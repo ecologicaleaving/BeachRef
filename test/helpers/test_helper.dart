@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Helper function to initialize Supabase for testing
+/// Helper function to initialize all services for testing
 Future<void> initializeSupabaseForTesting() async {
   try {
     // Initialize shared preferences for testing
     SharedPreferences.setMockInitialValues({});
+    
+    // Mock FlutterSecureStorage for testing
+    FlutterSecureStorage.setMockInitialValues({});
     
     // Try to access the client to see if it's initialized
     Supabase.instance.client;

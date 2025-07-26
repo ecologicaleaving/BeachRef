@@ -280,7 +280,7 @@ void main() {
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest());
-        await tester.pumpAndSettle();
+        await tester.pump(); // Single pump instead of pumpAndSettle
 
         // Assert
         expect(find.text(errorMessage), findsOneWidget);

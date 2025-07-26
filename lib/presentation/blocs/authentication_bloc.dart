@@ -34,9 +34,27 @@ abstract class AuthenticationState {
   const AuthenticationState();
 }
 
-class AuthenticationInitial extends AuthenticationState {}
+class AuthenticationInitial extends AuthenticationState {
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AuthenticationInitial;
+  }
 
-class AuthenticationLoading extends AuthenticationState {}
+  @override
+  int get hashCode => runtimeType.hashCode;
+}
+
+class AuthenticationLoading extends AuthenticationState {
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AuthenticationLoading;
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+}
 
 class AuthenticationAuthenticated extends AuthenticationState {
   final UserProfile user;
@@ -53,7 +71,16 @@ class AuthenticationAuthenticated extends AuthenticationState {
   int get hashCode => user.hashCode;
 }
 
-class AuthenticationUnauthenticated extends AuthenticationState {}
+class AuthenticationUnauthenticated extends AuthenticationState {
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AuthenticationUnauthenticated;
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+}
 
 class AuthenticationError extends AuthenticationState {
   final String message;

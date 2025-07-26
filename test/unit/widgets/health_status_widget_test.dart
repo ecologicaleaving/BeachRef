@@ -97,8 +97,7 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Disconnected'), findsOneWidget);

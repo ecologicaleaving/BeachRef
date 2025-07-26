@@ -3,7 +3,9 @@ import '../../services/vis_integration_service.dart';
 import '../../core/errors/vis_error.dart';
 
 class HealthStatusWidget extends StatefulWidget {
-  const HealthStatusWidget({super.key});
+  final VisIntegrationService? visService;
+  
+  const HealthStatusWidget({super.key, this.visService});
 
   @override
   State<HealthStatusWidget> createState() => _HealthStatusWidgetState();
@@ -11,7 +13,7 @@ class HealthStatusWidget extends StatefulWidget {
 
 class _HealthStatusWidgetState extends State<HealthStatusWidget>
     with TickerProviderStateMixin {
-  final VisIntegrationService _visService = VisIntegrationService();
+  late final VisIntegrationService _visService;
   
   HealthStatus? _healthStatus;
   bool _isLoading = false;
@@ -24,6 +26,7 @@ class _HealthStatusWidgetState extends State<HealthStatusWidget>
   @override
   void initState() {
     super.initState();
+    _visService = widget.visService ?? VisIntegrationService();
     _setupAnimations();
     _performHealthCheck();
   }

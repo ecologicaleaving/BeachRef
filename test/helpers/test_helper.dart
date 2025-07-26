@@ -5,10 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Helper function to initialize Supabase for testing
 Future<void> initializeSupabaseForTesting() async {
   try {
-    // Check if already initialized
-    if (Supabase.instance.client.supabaseUrl.isNotEmpty) {
-      return; // Already initialized
-    }
+    // Try to access the client to see if it's initialized
+    Supabase.instance.client;
+    return; // Already initialized
   } catch (e) {
     // Not initialized yet, proceed with initialization
   }

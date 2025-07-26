@@ -40,7 +40,7 @@ void main() {
     Widget createTestWidget() {
       return MaterialApp(
         home: Scaffold(
-          body: const HealthStatusWidget(),
+          body: HealthStatusWidget(visService: mockVisService),
         ),
       );
     }

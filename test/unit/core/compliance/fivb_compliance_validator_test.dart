@@ -33,7 +33,7 @@ void main() {
         // Assert
         expect(result.isError, isTrue);
         expect(result.error, isA<VisComplianceError>());
-        expect(result.error.message, contains('endpoint not allowed'));
+        expect(result.error.message, contains('endpoint violation'));
       });
 
       test('should enforce rate limiting between calls', () async {
@@ -100,7 +100,7 @@ void main() {
         // Assert
         expect(result.isError, isTrue);
         expect(result.error, isA<VisComplianceError>());
-        expect(result.error.message, contains('Missing required field'));
+        expect(result.error.details, contains('Missing required field'));
       });
 
       test('should reject tournament with invalid VIS ID', () {
@@ -121,7 +121,7 @@ void main() {
 
         // Assert
         expect(result.isError, isTrue);
-        expect(result.error.message, contains('Invalid VIS ID format'));
+        expect(result.error.details, contains('Invalid VIS ID format'));
       });
 
       test('should reject tournament with invalid date format', () {
@@ -142,7 +142,7 @@ void main() {
 
         // Assert
         expect(result.isError, isTrue);
-        expect(result.error.message, contains('Invalid date format'));
+        expect(result.error.details, contains('Invalid date format'));
       });
 
       test('should reject tournament with invalid competition level', () {
@@ -163,7 +163,7 @@ void main() {
 
         // Assert
         expect(result.isError, isTrue);
-        expect(result.error.message, contains('Invalid competition level'));
+        expect(result.error.details, contains('Invalid competition level'));
       });
     });
 

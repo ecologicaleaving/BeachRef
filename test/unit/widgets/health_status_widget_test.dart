@@ -7,7 +7,7 @@ import 'package:beachref/services/vis_integration_service.dart';
 import 'package:beachref/core/errors/vis_error.dart';
 import 'package:beachref/core/result.dart';
 
-import '../services/vis_integration_service_test.mocks.dart';
+import 'health_status_widget_test.mocks.dart';
 
 @GenerateMocks([VisIntegrationService])
 void main() {

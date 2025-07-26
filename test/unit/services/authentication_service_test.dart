@@ -56,7 +56,7 @@ void main() {
         when(mockUser.id).thenReturn('test-user-id');
         when(mockUser.email).thenReturn('test@example.com');
         when(mockUser.userMetadata).thenReturn({'display_name': 'Test User'});
-        when(mockUser.createdAt).thenReturn(DateTime.now());
+        when(mockUser.createdAt).thenReturn(DateTime.now().toIso8601String());
 
         when(mockSession.accessToken).thenReturn('test-access-token');
         when(mockSession.refreshToken).thenReturn('test-refresh-token');
@@ -146,12 +146,12 @@ void main() {
       test('should return UserProfile when user is authenticated and session is valid', () async {
         // Arrange
         final mockUser = MockUser();
-        final mockStoredSession = MockSession();
+        final mockStoredSession = MockSupabaseSession();
 
         when(mockUser.id).thenReturn('test-user-id');
         when(mockUser.email).thenReturn('test@example.com');
         when(mockUser.userMetadata).thenReturn({'display_name': 'Test User'});
-        when(mockUser.createdAt).thenReturn(DateTime.now());
+        when(mockUser.createdAt).thenReturn(DateTime.now().toIso8601String());
 
         when(mockGoTrueClient.currentUser).thenReturn(mockUser);
         when(mockSessionManager.getCurrentSession())
@@ -212,12 +212,12 @@ void main() {
         final mockUser = MockUser();
         final mockAuthResponse = MockAuthResponse();
         final mockSession = MockSupabaseSession();
-        final mockStoredSession = MockSession();
+        final mockStoredSession = MockSupabaseSession();
 
         when(mockUser.id).thenReturn('test-user-id');
         when(mockUser.email).thenReturn('test@example.com');
         when(mockUser.userMetadata).thenReturn({'display_name': 'Test User'});
-        when(mockUser.createdAt).thenReturn(DateTime.now());
+        when(mockUser.createdAt).thenReturn(DateTime.now().toIso8601String());
 
         when(mockSession.accessToken).thenReturn('new-access-token');
         when(mockSession.refreshToken).thenReturn('new-refresh-token');

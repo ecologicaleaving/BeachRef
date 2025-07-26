@@ -179,7 +179,9 @@ class FIVBComplianceValidator {
     final end = endDate ?? DateTime.now();
 
     final relevantCalls = _apiCallHistory
-        .where((call) => call.timestamp.isAfter(start) && call.timestamp.isBefore(end))
+        .where((call) => 
+          (call.timestamp.isAfter(start) || call.timestamp.isAtSameMomentAs(start)) && 
+          (call.timestamp.isBefore(end) || call.timestamp.isAtSameMomentAs(end)))
         .toList();
 
     final groupedByEndpoint = <String, List<ApiCallRecord>>{};

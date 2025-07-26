@@ -4,8 +4,16 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:beachref/presentation/blocs/authentication_bloc.dart';
+import 'package:beachref/services/session_manager.dart';
 import 'test_service_locator.dart';
 import '../mocks/mock_authentication_service.dart';
+
+// This file provides enhanced BLoC testing utilities and is not a test file itself.
+// Individual test files should import and use these utilities.
+void main() {
+  // This main function exists to prevent compilation errors
+  // but this file is not intended to run tests directly.
+}
 
 /// Enhanced BLoC testing utilities with detailed state comparison
 class EnhancedBlocTest {
@@ -146,11 +154,10 @@ class EnhancedBlocTest {
     
     serviceLocator.register<MockAuthenticationService>(authService);
     
-    // Note: In production, we'd update AuthenticationBloc to accept IAuthenticationService
-    // For now, we'll need to refactor the actual bloc to support dependency injection
-    
-    throw UnimplementedError(
-      'AuthenticationBloc needs to be refactored to accept IAuthenticationService interface'
+    // Create AuthenticationBloc with injected dependencies
+    return AuthenticationBloc(
+      authService: authService,
+      sessionManager: serviceLocator.get<SessionManager>(),
     );
   }
 }

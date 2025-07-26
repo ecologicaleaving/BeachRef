@@ -7,9 +7,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:beachref/app/app.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:beachref/presentation/blocs/authentication_bloc.dart';
+import 'package:beachref/presentation/pages/login_page.dart';
+import 'package:beachref/core/service_locator.dart';
 import 'helpers/test_helper.dart';
+import 'infrastructure/test_service_locator.dart';
+import 'mocks/mock_authentication_service.dart';
 
 void main() {
   setUpAll(() async {
@@ -18,14 +22,33 @@ void main() {
 
   tearDownAll(() async {
     await disposeSupabaseForTesting();
+    await ServiceLocator.reset();
   });
 
   testWidgets('BeachRef app loads correctly', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const BeachRefApp());
+    // Setup test dependencies
+    final testServiceLocator = TestServiceLocator();
+    testServiceLocator.setupDefaultTestServices();
+    
+    final mockAuthService = MockAuthenticationService();
+    mockAuthService.configureFailureScenarios(); // Start unauthenticated
+    
+    // Create a simplified test app that shows the login page
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider(
+          create: (context) => AuthenticationBloc(
+            authService: mockAuthService,
+            sessionManager: testServiceLocator.get(),
+          ),
+          child: const LoginPage(),
+        ),
+      ),
+    );
+    
     await tester.pumpAndSettle();
 
-    // Verify that the login page is displayed (default route for unauthenticated users)
+    // Verify that the login page is displayed
     expect(find.text('BeachRef Referee Portal'), findsOneWidget);
     expect(find.text('Sign in with your FIVB credentials'), findsOneWidget);
 

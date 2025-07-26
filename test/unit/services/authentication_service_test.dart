@@ -105,9 +105,11 @@ void main() {
       when(mockSupabaseClient.auth).thenReturn(mockGoTrueClient);
       when(mockLoggerService.generateCorrelationId()).thenReturn('test-correlation-id');
 
-      authService = AuthenticationService();
-      // We would need to inject dependencies for proper testing
-      // This is a simplified version for demonstration
+      authService = AuthenticationService(
+        supabaseClient: mockSupabaseClient,
+        logger: mockLoggerService,
+        sessionManager: mockSessionManager,
+      );
     });
 
     group('signInWithCredentials', () {

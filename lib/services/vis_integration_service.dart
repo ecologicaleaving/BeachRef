@@ -11,23 +11,16 @@ import '../data/models/tournament.dart';
 import '../data/models/cache_metadata.dart';
 
 class VisIntegrationService {
-  static final VisIntegrationService _instance = VisIntegrationService._internal();
-  factory VisIntegrationService([http.Client? httpClient]) {
-    if (httpClient != null) {
-      _instance._httpClient = httpClient;
-    } else if (!_instance._isHttpClientInitialized) {
-      _instance._httpClient = http.Client();
-      _instance._isHttpClientInitialized = true;
-    }
-    return _instance;
-  }
-  VisIntegrationService._internal();
-
-  late http.Client _httpClient;
-  bool _isHttpClientInitialized = false;
+  final http.Client _httpClient;
+  final LoggerService _logger;
   final Map<String, CacheMetadata> _cacheMetadata = {};
   final Map<String, dynamic> _cachedData = {};
-  final LoggerService _logger = LoggerService();
+
+  VisIntegrationService({
+    http.Client? httpClient,
+    LoggerService? logger,
+  }) : _httpClient = httpClient ?? http.Client(),
+       _logger = logger ?? LoggerService();
   final FIVBComplianceValidator _complianceValidator = FIVBComplianceValidator();
   
   DateTime? _lastApiCall;
@@ -100,6 +93,11 @@ class VisIntegrationService {
         },
         (error) {
           _handleFailure();
+          
+          // Preserve rate limit errors instead of wrapping them
+          if (error is VisRateLimitError) {
+            return Error(error);
+          }
           
           return Error(VisConnectionError(
             'Health check failed',
@@ -218,9 +216,10 @@ class VisIntegrationService {
     return result.fold(
       (data) => Success(data),
       (error) async {
-        // Don't retry on client errors (4xx)
+        // Don't retry on client errors (4xx) or maintenance errors (503)
         if (error is VisAuthenticationError || 
             error is VisDataValidationError ||
+            error is VisMaintenanceError ||
             attempt >= _retryDelays.length) {
           return Error(error);
         }
@@ -257,7 +256,15 @@ class VisIntegrationService {
         method: method,
       );
       if (complianceResult.isError) {
-        return Error(complianceResult.error);
+        final error = complianceResult.error;
+        // Convert FIVB rate limit violations to standard rate limit errors
+        if (error.message.contains('rate limit')) {
+          return Error(VisRateLimitError(
+            'Rate limit violation',
+            error.details,
+          ));
+        }
+        return Error(error);
       }
 
       // Rate limiting check

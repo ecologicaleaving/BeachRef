@@ -10,6 +10,13 @@ import 'base_test_classes.dart';
 import 'test_service_locator.dart';
 import '../mocks/mock_authentication_service.dart';
 
+// This file provides enhanced widget testing utilities and is not a test file itself.
+// Individual test files should import and use these utilities.
+void main() {
+  // This main function exists to prevent compilation errors
+  // but this file is not intended to run tests directly.
+}
+
 /// Enhanced widget testing utilities with robust async handling
 class EnhancedWidgetTest extends BaseWidgetTest {
   /// Test widget with authentication BLoC

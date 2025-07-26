@@ -3,7 +3,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:beachref/presentation/blocs/authentication_bloc.dart';
-import 'package:beachref/services/authentication_service.dart';
+import 'package:beachref/services/interfaces/i_authentication_service.dart';
 import 'package:beachref/services/session_manager.dart';
 import 'package:beachref/core/logging/logger_service.dart';
 import 'package:beachref/data/models/user_profile.dart';
@@ -13,7 +13,7 @@ import 'package:beachref/core/errors/auth_error.dart';
 
 import 'authentication_bloc_test.mocks.dart';
 
-@GenerateMocks([AuthenticationService, SessionManager, LoggerService])
+@GenerateMocks([IAuthenticationService, SessionManager, LoggerService])
 void main() {
   // Provide dummy values for Mockito
   provideDummy<Result<Session, AuthError>>(
@@ -43,6 +43,9 @@ void main() {
       createdAt: DateTime.now(),
     )),
   );
+
+  // Dummy for void Result
+  provideDummy<Result<void, AuthError>>(const Success(null));
   
   provideDummy<AuthError>(const AuthError('Dummy error'));
   provideDummy<Session>(Session(
@@ -70,7 +73,7 @@ void main() {
   ));
   group('AuthenticationBloc', () {
     late AuthenticationBloc authBloc;
-    late MockAuthenticationService mockAuthService;
+    late MockIAuthenticationService mockAuthService;
     late MockSessionManager mockSessionManager;
     late MockLoggerService mockLogger;
 
@@ -99,7 +102,7 @@ void main() {
     );
 
     setUp(() {
-      mockAuthService = MockAuthenticationService();
+      mockAuthService = MockIAuthenticationService();
       mockSessionManager = MockSessionManager();
       mockLogger = MockLoggerService();
 
@@ -278,7 +281,7 @@ void main() {
       blocTest<AuthenticationBloc, AuthenticationState>(
         'emits [AuthenticationUnauthenticated] when logout succeeds',
         build: () {
-          when(mockAuthService.signOut()).thenAnswer((_) async {});
+          when(mockAuthService.signOut()).thenAnswer((_) async => const Success(null));
           return authBloc;
         },
         act: (bloc) => bloc.add(LogoutRequested()),

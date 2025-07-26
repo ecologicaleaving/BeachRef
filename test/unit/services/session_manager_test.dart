@@ -40,7 +40,10 @@ void main() {
                            exception: anyNamed('exception'), component: anyNamed('component')))
           .thenReturn(null);
       
-      sessionManager = SessionManager(mockStorage, mockLogger);
+      sessionManager = SessionManager(
+        storage: mockStorage,
+        logger: mockLogger,
+      );
     });
 
     group('storeSession', () {

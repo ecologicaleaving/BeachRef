@@ -171,7 +171,7 @@ void main() {
         expect: () => [
           const AuthenticationLoading(),
           const AuthenticationError(
-            message: 'Login failed. Please check your credentials and try again.',
+            message: 'Invalid email or password. Please check your credentials and try again.',
             details: 'Invalid credentials',
           ),
         ],

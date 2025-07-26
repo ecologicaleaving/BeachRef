@@ -6,17 +6,23 @@ import '../core/logging/logger_service.dart';
 import '../data/models/user_profile.dart';
 import '../data/models/session.dart' as models;
 import 'session_manager.dart';
+import 'interfaces/i_authentication_service.dart';
 
-class AuthenticationService {
-  static final AuthenticationService _instance = AuthenticationService._internal();
-  factory AuthenticationService() => _instance;
-  AuthenticationService._internal();
+class AuthenticationService implements IAuthenticationService {
+  final SupabaseClient _supabase;
+  final LoggerService _logger;
+  final SessionManager _sessionManager;
 
-  final SupabaseClient _supabase = Supabase.instance.client;
-  final LoggerService _logger = LoggerService();
-  final SessionManager _sessionManager = SessionManager();
+  AuthenticationService({
+    SupabaseClient? supabaseClient,
+    LoggerService? logger,
+    SessionManager? sessionManager,
+  }) : _supabase = supabaseClient ?? Supabase.instance.client,
+       _logger = logger ?? LoggerService(),
+       _sessionManager = sessionManager ?? SessionManager();
 
   /// Sign in with FIVB credentials (MVP: uses email/password via Supabase)
+  @override
   Future<Result<UserProfile, AuthError>> signInWithCredentials({
     required String email,
     required String password,
@@ -102,6 +108,7 @@ class AuthenticationService {
   }
 
   /// Get current authenticated user
+  @override
   Future<Result<UserProfile, AuthError>> getCurrentUser() async {
     final correlationId = _logger.generateCorrelationId();
 
@@ -149,6 +156,7 @@ class AuthenticationService {
   }
 
   /// Refresh authentication token
+  @override
   Future<Result<UserProfile, AuthError>> refreshToken() async {
     final correlationId = _logger.generateCorrelationId();
 
@@ -238,7 +246,8 @@ class AuthenticationService {
   }
 
   /// Sign out user
-  Future<void> signOut() async {
+  @override
+  Future<Result<void, AuthError>> signOut() async {
     final correlationId = _logger.generateCorrelationId();
 
     try {
@@ -260,6 +269,8 @@ class AuthenticationService {
         component: 'AUTH_SERVICE',
       );
 
+      return const Success(null);
+
     } catch (e) {
       _logger.error(
         'Error during sign out',
@@ -270,6 +281,76 @@ class AuthenticationService {
 
       // Even if remote sign out fails, clear local session
       await _sessionManager.clearSession();
+      
+      return const Error(AuthError(
+        'Sign out error',
+        'An error occurred during sign out, but local session was cleared',
+      ));
+    }
+  }
+
+  /// Check if user is currently authenticated
+  @override
+  Future<bool> isAuthenticated() async {
+    try {
+      final currentUser = _supabase.auth.currentUser;
+      if (currentUser == null) return false;
+
+      final sessionResult = await _sessionManager.getCurrentSession();
+      return sessionResult.fold(
+        (session) => session.isValid,
+        (error) => false,
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Reset password for email
+  @override
+  Future<Result<void, AuthError>> resetPassword({required String email}) async {
+    final correlationId = _logger.generateCorrelationId();
+
+    try {
+      _logger.info(
+        'Password reset requested',
+        correlationId: correlationId,
+        data: {'email': email},
+        component: 'AUTH_SERVICE',
+      );
+
+      await _supabase.auth.resetPasswordForEmail(email);
+
+      _logger.info(
+        'Password reset email sent',
+        correlationId: correlationId,
+        component: 'AUTH_SERVICE',
+      );
+
+      return const Success(null);
+
+    } on AuthException catch (e) {
+      _logger.warning(
+        'Password reset failed',
+        correlationId: correlationId,
+        data: {'error': e.message},
+        component: 'AUTH_SERVICE',
+      );
+
+      return Error(AuthError('Password reset failed', e.message));
+
+    } catch (e) {
+      _logger.error(
+        'Unexpected error during password reset',
+        correlationId: correlationId,
+        exception: e,
+        component: 'AUTH_SERVICE',
+      );
+
+      return const Error(AuthError(
+        'Password reset error',
+        'An unexpected error occurred during password reset',
+      ));
     }
   }
 

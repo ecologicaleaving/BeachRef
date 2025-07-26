@@ -79,7 +79,8 @@ void main() {
       // Act
       await tester.pumpWidget(createTestWidget());
       // Wait for the async healthCheck to complete
-      await tester.pumpAndSettle();
+      await tester.pump(); // Initial pump
+      await tester.pump(const Duration(milliseconds: 100)); // Allow health check to complete
 
       // Assert
       expect(find.text('Connected'), findsOneWidget);
@@ -97,7 +98,8 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(); // Initial pump
+      await tester.pump(const Duration(milliseconds: 100)); // Allow health check to complete
 
       // Assert
       expect(find.text('Disconnected'), findsOneWidget);
@@ -158,11 +160,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(); // Initial pump
+      await tester.pump(const Duration(milliseconds: 100)); // Allow health check to complete
 
       // Tap on status indicator to expand error details
       await tester.tap(find.text('Disconnected'));
-      await tester.pumpAndSettle();
+      await tester.pump(); // Allow for state changes
 
       // Assert
       expect(find.text('Detailed network error information'), findsOneWidget);
@@ -268,7 +271,7 @@ void main() {
         status: ConnectionStatus.connected,
       )));
       
-      await tester.pumpAndSettle();
+      await tester.pump(); // Allow for state changes
       
       // After loading completes, button should be enabled again
       final enabledIconButton = tester.widget<IconButton>(iconButtonFinder);

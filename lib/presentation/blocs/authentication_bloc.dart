@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../services/authentication_service.dart';
+import '../../services/interfaces/i_authentication_service.dart';
 import '../../services/session_manager.dart';
 import '../../data/models/user_profile.dart';
 import '../../core/logging/logger_service.dart';
@@ -82,12 +82,12 @@ class AuthenticationError extends AuthenticationState {
 
 // BLoC
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
-  final AuthenticationService _authService;
+  final IAuthenticationService _authService;
   final SessionManager _sessionManager;
   final LoggerService _logger;
 
   AuthenticationBloc({
-    required AuthenticationService authService,
+    required IAuthenticationService authService,
     required SessionManager sessionManager,
     LoggerService? logger,
   })  : _authService = authService,
@@ -236,12 +236,24 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         component: 'AUTH_BLOC',
       );
 
-      await _authService.signOut();
+      final result = await _authService.signOut();
 
-      _logger.info(
-        'Logout successful',
-        correlationId: correlationId,
-        component: 'AUTH_BLOC',
+      result.fold(
+        (_) {
+          _logger.info(
+            'Logout successful',
+            correlationId: correlationId,
+            component: 'AUTH_BLOC',
+          );
+        },
+        (error) {
+          _logger.warning(
+            'Logout had errors but completed',
+            correlationId: correlationId,
+            data: {'error': error.message},
+            component: 'AUTH_BLOC',
+          );
+        },
       );
 
       emit(AuthenticationUnauthenticated());
@@ -345,7 +357,11 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     // Convert technical error messages to user-friendly ones
     final lowerError = errorMessage.toLowerCase();
     
-    if (lowerError.contains('invalid') && lowerError.contains('credential')) {
+    if (lowerError.contains('invalid') && (lowerError.contains('credential') || lowerError.contains('password') || lowerError.contains('email'))) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    
+    if (lowerError.contains('authentication failed') || lowerError.contains('login failed') || lowerError.contains('invalid credentials')) {
       return 'Invalid email or password. Please check your credentials and try again.';
     }
     

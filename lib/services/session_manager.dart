@@ -6,12 +6,6 @@ import '../core/errors/auth_error.dart';
 import '../core/logging/logger_service.dart';
 
 class SessionManager {
-  static final SessionManager _instance = SessionManager._internal();
-  factory SessionManager([FlutterSecureStorage? storage, LoggerService? logger]) => 
-    _instance.._storage = storage ?? _defaultStorage
-           .._logger = logger ?? LoggerService();
-  SessionManager._internal();
-
   static const _sessionKey = 'beach_ref_session';
   static const _defaultStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(
@@ -22,8 +16,14 @@ class SessionManager {
     ),
   );
 
-  late FlutterSecureStorage _storage;
-  late LoggerService _logger;
+  final FlutterSecureStorage _storage;
+  final LoggerService _logger;
+
+  SessionManager({
+    FlutterSecureStorage? storage,
+    LoggerService? logger,
+  }) : _storage = storage ?? _defaultStorage,
+       _logger = logger ?? LoggerService();
 
   /// Store session securely
   Future<void> storeSession(Session session) async {

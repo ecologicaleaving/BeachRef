@@ -63,14 +63,19 @@ class TestServiceLocator {
     
     // Register mock logger
     final mockLogger = MockLoggerService();
-    when(mockLogger.generateCorrelationId()).thenReturn('test-correlation-id');
     registerMock<LoggerService>(mockLogger);
     
     // Register services with dependency injection
-    final sessionManager = SessionManager(mockStorage, mockLogger);
+    final sessionManager = SessionManager(
+      storage: mockStorage,
+      logger: mockLogger,
+    );
     register<SessionManager>(sessionManager);
     
-    final visService = VisIntegrationService(mockHttpClient);
+    final visService = VisIntegrationService(
+      httpClient: mockHttpClient,
+      logger: mockLogger,
+    );
     register<VisIntegrationService>(visService);
   }
 }
@@ -78,4 +83,7 @@ class TestServiceLocator {
 /// Mock classes for testing
 class MockFlutterSecureStorage extends Mock implements FlutterSecureStorage {}
 class MockClient extends Mock implements http.Client {}
-class MockLoggerService extends Mock implements LoggerService {}
+class MockLoggerService extends Mock implements LoggerService {
+  @override
+  String generateCorrelationId() => 'test-correlation-id';
+}

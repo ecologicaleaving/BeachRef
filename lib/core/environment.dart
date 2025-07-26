@@ -26,6 +26,11 @@ class Environment {
     defaultValue: '',
   );
   
+  static const String fivbAppId = String.fromEnvironment(
+    'FIVB_APP_ID',
+    defaultValue: '2a9523517c52420da73d927c6d6bab23',
+  );
+  
   static const String environment = String.fromEnvironment(
     'ENVIRONMENT',
     defaultValue: kDebugMode ? 'development' : 'production',

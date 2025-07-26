@@ -12,10 +12,19 @@ import '../data/models/cache_metadata.dart';
 
 class VisIntegrationService {
   static final VisIntegrationService _instance = VisIntegrationService._internal();
-  factory VisIntegrationService([http.Client? httpClient]) => _instance.._httpClient = httpClient ?? http.Client();
+  factory VisIntegrationService([http.Client? httpClient]) {
+    if (httpClient != null) {
+      _instance._httpClient = httpClient;
+    } else if (!_instance._isHttpClientInitialized) {
+      _instance._httpClient = http.Client();
+      _instance._isHttpClientInitialized = true;
+    }
+    return _instance;
+  }
   VisIntegrationService._internal();
 
   late http.Client _httpClient;
+  bool _isHttpClientInitialized = false;
   final Map<String, CacheMetadata> _cacheMetadata = {};
   final Map<String, dynamic> _cachedData = {};
   final LoggerService _logger = LoggerService();

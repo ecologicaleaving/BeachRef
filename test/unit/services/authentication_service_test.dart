@@ -12,7 +12,7 @@ import 'package:beachref/data/models/session.dart';
 import 'package:beachref/core/result.dart';
 import 'package:beachref/core/errors/auth_error.dart';
 
-import '../helpers/test_helper.dart';
+import '../../helpers/test_helper.dart';
 import 'authentication_service_test.mocks.dart';
 
 @GenerateMocks([

@@ -95,25 +95,27 @@ class _HealthStatusWidgetState extends State<HealthStatusWidget>
       constraints: const BoxConstraints(
         minWidth: 200,
         maxWidth: 400,
-        maxHeight: 120,
+        minHeight: 120,
       ),
       child: Card(
         elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 4),
-              _buildStatusIndicator(),
-              const SizedBox(height: 4),
-              _buildMetrics(),
-              if (_isExpanded && _errorDetails != null) ...[
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHeader(),
                 const SizedBox(height: 4),
-                _buildErrorDetails(),
+                _buildStatusIndicator(),
+                const SizedBox(height: 4),
+                _buildMetrics(),
+                if (_isExpanded && _errorDetails != null) ...[
+                  const SizedBox(height: 4),
+                  _buildErrorDetails(),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

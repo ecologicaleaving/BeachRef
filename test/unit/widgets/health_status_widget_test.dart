@@ -78,11 +78,8 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pump(); // Single pump first
-      await tester.pump(const Duration(milliseconds: 100)); // Give time for async operation
-      
-      // Wait specifically for the text we expect
-      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      // Wait for the async healthCheck to complete
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Connected'), findsOneWidget);
@@ -162,13 +159,11 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
       // Tap on status indicator to expand error details
       await tester.tap(find.text('Disconnected'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Detailed network error information'), findsOneWidget);
@@ -251,7 +246,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(); // Initial pump to start loading
 
-      // Try to find refresh button while loading
+      // The widget should be in loading state, let's check the button state
       final refreshButton = find.byIcon(Icons.refresh);
       expect(refreshButton, findsOneWidget);
 
@@ -264,7 +259,7 @@ void main() {
       
       // The button should be disabled during loading
       final iconButton = tester.widget<IconButton>(iconButtonFinder);
-      expect(iconButton.onPressed, isNull);
+      expect(iconButton.onPressed, isNull, reason: 'Refresh button should be disabled during loading');
       
       // Complete the health check to avoid pending timers
       completer.complete(Success(HealthStatus(
@@ -275,6 +270,10 @@ void main() {
       )));
       
       await tester.pumpAndSettle();
+      
+      // After loading completes, button should be enabled again
+      final enabledIconButton = tester.widget<IconButton>(iconButtonFinder);
+      expect(enabledIconButton.onPressed, isNotNull, reason: 'Refresh button should be enabled after loading');
     });
   });
 }

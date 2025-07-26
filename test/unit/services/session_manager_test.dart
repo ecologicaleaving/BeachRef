@@ -25,11 +25,22 @@ void main() {
       mockStorage = MockFlutterSecureStorage();
       mockLogger = MockLoggerService();
       
+      // Mock all logger methods with any parameters
       when(mockLogger.generateCorrelationId()).thenReturn('test-correlation-id');
+      when(mockLogger.info(any, correlationId: anyNamed('correlationId'), 
+                          data: anyNamed('data'), component: anyNamed('component')))
+          .thenReturn(null);
+      when(mockLogger.debug(any, correlationId: anyNamed('correlationId'), 
+                           data: anyNamed('data'), component: anyNamed('component')))
+          .thenReturn(null);
+      when(mockLogger.warning(any, correlationId: anyNamed('correlationId'), 
+                             data: anyNamed('data'), component: anyNamed('component')))
+          .thenReturn(null);
+      when(mockLogger.error(any, correlationId: anyNamed('correlationId'), 
+                           exception: anyNamed('exception'), component: anyNamed('component')))
+          .thenReturn(null);
       
-      sessionManager = SessionManager();
-      // Note: In a real implementation, we'd need dependency injection
-      // This is a simplified version for demonstration
+      sessionManager = SessionManager(mockStorage, mockLogger);
     });
 
     group('storeSession', () {

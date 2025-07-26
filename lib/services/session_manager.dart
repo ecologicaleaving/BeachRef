@@ -7,11 +7,13 @@ import '../core/logging/logger_service.dart';
 
 class SessionManager {
   static final SessionManager _instance = SessionManager._internal();
-  factory SessionManager() => _instance;
+  factory SessionManager([FlutterSecureStorage? storage, LoggerService? logger]) => 
+    _instance.._storage = storage ?? _defaultStorage
+           .._logger = logger ?? LoggerService();
   SessionManager._internal();
 
   static const _sessionKey = 'beach_ref_session';
-  static const _storage = FlutterSecureStorage(
+  static const _defaultStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(
       encryptedSharedPreferences: true,
     ),
@@ -20,7 +22,8 @@ class SessionManager {
     ),
   );
 
-  final LoggerService _logger = LoggerService();
+  late FlutterSecureStorage _storage;
+  late LoggerService _logger;
 
   /// Store session securely
   Future<void> storeSession(Session session) async {

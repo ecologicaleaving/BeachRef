@@ -4,6 +4,7 @@ import '../../services/authentication_service.dart';
 import '../../services/session_manager.dart';
 import '../../data/models/user_profile.dart';
 import '../../core/logging/logger_service.dart';
+import '../../core/utils.dart';
 
 // Events
 abstract class AuthenticationEvent {}

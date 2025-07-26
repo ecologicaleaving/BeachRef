@@ -23,13 +23,17 @@ void main() {
   testWidgets('BeachRef app loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BeachRefApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our app title is displayed.
-    expect(find.text('BeachRef'), findsOneWidget);
-    expect(find.text('Welcome to BeachRef'), findsOneWidget);
-    expect(find.text('Beach Volleyball Referee Assistant'), findsOneWidget);
+    // Verify that the login page is displayed (default route for unauthenticated users)
+    expect(find.text('BeachRef Referee Portal'), findsOneWidget);
+    expect(find.text('Sign in with your FIVB credentials'), findsOneWidget);
 
     // Verify that the volleyball icon is displayed.
     expect(find.byIcon(Icons.sports_volleyball), findsOneWidget);
+    
+    // Verify login form elements are present
+    expect(find.text('Email or Username'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
   });
 }

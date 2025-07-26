@@ -105,6 +105,9 @@ void main() {
 
       provideDummy<String>('dummy-correlation-id');
       when(mockLogger.generateCorrelationId()).thenReturn('test-correlation-id');
+      
+      // Mock clearSession to return Future<void> by default
+      when(mockSessionManager.clearSession()).thenAnswer((_) async {});
 
       authBloc = AuthenticationBloc(
         authService: mockAuthService,

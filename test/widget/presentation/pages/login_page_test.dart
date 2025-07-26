@@ -234,11 +234,18 @@ void main() {
         await tester.pumpWidget(createWidgetUnderTest());
         await tester.pumpAndSettle();
 
+        // Scroll to make sure the forgot password button is visible
+        await tester.scrollUntilVisible(
+          find.text('Forgot your password?'),
+          500.0,
+          scrollable: find.byType(SingleChildScrollView),
+        );
+
         final forgotPasswordButton = find.text('Forgot your password?');
 
         // Act
         await tester.tap(forgotPasswordButton);
-        await tester.pumpAndSettle();
+        await tester.pump(); // Don't use pumpAndSettle as SnackBar animations may be infinite
 
         // Assert - Should show a snackbar with placeholder message
         expect(find.byType(SnackBar), findsOneWidget);
@@ -254,7 +261,7 @@ void main() {
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest());
-        await tester.pumpAndSettle();
+        await tester.pump(); // Single pump instead of pumpAndSettle
 
         // Assert
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -291,7 +298,7 @@ void main() {
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest());
-        await tester.pumpAndSettle();
+        await tester.pump(); // Single pump instead of pumpAndSettle
 
         // Assert
         final textFormFields = find.byType(TextFormField);

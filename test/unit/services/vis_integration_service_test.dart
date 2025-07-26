@@ -20,6 +20,8 @@ void main() {
       service = VisIntegrationService(mockClient);
       // Reset service state for clean test environment
       service.resetState();
+      // Clear any cached data between tests
+      service.clearCache();
     });
 
     tearDown(() {
@@ -220,7 +222,8 @@ void main() {
             .thenAnswer((_) async => http.Response('{"tournaments": []}', 200));
 
         // Act - Make first call
-        await service.healthCheck();
+        final firstResult = await service.healthCheck();
+        expect(firstResult.isSuccess, isTrue); // First call should succeed
         
         // Immediate second call should be rate limited
         final result = await service.healthCheck();
@@ -229,6 +232,9 @@ void main() {
         expect(result.isError, isTrue);
         expect(result.error, isA<VisRateLimitError>());
         expect(result.error.message, contains('Rate limit violation'));
+        
+        // Verify that only one actual HTTP call was made (second was rate limited)
+        verify(mockClient.get(any, headers: anyNamed('headers'))).called(1);
       });
     });
 

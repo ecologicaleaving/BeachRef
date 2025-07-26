@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import '../../services/authentication_service.dart';
 import '../../services/session_manager.dart';
 import '../../data/models/user_profile.dart';
@@ -7,7 +8,12 @@ import '../../core/logging/logger_service.dart';
 import '../../core/utils.dart';
 
 // Events
-abstract class AuthenticationEvent {}
+abstract class AuthenticationEvent extends Equatable {
+  const AuthenticationEvent();
+  
+  @override
+  List<Object?> get props => [];
+}
 
 class AppStarted extends AuthenticationEvent {}
 
@@ -16,11 +22,14 @@ class LoginRequested extends AuthenticationEvent {
   final String password;
   final bool rememberMe;
 
-  LoginRequested({
+  const LoginRequested({
     required this.email,
     required this.password,
     this.rememberMe = false,
   });
+
+  @override
+  List<Object?> get props => [email, password, rememberMe];
 }
 
 class LogoutRequested extends AuthenticationEvent {}
@@ -30,30 +39,19 @@ class SessionCheckRequested extends AuthenticationEvent {}
 class TokenRefreshRequested extends AuthenticationEvent {}
 
 // States
-abstract class AuthenticationState {
+abstract class AuthenticationState extends Equatable {
   const AuthenticationState();
+  
+  @override
+  List<Object?> get props => [];
 }
 
 class AuthenticationInitial extends AuthenticationState {
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AuthenticationInitial;
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
+  const AuthenticationInitial();
 }
 
 class AuthenticationLoading extends AuthenticationState {
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AuthenticationLoading;
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
+  const AuthenticationLoading();
 }
 
 class AuthenticationAuthenticated extends AuthenticationState {
@@ -62,24 +60,11 @@ class AuthenticationAuthenticated extends AuthenticationState {
   const AuthenticationAuthenticated({required this.user});
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AuthenticationAuthenticated && other.user == user;
-  }
-
-  @override
-  int get hashCode => user.hashCode;
+  List<Object?> get props => [user];
 }
 
 class AuthenticationUnauthenticated extends AuthenticationState {
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AuthenticationUnauthenticated;
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
+  const AuthenticationUnauthenticated();
 }
 
 class AuthenticationError extends AuthenticationState {
@@ -92,15 +77,7 @@ class AuthenticationError extends AuthenticationState {
   });
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AuthenticationError &&
-        other.message == message &&
-        other.details == details;
-  }
-
-  @override
-  int get hashCode => Object.hash(message, details);
+  List<Object?> get props => [message, details];
 }
 
 // BLoC

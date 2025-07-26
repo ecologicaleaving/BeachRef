@@ -1,4 +1,6 @@
-class UserProfile {
+import 'package:equatable/equatable.dart';
+
+class UserProfile extends Equatable {
   final String userId;
   final String email;
   final String displayName;
@@ -163,4 +165,19 @@ class UserProfile {
     }
     return true;
   }
+
+  @override
+  List<Object?> get props => [
+    userId,
+    email,
+    displayName,
+    refereeLevel,
+    certificationDate,
+    region,
+    preferredLocation,
+    preferredCompetitionLevels,
+    timezone,
+    lastLoginAt,
+    createdAt,
+  ];
 }

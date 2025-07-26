@@ -91,7 +91,10 @@ void main() {
               "start_date": "2024-07-25T00:00:00Z",
               "end_date": "2024-07-28T00:00:00Z",
               "competition_level": "International",
+              "tournament_type": "Beach Volleyball",
               "status": "active",
+              "teams": [],
+              "last_updated": "2024-01-01T00:00:00Z",
               "created_at": "2024-01-01T00:00:00Z",
               "updated_at": "2024-01-01T00:00:00Z"
             }
@@ -127,7 +130,10 @@ void main() {
               "start_date": "2024-07-25T00:00:00Z",
               "end_date": "2024-07-28T00:00:00Z",
               "competition_level": "International",
+              "tournament_type": "Beach Volleyball",
               "status": "active",
+              "teams": [],
+              "last_updated": "2024-01-01T00:00:00Z",
               "created_at": "2024-01-01T00:00:00Z",
               "updated_at": "2024-01-01T00:00:00Z"
             }

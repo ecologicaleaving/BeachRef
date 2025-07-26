@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -11,6 +12,7 @@ import 'package:beachref/data/models/session.dart';
 import 'package:beachref/core/result.dart';
 import 'package:beachref/core/errors/auth_error.dart';
 
+import '../helpers/test_helper.dart';
 import 'authentication_service_test.mocks.dart';
 
 @GenerateMocks([
@@ -25,6 +27,15 @@ import 'authentication_service_test.mocks.dart';
   MockSpec<supabase.Session>(as: #MockSupabaseSession),
 ])
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    await initializeSupabaseForTesting();
+  });
+
+  tearDownAll(() async {
+    await disposeSupabaseForTesting();
+  });
+
   group('AuthenticationService', () {
     late AuthenticationService authService;
     late MockSupabaseClient mockSupabaseClient;

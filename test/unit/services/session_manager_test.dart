@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -11,6 +12,10 @@ import 'session_manager_test.mocks.dart';
 
 @GenerateMocks([FlutterSecureStorage, LoggerService])
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   group('SessionManager', () {
     late SessionManager sessionManager;
     late MockFlutterSecureStorage mockStorage;

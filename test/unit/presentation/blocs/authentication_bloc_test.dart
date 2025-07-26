@@ -15,6 +15,59 @@ import 'authentication_bloc_test.mocks.dart';
 
 @GenerateMocks([AuthenticationService, SessionManager, LoggerService])
 void main() {
+  // Provide dummy values for Mockito
+  provideDummy<Result<Session, AuthError>>(
+    Success(Session(
+      sessionId: 'dummy-session-id',
+      userId: 'dummy-user-id',
+      accessToken: 'dummy-access-token',
+      refreshToken: 'dummy-refresh-token',
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+      rememberMe: false,
+      deviceInfo: 'Dummy Device',
+      createdAt: DateTime.now(),
+    )),
+  );
+  
+  provideDummy<Result<UserProfile, AuthError>>(
+    Success(UserProfile(
+      userId: 'dummy-user-id',
+      email: 'dummy@example.com',
+      displayName: 'Dummy User',
+      refereeLevel: 'National',
+      certificationDate: DateTime.now().subtract(const Duration(days: 365)),
+      region: 'International',
+      preferredCompetitionLevels: ['Beach Volleyball'],
+      timezone: 'UTC',
+      lastLoginAt: DateTime.now(),
+      createdAt: DateTime.now(),
+    )),
+  );
+  
+  provideDummy<AuthError>(const AuthError('Dummy error'));
+  provideDummy<Session>(Session(
+    sessionId: 'dummy-session-id',
+    userId: 'dummy-user-id',
+    accessToken: 'dummy-access-token',
+    refreshToken: 'dummy-refresh-token',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    rememberMe: false,
+    deviceInfo: 'Dummy Device',
+    createdAt: DateTime.now(),
+  ));
+  
+  provideDummy<UserProfile>(UserProfile(
+    userId: 'dummy-user-id',
+    email: 'dummy@example.com',
+    displayName: 'Dummy User',
+    refereeLevel: 'National',
+    certificationDate: DateTime.now().subtract(const Duration(days: 365)),
+    region: 'International',
+    preferredCompetitionLevels: ['Beach Volleyball'],
+    timezone: 'UTC',
+    lastLoginAt: DateTime.now(),
+    createdAt: DateTime.now(),
+  ));
   group('AuthenticationBloc', () {
     late AuthenticationBloc authBloc;
     late MockAuthenticationService mockAuthService;
@@ -50,6 +103,7 @@ void main() {
       mockSessionManager = MockSessionManager();
       mockLogger = MockLoggerService();
 
+      provideDummy<String>('dummy-correlation-id');
       when(mockLogger.generateCorrelationId()).thenReturn('test-correlation-id');
 
       authBloc = AuthenticationBloc(

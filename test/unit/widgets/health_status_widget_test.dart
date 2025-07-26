@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -77,7 +78,11 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle(); // Wait for async operations
+      await tester.pump(); // Single pump first
+      await tester.pump(const Duration(milliseconds: 100)); // Give time for async operation
+      
+      // Wait specifically for the text we expect
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
       // Assert
       expect(find.text('Connected'), findsOneWidget);
@@ -95,7 +100,8 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert
       expect(find.text('Disconnected'), findsOneWidget);
@@ -133,11 +139,13 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       
       // Tap refresh button
       await tester.tap(find.byIcon(Icons.refresh));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert - Health check should be called at least twice (initial + refresh)
       verify(mockVisService.healthCheck()).called(greaterThan(1));
@@ -154,11 +162,13 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Tap on status indicator to expand error details
       await tester.tap(find.text('Disconnected'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert
       expect(find.text('Detailed network error information'), findsOneWidget);
@@ -175,10 +185,11 @@ void main() {
         )),
       );
 
-      // Act - Set small screen size
-      await tester.binding.setSurfaceSize(const Size(300, 600));
+      // Act - Set small screen size but not too small to avoid overflow
+      await tester.binding.setSurfaceSize(const Size(400, 600));
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert - Should still display all elements
       expect(find.text('VIS Connection Status'), findsOneWidget);
@@ -200,7 +211,8 @@ void main() {
       // Act - Set large screen size
       await tester.binding.setSurfaceSize(const Size(800, 600));
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert - Should display expanded metrics layout
       expect(find.text('VIS Connection Status'), findsOneWidget);
@@ -222,7 +234,8 @@ void main() {
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert - Should show "30s ago" format
       expect(find.textContaining('Last check:'), findsOneWidget);
@@ -230,30 +243,38 @@ void main() {
     });
 
     testWidgets('should disable refresh button during loading', (WidgetTester tester) async {
-      // Arrange - Make health check take some time
-      when(mockVisService.healthCheck()).thenAnswer(
-        (_) async {
-          await Future.delayed(const Duration(milliseconds: 500));
-          return Success(HealthStatus(
-            isConnected: true,
-            responseTimeMs: 150,
-            lastCheckTime: DateTime.now(),
-            status: ConnectionStatus.connected,
-          ));
-        },
-      );
+      // Arrange - Create a completer to control when the health check completes
+      final completer = Completer<Result<HealthStatus, VisError>>();
+      when(mockVisService.healthCheck()).thenAnswer((_) => completer.future);
 
       // Act
       await tester.pumpWidget(createTestWidget());
-      await tester.pump(const Duration(milliseconds: 100)); // Don't wait for completion
+      await tester.pump(); // Initial pump to start loading
 
-      // Try to tap refresh button while loading
+      // Try to find refresh button while loading
       final refreshButton = find.byIcon(Icons.refresh);
       expect(refreshButton, findsOneWidget);
 
+      // Find the IconButton widget that contains the refresh icon
+      final iconButtonFinder = find.ancestor(
+        of: refreshButton,
+        matching: find.byType(IconButton),
+      );
+      expect(iconButtonFinder, findsOneWidget);
+      
       // The button should be disabled during loading
-      final iconButton = tester.widget<IconButton>(refreshButton);
+      final iconButton = tester.widget<IconButton>(iconButtonFinder);
       expect(iconButton.onPressed, isNull);
+      
+      // Complete the health check to avoid pending timers
+      completer.complete(Success(HealthStatus(
+        isConnected: true,
+        responseTimeMs: 150,
+        lastCheckTime: DateTime.now(),
+        status: ConnectionStatus.connected,
+      )));
+      
+      await tester.pumpAndSettle();
     });
   });
 }

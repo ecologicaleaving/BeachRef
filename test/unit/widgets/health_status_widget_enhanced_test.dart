@@ -53,7 +53,7 @@ void main() {
           home: HealthStatusWidget(visService: mockVisService),
         ),
       );
-      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Assert
       expect(find.text('VIS Connection Status'), findsOneWidget);
@@ -77,7 +77,7 @@ void main() {
           home: HealthStatusWidget(visService: mockVisService),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Assert
       expect(find.text('Disconnected'), findsOneWidget);
@@ -99,11 +99,11 @@ void main() {
           home: HealthStatusWidget(visService: mockVisService),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // Find and tap the error status to expand details
       await tester.tap(find.text('Disconnected'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Assert
       expect(find.text('Detailed network error information'), findsOneWidget);

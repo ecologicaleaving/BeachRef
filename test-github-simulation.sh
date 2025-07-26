@@ -101,9 +101,26 @@ run_tests() {
     
     # Run tests and capture output
     if flutter test --reporter=expanded 2>&1 | tee test_output.log; then
-        # Count results from the log
-        PASSED=$(grep -c "✓" test_output.log || echo "0")
-        FAILED=$(grep -c "✗" test_output.log || echo "0")
+        # Count results from the log - look for common test result patterns
+        PASSED=$(grep -c "PASSED\|✓\|passed" test_output.log || echo "0")
+        FAILED=$(grep -c "FAILED\|✗\|failed\|\[E\]" test_output.log || echo "0")
+        
+        # Alternative parsing from Flutter test summary line
+        if grep -q "Some tests failed" test_output.log; then
+            # Extract from summary line like "01:11 +159 -10: Some tests failed."
+            SUMMARY_LINE=$(grep "Some tests failed" test_output.log | tail -1)
+            if [[ $SUMMARY_LINE =~ \+([0-9]+)[[:space:]]-([0-9]+) ]]; then
+                PASSED=${BASH_REMATCH[1]}
+                FAILED=${BASH_REMATCH[2]}
+            fi
+        elif grep -q "All tests passed" test_output.log; then
+            # Extract from success line
+            SUMMARY_LINE=$(grep "All tests passed" test_output.log | tail -1)
+            if [[ $SUMMARY_LINE =~ \+([0-9]+) ]]; then
+                PASSED=${BASH_REMATCH[1]}
+                FAILED=0
+            fi
+        fi
         
         end_time=$(date +%s)
         duration=$((end_time - start_time))
@@ -113,6 +130,14 @@ run_tests() {
         echo "   ✅ Passed: $PASSED"
         echo "   ❌ Failed: $FAILED"
         echo "   ⏱️ Duration: ${duration}s"
+        
+        # Ensure variables are numeric
+        if ! [[ "$FAILED" =~ ^[0-9]+$ ]]; then
+            FAILED=0
+        fi
+        if ! [[ "$PASSED" =~ ^[0-9]+$ ]]; then
+            PASSED=0
+        fi
         
         if [ "$FAILED" -eq 0 ]; then
             print_success "All tests passed! 🎉"

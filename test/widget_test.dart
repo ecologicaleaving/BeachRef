@@ -9,8 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:beachref/app/app.dart';
+import 'helpers/test_helper.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeSupabaseForTesting();
+  });
+
+  tearDownAll(() async {
+    await disposeSupabaseForTesting();
+  });
+
   testWidgets('BeachRef app loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BeachRefApp());

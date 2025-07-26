@@ -11,6 +11,25 @@ import 'health_status_widget_test.mocks.dart';
 
 @GenerateMocks([VisIntegrationService])
 void main() {
+  // Provide dummy values for Mockito
+  provideDummy<Result<HealthStatus, VisError>>(
+    Success(HealthStatus(
+      isConnected: true,
+      responseTimeMs: 100,
+      lastCheckTime: DateTime.now(),
+      status: ConnectionStatus.connected,
+    )),
+  );
+  
+  provideDummy<HealthStatus>(
+    HealthStatus(
+      isConnected: true,
+      responseTimeMs: 100,
+      lastCheckTime: DateTime.now(),
+      status: ConnectionStatus.connected,
+    ),
+  );
+
   group('HealthStatusWidget Tests', () {
     late MockVisIntegrationService mockVisService;
 

@@ -4,6 +4,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Helper function to initialize Supabase for testing
 Future<void> initializeSupabaseForTesting() async {
+  try {
+    // Check if already initialized
+    if (Supabase.instance.client.supabaseUrl.isNotEmpty) {
+      return; // Already initialized
+    }
+  } catch (e) {
+    // Not initialized yet, proceed with initialization
+  }
+  
   await Supabase.initialize(
     url: 'https://test.supabase.co',
     anonKey: 'test-anon-key',
@@ -19,6 +28,10 @@ Widget createTestApp(Widget child) {
 
 /// Helper function to dispose Supabase after testing
 Future<void> disposeSupabaseForTesting() async {
-  // Reset Supabase instance for testing
-  Supabase.instance.dispose();
+  try {
+    // Dispose if possible
+    await Supabase.instance.client.dispose();
+  } catch (e) {
+    // Ignore disposal errors in tests
+  }
 }

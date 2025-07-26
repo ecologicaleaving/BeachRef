@@ -227,14 +227,15 @@ void main() {
       test('should generate report for date range', () {
         // Arrange
         final startDate = DateTime.now().subtract(Duration(days: 7));
-        final endDate = DateTime.now();
-
+        
         validator.recordApiCall(
           endpoint: '/tournaments',
           method: 'GET',
           statusCode: 200,
           responseTimeMs: 150,
         );
+        
+        final endDate = DateTime.now().add(Duration(minutes: 1)); // Ensure endDate is after the API call
 
         // Act
         final report = validator.generateUsageReport(

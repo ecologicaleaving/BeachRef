@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:beachref/main.dart' as app;
+import 'package:beachref/app/app.dart';
 import 'package:beachref/presentation/pages/login_page.dart';
 import 'package:beachref/presentation/pages/home_page.dart';
+import '../helpers/test_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() async {
+    await initializeSupabaseForTesting();
+  });
+
+  tearDownAll(() async {
+    await disposeSupabaseForTesting();
+  });
+
   group('Authentication Flow Integration Tests', () {
     testWidgets('Complete authentication flow - successful login', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify we start on the login page

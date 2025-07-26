@@ -5,21 +5,33 @@ import 'package:mockito/mockito.dart';
 import 'package:beachref/presentation/widgets/health_status_widget.dart';
 import 'package:beachref/services/vis_integration_service.dart';
 import 'package:beachref/core/result.dart';
-import '../../infrastructure/enhanced_widget_test.dart';
+import 'package:beachref/core/errors/vis_error.dart';
+import 'package:beachref/services/vis_integration_service.dart' show HealthStatus;
+// import '../../infrastructure/enhanced_widget_test.dart'; // Temporarily disabled due to mock conflicts
 import '../../infrastructure/test_data_factory.dart';
+
+// Mock generation
+import 'package:mockito/annotations.dart';
+
+@GenerateMocks([
+  VisIntegrationService,
+])
+import 'health_status_widget_enhanced_test.mocks.dart' as generated_mocks;
 
 void main() {
   group('HealthStatusWidget Enhanced Tests', () {
-    late EnhancedWidgetTest widgetTest;
-    late MockVisIntegrationService mockVisService;
+    late generated_mocks.MockVisIntegrationService mockVisService;
 
-    setUp(() {
-      widgetTest = EnhancedWidgetTest();
-      mockVisService = MockVisIntegrationService();
+    // Setup dummy values for Mockito
+    setUpAll(() {
+      // Create dummy values for Result types
+      provideDummy<Result<HealthStatus, VisError>>(
+        Success(TestDataFactory.createHealthStatus())
+      );
     });
 
-    tearDown(() {
-      widgetTest.cleanupWidgetTest();
+    setUp(() {
+      mockVisService = generated_mocks.MockVisIntegrationService();
     });
 
     testWidgets('should display loading state initially and then connected status', 
@@ -36,11 +48,12 @@ void main() {
       );
 
       // Act
-      await widgetTest.testHealthStatusWidget(
-        tester: tester,
-        mockVisService: mockVisService,
-        settleDuration: const Duration(milliseconds: 200),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HealthStatusWidget(visService: mockVisService),
+        ),
       );
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
 
       // Assert
       expect(find.text('VIS Connection Status'), findsOneWidget);
@@ -59,10 +72,12 @@ void main() {
       );
 
       // Act
-      await widgetTest.testHealthStatusWidget(
-        tester: tester,
-        mockVisService: mockVisService,
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HealthStatusWidget(visService: mockVisService),
+        ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Disconnected'), findsOneWidget);
@@ -79,13 +94,16 @@ void main() {
       );
 
       // Act
-      await widgetTest.testHealthStatusWidget(
-        tester: tester,
-        mockVisService: mockVisService,
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HealthStatusWidget(visService: mockVisService),
+        ),
       );
+      await tester.pumpAndSettle();
 
       // Find and tap the error status to expand details
-      await widgetTest.tapButtonSafely('Disconnected');
+      await tester.tap(find.text('Disconnected'));
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Detailed network error information'), findsOneWidget);
@@ -98,11 +116,12 @@ void main() {
       when(mockVisService.healthCheck()).thenAnswer((_) => completer.future);
 
       // Act
-      await widgetTest.testHealthStatusWidget(
-        tester: tester,
-        mockVisService: mockVisService,
-        settleDuration: const Duration(milliseconds: 50), // Shorter settle time
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HealthStatusWidget(visService: mockVisService),
+        ),
       );
+      await tester.pump(const Duration(milliseconds: 50)); // Shorter settle time
 
       // Check button state while loading
       final refreshButton = find.byIcon(Icons.refresh);

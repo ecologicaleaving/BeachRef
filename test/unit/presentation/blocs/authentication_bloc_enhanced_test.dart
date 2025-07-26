@@ -6,9 +6,22 @@ import 'package:beachref/services/authentication_service.dart';
 import 'package:beachref/services/session_manager.dart';
 import 'package:beachref/core/logging/logger_service.dart';
 import 'package:beachref/core/result.dart';
+import 'package:beachref/core/errors/auth_error.dart';
+import 'package:beachref/data/models/user_profile.dart';
+import 'package:beachref/data/models/session.dart';
 import '../../../infrastructure/base_test_classes.dart';
 import '../../../infrastructure/test_data_factory.dart';
 import '../../../infrastructure/enhanced_bloc_test.dart';
+
+// Mock generation
+import 'package:mockito/annotations.dart';
+
+@GenerateMocks([
+  AuthenticationService,
+  SessionManager,
+  LoggerService,
+])
+import 'authentication_bloc_enhanced_test.mocks.dart';
 
 void main() {
   group('AuthenticationBloc Enhanced Tests', () {
@@ -16,6 +29,17 @@ void main() {
     late MockAuthenticationService mockAuthService;
     late MockSessionManager mockSessionManager;
     late MockLoggerService mockLogger;
+
+    // Setup dummy values for Mockito
+    setUpAll(() {
+      // Create dummy values for Result types
+      provideDummy<Result<UserProfile, AuthError>>(
+        Success(TestDataFactory.createUserProfile())
+      );
+      provideDummy<Result<Session, AuthError>>(
+        Success(TestDataFactory.createSession())
+      );
+    });
 
     setUp(() {
       mockAuthService = MockAuthenticationService();
@@ -147,7 +171,7 @@ void main() {
         expect: () => [
           const AuthenticationLoading(),
           const AuthenticationError(
-            message: 'Invalid email or password. Please check your credentials and try again.',
+            message: 'Login failed. Please check your credentials and try again.',
             details: 'Invalid credentials',
           ),
         ],

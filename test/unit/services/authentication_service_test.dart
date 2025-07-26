@@ -146,7 +146,16 @@ void main() {
       test('should return UserProfile when user is authenticated and session is valid', () async {
         // Arrange
         final mockUser = MockUser();
-        final mockStoredSession = MockSupabaseSession();
+        final mockStoredSession = Session(
+          sessionId: 'test-session-id',
+          userId: 'test-user-id',
+          accessToken: 'test-access-token',
+          refreshToken: 'test-refresh-token',
+          expiresAt: DateTime.now().add(Duration(hours: 1)),
+          rememberMe: false,
+          deviceInfo: 'test-device',
+          createdAt: DateTime.now(),
+        );
 
         when(mockUser.id).thenReturn('test-user-id');
         when(mockUser.email).thenReturn('test@example.com');
@@ -156,7 +165,7 @@ void main() {
         when(mockGoTrueClient.currentUser).thenReturn(mockUser);
         when(mockSessionManager.getCurrentSession())
             .thenAnswer((_) async => Success(mockStoredSession));
-        when(mockStoredSession.isValid).thenReturn(true);
+        // Session is valid by default with future expiry date
 
         // Act
         final result = await authService.getCurrentUser();
@@ -212,7 +221,16 @@ void main() {
         final mockUser = MockUser();
         final mockAuthResponse = MockAuthResponse();
         final mockSession = MockSupabaseSession();
-        final mockStoredSession = MockSupabaseSession();
+        final mockStoredSession = Session(
+          sessionId: 'test-session-id',
+          userId: 'test-user-id',
+          accessToken: 'test-access-token',
+          refreshToken: 'test-refresh-token',
+          expiresAt: DateTime.now().add(Duration(hours: 1)),
+          rememberMe: false,
+          deviceInfo: 'test-device',
+          createdAt: DateTime.now(),
+        );
 
         when(mockUser.id).thenReturn('test-user-id');
         when(mockUser.email).thenReturn('test@example.com');
@@ -229,11 +247,7 @@ void main() {
         when(mockGoTrueClient.refreshSession()).thenAnswer((_) async => mockAuthResponse);
         when(mockSessionManager.getCurrentSession())
             .thenAnswer((_) async => Success(mockStoredSession));
-        when(mockStoredSession.copyWith(
-          accessToken: anyNamed('accessToken'),
-          refreshToken: anyNamed('refreshToken'),
-          expiresAt: anyNamed('expiresAt'),
-        )).thenReturn(mockStoredSession);
+        // Using real Session object, copyWith will work naturally
         when(mockSessionManager.storeSession(any)).thenAnswer((_) async {});
 
         // Act

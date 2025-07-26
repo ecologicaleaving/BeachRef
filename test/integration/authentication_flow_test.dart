@@ -63,7 +63,7 @@ void main() {
 
     testWidgets('Authentication flow - invalid credentials', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify we start on the login page
@@ -94,7 +94,7 @@ void main() {
 
     testWidgets('Authentication flow - empty fields validation', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify we start on the login page
@@ -114,7 +114,7 @@ void main() {
 
     testWidgets('Authentication flow - remember me functionality', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify we start on the login page
@@ -156,7 +156,7 @@ void main() {
 
     testWidgets('Authentication flow - loading states', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Find form elements
@@ -194,7 +194,7 @@ void main() {
 
     testWidgets('Authentication flow - forgot password', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Find forgot password button
@@ -216,7 +216,7 @@ void main() {
 
     testWidgets('Authentication flow - FIVB branding verification', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify FIVB branding elements are present
@@ -241,7 +241,7 @@ void main() {
       // Test with different screen sizes
       await tester.binding.setSurfaceSize(const Size(400, 600)); // Mobile portrait
       
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify layout adapts to mobile size
@@ -263,7 +263,7 @@ void main() {
 
     testWidgets('Authentication flow - accessibility features', (tester) async {
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // Verify semantic labels are present for screen readers
@@ -290,7 +290,7 @@ void main() {
       // but requires more complex test setup with mocked storage
       
       // Launch the app
-      app.main();
+      await tester.pumpWidget(const BeachRefApp());
       await tester.pumpAndSettle();
 
       // On first launch, should show login page

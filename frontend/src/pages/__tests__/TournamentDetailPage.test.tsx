@@ -318,8 +318,30 @@ describe('TournamentDetailPage', () => {
       data: undefined,
       isLoading: false,
       error: null,
-      refetch: jest.fn()
-    } as any);
+      refetch: jest.fn(),
+      isError: false,
+      isSuccess: false,
+      isFetching: false,
+      isPending: false,
+      isRefetching: false,
+      isStale: false,
+      dataUpdatedAt: 0,
+      errorUpdatedAt: 0,
+      failureCount: 0,
+      failureReason: null,
+      fetchStatus: 'idle' as const,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isInitialLoading: false,
+      isLoadingError: false,
+      isPaused: false,
+      isPlaceholderData: false,
+      isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as TournamentDetailResponse),
+      status: 'pending' as const
+    } as unknown as ReturnType<typeof useTournamentDetail>);
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });
 

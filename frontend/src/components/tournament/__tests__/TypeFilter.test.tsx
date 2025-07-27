@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TypeFilter } from '../TypeFilter';
 import '@testing-library/jest-dom';
 
@@ -29,7 +30,9 @@ describe('TypeFilter', () => {
     expect(screen.getByText('Tournament Types')).toBeInTheDocument();
   });
 
-  it('displays tournament type options', () => {
+  it('displays tournament type options when popover is opened', async () => {
+    const user = userEvent.setup();
+    
     render(
       <TypeFilter 
         selectedTypes={[]}
@@ -42,6 +45,10 @@ describe('TypeFilter', () => {
         onStatusesChange={mockOnStatusesChange}
       />
     );
+
+    // Click the trigger button to open the popover
+    const triggerButton = screen.getByRole('button', { name: /select tournament types/i });
+    await user.click(triggerButton);
 
     expect(screen.getByText('World Tour')).toBeInTheDocument();
     expect(screen.getByText('Continental')).toBeInTheDocument();

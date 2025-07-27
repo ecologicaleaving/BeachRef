@@ -7,23 +7,27 @@ import '@testing-library/jest-dom';
 // Mock the hooks to simulate real filtering behavior
 const mockUpdateFilters = jest.fn();
 const mockClearFilters = jest.fn();
+const mockUpdateSearch = jest.fn();
+
+// Create a mutable filters object to simulate state updates
+const mockFilters = {
+  search: '',
+  dateRange: {},
+  locations: [],
+  types: [],
+  surface: undefined,
+  gender: undefined,
+  statuses: []
+};
 
 jest.mock('../../../hooks/useFilters', () => ({
   useFilters: jest.fn(() => ({
-    filters: {
-      search: '',
-      dateRange: {},
-      locations: [],
-      types: [],
-      surface: undefined,
-      gender: undefined,
-      statuses: []
-    },
+    filters: mockFilters,
     updateFilters: mockUpdateFilters,
     clearFilters: mockClearFilters,
     hasActiveFilters: false,
     activeFilterCount: 0,
-    updateSearch: jest.fn(),
+    updateSearch: mockUpdateSearch,
     updateLocation: jest.fn(),
     updateDateRange: jest.fn(),
     updateLocations: jest.fn(),
@@ -58,6 +62,14 @@ const createTestWrapper = () => {
 describe('Filter Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset mock filters state
+    mockFilters.search = '';
+    mockFilters.dateRange = {};
+    mockFilters.locations = [];
+    mockFilters.types = [];
+    mockFilters.surface = undefined;
+    mockFilters.gender = undefined;
+    mockFilters.statuses = [];
   });
 
   it('renders complete filter panel with all components', () => {
@@ -78,17 +90,34 @@ describe('Filter Integration', () => {
   it('handles search input changes', () => {
     const TestWrapper = createTestWrapper();
     
-    render(
+    // Mock updateSearch to actually update the filters state
+    mockUpdateSearch.mockImplementation((value: string) => {
+      mockFilters.search = value;
+    });
+    
+    const { rerender } = render(
       <TestWrapper>
         <TournamentFilters resultCount={25} />
       </TestWrapper>
     );
 
     const searchInput = screen.getByPlaceholderText('Search tournaments...');
+    
+    // Use fireEvent to directly change the input value
     fireEvent.change(searchInput, { target: { value: 'beach volleyball' } });
 
-    // Verify the input value changes immediately
-    expect((searchInput as HTMLInputElement).value).toBe('beach volleyball');
+    // Verify updateSearch was called with the correct value
+    expect(mockUpdateSearch).toHaveBeenCalledWith('beach volleyball');
+    
+    // Re-render to reflect the state change
+    rerender(
+      <TestWrapper>
+        <TournamentFilters resultCount={25} />
+      </TestWrapper>
+    );
+
+    // Check that the input has the expected value
+    expect(searchInput).toHaveValue('beach volleyball');
   });
 
   it('updates result count dynamically', () => {

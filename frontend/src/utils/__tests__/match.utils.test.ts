@@ -8,7 +8,7 @@ import {
   getWinnerName,
   formatMatchDuration
 } from '../match.utils';
-import { Match } from '@/types/tournament.types';
+import type { Match } from '@/types/tournament.types';
 
 describe('match.utils', () => {
   const mockMatch: Match = {

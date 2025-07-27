@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MatchCard } from '../MatchCard';
-import { Match } from '@/types/tournament.types';
+import type { Match } from '@/types/tournament.types';
 
 // Mock the match utils
 jest.mock('@/utils/match.utils', () => ({

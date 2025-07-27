@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { TournamentHeader } from '../TournamentHeader';
-import { Tournament } from '@/types/tournament.types';
+import type { Tournament } from '@/types/tournament.types';
 
 // Mock the date utils
 jest.mock('@/utils/date.utils', () => ({

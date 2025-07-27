@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TournamentDetailPage } from '../TournamentDetailPage';
 import { useTournamentDetail } from '@/hooks/useTournamentDetail';
-import { TournamentDetailResponse } from '@/types/tournament.types';
+import type { TournamentDetailResponse } from '@/types/tournament.types';
 
 // Mock the hook
 jest.mock('@/hooks/useTournamentDetail');
@@ -118,6 +118,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'pending'
     });
 
@@ -151,12 +154,15 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });
 
-    expect(screen.getByText('FIVB Beach Volleyball World Championships')).toBeInTheDocument();
+    expect(screen.getAllByText('FIVB Beach Volleyball World Championships')).toHaveLength(2); // breadcrumb + header
     expect(screen.getByText('Back to Tournaments')).toBeInTheDocument();
   });
 
@@ -184,6 +190,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
@@ -215,10 +224,13 @@ describe('TournamentDetailPage', () => {
       isFetched: true,
       isFetchedAfterMount: true,
       isInitialLoading: false,
-      isLoadingError: false,
+      isLoadingError: true,
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'error'
     });
 
@@ -249,10 +261,13 @@ describe('TournamentDetailPage', () => {
       isFetched: true,
       isFetchedAfterMount: true,
       isInitialLoading: false,
-      isLoadingError: false,
+      isLoadingError: true,
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'error'
     });
 
@@ -285,6 +300,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
@@ -292,7 +310,7 @@ describe('TournamentDetailPage', () => {
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Tournaments')).toBeInTheDocument();
-    expect(screen.getByText('FIVB Beach Volleyball World Championships')).toBeInTheDocument();
+    expect(screen.getAllByText('FIVB Beach Volleyball World Championships')).toHaveLength(2); // breadcrumb + header
   });
 
   it('should handle null data state', () => {
@@ -302,16 +320,16 @@ describe('TournamentDetailPage', () => {
       error: null,
       refetch: jest.fn(),
       isError: false,
-      isSuccess: true,
+      isSuccess: false,
       isFetching: false,
       isPending: false,
       isRefetching: false,
       isStale: false,
-      dataUpdatedAt: Date.now(),
+      dataUpdatedAt: 0,
       errorUpdatedAt: 0,
       failureCount: 0,
       failureReason: null,
-      fetchStatus: 'idle',
+      fetchStatus: 'idle' as const,
       isFetched: true,
       isFetchedAfterMount: true,
       isInitialLoading: false,
@@ -319,8 +337,11 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
-      status: 'success'
-    });
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as TournamentDetailResponse),
+      status: 'pending' as const
+    } as unknown as ReturnType<typeof useTournamentDetail>);
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });
 

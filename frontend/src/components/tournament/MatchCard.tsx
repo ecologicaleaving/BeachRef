@@ -1,4 +1,4 @@
-import { Match } from '@/types/tournament.types';
+import type { Match } from '@/types/tournament.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, Trophy } from 'lucide-react';

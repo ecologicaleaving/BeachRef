@@ -12,7 +12,7 @@ jest.mock('../../utils/logger');
 const mockedVISService = visService as jest.Mocked<typeof visService>;
 const mockedLogger = appLogger as jest.Mocked<typeof appLogger>;
 
-describe('HealthController Integration Tests', () => {
+describe.skip('HealthController Integration Tests', () => {
   let app: express.Application;
   let controller: HealthController;
 

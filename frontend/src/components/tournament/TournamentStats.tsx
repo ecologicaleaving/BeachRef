@@ -1,4 +1,4 @@
-import { TournamentDetailResponse } from '@/types/tournament.types';
+import type { TournamentDetailResponse } from '@/types/tournament.types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, CheckCircle, Calendar } from 'lucide-react';

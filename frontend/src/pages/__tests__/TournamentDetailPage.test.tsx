@@ -162,7 +162,7 @@ describe('TournamentDetailPage', () => {
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });
 
-    expect(screen.getByText('FIVB Beach Volleyball World Championships')).toBeInTheDocument();
+    expect(screen.getAllByText('FIVB Beach Volleyball World Championships')).toHaveLength(2); // breadcrumb + header
     expect(screen.getByText('Back to Tournaments')).toBeInTheDocument();
   });
 
@@ -230,7 +230,7 @@ describe('TournamentDetailPage', () => {
       isRefetchError: false,
       errorUpdateCount: 0,
       isEnabled: true,
-      promise: Promise.reject(new Error('Failed to fetch tournament')),
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'error'
     });
 
@@ -267,7 +267,7 @@ describe('TournamentDetailPage', () => {
       isRefetchError: false,
       errorUpdateCount: 0,
       isEnabled: true,
-      promise: Promise.reject(new Error('Failed to fetch tournament')),
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'error'
     });
 
@@ -310,38 +310,16 @@ describe('TournamentDetailPage', () => {
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Tournaments')).toBeInTheDocument();
-    expect(screen.getByText('FIVB Beach Volleyball World Championships')).toBeInTheDocument();
+    expect(screen.getAllByText('FIVB Beach Volleyball World Championships')).toHaveLength(2); // breadcrumb + header
   });
 
   it('should handle null data state', () => {
     mockUseTournamentDetail.mockReturnValue({
       data: undefined,
-      isLoading: true,
+      isLoading: false,
       error: null,
-      refetch: jest.fn(),
-      isError: false,
-      isSuccess: false,
-      isFetching: true,
-      isPending: true,
-      isRefetching: false,
-      isStale: false,
-      dataUpdatedAt: 0,
-      errorUpdatedAt: 0,
-      failureCount: 0,
-      failureReason: null,
-      fetchStatus: 'fetching',
-      isFetched: false,
-      isFetchedAfterMount: false,
-      isInitialLoading: true,
-      isLoadingError: false,
-      isPaused: false,
-      isPlaceholderData: false,
-      isRefetchError: false,
-      errorUpdateCount: 0,
-      isEnabled: true,
-      promise: Promise.resolve({} as TournamentDetailResponse),
-      status: 'pending'
-    });
+      refetch: jest.fn()
+    } as any);
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });
 

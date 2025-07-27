@@ -1,22 +1,18 @@
 # User Interface Design Goals
 
 ## Overall UX Vision
-BeachRef provides a clean, professional interface optimized for referee workflows. The design prioritizes quick data access and filtering capabilities over visual aesthetics, with a focus on information density and efficient navigation. The interface should feel familiar to users of professional sports management tools while being intuitive enough for occasional use.
+VisConnect provides a clean, professional interface for viewing FIVB tournament data. The design prioritizes quick data access and clear presentation over complex features, with a focus on information clarity and efficient navigation. The interface uses modern UI components (shadcn/ui) to ensure professional appearance.
 
 ## Key Interaction Paradigms
-- **Filter-First Approach:** Primary interaction is filtering and searching rather than browsing
-- **Data Tables:** Tournament and match information presented in sortable, filterable tables
-- **Quick Actions:** One-click access to common tasks like exporting data or bookmarking tournaments
-- **Responsive Design:** Adaptive layouts that work equally well on desktop and mobile devices
+- **Direct Access:** No login barriers - immediate access to tournament data
+- **Clean Data Tables:** Tournament and match information presented in organized, readable tables
+- **Simple Filtering:** Basic filtering options for finding relevant tournaments
+- **Responsive Design:** Adaptive layouts that work on desktop and mobile devices
 
-## Core Screens and Views
-- **Login Screen:** FIVB credential authentication
-- **Dashboard:** Personalized view of upcoming tournaments and referee assignments
-- **Tournament List:** Filterable table of all available tournaments
-- **Tournament Detail:** Comprehensive view of single tournament with matches and referees
-- **Match Results:** Detailed match information including scores and statistics
-- **Referee Profile:** Individual referee information and assignment history
-- **Export/Settings:** Data export options and user preferences
+## Core Screens and Views (MVP)
+- **Tournament List:** Main view showing all available tournaments with basic filtering
+- **Tournament Detail:** Single tournament view with matches and basic information
+- **Match Results:** Match information including scores and teams
 
 ## Accessibility: WCAG AA
 The application shall meet WCAG 2.1 AA compliance standards including keyboard navigation, screen reader compatibility, and appropriate color contrast ratios.

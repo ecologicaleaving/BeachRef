@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { tournamentController } from '../tournament.controller';
 import { tournamentService } from '../../services/tournament.service';
-import { Tournament, PaginatedTournamentResponse } from '../../types/tournament.types';
+import { Tournament, PaginatedTournamentResponse, TournamentDetailResponse } from '../../types/tournament.types';
 
 // Mock the tournament service
 jest.mock('../../services/tournament.service');
@@ -201,15 +201,26 @@ describe('TournamentController', () => {
       gender: 'Men'
     };
 
+    const mockTournamentDetailResponse: TournamentDetailResponse = {
+      tournament: mockTournament,
+      matches: [],
+      statistics: {
+        totalMatches: 0,
+        completedMatches: 0,
+        upcomingMatches: 0,
+        liveMatches: 0
+      }
+    };
+
     it('should return tournament successfully', async () => {
       req.params = { id: '1' };
-      mockTournamentService.getTournamentById.mockResolvedValue(mockTournament);
+      mockTournamentService.getTournamentById.mockResolvedValue(mockTournamentDetailResponse);
 
       await tournamentController.getTournamentById(req as Request, res as Response);
 
       expect(mockTournamentService.getTournamentById).toHaveBeenCalledWith('1');
       expect(statusSpy).toHaveBeenCalledWith(200);
-      expect(jsonSpy).toHaveBeenCalledWith(mockTournament);
+      expect(jsonSpy).toHaveBeenCalledWith(mockTournamentDetailResponse);
     });
 
     it('should return 404 when tournament not found', async () => {

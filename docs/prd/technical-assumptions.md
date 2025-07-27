@@ -9,12 +9,12 @@ Single repository containing both frontend and backend code to simplify developm
 ## Testing Requirements
 **Unit + Integration Testing:** Comprehensive unit tests for business logic and integration tests for VIS API connectivity. Manual testing for UI/UX validation and cross-browser compatibility.
 
-## Additional Technical Assumptions and Requests
+## Technical Stack (MVP)
 - **Frontend Framework:** React with TypeScript for component-based UI development
+- **UI Framework:** shadcn/ui components for consistent, professional interface
 - **Backend Framework:** Node.js with Express for API development and VIS integration
-- **Database:** PostgreSQL for local data caching and user preferences
-- **Authentication:** Integration with FIVB's OAuth2/SAML authentication system
+- **Database:** None required for MVP (direct API calls)
+- **Authentication:** None for MVP - direct access
 - **API Integration:** RESTful integration with FIVB VIS web services
-- **Hosting:** Cloud deployment on AWS or similar platform with auto-scaling capabilities
-- **Caching Strategy:** Redis for API response caching to improve performance
-- **Monitoring:** Application performance monitoring and error tracking implementation
+- **Hosting:** Simple cloud deployment
+- **Styling:** Tailwind CSS (included with shadcn/ui)

@@ -711,36 +711,6 @@ export class VISService {
     }
   }
 
-  private extractMatchesFromJSONResponse(response: any, tournamentId: string): TournamentMatch[] {
-    const matches: TournamentMatch[] = [];
-    
-    try {
-      // Handle different response formats from VIS API
-      let matchData = response?.responses?.[0]?.matches || response?.matches || response?.result?.matches || [];
-      
-      // Ensure matchData is an array
-      if (!Array.isArray(matchData)) {
-        matchData = matchData ? [matchData] : [];
-      }
-      
-      matchData.forEach((visMatch: any, index: number) => {
-        const transformedMatch = this.transformVISJSONMatch(visMatch, tournamentId, index);
-        if (transformedMatch) {
-          matches.push(transformedMatch);
-        }
-      });
-      
-      visLogger.info(`Extracted ${matches.length} matches for tournament ${tournamentId}`);
-      return matches;
-      
-    } catch (error) {
-      visLogger.error('Failed to extract matches from JSON response', error as Error, { 
-        response, 
-        tournamentId 
-      });
-      return [];
-    }
-  }
 
   // Helper method to parse VIS JSON responses (no longer needed with direct JSON)
   // private async parseVISResponse(xmlData: string): Promise<any> {

@@ -49,6 +49,7 @@ core_principles:
   - CRITICAL: Story has ALL info you will need aside from what you loaded during the startup commands. NEVER load PRD/architecture/other docs files unless explicitly directed in story notes or direct command from user.
   - CRITICAL: ONLY update story file Dev Agent Record sections (checkboxes/Debug Log/Completion Notes/Change Log)
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
+  - CRITICAL: DON'T SKIP any "Low priority" task
   - Numbered Options - Always use numbered lists when presenting choices to the user
 
 # All commands require * prefix when used (e.g., *help)
@@ -59,6 +60,10 @@ commands:
   - exit: Say goodbye as the Developer, and then abandon inhabiting this persona
 develop-story:
   order-of-execution: "Read (first or next) task→Implement Task and its subtasks→Write tests→Execute validations→Only if ALL pass, then update the task checkbox with [x]→Update story section File List to ensure it lists and new or modified or deleted source file→repeat order-of-execution until complete"
+  shadcn-workflow:
+    - CRITICAL: When developing shadcn/ui components, ALWAYS use shadcn MCP (if available) BEFORE implementation
+    - REQUIRED SEQUENCE: Use shadcn MCP to get component info → Use shadcn MCP to see component demo → Then implement the component
+    - This workflow applies to any task involving shadcn/ui components, component libraries, or UI component implementation
   story-file-updates-ONLY:
     - CRITICAL: ONLY UPDATE THE STORY FILE WITH UPDATES TO SECTIONS INDICATED BELOW. DO NOT MODIFY ANY OTHER SECTIONS.
     - CRITICAL: You are ONLY authorized to edit these specific sections of story files - Tasks / Subtasks Checkboxes, Dev Agent Record section and all its subsections, Agent Model Used, Debug Log References, Completion Notes List, File List, Change Log, Status

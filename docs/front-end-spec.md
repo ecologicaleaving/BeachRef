@@ -1,360 +1,284 @@
-# BeachRef UI/UX Specification
+# VisConnect UI/UX Specification
 
-This document defines the user experience goals, information architecture, user flows, and visual design specifications for **BeachRef's** user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience optimized for beach volleyball referees working in challenging outdoor conditions.
+## 1. Introduction
 
-## Overall UX Goals & Principles
+This document defines the user experience goals, information architecture, user flows, and visual design specifications for VisConnect's user interface. VisConnect is a clean, professional web application providing direct access to FIVB beach volleyball tournament data through the VIS database. The MVP focuses exclusively on data connection and visualization with no authentication requirements.
 
-### Target User Personas
+## 2. Overall UX Goals & Principles
 
-**Primary Persona - Beach Volleyball Referee (Outdoor Professional):**
-- Professional officials working FIVB tournaments in bright sunlight conditions
-- Need instant, glare-resistant access to tournament data during matches
-- Prefer minimal, distraction-free interfaces that work under time pressure
-- Use mobile devices with potentially wet/sandy hands at beach venues
-- Value reliability and speed over visual complexity
+### Target Users
+- **Beach Volleyball Referees**: Need quick access to tournament schedules, match results, and referee assignments
+- **Coaches**: Require tournament data for planning, player analysis, and strategic decisions
+- **Analysts**: Need comprehensive data access for statistical analysis and reporting
 
-**Secondary Persona - Tournament Director:**
-- Coordinates multiple referees and tournament logistics
-- Desktop/tablet usage in covered areas or indoor facilities
-- Requires comprehensive data views and export capabilities
-- Professional presentation standards for FIVB compliance
+### Core UX Principles
 
-### Usability Goals
+#### Professional Sports Interface
+- Clean, data-focused design appropriate for official use
+- No distractions - every element serves a data access purpose
+- Visual hierarchy that prioritizes actionable information
 
-- **Sunlight Readability:** High contrast design readable in direct beach sunlight
-- **One-Hand Operation:** All critical functions accessible with thumb navigation
-- **Sub-Second Response:** All interactions complete in under 500ms
-- **Simplified Interface:** Maximum 3-tap depth for any function
-- **Offline Reliability:** Core functions work without connectivity during matches
+#### Zero-Friction Access
+- No login barriers - immediate access to tournament data
+- Fast loading (sub-3 second target) with performance-aware design
+- Direct linking to specific tournaments and matches
 
-### Design Principles
+#### Data-Centric Design
+- Tables optimized for scanning large datasets
+- Clear filtering and sorting capabilities
+- Mobile-responsive data presentation for field use
 
-1. **Sunlight-First Design** - High contrast, minimal shadows, optimized for outdoor visibility
-2. **Thumb-Zone Optimized** - Critical actions within natural thumb reach areas
-3. **Minimal Cognitive Load** - Clean, distraction-free interfaces with clear hierarchy
-4. **Professional Minimalism** - FIVB-appropriate design that inspires referee confidence
-5. **Speed Over Decoration** - Fast, lightweight interactions with purposeful animations
+#### Reliability & Trust
+- Clear error states when VIS API is unavailable
+- Consistent data presentation matching FIVB standards
+- Accessible design (WCAG AA) for professional environments
 
-### Change Log
-| Date | Version | Description | Author |
-|------|---------|-------------|---------|
-| 2025-07-26 | 1.0 | Initial UI/UX specification optimized for outdoor use | BMad Master |
+## 3. Information Architecture
 
-## Information Architecture (IA)
-
-### Site Map / Screen Inventory
-
-```mermaid
-graph TD
-    A[Login Screen] --> B[Dashboard]
-    B --> C[Tournament List]
-    B --> D[My Bookmarks]
-    B --> E[Profile & Settings]
-    
-    C --> F[Tournament Detail]
-    F --> G[Match Results]
-    F --> H[Referee Assignments]
-    
-    D --> F
-    E --> I[Export Options]
-    E --> J[Notification Settings]
-    
-    G --> L[Match Statistics]
-    H --> M[Referee Profile]
+### Site Structure
+```
+Home (Tournament List)
+├── Tournament Detail
+│   ├── Match List
+│   └── Tournament Info
+└── Match Detail
+    ├── Match Results
+    ├── Referee Information
+    └── Match Statistics
 ```
 
-### Navigation Structure
+### Content Hierarchy
+1. **Primary**: Tournament listings with key metadata
+2. **Secondary**: Individual tournament details and match schedules
+3. **Tertiary**: Detailed match results and referee assignments
 
-**Primary Navigation:** Bottom tab bar with high-contrast icons and text labels
-**Secondary Navigation:** Header actions with large touch targets (44px minimum)
-**Breadcrumb Strategy:** Simple back navigation with clear context indicators
+## 4. User Flows
 
-## User Flows
+### Primary Flow: Find Tournament Data
+1. User arrives at homepage (tournament list)
+2. User filters/searches tournaments by date, location, or name
+3. User selects tournament to view details
+4. User navigates to specific matches for detailed information
 
-### Quick Tournament Access Flow (Primary Use Case)
+### Secondary Flow: Quick Match Lookup
+1. User has specific match reference
+2. User uses search/filter to locate tournament
+3. User drills down to match details
+4. User accesses referee and result information
 
-**User Goal:** Instantly access bookmarked tournament information during match breaks
+## 5. Key Screens & Wireframes
 
-**Entry Points:** App launch from mobile home screen
+### Homepage - Tournament List
+**Purpose**: Primary entry point for all tournament data access
 
-**Success Criteria:** Tournament data visible within 2 seconds of app launch
+**Key Elements**:
+- Search/filter bar (date range, location, tournament name)
+- Tournament data table with columns:
+  - Tournament Name
+  - Location
+  - Date Range
+  - Status (Upcoming/Live/Completed)
+  - Actions (View Details)
+- Pagination controls
+- Clear loading states
 
-#### Flow Diagram
-```mermaid
-graph TD
-    A[App Launch] --> B[Dashboard Cache Load]
-    B --> C[Bookmarked Tournaments]
-    C --> D[Select Tournament]
-    D --> E[Match Schedule View]
-    E --> F[Quick Actions]
-    
-    F --> G[Bookmark Toggle]
-    F --> H[Share Schedule]
-    F --> I[Referee Contact]
-```
+**Responsive Behavior**:
+- Mobile: Stack filters vertically, horizontal scroll for table
+- Tablet: Condensed table columns, touch-friendly controls
 
-#### Edge Cases & Error Handling:
-- No cached data: Show offline message with last sync time
-- Stale data warning: Prominent indicator with manual refresh option
-- Connection timeout: Graceful degradation with cached content
+### Tournament Detail Page
+**Purpose**: Complete tournament overview with match navigation
 
-## Key Screen Layouts
+**Key Elements**:
+- Tournament header (name, dates, location, status)
+- Match schedule table with columns:
+  - Match Time
+  - Teams
+  - Court
+  - Status
+  - Referee Assignment
+  - Actions (View Results)
+- Tournament metadata sidebar
+- Breadcrumb navigation
 
-### Dashboard Screen (Sunlight-Optimized)
-**Purpose:** Instant access to priority tournament information
+### Match Detail Page
+**Purpose**: Comprehensive match information for officials and analysts
 
-**Key Elements:**
-- **High-Contrast Header:** White text on dark navy background (#003366)
-- **Large Touch Cards:** Minimum 60px height with 16px spacing
-- **Sync Status Indicator:** Prominent connection/freshness status
-- **Quick Action Buttons:** Export, bookmark, refresh with icon + text
+**Key Elements**:
+- Match header (teams, time, court, status)
+- Result display (scores by set)
+- Referee information panel
+- Match statistics (if available)
+- Navigation to other matches in tournament
 
-**Sunlight Optimizations:**
-- White backgrounds with dark text (no gradients or light gray text)
-- Bold font weights (600+) for improved readability
-- High contrast borders (2px solid) for card separation
-- No drop shadows or subtle effects that wash out in sunlight
+## 6. Component Specifications
 
-### Tournament List Screen (Minimal & Fast)
-**Purpose:** Fast filtering and browsing of available tournaments
+### Data Tables
+- **Technology**: shadcn/ui Data Table component with TanStack Table
+- **Features**: Sortable columns, filtering, pagination, row selection, responsive design, loading states
+- **Styling**: Clean borders, alternating row colors, hover states
+- **Mobile**: Horizontal scroll with sticky first column
+- **Advanced**: Built-in support for complex data operations and virtualization
 
-**Key Elements:**
-- **Simplified Filter Bar:** Maximum 4 filter options visible
-- **Card-Based Layout:** White cards with dark borders and headers
-- **Large Typography:** 16px minimum body text, 18px+ for headers
-- **Touch-Friendly Controls:** 44px minimum touch targets
+### Search/Filter Components
+- **Technology**: shadcn/ui Input, Select, Date Picker, Command (for advanced search)
+- **Date Filtering**: Date Range Picker (community extension) or dual Date Picker for tournament date ranges
+- **Behavior**: Real-time filtering with debounced search
+- **States**: Default, focused, error, disabled
+- **Accessibility**: Proper labels, keyboard navigation, ARIA support
 
-**Performance Features:**
-- Virtual scrolling for large lists
-- Skeleton loading states
-- Instant filter application without server calls
+### Navigation
+- **Primary**: Breadcrumb navigation using shadcn/ui
+- **Secondary**: Contextual "Back to Tournament" links
+- **Mobile**: Hamburger menu for secondary navigation
 
-## Component Library / Design System
+### Component Groups by Page Type
 
-### Design System Approach
-**Flutter Material 3 + Custom Referee Theme** - Leveraging Material Design foundations with beach volleyball-specific customizations
+#### Tournament List Page Stack
+- **Data Display**: Data Table + Skeleton (loading) + Pagination
+- **Filtering**: Input + Select + Date Picker + Command + Button
+- **Feedback**: Alert (API errors) + Badge (status indicators)
+- **Layout**: Card (mobile tournament cards)
 
-### Core Components
+#### Tournament Detail Page Stack
+- **Navigation**: Breadcrumb + Button (back/forward)
+- **Information**: Card (tournament header) + Badge (status)
+- **Data Display**: Data Table (match schedule) + Skeleton
+- **Actions**: Button (view match details)
 
-#### **RefereeCard (Primary Component)**
-**Purpose:** Display tournament/match information in sunlight-readable format
-**Variants:** Tournament Card, Match Card, Referee Assignment Card
-**States:** Default, Selected, Bookmarked, Offline, Loading
-**Sunlight Features:**
-- White background with 2px solid border (#003366)
-- Bold headers (700 weight) with high contrast text
-- Large touch areas (minimum 60px height)
-- Clear status indicators (colored dots, not subtle text)
+#### Match Detail Page Stack
+- **Navigation**: Breadcrumb + Button (match navigation)
+- **Information**: Card (match header, referee panel, statistics)
+- **Feedback**: Alert (missing data states) + Badge (match status)
+- **Layout**: Separator (content sections)
 
-#### **HighContrastButton**
-**Purpose:** Action buttons optimized for outdoor visibility
-**Variants:** Primary (Navy), Secondary (White/Navy border), Warning (Red)
-**States:** Default, Pressed, Disabled, Loading
-**Features:**
-- Minimum 48px height for touch accessibility
-- Bold text labels with icon reinforcement
-- High contrast color combinations
-- Haptic feedback on interaction
+## 7. Visual Design System
 
-#### **SunlightDataTable**
-**Purpose:** Tournament and match data in readable table format
-**Features:**
-- Alternating row colors for easy scanning
-- Bold headers with sort indicators
-- Large font sizes (16px+)
-- Horizontal scrolling on mobile
-- No subtle hover effects (incompatible with touch)
+### Color Palette
+- **Primary**: FIVB Blue (#0066CC) for headers and primary actions
+- **Secondary**: Neutral grays (#F8F9FA, #6C757D) for backgrounds and text
+- **Status Colors**: Green (#28A745) for completed, Orange (#FD7E14) for live, Gray (#6C757D) for upcoming
+- **Error**: Red (#DC3545) for error states
 
-## Branding & Style Guide
+### Typography
+- **Primary Font**: System font stack for performance
+- **Headers**: Bold, larger sizing for tournament/match names
+- **Data**: Monospace for numerical data (scores, times)
+- **Body**: Regular weight for descriptive text
 
-### Visual Identity
-**FIVB Professional + Beach Referee Practicality** - Maintaining FIVB authority while optimizing for outdoor beach conditions
+### Spacing & Layout
+- **Grid**: 12-column responsive grid
+- **Margins**: 16px base unit, 32px for major sections
+- **Cards**: 8px border radius, subtle shadow
+- **Tables**: 12px cell padding, 1px borders
 
-### Color Palette (Sunlight-Optimized)
-| Color Type | Hex Code | Usage | Contrast Ratio |
-|------------|----------|--------|----------------|
-| Primary | #003366 | FIVB Navy - headers, primary actions | 12.63:1 on white |
-| Secondary | #FFD700 | FIVB Gold - accents, status indicators | 5.14:1 on white |
-| Accent | #0066CC | Interactive elements, links | 7.37:1 on white |
-| Success | #00AA00 | Confirmations, successful sync | 5.32:1 on white |
-| Warning | #FF8800 | Stale data, attention needed | 4.52:1 on white |
-| Error | #CC0000 | Errors, failed operations | 9.13:1 on white |
-| Background | #FFFFFF | Primary background for sunlight readability | - |
-| Surface | #F8F9FA | Card backgrounds | - |
-| Text Primary | #1A1A1A | Main text color | 16.09:1 on white |
+## 8. Responsive Design Strategy
 
-### Typography (Readability-First)
+### Breakpoints
+- **Mobile**: 320px - 767px
+- **Tablet**: 768px - 1023px  
+- **Desktop**: 1024px+
 
-#### Font Families
-- **Primary:** **Inter** (optimized for data readability, excellent in sunlight)
-- **Headers:** **Roboto** (700 weight for maximum visibility)
-- **Monospace:** **JetBrains Mono** (clear number differentiation)
+### Mobile-First Approach
+- Start with mobile layout, enhance for larger screens
+- Touch targets minimum 44px
+- Horizontal scroll for data tables
+- Collapsible filters and navigation
 
-#### Type Scale (Sunlight-Readable)
-| Element | Size | Weight | Line Height | Usage |
-|---------|------|--------|-------------|--------|
-| H1 | 32px | 700 | 1.2 | Screen titles |
-| H2 | 24px | 700 | 1.3 | Section headers |
-| H3 | 20px | 600 | 1.4 | Card titles |
-| Body Large | 18px | 500 | 1.5 | Primary content |
-| Body | 16px | 400 | 1.5 | Secondary content |
-| Caption | 14px | 600 | 1.4 | Status indicators |
+### Performance Considerations
+- Lazy loading for large tournament lists
+- Skeleton states during data fetching
+- Progressive enhancement for advanced features
 
-### Iconography (Consistency & Recognition)
+## 9. Accessibility Requirements
 
-#### Selected Icon Library: **Phosphor Icons**
-**Rationale:** 
-- **Excellent outdoor visibility** - Bold, clear strokes designed for mobile
-- **Comprehensive sports coverage** - Includes sports-specific icons
-- **Flutter native support** - `phosphor_flutter` package with excellent performance
-- **Consistent design language** - Uniform stroke width and visual weight
-- **Professional appearance** - Clean, modern aesthetic suitable for FIVB branding
+### WCAG AA Compliance
+- Color contrast ratios of 4.5:1 minimum
+- Keyboard navigation for all interactive elements
+- Screen reader compatibility with proper ARIA labels
+- Focus indicators on all interactive elements
 
-#### Icon Implementation Standards
-- **Size:** 24px minimum (32px for primary actions)
-- **Stroke Width:** Bold variant (1.5px) for improved sunlight visibility
-- **Color:** High contrast (#003366 on light backgrounds)
-- **Usage:** Always paired with text labels for accessibility
-- **Semantic Consistency:** Same icon always represents same action across app
+### Specific Implementations
+- Table headers properly associated with data cells
+- Search/filter form labels clearly describe purpose
+- Error messages programmatically associated with form fields
+- Loading states announced to screen readers
 
-#### Core Icon Set
-- **Home:** `phosphor_flutter: house_bold`
-- **Tournaments:** `phosphor_flutter: trophy_bold`
-- **Bookmarks:** `phosphor_flutter: bookmark_simple_bold`
-- **Profile:** `phosphor_flutter: user_circle_bold`
-- **Search:** `phosphor_flutter: magnifying_glass_bold`
-- **Filter:** `phosphor_flutter: funnel_bold`
-- **Export:** `phosphor_flutter: export_bold`
-- **Sync:** `phosphor_flutter: arrows_clockwise_bold`
-- **Offline:** `phosphor_flutter: wifi_x_bold`
-- **Success:** `phosphor_flutter: check_circle_bold`
+## 10. Error Handling & Edge Cases
 
-### Spacing & Layout (Touch-Optimized)
-**Grid System:** 8dp Material Design base with 16dp/24dp component margins
-**Touch Targets:** 44px minimum (accessibility), 48px preferred (outdoor conditions)
-**Card Spacing:** 16px between cards, 24px section separation
-**Content Padding:** 16dp internal padding, 8dp for dense layouts
+### API Connection Failures
+- Clear error message: "Unable to connect to tournament data. Please try again."
+- Retry button with loading state
+- Graceful degradation - show cached data if available
 
-## Accessibility Requirements
+### Empty States
+- No tournaments found: Suggest adjusting filters with clear messaging
+- Tournament with no matches: Show tournament info with "No matches scheduled"
+- Loading states: Skeleton UI for all major components
 
-### Compliance Target
-**Standard:** WCAG 2.1 AA + Enhanced for Outdoor Use
+### Data Quality Issues
+- Missing referee assignments: Show "TBD" with appropriate styling
+- Incomplete match results: Clear indication of partial data
+- Invalid dates/times: Show raw data with warning indicator
 
-### Key Requirements
-**Visual (Sunlight-Enhanced):**
-- Color contrast ratios: **7:1 minimum** (exceeds AA standard for outdoor visibility)
-- Focus indicators: 3px solid outline with maximum contrast
-- Text sizing: Supports 200% zoom, larger base sizes for outdoor readability
+## 11. Performance Specifications
 
-**Interaction (Beach-Friendly):**
-- Touch targets: **48px minimum** (larger than standard for outdoor glove use)
-- Screen reader support: Full semantic structure with live regions
-- Keyboard navigation: Complete keyboard accessibility for desktop users
+### Loading Time Targets
+- **Initial page load**: < 3 seconds
+- **Tournament list refresh**: < 2 seconds
+- **Tournament detail navigation**: < 1.5 seconds
 
-**Content:**
-- Alternative text: Descriptive labels for all status indicators and icons
-- Heading structure: Clear H1>H2>H3 hierarchy
-- Form labels: Explicit labels with high contrast
+### Implementation Strategies
+- Data pagination (50 tournaments per page)
+- Image optimization and lazy loading
+- Efficient API calls with proper caching headers
+- Progressive data loading for tournament details
+
+## 12. Browser Support
+
+### Primary Support
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+### Mobile Support
+- iOS Safari 14+
+- Android Chrome 90+
+
+### Graceful Degradation
+- Basic functionality in older browsers
+- Progressive enhancement for modern features
+- No JavaScript fallbacks for critical data access
+
+## 13. Implementation Notes
+
+### Technology Stack Integration
+- **Framework**: React + Vite with shadcn/ui components
+- **Component Mapping**:
+  - Data Tables → Data Table + TanStack Table integration
+  - Forms → Input + Select + Date Picker + Command
+  - Navigation → Breadcrumb + Button components
+  - Feedback → Alert + Skeleton + Badge + Toast
+  - Layout → Card + Separator + Dialog
+- **Styling**: Tailwind CSS following shadcn/ui patterns
+- **State Management**: React Context + React Query (TanStack Query) for API state management
+- **API Integration**: RESTful calls to VIS database
+
+### Development Priorities
+1. Core data display (tournament list, details)
+2. Search and filtering functionality
+3. Responsive design implementation
+4. Error handling and loading states
+5. Accessibility features and testing
 
 ### Testing Strategy
-Automated testing with axe-core, manual testing in bright outdoor conditions, touch navigation with gloves
+- Component unit tests for all UI components
+- Integration tests for user flows
+- Accessibility testing with screen readers
+- Performance testing on various devices and connections
+- Cross-browser compatibility testing
 
-## Responsiveness Strategy
+---
 
-### Breakpoints (Beach-Optimized)
-| Breakpoint | Min Width | Max Width | Target Devices | Outdoor Usage |
-|------------|-----------|-----------|----------------|---------------|
-| Mobile | 320px | 767px | Phones at beach venues | Primary use case |
-| Tablet | 768px | 1023px | iPads in shaded areas | Secondary |
-| Desktop | 1024px | - | Office environments | Administrative |
-
-### Adaptation Patterns
-**Layout Changes:** 
-- Mobile: Single column, full-width cards
-- Tablet: Two-column grid with larger touch targets
-- Desktop: Three-column with traditional table layouts
-
-**Navigation Changes:**
-- Mobile: Bottom tab bar (thumb-friendly)
-- Desktop: Top navigation bar
-
-**Content Priority:**
-- Mobile: Essential data only, progressive disclosure
-- Desktop: Comprehensive data tables
-
-## Animation & Micro-interactions (Purposeful & Fast)
-
-### Motion Principles
-**Functional over decorative** - Animations that provide feedback and guide attention without slowing down workflows
-
-### Key Animations (Performance-Optimized)
-- **Page Transitions:** Fast slide transitions (200ms, ease-out)
-- **Loading States:** Minimal skeleton screens (avoid spinners in sunlight)
-- **Button Feedback:** Scale + haptic feedback (100ms, spring)
-- **Data Updates:** Subtle fade-in for new content (300ms, ease-in-out)
-- **Sync Indicator:** Rotation only when actively syncing
-- **Error States:** Attention-grabbing shake animation (200ms)
-
-### Flutter Animation Implementation
-- Use `AnimatedContainer` for layout changes
-- `Hero` widgets for screen transitions
-- `AnimatedSwitcher` for content updates
-- Hardware acceleration enabled for smooth 60fps performance
-
-## Performance Considerations (Critical for Beach Use)
-
-### Performance Goals (Strict Requirements)
-- **App Launch:** Under 1.5 seconds from tap to usable content
-- **Screen Transitions:** Under 200ms for all navigation
-- **Data Loading:** Instant from cache, under 3s from network
-- **Battery Efficiency:** Minimal background processing for all-day tournament use
-
-### Design Strategies (Mobile-Optimized)
-- **Image Optimization:** SVG icons only, no photographs or complex graphics  
-- **Lazy Loading:** Virtual scrolling for tournament lists
-- **Efficient Layouts:** Minimal nesting, optimized Flutter widgets
-- **Cache-First:** All interactions work from local data
-- **Background Sync:** Intelligent scheduling that preserves battery
-
-## Flutter-Specific Implementation Notes
-
-### Recommended Packages
-- **Icons:** `phosphor_flutter: ^2.0.0` (consistent, professional icon set)
-- **Animations:** Built-in Flutter animations (no heavy third-party libraries)
-- **State Management:** `flutter_bloc` (already in architecture)
-- **Theme:** Material 3 with custom referee theme extension
-
-### Performance Optimizations
-- Use `const` constructors for all static widgets
-- Implement `AutomaticKeepAliveClientMixin` for tab persistence
-- Optimize list rendering with `ListView.builder`
-- Cache network images with `cached_network_image`
-
-## Next Steps
-
-### Immediate Actions
-1. **Create Referee Theme Extension** for Material 3 with high-contrast colors
-2. **Build Component Library** in Flutter with Phosphor icons
-3. **Test Sunlight Readability** with actual referees in outdoor conditions
-4. **Implement Performance Monitoring** to ensure sub-second interactions
-5. **Create Accessibility Testing Plan** for beach venue conditions
-
-### Design Handoff Checklist
-- [x] All user flows optimized for one-handed outdoor use
-- [x] Component inventory with sunlight-readable variants
-- [x] Accessibility requirements enhanced for outdoor conditions  
-- [x] Responsive strategy prioritizing mobile beach usage
-- [x] FIVB branding integrated with practical visibility requirements
-- [x] Performance goals aligned with battery and speed constraints
-- [x] Icon library selected (Phosphor) with implementation standards
-- [x] Animation strategy focused on functional feedback
-
-**Key Design Decisions Rationale:**
-
-- **Phosphor Icons:** Best combination of professional appearance, outdoor visibility, and Flutter integration
-- **High Contrast Colors:** Exceed accessibility standards for bright sunlight readability
-- **Simplified Navigation:** Reduce cognitive load during high-pressure referee decisions
-- **Performance-First:** Every design decision evaluated for speed and battery impact
-- **Touch-Optimized:** Larger touch targets account for outdoor conditions and possible glove use
-
-This specification creates a professional, referee-focused tool that works reliably in challenging beach volleyball tournament environments while maintaining FIVB's authoritative brand standards.
+*This specification serves as the definitive guide for frontend development and should be referenced throughout the implementation process to ensure consistency with user experience goals.*

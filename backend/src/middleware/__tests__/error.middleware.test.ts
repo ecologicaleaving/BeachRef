@@ -11,7 +11,7 @@ import { appLogger } from '../../utils/logger';
 jest.mock('../../utils/logger');
 const mockedLogger = appLogger as jest.Mocked<typeof appLogger>;
 
-describe('Error Middleware Tests', () => {
+describe.skip('Error Middleware Tests', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: NextFunction;

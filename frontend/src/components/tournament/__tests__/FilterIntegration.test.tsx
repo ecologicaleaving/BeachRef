@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TournamentFilters } from '../TournamentFilters';
@@ -75,7 +76,8 @@ describe('Filter Integration', () => {
     expect(screen.getByText(/25 tournaments/)).toBeInTheDocument();
   });
 
-  it('handles search input changes', () => {
+  it('handles search input changes', async () => {
+    const user = userEvent.setup();
     const TestWrapper = createTestWrapper();
     
     render(
@@ -85,10 +87,13 @@ describe('Filter Integration', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search tournaments...');
-    fireEvent.change(searchInput, { target: { value: 'beach volleyball' } });
+    
+    // Use userEvent which is more realistic for user interactions
+    await user.clear(searchInput);
+    await user.type(searchInput, 'beach volleyball');
 
-    // Verify the input value changes immediately
-    expect((searchInput as HTMLInputElement).value).toBe('beach volleyball');
+    // Check that the input has the expected value
+    expect(searchInput).toHaveValue('beach volleyball');
   });
 
   it('updates result count dynamically', () => {

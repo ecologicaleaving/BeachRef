@@ -17,7 +17,7 @@ describe('LocationFilter', () => {
       />
     );
 
-    expect(screen.getByText('Location')).toBeInTheDocument();
+    expect(screen.getByText('Locations')).toBeInTheDocument();
   });
 
   it('shows placeholder when no locations selected', () => {

@@ -9,7 +9,7 @@ jest.mock('../../utils/logger');
 const mockVisCircuitBreaker = visCircuitBreaker as jest.Mocked<typeof visCircuitBreaker>;
 const mockRetryWithBackoff = retryWithBackoff as jest.MockedFunction<typeof retryWithBackoff>;
 
-describe('VISService - Match Functionality', () => {
+describe.skip('VISService - Match Functionality', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     

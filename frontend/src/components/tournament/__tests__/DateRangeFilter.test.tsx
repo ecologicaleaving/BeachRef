@@ -44,8 +44,8 @@ describe('DateRangeFilter', () => {
       />
     );
 
-    expect(screen.getByText('Jan 1, 2024')).toBeInTheDocument();
-    expect(screen.getByText('Jan 31, 2024')).toBeInTheDocument();
+    expect(screen.getByText('From: Jan 1, 2024')).toBeInTheDocument();
+    expect(screen.getByText('To: Jan 31, 2024')).toBeInTheDocument();
   });
 
   it('displays start date only when end date is missing', () => {

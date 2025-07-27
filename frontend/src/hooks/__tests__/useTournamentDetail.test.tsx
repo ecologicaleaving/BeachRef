@@ -168,7 +168,8 @@ describe('useTournamentDetail', () => {
 
     expect(mockTournamentService.getTournamentById).not.toHaveBeenCalled();
 
-    (rerender as any)({ tournamentId: 'tournament-1' });
+    // @ts-expect-error: TypeScript issue with renderHook rerender typing
+    rerender({ tournamentId: 'tournament-1' });
 
     expect(mockTournamentService.getTournamentById).toHaveBeenCalledWith('tournament-1');
   });

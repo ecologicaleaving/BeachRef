@@ -120,7 +120,7 @@ describe('TournamentDetailPage', () => {
       isRefetchError: false,
       errorUpdateCount: 0,
       isEnabled: true,
-      promise: Promise.resolve({} as any),
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'pending'
     });
 
@@ -339,7 +339,7 @@ describe('TournamentDetailPage', () => {
       isRefetchError: false,
       errorUpdateCount: 0,
       isEnabled: true,
-      promise: Promise.resolve({} as any),
+      promise: Promise.resolve({} as TournamentDetailResponse),
       status: 'pending'
     });
 

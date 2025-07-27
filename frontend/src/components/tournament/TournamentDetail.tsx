@@ -1,4 +1,4 @@
-import { TournamentDetailResponse } from '@/types/tournament.types';
+import type { TournamentDetailResponse } from '@/types/tournament.types';
 import { TournamentHeader } from './TournamentHeader';
 import { TournamentStats } from './TournamentStats';
 import { MatchList } from './MatchList';

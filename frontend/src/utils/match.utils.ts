@@ -1,4 +1,4 @@
-import { Match } from '@/types/tournament.types';
+import type { Match } from '@/types/tournament.types';
 
 export function formatTeamName(team: Match['teams']['team1'] | Match['teams']['team2']): string {
   if (!team.player2) {

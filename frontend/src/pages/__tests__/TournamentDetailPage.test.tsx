@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TournamentDetailPage } from '../TournamentDetailPage';
 import { useTournamentDetail } from '@/hooks/useTournamentDetail';
-import { TournamentDetailResponse } from '@/types/tournament.types';
+import type { TournamentDetailResponse } from '@/types/tournament.types';
 
 // Mock the hook
 jest.mock('@/hooks/useTournamentDetail');
@@ -118,6 +118,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as any),
       status: 'pending'
     });
 
@@ -151,6 +154,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
@@ -184,6 +190,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
@@ -215,10 +224,13 @@ describe('TournamentDetailPage', () => {
       isFetched: true,
       isFetchedAfterMount: true,
       isInitialLoading: false,
-      isLoadingError: false,
+      isLoadingError: true,
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.reject(new Error('Failed to fetch tournament')),
       status: 'error'
     });
 
@@ -249,10 +261,13 @@ describe('TournamentDetailPage', () => {
       isFetched: true,
       isFetchedAfterMount: true,
       isInitialLoading: false,
-      isLoadingError: false,
+      isLoadingError: true,
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.reject(new Error('Failed to fetch tournament')),
       status: 'error'
     });
 
@@ -285,6 +300,9 @@ describe('TournamentDetailPage', () => {
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve(mockTournamentDetail),
       status: 'success'
     });
 
@@ -298,28 +316,31 @@ describe('TournamentDetailPage', () => {
   it('should handle null data state', () => {
     mockUseTournamentDetail.mockReturnValue({
       data: undefined,
-      isLoading: false,
+      isLoading: true,
       error: null,
       refetch: jest.fn(),
       isError: false,
-      isSuccess: true,
-      isFetching: false,
-      isPending: false,
+      isSuccess: false,
+      isFetching: true,
+      isPending: true,
       isRefetching: false,
       isStale: false,
-      dataUpdatedAt: Date.now(),
+      dataUpdatedAt: 0,
       errorUpdatedAt: 0,
       failureCount: 0,
       failureReason: null,
-      fetchStatus: 'idle',
-      isFetched: true,
-      isFetchedAfterMount: true,
-      isInitialLoading: false,
+      fetchStatus: 'fetching',
+      isFetched: false,
+      isFetchedAfterMount: false,
+      isInitialLoading: true,
       isLoadingError: false,
       isPaused: false,
       isPlaceholderData: false,
       isRefetchError: false,
-      status: 'success'
+      errorUpdateCount: 0,
+      isEnabled: true,
+      promise: Promise.resolve({} as any),
+      status: 'pending'
     });
 
     render(<TournamentDetailPage />, { wrapper: createWrapper() });

@@ -1,6 +1,6 @@
 import type { PaginatedTournamentResponse, TournamentQueryParams, TournamentDetailResponse } from '@/types/tournament.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:3001';
 
 export class TournamentService {
   private async fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {

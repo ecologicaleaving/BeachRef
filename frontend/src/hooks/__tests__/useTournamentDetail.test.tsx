@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTournamentDetail } from '../useTournamentDetail';
 import { tournamentService } from '@/services/tournament.service';
-import { TournamentDetailResponse } from '@/types/tournament.types';
+import type { TournamentDetailResponse } from '@/types/tournament.types';
 
 jest.mock('@/services/tournament.service');
 
@@ -159,7 +159,7 @@ describe('useTournamentDetail', () => {
 
   it('should enable query only when tournament ID is provided', () => {
     const { rerender } = renderHook(
-      ({ tournamentId }: { tournamentId?: string }) => useTournamentDetail(tournamentId),
+      ({ tournamentId }: { tournamentId: string | undefined }) => useTournamentDetail(tournamentId),
       {
         wrapper: createWrapper(),
         initialProps: { tournamentId: undefined }
@@ -168,7 +168,7 @@ describe('useTournamentDetail', () => {
 
     expect(mockTournamentService.getTournamentById).not.toHaveBeenCalled();
 
-    rerender({ tournamentId: 'tournament-1' });
+    (rerender as any)({ tournamentId: 'tournament-1' });
 
     expect(mockTournamentService.getTournamentById).toHaveBeenCalledWith('tournament-1');
   });

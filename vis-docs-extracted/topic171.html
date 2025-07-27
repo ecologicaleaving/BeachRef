@@ -1,0 +1,355 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to upload a special document</title>
+    <meta name="Title" content="Request to upload a special document"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="This request is used when a special document must be uploaded." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="6c8b61f8-59cd-4a11-b40f-0e76f1207ee9"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="1"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic199.html">Requests</a>
+ > Document
+ > Request to upload a special document</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to upload a special document</div></div>
+                        <p>This request is used when a special document must be uploaded.</p>
+
+<p>When receiving this request, the web service will save the document, update the related item with the number of the document and return the number of the document. The item is identified by the document type and the number of the item. For example, if the document is a scoresheet for a volleyball match, the caller must specify the unique number of the match. If there already exists a special document of the same type for the item, the previous document will be removed.</p>
+
+<p>A special document is a document related to an item that must be identified by the VIS system. Example of these documents are the match scoresheets, a person's passport, a filled FIVB form, etc.</p>
+
+<div id="i-6be61eeb-92f4-46cc-ba62-524ab00f2220-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-6be61eeb-92f4-46cc-ba62-524ab00f2220-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="UploadSpecialDocument"</span>
+         <span style="COLOR: #ff0000">Document</span><span style="COLOR: #0000ff">="&lt;document&gt;"</span>
+         <span style="COLOR: #ff0000">DocumentType</span><span style="COLOR: #0000ff">="&lt;special document type&gt;"</span>
+         <span style="COLOR: #ff0000">FileNameExtension</span><span style="COLOR: #0000ff">="&lt;extension of the file name&gt;"</span>
+         <span style="COLOR: #ff0000">NoItem</span><span style="COLOR: #0000ff">="&lt;number of the item related to the document&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Attribute</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Document</td>
+
+                <td>The document.<br />
+                The document must be encoded using <a href="https://msdn.microsoft.com/en-us/library/dhx0d524%28v=vs.110%29.aspx" target="_blank">Base64</a> encoding.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+
+            <tr>
+                <td>DocumentType</td>
+
+                <td>The <a href="topic80.html">special document type</a>.<br />
+                This attribute can contain the value or the name of the type.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+
+            <tr>
+                <td>FileNameExtension</td>
+
+                <td>The extension of the file name.<br />
+                This attribute is used to determine which kind of document file is sent.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+
+            <tr>
+                <td>NoItem</td>
+
+                <td>The number of the item related to the document.<br />
+                For example, for a volleyball match scoresheet, this is the unique number of the match.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-c041e3c5-90b7-4737-8848-af9ac418680d-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-c041e3c5-90b7-4737-8848-af9ac418680d-section-content" class="i-section-content">
+    <p>When the request is successful, the service will return an <strong>&lt;OK&gt;</strong> XML element, with the number of the document:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="xxxx"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="i-f81b9eb8-4483-4c33-a1c0-273106d12719-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Errors</span>
+</div>
+
+<div id="i-f81b9eb8-4483-4c33-a1c0-273106d12719-section-content" class="i-section-content">
+    <p>In addition to <a href="topic9.html">global errors</a>, the following errors can be sent by the web service:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Error</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>&lt;AccessDenied&gt;</td>
+
+                <td>You don't have the right to upload a special document for the specified item.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;BadParameter&gt;</td>
+
+                <td>- The <strong>Document</strong> attribute is not correctly encoded.<br />
+                - The <strong>DocumentType</strong> attribute has not a valid value.<br />
+                - The <strong>NoItem</strong> attribute is not a valid integer number.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;NoData&gt;</td>
+
+                <td>The item related to the document doesn't exist.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;ParameterMissing&gt;</td>
+
+                <td>- The <strong>Document</strong> attribute is missing.<br />
+                - The <strong>DocumentType</strong> attribute is missing.<br />
+                - The <strong>FileNameExtension</strong> attribute is missing.<br />
+                - The <strong>NoItem</strong> attribute is missing.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-e013d1dc-b736-47f8-9dd6-341e7c064dae-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-e013d1dc-b736-47f8-9dd6-341e7c064dae-section-content" class="i-section-content">
+    <p>This is a private request: a username and password is required. otherwise, an <strong>&lt;AccessDenied&gt;</strong> XML element will be returned by the web service.</p>
+
+    <p>A user can be limited to upload a special document to only some items.</p>
+</div>
+
+<div id="i-c36a8c28-442d-452f-8a12-8fb0d443b7a9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-c36a8c28-442d-452f-8a12-8fb0d443b7a9-section-content" class="i-section-content">
+    <p>Upload a beach volleyball scoresheet.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="UploadSpecialDocument"</span>
+         <span style="COLOR: #ff0000">Document</span><span style="COLOR: #0000ff">="XXXX"</span>
+         <span style="COLOR: #ff0000">DocumentType</span><span style="COLOR: #0000ff">="BeachTournamentScoresheet"</span>
+         <span style="COLOR: #ff0000">FileNameExtension</span><span style="COLOR: #0000ff">="pdf"</span>
+         <span style="COLOR: #ff0000">NoItem</span><span style="COLOR: #0000ff">="1234"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is (formatted for readability):</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="201512345"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic80.html">SpecialDocumentType values</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.SpecialDocumentType.html">SpecialDocumentType class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.UploadSpecialDocumentRequest.html">UploadSpecialDocumentRequest class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic171.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Article</title>
+    <meta name="Title" content="Article"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+    This documentation is preliminary, as the articles API is currently in development. The information here is subject to changes.
+
+
+Represents an article.
+This can be press releases, person profiles, information about a tournament or an event" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="e27ddbe5-d731-43f3-a2ae-eeda0018888f"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="1"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Media
+ > Articles
+ > Article</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Article</div></div>
+                        <div class="i-box i-box-caution">
+    This documentation is preliminary, as the articles API is currently in development. The information here is subject to changes.
+</div>
+
+<p>Represents an article.<br />
+This can be press releases, person profiles, information about a tournament or an event.<br />
+An article contains only data that is not tied to a language. Each article can contain one or more texts, available with the <strong>Texts</strong> relation.</p>
+
+<p>This data type supersedes the PressRelease data type.</p>
+
+<p>The name of the XML element for an article is <strong>&lt;Article&gt;</strong>.<br />
+The name of the XML element for a list of articles is <strong>&lt;Articles&gt;</strong>.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#Properties">Properties</a></li>
+
+    <li><a href="#Relations">Relations</a></li>
+</ul>
+
+<div id="i-4e4d7461-f78d-4f7c-8392-d8d761d0e902-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Properties" name="Properties"></a>Properties</span>
+</div>
+
+<div id="i-4e4d7461-f78d-4f7c-8392-d8d761d0e902-section-content" class="i-section-content">
+    <p>The following table lists all the properties for an article.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>DateTime</td>
+
+                <td><a href="topic17.html">DateTime</a></td>
+
+                <td>The date and time of the article.</td>
+            </tr>
+
+            <tr>
+                <td>DeletedDT</td>
+
+                <td><a href="topic17.html">DateTime</a></td>
+
+                <td><strong>Null</strong> if the event is valid.<br />
+                The date and time of the deletion when the event is deleted.</td>
+            </tr>
+
+            <tr>
+                <td>ENewsLocation</td>
+
+                <td><a href="topic86.html">ArticleENewsLocation</a></td>
+
+                <td>Indicates where the article must be published on the e-News publication.</td>
+            </tr>
+
+            <tr>
+                <td>HasPhoto</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article has a photo.</td>
+            </tr>
+
+            <tr>
+                <td>IsVideoLive</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the video specified in <em>VideoUri</em> is live.</td>
+            </tr>
+
+            <tr>
+                <td>LastChangeDT</td>
+
+                <td><a href="topic17.html">DateTime</a></td>
+
+                <td>The date and time of the last change in the article.</td>
+            </tr>
+
+            <tr>
+                <td>LastChangeUser</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of the user who has made the last change in the article.</td>
+            </tr>
+
+            <tr>
+                <td>LastChangeUsername</td>
+
+                <td>String</td>
+
+                <td>The username of the user who has made the last change in the article.</td>
+            </tr>
+
+            <tr>
+                <td>No</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The unique number of the article.<br />
+                This number is unique among all the articles.</td>
+            </tr>
+
+            <tr>
+                <td>PhotoUrl</td>
+
+                <td>String</td>
+
+                <td>
+                    <p>The URL of the photo.<br />
+                    The URL is for the full photo, without resizing. You can add parameters to have a thumbnail, see&nbsp;<a href="topic201.html">GetImage.asmx</a> for more information.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>PublishOnBeach</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the beach volleyball pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnDevelopment</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the development pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnFivb</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the FIVB pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnHeadlines</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the headlines pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnHome</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the home page.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnMedical</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the medical pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnMsdp</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article must be published on the Microsoft Sports Digital Platform.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnPresident</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the president pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnRefereeingRules</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the refereeing / rules pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnSnow</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the snow volleyball pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnTechnicalCoach</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the technical / coaches pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnTournament</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the tournament pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnTwitter</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on Twitter.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnVolley</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the volleyball pages.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnVolleyballWorld</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the Volleyball World publication.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOnWorldVolleyNews</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Indicates whether the article should be published on the World Volley News publication.<br />
+                This property is used internally for the FIVB site, but can give a guidance about where the article should be visible.</td>
+            </tr>
+
+            <tr>
+                <td>ShareUrl</td>
+
+                <td>String</td>
+
+                <td>The URL that can be used to share the article.</td>
+            </tr>
+
+            <tr>
+                <td>Source</td>
+
+                <td>String</td>
+
+                <td>The source of the article.</td>
+            </tr>
+
+            <tr>
+                <td>Url</td>
+
+                <td>String</td>
+
+                <td>The URL for additional information, if any.</td>
+            </tr>
+
+            <tr>
+                <td>ValidFrom</td>
+
+                <td><a href="topic17.html">DateTime</a></td>
+
+                <td>The UTC date and time when the article is valid.</td>
+            </tr>
+
+            <tr>
+                <td>ValidTo</td>
+
+                <td><a href="topic17.html">DateTime</a></td>
+
+                <td>The UTC date and time until when the article is valid.</td>
+            </tr>
+
+            <tr>
+                <td>Version</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The version of the article.</td>
+            </tr>
+
+            <tr>
+                <td>VideoUri</td>
+
+                <td>String</td>
+
+                <td>The URL of a video related to the article.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-d7f1d633-b35e-4459-9c7d-ddcbed1ddfdc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Relations" name="Relations"></a>Relations</span>
+</div>
+
+<div id="i-d7f1d633-b35e-4459-9c7d-ddcbed1ddfdc-section-content" class="i-section-content">
+    <p>The following table lists the relations for an article.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Tags</td>
+
+                <td>Array of <a href="topic41.html">TagItem</a></td>
+
+                <td>
+                    <p>The tags.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Text</td>
+
+                <td><a href="topic46.html">ArticleText</a></td>
+
+                <td>
+                    <p>The text in the specified language.<br />
+                    <span style="COLOR: rgb(247,150,70)">Currently not implemented.</span></p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Texts</td>
+
+                <td>Array of <a href="topic46.html">ArticleText</a></td>
+
+                <td>The texts.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic86.html">Article e-News Location</a></div>
+<div class="i-see-also-link">
+<a href="topic148.html">Filter for an article</a></div>
+<div class="i-see-also-link">
+<a href="topic46.html">Article Text</a></div>
+<div class="i-see-also-link">
+<a href="topic40.html">Tag</a></div>
+<div class="i-see-also-link">
+<a href="topic41.html">Tag Item</a></div>
+<div class="i-see-also-link">
+<a href="topic42.html">Tag Text</a></div>
+<div class="i-see-also-link">
+<a href="topic175.html">Request to get a list of articles</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.Article.html">Article class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleENewsLocation.html">ArticleENewsLocation class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleFilter.html">ArticleFilter class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleText.html">ArticleText class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.GetArticleListRequest.html">GetArticleListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.GetArticleRequest.html">GetArticleRequest class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic45.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

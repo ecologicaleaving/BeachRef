@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get a list of registrations of teams in a volleyball tournament</title>
+    <meta name="Title" content="Request to get a list of registrations of teams in a volleyball tournament"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="9844bb05-6710-42e6-b5e2-baea3df97fb9"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="3"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Teams registrations
+ > Request to get a list of registrations of teams in a volleyball tournament</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get a list of registrations of teams in a volleyball tournament</div></div>
+                        <div id="i-24816035-f40a-483b-b9bb-456179937c05-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-24816035-f40a-483b-b9bb-456179937c05-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTeamList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+         Version="<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">version</span> <span style="COLOR: #ff0000">of</span> <span style="COLOR: #ff0000">local</span> <span style="COLOR: #ff0000">list</span><span style="COLOR: #0000ff">&gt;</span>"&gt;
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #0000ff">/&gt;</span> <span style="COLOR: #008000">&lt;!-- optional: contains the filter to use --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic59.html">VolleyTeam</a> data. Only the fields you have access to will be returned.</p>
+
+    <p class="SubHeader2">Filter</p>
+
+    <p>The filter is optional.<br />
+    If it is not specified, the response will contain all the teams registrations.<br />
+    Please see the <a href="topic154.html">VolleyTeamFilter</a> description for more information.</p>
+
+    <p class="SubHeader2">Version</p>
+
+    <p>The version is optional.<br />
+    The goal of this parameter is to request an update to an existing local list: for the first request, you don't specify the parameter (or set it to 0) and you receive the full list of the filtered registrations; for subsequent requests, you specify the version of the local list and the web service only returns the changes (new registrations or registrations that have changed). Doing this will decrease the bandwidth used by the local application.<br />
+    Note that the version of all the registrations (not only the filtered ones) is returned in the root of the response.</p>
+</div>
+
+<div id="i-9ae4aec0-1bb5-4084-957f-c7d5e2d63c50-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-9ae4aec0-1bb5-4084-957f-c7d5e2d63c50-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns the filtered list of teams registrations.</p>
+
+    <p>In addition, the root element contains the number of registrations that are returned and the version of all the registrations.</p>
+</div>
+
+<div id="i-ff93e8c2-ede8-4b71-84c3-26e9cebf37e6-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-ff93e8c2-ede8-4b71-84c3-26e9cebf37e6-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for a team registration are public and other are not.<br />
+    The response from the web service will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-0e672ba4-d022-4fed-ab86-5152a29808a6-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-0e672ba4-d022-4fed-ab86-5152a29808a6-section-content" class="i-section-content">
+    <p>Get the list of the teams registered in the tournament with the number <strong>979</strong>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTeamList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No FederationCode Code Name"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #ff0000">NoTournament</span><span style="COLOR: #0000ff">="979"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeams</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3231"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="ARG"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Argentina"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3233"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BEL"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Belgium"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3235"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BRA"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Brazil"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="520"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3237"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BUL"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Bulgaria"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3239"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="CAN"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Canada"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3241"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="FRA"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="France"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3232"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="IRI"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Iran"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="437"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3234"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="ITA"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Italy"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="439"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3236"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="POL"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Poland"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3238"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="RUS"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Russia"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3240"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="SRB"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Serbia"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTeam</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="3242"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="USA"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="USA"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballTeams</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetVolleyTeamList' Fields='No FederationCode Code Name'&gt;&lt;Filter NoTournament='979'/&gt;&lt;/Request&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic8.html">General errors (JSON)</a></div>
+<div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic193.html">GetVolleyTeam request</a></div>
+<div class="i-see-also-link">
+<a href="topic59.html">VolleyTeam</a></div>
+<div class="i-see-also-link">
+<a href="topic154.html">VolleyTeamFilter</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTeamListRequest.html">GetVolleyTeamListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTeamRequest.html">GetVolleyTeamRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTeam.html">VolleyTeam class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTeamFilter.html">VolleyTeamFilter class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic194.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+﻿/* This StyleSheet contains custom styles for this project */
+
+.Code {
+  background-color: #EEEEEE;
+  color: Black;
+  font-family: "Lucida Console", "Courier New", "sans serif";
+  padding-left: 0;
+}
+
+
+h3 {
+  color: navy;
+  font-size: 16px;
+}
+
+
+table
+{
+  width: auto;
+}
+
+
+.Table
+{
+  width: auto;
+}

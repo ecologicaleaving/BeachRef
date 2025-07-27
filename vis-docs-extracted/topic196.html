@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get a list of volleyball tournaments</title>
+    <meta name="Title" content="Request to get a list of volleyball tournaments"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="03be8c65-0f7e-4674-8a68-d5f5a4799cce"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="6"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Tournaments
+ > Request to get a list of volleyball tournaments</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get a list of volleyball tournaments</div></div>
+                        <div id="i-28c9b05c-c78c-4b85-a240-fe5a2249d47f-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-28c9b05c-c78c-4b85-a240-fe5a2249d47f-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTournamentList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+         Version="<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">version</span> <span style="COLOR: #ff0000">of</span> <span style="COLOR: #ff0000">local</span> <span style="COLOR: #ff0000">list</span><span style="COLOR: #0000ff">&gt;</span>"&gt;
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #0000ff">/&gt;</span> <span style="COLOR: #008000">&lt;!-- optional: contains the filter to use --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic60.html">VolleyTournament</a> data. Only the fields you have access to will be returned.</p>
+
+    <p class="SubHeader2">Filter</p>
+
+    <p>The filter is optional.<br />
+    If it is not specified, the response will contain all the beach volleyball tournaments.<br />
+    Please see the <a href="topic155.html">VolleyTournamentFilter</a> description for more information.</p>
+
+    <p class="SubHeader2">Version</p>
+
+    <p>The version is optional.<br />
+    The goal of this parameter is to request an update to an existing local list: for the first request, you don't specify the parameter (or set it to 0) and you receive the full list of the filtered tournaments; for subsequent requests, you specify the version of the local list and the web service only returns the changes (new tournaments or tournaments that have changed). Doing this will decrease the bandwidth used by the local application.<br />
+    Note that the version of all the tournaments (not only the filtered ones) is returned in the root of the response.</p>
+</div>
+
+<div id="i-c3ffe3ca-7bfc-41f9-8b1e-c33d756f56fd-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-c3ffe3ca-7bfc-41f9-8b1e-c33d756f56fd-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns the filtered list of volleyball tournaments.</p>
+
+    <p>In addition, the root element contains the number of tournaments that are returned and the version of all the tournaments.</p>
+</div>
+
+<div id="i-f6d95281-53fd-462b-a4cf-8787a13851d8-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-f6d95281-53fd-462b-a4cf-8787a13851d8-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for a volleyball tournament are public and other are not.<br />
+    The response from the web service will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-bdbb1838-1598-4efa-af1f-308e7a122d32-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-bdbb1838-1598-4efa-af1f-308e7a122d32-section-content" class="i-section-content">
+    <p>Get the list of the tournaments confirmed, running and finished for the 2017 season.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTournamentList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No Code Name StartDate EndDate"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #ff0000">Seasons</span><span style="COLOR: #0000ff">="2017"</span> <span style="COLOR: #ff0000">Statuses</span><span style="COLOR: #0000ff">="Scheduled Running Finished"</span><span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournaments</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="56"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="879"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="949"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="UNI2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="XXIX Summer Universiade"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-19"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-30"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="952"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WGCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FIVB Women's Grand Champions Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-09-05"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-09-10"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="861"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="963"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="VISTEST"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Volleyball Tournament test"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-01"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-09-30"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="846"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="973"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="GU182017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Girls' U18 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-18"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-27"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="852"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="974"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BU192017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Boys' U19 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-18"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-27"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="851"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="975"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WU202017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Women's U20 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-14"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-24"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="826"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="976"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MU212017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Men's U21 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-23"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-02"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="848"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="977"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WU232017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Women's U23 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-09-10"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-09-17"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="879"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="978"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MU232017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Men's U23 World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-18"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="849"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="979"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017-1"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 1"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-02"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-08"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="853"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="980"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017-2"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 2"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-02"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="796"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="981"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017-3"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 3"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-02"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-18"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="790"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="982"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017G3F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 3 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-17"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-18"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="787"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="983"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017G2F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 2 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-24"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="984"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WL2017G1F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World League 2017 - Group 1 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-04"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-08"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="987"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WGP2017c"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World Grand Prix 2017 - Group 3"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-07"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-23"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="825"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="988"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WGP2017G3F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World Grand Prix 2017 - Group 3 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-22"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-23"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="630"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="989"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WGP2017G2F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World Grand Prix 2017 - Group 2 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-29"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-30"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="629"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="990"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WGP2017G1F"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World Grand Prix 2017 - Group 1 Final"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-02"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-06"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="830"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1003"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="EUGU182017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV U18 European Championship Final - Girls"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-04-01"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-04-09"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1004"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="EUBU192017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV U19 European Championship Final - Boys"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-04-22"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-04-30"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1005"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MQ18EU2r"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Men's European Qualification - 2nd round"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-23"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-28"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1006"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WQ18EU2r"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Women's European Qualification - 2nd round"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-30"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-04"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1007"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MQ18EU3r"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Men's European Qualification - 3rd round"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-11"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-16"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1008"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WQ18EU3r"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Women's European Qualification - 3rd round"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-22"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-27"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1009"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MEUR2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV European Championship Final - Men"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-24"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-09-03"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1010"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WEUR2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV European Championship Final - Women"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-09-22"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-10-01"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1011"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="EUML2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV European League Final 4 - Men"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1012"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="EUWL2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="CEV European League Final 4 - Women"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1030"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WCWC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Women's Club World Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-09"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-14"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="741"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1032"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MTRX2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Montreux Volley Masters 2017"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-06"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-11"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="776"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1033"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="AFWCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Women's African Club Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-04-06"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-04-16"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1034"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="SAMCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="South American Men's Club Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-02-21"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-02-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1035"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="SAWCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="South American Women's Club Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-02-14"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-02-18"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1036"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="B19PAN17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 U-19 Boy's Pan American Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-03-20"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-03-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="677"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1038"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="G18PAN17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 U-18 Girl's Pan American Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-03-28"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-04-02"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="685"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1039"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="AFMU232017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Men's U23 African Nations Championship "</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-02-19"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-02-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1040"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="G20PAN17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 U-20 Girl's Pan American Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-08"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-13"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="740"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1041"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="AFMCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Men's African Club Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-03-17"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-03-21"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1042"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="M21PAN17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 U-21 Men's Pan American Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-16"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-21"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="743"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1043"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MSAM2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="South American Senior Men's Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-07"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-11"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1044"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WSAM2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="South American Senior Women's Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-12"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-19"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1047"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MASI2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="19th Asian Senior Men's Volleyball Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-24"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-01"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1048"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WASI2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="19th Asian Senior Women's Volleyball Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-09"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-17"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1049"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="M23WHQ17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="SMM 2nd MU23 Asian Volleyball Championship 2017"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-01"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-09"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="726"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1050"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="W23WHQ17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="SMM 2nd WU23 Asian Volleyball Championship 2017"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-13"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-21"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="751"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1051"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MU212017P"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Men's U21 World Championship (potential teams)"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-23"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-02"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="737"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1054"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WPANC17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Senior Women's Panamerican Cup"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-17"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-25"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="792"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1055"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="AWCC2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Asian Women's Club Volleyball Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-05-25"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-05-31"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="764"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1059"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WCISM17"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="18th CISM World Military Women's Volleyball Championship"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-06-04"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-06-09"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="778"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1060"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="NOGU18FF"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Norceca Girls Youth U 18 Final Four"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-04"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-06"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="841"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1061"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MQ18AF"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Men's African Qualification and African Champs"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-10-22"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-10-29"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1062"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WQ18AF"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Women's African Qualification and African Champs"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-10-07"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-10-14"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1063"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MCAZ2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Cazova Men's Senior Championship "</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-04"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-09"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="813"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1065"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="WCAZ2017"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2017 Cazova Women's Senior Championship "</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-07-26"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-07-31"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="833"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournament</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1070"</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="MQ18AS-A"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="2018 WCH Men's Asian Qualification"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2017-08-10"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2017-08-14"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="843"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballTournaments</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetVolleyTournamentList' Fields='No Code Name StartDate EndDate'&gt;&lt;Filter Seasons='2017' Statuses='Scheduled Running Finished'/&gt;&lt;/Request&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic8.html">General errors (JSON)</a></div>
+<div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic195.html">GetVolleyTournament request</a></div>
+<div class="i-see-also-link">
+<a href="topic197.html">GetVolleyTournamentRanking request</a></div>
+<div class="i-see-also-link">
+<a href="topic60.html">VolleyTournament</a></div>
+<div class="i-see-also-link">
+<a href="topic155.html">VolleyTournamentFilter</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentListRequest.html">GetVolleyTournamentListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentRankingRequest.html">GetVolleyTournamentRankingRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentRequest.html">GetVolleyTournamentRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTournament.html">VolleyTournament class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTournamentFilter.html">VolleyTournamentFilter class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic196.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

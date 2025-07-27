@@ -1,0 +1,705 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>VBA statistics file</title>
+    <meta name="Title" content="VBA statistics file"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+    This is a preliminary version of the documentation and there can remain errors on it." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="27a02e89-018b-40da-a96b-08de7254908f"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="4"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Files format
+ > Legacy
+ > VBA
+ > VBA statistics file</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">VBA statistics file</div></div>
+                        <div class="i-box i-box-caution">
+    <p>This is a preliminary version of the documentation and there can remain errors on it.</p>
+
+    <p>If you find errors (even typos) in this documentation, please contact the <a href="mailto:vis.sdk@fivb.org">FIVB</a>.</p>
+</div>
+
+<p>The VBA statistics file is named Statxxx.i, where xxx is the number of the match in the tournament, using 3 digits, and i is 1 for the first acquisition PC and 2 for the second one.</p>
+
+<p>It exists in different formats, for 20 or 25 players. Unfortunately, there is no way to detect the version of the file.</p>
+
+<p>The content of the file is a collection of entries. The available entries can be identified by bits 0 to 4 of their first byte. Normally, these bits contain the shirt number of the player, but can contain special values to identify the following data.</p>
+
+<p>The different entries for the file are listed in the following sections.</p>
+
+<div id="i-3745eebc-7784-411b-98f3-61a3a406cd6f-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Action</span>
+</div>
+
+<div id="i-3745eebc-7784-411b-98f3-61a3a406cd6f-section-content" class="i-section-content">
+    <p>An action is packed into a 16-bits integer, with the LSB first.</p>
+
+    <p>The format of the packed integer is the following:</p>
+
+    <ul>
+        <li>Bits 0 to 4 (mask is 0x001F) contain the shirt number. It can be 1 to 20 or 1 to 25, depending on the format. Some special values are defined, see the table below for them.</li>
+
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the skill, see the table below for the values.</li>
+
+        <li>Bits 10 to 14 (mask is 0x7C00) contain the note, see the table below for the values.</li>
+
+        <li>Bits 15 is 0 for team A or 1 for team B.</li>
+    </ul>
+
+    <p><strong class="SubHeader1">Special values for the shirt number, in the 20 players format</strong></p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Decimal value</th>
+
+                <th>Value in action</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">24</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0018</p>
+                </td>
+
+                <td><a href="#LiberoSubstitution">Libero substitution</a>.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">25</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0019</p>
+                </td>
+
+                <td>Libero has entered the court.<br />
+                No more used, but can appear in old files.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">26</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001A</p>
+                </td>
+
+                <td><a href="#EndOfSetV2">End of set (version 2).</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">27</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001B</p>
+                </td>
+
+                <td>End of set is played as a tie-break.<br />
+                No more used, but can appear in old files.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">28</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001C</p>
+                </td>
+
+                <td><a href="#PlayerSubstitution">Player substitution.</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">29</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001D</p>
+                </td>
+
+                <td><a href="#NewLineUp">New line-up.</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">30</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001E</p>
+                </td>
+
+                <td><a href="#EndOfSetV1">End of set (version 1).</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">31</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001F</p>
+                </td>
+
+                <td>The action is for the team.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    <strong class="SubHeader1">Special values for the shirt number, in the 25 players format</strong></p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Decimal value</th>
+
+                <th>Value in action</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">26</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001A</p>
+                </td>
+
+                <td><a href="#LiberoSubstitution">Libero substitution</a>.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">27</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001B</p>
+                </td>
+
+                <td>Libero has entered the court.<br />
+                No more used, but can appear in old files.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">28</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001C</p>
+                </td>
+
+                <td><a href="#EndOfSetV2">End of set (version 2).</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">29</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001D</p>
+                </td>
+
+                <td><a href="#PlayerSubstitution">Player substitution.</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">30</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001E</p>
+                </td>
+
+                <td><a href="#NewLineUp">New line-up.</a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">31</p>
+                </td>
+
+                <td>
+                    <p align="right">0x001F</p>
+                </td>
+
+                <td>The action is for the team.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    <strong class="SubHeader1">Values for the skill</strong></p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Decimal value</th>
+
+                <th>Hexadecimal value</th>
+
+                <th>Value in action</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">0</p>
+                </td>
+
+                <td>
+                    <p align="right">0x00</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0000</p>
+                </td>
+
+                <td>Spike.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">1</p>
+                </td>
+
+                <td>
+                    <p align="right">0x01</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0020</p>
+                </td>
+
+                <td>Block.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">2</p>
+                </td>
+
+                <td>
+                    <p align="right">0x02</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0040</p>
+                </td>
+
+                <td>Serve.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">3</p>
+                </td>
+
+                <td>
+                    <p align="right">0x03</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0060</p>
+                </td>
+
+                <td>Dig.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">4</p>
+                </td>
+
+                <td>
+                    <p align="right">0x04</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0080</p>
+                </td>
+
+                <td>Set.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">5</p>
+                </td>
+
+                <td>
+                    <p align="right">0x05</p>
+                </td>
+
+                <td>
+                    <p align="right">0x00A0</p>
+                </td>
+
+                <td>Reception.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">6</p>
+                </td>
+
+                <td>
+                    <p align="right">0x06</p>
+                </td>
+
+                <td>
+                    <p align="right">0x00C0</p>
+                </td>
+
+                <td>No skill.<br />
+                Used for team faults and opponent errors.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    <strong class="SubHeader1">Values for the note</strong></p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Decimal value</th>
+
+                <th>Hexadecimal value</th>
+
+                <th>Value in action</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">0</p>
+                </td>
+
+                <td>
+                    <p align="right">0x00</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0000</p>
+                </td>
+
+                <td>Success.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">1</p>
+                </td>
+
+                <td>
+                    <p align="right">0x01</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0400</p>
+                </td>
+
+                <td>Excellent.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">2</p>
+                </td>
+
+                <td>
+                    <p align="right">0x02</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0800</p>
+                </td>
+
+                <td>None.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">3</p>
+                </td>
+
+                <td>
+                    <p align="right">0x03</p>
+                </td>
+
+                <td>
+                    <p align="right">0x0C00</p>
+                </td>
+
+                <td>Fault.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-6f49e316-286f-4f14-87bd-176c992ced93-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="EndOfSetV1" name="EndOfSetV1"></a>End of set (version 1)</span>
+</div>
+
+<div id="i-6f49e316-286f-4f14-87bd-176c992ced93-section-content" class="i-section-content">
+    <p>The version 1 is used only in the 20 players format. It is coded with two 16-bits values, starting with the LSB.</p>
+
+    <p>The first value is:</p>
+
+    <ul>
+        <li>Bits 0 to 4 (mask is 0x001F) contain the special code: 30 (0x001E).</li>
+
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the number of the set.</li>
+    </ul>
+
+    <p>The second value is:</p>
+
+    <ul>
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the number of points of team A.</li>
+
+        <li>Bits 10 to 14 (mask is 0x7C00) contain the number of points of team B.</li>
+    </ul>
+</div>
+
+<div id="i-832504be-ebed-44d7-8cb6-cc0b8de4ad27-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="EndOfSetV2" name="EndOfSetV2"></a>End of set (version 2)</span>
+</div>
+
+<div id="i-832504be-ebed-44d7-8cb6-cc0b8de4ad27-section-content" class="i-section-content">
+    <p>An end of set is coded with two 16-bits values, starting with the LSB.</p>
+
+    <p>The first value is:</p>
+
+    <ul>
+        <li>Bits 0 to 4 (mask is 0x001F) contain the special code: 26 (0x001A) for 20 players format or 28 (0x001C) for 25 players format.</li>
+
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the number of the set.</li>
+    </ul>
+
+    <p>The second value is:</p>
+
+    <ul>
+        <li>Bits 0 to 7 (mask is 0x00FF) contain the number of points of team A.</li>
+
+        <li>Bits 8 to 15 (mask is 0xFF00) contain the number of points of team B.</li>
+    </ul>
+</div>
+
+<div id="i-bb4a656d-5060-4ec6-876c-1c1044fa883e-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="LiberoSubstitution" name="LiberoSubstitution"></a>Libero substitution</span>
+</div>
+
+<div id="i-bb4a656d-5060-4ec6-876c-1c1044fa883e-section-content" class="i-section-content">
+    <p>Libero substitution is a variant of player substitution. It is used when the player leaving the court is a libero.</p>
+
+    <ul>
+        <li>Bits 0 to 4 (mask is 0x001F) contain the special code: 24 (0x0018) for 20 players format or 26 (0x001A) for 25 players format.</li>
+
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the shirt number of the libero leaving the court.</li>
+
+        <li>Bits 10 to 14 (mask is 0x7C00) contain the shirt number of the libero entering the court.</li>
+
+        <li>Bit 15 is 0 for team A or 1 for team B.</li>
+    </ul>
+</div>
+
+<div id="i-f338fd1c-786a-485a-b0cd-9aca8a0d0338-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="NewLineUp" name="NewLineUp"></a>New line-up</span>
+</div>
+
+<div id="i-f338fd1c-786a-485a-b0cd-9aca8a0d0338-section-content" class="i-section-content">
+    <p>A new line-up is coded with a 16-bits header (starting with the LSB) and six 8-bits value.</p>
+
+    <p>The header is a special value:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Team</th>
+
+                <th>Value for 20 players</th>
+
+                <th>Value for 25 players</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">A</p>
+                </td>
+
+                <td>
+                    <p align="right">0x081D</p>
+                </td>
+
+                <td>
+                    <p align="right">0x081E</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">B</p>
+                </td>
+
+                <td>
+                    <p align="right">0x881D</p>
+                </td>
+
+                <td>
+                    <p align="right">0x881E</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    The data contains the shirt numbers of the 6 players, starting with the server (bottom right) and going counterclockwise.</p>
+</div>
+
+<div id="i-ac13d286-07d4-48b7-89aa-9e4c260a2771-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="PlayerSubstitution" name="PlayerSubstitution"></a>Player substitution</span>
+</div>
+
+<div id="i-ac13d286-07d4-48b7-89aa-9e4c260a2771-section-content" class="i-section-content">
+    <ul>
+        <li>Bits 0 to 4 (mask is 0x001F) contain the special code: 28 (0x001C) for 20 players format or 29 (0x001D) for 25 players format.</li>
+
+        <li>Bits 5 to 9 (mask is 0x03E0) contain the shirt number of the player leaving the court.</li>
+
+        <li>Bits 10 to 14 (mask is 0x7C00) contain the shirt number of the player entering the court.</li>
+
+        <li>Bit 15 is 0 for team A or 1 for team B.</li>
+    </ul>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><div class="i-see-also-link">
+<a href="topic142.html">Communications between WinVis32 and VBA</a></div>
+<div class="i-see-also-link">
+<a href="topic139.html">VBA match file</a></div>
+<div class="i-see-also-link">
+<a href="topic141.html">VBA statistics file (for shirt numbers up to 99)</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic140.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

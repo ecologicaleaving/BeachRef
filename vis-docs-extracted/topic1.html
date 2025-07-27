@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>User access - Conditions</title>
+    <meta name="Title" content="User access - Conditions"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Conditions are optional for fields and permissions. They indicate if a field or action is available only if some conditions are met." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="0e471dce-253c-41bf-8353-e4586df133c3"/>
+    
+    
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">User access - Conditions</div></div>
+                        <p>Conditions are optional for fields and permissions. They indicate if a field or action is available only if some conditions are met.</p>
+
+<div id="i-7adf2a78-0389-4c71-8a77-29488237b111-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Syntax</span>
+</div>
+
+<div id="i-7adf2a78-0389-4c71-8a77-29488237b111-section-content" class="i-section-content">
+    <p>The syntax for a condition is the following:</p>
+
+    <div class="i-filtered-content-" data-title="" data-itemid="">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Syntax</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+&lt;Property name&gt; &lt;Operator&gt; &lt;Value&gt;
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where:</p>
+
+    <ul>
+        <li>&lt;Property Name&gt; is the name of a property.</li>
+
+        <li>&lt;Operator&gt; is the operator: <strong>=</strong> for equality or <strong>&lt;&gt;</strong> for inequality.</li>
+
+        <li>&lt;Value&gt; is the value of the property. For a discrete value, it must be its name.</li>
+    </ul>
+
+    <p></p>
+
+    <p>The <em>property name</em> can a the name of a single property, or a list of properties separated by a dot, for example:</p>
+
+    <ul>
+        <li>FirstName: the first name of the player.</li>
+
+        <li>Federation.Code:</li>
+    </ul>
+
+    <p>the code of the federation of the player.</p>
+
+    <p>For JSON output, the properties names are converted to camel case.</p>
+</div>
+
+<div id="i-7d4f25bb-4f3d-476e-87fe-b1eebdaced2a-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Use</span>
+</div>
+
+<div id="i-7d4f25bb-4f3d-476e-87fe-b1eebdaced2a-section-content" class="i-section-content">
+    <p>The conditions must be defined inside the field or permission definition:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Limit the edition of the first name of a player</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Field</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FirstName"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Condition</span><span style="COLOR: #0000ff">&gt;</span>Status="Draft"<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Condition</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Condition</span><span style="COLOR: #0000ff">&gt;</span>FederationCode=SUI<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Condition</span><span style="COLOR: #0000ff">&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Filed</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The first name of the player can only be edited if his/her status is <em>Draft</em> <strong>and</strong> the code of his/her federation is <em>SUI</em>.</p>
+
+    <p></p>
+
+    <p>If there are more than one condition and the any of the condition permits the field or the action, the entry must be repeated:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Limit the edition of the first name of a player</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Field</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FirstName"</span> <span style="COLOR: #ff0000">Condition</span><span style="COLOR: #0000ff">="Status=Draft"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Field</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FirstName"</span> <span style="COLOR: #ff0000">Condition</span><span style="COLOR: #0000ff">="FederationCode=SUI"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The first name of the player can only be edited if his/her status is <em>Draft</em> <strong>or</strong> the code of his/her federation is <em>SUI</em>.</p>
+
+    <p></p>
+
+    <p>If there is a single condition on a field, the condition can be in the field definition:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Limit the edition of the first name of a player</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Field</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FirstName"</span> <span style="COLOR: #ff0000">Condition</span><span style="COLOR: #0000ff">="Status=Draft"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The first name of the player can only be edited if his/her status is <em>Draft</em>.</p>
+</div>
+
+<div id="i-ab9719c0-21b9-477b-837e-6252c2a9ea63-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Definition</span>
+</div>
+
+<div id="i-ab9719c0-21b9-477b-837e-6252c2a9ea63-section-content" class="i-section-content">
+    <p>For the definition of a condition, in addition to values, you can also use parameters:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Defining a condition</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Field</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="FirstName"</span> <span style="COLOR: #ff0000">Condition</span><span style="COLOR: #0000ff">="FederationCode={FederationCode}"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The first name of the player can only be edited if the code of his/her federation is the <em>federation of the logged in user</em>.</p>
+
+    <p>See <a href="topic2.html">Parameters</a> for a list of the available parameters.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><div class="i-see-also-link">
+<a href="topic2.html">User access - Parameters</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic1.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

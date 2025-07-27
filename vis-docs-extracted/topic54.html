@@ -1,0 +1,425 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Volleyball Players Ranking</title>
+    <meta name="Title" content="Volleyball Players Ranking"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Represent the players' ranking of a volleyball tournament." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="11a77638-9895-4266-b507-3c19a2c3401b"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Players ranking
+ > Volleyball Players Ranking</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Volleyball Players Ranking</div></div>
+                        <p>Represent the players' ranking of a volleyball tournament.</p>
+
+<p>The rankings are per skill.<br />
+The name of the XML element for a ranking is <strong>&lt;Ranking&gt;</strong>.<br />
+The name of the XML element for a list of rankings is <strong>Rankings&gt;</strong>.</p>
+
+<p>The data returned for a ranking depends on the skill.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#Common">Common properties</a></li>
+
+    <li><a href="#NonScoringSkills">Properties for non-scoring skills (Dig, Libero, Reception and Set)</a></li>
+
+    <li><a href="#Scorers">Properties for scorers</a></li>
+
+    <li><a href="#ScoringSkills">Properties for scoring skills (Block, Serve and Spike)</a></li>
+
+    <li><a href="#RankPosition">Rank and position</a></li>
+</ul>
+
+<div id="i-410fe82b-10a3-4c5b-bb96-83c3c5710cc4-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Common" name="Common"></a>Common properties</span>
+</div>
+
+<div id="i-410fe82b-10a3-4c5b-bb96-83c3c5710cc4-section-content" class="i-section-content">
+    <p>The following properties are available for all the rankings.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>FirstName</td>
+
+                <td>String</td>
+
+                <td>The first name.</td>
+            </tr>
+
+            <tr>
+                <td>LastName</td>
+
+                <td>String</td>
+
+                <td>The last name.</td>
+            </tr>
+
+            <tr>
+                <td>NbMatches</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of matches played.</td>
+            </tr>
+
+            <tr>
+                <td>NbSets</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of sets played.</td>
+            </tr>
+
+            <tr>
+                <td>No</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of the player.</td>
+            </tr>
+
+            <tr>
+                <td>NoShirt</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The shirt number</td>
+            </tr>
+
+            <tr>
+                <td>NoTeam</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of the team.</td>
+            </tr>
+
+            <tr>
+                <td>Position</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The position in the ranking.<br />
+                The value is 1 for the best player and counts downward.</td>
+            </tr>
+
+            <tr>
+                <td>Rank</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The rank team.<br />
+                When there is a tie between two or more players, they can have the same rank. In this case, the first player has a positive ranking and the other ones have a negative ranking with the same absolute value. The negative rank values should not be displayed to the user.</td>
+            </tr>
+
+            <tr>
+                <td>TeamCode</td>
+
+                <td>String</td>
+
+                <td>The code of the team.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-50f74cf3-1182-4f0f-acfa-c983a792856d-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="ScoringSkills" name="ScoringSkills"></a>Properties for non-scoring skills (Dig, Libero, Reception and Set)</span>
+</div>
+
+<div id="i-50f74cf3-1182-4f0f-acfa-c983a792856d-section-content" class="i-section-content">
+    <p>The following properties are available for the non-scoring skills, in addition to the common properties.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Continues</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of attempts with the rally continuing.</td>
+            </tr>
+
+            <tr>
+                <td>Excellents</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of excellent gestures.</td>
+            </tr>
+
+            <tr>
+                <td>Faults</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of faults.</td>
+            </tr>
+
+            <tr>
+                <td>Note</td>
+
+                <td>String</td>
+
+                <td>The note.<br />
+                The property is only returned for players that are ranked and have a note.</td>
+            </tr>
+
+            <tr>
+                <td>TotalAttempts</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The total number of attempts.<br />
+                This is the sum of <em>Continues</em>, Excellents and <em>Faults</em>.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-838fef0f-29d4-46f7-8afa-552046863f56-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="NonScoringSkills" name="NonScoringSkills"></a>Properties for scoring skills (Block, Serve and Spike)</span>
+</div>
+
+<div id="i-838fef0f-29d4-46f7-8afa-552046863f56-section-content" class="i-section-content">
+    <p>The following properties are available for scoring skills, in addition to the common properties.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Continues</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of attempts with the rally continuing.</td>
+            </tr>
+
+            <tr>
+                <td>Faults</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of faults.</td>
+            </tr>
+
+            <tr>
+                <td>Note</td>
+
+                <td>String</td>
+
+                <td>The note.<br />
+                The property is only returned for players that are ranked and have a note.</td>
+            </tr>
+
+            <tr>
+                <td>Points</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of points</td>
+            </tr>
+
+            <tr>
+                <td>TotalAttempts</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The total number of attempts.<br />
+                This is the sum of <em>Continues</em>, <em>Faults</em> and <em>Points</em>.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-718e9f41-ae62-42f6-ba61-1e43310457fc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Scorers" name="Scorers"></a>Properties for scorers</span>
+</div>
+
+<div id="i-718e9f41-ae62-42f6-ba61-1e43310457fc-section-content" class="i-section-content">
+    <p>The following properties are available for scorers, in addition to the common properties.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Blocks</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of points scored with blocks.</td>
+            </tr>
+
+            <tr>
+                <td>Points</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The total number of scored points.</td>
+            </tr>
+
+            <tr>
+                <td>Services</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of points scored with services.</td>
+            </tr>
+
+            <tr>
+                <td>Spikes</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of points scored with spikes.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-daf2561e-53dc-4854-a0a6-5506274e8ae9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="RankPosition" name="RankPosition"></a>Rank and Position</span>
+</div>
+
+<div id="i-daf2561e-53dc-4854-a0a6-5506274e8ae9-section-content" class="i-section-content">
+    <p>The <strong>Rank</strong> property con be negative for tied players: the first player has a positive value and the tied ones have a negative value of the same absolute value.</p>
+
+    <p>As the <strong>Rank</strong> property can be negative, you must not use it for sorting, instead, you must use the <strong>Position</strong> property, that always starts at 1 and is incremented for each player.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic54.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

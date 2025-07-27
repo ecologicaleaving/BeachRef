@@ -1,0 +1,494 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get a list of registration of players in volleyball tournaments</title>
+    <meta name="Title" content="Request to get a list of registration of players in volleyball tournaments"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="2d4fbcbc-5c53-48a5-b309-7a67065d33ea"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="3"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Players registrations
+ > Request to get a list of registration of players in volleyball tournaments</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get a list of registration of players in volleyball tournaments</div></div>
+                        <div id="i-437b9ab9-c02f-444a-973d-e97cbd04a7b8-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-437b9ab9-c02f-444a-973d-e97cbd04a7b8-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyPlayerList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+         Version="<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">version</span> <span style="COLOR: #ff0000">of</span> <span style="COLOR: #ff0000">local</span> <span style="COLOR: #ff0000">list</span><span style="COLOR: #0000ff">&gt;</span>"&gt;
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #0000ff">/&gt;</span> <span style="COLOR: #008000">&lt;!-- optional: contains the filter to use --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic53.html">VolleyPlayer</a> data. Only the fields you have access to will be returned.</p>
+
+    <p class="SubHeader2">Filter</p>
+
+    <p>The filter is optional.<br />
+    If it is not specified, the response will contain all the players registrations.<br />
+    Please see the&nbsp;<a href="topic152.html">VolleyPlayerFilter</a> description for more information.</p>
+
+    <p class="SubHeader2">Version</p>
+
+    <p>The version is optional.<br />
+    The goal of this parameter is to request an update to an existing local list: for the first request, you don't specify the parameter (or set it to 0) and you receive the full list of the filtered registrations; for subsequent requests, you specify the version of the local list and the web service only returns the changes (new registrations or registrations that have changed). Doing this will decrease the bandwidth used by the local application.<br />
+    Note that the version of all the registrations (not only the filtered ones) is returned in the root of the response.</p>
+</div>
+
+<div id="i-fc5bc2b8-e683-4679-9f2d-bbb8cd955835-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-fc5bc2b8-e683-4679-9f2d-bbb8cd955835-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns the filtered list of players registrations.</p>
+
+    <p>In addition, the root element contains the number of registrations that are returned and the version of all the registrations.</p>
+</div>
+
+<div id="i-49fc714e-4d15-4e9b-92b1-5d37c145666c-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-49fc714e-4d15-4e9b-92b1-5d37c145666c-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for a player registration are public and other are not.<br />
+    The response from the web service will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-83c420c1-54ee-42f8-94cc-c5c31e17530b-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-83c420c1-54ee-42f8-94cc-c5c31e17530b-section-content" class="i-section-content">
+    <p>Get the list of the players registered in the team registration with the number <strong>3004</strong>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyPlayerList"</span>
+          <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3004"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Player"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No FirstName LastName"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-tab-container i-tab-container-widget">
+        <ul role="tablist">
+            <li class="i-filtered-content-XML"><a href="#i-tab-content-XML">XML</a></li>
+
+            <li class="i-filtered-content-JSON"><a href="#i-tab-content-JSON">JSON</a></li>
+        </ul>
+
+        <div id="i-tab-content-XML" class="i-code i-filtered-content-XML">
+            <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayers</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="20"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="4593"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50349"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="136728"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Yasmine"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Abderrahim"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="690864"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50350"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="135595"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Dallal Merwa"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Achour"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="690138"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50353"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="133833"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Chanez"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Ayadi"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="689046"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50354"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="151119"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Jasmin"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Belguendouz"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="700039"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50357"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="143570"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Zahra"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Guimour"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="695152"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50358"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="120596"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Salima"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Hammouche"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="678799"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50362"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="112531"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Lydia"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Oulmou"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="723554"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50377"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="143361"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Kahina"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Arbouche"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="695005"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50378"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="143194"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Chahla"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Benmokhtar"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="694914"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50379"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="120603"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Safia"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Boukhima"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="718080"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50380"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="135666"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Wissem Samia"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Dali"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="705815"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50381"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="143569"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Safia"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Imadali"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="695151"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50382"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="147434"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Chettout"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kahina"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="697698"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50383"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="153060"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Melissa"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kasri"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="701150"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50384"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="133396"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Kahina"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Messaoudene"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="724046"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50399"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="156347"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Fahima"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Brahmi"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="703438"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50400"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="156352"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Hanan"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Abbaz"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="703440"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50554"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="694"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="113942"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Nawal"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Mansouri"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="674990"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50635"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="124211"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Aicha"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Mezemate"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="721886"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballPlayer</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="50636"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1285"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="134491"</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Yasmine"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Oudni"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="705821"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayer</span><span style="COLOR: #0000ff">&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballPlayers</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+        </div>
+
+        <div id="i-tab-content-JSON" class="i-code i-filtered-content-JSON">
+            <pre>
+  <span style="COLOR: #800000">"data"</span>: [
+    {
+      <span style="COLOR: #800000">"no"</span>: 50349,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 136728,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Yasmine"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Abderrahim"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50350,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 135595,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Dallal Merwa"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Achour"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50353,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 133833,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Chanez"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Ayadi"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50354,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 151119,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Jasmin"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Belguendouz"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50357,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 143570,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Zahra"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Guimour"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50358,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 120596,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Salima"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Hammouche"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50362,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 112531,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Lydia"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Oulmou"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50377,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 143361,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Kahina"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Arbouche"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50378,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 143194,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Chahla"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Benmokhtar"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50379,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 120603,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Safia"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Boukhima"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50380,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 135666,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Wissem Samia"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Dali"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50381,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 143569,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Safia"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Imadali"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50382,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 147434,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Chettout"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Kahina"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50383,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 153060,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Melissa"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Kasri"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50384,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 133396,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Kahina"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Messaoudene"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50399,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 156347,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Fahima"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Brahmi"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50400,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 156352,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Hanan"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Abbaz"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50554,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 113942,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Nawal"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Mansouri"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50635,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 124211,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Aicha"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Mezemate"</span>
+      }
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 50636,
+      <span style="COLOR: #800000">"player"</span>: {
+        <span style="COLOR: #800000">"no"</span>: 134491,
+        <span style="COLOR: #800000">"firstName"</span>: <span style="COLOR: #800000">"Yasmine"</span>,
+        <span style="COLOR: #800000">"lastName"</span>: <span style="COLOR: #800000">"Oudni"</span>
+      }
+    }
+  ],
+  <span style="COLOR: #800000">"nbItems"</span>: 20,
+  <span style="COLOR: #800000">"version"</span>: 4593
+}
+</pre>
+        </div>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetVolleyPlayerList' Fields='No'&gt;&lt;Filter NoTeam='3004' /&gt;&lt;Relation Name='Player' Fields='No FirstName LastName' /&gt;&lt;/Request&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic8.html">General errors (JSON)</a></div>
+<div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic187.html">GetVolleyPlayer request</a></div>
+<div class="i-see-also-link">
+<a href="topic53.html">VolleyPlayer</a></div>
+<div class="i-see-also-link">
+<a href="topic152.html">VolleyPlayerFilter</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyPlayerListRequest.html">GetVolleyPlayerListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyPlayerRequest.html">GetVolleyPlayerRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayer.html">VolleyPlayer class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayerFilter.html">VolleyPlayerFilter class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic188.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

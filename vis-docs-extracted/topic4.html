@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Application identifier</title>
+    <meta name="Title" content="Application identifier"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="For each request, the client should provide an application identifier." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="55149913-789c-4570-85a2-58ff0dac04c7"/>
+    
+    
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Application identifier</div></div>
+                        <p>For each request, the client should provide an application identifier.</p>
+
+<p>The identifier is unique to an application (not of an application developer). So if you develop more than one application that uses the FIVB web service, please request one identifier for each application.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#GettingId">Getting an identifier</a></li>
+
+    <li><a href="#UsingId">Using the identifier in a request</a></li>
+
+    <li><a href="#WebServiceLog">Getting the web service log for the application</a></li>
+</ul>
+
+<div id="i-02418374-99e4-4687-8901-03ee77b7e57b-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="GettingId" name="GettingId"></a>Getting an identifier</span>
+</div>
+
+<div id="i-02418374-99e4-4687-8901-03ee77b7e57b-section-content" class="i-section-content">
+    <p>To get an application identifier, you must:</p>
+
+    <ol>
+        <li>Have a developer account on the FIVB.</li>
+
+        <li>Request an application identifier for your application.</li>
+    </ol>
+
+    <p>Currently, the only way to create a developer account and and request an application identifier is to contact the FIVB using the following e-mail address: <a href="mailto:vis.sdk@fivb.org">vis.sdk@fivb.org</a>.</p>
+
+    <p>Later, we will add web pages, so that you can directly create an account, display your applications and view and manage the web service log for your application.</p>
+</div>
+
+<div id="i-8c463a9a-bb50-46e8-abb2-93f71b4f295c-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="UsingId" name="UsingId"></a>Using the identifier in a request</span>
+</div>
+
+<div id="i-8c463a9a-bb50-46e8-abb2-93f71b4f295c-section-content" class="i-section-content">
+    <p>To add the application identifier in the request, you must use the <strong>X-FIVB-App-ID</strong> custom header:</p>
+
+    <div class="i-filtered-content-Text" data-title="Text" data-itemid="Text">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Application identifier header</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+X-FIVB-App-ID: <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">identifier</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="i-4880dcf8-ecd9-4bab-9d26-306db6641774-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="WebServiceLog" name="WebServiceLog"></a>Getting the web service log for the application</span>
+</div>
+
+<div id="i-4880dcf8-ecd9-4bab-9d26-306db6641774-section-content" class="i-section-content">
+    This is currently not implemented, but will be in the future.
+</div>
+            <a name="seealsobookmark"></a>
+            
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic4.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

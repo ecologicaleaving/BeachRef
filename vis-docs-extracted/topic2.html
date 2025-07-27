@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>User access - Parameters</title>
+    <meta name="Title" content="User access - Parameters"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="When defining conditions, you can use parameters. In this case, the value of the property is replace by a parameter place holder: {name}, where name is the name of the parameter." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="74cb7997-a056-4fe8-a7ce-9c4c01579ce4"/>
+    
+    
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">User access - Parameters</div></div>
+                        <p>When defining <a href="topic1.html">conditions</a>, you can use parameters. In this case, the value of the property is replace by a parameter place holder: <strong>{name}</strong>, where <em>name</em> is the name of the parameter.</p>
+
+<p>The following parameters are taken from the user information:</p>
+
+<table class="Table">
+    <thead>
+        <tr>
+            <th>Name</th>
+
+            <th>Value</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>NoUser</td>
+
+            <td>The number of the user.<br />
+            Always defined.</td>
+        </tr>
+
+        <tr>
+            <td>UserType</td>
+
+            <td>The <a href="topic107.html">type of the user</a>.<br />
+            Always defined.</td>
+        </tr>
+
+        <tr>
+            <td>UserTypeNo</td>
+
+            <td>The number related to the type of the user.<br />
+            For example, if the user is for a player, this is the number of the player.<br />
+            Always defined.</td>
+        </tr>
+
+        <tr>
+            <td>ConfederationCode</td>
+
+            <td>The code of the confederation.<br />
+            If only the federation is defined, the web service will take the confederation to which the federation belongs.<br />
+            Can be undefined.</td>
+        </tr>
+
+        <tr>
+            <td>NoConfederation</td>
+
+            <td>The number of the confederation.<br />
+            The web service calculates it automatically from the code of the confederation, if defined.<br />
+            Can be undefined.</td>
+        </tr>
+
+        <tr>
+            <td>FederationCode</td>
+
+            <td>The code of the federation.<br />
+            Can be undefined.</td>
+        </tr>
+
+        <tr>
+            <td>NoFederation</td>
+
+            <td>The number of the federation.<br />
+            The web service calculates it automatically from the code of the federation, if defined.<br />
+            Can be undefined.</td>
+        </tr>
+    </tbody>
+</table>
+
+<p></p>
+
+<p>The parameters are only used when defining the conditions. When the authorizations are sent to a client, they are replaced by the value of the parameter.</p>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><div class="i-see-also-link">
+<a href="topic1.html">User access - Conditions</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic2.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

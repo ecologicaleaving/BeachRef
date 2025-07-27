@@ -1,0 +1,455 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get the ranking of the players in a volleyball tournament</title>
+    <meta name="Title" content="Request to get the ranking of the players in a volleyball tournament"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="796a229e-ad75-4f06-bbe0-a99311538eb5"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="1"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Players ranking
+ > Request to get the ranking of the players in a volleyball tournament</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get the ranking of the players in a volleyball tournament</div></div>
+                        <div id="i-f82a99e9-80cc-4292-a687-17cb1b91f7ad-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-f82a99e9-80cc-4292-a687-17cb1b91f7ad-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyPlayersRankingList"</span>
+         <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="&lt;the number of the ranking&gt;"</span>
+         <span style="COLOR: #ff0000">NoTournament</span><span style="COLOR: #0000ff">="&lt;the number of the tournament&gt;"</span>
+         <span style="COLOR: #ff0000">NumberOfPlayers</span><span style="COLOR: #0000ff">="&lt;the number of players to return&gt;"</span>;
+         <span style="COLOR: #ff0000">NumberOfScorers</span><span style="COLOR: #0000ff">="&lt;the number of scorers to return&gt;"</span>;
+         <span style="COLOR: #ff0000">Skills</span><span style="COLOR: #0000ff">="&lt;the skills to return&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">No and NoTournament</p>
+
+    <p>One of these parameters must be specified. If both are specified, the web service uses the <em>No</em> parameter.</p>
+
+    <p>Each tournament can have zero, one or many players' ranking. For example, there can be a ranking for the preliminary round, the final round and a global ranking.</p>
+
+    <p>To get the default players' ranking for a tournament, just specify the number of the tournament with the <em>NoTournament</em> parameter.<br />
+    To get a specific players' ranking, specify the ranking with the <em>No</em> parameter.</p>
+
+    <p class="SubHeader2">NumberOfPlayers / NumberOfXxx</p>
+
+    <p>Indicates how many players must be returned by the web service, for each skill. If the parameter is missing, the web service returns all the players for each ranking. If there is less players in the ranking for a skill, only the existing players are returned.</p>
+
+    <p><em>NumberOfPlayers</em> is the default value for all the skills. If you want a different number of players for the scorers, you must also use the <em>NumberOfScorers</em> parameter.</p>
+
+    <p class="SubHeader2">Skills</p>
+
+    <p>Indicates which skills must be returned by the web service. If the parameter is missing, the web service returns all the skills.</p>
+
+    <p>The parameter contains a list of skills separated by a space.</p>
+
+    <p>The following skills are available:</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Block</td>
+
+                <td>Block.</td>
+            </tr>
+
+            <tr>
+                <td>Dig</td>
+
+                <td>Dig.</td>
+            </tr>
+
+            <tr>
+                <td>Libero</td>
+
+                <td>Ranking for the liberos.</td>
+            </tr>
+
+            <tr>
+                <td>Reception</td>
+
+                <td>Reception.</td>
+            </tr>
+
+            <tr>
+                <td>Scorer</td>
+
+                <td>Ranking for the scorers (points marked with Block, Serve and Spike).</td>
+            </tr>
+
+            <tr>
+                <td>Service</td>
+
+                <td>Service.</td>
+            </tr>
+
+            <tr>
+                <td>Set</td>
+
+                <td>Set.</td>
+            </tr>
+
+            <tr>
+                <td>Spike</td>
+
+                <td>Spike.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-1198e9cc-98c6-48b8-b674-357e228830fe-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-1198e9cc-98c6-48b8-b674-357e228830fe-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns the requested players' rankings.</p>
+</div>
+
+<div id="i-1ac92e88-31d5-4b27-8e68-31e43cf21c97-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Errors</span>
+</div>
+
+<div id="i-1ac92e88-31d5-4b27-8e68-31e43cf21c97-section-content" class="i-section-content">
+    <p>In addition to the standard errors, the following errors can be returned.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Code</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>NoDefaultRanking</td>
+
+                <td>The specified tournament has no default ranking.</td>
+            </tr>
+
+            <tr>
+                <td>NoRanking</td>
+
+                <td>The specified tournament has no ranking.</td>
+            </tr>
+
+            <tr>
+                <td>ParameterMissing</td>
+
+                <td>The <em>No</em> or <em>NoTournament</em> parameter must be specified.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-1c318980-e75e-487f-99de-9f3284fe2882-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-1c318980-e75e-487f-99de-9f3284fe2882-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>All the properties are public and are returned by the web service.</p>
+</div>
+
+<div id="i-64309b3d-c40c-4b07-8b15-96a2cd12d11b-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-64309b3d-c40c-4b07-8b15-96a2cd12d11b-section-content" class="i-section-content">
+    <p>Get the 10 best players of tournament <strong>955</strong>, for specified skills.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyPlayersRankingList"</span>
+         <span style="COLOR: #ff0000">NoTournament</span><span style="COLOR: #0000ff">="955"</span>
+         <span style="COLOR: #ff0000">NumberOfPlayers</span><span style="COLOR: #0000ff">="10"</span>
+         <span style="COLOR: #ff0000">Skills</span><span style="COLOR: #0000ff">="Set Spike Libero Scorer"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>&nbsp;The response is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Responses</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Rankings</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Ranking</span> <span style="COLOR: #ff0000">Skill</span><span style="COLOR: #0000ff">="Libero"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Piyanut"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Pannoy"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51240"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="48"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="16"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="6.81"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="143"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="207"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Seniye Merve"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Dalbeler"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51058"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="44"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="5.23"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="115"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="181"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Mengjie"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Wang"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51192"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="30"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="16"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="4.28"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="77"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="123"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Yupa"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Sanitklang"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51242"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="11"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="1.57"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="33"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="54"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Kirsten"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Knip"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49971"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="15"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="1.29"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="27"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="51"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Hatice Gizem"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Orge"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51068"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="1.23"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="27"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="42"</span> <span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Ranking</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Ranking</span> <span style="COLOR: #ff0000">Skill</span><span style="COLOR: #0000ff">="Scorer"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Ajcharaporn"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kongyot"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51236"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="89"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="99"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Xiangyu"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Gong"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51186"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="14"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="77"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="92"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Celeste"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Plak"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49975"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="76"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="89"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Judith"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Pietersen"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49974"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="73"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="83"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Polen"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Uslupehlivan"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51069"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="61"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="77"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Hande"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Baladin"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51057"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="65"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="74"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Pleumjit"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Thinkaow"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51245"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="11"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="50"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="66"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Malika"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kanthong"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51234"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="15"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="48"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="62"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Ruoqi"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Hui"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51187"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="12"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="46"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="59"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Anne"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Buijs"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49968"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="11"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Blocks</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Services</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Spikes</span><span style="COLOR: #0000ff">="47"</span> <span style="COLOR: #ff0000">Points</span><span style="COLOR: #0000ff">="58"</span> <span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Ranking</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Ranking</span> <span style="COLOR: #ff0000">Skill</span><span style="COLOR: #0000ff">="Set"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Femke"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Stoltenborg"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49980"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="281"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="10.19"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="214"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="501"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Qiuyue"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Wei"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51196"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="148"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="9.28"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="167"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="317"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Nootsara"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Tomkom"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51246"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="13"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="155"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="6.43"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="135"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="297"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Nursevil"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Aydinlar"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51056"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="17"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="220"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="5.00"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="110"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="337"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Naz"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Aydemir Akyol"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51055"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="11"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="82"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="4.73"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="104"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="192"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Pornpun"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Guedpard"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51231"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="115"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="4.19"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="88"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="207"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Di"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Yao"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51198"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="74"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="1.83"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="33"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="111"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Yupa"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Sanitklang"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51242"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="0.19"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="13"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Xiangyu"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Gong"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51186"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="14"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="23"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="0.17"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="27"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Britt"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Bongaerts"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49967"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="13"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="0.14"</span> <span style="COLOR: #ff0000">Excellents</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Ranking</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Ranking</span> <span style="COLOR: #ff0000">Skill</span><span style="COLOR: #0000ff">="Spike"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Celeste"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Plak"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49975"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="55"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="15"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="52.05"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="76"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="146"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Ruoqi"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Hui"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51187"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="12"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="38"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="13"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="47.42"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="46"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="97"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Hande"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Baladin"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51057"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="59"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="17"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="46.10"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="65"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="141"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Xiangyu"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Gong"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51186"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="14"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="72"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="45.03"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="77"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="171"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Ajcharaporn"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kongyot"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51236"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="88"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="24"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="44.28"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="89"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="201"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Judith"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Pietersen"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49974"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="68"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="26"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="43.71"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="73"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="167"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Xiaotong"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Liu"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="18"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51188"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2997"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="49"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="12"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="40.78"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="42"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="103"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Polen"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Uslupehlivan"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="22"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51069"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="6"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2999"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="TUR"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="78"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="38.13"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="61"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="160"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Anne"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Buijs"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="49968"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="11"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="3000"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="72"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="17"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="34.56"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="47"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="136"</span> <span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Player</span> <span style="COLOR: #ff0000">FirstName</span><span style="COLOR: #0000ff">="Malika"</span> <span style="COLOR: #ff0000">LastName</span><span style="COLOR: #0000ff">="Kanthong"</span> <span style="COLOR: #ff0000">NbMatches</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">NbSets</span><span style="COLOR: #0000ff">="21"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="51234"</span> <span style="COLOR: #ff0000">NoShirt</span><span style="COLOR: #0000ff">="15"</span> <span style="COLOR: #ff0000">NoTeam</span><span style="COLOR: #0000ff">="2998"</span> <span style="COLOR: #ff0000">Position</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="10"</span> <span style="COLOR: #ff0000">Continues</span><span style="COLOR: #0000ff">="64"</span> <span style="COLOR: #ff0000">Faults</span><span style="COLOR: #0000ff">="35"</span> <span style="COLOR: #ff0000">Note</span><span style="COLOR: #0000ff">="32.65"</span> <span style="COLOR: #ff0000">Successes</span><span style="COLOR: #0000ff">="48"</span> <span style="COLOR: #ff0000">TotalAttempts</span><span style="COLOR: #0000ff">="147"</span> <span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Ranking</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Rankings</span><span style="COLOR: #0000ff">&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Responses</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>&nbsp;You can see the live request by clicking on&nbsp;<a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Requests&gt;&lt;Request Type='GetVolleyPlayersRankingList' NoTournament='955' NumberOfPlayers='10' Skills='Set Spike Libero Scorer' /&gt;&lt;/Requests&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic54.html">Volleyball Players Ranking</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https//www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyPlayersRankingListRequest.html">GetVolleyPlayersRankingListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking.html">VolleyPlayersRanking class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking Blocker.html">VolleyPlayersRanking.Blocker class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking BlockerList.html">VolleyPlayersRanking.BlockerList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking Digger.html">VolleyPlayersRanking.Digger class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking DiggerList.html">VolleyPlayersRanking.DiggerList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking Libero.html">VolleyPlayersRanking.Libero class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking LiberoList.html">VolleyPlayersRanking.LiberoList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking NonScoringPlayer.html">VolleyPlayersRanking.NonScoringPlayer</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking Player.html">VolleyPlayersRanking.Player class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking PlayerList`1.html">VolleyPlayersRanking PlayerList<TPlayer> class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking Receiver.html">VolleyPlayersRanking.Receiver</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+ReceiverList.html">VolleyPlayersRanking.ReceiverList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+Scorer.html">VolleyPlayersRanking.Scorer class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+ScorerList.html">VolleyPlayersRanking.ScorerList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+ScoringPlayer.html">VolleyPlayersRanking.ScoringPlayer class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+Server.html">VolleyPlayersRanking.Server class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+ServerList.html">VolleyPlayersRanking.ServerList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+Setter.html">VolleyPlayersRanking.Setter class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+SetterList.html">VolleyPlayersRanking.SetterList class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+SkillPlayer.html">VolleyPlayersRanking.SkillPlayer class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+SkillPlayerList%601.html">VolleyPlayersRanking.SkillPlayerList<TPlayer> class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+Spiker.html">VolleyPlayersRanking.Spiker class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyPlayersRanking+SpikerList.html">VolleyPlayersRanking.SpikerList class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic189.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

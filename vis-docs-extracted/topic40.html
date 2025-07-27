@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Tag</title>
+    <meta name="Title" content="Tag"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+    This documentation is preliminary, as the tags API is currently in development. The information here is subject to changes.
+
+
+Represents a tag.
+This can be applied to an article or an image.
+A tag contains only data that is not tied to a l" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="a34e3205-abc5-4d92-889f-7e84c579358c"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="1"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic63.html">Data types</a>
+ > Common
+ > Tag</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Tag</div></div>
+                        <div class="i-box i-box-caution">
+    This documentation is preliminary, as the tags API is currently in development. The information here is subject to changes.
+</div>
+
+<p>Represents a tag.<br />
+This can be applied to an <a href="topic45.html">article</a> or an image.<br />
+A tag contains only data that is not tied to a language. Each article can contain one or more texts, available with the <strong>Texts</strong> relation.</p>
+
+<p>The name of the XML element for a tag is <strong>&lt;Tag&gt;</strong>.<br />
+The name of the XML element for a list of tags is <strong>&lt;Tags&gt;</strong>.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#Names">Names of tags</a></li>
+
+    <li><a href="#Properties">Properties</a></li>
+
+    <li><a href="#Relations">Relation</a>s</li>
+
+    <li><a href="#Types">Types of tags</a></li>
+</ul>
+
+<div id="i-feb97529-f6ce-48b6-ba84-1178c0df1596-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Properties" name="Properties"></a>Properties</span>
+</div>
+
+<div id="i-feb97529-f6ce-48b6-ba84-1178c0df1596-section-content" class="i-section-content">
+    <p>The following table lists all the properties for a tag.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>ItemType</td>
+
+                <td><a href="topic101.html">DataType</a></td>
+
+                <td>The type of the tag item.<br />
+                The value is empty if this is not an item tag.</td>
+            </tr>
+
+            <tr>
+                <td>No</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number.</td>
+            </tr>
+
+            <tr>
+                <td>Text</td>
+
+                <td>String</td>
+
+                <td>The text, in the English language.</td>
+            </tr>
+
+            <tr>
+                <td>UserText</td>
+
+                <td>String</td>
+
+                <td>The text, in the user language.<br />
+                <span style="COLOR: rgb(247,150,70)">User language processing is currently not implemented, so this property has the same value as <em>Text</em>.</span></td>
+            </tr>
+
+            <tr>
+                <td>Version</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The version of the tag.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-a5872ee1-6545-4d9d-83bc-a3989fed868c-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Relations" name="Relations"></a>Relations</span>
+</div>
+
+<div id="i-a5872ee1-6545-4d9d-83bc-a3989fed868c-section-content" class="i-section-content">
+    <p>The following table lists the relations for a tag.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Items</td>
+
+                <td>Array of <a href="topic41.html">TagIten</a></td>
+
+                <td>The items linked to the tag.<br />
+                <span style="COLOR: rgb(247,150,70)">Currently not implemented.</span></td>
+            </tr>
+
+            <tr>
+                <td>Texts</td>
+
+                <td>Array of <a href="topic42.html">TagText</a></td>
+
+                <td>The texts.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-d886d12c-fc1d-4a50-892f-d3cf308c31f9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Types" name="Types"></a>Types of tags</span>
+</div>
+
+<div id="i-d886d12c-fc1d-4a50-892f-d3cf308c31f9-section-content" class="i-section-content">
+    <p>There are 3 types of tags: item tags, system tags and text tags.</p>
+
+    <p class="SubHeader2">Item tags</p>
+
+    <p>An item tag is used when the tag reference an item, for example a player. In this case, the tag assignment contains also the number of the item. When the tag is displayed, the number of the item is separated with a semi-colon: <em>player:100002</em>.</p>
+
+    <p class="SubHeader2">System tags</p>
+
+    <p>System tags are represented by a text starting by a #. They are used to mark some special types of an article, for example those for the Trophy Tour with the <em>#trophy-tour</em> tag. You can find a list of the currently defined system tags at the&nbsp;<a href="topic39.html">System Tags</a> page.</p>
+
+    <p class="SubHeader2">Text tags</p>
+
+    <p>Text tag can be defined by the author of an article or an image. They can be any text.</p>
+</div>
+
+<div id="i-c9860654-e12f-47be-850d-d983f0c117b5-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Names" name="Names"></a>Names of tags</span>
+</div>
+
+<div id="i-c9860654-e12f-47be-850d-d983f0c117b5-section-content" class="i-section-content">
+    <p>Each tag is identified by its number. The name that is displayed to the user can be translated to many languages, as specified by the <a href="topic42.html">TagText</a> data type.</p>
+
+    <p>A name can contain letters, numbers and the dash char. The dash char is used to separate the words in the name; it cannot be used at the start of the tag. Letters are treated in a case-insensitive way and cannot contain any accented char. The web service converts all texts to lowercase and removes the accents and the other diacritics on the chars.<br />
+    Examples of names are <strong>2020-olympic-games</strong>, <strong>jeux-olympiques-2020</strong> (French version of the previous one), <strong>world-league</strong> and <strong>snow-volleyball</strong>.</p>
+
+    <p>System tags starts with a # char, that is forbidden for other tags.<br />
+    Examples of system tags are <strong>#trophy-tour</strong> and <strong>#features</strong>.<br />
+    You can find a list of the currently defined system tags at the&nbsp;<a href="topic39.html"><u><font color="#0066CC">System Tags</font></u></a> page.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic101.html">Data Type</a></div>
+<div class="i-see-also-link">
+<a href="topic39.html">System Tags</a></div>
+<div class="i-see-also-link">
+<a href="topic41.html">Tag Item</a></div>
+<div class="i-see-also-link">
+<a href="topic42.html">Tag Text</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic40.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

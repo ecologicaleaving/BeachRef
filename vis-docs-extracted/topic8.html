@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>General errors (JSON)</title>
+    <meta name="Title" content="General errors (JSON)"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Communication errors
+
+
+
+    When there is a communication error (HTTP error 404), it means that the web service is not accessible for a moment. It could be because of Internet error, the server is restarted, or any other cause. In this cas" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="48d52016-49ab-4ffb-b6b4-c687cacef835"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="3"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">General errors (JSON)</div></div>
+                        <div id="i-77d7047a-6890-4364-a6f7-fd330822a53d-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Communication errors</span>
+</div>
+
+<div id="i-77d7047a-6890-4364-a6f7-fd330822a53d-section-content" class="i-section-content">
+    <p>When there is a communication error (HTTP error 404), it means that the web service is not accessible for a moment. It could be because of Internet error, the server is restarted, or any other cause. In this case, the request can be sent later, when the web service is accessible again. Because the username and password are sent for each request, the web service can automatically log in the user and no data is lost.</p>
+</div>
+
+<div id="i-45dc4327-3c6f-4c08-ac47-ad27339430b8-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Types of errors</span>
+</div>
+
+<div id="i-45dc4327-3c6f-4c08-ac47-ad27339430b8-section-content" class="i-section-content">
+    <p>There are two types of errors: global errors and request error. When a global error is encountered, no request is processed. When a request error is encountered, only the request with the error is not processed (in the case of multiple request format), the other requests are processed and can return a result or an error.</p>
+
+    <p class="SubHeader2">Single request format</p>
+
+    <p>The error is indicated by an HTTP status code and the content of the response is an <em>errors</em> array with an entry containing the identifier of the error, its code and more information if available.</p>
+
+    <p>Global errors and request errors are returned with the same method.</p>
+
+    <p class="SubHeader2">Multiple request format</p>
+
+    <p>The errors are indicated by an <em>errors</em> array with an entry containing the identifier of the error, its code and more information if available.</p>
+
+    <p>Global errors are returned as the root value of the response.</p>
+
+    <p>Request errors are returned as the response&amp; value for the request.</p>
+</div>
+
+<div id="i-3ad8cf7d-f84f-4bdd-8a7b-592eb4ac142f-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Web service errors</span>
+</div>
+
+<div id="i-3ad8cf7d-f84f-4bdd-8a7b-592eb4ac142f-section-content" class="i-section-content">
+    <p>When there is a web service error, the error message and debugging information (when a debug build is used on the web service) are sent back to the client. The error message consist of a single <strong>"error"</strong> JSON value containing the code and the text of the error.<br />
+    The JSON value is the following:</p>
+
+    <div class="i-filtered-content-JSON" data-title="JSON" data-itemid="JSON">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+{<span style="COLOR: #800000">"errors"</span> :
+  {
+    code: <span style="COLOR: #800000">"&lt;error code&gt;"</span>,
+    message: <span style="COLOR: #800000">"&lt;error message&gt;"</span>
+  }
+}
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>When there is no error message, the <strong>"message"</strong> property is not present.</p>
+
+    <p>If the error is raised during the processing of a single request, the <strong>"error"</strong> value is the answer for the request. If the error is global to the processing of the list of requests, the <strong>"error"</strong> value is the only answer that the client will receive.</p>
+
+    <p>In any case, when encountering a web service error, please contact the FIVB with the request and the error. So we can look at the reason and correct the web service.</p>
+</div>
+
+<div id="i-29707562-9794-4f67-8360-15e9c5755776-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Global errors</span>
+</div>
+
+<div id="i-29707562-9794-4f67-8360-15e9c5755776-section-content" class="i-section-content">
+    <p>The following table lists the global errors.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Code</th>
+
+                <th>Id</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>accessTokenExpired</td>
+
+                <td>
+                    <p align="right">1</p>
+                </td>
+
+                <td>The access token has expired.</td>
+            </tr>
+
+            <tr>
+                <td>accessTokenInvalid</td>
+
+                <td>
+                    <p align="right">2</p>
+                </td>
+
+                <td>The access token is invalid.</td>
+            </tr>
+
+            <tr>
+                <td>accessTokenRevoked</td>
+
+                <td>
+                    <p align="right">3</p>
+                </td>
+
+                <td>The access token has been revoked.</td>
+            </tr>
+
+            <tr>
+                <td>badRequestSyntax</td>
+
+                <td>
+                    <p align="right">4</p>
+                </td>
+
+                <td>The XML of the request is not well-formed.</td>
+            </tr>
+
+            <tr>
+                <td>badUser</td>
+
+                <td>
+                    <p align="right">6</p>
+                </td>
+
+                <td>The username or password is not valid.</td>
+            </tr>
+
+            <tr>
+                <td>error</td>
+
+                <td>
+                    <p align="right">5</p>
+                </td>
+
+                <td>Other server error.<br />
+                The error message gives more information.<br />
+                This error indicates an error in the server code and should be sent back, with the request that generated the error, to the FIVB for further investigation.</td>
+            </tr>
+
+            <tr>
+                <td>refreshTokenExpired</td>
+
+                <td>
+                    <p align="right">7</p>
+                </td>
+
+                <td>The refresh token has expired.</td>
+            </tr>
+
+            <tr>
+                <td height="18">refreshTokenInvalid</td>
+
+                <td>
+                    <p align="right">8</p>
+                </td>
+
+                <td height="18">The refresh token is invalid.</td>
+            </tr>
+
+            <tr>
+                <td>refreshTokenRevoked</td>
+
+                <td>
+                    <p align="right">9</p>
+                </td>
+
+                <td>The refresh token has been revoked.</td>
+            </tr>
+
+            <tr>
+                <td>unsupportedAuthentication</td>
+
+                <td>
+                    <p align="right">10</p>
+                </td>
+
+                <td>The specified authentication method is not supported.<br />
+                See the <a href="topic7.html#Authentication">Authentication</a> documentation for more information.</td>
+            </tr>
+
+            <tr>
+                <td>userIsDeleted</td>
+
+                <td>
+                    <p align="right">12</p>
+                </td>
+
+                <td>The user cannot send requests because he/she is disabled.</td>
+            </tr>
+
+            <tr>
+                <td>userIsRevoked</td>
+
+                <td>
+                    <p align="right">13</p>
+                </td>
+
+                <td>The user cannot send requests because he/she has been revoked.<br />
+                The error message gives the reason for which the user has been revoked.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-91d36eeb-e9ce-4080-9a90-984708cf2a4c-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request errors</span>
+</div>
+
+<div id="i-91d36eeb-e9ce-4080-9a90-984708cf2a4c-section-content" class="i-section-content">
+    <p>The following table lists the common request errors.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Code</th>
+
+                <th>
+                    <p style="MARGIN: 0px" align="right">Id</p>
+                </th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>accessDenied</td>
+
+                <td>1000</td>
+
+                <td>You don't have access to this request.</td>
+            </tr>
+
+            <tr>
+                <td>badFilterParameter</td>
+
+                <td>1001</td>
+
+                <td>One of the parameters of the filter is not valid.<br />
+                The error message gives the name of the parameter.<br />
+                See the documentation of the filter for its parameters.</td>
+            </tr>
+
+            <tr>
+                <td>badParameter</td>
+
+                <td>1002</td>
+
+                <td>One of the parameter in the request is not valid.<br />
+                The error message gives more information about the parameter.<br />
+                See the documentation of the request for exact parameter information.</td>
+            </tr>
+
+            <tr>
+                <td>badSortProperty</td>
+
+                <td>
+                    <p align="right">1014</p>
+                </td>
+
+                <td>The specified property is not available for sorting.<br />
+                The error message gives the name of the property.<br />
+                The properties that can be used for sorting are limited for each data type. See the documentation of the request to know which properties are available for sorting.<br />
+                If you really need to use this property for sorting, please contact the FIVB to request the use of this property.</td>
+            </tr>
+
+            <tr>
+                <td>error</td>
+
+                <td>1004</td>
+
+                <td>Other server error.<br />
+                The error message gives more information.<br />
+                This error indicates an error in the server code and should be sent back, with the request that generated the error, to the FIVB for further investigation.</td>
+            </tr>
+
+            <tr>
+                <td>filterParameterMissing</td>
+
+                <td>1003</td>
+
+                <td>A mandatory parameter of the filter is missing.<br />
+                The error message gives the name of the parameter.<br />
+                See the documentation of the filter for its parameters.</td>
+            </tr>
+
+            <tr>
+                <td>invalidLanguage</td>
+
+                <td>1019</td>
+
+                <td>The specified languages have not a valid syntax.<br />
+                A language specification must use the syntax of the HTTP <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language" alt="Accept-Language header">Accept-Language</a> header.</td>
+            </tr>
+
+            <tr>
+                <td>invalidTag</td>
+
+                <td>1017</td>
+
+                <td>A tag cannot be parsed.<br />
+                This error is flagged for an unknown system tag, a bad item tag or a free-text tag that contains invalid chars.<br />
+                Look at <a href="https://www.fivb.org/VisSDK/VisWebService/#Tag.html#Types" alt="Tag syntax">tag syntax</a> for more information about the syntax of the tags.</td>
+            </tr>
+
+            <tr>
+                <td>mandatoryPropertyMissing</td>
+
+                <td>1013</td>
+
+                <td>One or more mandatory properties of an item are missing.<br />
+                The error message contains the names of the missing properties, separated by a comma.<br />
+                See the documentation of the item type for the mandatory properties.</td>
+            </tr>
+
+            <tr>
+                <td>noData</td>
+
+                <td>1005</td>
+
+                <td>That there is no data to send back.<br />
+                This response is used for single-data request, when the parameters of the request matches no data.</td>
+            </tr>
+
+            <tr>
+                <td>noLanguage</td>
+
+                <td>1018</td>
+
+                <td>A request needs language information and the language was not specified.<br />
+                Some request needs language information. For example, the <i>Text</i> relation of an article.</td>
+            </tr>
+
+            <tr>
+                <td>notImplemented</td>
+
+                <td>1006</td>
+
+                <td>A function of the request is currently not implemented.<br />
+                The error message gives more information about the not implemented function.<br />
+                If you really need to use a non-implemented function, please contact the FIVB for information about when this function will be implemented.</td>
+            </tr>
+
+            <tr>
+                <td>notInJson</td>
+
+                <td>1007</td>
+
+                <td>The request is currently not available with JSON output.<br />
+                You can find the list of request available with JSON output <a href="topic199.html">here</a>.</td>
+            </tr>
+
+            <tr>
+                <td>notInNewFormat</td>
+
+                <td>1008</td>
+
+                <td>The request is currently not available in the new format (single request format).<br />
+                You must enclose the request with <strong>&lt;Requests&gt;&lt;/Requests&gt;</strong>.<br />
+                You can find the list of request available in the new format <a href="topic199.html">here</a>.</td>
+            </tr>
+
+            <tr>
+                <td>ok</td>
+
+                <td></td>
+
+                <td>The request has been executed correctly.<br />
+                This response is used for requests that doesn't send data back or that just return a single value.</td>
+            </tr>
+
+            <tr>
+                <td>parameterMissing</td>
+
+                <td>1009</td>
+
+                <td>One of the mandatory parameter of the request is missing.<br />
+                The error message gives more information about the parameter.<br />
+                See the documentation of the request for exact parameter information.</td>
+            </tr>
+
+            <tr>
+                <td>relationParameterMissing</td>
+
+                <td>1011</td>
+
+                <td>A mandatory parameter of a relation is missing.<br />
+                The error message contains the name of the relation and the name of the parameter.<br />
+                See the documentation of the request for information about its relations.</td>
+            </tr>
+
+            <tr>
+                <td>relationsNotSupported</td>
+
+                <td>1010</td>
+
+                <td>The request doesn't support relations.<br />
+                See the documentation of the request for information about its relations.</td>
+            </tr>
+
+            <tr>
+                <td>sortsNotSupported</td>
+
+                <td>
+                    <p align="right">1015</p>
+                </td>
+
+                <td>The request doesn't support sorting.<br />
+                Currently the <i>SortBy</i> parameter is only supported for some data type. See the documentation of the request to know whether the sort are supported.</td>
+            </tr>
+
+            <tr>
+                <td>unknownRelationName</td>
+
+                <td>1012</td>
+
+                <td>A relation is unknown for the request.<br />
+                The error message contains the name of the relation.<br />
+                See the documentation of the request for information about its relations.</td>
+            </tr>
+
+            <tr>
+                <td>verifyError</td>
+
+                <td>1016</td>
+
+                <td>The item has errors during verification.<br />
+                When saving an item, the item is checked against many criteria. If one or many criteria are not met, the error is returned by the web service with the result of the verification.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    In addition to these common errors, each request can return dedicated error. See the documentation of the request for the errors that can be returned.</p>
+</div>
+
+<p></p>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic8.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

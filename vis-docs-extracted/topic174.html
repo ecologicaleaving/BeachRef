@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Get request</title>
+    <meta name="Title" content="Get request"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="f2622845-19c9-4597-9940-4c9143f474c1"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="6"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Media
+ > Articles
+ > Get request</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Get request</div></div>
+                        <div id="i-3df88e50-fec0-4ff6-bea9-c0abcef92cdc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-3df88e50-fec0-4ff6-bea9-c0abcef92cdc-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetArticle"</span>
+         <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="&lt;artcle number&gt;"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;optional: list of the fields to return&gt;"</span> <span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="&lt;name of the relation&gt;"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields for the relation&gt;"</span><span style="COLOR: #0000ff">&gt;</span>/&gt; <span style="COLOR: #008000">&lt;!-- optional: contains a relation (can be used multiple times) --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span> 
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Attribute</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>No</td>
+
+                <td>The number of the article.<br />
+                This is a <strong>mandatory</strong> parameter.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is optional: if it not specified, all the fields you have access to will be sent.<br />
+    It can contain all the fields in the <a href="topic45.html">Article</a> data. Only the fields you have access to will be returned.</p>
+
+    <p class="SubHeader2">Relations</p>
+
+    <p>The relations are optional. They permit to get additional information about the article, such as the texts or the tags.<br />
+    A list of the available relations for an article can be found <a href="topic45.html#Relations">here</a>.</p>
+</div>
+
+<div id="i-b02edc4d-54d4-47b5-a92d-a148930b92d9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-b02edc4d-54d4-47b5-a92d-a148930b92d9-section-content" class="i-section-content">
+    When the request is successful, the service will return the data of an <a href="topic45.html">article</a>.
+</div>
+
+<div id="i-40926c45-d3aa-4a9f-bf91-adff405167c0-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-40926c45-d3aa-4a9f-bf91-adff405167c0-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for an article are public and other are not.<br />
+    The response from the server will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-822a4e56-7fc2-4aba-8f8f-dd2b06d380db-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-822a4e56-7fc2-4aba-8f8f-dd2b06d380db-section-content" class="i-section-content">
+    <p>Retrieve the article with the number <strong>28639</strong>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetArticle"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="28639"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No Category Source SourceCategory TeamCode TournamentCode NoMatch PublishOnHome VideoUri IsVideoLive"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Texts"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="Accepted LanguageCode LanguageEnglishName LanguageNativeName AuthorName Headline Introduction PhotoTitle Quotes Text"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Tags"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="TagText TagUserText"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-tab-container i-tab-container-widget">
+        <ul role="tablist">
+            <li class="i-filtered-content-XML"><a href="#i-tab-content-XML">XML</a></li>
+
+            <li class="i-filtered-content-JSON"><a href="#i-tab-content-JSON">JSON</a></li>
+        </ul>
+
+        <div id="i-tab-content-XML" class="i-code i-filtered-content-XML">
+            <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="28639"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">PublishOnHome</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">VideoUri</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">IsVideoLive</span><span style="COLOR: #0000ff">="0"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Brazil continue march through Europe with win over Italy"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">="Rio de Janeiro, Brazil, May 24, 2011 - Brazil’s women’s junior team recorded a straight sets (25-22, 25-23, 25-22) win over Italy on Monday as the side continues its tour through Europe in preparation for the 2011 FIVB Volleyball Women’s Junior World Championship, set to take place in Peru from July 21 to 30."</span> <span style="COLOR: #ff0000">PhotoTitle</span><span style="COLOR: #0000ff">="Brazil are using the tour to prepare for the 2011 FIVB Volleyball Women's Junior World Championship and will hope to regain the title they lost in 2009"</span> <span style="COLOR: #ff0000">Quotes</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;font style=&amp;quot;font-family: Verdana,Arial;&amp;quot; size=&amp;quot;1&amp;quot;&amp;gt;Rio de Janeiro, Brazil, May 24, 2011 - Brazil’s women’s junior team recorded a straight sets (25-22, 25-23, 25-22) win over Italy on Monday as the side continues its tour through Europe in preparation for the 2011 FIVB Volleyball Women’s Junior World Championship, set to take place in Peru from July 21 to 30.&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;Brazil now have nine wins from nine after three matches each against Russia, the Czech Republic and latest casualties Italy and will be confident they will be able to regain their World Championship title from 2007 after finishing third in the last edition in 2009.&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;But the win wasn’t without its issues as Gabriela Samara twisted her ankle early on. However it is believed that the injury is not serious.&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;&amp;quot;With the injuries of Samara and Gabriela, we're at an important time with the preparation of the group,” coach Luizomar Moura said. “The girls who entered the team managed to maintain their level. Problems like this strengthen the group.&amp;quot; &amp;lt;br&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/font&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="17915"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="3"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="46987"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="46987"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#news"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#news"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="46988"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="46988"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:490"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:490"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="46989"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="46989"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+        </div>
+
+        <div id="i-tab-content-JSON" class="i-code i-filtered-content-JSON">
+            <pre>
+{
+  <span style="COLOR: #800000">"data"</span>: {
+    <span style="COLOR: #800000">"no"</span>: 28639,
+    <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+    <span style="COLOR: #800000">"publishOnHome"</span>: 1,
+    <span style="COLOR: #800000">"videoUri"</span>: <span style="COLOR: #800000">""</span>,
+    <span style="COLOR: #800000">"isVideoLive"</span>: 0,
+    <span style="COLOR: #800000">"texts"</span>: [
+      {
+        <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+        <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+        <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Brazil continue march through Europe with win over Italy"</span>,
+        <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #800000">"Rio de Janeiro, Brazil, May 24, 2011 - Brazil’s women’s junior team recorded a straight sets (25-22, 25-23, 25-22) win over Italy on Monday as the side continues its tour through Europe in preparation for the 2011 FIVB Volleyball Women’s Junior World Championship, set to take place in Peru from July 21 to 30."</span>,
+        <span style="COLOR: #800000">"photoTitle"</span>: <span style="COLOR: #800000">"Brazil are using the tour to prepare for the 2011 FIVB Volleyball Women's Junior World Championship and will hope to regain the title they lost in 2009"</span>,
+        <span style="COLOR: #800000">"quotes"</span>: <span style="COLOR: #0000ff">null</span>,
+        <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;font style=\"font-family: Verdana,Arial;\" size=\"1\"&gt;Rio de Janeiro, Brazil, May 24, 2011 - Brazil’s women’s junior team recorded a straight sets (25-22, 25-23, 25-22) win over Italy on Monday as the side continues its tour through Europe in preparation for the 2011 FIVB Volleyball Women’s Junior World Championship, set to take place in Peru from July 21 to 30.&lt;br&gt;&lt;br&gt;Brazil now have nine wins from nine after three matches each against Russia, the Czech Republic and latest casualties Italy and will be confident they will be able to regain their World Championship title from 2007 after finishing third in the last edition in 2009.&lt;br&gt;&lt;br&gt;But the win wasn’t without its issues as Gabriela Samara twisted her ankle early on. However it is believed that the injury is not serious.&lt;br&gt;&lt;br&gt;\"With the injuries of Samara and Gabriela, we're at an important time with the preparation of the group,” coach Luizomar Moura said. “The girls who entered the team managed to maintain their level. Problems like this strengthen the group.\" &lt;br&gt;&lt;br&gt;&lt;/font&gt;"</span>
+      }
+    ],
+    <span style="COLOR: #800000">"nbItems"</span>: 1,
+    <span style="COLOR: #800000">"tags"</span>: [
+      {
+        <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+        <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+      },
+      {
+        <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#news"</span>,
+        <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#news"</span>
+      },
+      {
+        <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:490"</span>,
+        <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:490"</span>
+      }
+    ],
+    <span style="COLOR: #800000">"nbItems"</span>: 3
+  }
+}
+</pre>
+        </div>
+    </div>
+
+    <p><span class="attribute-value">You can see the live request by clicking on <a href="https://www.fivb.org/vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetArticle' No='28639' Fields='No Category Source SourceCategory TeamCode TournamentCode NoMatch PublishOnHome VideoUri IsVideoLive' &gt;&lt;Relation Name='Texts' Fields='Accepted LanguageCode LanguageEnglishName LanguageNativeName AuthorName Headline Introduction PhotoTitle Quotes Text' /&gt;&lt;Relation Name='Tags' Fields='TagText TagUserText' /&gt;&lt;/Request&gt;" target="_blank">this URL</a>.</span></p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic45.html">Article</a></div>
+<div class="i-see-also-link">
+<a href="topic46.html">Article Text</a></div>
+<div class="i-see-also-link">
+<a href="topic8.html">General errors (JSON)</a></div>
+<div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.Article.html">Article class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleText.html">ArticleText class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.GetArticleListRequest.html">GetArticleListRequest class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic174.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

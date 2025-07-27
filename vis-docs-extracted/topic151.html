@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Volleyball Match Filter</title>
+    <meta name="Title" content="Volleyball Match Filter"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Filter to select matches in volleyball tournaments." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="f06c2655-eb59-45bc-98af-78713031ceef"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="3"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Matches
+ > Volleyball Match Filter</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Volleyball Match Filter</div></div>
+                        <p>Filter to select&nbsp;matches in&nbsp;volleyball tournaments.</p>
+
+<div id="i-a1065707-517f-4115-80a5-279c503c5001-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Properties</span>
+</div>
+
+<div id="i-a1065707-517f-4115-80a5-279c503c5001-section-content" class="i-section-content">
+    <p>The following table lists the properties for the filter.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>FirstDate</td>
+
+                <td><a href="topic16.html">Date</a></td>
+
+                <td>Selects the matches at or after the specified date.</td>
+            </tr>
+
+            <tr>
+                <td>ForLiveScore</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>Selects the matches that are available for live score.<br />
+                Includes the matches currently in progress and those that will start between the previous 3 hours and the next 30 minutes.</td>
+            </tr>
+
+            <tr>
+                <td>HeadToHeadCodes</td>
+
+                <td>String</td>
+
+                <td>Selects the matches by the codes of their teams.<br />
+                The value must be two team codes separated by a space.</td>
+            </tr>
+
+            <tr>
+                <td>LastDate</td>
+
+                <td><a href="topic16.html">Date</a></td>
+
+                <td>Selects the matches at or before the specified date.</td>
+            </tr>
+
+            <tr>
+                <td>NoEvent</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>Selects the matches of the specified event.</td>
+            </tr>
+
+            <tr>
+                <td>NoMatches</td>
+
+                <td><a href="topic22.html">Int32&nbsp;set</a></td>
+
+                <td>Selects the matches with the specified numbers.</td>
+            </tr>
+
+            <tr>
+                <td>NoPool</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>Selects the matches of the specified pool.<br />
+                For a play-off pool, the filter selects all the matches that are taken into account for the ranking of the pool. These contains the matches of the pools and the matches of selected previous pools for the qualified teams. To get the selected pools and the qualified teams, you can look at the <a href="topic57.html">technical information of the pool</a>.</td>
+            </tr>
+
+            <tr>
+                <td>NoTeam</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>Selects the matches of the specified team.<br />
+                Due to a current limitation on the SQL tables, the web service uses the team code for the check. As each team is identified by a unique code, this should not pose problem.</td>
+            </tr>
+
+            <tr>
+                <td>NoTournament</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>Selects the matches of the specified tournament.</td>
+            </tr>
+
+            <tr>
+                <td>NoTournaments</td>
+
+                <td><a href="topic22.html">Int32&nbsp;set</a></td>
+
+                <td>Selects the matches of the specified tournaments.</td>
+            </tr>
+
+            <tr>
+                <td>Statuses</td>
+
+                <td><a href="topic123.html">VolleyMatchStatus</a>&nbsp;set</td>
+
+                <td>Selects the matches whose status is one of the values.<br />
+                If this property is specified, it must contains a list of statuses separated with a space. Each status in the list can be specified by its <b>Value</b> or <b>Name</b>.</td>
+            </tr>
+
+            <tr>
+                <td>TournamentGenders</td>
+
+                <td><a href="topic81.html">EventGender</a> set</td>
+
+                <td>
+                    <p>Selects the matches whose tournament gender is one of the values.<br />
+                    If this property is specified, it must contains a list of genders separated with a space. Each gender in the list can be specified by its <strong>Value</strong> or <strong>Name</strong>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>TournamentOrganizerCode<br />
+                TournamentOrganizerType</td>
+
+                <td>String<br />
+                <a href="topic83.html">OrganizerType</a></td>
+
+                <td>Selects the matches whose tournament is organized by the specified one.<br />
+                You can specify only the organizer type and the selected matches will be those with specified organizer type.<br />
+                If the organizer type is <em>Confederation</em> or <em>Federation</em>, you can also specify the confederation code or federation code, respectively. In this case, the selected matches will be those organized by the specific confederation or federation.</td>
+            </tr>
+
+            <tr>
+                <td>TournamentTypes</td>
+
+                <td><a href="topic81.html">VolleyTournamentType</a>&nbsp;set</td>
+
+                <td>Selects the matches whose tournament type is one of the values.<br />
+                If this property is specified, it must contains a list of types separated with a space. Each type in the list can be specified by its Value or <strong>Name</strong>.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-782ff574-9460-40c0-86e5-b3acbca58f2e-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Examples</span>
+</div>
+
+<div id="i-782ff574-9460-40c0-86e5-b3acbca58f2e-section-content" class="i-section-content">
+    <table style="WIDTH: auto; clip-top: auto">
+        <thead>
+            <tr>
+                <th>Filter</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td class="Code">&lt;Filter NoTournament="979" /&gt;</td>
+
+                <td>Selects the matches in the tournament with the number 979.</td>
+            </tr>
+
+            <tr>
+                <td class="Code">
+                    <p>&lt;Filter FirstDate="2018-6-1"<br />
+                    &nbsp; &nbsp; &nbsp; &nbsp; LastDate="2018-6-30" /&gt;</p>
+                </td>
+
+                <td>Selects the matches that are played in June 2018.</td>
+            </tr>
+
+            <tr>
+                <td class="Code">
+                    <p>&lt;Filter TournamentGender="M"<br />
+                    &nbsp; &nbsp; &nbsp; &nbsp; TournamentOrganizerType="Fivb" /&gt;<br />
+                    &nbsp; &nbsp; &nbsp; &nbsp; HeadToHeadCodes="BRA USA" /&gt;</p>
+                </td>
+
+                <td>Selects the matches between Brazil and USA, for men tournaments organized by the FIVB..</td>
+            </tr>
+
+            <tr>
+                <td class="Code">
+                    <p>&lt;Filter TournamentOrganizerType="Fivb" /&gt;</p>
+                </td>
+
+                <td>Selects the matches in tournaments organized by the FIVB.</td>
+            </tr>
+
+            <tr>
+                <td class="Code">
+                    <p>&lt;Filter TournamentOrganizerType="Federation"<br />
+                    &nbsp; &nbsp; &nbsp; &nbsp; TournamentOrganizerCode="USA" /&gt;</p>
+                </td>
+
+                <td>Selects the matches in tournaments organized by the USA federation.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic52.html">Volleyball Match</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyMatch.html">VolleyMatch class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyMatchFilter.html">VolleyMatchFilter class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic151.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

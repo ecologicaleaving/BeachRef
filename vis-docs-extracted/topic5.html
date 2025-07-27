@@ -1,0 +1,577 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Authentication using JSON web tokens</title>
+    <meta name="Title" content="Authentication using JSON web tokens"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="JSON web tokens are a standard way of authentication for the web. They are used by the web service to authenticate the user who is making a call and to check what are his/her permissions. Depending on user permissions, a request can return an &quot;access" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="8416c9cb-0dd3-4936-9d66-af164098fa70"/>
+    
+    
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Authentication using JSON web tokens</div></div>
+                        <p>JSON web tokens are a standard way of authentication for the web. They are used by the web service to authenticate the user who is making a call and to check what are his/her permissions. Depending on user permissions, a request can return an "access denied" error, limit the information returned by the web service or limit the changes made to data.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#CreateToken">Creating a token</a></li>
+
+    <li><a href="#RefreshToken">Refreshing a token</a></li>
+
+    <li><a href="#CheckToken">Checking a token</a></li>
+
+    <li><a href="#UseToken">Using the token in a request</a></li>
+</ul>
+
+<p>All these requests are available with the single or multiple requests formats. The web service response can be formatted in JSON or XML.</p>
+
+<div id="i-8f250749-6a84-40c3-b7d3-990253228c72-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="CreateToken" name="CreateToken"></a>Creating a token</span>
+</div>
+
+<div id="i-8f250749-6a84-40c3-b7d3-990253228c72-section-content" class="i-section-content">
+    <p>To create a JSON web token, you must use the following request:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetJsonWebToken"</span> <span style="COLOR: #ff0000">Username</span><span style="COLOR: #0000ff">="&lt;username&gt;"</span> <span style="COLOR: #ff0000">Password</span><span style="COLOR: #0000ff">="&lt;password&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where <em>&lt;username&gt;</em> is the username of the user and <em>&lt;password&gt;</em> is the password of the user. The username is mandatory and is case-insensitive. The password can be omitted if the user account has no password.</p>
+
+    <p>The request must contain the application identifier in its header.</p>
+
+    <p>If successful, the web service returns both an access token and a refresh token. The access token can then be used to identify the user in subsequent requests and the refresh token can be used to get a new access token when the current one has expired.</p>
+
+    <p>The following errors can be returned by the web service:</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Identifier</th>
+
+                <th>Code</th>
+
+                <th width="100">HTTP status</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">6</p>
+                </td>
+
+                <td>BadUser</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The username and password pair is not recognized by the web service.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">11</p>
+                </td>
+
+                <td>ApplicationIdMissing</td>
+
+                <td>
+                    <p align="right">400</p>
+                </td>
+
+                <td>The application identifier is not specified in the header.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">12</p>
+                </td>
+
+                <td>UserIsDisabled</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The user is rejected because he/she has been disabled.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">13</p>
+                </td>
+
+                <td>UserIsRevoked</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The user is rejected because he/she has been revoked. The details of the error are the revocation reason.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">1009</p>
+                </td>
+
+                <td>ParameterMissing</td>
+
+                <td>
+                    <p align="right">400</p>
+                </td>
+
+                <td>The <em>Username</em> attribute is missing.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    In case of success, the web service returns the tokens in the following format:</p>
+
+    <div class="i-tab-container i-tab-container-widget">
+        <ul role="tablist">
+            <li class="i-filtered-content-XML"><a href="#i-tab-content-XML">XML</a></li>
+
+            <li class="i-filtered-content-JSON"><a href="#i-tab-content-JSON">JSON</a></li>
+        </ul>
+
+        <div id="i-tab-content-XML" class="i-code i-filtered-content-XML">
+            <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #ff0000">AccessToken</span><span style="COLOR: #0000ff">="&lt;access token&gt;"</span>
+    <span style="COLOR: #ff0000">RefreshToken</span><span style="COLOR: #0000ff">="&lt;refresh token&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+        </div>
+
+        <div id="i-tab-content-JSON" class="i-code i-filtered-content-JSON">
+            <pre>
+{
+  <span style="COLOR: #800000">"data"</span>: {
+    <span style="COLOR: #800000">"accessToken"</span>: <span style="COLOR: #800000">"&lt;access token&gt;"</span>,
+    <span style="COLOR: #800000">"refreshToken"</span>: <span style="COLOR: #800000">"&lt;refresh token&gt;"</span>
+  }
+}
+</pre>
+        </div>
+    </div>
+</div>
+
+<div id="i-5960af72-bdc6-453f-9b34-3f51543b66fc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="RefreshToken" name="RefreshToken"></a>Refreshing a token</span>
+</div>
+
+<div id="i-5960af72-bdc6-453f-9b34-3f51543b66fc-section-content" class="i-section-content">
+    <div class="i-box i-box-caution">
+        When using this request, don't use the old access token in the request headers. If you do so and the access token is no more valid, an error will be returned by the web service, indicating that the access token is invalid.
+    </div>
+
+    <p>To refresh a JSON web token, you must use the following request:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetJsonWebToken"</span> <span style="COLOR: #ff0000">RefreshToken</span><span style="COLOR: #0000ff">="&lt;base-64 encoded token&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where <em>&lt;base.-64 encoded token&gt;</em> is the refresh token. The refresh token is mandatory.</p>
+
+    <p>The request must contain the application identifier in its header.</p>
+
+    <p>If successful, the web service returns both new access and refresh tokens. The access token can then be used to identify the user in subsequent requests and the refresh token can be used to get a new access token when the current one has expired.</p>
+
+    <p>The following errors can be returned by the web service:</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Identifier</th>
+
+                <th>Code</th>
+
+                <th>HTTP status</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">7</p>
+                </td>
+
+                <td>RefreshTokenExpired</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The refresh token has expired.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">8</p>
+                </td>
+
+                <td>RefreshTokenInvalid</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The refresh token is invalid.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">9</p>
+                </td>
+
+                <td>RefreshTokenRevoked</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The refresh token has been revoked.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    In case of success, the web service returns the tokens in the following format:</p>
+
+    <div class="i-tab-container i-tab-container-widget">
+        <ul role="tablist">
+            <li class="i-filtered-content-XML"><a href="#i-tab-content-XML">XML</a></li>
+
+            <li class="i-filtered-content-JSON"><a href="#i-tab-content-JSON">JSON</a></li>
+        </ul>
+
+        <div id="i-tab-content-XML" class="i-code i-filtered-content-XML">
+            <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #ff0000">AccessToken</span><span style="COLOR: #0000ff">="&lt;access token&gt;"</span>
+    <span style="COLOR: #ff0000">RefreshToken</span><span style="COLOR: #0000ff">="&lt;refresh token&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+        </div>
+
+        <div id="i-tab-content-JSON" class="i-code i-filtered-content-JSON">
+            <pre>
+{
+  <span style="COLOR: #800000">"data"</span>: {
+    <span style="COLOR: #800000">"accessToken"</span>: <span style="COLOR: #800000">"&lt;access token&gt;"</span>,
+    <span style="COLOR: #800000">"refreshToken"</span>: <span style="COLOR: #800000">"&lt;refresh token&gt;"</span>
+  }
+}
+</pre>
+        </div>
+    </div>
+</div>
+
+<div id="i-0d4a7e84-aa98-4bae-8d2b-9ff1dd978fbc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="CheckToken" name="CheckToken"></a>Checking a token</span>
+</div>
+
+<div id="i-0d4a7e84-aa98-4bae-8d2b-9ff1dd978fbc-section-content" class="i-section-content">
+    <p>To check a JSON web token, you must use the following request:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="CheckJsonWebToken"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The request must contain the access token and the application identifier in its header.</p>
+
+    <p>If the token is no more valid, the web service returns one of the following response:</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Identifier</th>
+
+                <th>Code</th>
+
+                <th>HTTP status</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="right">1</p>
+                </td>
+
+                <td>AccessTokenExpired</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The access token has expired.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">2</p>
+                </td>
+
+                <td>AccessTokenInvalid</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The access token is invalid.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="right">3</p>
+                </td>
+
+                <td>AccessTokenRevoked</td>
+
+                <td>
+                    <p align="right">401</p>
+                </td>
+
+                <td>The access token has been revoked.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><br />
+    In case of success, the response of the web service depends on the request format:</p>
+
+    <ul>
+        <li>For a single request, the web service returns a <strong>204 (NoContent)</strong> HTTP status.</li>
+
+        <li>For multiple requests, the web service returns a <strong>OK</strong>.</li>
+    </ul>
+</div>
+
+<div id="i-6af93d64-6ed7-43bf-b3bb-e9f633ef0e20-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="UseToken" name="UseToken"></a>Using the token in a request</span>
+</div>
+
+<div id="i-6af93d64-6ed7-43bf-b3bb-e9f633ef0e20-section-content" class="i-section-content">
+    <p>The use of the token in a request depends on the format of the request.</p>
+
+    <p class="SubHeader2">Single request</p>
+
+    <p>In this case, the token must be specified in the <strong>Authorization</strong> header. The value of the header should be:</p>
+
+    <div class="i-filtered-content-Text" data-title="Text" data-itemid="Text">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Authorization header</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+Bearer <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">access</span> <span style="COLOR: #ff0000">token</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Multiple requests</p>
+
+    <p>In this case the token must be specified in the <strong>Authorization</strong> header (as above) or in the <strong>AccessToken</strong> attribute of the request root element:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Requests</span> <span style="COLOR: #ff0000">AccessToken</span><span style="COLOR: #0000ff">="access token"</span><span style="COLOR: #0000ff">&gt;</span>
+  ...
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Requests</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic4.html">Application identifier</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic5.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

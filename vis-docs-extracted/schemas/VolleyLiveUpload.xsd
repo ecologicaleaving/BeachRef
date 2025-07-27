@@ -1,0 +1,1416 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Created with Liquid XML 2016 Designer Edition 14.1.4.6649 (https://www.liquid-technologies.com)-->
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="VolleyLive">
+    <xs:annotation>
+      <xs:documentation>Main element with all the live data.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="LineUp" type="VolleyLiveLineUp">
+          <xs:annotation>
+            <xs:documentation>The current line-up.
+There should be a maximum of two line-ups: one for each team.
+The players are listed starting at the first server and continuing in a counterclockwise direction.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Match">
+          <xs:annotation>
+            <xs:documentation>The match.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence minOccurs="0">
+              <xs:element name="Events">
+                <xs:annotation>
+                  <xs:documentation>Events.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="Comment">
+                      <xs:annotation>
+                        <xs:documentation>Comment.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:complexContent>
+                          <xs:extension base="Comment">
+                            <xs:attribute name="Status" type="VolleyMatchStatus" use="required">
+                              <xs:annotation>
+                                <xs:documentation>Status of the match related to the comment.
+Is used to place the comment in a match phase.</xs:documentation>
+                              </xs:annotation>
+                            </xs:attribute>
+                          </xs:extension>
+                        </xs:complexContent>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="PlayerStatistics" type="PlayerStatistics">
+                <xs:annotation>
+                  <xs:documentation>Statistics for a player.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="TeamStatistics" type="TeamStatistics">
+                <xs:annotation>
+                  <xs:documentation>Statistics for a team.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="BeginDateTime" type="xs:dateTime">
+              <xs:annotation>
+                <xs:documentation>The date and time of when the match really starts.
+This attribute is missing until the match is started.
+This is the reference value for all time offsets.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="EndDateTime" type="xs:dateTime">
+              <xs:annotation>
+                <xs:documentation>The date and time when the match ends.
+This attribute is missing until the match is finished.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="MatchPointsA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>The number of match points for team A.
+This attribute is omitted if the match has not started.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="MatchPointsB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>The number of match points for team B.
+This attribute is omitted if the match has not started.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="No" type="xs:positiveInteger" use="required">
+              <xs:annotation>
+                <xs:documentation>The number of the match.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NoTeamA" type="xs:positiveInteger" use="required">
+              <xs:annotation>
+                <xs:documentation>The number of team A.
+The attribute is missing if team A is unknown.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NoTeamB" type="xs:positiveInteger" use="required">
+              <xs:annotation>
+                <xs:documentation>The number of team B.
+The attribute is missing if team B is unknown.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ResultType" type="VolleyMatchResultType">
+              <xs:annotation>
+                <xs:documentation>The type of result.
+This attribute is missing if the match is not terminated.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Status" type="VolleyMatchStatus" use="required">
+              <xs:annotation>
+                <xs:documentation>The status.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Set">
+          <xs:annotation>
+            <xs:documentation>Set in the match.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Events">
+                <xs:annotation>
+                  <xs:documentation>Events.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="Injury" type="Injury">
+                      <xs:annotation>
+                        <xs:documentation>Injury for a player.</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Protest" type="Protest">
+                      <xs:annotation>
+                        <xs:documentation>Protest of a team.</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Rally">
+                      <xs:annotation>
+                        <xs:documentation>Rally.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                          <xs:element name="Action">
+                            <xs:annotation>
+                              <xs:documentation>Action.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:attribute name="BallSpeed" type="xs:positiveInteger">
+                                <xs:annotation>
+                                  <xs:documentation>Speed of the ball, in m/h.
+This attribute is missing if the ball speed is unknown.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Identifier" type="UUID" use="optional">
+                                <xs:annotation>
+                                  <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="NoPlayer" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Number of the player who has made the action.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Note">
+                                <xs:annotation>
+                                  <xs:documentation>Note. If the attribute is missing, there is no note.</xs:documentation>
+                                </xs:annotation>
+                                <xs:simpleType>
+                                  <xs:restriction base="VolleyNote">
+                                    <xs:enumeration value="Excellent" />
+                                    <xs:enumeration value="Fault" />
+                                    <xs:enumeration value="Success" />
+                                  </xs:restriction>
+                                </xs:simpleType>
+                              </xs:attribute>
+                              <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Position of the event in the list.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Skill" type="VolleySkill" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>The skill.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="TimeOffset" type="TimeOffset">
+                                <xs:annotation>
+                                  <xs:documentation>Time offset of the action, from the start of the match.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="BallPosition" type="Position">
+                            <xs:annotation>
+                              <xs:documentation>Position of the ball.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="ChallengeRequest">
+                            <xs:annotation>
+                              <xs:documentation>Challenge asked by a team at the end of the rally.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:complexContent>
+                                <xs:extension base="Challenge">
+                                  <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+                                    <xs:annotation>
+                                      <xs:documentation>Number of the team that asks the challenge.</xs:documentation>
+                                    </xs:annotation>
+                                  </xs:attribute>
+                                  <xs:attribute name="Text" type="xs:string">
+                                    <xs:annotation>
+                                      <xs:documentation>Optional text with information about the challenge.</xs:documentation>
+                                    </xs:annotation>
+                                  </xs:attribute>
+                                </xs:extension>
+                              </xs:complexContent>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="ChallengeResult">
+                            <xs:annotation>
+                              <xs:documentation>Response to the previous challenge.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:complexContent>
+                                <xs:extension base="Challenge">
+                                  <xs:attribute name="IsPositive" type="xs:boolean">
+                                    <xs:annotation>
+                                      <xs:documentation>Indicates whether the challenge is positive.
+If the attribute is missing, the challenge is negative.</xs:documentation>
+                                    </xs:annotation>
+                                  </xs:attribute>
+                                  <xs:attribute name="Text" type="xs:string">
+                                    <xs:annotation>
+                                      <xs:documentation>Optional text with information about the challenge.</xs:documentation>
+                                    </xs:annotation>
+                                  </xs:attribute>
+                                </xs:extension>
+                              </xs:complexContent>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="ChangeLineUp">
+                            <xs:annotation>
+                              <xs:documentation>Change of line-up.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:choice>
+                                <xs:element name="LineUp">
+                                  <xs:annotation>
+                                    <xs:documentation>The new line-up.</xs:documentation>
+                                  </xs:annotation>
+                                  <xs:complexType>
+                                    <xs:attribute name="NoPlayer1" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 1.
+This is the player at the service position (back right).</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="NoPlayer2" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 2.
+This is the player in the front right.</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="NoPlayer3" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 3.
+This is the player in the front center.</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="NoPlayer4" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 4.
+This is the player in the front left.</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="NoPlayer5" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 5.
+This is the player in the back left.</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="NoPlayer6" type="xs:positiveInteger" use="required">
+                                      <xs:annotation>
+                                        <xs:documentation>Number of player 6.
+This is the player in the back center.</xs:documentation>
+                                      </xs:annotation>
+                                    </xs:attribute>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:choice>
+                              <xs:attribute name="Identifier" type="UUID">
+                                <xs:annotation>
+                                  <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Number of the team.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Position of the event in the list.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="TimeOffset" type="TimeOffset">
+                                <xs:annotation>
+                                  <xs:documentation>Time offset of the line-up change, from the start of the match.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="Comment" type="Comment">
+                            <xs:annotation>
+                              <xs:documentation>Comment.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="Injury" type="Injury">
+                            <xs:annotation>
+                              <xs:documentation>Injury for a player.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="LineUp" type="VolleyLiveLineUp">
+                            <xs:annotation>
+                              <xs:documentation>Line-up for a team.
+There should be 0 or 2 elements for the line-ups: one for each team.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="PlayerPosition">
+                            <xs:annotation>
+                              <xs:documentation>Position of a player.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:complexContent>
+                                <xs:extension base="Position">
+                                  <xs:attribute name="NoPlayer" type="xs:positiveInteger" use="required">
+                                    <xs:annotation>
+                                      <xs:documentation>Number of the player.</xs:documentation>
+                                    </xs:annotation>
+                                  </xs:attribute>
+                                  <xs:attribute name="Skill">
+                                    <xs:annotation>
+                                      <xs:documentation>Skill.
+This attribute is missing if the position is not related to a skill.
+The special value None indicates that the position is related to a touch of the ball, but the skill is unknown.</xs:documentation>
+                                    </xs:annotation>
+                                    <xs:simpleType>
+                                      <xs:restriction base="xs:string">
+                                        <xs:enumeration value="Attack" />
+                                        <xs:enumeration value="Block" />
+                                        <xs:enumeration value="Dig" />
+                                        <xs:enumeration value="Reception" />
+                                        <xs:enumeration value="Set" />
+                                        <xs:enumeration value="Service" />
+                                        <xs:enumeration value="None" />
+                                      </xs:restriction>
+                                    </xs:simpleType>
+                                  </xs:attribute>
+                                </xs:extension>
+                              </xs:complexContent>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="PlayerSanction" type="PlayerSanction">
+                            <xs:annotation>
+                              <xs:documentation>Sanction for a player.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="Protest" type="Protest">
+                            <xs:annotation>
+                              <xs:documentation>Protest of a team.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:element name="Substitution">
+                            <xs:annotation>
+                              <xs:documentation>Player substitution.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:attribute name="Identifier" type="UUID">
+                                <xs:annotation>
+                                  <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="NoPlayerIn" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Number of the player that enters the court.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="NoPlayerOut" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Number of the player that goes out of the court.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Position of the event in the list.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="TimeOffset" type="TimeOffset">
+                                <xs:annotation>
+                                  <xs:documentation>Time offset of the substitution, from the start of the match.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="TeamAction">
+                            <xs:annotation>
+                              <xs:documentation>Point is attributed to a team, not a player.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                              <xs:attribute name="Identifier" type="UUID">
+                                <xs:annotation>
+                                  <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Note" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Note. If the attribute is missing, there is no note.</xs:documentation>
+                                </xs:annotation>
+                                <xs:simpleType>
+                                  <xs:restriction base="VolleyNote">
+                                    <xs:enumeration value="Excellent" />
+                                    <xs:enumeration value="Fault" />
+                                    <xs:enumeration value="Success" />
+                                  </xs:restriction>
+                                </xs:simpleType>
+                              </xs:attribute>
+                              <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Number of the team.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                                <xs:annotation>
+                                  <xs:documentation>Position of the event in the list.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                              <xs:attribute name="TimeOffset" type="TimeOffset">
+                                <xs:annotation>
+                                  <xs:documentation>Time offset of the team point, from the start of the match.</xs:documentation>
+                                </xs:annotation>
+                              </xs:attribute>
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="TeamSanction" type="TeamSanction">
+                            <xs:annotation>
+                              <xs:documentation>Sanction for a team.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                        </xs:choice>
+                        <xs:attribute name="EndTimeOffset" type="TimeOffset">
+                          <xs:annotation>
+                            <xs:documentation>Time offset of the end of the rally, from the start of the match.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Identifier" type="UUID" use="optional">
+                          <xs:annotation>
+                            <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="No" type="xs:positiveInteger">
+                          <xs:annotation>
+                            <xs:documentation>Number of the rally.
+The rallies are numbered starting at 1 for the first rally of the match.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                          <xs:annotation>
+                            <xs:documentation>Position of the event in the list.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Status" type="VolleyRallyStatus">
+                          <xs:annotation>
+                            <xs:documentation>Status.
+If the attribute is missing, the rally is accepted.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="TimeOffset" type="TimeOffset">
+                          <xs:annotation>
+                            <xs:documentation>Time offset of the rally, from the start of the match.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="UserSetsScore" type="xs:boolean">
+                          <xs:annotation>
+                            <xs:documentation>Whether the score has been set by the user.
+If the attribute is missing, the score is calculated automatically.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="PlayerSanction" type="PlayerSanction">
+                      <xs:annotation>
+                        <xs:documentation>Sanction for a player.</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="TeamSanction" type="TeamSanction">
+                      <xs:annotation>
+                        <xs:documentation>Sanction. for a team</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="TechnicalTimeout">
+                      <xs:annotation>
+                        <xs:documentation>Technical timeout.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:attribute name="Identifier" type="UUID">
+                          <xs:annotation>
+                            <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                          <xs:annotation>
+                            <xs:documentation>Position of the event in the list.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="TimeOffset" type="TimeOffset">
+                          <xs:annotation>
+                            <xs:documentation>Time offset of the timeout, from the start of the match.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="Timeout">
+                      <xs:annotation>
+                        <xs:documentation>Timeout.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:attribute name="Identifier" type="UUID">
+                          <xs:annotation>
+                            <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+                          <xs:annotation>
+                            <xs:documentation>Number of the team that asks for the timeout.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+                          <xs:annotation>
+                            <xs:documentation>Position of the event in the list.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="TimeOffset" type="TimeOffset">
+                          <xs:annotation>
+                            <xs:documentation>Time offset of the timeout, from the start of the match.</xs:documentation>
+                          </xs:annotation>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="LineUp" type="VolleySetLineUp">
+                <xs:annotation>
+                  <xs:documentation>Line-up for a team in the set.
+The players are listed starting at the first server and continuing in a counterclockwise direction.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="PlayerStatistics" type="PlayerStatistics">
+                <xs:annotation>
+                  <xs:documentation>Statistics for a player.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="TeamStatistics" type="TeamStatistics">
+                <xs:annotation>
+                  <xs:documentation>Statistics for a team.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:choice>
+            <xs:attribute name="BeginTimeOffset" type="TimeOffset">
+              <xs:annotation>
+                <xs:documentation>Time offset of the set, from the start of the match.
+This property is missing if the time offset is unknown.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Duration" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Duration of the set, in seconds.
+This attribute is missing if the set is not terminated or the duration is not available.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeAcceptedTeamA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges accepted for team A.
+This attribute is missing if team A has not requested any challenge or none of its challenges have been accepted.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeAcceptedTeamB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges accepted for team B.
+This attribute is missing if team B has not requested any challenge or none of its challenges have been accepted.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeRefusedTeamA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges refused for team A.
+This attribute is missing if team A has not requested any challenge or none of its challenges have been refused.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeRefusedTeamB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges refused for team B.
+This attribute is missing if team B has not requested any challenge or none of its challenges have been refused.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeRequestedTeamA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges requested by team A.
+This attribute is missing if team A has not requested any challenge.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbChallengeRequestedTeamB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of challenges requested by team B.
+This attribute is missing if team B has not requested any challenge.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbTimeoutTeamA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of timeouts for team A.
+This attribute is missing if team A has no timeouts.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="NbTimeoutTeamB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of timeouts for team B.
+This attribute is missing if team B has no timeouts.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="No" use="required">
+              <xs:annotation>
+                <xs:documentation>Number of the set.</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:positiveInteger">
+                  <xs:minInclusive value="1" />
+                  <xs:maxInclusive value="5" />
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="NoServingTeam" type="xs:positiveInteger">
+              <xs:annotation>
+                <xs:documentation>Number of the team that is serving at the start of the set.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="PointsTeamA" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of points for team A in the set.
+This property is omitted if the set is not started.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="PointsTeamB" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Number of points for team B in the set.
+This property is omitted if the set is not started.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Team">
+          <xs:annotation>
+            <xs:documentation>Team</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="Player">
+                <xs:annotation>
+                  <xs:documentation>Player.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:attribute name="IsCaptain" type="xs:boolean">
+                    <xs:annotation>
+                      <xs:documentation>Indicates whether the player is a captain.
+If the attribute is missing, he/she is not a captain.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="IsLibero" type="xs:boolean">
+                    <xs:annotation>
+                      <xs:documentation>Indicates whether the player is a libero.
+If the attribute is missing, he/she is not a libero.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="No" type="xs:positiveInteger" use="required">
+                    <xs:annotation>
+                      <xs:documentation>Number of the player.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="NoShirt" type="xs:positiveInteger" use="required">
+                    <xs:annotation>
+                      <xs:documentation>Number of the shirt for the player in the match.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="No" type="xs:positiveInteger" use="required">
+              <xs:annotation>
+                <xs:documentation>Number.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+      <xs:attribute name="NoServingTeam" type="xs:positiveInteger">
+        <xs:annotation>
+          <xs:documentation>The number of the team that is serving.
+When between rallies or between sets, this is the number of the team that will serve at the next rally or set. If the attribute is missing, this information is not available (match not started, finished, ...).</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="Challenge">
+    <xs:annotation>
+      <xs:documentation>Common data for a challenge.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="PointsTeamA" type="xs:nonNegativeInteger">
+      <xs:annotation>
+        <xs:documentation>Number of points for team A.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="PointsTeamB" type="xs:nonNegativeInteger">
+      <xs:annotation>
+        <xs:documentation>Number of points for Team B.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Comment">
+    <xs:annotation>
+      <xs:documentation>Comment.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Category" type="CommentCategory">
+      <xs:annotation>
+        <xs:documentation>Category.
+This attribute is omitted if there is no category for the comment.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Language" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Language.
+This is an ISO 639-1 code.
+This attribute is omitted if the language is English (en).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Text" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Text.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the comment.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="CommentCategory">
+    <xs:annotation>
+      <xs:documentation>Category for a comment.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Serve" />
+      <xs:enumeration value="Spike" />
+      <xs:enumeration value="Block" />
+      <xs:enumeration value="Reception" />
+      <xs:enumeration value="Set" />
+      <xs:enumeration value="Dig" />
+      <xs:enumeration value="Substitution" />
+      <xs:enumeration value="Sanction" />
+      <xs:enumeration value="Timeout" />
+      <xs:enumeration value="Challenge" />
+      <xs:enumeration value="Twitter" />
+      <xs:enumeration value="Facebook" />
+      <xs:enumeration value="Instagram" />
+      <xs:enumeration value="RallyHighlight" />
+      <xs:enumeration value="1" />
+      <xs:enumeration value="2" />
+      <xs:enumeration value="3" />
+      <xs:enumeration value="4" />
+      <xs:enumeration value="5" />
+      <xs:enumeration value="6" />
+      <xs:enumeration value="7" />
+      <xs:enumeration value="8" />
+      <xs:enumeration value="9" />
+      <xs:enumeration value="10" />
+      <xs:enumeration value="11" />
+      <xs:enumeration value="12" />
+      <xs:enumeration value="13" />
+      <xs:enumeration value="14" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Injury">
+    <xs:annotation>
+      <xs:documentation>Injury.
+</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Comment" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional comment on the injury.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the player.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the injury, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="PlayerSanction">
+    <xs:annotation>
+      <xs:documentation>Sanction for a player.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Comment" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional comment on the saction.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the player.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the sanction, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Type" type="SanctionType" />
+  </xs:complexType>
+  <xs:complexType name="PlayerStatistics">
+    <xs:annotation>
+      <xs:documentation>Statistics for a player.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="BlockContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of blocks with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="BlockFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of blocks with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="BlockPoint" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of blocks with a point.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DigContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of digs with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DigExcellent" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of excellent digs.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DigFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of digs with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the player.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoShirt" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the shirt of the player.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ReceptionContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of receptions with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ReceptionExcellent" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of excellent receptions.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ReceptionFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of receptions with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ServeContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of serves with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ServeFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of serves with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ServePoint" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of serves with a point.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SetContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of sets with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SetExcellent" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of excellent sets.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SetFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of sets with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SpikeContinue" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of spikes with the rally continuing.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SpikeFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of spikes with a fault.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SpikePoint" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of serves with a point.
+The attribute is omitted if its value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TeamCode" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Code of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TeamName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TeamNamePlayer" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Team name of the player.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Position">
+    <xs:annotation>
+      <xs:documentation>Position of a player or the ball.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the action, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="X" type="xs:int" use="required">
+      <xs:annotation>
+        <xs:documentation>Position in the X axis, in cm.
+The 0 is defined at the net, looking from the referee table. Positive values are to the right.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Y" type="xs:int" use="required">
+      <xs:annotation>
+        <xs:documentation>Position in the Y axis, in cm.
+The 0 is defined at the farthest point of the net, looking from the referees table. Positive values are in direction of the referees table.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Z" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position in the Z axis, in cm.
+For a player, this is the position of the top of the head. For the ball, this is the position of the center of the ball.
+The floor is at value 0 and all the values are positive.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Protest">
+    <xs:annotation>
+      <xs:documentation>Protest
+</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Identifier" type="UUID">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the team that protest.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Text" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Information about the protest.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the protest, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="SanctionType">
+    <xs:annotation>
+      <xs:documentation>Type of sanction.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RedCard" />
+      <xs:enumeration value="YellowCard" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="TeamSanction">
+    <xs:annotation>
+      <xs:documentation>Sanction for a team.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Comment" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional comment on the saction.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Identifier" type="UUID" use="optional">
+      <xs:annotation>
+        <xs:documentation>Identifier of the event.
+This is a UUID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Position" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Position of the event in the list.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TimeOffset" type="TimeOffset">
+      <xs:annotation>
+        <xs:documentation>Time offset of the sanction, from the start of the match.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Type" type="SanctionType" />
+  </xs:complexType>
+  <xs:complexType name="TeamStatistics">
+    <xs:annotation>
+      <xs:documentation>Statistics for a team.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Code" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Code of the team.
+</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="OpponentFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of opponent faults.
+The attribute is omitted if the value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TeamFault" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of team faults.
+The attribute is omitted if the value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="TimeOffset">
+    <xs:annotation>
+      <xs:documentation>Time offset, in ms.
+If the value is positive, it is relative to the start of the match.
+If the value is negative, it is relative to the scheduled match date and time.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:integer" />
+  </xs:simpleType>
+  <xs:simpleType name="UUID">
+    <xs:annotation>
+      <xs:documentation>UUID, used to uniquely identifies an item.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="VolleyLiveLineUp">
+    <xs:annotation>
+      <xs:documentation>Line-up on the court.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="NoPlayer1" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 1.
+This is the player at the service position (back right).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer2" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 2.
+This is the player in the front right.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer3" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 3.
+This is the player in the front center.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer4" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 4.
+This is the player in the front left.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer5" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 5.
+This is the player in the back left.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer6" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of player 6.
+This is the player in the back center.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>The number of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="VolleyMatchResultType">
+    <xs:annotation>
+      <xs:documentation>Type of result.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Normal" />
+      <xs:enumeration value="ForfeitTeamA" />
+      <xs:enumeration value="ForfeitTeamB" />
+      <xs:enumeration value="ForfeitBothTeams" />
+      <xs:enumeration value="0" />
+      <xs:enumeration value="1" />
+      <xs:enumeration value="2" />
+      <xs:enumeration value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VolleyMatchStatus">
+    <xs:annotation>
+      <xs:documentation>Status of the match.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Opened" />
+      <xs:enumeration value="RosterDefined" />
+      <xs:enumeration value="ReadyToStart" />
+      <xs:enumeration value="Set1Ready" />
+      <xs:enumeration value="InSet1" />
+      <xs:enumeration value="Set1Finished" />
+      <xs:enumeration value="Set2Ready" />
+      <xs:enumeration value="InSet2" />
+      <xs:enumeration value="Set2Finished" />
+      <xs:enumeration value="Set3Ready" />
+      <xs:enumeration value="InSet3" />
+      <xs:enumeration value="Set3Finished" />
+      <xs:enumeration value="Set4Ready" />
+      <xs:enumeration value="InSet4" />
+      <xs:enumeration value="Set4Finished" />
+      <xs:enumeration value="Set5Ready" />
+      <xs:enumeration value="InSet5" />
+      <xs:enumeration value="Finished" />
+      <xs:enumeration value="OfficialResult" />
+      <xs:enumeration value="Corrected" />
+      <xs:enumeration value="Closed" />
+      <xs:enumeration value="1" />
+      <xs:enumeration value="2" />
+      <xs:enumeration value="3" />
+      <xs:enumeration value="4" />
+      <xs:enumeration value="5" />
+      <xs:enumeration value="6" />
+      <xs:enumeration value="7" />
+      <xs:enumeration value="8" />
+      <xs:enumeration value="9" />
+      <xs:enumeration value="10" />
+      <xs:enumeration value="11" />
+      <xs:enumeration value="12" />
+      <xs:enumeration value="13" />
+      <xs:enumeration value="14" />
+      <xs:enumeration value="15" />
+      <xs:enumeration value="16" />
+      <xs:enumeration value="17" />
+      <xs:enumeration value="18" />
+      <xs:enumeration value="19" />
+      <xs:enumeration value="20" />
+      <xs:enumeration value="21" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VolleyNote">
+    <xs:annotation>
+      <xs:documentation>Note for a skill.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Excellent" />
+      <xs:enumeration value="Fault" />
+      <xs:enumeration value="Success" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VolleySkill">
+    <xs:annotation>
+      <xs:documentation>Skill.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Block" />
+      <xs:enumeration value="Dig" />
+      <xs:enumeration value="Reception" />
+      <xs:enumeration value="Set" />
+      <xs:enumeration value="Service" />
+      <xs:enumeration value="Spike" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VolleyRallyStatus">
+    <xs:annotation>
+      <xs:documentation>Status for a rally.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Accepted" />
+      <xs:enumeration value="Replayed" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="VolleySetLineUp">
+    <xs:annotation>
+      <xs:documentation>Line-up for a set.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="NoLibero1" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the first libero.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoLibero2" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the second libero.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer1" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 1.
+This is the player at the service position (back right).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer2" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 2.
+This is the player in the front right.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer3" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 3.
+This is the player in the front center.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer4" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 4.
+This is the player in the front left.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer5" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 5.
+This is the player in the back left.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoPlayer6" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of player 6.
+This is the player in the back center.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute1" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 1.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute2" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 2.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute3" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 3.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute4" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 4.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute5" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 5.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoSubstitute6" type="xs:positiveInteger">
+      <xs:annotation>
+        <xs:documentation>Number of the substitute for player 6.
+This attribute is omitted if the player 1 was not substituted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="NoTeam" type="xs:positiveInteger" use="required">
+      <xs:annotation>
+        <xs:documentation>Number of the team.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+</xs:schema>

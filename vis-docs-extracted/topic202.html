@@ -1,0 +1,803 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Video acquisition</title>
+    <meta name="Title" content="Video acquisition"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+    This information is currently at the draft stage and should change as this part of the live score is under development.
+
+
+" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="8c6ea036-c64f-420e-9f19-68951b4320ce"/>
+    
+    
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Video acquisition</div></div>
+                        <div class="i-box i-box-caution">
+    This information is currently at the draft stage and should change as this part of the live score is under development.
+</div>
+
+<p></p>
+
+<p>The video acquisition system consist of a set of movie cameras dispatched around the court. These cameras are filming the match and, after image processing, are used to calculate the positions of the players and of the ball. This data is then transmitted to the match management PC for processing.</p>
+
+<div id="i-f3141cd1-49e4-4f5b-9559-3f3ced81e60e-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Time reference for the messages</span>
+</div>
+
+<div id="i-f3141cd1-49e4-4f5b-9559-3f3ced81e60e-section-content" class="i-section-content">
+    <p>The <strong>Positions</strong> and <strong>Start</strong> messages contain a time offset, in ms. To simplify the management of the messages on both sides, the video acquisition system should keep a time offset that starts at <strong>0</strong> and increments during the match. The time offset starts at video recording, so it can be used to position exactly into the video when viewing it again.&nbsp;The match management PC will save the time offset of the start of the match, so it can make a subtraction to keep the time offset from the start of the match.</p>
+</div>
+
+<div id="i-1638fa30-9d68-48d8-a836-76fe092bb9e7-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Communications</span>
+</div>
+
+<div id="i-1638fa30-9d68-48d8-a836-76fe092bb9e7-section-content" class="i-section-content">
+    <p>The video acquisition client should first identify on the match management PC, using the protocol defined <a href="topic203.html">here</a>.</p>
+
+    <p>The client then connects to the port and&nbsp;the management PC sends an acknowledgement.&nbsp;The client then&nbsp;waits for a <strong>Start</strong> message before sending <strong>Position</strong> messages. It can do this until it received a <strong>Stop</strong> message. The management PC will also send information to the acquisition system, with the <strong>Roster</strong> and <strong>Line-up</strong> messages. Before sending these messages, it will, if necessary, use the <strong>Stop</strong> message to stop the <strong>Position</strong> message flood. After the message is acknowledged, a <strong>Start</strong> message will be send to start again the <strong>Position</strong> messages.</p>
+
+    <p>If the connection is broken, the acquisition system must reconnect and identify again. The <strong>Start</strong> message will inform it of the time stamp of the next message to send.</p>
+
+    <p>The base format of a message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>Id</td>
+
+                <td>Length</td>
+
+                <td>Body (<em>Length</em> bytes)</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Field</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>A suite of bytes indicating the start of a message. Its value is <strong>20</strong> bytes, each having an <strong>0xFF</strong> value.</td>
+            </tr>
+
+            <tr>
+                <td>Id</td>
+
+                <td>
+                    A byte with the identifier of the message.<br />
+                    The following values are defined:<br />
+
+                    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <p style="MARGIN: 0px" align="right">Value</p>
+                                </th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">0</p>
+                                </td>
+
+                                <td>Acknowledgement.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">1</p>
+                                </td>
+
+                                <td>Line-up.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">2</p>
+                                </td>
+
+                                <td>Positions.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">3</p>
+                                </td>
+
+                                <td>Roster.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">4</p>
+                                </td>
+
+                                <td>Start.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">5</p>
+                                </td>
+
+                                <td>Stop.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Length</td>
+
+                <td>A byte with the length of the message body, in bytes.</td>
+            </tr>
+
+            <tr>
+                <td>Body</td>
+
+                <td>
+                    <p style="MARGIN-TOP: 0px">The message body, see the following sections for information:</p>
+
+                    <ul>
+                        <li><a href="#Acknowledgement">Acknowledgement</a></li>
+
+                        <li><a href="#LineUp">Line-up</a></li>
+
+                        <li><a href="#Position">Position</a></li>
+
+                        <li><a href="#Roster">Roster</a></li>
+
+                        <li><a href="#Start">Start</a></li>
+
+                        <li><a href="#Stop">Stop</a></li>
+                    </ul>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Checksum</td>
+
+                <td>A byte with the checksum.<br />
+                The checksum is calculated so that the sum of all bytes of the message, ignoring carries, is 0.</td>
+            </tr>
+
+            <tr>
+                <td>END</td>
+
+                <td>A byte indicating the end of the message. Its value is <strong>0xF0</strong>.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-87191762-d214-434f-959c-80af7450fffc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="Acknowledgement" id="Acknowledgement">Acknowledgement message</a></span>
+</div>
+
+<div id="i-87191762-d214-434f-959c-80af7450fffc-section-content" class="i-section-content">
+    <p>This message is used to confirm that a message is received correctly or that an error has occurred. It is used only on&nbsp;all messages, excepted <strong>Position</strong>.</p>
+
+    <p>The format of this message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>0</td>
+
+                <td>1</td>
+
+                <td>Code</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where <em>Code</em> is one of the following value:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Value</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">0</p>
+                </td>
+
+                <td>No error: message received and processed correctly.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">1</p>
+                </td>
+
+                <td>Unknown message identifier.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">2</p>
+                </td>
+
+                <td>Length of the message is not correct.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">3</p>
+                </td>
+
+                <td>Checksum of the message is not correct.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">4</p>
+                </td>
+
+                <td>Invalid computer (IP does not match).</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">5</p>
+                </td>
+
+                <td>Invalid data.</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p style="MARGIN: 0px" align="right">10 and more</p>
+                </td>
+
+                <td>Reserved for the errors of the different messages.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-10f170de-7099-4539-b6c4-9b4c20ee6179-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="Start" id="Start">Start message</a></span>
+</div>
+
+<div id="i-10f170de-7099-4539-b6c4-9b4c20ee6179-section-content" class="i-section-content">
+    <p>This message is sent by the manager to the video acquisition client, after the identification is accepted, or after a <strong>Stop</strong> message is send.</p>
+
+    <p>The format of the message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>4</td>
+
+                <td>4</td>
+
+                <td>Time offset</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Field</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Time offset</td>
+
+                <td>The time offset, in milliseconds, of the next message to send.<br />
+                This is a 32 bits integer number, starting with the MSB.<br />
+                At the beginning of the match, this value is <strong>0</strong>. If the communications are interrupted or the management PC wants that the video acquisition system sends again some messages, it will give the time offset of the next message it wants to receive.<br />
+                Note that there are perhaps no message to send at this time offset. In this case, the video acquisition system must send the first message with a time offset greater than the parameter.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>After receiving this message, the video acquisition system can start sending messages.</p>
+</div>
+
+<div id="i-77fe440d-0805-42f7-9275-fce86b50fa23-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="Stop" id="Stop">Stop message</a></span>
+</div>
+
+<div id="i-77fe440d-0805-42f7-9275-fce86b50fa23-section-content" class="i-section-content">
+    <p>This message is sent by the manager to the video acquisition system, when it wants the acquisition system to stop sending messages.</p>
+
+    <p>The format of the message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>5</td>
+
+                <td>0</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>After receiving this message, the video acquisition system must stop sending messages.</p>
+</div>
+
+<div id="i-5eaaa759-ecfb-4a8d-93af-3620b78805ff-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="Roster" id="Roster">Roster message</a></span>
+</div>
+
+<div id="i-5eaaa759-ecfb-4a8d-93af-3620b78805ff-section-content" class="i-section-content">
+    <p>This message is sent by the manager to the video acquisition system after the identification, it contains the numbers of the maximum 4 players that can be on the court for each team.</p>
+
+    <p>The format of the message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>3</td>
+
+                <td>28</td>
+
+                <td>Player 1 team A</td>
+
+                <td>...</td>
+
+                <td>Player 12 team A</td>
+
+                <td>Libero 1 team A</td>
+
+                <td>Libero 2 team A</td>
+
+                <td>Player 1 team B</td>
+
+                <td>...</td>
+
+                <td>Player 12 team B</td>
+
+                <td>Libero 1 team B</td>
+
+                <td>Libero 2 team B</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where each entry is player number, or <strong>0</strong> for any position without a player number.</p>
+</div>
+
+<div id="i-1dd4d7cf-42e4-45bf-9db9-399a68a2d85b-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="LineUp" id="LineUp">Line-up message</a></span>
+</div>
+
+<div id="i-1dd4d7cf-42e4-45bf-9db9-399a68a2d85b-section-content" class="i-section-content">
+    <p>This message is sent by the manager to the video acquisition system after each player change and before the start of a rally. It is also sent before any <strong>Start</strong> message. It contains the short numbers of the six players on the court for a team. The first player in the line-up is the player at the Serve position and the players are sent in counterclockwise direction.</p>
+
+    <p>The format of the message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>3</td>
+
+                <td>7</td>
+
+                <td>Team number</td>
+
+                <td>Serve player</td>
+
+                <td>Player 2</td>
+
+                <td>Player 3</td>
+
+                <td>Player 4</td>
+
+                <td>Player 5</td>
+
+                <td>Player 6</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where <em>Team number</em> is the number of the team: <strong>0</strong> for team A and <strong>1</strong> for team B.</p>
+</div>
+
+<div id="i-2780151b-71b2-485a-9cbe-006a61697152-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a name="Position" id="Position">Position message</a></span>
+</div>
+
+<div id="i-2780151b-71b2-485a-9cbe-006a61697152-section-content" class="i-section-content">
+    <p>This message is sent regularly by the video acquisition system to the management PC to inform about the position of the players and the ball.</p>
+
+    <p>The format of the message is the following:</p>
+
+    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+        <tbody>
+            <tr>
+                <td>START</td>
+
+                <td>2</td>
+
+                <td>12</td>
+
+                <td>Time offset</td>
+
+                <td>Item number</td>
+
+                <td>Skill</td>
+
+                <td>X position</td>
+
+                <td>Y position</td>
+
+                <td>Z position</td>
+
+                <td>Checksum</td>
+
+                <td>END</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Field</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Time offset</td>
+
+                <td>The time offset, in milliseconds.<br />
+                This is a 32 bits unsigned integer number, starting with the MSB.</td>
+            </tr>
+
+            <tr>
+                <td>Item number</td>
+
+                <td>
+                    Number of the item.<br />
+                    This is a byte coded as following:<br />
+
+                    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>0</td>
+
+                                <td>Player of team A with unknown shirt number.</td>
+                            </tr>
+
+                            <tr>
+                                <td>1 to 99</td>
+
+                                <td>Shirt number of a player of team A.</td>
+                            </tr>
+
+                            <tr>
+                                <td>100</td>
+
+                                <td>Player of team B with unknown shirt number.</td>
+                            </tr>
+
+                            <tr>
+                                <td>101 to 199</td>
+
+                                <td>Shirt number of a player of team B. The shirt number is incremented by 100.</td>
+                            </tr>
+
+                            <tr>
+                                <td>255</td>
+
+                                <td>The ball.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Skill</td>
+
+                <td>
+                    Skill for the player.<br />
+                    This is a byte coded as following:<br />
+
+                    <table style="WIDTH: auto; MARGIN-LEFT: 20px">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">0</p>
+                                </td>
+
+                                <td>No skill, or message not related to a player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">1</p>
+                                </td>
+
+                                <td>Attack.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">2</p>
+                                </td>
+
+                                <td>Block.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">3</p>
+                                </td>
+
+                                <td>Service.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">4</p>
+                                </td>
+
+                                <td>Dig.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">5</p>
+                                </td>
+
+                                <td>Set.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">6</p>
+                                </td>
+
+                                <td>Reception.</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p style="MARGIN: 0px" align="right">100</p>
+                                </td>
+
+                                <td>Touch a the ball, not related to a skill.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>X position</td>
+
+                <td>X position.<br />
+                See comments below for the coding of positions.</td>
+            </tr>
+
+            <tr>
+                <td>Y position</td>
+
+                <td>Y position.<br />
+                See comments below for the coding of positions.</td>
+            </tr>
+
+            <tr>
+                <td>Z position</td>
+
+                <td>Z position.<br />
+                See comments below for the coding of positions.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>The positions are expressed in centimeters. They are a 16 bits 2's complement integer number, starting with the MSB.<br />
+    The origin point is the farthest point of the net on the court, when viewed from the referee table. X positions are positive when going to the right and negative when going to the left. Y positions are positive when going towards the referee table and negative for the other direction. Z positions are always positive.<br />
+    For a player, the position is those of the top of the head. For the ball, it is the center of the ball.</p>
+
+    <p>This message must not be acknowledged.</p>
+</div>
+
+<div id="i-e8f71729-7f90-4c90-95c4-890e85d08ff9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Errors</span>
+</div>
+
+<div id="i-e8f71729-7f90-4c90-95c4-890e85d08ff9-section-content" class="i-section-content">
+    <p>In case of communication error (bad checksum, ...), the sender of the message will try to send it again, for a maximum of 5 times. If there are still errors, the communication channel will be closed and a message displayed to the operator. He/she must take an action to restart the communication, perhaps after making some other checks.</p>
+
+    <p>The video acquisition system is designed in such a way that it could work independently of the match management PC. In this case, the data will be saved locally and processed after the end of the match.<br />
+    The first feature is that it will record the video stream from all the cameras in a second place. The images can then be scanned again after the match to retrieve the positions information.<br />
+    The second feature is that the positions information are saved in a file local to the acquisition system. A human operator can then resynchronize, using&nbsp;the video, with a known event of the match (start of match, start of set, start of a given rally, ...), so the information can be loaded into the management PC.<br />
+    In case there are more than one video recording period, each period will be resynchronized by a human operator.</p>
+</div>
+
+<div id="i-6160ed3d-bfea-4cf7-acd1-6ad035d43e0a-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Test</span>
+</div>
+
+<div id="i-6160ed3d-bfea-4cf7-acd1-6ad035d43e0a-section-content" class="i-section-content">
+    <p>The video acquisition system can, at any time, send an acquisition request and close the communication port. This tests whether it can reach the management PC and communicate with it.</p>
+
+    <p>A special test mode will also be implemented to check the communication speed. This test is started manually at each end. The management waits for a identification from the acquisition system. After the connection is initialized, a button will enable the start and the stop of the <strong>Position</strong> messages. It will then display the number of messages received, the number of errors and the raw speed of the messages.</p>
+</div>
+
+<p></p>
+            <a name="seealsobookmark"></a>
+            
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic202.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

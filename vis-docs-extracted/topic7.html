@@ -1,0 +1,460 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Introduction to requests</title>
+    <meta name="Title" content="Introduction to requests"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content=" This page contains the following information:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="11550222-55a8-4f6a-85c1-8b5b0cb491d6"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Introduction to requests</div></div>
+                        <p>&nbsp;This page contains the following information:</p>
+
+<ul>
+    <li><a href="#Introduction">Introduction</a></li>
+
+    <li><a href="#ApplicationIdentifier">Application identifier</a></li>
+
+    <li><a href="#Authentication">Authentication</a></li>
+
+    <li><a href="#RequestParameter">Request parameter</a></li>
+
+    <li><a href="#BaseRequestFormat">Base format for a request</a></li>
+
+    <li><a href="#XmlResponse">Response (XML)</a></li>
+
+    <li><a href="#JsonResponse">Response (JSON)</a></li>
+
+    <li><a href="#Compression">Compression</a></li>
+</ul>
+
+<div id="i-592edcc3-c05f-41fc-ba90-e5d6fab4b748-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Introduction" name="Introduction"></a>Introduction</span>
+</div>
+
+<div id="i-592edcc3-c05f-41fc-ba90-e5d6fab4b748-section-content" class="i-section-content">
+    <p>The entry point for all web service XML requests is <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx" target="_blank">https://www.fivb.org/Vis2009/XmlRequest.asmx</a>.</p>
+
+    <p>The request must contain a <strong>Request</strong> parameter, in the query string, the form data or the HTTP payload. This parameter is an XML element describing a request or a list of requests. Even if the parameter can be in the query string, it is not recommended to do this in production code and to use the form data with a POST request or the HTTP payload method. This is recommended because an URL is limited to about 4K bytes and a long request will be refused by the server, before it reaches the web service. On the other hand, it could be useful to check a request with a browser, and in this case a request in the URL is very convenient.</p>
+
+    <p>All the requests can return an XML response, but only some of them can return a JSON response (the list is growing). To identify the requests that can return JSON output, you can look at the <a href="topic199.html">list of requests</a>.</p>
+
+    <p>You can test a request and its response using a web browser.<br />
+    For example, if you browse the following URL, you will retrieve information about the web service: <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetServiceInformation' /&gt;">https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Request Type='GetServiceInformation' /&gt;</a>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #ff0000">Id</span><span style="COLOR: #0000ff">="FivbVis"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="18.1.22.1169"</span> <span style="COLOR: #ff0000">Date</span><span style="COLOR: #0000ff">="2018-01-22"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="i-9e521848-fab5-4695-883d-db8590433a9d-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="ApplicationIdentifier" name="ApplicationIdentifier"></a>Application identifier</span>
+</div>
+
+<div id="i-9e521848-fab5-4695-883d-db8590433a9d-section-content" class="i-section-content">
+    <p>To communicate with the web service, an application must use an application identifier. The identifier is unique to an application, not a developer or a company. One of the benefits of an application identifier is that the developer has access to the error log of the web service for the application (this feature is in development).</p>
+
+    <p>To obtain an application identifier, please contact the FIVB at <a href="mailto:vis.sdk@fivb.org">vis.sdk@fivb.org</a>.</p>
+
+    <p>For more information about the use of the application identifier, please look at the following documentation page: <a href="topic4.html">Application identifier</a>.</p>
+</div>
+
+<div id="i-ca5125ab-096b-41e3-aa2b-13f3e9cfad79-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Authentication" name="Authentication"></a>Authentication</span>
+</div>
+
+<div id="i-ca5125ab-096b-41e3-aa2b-13f3e9cfad79-section-content" class="i-section-content">
+    <p>Authentication is needed only if you need to access non-public data or you need to modify data. If your application needs only access to public data, you don't need to authenticate to the web service. In this case, don't specify any authentication information and you will be treated as a guest.</p>
+
+    <p>Authentication can be made using three different methods: JSON web token, basic authentication, authentication in the request.</p>
+
+    <p class="SubHeader2">JSON web token</p>
+
+    <p>The preferred method to authenticate is the use of <a href="https://jwt.io/">JSON web tokens</a>. The application asks the web service for a token, then uses it to send requests. When the token expires, the application car ask to refresh it or create a new token.</p>
+
+    <p>For more information about the use of JSON web tokens with the FIVB web service, please look at the following documentation page: <a href="topic5.html">Authentication using JSON web tokens</a>.</p>
+
+    <p class="SubHeader2">Basic Authentication</p>
+
+    <p>In this case, the username and password are specified in the <strong>Authorization</strong> header of the request. The header value must contain <strong>"Basic "</strong> followed by the username and password, separated by a colon and coded using base-64 encoding.</p>
+
+    <p>For more information about the use of basic authentication, please look at this <a href="https://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">Wikipedia article</a>.</p>
+
+    <p class="SubHeader2">Authentication in the request</p>
+
+    <p>This method of authentication can only be used with multiple requests. It consists in the use of the <strong>Username</strong> and <strong>Password</strong> attributes in the root <strong>&lt;Requests&gt;</strong> element. The <a href="#RequestParameter">Request parameter</a> section gives more information</p>
+</div>
+
+<div id="i-eaa053c4-9ac1-4d4e-af93-9ca9b48c9d18-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="RequestParameter" name="RequestParameter"></a>Request parameter</span>
+</div>
+
+<div id="i-eaa053c4-9ac1-4d4e-af93-9ca9b48c9d18-section-content" class="i-section-content">
+    <p>The format of the request parameter depends on the format of the request.</p>
+
+    <p class="SubHeader2">Single request</p>
+
+    <p>The <strong>Request</strong> parameter has the following global format:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="xxx"</span> <span style="COLOR: #ff0000">other-attributes</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #008000">&lt;!-- Optional parameters --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Note that not all of the requests currently accept the "single request" format (the list is growing).To identify the requests that can use the single request format, you can look at the <a href="topic199.html">list of requests</a>.</p>
+
+    <p class="SubHeader2">Multiple requests</p>
+
+    <p>The <strong>Request</strong> parameter has the following global format:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>List of requests</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Requests</span> <span style="COLOR: #ff0000">Username</span><span style="COLOR: #0000ff">="xxx"</span> <span style="COLOR: #ff0000">Password</span><span style="COLOR: #0000ff">="xxx"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #008000">&lt;!-- Zero or more &lt;Request&gt; entries --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Requests</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p><br />
+    The following table lists the attributes for the <strong>&lt;Requests&gt;</strong> element. Note that these attributes are only used if no other authentication method is used in the request.<br /></p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Attribute</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Username</td>
+
+                <td>Name of the user making the request.<br />
+                If it is not specified, <strong>Guest</strong> will be used by default by the web service.</td>
+            </tr>
+
+            <tr>
+                <td>Password</td>
+
+                <td>The password of the user, either in plain text or encrypted.<br />
+                If there is no password, this attribute can be omitted.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-7bd82ae2-93b2-43f5-ba4c-81261256d9b1-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="BaseRequestFormat" name="BaseRequestFormat"></a>Base format for a request</span>
+</div>
+
+<div id="i-7bd82ae2-93b2-43f5-ba4c-81261256d9b1-section-content" class="i-section-content">
+    <p>A request has the following default format:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Request format</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="xxx"</span> <span style="COLOR: #ff0000">other-attributes</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #008000">&lt;!-- Optional parameters --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The <strong>Type</strong> attribute indicates which request you make to the web service. Depending on the request, there can be other attributes and parameters that can be specified.<br />
+    Please look at the documentation of each request for detailed format.</p>
+</div>
+
+<div id="i-28a6c422-8b3a-4d4a-87a6-eee99d549bdc-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="XmlResponse" name="XmlResponse"></a>Response (XML)</span>
+</div>
+
+<div id="i-28a6c422-8b3a-4d4a-87a6-eee99d549bdc-section-content" class="i-section-content">
+    <p>This is the default response format. It is used when the <strong>Accept</strong> header is not specified or doesn't contain a recognized value. It is also used when the <strong>Accept</strong> header contains the <strong>application/xml</strong> format.</p>
+
+    <p>The format of the XML response depends on the format of the request.</p>
+
+    <p class="SubHeader2">Single request</p>
+
+    <p>When a error is received, the HTTP status indicates an error code.</p>
+
+    <p>Otherwise the web service returns an XML element, containing only <strong>&lt;OK /&gt;</strong> or more information, depending on the request. If no information is returned by the web service, an HTTP status of <strong>204</strong> (no content) is returned. Please look at the documentation of each request for detailed response format.</p>
+
+    <p class="SubHeader2">Multiple request</p>
+
+    <p>The web service responds by sending back an XML document having the specified format:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Response format</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;?</span><span style="COLOR: #ff00ff">xml version="1.0"</span><span style="COLOR: #0000ff">?&gt;</span>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Responses</span>
+  <span style="COLOR: #0000ff">&lt;</span>!-- <span style="COLOR: #ff0000">Response</span> <span style="COLOR: #ff0000">for</span> 1<span style="COLOR: #ff0000">st</span> <span style="COLOR: #ff0000">request</span>   --<span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #008000">&lt;!-- Response for 2nd request   --&gt;</span>
+  <span style="COLOR: #008000">&lt;!--          ...              --&gt;</span>
+  <span style="COLOR: #008000">&lt;!-- Response for last request --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Responses</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response for each request is a single XML element which contains the requested data, a confirmation information or an error information. The responses are in the same order as the requests.<br />
+    Please look at the documentation of each request for detailed response format.</p>
+</div>
+
+<div id="i-ea7e5621-66f0-482b-8fda-701bcb889ac8-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="JsonResponse" name="JsonResponse"></a>Response (JSON)</span>
+</div>
+
+<div id="i-ea7e5621-66f0-482b-8fda-701bcb889ac8-section-content" class="i-section-content">
+    <p>This is the response format used when the <strong>Accept</strong> header contains the <strong>application/json</strong> format.</p>
+
+    <p>Currently few of the requests can return value in JSON format. Look at <a href="topic199.html">list of requests</a> or at the documentation of each request to see if a request accepts the JSON output format. If a request doesn't accept the JSON format an error is returned.</p>
+
+    <p>The format of the XML response depends on the format of the request.</p>
+
+    <p class="SubHeader2">Single request</p>
+
+    <p>When a error is received, the HTTP status indicates an error code.</p>
+
+    <p>Otherwise the web service returns a JSON value, containing more information, depending on the request. If no information is returned by the web service, an HTTP status of <strong>204</strong> (no content) is returned. Please look at the documentation of each request for detailed response format.</p>
+
+    <p class="SubHeader2">Multiple request</p>
+
+    <p>The web service responds by sending back a JSON object having the specified format:</p>
+
+    <div class="i-filtered-content-JSON" data-title="JSON" data-itemid="JSON">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Response format</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+{
+  <span style="COLOR: #800000">"responses"</span>: [
+    <span style="COLOR: #008000">// Response for 1st request
+</span>    <span style="COLOR: #008000">// Response for 2nd request
+</span>    <span style="COLOR: #008000">//           ...
+</span>    <span style="COLOR: #008000">// Response for last request
+</span>  ]
+}
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response for each request is a single JSON element which contains the requested data, a confirmation information or an error information. The responses are in the same order as the requests.</p>
+
+    <p class="SubHeader2">Properties names in responses</p>
+
+    <p>The names of the properties are the same of those in XML format, but they are converted to <strong>camelCase</strong>, with their first char in lowercase.<br />
+    Please look at the documentation of each request for detailed response format.</p>
+</div>
+
+<div id="i-744e7f96-a780-46cd-a882-b522de5a9fcf-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Compression" name="Compression"></a>Compression</span>
+</div>
+
+<div id="i-744e7f96-a780-46cd-a882-b522de5a9fcf-section-content" class="i-section-content">
+    <p>If the request header contains the <strong>Accept-Encoding</strong> header, with one of the following encoding format: <strong>gzip</strong> or <strong>deflate</strong>, the web service response is compressed using the specified encoding format. If the accepted formats are both specifed, the web service returns data in <strong>gzip</strong> format.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic199.html">Requests</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic7.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

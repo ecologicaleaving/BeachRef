@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to upload volleyball live data</title>
+    <meta name="Title" content="Request to upload volleyball live data"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="This request is used when live data must be uploaded to the web service." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="d6dd91de-787e-4029-80f9-39b9629b0e7a"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="1"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic199.html">Requests</a>
+ > Volleyball
+ > Live
+ > Request to upload volleyball live data</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to upload volleyball live data</div></div>
+                        <p>This request is used when live data must be uploaded to the web service.</p>
+
+<div id="i-41532082-fadc-4a2b-acc6-439272a1c24a-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-41532082-fadc-4a2b-acc6-439272a1c24a-section-content" class="i-section-content">
+    <p>The syntax for the request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="UploadVolleyLive"</span>
+         <span style="COLOR: #ff0000">ClientId</span><span style="COLOR: #0000ff">="&lt;client identifier&gt;"</span>
+         <span style="COLOR: #ff0000">ClientRole</span><span style="COLOR: #0000ff">="&lt;computer role&gt;"</span>
+         <span style="COLOR: #ff0000">NoMatch</span><span style="COLOR: #0000ff">="&lt;match number&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyLive</span> ... <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Attribute</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>ClientId</td>
+
+                <td>The identifier of the client.<br />
+                This is a UUID.<br />
+                For a single match, all the clients must have a unique identifier.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+
+            <tr>
+                <td>ClientRole</td>
+
+                <td>The <a href="topic117.html">role</a> of the client.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+
+            <tr>
+                <td>NoMatch</td>
+
+                <td>The number of the match.<br />
+                This is a <strong>mandatory</strong> attribute.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><a href="topic438.html">VolleyLive</a> is the live data to upload.</p>
+</div>
+
+<div id="i-139d176d-4761-401e-be41-5e59f25dbd40-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-139d176d-4761-401e-be41-5e59f25dbd40-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns an <strong>&lt;OK&gt;</strong> XML element.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">OK</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="i-845e14d6-7c9d-40c0-8599-8a469f440316-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Errors</span>
+</div>
+
+<div id="i-845e14d6-7c9d-40c0-8599-8a469f440316-section-content" class="i-section-content">
+    <p>In addition to <a href="topic9.html">global errors</a>, the following errors can be sent by the web service:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Error</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>&lt;AccessDenied&gt;</td>
+
+                <td>You don't have the right to upload live data for the match.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;BadParameter&gt;</td>
+
+                <td>- The <strong>IdClient</strong> attribute is not a valid UUID.<br />
+                - The <strong>Role</strong> attribute is not a valid <a href="topic117.html">role</a>.<br />
+                - There is one or more errors in the live data. See the element content for more information about the error.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;NoData&gt;</td>
+
+                <td>The match doesn't exist.</td>
+            </tr>
+
+            <tr>
+                <td>&lt;ParameterMissing&gt;</td>
+
+                <td>- The <strong>IdClient</strong> attribute is missing.<br />
+                - The <strong>Role</strong> attribute is missing.<br />
+                - The <strong>VolleyLive</strong> children element is missing.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>For the <em>&lt;BadParameter&gt;</em> error, the following tests are made by the web service:</p>
+
+    <ul>
+        <li>Each value has the right format for its type.</li>
+
+        <li>The <strong>NoServingTeam</strong> attribute of <strong>&lt;VolleyLive&gt;</strong> corresponds to a team of the match.</li>
+
+        <li>The <strong>&lt;LineUp&gt;</strong> child element of <strong>&lt;VolleyLive&gt;</strong> occurs at most twice.</li>
+
+        <li>The <strong>NoTeam</strong> attribute of <strong>&lt;LineUp&gt;</strong> corresponds to a team of the match.</li>
+
+        <li>The <strong>player's numbers</strong> attribute of <strong>&lt;LineUp&gt;</strong> corresponds to the players of the right team</li>
+
+        <li>The <strong>player's numbers</strong> attribute of <strong>&lt;LineUp&gt;</strong> corresponds to the players registered for the team in the tournament</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Match&gt;</strong> is specified and corresponds to an existing match.</li>
+
+        <li>The <strong>&lt;Team&gt;</strong> element occurs at most twice.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Team&gt;</strong> is specified and corresponds to a team of the match.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Team&gt;</strong> is unique.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Player&gt;</strong> is specified and correponds to a player registered for the team in the tournament.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Player&gt;</strong> is unique.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Set&gt;</strong> is specified and is between <strong>1</strong> and <strong>5</strong>.</li>
+
+        <li>The <strong>No</strong> attribute of <strong>&lt;Set&gt;</strong> is unique.</li>
+
+        <li>The <strong>NoServingTeam</strong> attribute of <strong>&lt;Set&gt;</strong> corresponds to a team of the match.</li>
+
+        <li>The <strong>scores</strong> of the match and the sets are valid.</li>
+    </ul>
+</div>
+
+<div id="i-33122b6b-4037-4127-b709-fecd4205a936-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-33122b6b-4037-4127-b709-fecd4205a936-section-content" class="i-section-content">
+    <p>This is a private request: a username and password is required. Otherwise, an <strong>&lt;AccessDenied&gt;</strong> XML element is returned by the web service.</p>
+
+    <p>A user can be limited to upload live data only for some matches.</p>
+</div>
+
+<div id="i-5f955023-6308-415e-971d-32f496fba827-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-5f955023-6308-415e-971d-32f496fba827-section-content" class="i-section-content">
+    See the <a href="topic438.html">XSD schema</a> for an example of a live data to upload.
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.Live.UploadVolleyLiveRequest.html">UploadVolleyLiveRequest Class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.Live.VolleyLiveUploadRole.html">VolleyLiveUploadRole Class</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic117.html">VolleyLiveUploadRole</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic183.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

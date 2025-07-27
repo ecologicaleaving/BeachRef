@@ -1,0 +1,687 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get a list of articles</title>
+    <meta name="Title" content="Request to get a list of articles"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="9fdfc764-8288-442d-b2e0-3098a53aa57b"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="7"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Media
+ > Articles
+ > Request to get a list of articles</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get a list of articles</div></div>
+                        <div id="i-b353ea87-c2b8-40c5-ad94-31e4fef0f234-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-b353ea87-c2b8-40c5-ad94-31e4fef0f234-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetArticleList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+         Version="<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">version</span> <span style="COLOR: #ff0000">of</span> <span style="COLOR: #ff0000">local</span> <span style="COLOR: #ff0000">list</span><span style="COLOR: #0000ff">&gt;</span>"&gt;
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #0000ff">/&gt;</span> <span style="COLOR: #008000">&lt;!-- optional: contains the filter to use --&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="&lt;name of the relation&gt;"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields for the relation&gt;"</span><span style="COLOR: #0000ff">&gt;</span>/&gt; <span style="COLOR: #008000">&lt;!-- optional: contains a relation (can be used multiple times) --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic45.html">Article</a> data. Only the fields you have access to will be returned.</p>
+
+    <p class="SubHeader2">Filter</p>
+
+    <p>The filter is optional.<br />
+    If it is not specified, the response will contain all the articles.<br />
+    Please see the <a href="topic148.html">ArticleFilter</a> documentation for more information.</p>
+
+    <p class="SubHeader2">Relations</p>
+
+    <p>The relations are optional. They permit to get additional information about the article, such as the texts or the tags.<br />
+    A list of the available relations for an article can be found <a href="topic45.html#Relations">here</a>.</p>
+
+    <p class="SubHeader2">Version</p>
+
+    <p>The version is optional.<br />
+    The goal of this parameter is to request an update to an existing local list: for the first request, you don't specify the parameter (or set it to 0) and you receive the full list of the filtered articles; for subsequent requests, you specify the version of the local list and the web service only returns the changes (new articles or articles that have changed). Doing this will decrease the bandwidth used by the local application.<br />
+    Note that the version of all the articles (not only the filtered ones) is returned in the root of the response.</p>
+</div>
+
+<div id="i-4291d242-9022-495c-a544-72a421e1a459-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-4291d242-9022-495c-a544-72a421e1a459-section-content" class="i-section-content">
+    <p>When the request is successful, the web service returns the filtered list of articles.</p>
+
+    <p>In addition, the root element contains the number of articles that are returned and the version of all the articles.</p>
+</div>
+
+<div id="i-d8e2efc4-2f6b-43a8-91f6-67a40a3f12c8-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-d8e2efc4-2f6b-43a8-91f6-67a40a3f12c8-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for an article are public and other are not.<br />
+    The response from the web service will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-ef5d98d2-1d02-45e3-a28d-c7cf1538ab05-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-ef5d98d2-1d02-45e3-a28d-c7cf1538ab05-section-content" class="i-section-content">
+    <p>Get the list of the&nbsp;articles related to player number <strong>110419</strong>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetArticleList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="No DateTime Source"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tag</span><span style="COLOR: #0000ff">&gt;</span>Player:110419<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tag</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+ <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Filter</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Tags"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="TagText TagUserText"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Relation</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Texts"</span> <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="LanguageCode LanguageEnglishName LanguageNativeName AuthorName Headline Introduction Text"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-tab-container i-tab-container-widget">
+        <ul role="tablist">
+            <li class="i-filtered-content-XML"><a href="#i-tab-content-XML">XML</a></li>
+
+            <li class="i-filtered-content-JSON"><a href="#i-tab-content-JSON">JSON</a></li>
+        </ul>
+
+        <div id="i-tab-content-XML" class="i-code i-filtered-content-XML">
+            <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Articles</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="9"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="137356"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="15318"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2007-10-02T00:00:00"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="13027"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="13027"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="13028"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="13028"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="13029"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="13029"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:87"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:87"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="13030"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="13030"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;B&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;?xml:namespace prefix = o ns = &amp;quot;urn:schemas-microsoft-com:office:office&amp;quot; /&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Born in: &amp;lt;?xml:namespace prefix = st1 ns = &amp;quot;urn:schemas-microsoft-com:office:smarttags&amp;quot; /&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Londrina&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:City&amp;gt; (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Giba was the best player in the Olympic Games in &amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Athens&amp;lt;/st1:City&amp;gt;, in 2004, when &amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Brazil&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:country-region&amp;gt; won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at &amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Cuneo&amp;lt;/st1:City&amp;gt;, &amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;Italy&amp;lt;/st1:country-region&amp;gt;&amp;lt;/st1:place&amp;gt;. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in &amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Rio de Janeiro&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:City&amp;gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="5161"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="16117"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2008-03-28T00:00:00"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="15116"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="15116"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="15117"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="15117"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="15118"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="15118"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:108"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:108"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="15119"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="15119"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;BR&amp;gt;Height: 1,92m &amp;lt;BR&amp;gt;Weight: 85kg&amp;lt;BR&amp;gt;Date of birth: 23/12/76&amp;lt;BR&amp;gt;Born in: Londrina (PR)&amp;lt;BR&amp;gt;Giba was the best player in the Olympic Games in Athens in 2004 when Brazil won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Cuneo, Italy. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition.&amp;lt;BR&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="5939"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="17204"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2008-06-23T00:00:00"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="18060"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="18060"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="18061"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="18061"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="18062"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="18062"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:14"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:14"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="18063"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="18063"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;B&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;?xml:namespace prefix = o ns = &amp;quot;urn:schemas-microsoft-com:office:office&amp;quot; /&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;Born in: &amp;lt;?xml:namespace prefix = st1 ns = &amp;quot;urn:schemas-microsoft-com:office:smarttags&amp;quot; /&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Londrina&amp;lt;/st1:City&amp;gt;&amp;lt;/st1:place&amp;gt; (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoNormal style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US&amp;quot;&amp;gt;Giba was the best player in the Olympic Games in &amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Athens&amp;lt;/st1:City&amp;gt;, in 2004, when &amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;Brazil&amp;lt;/st1:country-region&amp;gt;&amp;lt;/st1:place&amp;gt; won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at &amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Cuneo&amp;lt;/st1:City&amp;gt;, &amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;Italy&amp;lt;/st1:country-region&amp;gt;&amp;lt;/st1:place&amp;gt;. He was world champion twice: in 2002 and &amp;lt;st1:metricconverter w:st=&amp;quot;on&amp;quot; ProductID=&amp;quot;2006. In&amp;quot;&amp;gt;2006. In&amp;lt;/st1:metricconverter&amp;gt; this last competition, he was the best player. In 2007, he won the Pan-American Games, in &amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Rio de Janeiro&amp;lt;/st1:City&amp;gt;&amp;lt;/st1:place&amp;gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition.&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="6997"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="18893"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2009-03-30T00:00:00"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="22196"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="22196"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="22197"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="22197"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="22198"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="22198"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:109"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:109"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="22199"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="22199"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;B style=&amp;quot;mso-bidi-font-weight: normal&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;?xml:namespace prefix = o ns = &amp;quot;urn:schemas-microsoft-com:office:office&amp;quot; /&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Born in: Londrina (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;&amp;amp;nbsp;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;FONT size=3&amp;gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Iskra Odintsovo, from Russia. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League.&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="8581"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="24280"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2010-06-10T13:32:34"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="36305"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="36305"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="36306"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="36306"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="36307"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="36307"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:235"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:235"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="36308"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="36308"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">="&amp;lt;FONT size=1 face=Verdana,Arial&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;P align=justify&amp;gt;&amp;lt;FONT size=1 face=Verdana,Arial&amp;gt;&amp;lt;STRONG&amp;gt;Height: 1,92m &amp;lt;BR&amp;gt;Weight: 85kg&amp;lt;BR&amp;gt;Date of birth: 23/12/76&amp;lt;BR&amp;gt;Born in: Londrina (PR)&amp;lt;BR&amp;gt;Club: Pinheiros/Sky (BRA)&amp;lt;/STRONG&amp;gt;&amp;lt;BR&amp;gt;&amp;lt;BR&amp;gt;Giba was the best player&amp;amp;nbsp;of the Olympic Games in Athens, in 2004, when Brazil won&amp;amp;nbsp;their second olympic title. He won the FIVB World Cup in 2003, and six World League&amp;amp;nbsp;titles (2001, 2003, 2004, 2005, 2006 and 2007). He played&amp;amp;nbsp;for the Junior Brazilian team, winning the South American Championship (94), and finishing second&amp;amp;nbsp;at&amp;amp;nbsp;the FIVB&amp;amp;nbsp;Junior World Championship (95). In the Youth Brazilian Team, he won the FIVB World Championship, in 93. He got the Superliga 99/00 and 00/01 titles. In the last season, he played&amp;amp;nbsp;for Iskra Odintsovo, from Russia. He was World Champion twice, respectively in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team.&amp;amp;nbsp;The same year, he&amp;amp;nbsp;clinched the gold medal at the South American Championship, and was&amp;amp;nbsp;elected best player of the competition. In the FIVB World Cup, one more time, he returned home with the gold and was elected main star of the competition. In 2008, he was silver medallist&amp;amp;nbsp;at Beijing Olympic Games and was elected best server of the FIVB World League. In 2009, Giba led Brazil’s renewed team&amp;amp;nbsp;to the FIVB World League, the FIVB&amp;amp;nbsp;World Grand Champions Cup and the South American Championship.&amp;lt;BR&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/P&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="13595"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="25480"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2010-08-19T16:14:25"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="39179"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="39179"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="39180"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="39180"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="39181"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="39181"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:172"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:172"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="39182"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="39182"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">="&amp;lt;font style=&amp;quot;font-family: Verdana,Arial;&amp;quot; size=&amp;quot;1&amp;quot;&amp;gt;&amp;amp;nbsp;&amp;lt;/font&amp;gt;"</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;font size=&amp;quot;1&amp;quot; face=&amp;quot;Verdana,Arial&amp;quot;&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;Born in: Londrina (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;Club: Pinheiros/Sky (BRA)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/font&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;p class=&amp;quot;MsoBodyText&amp;quot; style=&amp;quot;margin: 0cm 0cm 0pt; line-height: 150%;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;font size=&amp;quot;3&amp;quot;&amp;gt;&amp;amp;nbsp;&amp;lt;/font&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;span style=&amp;quot;font-size: 11pt; line-height: 115%; font-family: 'Tahoma','sans-serif';&amp;quot; lang=&amp;quot;EN-US&amp;quot;&amp;gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Iskra Odintsovo, from Russia. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League. Last season, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. He started the 2010 season winning the World League.&amp;lt;br&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;/font&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="14752"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="28093"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2011-03-31T21:32:31"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="45661"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="45661"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="45662"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="45662"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="45663"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="45663"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:242"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:242"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="45664"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="45664"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">="&amp;lt;font style=&amp;quot;font-family: Verdana,Arial;&amp;quot; size=&amp;quot;1&amp;quot;&amp;gt;&amp;amp;nbsp;&amp;lt;/font&amp;gt;"</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;font size=&amp;quot;1&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Height: 1,92m&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Weight: 85kg&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Date of birth: 23/12/76&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Born in: Londrina (PR)&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Club: Pinheiros/Sky (BRA)&amp;lt;/span&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;/span&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;br style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;&amp;lt;span style=&amp;quot;font-family: Verdana,Arial;&amp;quot;&amp;gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second title. He has won the World Cup (2003), and the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played for the Brazilian junior team, winning the South American Championship (94), and coming second at the FIVB Volleyball Men's Junior World Championship (95). FOr the the Brazilian youth team he won the World Championship, in 93. He was the champion of the Superliga in 1999/00 and 2000/01. Giba has also been world champion three times: in 2002, 2006 and 2010, being elected MVP in 2006. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was captain of the Brazilian team. In the same year, he won the gold medal at the South American Championship, and was the best player of the competition. He went on to win another World Cup in 2007, taking the MVP prize as well. In 2008, he was silver medallist at the Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship.&amp;lt;/span&amp;gt;&amp;lt;/font&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="17369"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="32462"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2011-10-08T19:34:15"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="56987"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="56987"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="56988"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="56988"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="56989"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="56989"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:251"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:251"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="56990"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="56990"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT face=Verdana,Arial size=1&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;B style=&amp;quot;mso-bidi-font-weight: normal&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;?xml:namespace prefix = o ns = &amp;quot;urn:schemas-microsoft-com:office:office&amp;quot; /&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Born in: &amp;lt;?xml:namespace prefix = st1 ns = &amp;quot;urn:schemas-microsoft-com:office:smarttags&amp;quot; /&amp;gt;&amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Londrina&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:City&amp;gt; (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Club: Cimed/Sky (BRA)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;amp;nbsp;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;Giba was the best player in the Olympic Games in &amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;Athens&amp;lt;/st1:City&amp;gt;, in 2004, when &amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Brazil&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:country-region&amp;gt; won its second olympic title. He was the champion of the World Cup (2003), and won the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. Giba was world champion three times: in 2002, 2006 and 2010, being elected the best player in the second title. In 2007, he won the Pan-American Games, in &amp;lt;st1:City w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Rio de Janeiro&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:City&amp;gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led &amp;lt;st1:country-region w:st=&amp;quot;on&amp;quot;&amp;gt;&amp;lt;st1:place w:st=&amp;quot;on&amp;quot;&amp;gt;Brazil&amp;lt;/st1:place&amp;gt;&amp;lt;/st1:country-region&amp;gt;’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. In 2010, won the World League and the World Championship. In 2011, finished second in the World League.&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P class=MsoBodyText style=&amp;quot;MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%&amp;quot;&amp;gt;&amp;lt;B style=&amp;quot;mso-bidi-font-weight: normal&amp;quot;&amp;gt;&amp;lt;SPAN lang=EN-US style=&amp;quot;FONT-FAMILY: Tahoma&amp;quot;&amp;gt;&amp;lt;o:p&amp;gt;&amp;amp;nbsp;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="21759"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Article</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="34337"</span> <span style="COLOR: #ff0000">DateTime</span><span style="COLOR: #0000ff">="2012-04-25T23:14:05"</span> <span style="COLOR: #ff0000">Source</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Tags</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="4"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#volley"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="61506"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="61506"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="#player-profile"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="61507"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="61507"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="player:110419"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="61508"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="61508"</span><span style="COLOR: #0000ff">/&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">TagItem</span> <span style="COLOR: #ff0000">TagText</span><span style="COLOR: #0000ff">="volley-tournament:252"</span> <span style="COLOR: #ff0000">TagUserText</span><span style="COLOR: #0000ff">="volley-tournament:252"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="61509"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="61509"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Tags</span><span style="COLOR: #0000ff">&gt;</span>
+    <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Texts</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">&gt;</span>
+      <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">ArticleText</span> <span style="COLOR: #ff0000">LanguageEnglishName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">LanguageNativeName</span><span style="COLOR: #0000ff">="English"</span> <span style="COLOR: #ff0000">Headline</span><span style="COLOR: #0000ff">="Player 110419:  Giba - Gilberto Godoy Filho"</span> <span style="COLOR: #ff0000">Introduction</span><span style="COLOR: #0000ff">=""</span> <span style="COLOR: #ff0000">Text</span><span style="COLOR: #0000ff">="&amp;lt;FONT size=1 face=Verdana,Arial&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;B&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;# 7 - GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&amp;lt;?xml:namespace prefix = o ns = &amp;quot;urn:schemas-microsoft-com:office:office&amp;quot; /&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/B&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Height: 1,92m &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Weight: 85kg&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Date of birth: 23/12/76&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Born in: Londrina (PR)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Club: Cimed/SKY (BRA)&amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;o:p&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;&amp;amp;nbsp;&amp;lt;/FONT&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;#xD;&amp;#xA;&amp;lt;P style=&amp;quot;TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt&amp;quot; class=MsoNormal&amp;gt;&amp;lt;SPAN style=&amp;quot;FONT-SIZE: 12pt; mso-ansi-language: EN-US&amp;quot; lang=EN-US&amp;gt;&amp;lt;FONT face=Calibri&amp;gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. Giba was world champion three times: in 2002, 2006 and 2010, being elected the best player in the second title. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medalist in Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. &amp;lt;o:p&amp;gt;&amp;lt;/o:p&amp;gt;&amp;lt;/FONT&amp;gt;&amp;lt;/SPAN&amp;gt;&amp;lt;/P&amp;gt;&amp;lt;/FONT&amp;gt;"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="23629"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+    <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Texts</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Article</span><span style="COLOR: #0000ff">&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Articles</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+        </div>
+
+        <div id="i-tab-content-JSON" class="i-code i-filtered-content-JSON">
+            <pre>
+{
+ <span style="COLOR: #800000">"data"</span>: [
+    {
+      <span style="COLOR: #800000">"no"</span>: 15318,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2007-10-02T00:00:00"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+        tagText<span style="COLOR: #800000">": "</span>#volley<span style="COLOR: #800000">",
+</span>        <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:87"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:87"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #0000ff">null</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;B&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&lt;?xml:namespace prefix = o ns = \"urn:schemas-microsoft-com:office:office\" /&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;Born in: &lt;?xml:namespace prefix = st1 ns = \"urn:schemas-microsoft-com:office:smarttags\" /&gt;&lt;st1:City w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Londrina&lt;/st1:place&gt;&lt;/st1:City&gt; (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"COLOR: black; FONT-FAMILY: Arial; mso-ansi-language: EN-US\"&gt;&lt;FONT size=3&gt;Giba was the best player in the Olympic Games in &lt;st1:City w:st=\"on\"&gt;Athens&lt;/st1:City&gt;, in 2004, when &lt;st1:country-region w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Brazil&lt;/st1:place&gt;&lt;/st1:country-region&gt; won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at &lt;st1:place w:st=\"on\"&gt;&lt;st1:City w:st=\"on\"&gt;Cuneo&lt;/st1:City&gt;, &lt;st1:country-region w:st=\"on\"&gt;Italy&lt;/st1:country-region&gt;&lt;/st1:place&gt;. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in &lt;st1:City w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Rio de Janeiro&lt;/st1:place&gt;&lt;/st1:City&gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. &lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 16117,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2008-03-28T00:00:00"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:108"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:108"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;&lt;/FONT&gt;"</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&lt;BR&gt;Height: 1,92m &lt;BR&gt;Weight: 85kg&lt;BR&gt;Date of birth: 23/12/76&lt;BR&gt;Born in: Londrina (PR)&lt;BR&gt;Giba was the best player in the Olympic Games in Athens in 2004 when Brazil won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Cuneo, Italy. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition.&lt;BR&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 17204,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2008-06-23T00:00:00"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:14"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:14"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #0000ff">null</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;B&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;GILBERTO A. DE GODOY FILHO (GIBA) – WING-SPIKER&lt;?xml:namespace prefix = o ns = \"urn:schemas-microsoft-com:office:office\" /&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;Born in: &lt;?xml:namespace prefix = st1 ns = \"urn:schemas-microsoft-com:office:smarttags\" /&gt;&lt;st1:place w:st=\"on\"&gt;&lt;st1:City w:st=\"on\"&gt;Londrina&lt;/st1:City&gt;&lt;/st1:place&gt; (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoNormal style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%; TEXT-ALIGN: justify; mso-margin-top-alt: auto; mso-margin-bottom-alt: auto\"&gt;&lt;SPAN lang=EN-US style=\"FONT-SIZE: 14pt; COLOR: black; LINE-HEIGHT: 150%; FONT-FAMILY: 'Palatino Linotype'; mso-ansi-language: EN-US\"&gt;Giba was the best player in the Olympic Games in &lt;st1:City w:st=\"on\"&gt;Athens&lt;/st1:City&gt;, in 2004, when &lt;st1:place w:st=\"on\"&gt;&lt;st1:country-region w:st=\"on\"&gt;Brazil&lt;/st1:country-region&gt;&lt;/st1:place&gt; won the second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at &lt;st1:place w:st=\"on\"&gt;&lt;st1:City w:st=\"on\"&gt;Cuneo&lt;/st1:City&gt;, &lt;st1:country-region w:st=\"on\"&gt;Italy&lt;/st1:country-region&gt;&lt;/st1:place&gt;. He was world champion twice: in 2002 and &lt;st1:metricconverter w:st=\"on\" ProductID=\"2006. In\"&gt;2006. In&lt;/st1:metricconverter&gt; this last competition, he was the best player. In 2007, he won the Pan-American Games, in &lt;st1:place w:st=\"on\"&gt;&lt;st1:City w:st=\"on\"&gt;Rio de Janeiro&lt;/st1:City&gt;&lt;/st1:place&gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition.&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 18893,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2009-03-30T00:00:00"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:109"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:109"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #0000ff">null</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;B style=\"mso-bidi-font-weight: normal\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&lt;?xml:namespace prefix = o ns = \"urn:schemas-microsoft-com:office:office\" /&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;Born in: Londrina (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;&amp;nbsp;&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;FONT size=3&gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Iskra Odintsovo, from Russia. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League.&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 24280,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2010-06-10T13:32:34"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:235"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:235"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #800000">"&lt;FONT size=1 face=Verdana,Arial&gt;&lt;/FONT&gt;"</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;P align=justify&gt;&lt;FONT size=1 face=Verdana,Arial&gt;&lt;STRONG&gt;Height: 1,92m &lt;BR&gt;Weight: 85kg&lt;BR&gt;Date of birth: 23/12/76&lt;BR&gt;Born in: Londrina (PR)&lt;BR&gt;Club: Pinheiros/Sky (BRA)&lt;/STRONG&gt;&lt;BR&gt;&lt;BR&gt;Giba was the best player&amp;nbsp;of the Olympic Games in Athens, in 2004, when Brazil won&amp;nbsp;their second olympic title. He won the FIVB World Cup in 2003, and six World League&amp;nbsp;titles (2001, 2003, 2004, 2005, 2006 and 2007). He played&amp;nbsp;for the Junior Brazilian team, winning the South American Championship (94), and finishing second&amp;nbsp;at&amp;nbsp;the FIVB&amp;nbsp;Junior World Championship (95). In the Youth Brazilian Team, he won the FIVB World Championship, in 93. He got the Superliga 99/00 and 00/01 titles. In the last season, he played&amp;nbsp;for Iskra Odintsovo, from Russia. He was World Champion twice, respectively in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team.&amp;nbsp;The same year, he&amp;nbsp;clinched the gold medal at the South American Championship, and was&amp;nbsp;elected best player of the competition. In the FIVB World Cup, one more time, he returned home with the gold and was elected main star of the competition. In 2008, he was silver medallist&amp;nbsp;at Beijing Olympic Games and was elected best server of the FIVB World League. In 2009, Giba led Brazil’s renewed team&amp;nbsp;to the FIVB World League, the FIVB&amp;nbsp;World Grand Champions Cup and the South American Championship.&lt;BR&gt;&lt;/FONT&gt;&lt;/P&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 25480,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2010-08-19T16:14:25"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:172"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:172"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #800000">"&lt;font style=\"font-family: Verdana,Arial;\" size=\"1\"&gt;&amp;nbsp;&lt;/font&gt;"</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;font size=\"1\" face=\"Verdana,Arial\"&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;b&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;Born in: Londrina (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;font size=\"3\"&gt;Club: Pinheiros/Sky (BRA)&lt;o:p&gt;&lt;/o:p&gt;&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;\r\n&lt;p class=\"MsoBodyText\" style=\"margin: 0cm 0cm 0pt; line-height: 150%;\"&gt;&lt;span style=\"font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;&lt;o:p&gt;&lt;font size=\"3\"&gt;&amp;nbsp;&lt;/font&gt;&lt;/o:p&gt;&lt;/span&gt;&lt;/p&gt;&lt;span style=\"font-size: 11pt; line-height: 115%; font-family: 'Tahoma','sans-serif';\" lang=\"EN-US\"&gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League six times (2001, 2003, 2004, 2005, 2006 and 2007). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. In the last season, he played at Iskra Odintsovo, from Russia. He was world champion twice: in 2002 and 2006. In this last competition, he was the best player. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League. Last season, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. He started the 2010 season winning the World League.&lt;br&gt;&lt;/span&gt;&lt;/font&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 28093,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2011-03-31T21:32:31"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:242"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:242"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #800000">"&lt;font style=\"font-family: Verdana,Arial;\" size=\"1\"&gt;&amp;nbsp;&lt;/font&gt;"</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;font size=\"1\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Height: 1,92m&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Weight: 85kg&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Date of birth: 23/12/76&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Born in: Londrina (PR)&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Club: Pinheiros/Sky (BRA)&lt;/span&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;&lt;/span&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;br style=\"font-family: Verdana,Arial;\"&gt;&lt;span style=\"font-family: Verdana,Arial;\"&gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second title. He has won the World Cup (2003), and the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played for the Brazilian junior team, winning the South American Championship (94), and coming second at the FIVB Volleyball Men's Junior World Championship (95). FOr the the Brazilian youth team he won the World Championship, in 93. He was the champion of the Superliga in 1999/00 and 2000/01. Giba has also been world champion three times: in 2002, 2006 and 2010, being elected MVP in 2006. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was captain of the Brazilian team. In the same year, he won the gold medal at the South American Championship, and was the best player of the competition. He went on to win another World Cup in 2007, taking the MVP prize as well. In 2008, he was silver medallist at the Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship.&lt;/span&gt;&lt;/font&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 32462,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2011-10-08T19:34:15"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:251"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:251"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #0000ff">null</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT face=Verdana,Arial size=1&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;B style=\"mso-bidi-font-weight: normal\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&lt;?xml:namespace prefix = o ns = \"urn:schemas-microsoft-com:office:office\" /&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Born in: &lt;?xml:namespace prefix = st1 ns = \"urn:schemas-microsoft-com:office:smarttags\" /&gt;&lt;st1:City w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Londrina&lt;/st1:place&gt;&lt;/st1:City&gt; (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Club: Cimed/Sky (BRA)&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;o:p&gt;&amp;nbsp;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;Giba was the best player in the Olympic Games in &lt;st1:City w:st=\"on\"&gt;Athens&lt;/st1:City&gt;, in 2004, when &lt;st1:country-region w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Brazil&lt;/st1:place&gt;&lt;/st1:country-region&gt; won its second olympic title. He was the champion of the World Cup (2003), and won the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. Giba was world champion three times: in 2002, 2006 and 2010, being elected the best player in the second title. In 2007, he won the Pan-American Games, in &lt;st1:City w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Rio de Janeiro&lt;/st1:place&gt;&lt;/st1:City&gt;, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medallist in Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led &lt;st1:country-region w:st=\"on\"&gt;&lt;st1:place w:st=\"on\"&gt;Brazil&lt;/st1:place&gt;&lt;/st1:country-region&gt;’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. In 2010, won the World League and the World Championship. In 2011, finished second in the World League.&lt;o:p&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P class=MsoBodyText style=\"MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 150%\"&gt;&lt;B style=\"mso-bidi-font-weight: normal\"&gt;&lt;SPAN lang=EN-US style=\"FONT-FAMILY: Tahoma\"&gt;&lt;o:p&gt;&amp;nbsp;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    },
+    {
+      <span style="COLOR: #800000">"no"</span>: 34337,
+      <span style="COLOR: #800000">"dateTime"</span>: <span style="COLOR: #800000">"2012-04-25T23:14:05"</span>,
+      <span style="COLOR: #800000">"source"</span>: <span style="COLOR: #0000ff">null</span>,
+      <span style="COLOR: #800000">"tags"</span>: [
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#volley"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#volley"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"#player-profile"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"#player-profile"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"player:110419"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"player:110419"</span>
+        },
+        {
+          <span style="COLOR: #800000">"tagText"</span>: <span style="COLOR: #800000">"volley-tournament:252"</span>,
+          <span style="COLOR: #800000">"tagUserText"</span>: <span style="COLOR: #800000">"volley-tournament:252"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 4,
+      <span style="COLOR: #800000">"texts"</span>: [
+        {
+          <span style="COLOR: #800000">"languageEnglishName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"languageNativeName"</span>: <span style="COLOR: #800000">"English"</span>,
+          <span style="COLOR: #800000">"headline"</span>: <span style="COLOR: #800000">"Player 110419:  Giba - Gilberto Godoy Filho"</span>,
+          <span style="COLOR: #800000">"introduction"</span>: <span style="COLOR: #0000ff">null</span>,
+          <span style="COLOR: #800000">"text"</span>: <span style="COLOR: #800000">"&lt;FONT size=1 face=Verdana,Arial&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;B&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;# 7 - GILBERTO AMAURI DE GODOY FILHO (GIBA) – WING-SPIKER&lt;?xml:namespace prefix = o ns = \"urn:schemas-microsoft-com:office:office\" /&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/B&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Height: 1,92m &lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Weight: 85kg&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Date of birth: 23/12/76&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Born in: Londrina (PR)&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Club: Cimed/SKY (BRA)&lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;o:p&gt;&lt;FONT face=Calibri&gt;&amp;nbsp;&lt;/FONT&gt;&lt;/o:p&gt;&lt;/SPAN&gt;&lt;/P&gt;\r\n&lt;P style=\"TEXT-ALIGN: justify; MARGIN: 0cm 0cm 0pt\" class=MsoNormal&gt;&lt;SPAN style=\"FONT-SIZE: 12pt; mso-ansi-language: EN-US\" lang=EN-US&gt;&lt;FONT face=Calibri&gt;Giba was the best player in the Olympic Games in Athens, in 2004, when Brazil won its second olympic title. He was the champion of the World Cup (2003), and won the World League eight times (2001, 2003, 2004, 2005, 2006, 2007, 2009 and 2010). He played at the junior Brazilian team, winning the South American Championship (94), and being second place in the Junior World Championship (95). In the Youth Brazilian Team, he won the World Championship, in 93. He was the champion of the Superliga 99/00 and 00/01. Giba was world champion three times: in 2002, 2006 and 2010, being elected the best player in the second title. In 2007, he won the Pan-American Games, in Rio de Janeiro, where he was the captain of the Brazilian team. In the same year, he won the gold medal at South American Championship, and was the best player of the competition. In the World Cup, one more time, he was the champion and was elected the main star of the competition. In 2008, he was silver medalist in Beijing Olympic Games and was elected as the best server of the World League. In 2009, Giba led Brazil’s renewed team in the World League, the World Grand Champions Cup and the South American Championship. &lt;o:p&gt;&lt;/o:p&gt;&lt;/FONT&gt;&lt;/SPAN&gt;&lt;/P&gt;&lt;/FONT&gt;"</span>
+        }
+      ],
+      <span style="COLOR: #800000">"nbItems"</span>: 1
+    }
+  ],
+  <span style="COLOR: #800000">"nbItems"</span>: 9,
+  <span style="COLOR: #800000">"version"</span>: 137356
+}
+</pre>
+        </div>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=&lt;Requests&gt;&lt;Request Type='GetArticleList' Fields='No DateTime Source'&gt;&lt;Filter&gt;&lt;Tags&gt;&lt;Tag&gt;Player:110419&lt;/Tag&gt;&lt;/Tags&gt;&lt;/Filter&gt;&lt;Relation Name='Tags' Fields='TagText TagUserText' /&gt;&lt;Relation Name='Texts' Fields='LanguageCode LanguageEnglishName LanguageNativeName AuthorName Headline Introduction Text' /&gt;&lt;/Request&gt;&lt;/Requests&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic45.html">Article</a></div>
+<div class="i-see-also-link">
+<a href="topic148.html">Filter for an article</a></div>
+<div class="i-see-also-link">
+<a href="topic46.html">Article Text</a></div>
+<div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic8.html">General errors (JSON)</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.Article.html">Article class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleFilter.html">ArticleFilter class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.ArticleText.html">ArticleText class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.GetArticleRequest.html">GetArticleRequest class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic175.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,764 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Volley Statistic</title>
+    <meta name="Title" content="Volley Statistic"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Represents a volleyball statistic." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="a0f7cca3-7e59-401c-9bfa-60daa20dd4b4"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Statistics
+ > Volley Statistic</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Volley Statistic</div></div>
+                        <p>Represents a volleyball statistic.</p>
+
+<p>The name of the XML element for a statistic is <strong>&lt;VolleyStatistic&gt;</strong>.<br />
+The name of the XML element for a list of statistics is <strong>&lt;VolleyStatistics&gt;</strong>.</p>
+
+<p>The statistics calculated by the web service can be for players or for teams, in addition, the caller can ask for the sum of all players in a team. The web service keeps the statistics for each set of a match and the caller can ask for the statistics by set, the sum by match or the sum by tournament.</p>
+
+<p>This page contains the following information:</p>
+
+<ul>
+    <li><a href="#Properties">Properties</a></li>
+
+    <li><a href="#Relations">Relations</a></li>
+
+    <li><a href="#SideOutAndRallyPointSystems">Side-out and Rally Point systems</a></li>
+
+    <li><a href="#StatisticsForTournamentsMatchesAndSets">Statistics for tournaments, matches and sets</a></li>
+</ul>
+
+<div id="i-6f5e6502-16b3-4907-b972-23b8348b4cb6-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Properties" name="Properties"></a>Properties</span>
+</div>
+
+<div id="i-6f5e6502-16b3-4907-b972-23b8348b4cb6-section-content" class="i-section-content">
+    <p>The following table lists all the properties for a statistic.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>AttemptTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of attempts.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of all the other statistics values.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>BlockContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of blocks with the rally continuing.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>BlockFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of blocks with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>BlockFaultSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of blocks with a fault, giving a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>BlockPoint</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of blocks with a point.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>BlockSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of blocks with a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>BlockTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of blocks.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>BlockContinue</em>, <em>BlockFault</em>, <em>BlockFaultSideOut</em>, <em>BlockPoint</em> and <em>BlockSideOut</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>DigContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of digs with the rally continuing.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>DigExcellent</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of excellent digs.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>DigFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of digs with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>DigFaultSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of digs with a fault, giving a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>DigTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of digs.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>DigContinue</em>, <em>DigExcellent</em>, <em>DigFault</em> and <em>DigFaultSideOut</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>ItemType</td>
+
+                <td><a href="topic101.html">DataType</a></td>
+
+                <td>
+                    <p>The type of the item related to the statistic.</p>
+
+                    <p>Can take one of the following value:</p>
+
+                    <table class="Table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>DataType.Player</td>
+
+                                <td>The statistic is for a player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>DataType.VolleyTeamDirectoryItem</td>
+
+                                <td>The statistic is for a team.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>NoItem</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The number of the item related to the statistic.</p>
+
+                    <p>The meaning depends on the value of <em>ItemType</em>:</p>
+
+                    <table class="Table">
+                        <thead>
+                            <tr>
+                                <th>ItemType</th>
+
+                                <th>Meaning of NoItem</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>DataType.Player</td>
+
+                                <td>The number of the player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>DataType.VolleyTeamDirectoryItem</td>
+
+                                <td>The number of the team registration.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>NoMatch</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of the match.<br />
+                The property is missing when the statistic is the total for a tournament.</td>
+            </tr>
+
+            <tr>
+                <td>NoSet</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The number of the set.<br />
+                    The property is missing when the statistic is the total for a match or a tournament.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>NoShirt</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The shirt number.</p>
+
+                    <p>The meaning depends on the value of <em>ItemType</em>.</p>
+
+                    <table class="Table">
+                        <thead>
+                            <tr>
+                                <th>ItemType</th>
+
+                                <th>Meaning of NoShirt</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>DataType.Player</td>
+
+                                <td>The shirt number of the player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>DataType.VolleyTeamDirectoryItem</td>
+
+                                <td>1 for the first team of the match.<br />
+                                2 for the second team of the match.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>NoTournament</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of the tournament.</td>
+            </tr>
+
+            <tr>
+                <td>OpponentErrors</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of opponent errors.<br />
+                This property is only for team statistics.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>PointTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of points.</p>
+
+                    <p>This is the sum of <em>DigPoint</em>, <em>ServePoint</em> and <em>SpikePoint</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>ReceptionContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of receptions with the rally continuing.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ReceptionExcellent</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of excellent receptions.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ReceptionFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of receptions with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ReceptionTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of receptions.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>ReceptionContinue</em>, <em>ReceptionContinue</em>, <em>ReceptionFault</em> and <em>ReceptionTotal</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>ServeContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of serves with the rally continuing.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ServeFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of serves with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ServeFaultSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of serves with a fault, giving a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ServePoint</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of serves with a point.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>ServeTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of serves.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>ServeContinue</em>, <em>ServeFault</em>, <em>ServeFaultSideOut</em>, <em>ServePoint</em> and <em>ServeTotal</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>SetContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The number of sets with the rally continuing.<br />
+                    The property is missing if its value is 0.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>SetExcellent</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of excellent sets.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SetFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of sets with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SetFaultSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of sets with a fault, giving a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SetTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of sets.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>SetContinue</em>, <em>SetExcellent</em>, <em>SetFault</em> and <em>SetFaultSideOut</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>SpikeContinue</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of spikes with the rally continuing.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SpikeFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of spikes with a fault.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SpikeFaultSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of spikes with a fault, giving a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SpikePoint</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of spikes with a point.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SpikeSideOut</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of spikes with a side-out.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+
+            <tr>
+                <td>SpikeTotal</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>
+                    <p>The total number of spikes.<br />
+                    The property is missing if its value is 0.</p>
+
+                    <p>This is the sum of <em>SpikeContinue</em>, <em>SpikeFault</em>, <em>SpikeFaultSideOut</em>, <em>SpikePoint</em> and <em>SpikeTotal</em>.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>TeamFault</td>
+
+                <td><a href="topic21.html">Int32</a></td>
+
+                <td>The number of team faults.<br />
+                This property is only for team statistics.<br />
+                The property is missing if its value is 0.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-b46704ae-3298-4e58-b82e-4427f989ed42-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="Relations" name="Relations"></a>Relations</span>
+</div>
+
+<div id="i-b46704ae-3298-4e58-b82e-4427f989ed42-section-content" class="i-section-content">
+    <p>The following table lists the relations for a statistic.</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Match</td>
+
+                <td><a href="topic52.html">VolleyMatch</a></td>
+
+                <td>The match.<br />
+                The match is missing (null in JSON) if the statistic is the sum from more than one match.</td>
+            </tr>
+
+            <tr>
+                <td>Player</td>
+
+                <td><a href="topic50.html">Player</a></td>
+
+                <td>The player.<br />
+                The relation is missing (null in JSON) if the statistic is for a team.</td>
+            </tr>
+
+            <tr>
+                <td>Team</td>
+
+                <td>VolleyTeamDirectoryItem</td>
+
+                <td>The team.<br />
+                The relation is missing (null in JSON) if the statistic is for a player.</td>
+            </tr>
+
+            <tr>
+                <td>Tournament</td>
+
+                <td><a href="topic60.html">VolleyTournament</a></td>
+
+                <td>The tournament.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-6038f5aa-1249-4c07-90d0-589aeedcba1f-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="SideOutAndRallyPointSystems" name="SideOutAndRallyPointSystems"></a>Side-out and Rally Point systems</span>
+</div>
+
+<div id="i-6038f5aa-1249-4c07-90d0-589aeedcba1f-section-content" class="i-section-content">
+    <p>Initially, the points were counted using the side-out system: when a team wins a rally, it won a point only if serving; otherwise, it won the right to serve.</p>
+
+    <p>Later, starting in 1998, the rule change to the Rally Point system: when a team wins a rally, it won a point.</p>
+
+    <p>The properties with the name ending with SideOut are only available for statistics of old volleyball tournaments.</p>
+</div>
+
+<div id="i-a07476e4-8866-4c45-9459-17ec78760f70-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text"><a id="StatisticsForTournamentsMatchesAndSets" name="StatisticsForTournamentsMatchesAndSets"></a>Statistics for tournaments, matches and sets</span>
+</div>
+
+<div id="i-a07476e4-8866-4c45-9459-17ec78760f70-section-content" class="i-section-content">
+    <p>You can see whether a statistic is for a tournament, match or set using the <em>NoMatch</em> and <em>NoSet</em> properties:</p>
+
+    <table class="Table">
+        <thead>
+            <tr>
+                <th>NoMatch</th>
+
+                <th>NoSet</th>
+
+                <th>Statistic for</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <p align="center">0</p>
+                </td>
+
+                <td>
+                    <p align="center">-</p>
+                </td>
+
+                <td>Tournament</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="center">xx</p>
+                </td>
+
+                <td>
+                    <p align="center">0</p>
+                </td>
+
+                <td>Match</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p align="center">xx</p>
+                </td>
+
+                <td>
+                    <p align="center">xx</p>
+                </td>
+
+                <td>Set</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p></p>
+</div>
+            <a name="seealsobookmark"></a>
+            
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic58.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

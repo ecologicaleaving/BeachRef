@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  List of confederations with their names.
+  For the VIS project.
+
+  Author: OrdinaSoft
+          Patrick Lanz
+          Lausanne
+          info@ordinasoft.ch
+
+  First version:  January 30, 2009
+-->
+
+<Resources>
+  <String Name="AVC">Asian volleyball confederation</String>
+  <String Name="CAVB">Confédération africaine de volleyball</String>
+  <String Name="CEV">Conféderation européenne de volleyball</String>
+  <String Name="CSV">Confederacion sudamericana de voleibol</String>
+  <String Name="NORCECA">Norceca Volleyball Confederacion</String>
+</Resources>

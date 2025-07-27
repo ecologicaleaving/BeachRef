@@ -1,0 +1,286 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Filter for press release texts</title>
+    <meta name="Title" content="Filter for press release texts"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Filter for press release texts." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="336d215a-307a-4715-8011-1ac8af54dc17"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic156.html">Filters</a>
+ > Media
+ > Filter for press release texts</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Filter for press release texts</div></div>
+                        <p>Filter for press release texts.</p>
+
+<div id="i-5871e47c-ef8a-4d46-b667-d8f2628b7b58-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Attributes</span>
+</div>
+
+<div id="i-5871e47c-ef8a-4d46-b667-d8f2628b7b58-section-content" class="i-section-content">
+    <p>The following table lists the attributes for the filter for press release texts.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Accepted</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>
+                    Accepted state for the press release texts.<br />
+                    The meaning of the values is:<br />
+
+                    <table style="WIDTH: auto">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p style="MARGIN-BOTTOM: 0px; MARGIN-TOP: 0px" align="center">Empty<br />
+                                    <strong>OR</strong><br />
+                                    Not specified</p>
+                                </td>
+
+                                <td>The web service will return all the press releases, not taking account of the accepted state of their texts.</td>
+                            </tr>
+
+                            <tr>
+                                <td>True</td>
+
+                                <td>The web service will return only the press release whose at least one of their text is accepted.</td>
+                            </tr>
+
+                            <tr>
+                                <td>False</td>
+
+                                <td>The web service will return only the press release whose at least one of their texts is not accepted.</td>
+                            </tr>
+                        </tbody>
+                    </table><br />
+                    If this attribute is specified, the <strong>Languages</strong> property of the returned press releases will contain only the languages for the texts that are accepted or not, depending of the value of this attribute.
+                </td>
+            </tr>
+
+            <tr>
+                <td>AcceptedOnly</td>
+
+                <td><a href="topic13.html">Boolean</a></td>
+
+                <td>
+                    Return only accepted press release texts.<br />
+                    If it is not specified, the returned press releases will contain only the accepted ones.
+
+                    <div class="i-box i-box-caution">
+                        This attribute is obsolete and is accepted only for compatibility with old client applications.<br />
+                        Please use the <strong>Accepted</strong> attribute instead.
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Categories</td>
+
+                <td><a href="topic94.html">PressReleaseCategory</a><a href="topic16.html"></a></td>
+
+                <td>Categories for the press release.<br />
+                Each category must be specified by its name or value, and, if more than one category is specified, they must be separated with spaces.<br />
+                If it is not specified, all categories are included in the returned press release texts.</td>
+            </tr>
+
+            <tr>
+                <td>Category</td>
+
+                <td><a href="topic94.html">PressReleaseCategory</a><a href="topic16.html"></a></td>
+
+                <td>
+                    Category of the press release.<br />
+                    If it is not specified, all categories are included in the returned press releases.
+
+                    <div class="i-box i-box-caution">
+                        This attribute is obsolete and is accepted only for compatibility with old client applications.<br />
+                        Please use the&nbsp;<strong>Categories</strong> attribute instead.
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Language</td>
+
+                <td>String</td>
+
+                <td>Language of the press release text.<br />
+                All press releases are in <strong>English</strong> and some of them are translated to other languages.<br />
+                See the description of the <strong>Language</strong> field of the <a href="topic48.html">PressReleaseText</a> data type for a list of valid values.<br />
+                If it is not specified, the returned texts&nbsp;are not filtered by this criteria and the result can contain more than one text for a press release, in different languages.</td>
+            </tr>
+
+            <tr>
+                <td>PublishOn</td>
+
+                <td><a href="topic95.html">PressReleasePublishOn</a></td>
+
+                <td>Where the press release should be published.<br />
+                You can specify more than one value, if you separate them with a space. If there is more than one value, the response will contain all the press releases that are published on one of the specified location. For example, if you specify <strong>PublishOn="Volleyball Beach"</strong>, the response will contain all the press releases that are intended to be published on the <strong>Volleyball</strong> or <strong>Beach Volleyball</strong> pages.<br />
+                If it is not specified, the returned texts&nbsp;are not filtered by this criteria.</td>
+            </tr>
+
+            <tr>
+                <td>SpecialType</td>
+
+                <td><a href="topic97.html">PressReleaseSpecialType</a></td>
+
+                <td>
+                    List of special press release types to include in the result.<br />
+                    You can specify more than one value, if you separate them with a space. If there is more than one value, the response will contain all the press releases that are of one of the specified special type. For example, if you specify <strong>SpecialType="MatchFlash MatchPreview"</strong>, the response will contain all press releases that are a <strong>match flash information</strong> or a <strong>match preview</strong>.<br />
+                    If it is not specified, the returned texts&nbsp;are not filtered by this criteria.
+
+                    <div class="i-box i-box-caution">
+                        This attribute is obsolete and is accepted only for compatibility with old client applications.<br />
+                        Please use the&nbsp;<strong>SpecialTypes</strong> attribute instead.
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>SpecialTypes</td>
+
+                <td><a href="topic97.html">PressReleaseSpecialType</a></td>
+
+                <td>Types for the press release texts.<br />
+                Each type must be specified by its name or value, and, if more than one type is specified, they must be separated with spaces.<br />
+                If it is not specified, the returned texts&nbsp;are not filtered by this criteria.</td>
+            </tr>
+
+            <tr>
+                <td>TournamentCodes</td>
+
+                <td>String</td>
+
+                <td>Code of the tournaments related to the press release.<br />
+                You can specify more than one code, if you separate them with a space. If there is more than one value, the response will contain all the press releases that is in relation to one of the specified tournament.<br />
+                If it is not specified, the returned texts&nbsp;are not filtered by tournament code.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic48.html">Press Release Text</a></div>
+<div class="i-see-also-link">
+<a href="topic177.html">Request to get a press release text</a></div>
+<div class="i-see-also-link">
+<a href="topic178.html">Request to get a list of press release texts</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Media.PressReleaseTextFilter.html">PressReleaseTextFilter Class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic150.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

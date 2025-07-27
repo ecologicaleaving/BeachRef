@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>GetImage.asmx</title>
+    <meta name="Title" content="GetImage.asmx"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="Because images can be displayed by a standard HTML page, the retrieving of an image data is made using a special URL: https://www.fivb.org/Vis2009/Images/GetImage.asmx." />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="6ee9a0fd-f1fa-4cdd-8c97-dc1009ef5f99"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Special URLs
+ > GetImage.asmx</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">GetImage.asmx</div></div>
+                        <p>Because images can be displayed by a standard HTML page, the retrieving of an image data is made using a special URL: <strong>https://www.fivb.org/Vis2009/Images/GetImage.asmx</strong>.</p>
+
+<p>Most of the images on the server are JPEG images, but there can also be PNG and WMF images. The images computed by the web service are always JPEG images.</p>
+
+<div id="i-a31d485e-75e2-4f00-a407-c923a738f0fa-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Parameters</span>
+</div>
+
+<div id="i-a31d485e-75e2-4f00-a407-c923a738f0fa-section-content" class="i-section-content">
+    <p>The following table lists the parameters of the image that are specified in the URL as a query string.</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Parameter</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Height</td>
+
+                <td>Height of the image, in pixels.</td>
+            </tr>
+
+            <tr>
+                <td>MaxSize</td>
+
+                <td>Maximum size of the image, in pixels.<br />
+                Setting this parameter is the same as setting the <strong>Height</strong> and <strong>Width</strong> parameter with the same value.</td>
+            </tr>
+
+            <tr>
+                <td>No</td>
+
+                <td>
+                    <p style="MARGIN-TOP: 0px">Number of the image.<br />
+                    The meaning of the this parameter depends on the <strong>Type</strong> parameter:</p>
+
+                    <table style="WIDTH: auto">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+
+                                <th>Meaning</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>&nbsp;</td>
+
+                                <td>Number of the image, as returned by the GetImageList request.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Player</td>
+
+                                <td>Number of the player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Press</td>
+
+                                <td>Number of the press release (not the number of the press release text).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Stretch</td>
+
+                <td>
+                    <p style="MARGIN-TOP: 0px">Indicates how the image must be stretched.</p>
+
+                    <table style="WIDTH: auto">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Meaning</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>None</td>
+
+                                <td>The image must not be stretched.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Fill</td>
+
+                                <td>The image is resized to fill the specified dimensions without preserving the aspect ratio.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Uniform</td>
+
+                                <td>The image is resized to fit in the destination dimensions while it preserves its native aspect ratio.<br />
+                                If the aspect ratio of the destination rectangle differs from the source, the thumbnail image will be smaller than the destination rectangle.<br />
+                                This is the default value.</td>
+                            </tr>
+
+                            <tr>
+                                <td>UniformToFill</td>
+
+                                <td>The image is resized to fill the destination dimensions while it preserves its native aspect ratio.<br />
+                                If the aspect ratio of the destination rectangle differs from the source, the source content is clipped to fit in the destination dimensions.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p>This parameter is only available for a thumbnail.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Type</td>
+
+                <td>
+                    <p style="MARGIN-TOP: 0px">Type of the image to retrieve:</p>
+
+                    <table style="WIDTH: auto">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>&nbsp;</td>
+
+                                <td>Normal image.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Player</td>
+
+                                <td>Image for a player.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Press</td>
+
+                                <td>Image for a press release.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Width</td>
+
+                <td>Width of the image, in pixels.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>If no image correspond to the specified parameters, an empty image of 1x1 pixel will be sent to the client.</p>
+
+    <p>If no image size is specified, the returned image will be the original image, as saved on the server.<br />
+    If an image size is specified, the server will compute and return an image of the specified size.<br />
+    If the image size is greater than the original image size, the original image will be returned.<br />
+    In any case, the image will keep its original aspect ratio, excepted if the stretch option is set to <strong>Fill</strong>.</p>
+</div>
+
+<div id="i-04ef29d9-f00f-48f8-93ed-9e453bfed04d-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Examples</span>
+</div>
+
+<div id="i-04ef29d9-f00f-48f8-93ed-9e453bfed04d-section-content" class="i-section-content">
+    <p>Here is the URL to retrieve the image <strong>200600001</strong>, with a maximum size of 150 pixels: <a href="https://www.fivb.org/Vis2009/Images/GetImage.asmx?No=200600001&amp;MaxSize=150">https://www.fivb.org/Vis2009/Images/GetImage.asmx?No=200600001&amp;MaxSize=150</a>.</p>
+
+    <p>Here is the URL to retrieve the image for the player <strong>135198</strong>, with a maximum size of 150 pixels: <a href="https://www.fivb.org/Vis2009/Images/GetImage.asmx?Type=Player&amp;No=135198&amp;MaxSize=150">https://www.fivb.org/Vis2009/Images/GetImage.asmx?Type=Player&amp;No=135198&amp;MaxSize=150</a>.</p>
+
+    <p>Here is the URL to retrieve the image for the press release <strong>27808</strong>, with a maximum size of 150 pixels: <a href="https://www.fivb.org/Vis2009/Images/GetImage.asmx?Type=Press&amp;No=27808&amp;MaxSize=150">https://www.fivb.org/Vis2009/Images/GetImage.asmx?Type=Press&amp;No=27808&amp;MaxSize=150</a>.</p>
+
+    <p>You can click on any URL to see the result of the request.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/Fivb.Vis.DataWPF~Fivb.Vis.ImageParameters.html">ImageParameters Class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/Fivb.Vis.DataWPF~Fivb.Vis.ImageStretch.html">ImageStretch Class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic201.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

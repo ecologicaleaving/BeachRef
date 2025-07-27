@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get a list of events</title>
+    <meta name="Title" content="Request to get a list of events"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="9315a35c-57b0-4b10-b63b-60b36811a49b"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic199.html">Requests</a>
+ > Event
+ > Request to get a list of events</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get a list of events</div></div>
+                        <div id="i-9d004ffd-66ea-4852-8279-97861d47b996-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-9d004ffd-66ea-4852-8279-97861d47b996-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetEventList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #0000ff">/&gt;</span> <span style="COLOR: #008000">&lt;!-- Optional: contains the filter to use --&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="SubHeader2">Filter</p>
+
+    <p>The filter is optional.<br />
+    If it is not specified, the response will contain all the events.<br />
+    Please see <a href="topic147.html">EventFilter</a> for more information.</p>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic43.html">Event</a> data. Only the fields you have access to will be returned.</p>
+</div>
+
+<div id="i-633e65c3-ce98-46d2-a3ad-ae1cad6a6e9f-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-633e65c3-ce98-46d2-a3ad-ae1cad6a6e9f-section-content" class="i-section-content">
+    When the request is successful, the filter will return the list of filtered events.
+</div>
+
+<div id="i-a557f691-ef3b-498b-b8ba-89d761242073-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-a557f691-ef3b-498b-b8ba-89d761242073-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>Some of the fields for an event are public and other are not.<br />
+    The response from the server will contain only the fields the client has access to.</p>
+</div>
+
+<div id="i-091464cd-d83e-4813-a967-d6ff6e37cd1a-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-091464cd-d83e-4813-a967-d6ff6e37cd1a-section-content" class="i-section-content">
+    <p>Get the list of top-level beach volleyball events for the year 2011 that are managed by the system.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetEventList"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="Code Name StartDate EndDate"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Filter</span> <span style="COLOR: #ff0000">IsVisManaged</span><span style="COLOR: #0000ff">="True"</span> <span style="COLOR: #ff0000">NoParentEvent</span><span style="COLOR: #0000ff">="0"</span> <span style="COLOR: #ff0000">HasBeachTournament</span><span style="COLOR: #0000ff">="True"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2011-01-01"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2011-12-31"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Request</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Events</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Event</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BVB-SWT2011"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="Swatch World Tour 2011"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2011-04-18"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2011-11-06"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Event</span> <span style="COLOR: #ff0000">Code</span><span style="COLOR: #0000ff">="BVB-ITA2011"</span> <span style="COLOR: #ff0000">Name</span><span style="COLOR: #0000ff">="World Championships 2011"</span> <span style="COLOR: #ff0000">StartDate</span><span style="COLOR: #0000ff">="2011-06-13"</span> <span style="COLOR: #ff0000">EndDate</span><span style="COLOR: #0000ff">="2011-06-19"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="1"</span><span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">Events</span><span style="COLOR: #0000ff">&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/vis2009/XmlRequest.asmx?Request=&lt;Requests&gt;&lt;Request Type='GetEventList' Fields='Code Name StartDate EndDate'&gt;&lt;Filter IsVisManaged='True' NoParentEvent='0' HasBeachTournament='True' StartDate='2011-01-01' EndDate='2011-12-31' /&gt;&lt;/Request&gt;&lt;/Requests&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic43.html">Event</a></div>
+<div class="i-see-also-link">
+<a href="topic147.html">Filter for events</a></div>
+<div class="i-see-also-link">
+<a href="topic172.html">Request to get an event</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/Fivb.Vis.DataWPF~Fivb.Vis.GetEventListRequest.html">GetEventListRequest Class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic173.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

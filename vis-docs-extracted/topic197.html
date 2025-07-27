@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" value="IE=EDGE" />
+
+    
+    
+    <title>Request to get the ranking of a volleyball tournament</title>
+    <meta name="Title" content="Request to get the ranking of a volleyball tournament"/>
+    
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
+
+    <script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script>
+    <script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/bootstrap/css/default/bootstrap.min.css"></link>
+    
+    <script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script>
+
+    <meta name="Description" content="
+     Request
+
+
+
+    The syntax for this request is:" />
+    
+    <link rel="stylesheet" type="text/css" href="template/packages/plugins-topics/css/chm.mshc/jquery-plugins.css"></link>
+    <link rel="stylesheet" type="text/css" href="template/packages/core-topics/css/topics.css"  data-mshv2-stylesheet="/template/packages/core-topics/topics.mshv2.css" data-mshv1-stylesheet="/template/packages/core-topics/topics.mshv1.css" data-responsive-mobile="template/packages/core-topics/topics.mobile.css" data-responsive-tablet="template/packages/core-topics/topics.tablet.css"></link>
+    <script src="template/packages/plugins-topics/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script>
+    <script src="template/packages/core-topics/script/topics.min.js" type="text/javascript"></script>
+    
+    <meta name="Microsoft.Help.Id" content="8c242dcb-7583-4ce4-a86c-796c2f53ab84"/>
+    <meta name="Microsoft.Help.TocParent" content="-1"/>
+    <meta name="Microsoft.Help.TocOrder" content="2"/>
+    <meta name="Microsoft.Help.F1" content=""/>
+    <meta name="Microsoft.Help.ContentType" content="Concepts" />
+    
+    
+    
+    
+
+    
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/customstyles.css"></link>
+    
+
+    
+
+    
+    
+</head>
+
+<body id="i-page">
+    <div id="i-background-container"></div>
+    <div id="i-root-container">
+        <header>
+            <div id="i-before-header-content" class="i-before-header-content">
+                
+            </div>
+            <div id="i-header-content" class="i-header-content">
+                <div class="i-project-title">VIS web service documentation</div>
+            </div>
+            <img class="logoimage" src="images/FIVB-Logo.jpg" border="0"></img>
+            <div id="i-after-header-content" class="i-after-header-content">
+                <!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all">Collapse All</label>
+                <label class="i-expand-all" style="display: none;">Expand All</label>
+            </span>
+                
+            </div>
+            <div class="i-breadcrumbs-container"><table><tr><td>
+Volleyball
+ > <a href="topic158.html">Competitions</a>
+ > Tournaments
+ > Ranking
+ > Request to get the ranking of a volleyball tournament</td></tr></table></div>
+
+        </header>
+        
+        <section class="i-primary-content">
+            <div id="i-body-content" class="i-body-content">
+                <article class="i-page">
+                    <section class="i-article-container">
+                        <div class="i-page-title"><div class="i-page-title-text">Request to get the ranking of a volleyball tournament</div></div>
+                        <div id="i-793a3a4e-a884-4f46-adb2-a92b45d52058-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Request</span>
+</div>
+
+<div id="i-793a3a4e-a884-4f46-adb2-a92b45d52058-section-content" class="i-section-content">
+    <p>The syntax for this request is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTournamentRanking"</span>
+         <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="&lt;tournament number&gt;"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="&lt;list of the fields to return&gt;"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>Where:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Attribute</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>No</td>
+
+                <td>The number of the volleyball tournament.<br />
+                This is a <strong>mandatory</strong> parameter.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="SubHeader2">Fields</p>
+
+    <p>The list of fields is mandatory.<br />
+    It can contain all the fields in the <a href="topic61.html">VolleyTournamentRankingEntry</a> data. All the fields are public, so you can request any one.</p>
+</div>
+
+<div id="i-0a0892f2-230c-4a72-8111-02e5dfbd0fb9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Response</span>
+</div>
+
+<div id="i-0a0892f2-230c-4a72-8111-02e5dfbd0fb9-section-content" class="i-section-content">
+    When the request is successful, the service will return the a <strong>&lt;VolleyballTournamentRanking&gt;</strong> XML element that contains <a href="topic61.html">volleyball tournament ranking entries</a>.
+</div>
+
+<div id="i-b09310ed-8a7c-46d7-ad49-f250f682b56e-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Errors</span>
+</div>
+
+<div id="i-b09310ed-8a7c-46d7-ad49-f250f682b56e-section-content" class="i-section-content">
+    <p>In addition to global errors, the following errors can be sent by the server:</p>
+
+    <table style="WIDTH: auto">
+        <thead>
+            <tr>
+                <th>Code</th>
+
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>BadParameter</td>
+
+                <td>The <strong>No</strong> parameter is not a <a href="topic21.html">valid 32-bits integer number</a>.</td>
+            </tr>
+
+            <tr>
+                <td>NoData</td>
+
+                <td>The volleyball tournament with the specified number does not exist or has been deleted.</td>
+            </tr>
+
+            <tr>
+                <td>ParameterMissing</td>
+
+                <td>You must specify the <strong>No</strong> parameter.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="i-4dcc002e-73b9-4eea-af39-fdacfb89d4f3-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Security</span>
+</div>
+
+<div id="i-4dcc002e-73b9-4eea-af39-fdacfb89d4f3-section-content" class="i-section-content">
+    <p>This is a public request: any client can retrieve information.</p>
+
+    <p>All the fields for a volleyball tournament ranking are public.</p>
+</div>
+
+<div id="i-6a6b57a8-563e-4da0-904b-4a72724bb0a9-section-heading" class="i-section-heading">
+    <span class="i-section-heading-icon"><span class="i-hidden">&nbsp;</span></span><span class="i-section-heading-text">Example</span>
+</div>
+
+<div id="i-6a6b57a8-563e-4da0-904b-4a72724bb0a9-section-content" class="i-section-content">
+    <p>Get the ranking for the tournament with the number <strong>1032</strong>.</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service request</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">Request</span> <span style="COLOR: #ff0000">Type</span><span style="COLOR: #0000ff">="GetVolleyTournamentRanking"</span>
+         <span style="COLOR: #ff0000">NoTournament</span><span style="COLOR: #0000ff">="1032"</span>
+         <span style="COLOR: #ff0000">Fields</span><span style="COLOR: #0000ff">="Rank TeamSource TeamCode TeamName"</span> <span style="COLOR: #0000ff">/&gt;</span>
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>The response is:</p>
+
+    <div class="i-filtered-content-XML" data-title="XML" data-itemid="XML">
+        <table class="i-syntax-table">
+            <tbody>
+                <tr>
+                    <th>Web service response</th>
+
+                    <th>
+                        <div class="i-copy-code-wrapper">
+                            <span class="i-copy-code">Copy Code</span>
+                        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td class="i-code" colspan="2">
+                        <pre>
+<span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRankings</span> <span style="COLOR: #ff0000">NbItems</span><span style="COLOR: #0000ff">="8"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="495"</span><span style="COLOR: #0000ff">&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="1"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Winner NoMatch=&amp;quot;18&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="BRA"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Brazil"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="146"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1164"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="2"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Loser NoMatch=&amp;quot;18&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="GER"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Germany"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="147"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1165"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="3"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Winner NoMatch=&amp;quot;17&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="CHN"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="China"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="148"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1166"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="4"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Loser NoMatch=&amp;quot;17&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="ARG"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Argentina"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="149"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1167"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="5"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Winner NoMatch=&amp;quot;13&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="NED"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Netherlands"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="150"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1168"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="-5"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Winner NoMatch=&amp;quot;14&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="POL"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Poland"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="151"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1169"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="7"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Loser NoMatch=&amp;quot;14&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="SUI"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Switzerland"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="152"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1170"</span> <span style="COLOR: #0000ff">/&gt;</span>
+  <span style="COLOR: #0000ff">&lt;</span><span style="COLOR: #800000">VolleyballTournamentRanking</span> <span style="COLOR: #ff0000">Rank</span><span style="COLOR: #0000ff">="-7"</span> <span style="COLOR: #ff0000">TeamSource</span><span style="COLOR: #0000ff">="&lt;Loser NoMatch=&amp;quot;13&amp;quot; /&gt;"</span> <span style="COLOR: #ff0000">TeamCode</span><span style="COLOR: #0000ff">="THA"</span> <span style="COLOR: #ff0000">TeamName</span><span style="COLOR: #0000ff">="Thailand"</span> <span style="COLOR: #ff0000">Version</span><span style="COLOR: #0000ff">="153"</span> <span style="COLOR: #ff0000">No</span><span style="COLOR: #0000ff">="1171"</span> <span style="COLOR: #0000ff">/&gt;</span>
+<span style="COLOR: #0000ff">&lt;/</span><span style="COLOR: #800000">VolleyballTournamentRankings</span><span style="COLOR: #0000ff">&gt;</span> 
+</pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>You can see the live request by clicking on <a href="https://www.fivb.org/vis2009/XmlRequest.asmx?Request=&lt;Requests&gt;&lt;Request Type='GetVolleyTournamentRanking' NoTournament='1032' Fields='Rank TeamSource TeamCode TeamName' /&gt;&lt;/Requests&gt;" target="_blank">this URL</a>.</p>
+</div>
+            <a name="seealsobookmark"></a>
+            <div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-see-also-sub-heading">Guide</h4><div class="i-see-also-link">
+<a href="topic158.html">Volleyball competitions</a></div>
+
+<h4 class="i-see-also-sub-heading">Web service</h4><div class="i-see-also-link">
+<a href="topic9.html">General errors (XML)</a></div>
+<div class="i-see-also-link">
+<a href="topic195.html">GetVolleyTournament request</a></div>
+<div class="i-see-also-link">
+<a href="topic196.html">GetVolleyTournamentList requets</a></div>
+<div class="i-see-also-link">
+<a href="topic60.html">VolleyTournament</a></div>
+<div class="i-see-also-link">
+<a href="topic61.html">VolleyTournamentRankingEntry</a></div>
+
+<h4 class="i-see-also-sub-heading">Windows client</h4><div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentListRequest.html">GetVolleyTournamentListRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentRankingRequest.html">GetVolleyTournamentRankingRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.GetVolleyTournamentRequest.html">GetVolleyTournamentRequest class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTournamentRanking.html">VolleyTournamentRanking class</a></div>
+<div class="i-see-also-link">
+<a href="https://www.fivb.org/VisSDK/Fivb.Vis.DataWPF/#Fivb.Vis.DataWPF~Fivb.Vis.Volley.VolleyTournamentRankingEntry.html">VolleyTournamentRankingEntry class</a></div>
+
+</div>
+                        
+                    </section>
+                </article>
+            </div>
+        </section>
+        <footer>
+            <div id="i-footer-content" class="i-footer-content">
+                
+
+<a href="mailto:vis.sdk@fivb.org?subject=VIS web service documentation Feedback: topic197.html">Send Feedback</a>
+            </div>
+        </footer>
+        
+    </div>
+    
+    
+    <script type="text/javascript">
+        $(function () {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

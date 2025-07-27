@@ -19,7 +19,16 @@ declare module 'axios' {
 }
 
 // Mock dependencies
-jest.mock('axios');
+jest.mock('axios', () => ({
+  create: jest.fn().mockReturnValue({
+    get: jest.fn(),
+    post: jest.fn(),
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() }
+    }
+  })
+}));
 jest.mock('../../middleware/error.middleware');
 jest.mock('../../utils/logger');
 jest.mock('../../config/environment', () => ({
@@ -55,9 +64,10 @@ describe('VISService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock axios instance
+    // Get the mock axios instance
     mockAxiosInstance = {
       get: jest.fn(),
+      post: jest.fn(),
       interceptors: {
         request: { use: jest.fn() },
         response: { use: jest.fn() }
@@ -81,9 +91,9 @@ describe('VISService', () => {
         baseURL: 'https://test-vis-api.fivb.com',
         timeout: 5000,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
-          'Authorization': 'Bearer test-api-key'
+          'X-FIVB-App-ID': 'test-api-key'
         }
       });
     });

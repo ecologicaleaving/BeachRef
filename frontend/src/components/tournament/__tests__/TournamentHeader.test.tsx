@@ -117,7 +117,7 @@ describe('TournamentHeader', () => {
   it('should display tournament level with trophy icon', () => {
     render(<TournamentHeader tournament={mockTournament} />);
 
-    const levelBadge = screen.getByText('World Tour').closest('span');
+    const levelBadge = screen.getByText('World Tour').closest('div');
     expect(levelBadge).toBeInTheDocument();
     
     // Check for Trophy icon (lucide-react trophy)
@@ -128,7 +128,7 @@ describe('TournamentHeader', () => {
   it('should display location with map pin icon', () => {
     render(<TournamentHeader tournament={mockTournament} />);
 
-    const locationBadge = screen.getByText('Miami, USA').closest('span');
+    const locationBadge = screen.getByText('Miami, USA').closest('div');
     expect(locationBadge).toBeInTheDocument();
     
     // Check for MapPin icon
@@ -141,7 +141,7 @@ describe('TournamentHeader', () => {
 
     // The dates should be formatted and displayed
     const dateElement = screen.getByText(/Jan 15, 2024 - Jan 20, 2024/);
-    const dateBadge = dateElement.closest('span');
+    const dateBadge = dateElement.closest('div');
     expect(dateBadge).toBeInTheDocument();
     
     // Check for Calendar icon

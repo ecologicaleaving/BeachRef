@@ -159,16 +159,16 @@ describe('useTournamentDetail', () => {
 
   it('should enable query only when tournament ID is provided', () => {
     const { rerender } = renderHook(
-      ({ id }: { id?: string }) => useTournamentDetail(id),
+      ({ tournamentId }: { tournamentId?: string }) => useTournamentDetail(tournamentId),
       {
         wrapper: createWrapper(),
-        initialProps: { id: undefined }
+        initialProps: { tournamentId: undefined }
       }
     );
 
     expect(mockTournamentService.getTournamentById).not.toHaveBeenCalled();
 
-    rerender({ id: 'tournament-1' });
+    rerender({ tournamentId: 'tournament-1' });
 
     expect(mockTournamentService.getTournamentById).toHaveBeenCalledWith('tournament-1');
   });

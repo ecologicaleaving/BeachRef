@@ -23,6 +23,28 @@ export interface Tournament {
   gender: 'Men' | 'Women' | 'Mixed';
 }
 
+// Referee Types for Story 1.1
+export type RefereeLevel = 'International' | 'Continental' | 'National';
+
+export interface Referee {
+  id: string;
+  name: string;
+  country?: string;
+  level?: RefereeLevel;
+  certifications?: string[];
+}
+
+// Type guard for referee level validation
+export const isValidRefereeLevel = (level: string): level is RefereeLevel => {
+  return ['International', 'Continental', 'National'].includes(level);
+};
+
+// Helper type for match referee structure  
+export interface MatchReferees {
+  main?: Referee;
+  assistant?: Referee;
+}
+
 // Match Types for Story 2.3
 export interface Match {
   id: string;
@@ -51,6 +73,8 @@ export interface Match {
   round: string;
   court: string;
   winner?: 'team1' | 'team2';
+  // Story 1.1: Added referee information
+  referees?: MatchReferees;
 }
 
 // Tournament Detail Response for Story 2.3
@@ -89,4 +113,15 @@ export interface TournamentQueryParams {
   surface?: string;
   gender?: string;
   statuses?: string; // Comma-separated status values
+  // Story 1.3: Referee filtering capability
+  referees?: string; // Comma-separated referee names/IDs
+}
+
+// Story 1.3: Referee search response for autocomplete
+export interface RefereeSearchResponse {
+  referees: Array<{
+    name: string;
+    country?: string;
+    matchCount: number;
+  }>;
 }

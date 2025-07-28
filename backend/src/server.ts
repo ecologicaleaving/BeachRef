@@ -5,6 +5,7 @@ import { config } from './config/environment';
 import healthRoutes from './routes/health.routes';
 import visRoutes from './routes/vis.routes';
 import { tournamentRoutes } from './routes/tournament.routes';
+import { refereeRoutes } from './routes/referee.routes';
 import { errorHandler, requestId } from './middleware/error.middleware';
 import { appLogger } from './utils/logger';
 
@@ -36,6 +37,9 @@ app.use('/api/vis', visRoutes);
 // Tournament API routes
 app.use('/api/tournaments', tournamentRoutes);
 
+// Story 1.3: Referee API routes
+app.use('/api/referees', refereeRoutes);
+
 // Legacy health check endpoint (for backwards compatibility)
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -56,6 +60,7 @@ app.get('/api', (req, res) => {
     monitoring: '/api/health/monitoring',
     visTest: '/api/vis/test',
     tournaments: '/api/tournaments',
+    refereeSearch: '/api/referees/search',
     visLegacyTournaments: '/api/vis/tournaments',
     tournamentCount: '/api/vis/tournaments/count'
   });

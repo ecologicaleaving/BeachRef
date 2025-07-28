@@ -47,6 +47,8 @@ export interface TournamentQueryParams {
   surface?: Tournament['surface'];
   gender?: Tournament['gender'];
   statuses?: string; // Comma-separated status values
+  // Story 1.3: Referee filtering capability
+  referees?: string; // Comma-separated referee names/IDs
 }
 
 export interface TournamentFilters {
@@ -66,6 +68,8 @@ export interface TournamentFilters {
   locations?: string[]; // Array of countries/cities
   types?: Tournament['level'][];
   statuses?: Tournament['status'][];
+  // Story 1.3: Referee filtering capability
+  referees?: string[]; // Array of referee names/IDs for filtering
 }
 
 export interface FilterOptions {
@@ -74,6 +78,28 @@ export interface FilterOptions {
   surfaces: { value: Tournament['surface']; label: string }[];
   genders: { value: Tournament['gender']; label: string }[];
   statuses: { value: Tournament['status']; label: string }[];
+}
+
+// Referee Types for Story 1.1
+export type RefereeLevel = 'International' | 'Continental' | 'National';
+
+export interface Referee {
+  id: string;
+  name: string;
+  country?: string;
+  level?: RefereeLevel;
+  certifications?: string[];
+}
+
+// Type guard for referee level validation
+export const isValidRefereeLevel = (level: string): level is RefereeLevel => {
+  return ['International', 'Continental', 'National'].includes(level);
+};
+
+// Helper type for match referee structure
+export interface MatchReferees {
+  main?: Referee;
+  assistant?: Referee;
 }
 
 // Match Types for Story 2.3
@@ -104,6 +130,8 @@ export interface Match {
   round: string;
   court: string;
   winner?: 'team1' | 'team2';
+  // Story 1.1: Added referee information
+  referees?: MatchReferees;
 }
 
 // Tournament Detail Response for Story 2.3
@@ -116,4 +144,13 @@ export interface TournamentDetailResponse {
     upcomingMatches: number;
     liveMatches: number;
   };
+}
+
+// Story 1.3: Referee search response for autocomplete
+export interface RefereeSearchResponse {
+  referees: Array<{
+    name: string;
+    country?: string;
+    matchCount: number;
+  }>;
 }

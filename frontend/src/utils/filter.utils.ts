@@ -37,7 +37,8 @@ export const isFilterActive = (filters: TournamentFilters): boolean => {
     filters.types?.length ||
     filters.surface ||
     filters.gender ||
-    filters.statuses?.length
+    filters.statuses?.length ||
+    filters.referees?.length
   );
 };
 
@@ -51,6 +52,7 @@ export const getActiveFilterCount = (filters: TournamentFilters): number => {
   if (filters.surface) count++;
   if (filters.gender) count++;
   if (filters.statuses?.length) count++;
+  if (filters.referees?.length) count++;
   return count;
 };
 
@@ -62,7 +64,8 @@ export const clearAllFilters = (): TournamentFilters => ({
   types: [],
   surface: undefined,
   gender: undefined,
-  statuses: []
+  statuses: [],
+  referees: []
 });
 
 export const buildFilterSummary = (filters: TournamentFilters): string[] => {
@@ -77,6 +80,7 @@ export const buildFilterSummary = (filters: TournamentFilters): string[] => {
   if (filters.surface) summary.push(`Surface: ${filters.surface}`);
   if (filters.gender) summary.push(`Gender: ${filters.gender}`);
   if (filters.statuses?.length) summary.push(`Status: ${filters.statuses.join(', ')}`);
+  if (filters.referees?.length) summary.push(`Referees: ${filters.referees.join(', ')}`);
   
   return summary;
 };
@@ -94,6 +98,7 @@ export const filtersToQueryParams = (filters: TournamentFilters): Record<string,
   if (filters.surface) params.surface = filters.surface;
   if (filters.gender) params.gender = filters.gender;
   if (filters.statuses?.length) params.statuses = filters.statuses.join(',');
+  if (filters.referees?.length) params.referees = filters.referees.join(',');
   
   return params;
 };
@@ -130,6 +135,9 @@ export const queryParamsToFilters = (searchParams: URLSearchParams): TournamentF
   
   const statuses = searchParams.get('statuses');
   if (statuses) filters.statuses = statuses.split(',') as Tournament['status'][];
+  
+  const referees = searchParams.get('referees');
+  if (referees) filters.referees = referees.split(',');
   
   return filters;
 };

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DateRangeFilter } from './DateRangeFilter';
 import { LocationFilter } from './LocationFilter';
 import { TypeFilter } from './TypeFilter';
+import { RefereeFilter } from './RefereeFilter';
 import { useFilters } from '@/hooks/useFilters';
 import { Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ export function TournamentFilters({ resultCount, className }: TournamentFiltersP
     updateSurface,
     updateGender,
     updateStatuses,
+    updateReferees,
     clearFilters,
     hasActiveFilters,
     activeFilterCount
@@ -85,7 +87,7 @@ export function TournamentFilters({ resultCount, className }: TournamentFiltersP
           </div>
 
           {/* Quick filters row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <DateRangeFilter
               dateRange={filters.dateRange}
               onDateRangeChange={updateDateRange}
@@ -93,6 +95,10 @@ export function TournamentFilters({ resultCount, className }: TournamentFiltersP
             <LocationFilter
               selectedLocations={filters.locations || []}
               onLocationsChange={updateLocations}
+            />
+            <RefereeFilter
+              selectedReferees={filters.referees || []}
+              onRefereesChange={updateReferees}
             />
             <TypeFilter
               selectedTypes={filters.types || []}
@@ -160,6 +166,7 @@ export function TournamentFilters({ resultCount, className }: TournamentFiltersP
                 <li>Use the search box to find tournaments by name</li>
                 <li>Select date ranges to find upcoming or past tournaments</li>
                 <li>Filter by multiple locations to compare tournaments</li>
+                <li>Search for specific referees to see their tournament assignments</li>
                 <li>Combine filters for more specific results</li>
               </ul>
             </div>

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { tournamentService } from '../services/tournament.service';
-import { TournamentQueryParams } from '../types/tournament.types';
+import { TournamentQueryParams, RefereeSearchResponse } from '../types/tournament.types';
 import { visLogger } from '../utils/logger';
 
 export class TournamentController {
@@ -19,7 +19,9 @@ export class TournamentController {
         types: req.query.types as string,
         surface: req.query.surface as string,
         gender: req.query.gender as string,
-        statuses: req.query.statuses as string
+        statuses: req.query.statuses as string,
+        // Story 1.3: Referee filtering
+        referees: req.query.referees as string
       };
 
       // Validate parameters using extracted method
@@ -78,6 +80,35 @@ export class TournamentController {
       });
 
       res.status(500).json(this.createErrorResponse(500, 'Failed to retrieve tournament'));
+    }
+  }
+
+  // Story 1.3: Search referees for autocomplete
+  async searchReferees(req: Request, res: Response): Promise<void> {
+    try {
+      const query = req.query.q as string;
+
+      if (!query || typeof query !== 'string' || query.trim().length < 2) {
+        res.status(400).json(this.createErrorResponse(400, 'Query parameter "q" is required and must be at least 2 characters'));
+        return;
+      }
+
+      const result: RefereeSearchResponse = await tournamentService.searchReferees(query.trim());
+
+      visLogger.info('Referee search request successful', {
+        requestId: req.headers['x-request-id'],
+        query,
+        resultCount: result.referees.length
+      });
+
+      res.status(200).json(result);
+    } catch (error) {
+      visLogger.error('Referee search request failed', error as Error, {
+        requestId: req.headers['x-request-id'],
+        query: req.query.q
+      });
+
+      res.status(500).json(this.createErrorResponse(500, 'Failed to search referees'));
     }
   }
 

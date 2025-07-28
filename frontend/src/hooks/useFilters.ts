@@ -125,6 +125,11 @@ export function useFilters() {
     updateFilters(prev => ({ ...prev, statuses }));
   }, [updateFilters]);
 
+  // Story 1.3: Add referee filtering support
+  const updateReferees = useCallback((referees: string[]) => {
+    updateFilters(prev => ({ ...prev, referees }));
+  }, [updateFilters]);
+
   // Clear all filters
   const clearFilters = useCallback(() => {
     const clearedFilters = clearAllFilters();
@@ -154,6 +159,7 @@ export function useFilters() {
     updateSurface,
     updateGender,
     updateStatuses,
+    updateReferees,
     clearFilters,
     hasActiveFilters,
     activeFilterCount

@@ -1,4 +1,4 @@
-import { visService } from './vis.service';
+import { visService } from './vis-factory.service';
 import { Tournament, PaginatedTournamentResponse, TournamentQueryParams, TournamentDetailResponse, Match } from '../types/tournament.types';
 import { TournamentFilters } from '../types/vis.types';
 import { visLogger } from '../utils/logger';

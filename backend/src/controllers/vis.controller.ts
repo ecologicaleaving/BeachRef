@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { visService } from '../services/vis.service';
+import { visService } from '../services/vis-factory.service';
 import { asyncHandler } from '../middleware/error.middleware';
 import { ValidationError, NotFoundError } from '../middleware/error.middleware';
 import { TournamentFilters, VISAPIError } from '../types/vis.types';

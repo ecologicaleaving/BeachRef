@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { visService } from '../services/vis.service';
+import { visService, VISFactoryService } from '../services/vis-factory.service';
 import { HealthStatus, VISHealthResponse } from '../types/vis.types';
 import { appLogger } from '../utils/logger';
 
@@ -15,7 +15,8 @@ export class HealthController {
         service: 'VisConnect API',
         version: '1.0.0',
         uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        demoMode: VISFactoryService.isDemoMode()
       };
 
       res.status(200).json(healthResponse);

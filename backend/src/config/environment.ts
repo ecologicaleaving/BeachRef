@@ -13,6 +13,9 @@ export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   
+  // Demo Mode Configuration
+  demoMode: process.env.DEMO_MODE === 'true' || !process.env.VIS_API_KEY,
+  
   // VIS API Configuration
   visApi: {
     url: process.env.VIS_API_URL || 'https://www.fivb.org/VisSDK/VisWebService/api/v1',

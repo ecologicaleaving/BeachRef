@@ -1,7 +1,10 @@
 import type { PaginatedTournamentResponse, TournamentQueryParams, TournamentDetailResponse } from '@/types/tournament.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-const isProduction = import.meta.env.PROD;
+// Use relative path for production (Vercel), localhost for development
+const isLocalhost = window.location.hostname === 'localhost';
+const API_BASE_URL = isLocalhost 
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:3001')
+  : ''; // Empty string for relative paths on production
 
 export class TournamentService {
   private async fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
@@ -43,8 +46,7 @@ export class TournamentService {
         }
       });
 
-      const apiPath = isProduction ? '/tournaments' : '/api/tournaments';
-      const url = `${API_BASE_URL}${apiPath}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      const url = `${API_BASE_URL}/api/tournaments${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
       
       const response = await this.fetchWithTimeout(url);
 
@@ -76,8 +78,7 @@ export class TournamentService {
 
   async getTournamentById(id: string): Promise<TournamentDetailResponse> {
     try {
-      const apiPath = isProduction ? '/tournaments' : '/api/tournaments';
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}${apiPath}/${id}`);
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/api/tournaments/${id}`);
 
       if (!response.ok) {
         if (response.status === 404) {

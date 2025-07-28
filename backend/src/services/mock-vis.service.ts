@@ -2,106 +2,133 @@ import { Tournament, TournamentDetail, TournamentFilters, HealthStatus, Tourname
 import { Match as TournamentMatch } from '../types/tournament.types';
 
 export class MockVISService {
-  private mockTournaments: Tournament[] = [
-    {
-      id: 'mock-001',
-      name: 'Beach Volleyball World Championships 2024',
-      dates: {
-        start: new Date('2024-08-15'),
-        end: new Date('2024-08-25')
-      },
-      location: {
-        city: 'Rio de Janeiro',
-        country: 'Brazil',
-        venue: 'Copacabana Beach Arena'
-      },
-      level: TournamentLevel.WORLD_CHAMPIONSHIP,
-      status: TournamentStatus.COMPLETED,
-      matchCount: 64
-    },
-    {
-      id: 'mock-002',
-      name: 'FIVB World Tour Finals 2024',
-      dates: {
-        start: new Date('2024-09-10'),
-        end: new Date('2024-09-15')
-      },
-      location: {
-        city: 'Doha',
-        country: 'Qatar',
-        venue: 'Katara Beach Complex'
-      },
-      level: TournamentLevel.WORLD_TOUR,
-      status: TournamentStatus.ONGOING,
-      matchCount: 32
-    },
-    {
-      id: 'mock-003',
-      name: 'European Beach Volleyball Championship 2024',
-      dates: {
-        start: new Date('2024-07-20'),
-        end: new Date('2024-07-28')
-      },
-      location: {
-        city: 'Vienna',
-        country: 'Austria',
-        venue: 'Donauinsel Beach Arena'
-      },
-      level: TournamentLevel.CONTINENTAL,
-      status: TournamentStatus.COMPLETED,
-      matchCount: 48
-    },
-    {
-      id: 'mock-004',
-      name: 'Asian Beach Games 2024',
-      dates: {
-        start: new Date('2024-10-05'),
-        end: new Date('2024-10-12')
-      },
-      location: {
-        city: 'Sanya',
-        country: 'China',
-        venue: 'Sanya Bay Beach Stadium'
-      },
-      level: TournamentLevel.CONTINENTAL,
-      status: TournamentStatus.UPCOMING,
-      matchCount: 40
-    },
-    {
-      id: 'mock-005',
-      name: 'USA Beach Volleyball National Championship',
-      dates: {
-        start: new Date('2024-06-15'),
-        end: new Date('2024-06-22')
-      },
-      location: {
-        city: 'Manhattan Beach',
-        country: 'USA',
-        venue: 'Manhattan Beach Pier'
-      },
-      level: TournamentLevel.NATIONAL,
-      status: TournamentStatus.COMPLETED,
-      matchCount: 56
-    },
-    {
-      id: 'mock-006',
-      name: 'FIVB Beach Volleyball World Tour - Rome',
-      dates: {
-        start: new Date('2024-11-01'),
-        end: new Date('2024-11-05')
-      },
-      location: {
-        city: 'Rome',
-        country: 'Italy',
-        venue: 'Foro Italico Beach Arena'
-      },
-      level: TournamentLevel.WORLD_TOUR,
-      status: TournamentStatus.UPCOMING,
-      matchCount: 24
-    }
-  ];
+  private mockTournaments: Tournament[] = this.generateMockTournaments();
 
-  private mockMatches: { [tournamentId: string]: TournamentMatch[] } = {
+  private generateMockTournaments(): Tournament[] {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
+    // Helper to create date relative to today
+    const daysFromNow = (days: number) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() + days);
+      return date;
+    };
+
+    return [
+      {
+        id: 'mock-001',
+        name: `Beach Volleyball World Championships ${currentYear}`,
+        dates: {
+          start: daysFromNow(-20), // Started 20 days ago
+          end: daysFromNow(-10)    // Ended 10 days ago
+        },
+        location: {
+          city: 'Rio de Janeiro',
+          country: 'Brazil',
+          venue: 'Copacabana Beach Arena'
+        },
+        level: TournamentLevel.WORLD_CHAMPIONSHIP,
+        status: TournamentStatus.COMPLETED,
+        matchCount: 64
+      },
+      {
+        id: 'mock-002',
+        name: `FIVB World Tour Finals ${currentYear}`,
+        dates: {
+          start: daysFromNow(-3),  // Started 3 days ago
+          end: daysFromNow(2)      // Ends in 2 days
+        },
+        location: {
+          city: 'Doha',
+          country: 'Qatar',
+          venue: 'Katara Beach Complex'
+        },
+        level: TournamentLevel.WORLD_TOUR,
+        status: TournamentStatus.ONGOING,
+        matchCount: 32
+      },
+      {
+        id: 'mock-003',
+        name: `European Beach Volleyball Championship ${currentYear}`,
+        dates: {
+          start: daysFromNow(-40), // Started 40 days ago
+          end: daysFromNow(-32)    // Ended 32 days ago
+        },
+        location: {
+          city: 'Vienna',
+          country: 'Austria',
+          venue: 'Donauinsel Beach Arena'
+        },
+        level: TournamentLevel.CONTINENTAL,
+        status: TournamentStatus.COMPLETED,
+        matchCount: 48
+      },
+      {
+        id: 'mock-004',
+        name: `Asian Beach Games ${currentYear}`,
+        dates: {
+          start: daysFromNow(15),  // Starts in 15 days
+          end: daysFromNow(22)     // Ends in 22 days
+        },
+        location: {
+          city: 'Sanya',
+          country: 'China',
+          venue: 'Sanya Bay Beach Stadium'
+        },
+        level: TournamentLevel.CONTINENTAL,
+        status: TournamentStatus.UPCOMING,
+        matchCount: 40
+      },
+      {
+        id: 'mock-005',
+        name: `USA Beach Volleyball National Championship`,
+        dates: {
+          start: daysFromNow(-60), // Started 60 days ago
+          end: daysFromNow(-53)    // Ended 53 days ago
+        },
+        location: {
+          city: 'Manhattan Beach',
+          country: 'USA',
+          venue: 'Manhattan Beach Pier'
+        },
+        level: TournamentLevel.NATIONAL,
+        status: TournamentStatus.COMPLETED,
+        matchCount: 56
+      },
+      {
+        id: 'mock-006',
+        name: `FIVB Beach Volleyball World Tour - Rome`,
+        dates: {
+          start: daysFromNow(30),  // Starts in 30 days
+          end: daysFromNow(34)     // Ends in 34 days
+        },
+        location: {
+          city: 'Rome',
+          country: 'Italy',
+          venue: 'Foro Italico Beach Arena'
+        },
+        level: TournamentLevel.WORLD_TOUR,
+        status: TournamentStatus.UPCOMING,
+        matchCount: 24
+      }
+    ];
+  }
+
+  private mockMatches: { [tournamentId: string]: TournamentMatch[] } = this.generateMockMatches();
+
+  private generateMockMatches(): { [tournamentId: string]: TournamentMatch[] } {
+    const now = new Date();
+    
+    // Helper to create date relative to today
+    const daysFromNow = (days: number, hours: number = 0) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() + days);
+      date.setHours(date.getHours() + hours);
+      return date;
+    };
+
+    return {
     'mock-001': [
       {
         id: 'match-001-01',
@@ -123,8 +150,8 @@ export class MockVISService {
           set2: { team1: 21, team2: 16 }
         },
         status: 'Completed',
-        scheduledTime: new Date('2024-08-25T18:00:00Z'),
-        actualStartTime: new Date('2024-08-25T18:05:00Z'),
+        scheduledTime: daysFromNow(-10, 18),  // 10 days ago at 18:00
+        actualStartTime: daysFromNow(-10, 18),
         duration: 45,
         round: 'Gold Medal Match',
         court: 'Center Court',
@@ -151,8 +178,8 @@ export class MockVISService {
           set3: { team1: 15, team2: 13 }
         },
         status: 'Completed',
-        scheduledTime: new Date('2024-08-25T15:30:00Z'),
-        actualStartTime: new Date('2024-08-25T15:35:00Z'),
+        scheduledTime: daysFromNow(-10, 15),  // 10 days ago at 15:30
+        actualStartTime: daysFromNow(-10, 15),
         duration: 62,
         round: 'Bronze Medal Match',
         court: 'Court 1',
@@ -180,8 +207,8 @@ export class MockVISService {
           set2: { team1: 21, team2: 15 }
         },
         status: 'Live',
-        scheduledTime: new Date('2024-09-15T16:00:00Z'),
-        actualStartTime: new Date('2024-09-15T16:05:00Z'),
+        scheduledTime: daysFromNow(0, -2),  // Today, 2 hours ago
+        actualStartTime: daysFromNow(0, -2),
         round: 'Semi-Final',
         court: 'Center Court'
       },
@@ -202,12 +229,13 @@ export class MockVISService {
         },
         score: {},
         status: 'Scheduled',
-        scheduledTime: new Date('2024-09-15T19:00:00Z'),
+        scheduledTime: daysFromNow(1, 10),  // Tomorrow at 10:00
         round: 'Semi-Final',
         court: 'Court 1'
       }
     ]
-  };
+    };
+  }
 
   async healthCheck(): Promise<HealthStatus> {
     return {

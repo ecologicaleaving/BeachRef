@@ -48,6 +48,78 @@ function getMockTournamentById(id: string) {
       matchCount: 32,
       surface: 'Sand',
       gender: 'Mixed'
+    },
+    'mock-003': {
+      id: 'mock-003',
+      name: `European Beach Volleyball Championship ${currentYear}`,
+      dates: {
+        start: daysFromNow(-40),
+        end: daysFromNow(-32)
+      },
+      location: {
+        city: 'Vienna',
+        country: 'Austria',
+        venue: 'Donauinsel Beach Arena'
+      },
+      level: 'Continental',
+      status: 'Completed',
+      matchCount: 48,
+      surface: 'Sand',
+      gender: 'Mixed'
+    },
+    'mock-004': {
+      id: 'mock-004',
+      name: `Asian Beach Games ${currentYear}`,
+      dates: {
+        start: daysFromNow(15),
+        end: daysFromNow(22)
+      },
+      location: {
+        city: 'Sanya',
+        country: 'China',
+        venue: 'Sanya Bay Beach Stadium'
+      },
+      level: 'Continental',
+      status: 'Upcoming',
+      matchCount: 40,
+      surface: 'Sand',
+      gender: 'Mixed'
+    },
+    'mock-005': {
+      id: 'mock-005',
+      name: `USA Beach Volleyball National Championship`,
+      dates: {
+        start: daysFromNow(-60),
+        end: daysFromNow(-53)
+      },
+      location: {
+        city: 'Manhattan Beach',
+        country: 'USA',
+        venue: 'Manhattan Beach Pier'
+      },
+      level: 'National',
+      status: 'Completed',
+      matchCount: 56,
+      surface: 'Sand',
+      gender: 'Mixed'
+    },
+    'mock-006': {
+      id: 'mock-006',
+      name: `FIVB Beach Volleyball World Tour - Rome`,
+      dates: {
+        start: daysFromNow(30),
+        end: daysFromNow(34)
+      },
+      location: {
+        city: 'Rome',
+        country: 'Italy',
+        venue: 'Foro Italico Beach Arena'
+      },
+      level: 'World Tour',
+      status: 'Upcoming',
+      matchCount: 24,
+      surface: 'Sand',
+      gender: 'Mixed'
     }
   };
 
@@ -78,7 +150,15 @@ function getMockTournamentById(id: string) {
         duration: 45,
         round: 'Gold Medal Match',
         court: 'Center Court',
-        winner: 'team1'
+        winner: 'team1',
+        referees: {
+          main: {
+            id: 'ref-001',
+            name: 'John Smith',
+            country: 'USA',
+            level: 'International'
+          }
+        }
       }
     ],
     'mock-002': [
@@ -105,9 +185,95 @@ function getMockTournamentById(id: string) {
         scheduledTime: daysFromNow(0, -2),
         actualStartTime: daysFromNow(0, -2),
         round: 'Semi-Final',
-        court: 'Center Court'
+        court: 'Center Court',
+        referees: {
+          main: {
+            id: 'ref-002',
+            name: 'Maria Garcia',
+            country: 'ESP',
+            level: 'International'
+          }
+        }
       }
-    ]
+    ],
+    'mock-003': [
+      {
+        id: 'match-003-01',
+        tournamentId: 'mock-003',
+        teams: {
+          team1: {
+            player1: 'Clemens Wickler',
+            player2: 'Nils Ehlers',
+            country: 'GER'
+          },
+          team2: {
+            player1: 'Adrian Carambula',
+            player2: 'Alex Ranghieri',
+            country: 'ITA'
+          }
+        },
+        score: {
+          set1: { team1: 21, team2: 19 },
+          set2: { team1: 16, team2: 21 },
+          set3: { team1: 15, team2: 13 }
+        },
+        status: 'Completed',
+        scheduledTime: daysFromNow(-32, 16),
+        actualStartTime: daysFromNow(-32, 16),
+        duration: 62,
+        round: 'Final',
+        court: 'Center Court',
+        winner: 'team1',
+        referees: {
+          main: {
+            id: 'ref-003',
+            name: 'Hans Mueller',
+            country: 'GER',
+            level: 'International'
+          }
+        }
+      }
+    ],
+    'mock-004': [],
+    'mock-005': [
+      {
+        id: 'match-005-01',
+        tournamentId: 'mock-005',
+        teams: {
+          team1: {
+            player1: 'Kelly Cheng',
+            player2: 'Sara Hughes',
+            country: 'USA'
+          },
+          team2: {
+            player1: 'Taryn Kloth',
+            player2: 'Kristen Nuss',
+            country: 'USA'
+          }
+        },
+        score: {
+          set1: { team1: 17, team2: 21 },
+          set2: { team1: 21, team2: 18 },
+          set3: { team1: 15, team2: 11 }
+        },
+        status: 'Completed',
+        scheduledTime: daysFromNow(-53, 14),
+        actualStartTime: daysFromNow(-53, 14),
+        duration: 58,
+        round: 'Championship Final',
+        court: 'Main Court',
+        winner: 'team1',
+        referees: {
+          main: {
+            id: 'ref-005',
+            name: 'Ahmed Hassan',
+            country: 'EGY',
+            level: 'International'
+          }
+        }
+      }
+    ],
+    'mock-006': []
   };
 
   const tournament = tournaments[id];

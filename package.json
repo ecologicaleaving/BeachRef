@@ -32,5 +32,8 @@
   "devDependencies": {
     "@vercel/node": "^5.3.7",
     "concurrently": "^9.2.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

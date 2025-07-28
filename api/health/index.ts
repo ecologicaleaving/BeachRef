@@ -1,6 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { config } from '../../backend/src/config/environment';
-import { VISFactoryService } from '../../backend/src/services/vis-factory.service';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -23,11 +21,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const healthResponse = {
       status: 'healthy',
       timestamp,
-      service: 'VisConnect API',
+      service: 'BeachRef API',
       version: '1.0.0',
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || 'production',
-      demoMode: VISFactoryService.isDemoMode()
+      demoMode: true
     };
 
     res.status(200).json(healthResponse);

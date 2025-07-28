@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ecologicaleaving/BeachRef#readme",
   "description": "",
   "devDependencies": {
+    "@vercel/node": "^5.3.7",
     "concurrently": "^9.2.0"
   }
 }

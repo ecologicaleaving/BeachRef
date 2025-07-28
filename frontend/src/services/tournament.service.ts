@@ -1,6 +1,7 @@
 import type { PaginatedTournamentResponse, TournamentQueryParams, TournamentDetailResponse } from '@/types/tournament.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const isProduction = import.meta.env.PROD;
 
 export class TournamentService {
   private async fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
@@ -42,7 +43,8 @@ export class TournamentService {
         }
       });
 
-      const url = `${API_BASE_URL}/api/tournaments${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      const apiPath = isProduction ? '/tournaments' : '/api/tournaments';
+      const url = `${API_BASE_URL}${apiPath}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
       
       const response = await this.fetchWithTimeout(url);
 
@@ -74,7 +76,8 @@ export class TournamentService {
 
   async getTournamentById(id: string): Promise<TournamentDetailResponse> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/api/tournaments/${id}`);
+      const apiPath = isProduction ? '/tournaments' : '/api/tournaments';
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}${apiPath}/${id}`);
 
       if (!response.ok) {
         if (response.status === 404) {

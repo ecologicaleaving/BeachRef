@@ -123,6 +123,20 @@ function generateMockTournaments() {
   ];
 }
 
+// Mock function to get referees assigned to each tournament
+function getTournamentReferees(tournamentId: string): string[] {
+  const refereeAssignments: Record<string, string[]> = {
+    'mock-001': ['John Smith', 'Maria Garcia', 'Pierre Dubois'],
+    'mock-002': ['Hans Mueller', 'Ana Santos', 'Marco Rossi'],
+    'mock-003': ['Yuki Tanaka', 'Emma Johnson', 'Sofia Popovic'],
+    'mock-004': ['Carlos Rodriguez', 'Lisa Anderson', 'David Lee'],
+    'mock-005': ['Ahmed Hassan', 'Isabella Costa', 'John Smith'],
+    'mock-006': ['Robert Wilson', 'Maria Garcia', 'Hans Mueller']
+  };
+  
+  return refereeAssignments[tournamentId] || [];
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -142,9 +156,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const refereeFilter = req.query.referees as string;
 
     // Generate mock tournaments
-    const tournaments = generateMockTournaments();
+    let tournaments = generateMockTournaments();
+    
+    // Apply referee filter if provided
+    if (refereeFilter && refereeFilter.trim()) {
+      const refereeNames = refereeFilter.split(',').map(name => name.trim().toLowerCase());
+      tournaments = tournaments.filter(tournament => {
+        // Mock: some tournaments have certain referees assigned
+        const tournamentReferees = getTournamentReferees(tournament.id);
+        return refereeNames.some(refereeName => 
+          tournamentReferees.some(ref => ref.toLowerCase().includes(refereeName))
+        );
+      });
+    }
     
     // Simple pagination
     const startIndex = (page - 1) * limit;

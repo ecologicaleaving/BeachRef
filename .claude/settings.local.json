@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run list:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install)",
+      "Bash(rm:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(git reset:*)",
+      "Bash(npm test)",
+      "Bash(npm install:*)",
+      "Bash(npm start)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run lint)",
+      "WebFetch(domain:github.com)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(gh workflow:*)",
+      "Bash(npm ci:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm test:*)",
+      "Bash(mv:*)",
+      "Bash(npx jest:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx ts-jest config:init:*)",
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(gh repo view:*)",
+      "WebFetch(domain:beachref.vercel.app)",
+      "Bash(gh run view:*)",
+      "WebFetch(domain:vercel.com)"
+    ],
+    "deny": []
+  }
+}

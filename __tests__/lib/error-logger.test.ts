@@ -125,7 +125,10 @@ describe('ErrorLogger', () => {
 
     it('should log detailed info in development', () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'development',
+        writable: true
+      });
       
       const error = new Error('Dev error');
       logError(error);
@@ -134,7 +137,10 @@ describe('ErrorLogger', () => {
       expect(console.error).toHaveBeenCalledWith('Error ID:', expect.any(String));
       expect(console.groupEnd).toHaveBeenCalled();
       
-      process.env.NODE_ENV = originalEnv;
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalEnv,
+        writable: true
+      });
     });
   });
 

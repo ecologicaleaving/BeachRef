@@ -63,7 +63,7 @@ describe('Vercel Configuration', () => {
 
     it('should have proper caching configuration', () => {
       const apiHeaders = vercelConfig.headers.find((h: any) => h.source === '/api/(.*)');
-      const staticHeaders = vercelConfig.headers.find((h: any) => h.source.includes('\\.(js|css|png'));
+      const staticHeaders = vercelConfig.headers.find((h: any) => h.source.includes('(?:js|css|png'));
       
       expect(apiHeaders).toBeDefined();
       expect(staticHeaders).toBeDefined();

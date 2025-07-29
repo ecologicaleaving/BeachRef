@@ -203,7 +203,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
 
   // Handle column sort
   const handleSort = useCallback((column: SortColumn) => {
-    setSortConfig(prevConfig => {
+    setSortConfig((prevConfig: SortConfig | null) => {
       if (prevConfig?.column === column) {
         // Toggle direction or clear sort
         if (prevConfig.direction === 'asc') {
@@ -337,7 +337,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   }), []);
 
   const getColumnVisibility = useCallback((column: SortColumn) => {
-    const priority = columnPriority[column];
+    const priority = columnPriority[column as keyof typeof columnPriority];
     
     switch (screenSize) {
       case 'mobile':

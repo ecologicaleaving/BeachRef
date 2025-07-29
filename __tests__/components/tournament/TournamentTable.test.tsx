@@ -356,7 +356,7 @@ describe('TournamentTable', () => {
       expect(headers).toHaveLength(6); // 6 columns
 
       // Check all headers have aria-sort attribute
-      headers.forEach(header => {
+      headers.forEach((header: Element) => {
         expect(header).toHaveAttribute('aria-sort');
       });
     });

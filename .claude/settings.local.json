@@ -36,7 +36,9 @@
       "Bash(gh repo view:*)",
       "WebFetch(domain:beachref.vercel.app)",
       "Bash(gh run view:*)",
-      "WebFetch(domain:vercel.com)"
+      "WebFetch(domain:vercel.com)",
+      "Bash(npx create-next-app:*)",
+      "Bash(timeout 10s npm run dev:*)"
     ],
     "deny": []
   }

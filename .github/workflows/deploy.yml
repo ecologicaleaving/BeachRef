@@ -1,4 +1,4 @@
-name: Deploy VisConnect to Vercel
+name: BeachRef MVP CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test-backend:
+  test:
     runs-on: ubuntu-latest
     
     steps:
@@ -18,68 +18,19 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
+        cache-dependency-path: package-lock.json
     
-    - name: Install backend dependencies
+    - name: Install dependencies
       run: npm ci
-      working-directory: ./backend
     
-    - name: Run backend linting
-      run: npm run lint --if-present
-      working-directory: ./backend
-    
-    - name: Run backend tests
-      run: npm test -- --passWithNoTests || true
-      working-directory: ./backend
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-    
-    - name: Install frontend dependencies
-      run: npm ci
-      working-directory: ./frontend
-    
-    - name: Run frontend linting
+    - name: Run linting
       run: npm run lint
-      working-directory: ./frontend
     
-    - name: Run frontend tests
+    - name: Run type checking
+      run: npm run type-check
+    
+    - name: Run tests
       run: npm test -- --passWithNoTests
-      working-directory: ./frontend
     
-    - name: Build frontend
+    - name: Build application
       run: npm run build
-      working-directory: ./frontend
-
-  deploy:
-    needs: [test-backend, test-frontend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-    
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.ORG_ID }}
-        vercel-project-id: ${{ secrets.PROJECT_ID }}
-        vercel-args: '--prod'

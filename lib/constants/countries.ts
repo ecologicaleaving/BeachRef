@@ -1,0 +1,87 @@
+/**
+ * Country code to name mapping for tournament displays
+ * Contains common country codes used in volleyball tournaments
+ */
+export const COUNTRY_NAMES: Record<string, string> = {
+  'US': 'United States',
+  'CA': 'Canada',
+  'BR': 'Brazil',
+  'AU': 'Australia',
+  'DE': 'Germany',
+  'FR': 'France',
+  'IT': 'Italy',
+  'ES': 'Spain',
+  'GB': 'United Kingdom',
+  'NL': 'Netherlands',
+  'NO': 'Norway',
+  'SE': 'Sweden',
+  'DK': 'Denmark',
+  'FI': 'Finland',
+  'PL': 'Poland',
+  'CZ': 'Czech Republic',
+  'AT': 'Austria',
+  'CH': 'Switzerland',
+  'BE': 'Belgium',
+  'PT': 'Portugal',
+  'GR': 'Greece',
+  'TR': 'Turkey',
+  'RU': 'Russia',
+  'CN': 'China',
+  'JP': 'Japan',
+  'KR': 'South Korea',
+  'IN': 'India',
+  'SG': 'Singapore',
+  'TH': 'Thailand',
+  'MY': 'Malaysia',
+  'ID': 'Indonesia',
+  'PH': 'Philippines',
+  'VN': 'Vietnam',
+  'MX': 'Mexico',
+  'AR': 'Argentina',
+  'CL': 'Chile',
+  'PE': 'Peru',
+  'CO': 'Colombia',
+  'VE': 'Venezuela',
+  'EG': 'Egypt',
+  'ZA': 'South Africa',
+  'MA': 'Morocco',
+  'NG': 'Nigeria',
+  'KE': 'Kenya',
+  'GH': 'Ghana',
+  'TN': 'Tunisia',
+  'DZ': 'Algeria',
+  'IL': 'Israel',
+  'AE': 'United Arab Emirates',
+  'SA': 'Saudi Arabia',
+  'QA': 'Qatar',
+  'KW': 'Kuwait',
+  'JO': 'Jordan',
+  'LB': 'Lebanon',
+  'IQ': 'Iraq',
+  'IR': 'Iran',
+  'PK': 'Pakistan',
+  'BD': 'Bangladesh',
+  'LK': 'Sri Lanka',
+  'MM': 'Myanmar',
+  'KH': 'Cambodia',
+  'LA': 'Laos',
+  'NP': 'Nepal',
+  'BT': 'Bhutan',
+  'MV': 'Maldives',
+  'AF': 'Afghanistan',
+  'UZ': 'Uzbekistan',
+  'KZ': 'Kazakhstan',
+  'KG': 'Kyrgyzstan',
+  'TJ': 'Tajikistan',
+  'TM': 'Turkmenistan',
+  'MN': 'Mongolia'
+};
+
+/**
+ * Get country name from country code
+ * @param countryCode - Two-letter ISO country code
+ * @returns Full country name or the original code if not found
+ */
+export const getCountryName = (countryCode: string): string => {
+  return COUNTRY_NAMES[countryCode.toUpperCase()] || countryCode;
+};

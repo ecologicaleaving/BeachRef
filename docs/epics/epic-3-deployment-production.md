@@ -27,17 +27,27 @@ Ensure robust production deployment with comprehensive error handling, performan
 
 ## Stories
 
-1. **Story 3.1:** Production Error Handling & Loading States
+1. **Story 3.1:** Deployment Pipeline Architecture Fix
+   - Resolve dual-pipeline conflicts between GitHub Actions and Vercel
+   - Standardize Node.js version and package management across environments
+   - Achieve >95% deployment success rate
+
+2. **Story 3.2:** Vercel Configuration Optimization
+   - Optimize Vercel build configuration for Next.js 14 best practices
+   - Configure proper environment variable management
+   - Implement build caching to reduce deployment time to <2 minutes
+
+3. **Story 3.3:** Production Error Handling & Loading States
    - Implement comprehensive error boundaries
    - Add graceful fallbacks for API failures
    - Create user-friendly error messages and retry mechanisms
 
-2. **Story 3.2:** Performance Optimization & Caching
+4. **Story 3.4:** Performance Optimization & Caching
    - Optimize bundle size and implement code splitting
    - Configure proper caching headers for static assets
    - Add performance monitoring and optimization
 
-3. **Story 3.3:** Production Deployment & Monitoring
+5. **Story 3.5:** Production Deployment & Monitoring
    - Configure Vercel production environment settings
    - Set up deployment health checks
    - Implement basic monitoring and alerting

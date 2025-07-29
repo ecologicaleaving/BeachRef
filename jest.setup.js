@@ -38,3 +38,28 @@ Object.defineProperty(global, 'Response', {
 
 // Mock fetch
 global.fetch = jest.fn();
+
+// Mock IntersectionObserver for CountryFlag component
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback) {
+    this.callback = callback;
+    // Immediately trigger the callback with a visible entry
+    setTimeout(() => {
+      callback([
+        {
+          isIntersecting: true,
+          target: document.createElement('div'),
+          boundingClientRect: {} ,
+          intersectionRatio: 1,
+          intersectionRect: {},
+          rootBounds: {},
+          time: Date.now()
+        }
+      ], this);
+    }, 0);
+  }
+  
+  observe = jest.fn();
+  disconnect = jest.fn();
+  unobserve = jest.fn();
+};

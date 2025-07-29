@@ -267,7 +267,7 @@ describe('TournamentTable', () => {
 
       // Wait for error to appear
       await waitFor(() => {
-        expect(screen.getByText('Error Loading Tournaments')).toBeInTheDocument();
+        expect(screen.getByText('Connection Error')).toBeInTheDocument();
       });
 
       // Click retry button

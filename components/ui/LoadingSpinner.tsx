@@ -4,12 +4,14 @@ interface LoadingSpinnerProps {
   size?: 'small' | 'medium' | 'large';
   className?: string;
   label?: string;
+  variant?: 'default' | 'retry' | 'inline';
 }
 
 export const LoadingSpinner: FC<LoadingSpinnerProps> = ({
   size = 'medium',
   className = '',
-  label = 'Loading...'
+  label = 'Loading...',
+  variant = 'default'
 }) => {
   const sizeClasses = {
     small: 'w-4 h-4',
@@ -17,18 +19,38 @@ export const LoadingSpinner: FC<LoadingSpinnerProps> = ({
     large: 'w-12 h-12'
   };
 
+  const variantClasses = {
+    default: 'border-gray-200 border-t-blue-600',
+    retry: 'border-yellow-200 border-t-yellow-600',
+    inline: 'border-gray-300 border-t-gray-600'
+  };
+
+  const containerClasses = {
+    default: 'flex items-center justify-center',
+    retry: 'flex items-center justify-center bg-yellow-50 rounded-lg p-4',
+    inline: 'inline-flex items-center'
+  };
+
   return (
     <div
-      className={`flex items-center justify-center ${className}`}
+      className={`${containerClasses[variant]} ${className}`}
       role="status"
       aria-live="polite"
       aria-label={label}
     >
       <div
-        className={`${sizeClasses[size]} border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin`}
+        className={`${sizeClasses[size]} border-4 ${variantClasses[variant]} rounded-full animate-spin`}
         aria-hidden="true"
       />
-      <span className="sr-only">{label}</span>
+      {variant === 'retry' && (
+        <span className="ml-3 text-sm text-yellow-800 font-medium">{label}</span>
+      )}
+      {variant === 'inline' && (
+        <span className="ml-2 text-sm text-gray-600">{label}</span>
+      )}
+      {variant === 'default' && (
+        <span className="sr-only">{label}</span>
+      )}
     </div>
   );
 };
@@ -97,6 +119,62 @@ export const TableLoadingSkeleton: FC<TableLoadingSkeletonProps> = ({
       ))}
       
       <span className="sr-only">Loading tournament table</span>
+    </div>
+  );
+};
+
+interface ProgressiveLoadingProps {
+  steps: Array<{
+    label: string;
+    completed: boolean;
+    current: boolean;
+  }>;
+  className?: string;
+}
+
+export const ProgressiveLoading: FC<ProgressiveLoadingProps> = ({
+  steps,
+  className = ''
+}) => {
+  return (
+    <div className={`space-y-3 ${className}`} role="status" aria-label="Loading progress">
+      <div className="text-center">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Loading Tournament Data</h3>
+      </div>
+      
+      {steps.map((step, index) => (
+        <div key={index} className="flex items-center">
+          <div className="flex-shrink-0">
+            {step.completed ? (
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : step.current ? (
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+              </div>
+            ) : (
+              <div className="w-6 h-6 bg-gray-300 rounded-full" />
+            )}
+          </div>
+          <div className="ml-3">
+            <p className={`text-sm font-medium ${
+              step.completed ? 'text-green-700' : 
+              step.current ? 'text-blue-700' : 
+              'text-gray-500'
+            }`}>
+              {step.label}
+            </p>
+          </div>
+          {step.current && (
+            <div className="ml-auto">
+              <LoadingSpinner size="small" variant="inline" label="" />
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

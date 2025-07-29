@@ -29,3 +29,32 @@ export class VISApiError extends Error {
     this.originalError = originalError
   }
 }
+
+// Tournament Table Component Types
+export interface TournamentTableProps {
+  initialData?: Tournament[] | null;
+  className?: string;
+}
+
+export interface TournamentTableState {
+  tournaments: Tournament[];
+  loading: boolean;
+  error: string | null;
+  sortColumn: string | null;
+  sortDirection: 'asc' | 'desc';
+}
+
+export type SortColumn = 'name' | 'countryCode' | 'startDate' | 'endDate' | 'gender' | 'type';
+
+export interface SortConfig {
+  column: SortColumn;
+  direction: 'asc' | 'desc';
+}
+
+// Utility types for data formatting
+export interface FormattedTournament extends Tournament {
+  formattedStartDate: string;
+  formattedEndDate: string;
+  formattedGender: string;
+  countryName?: string;
+}

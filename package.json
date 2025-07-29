@@ -16,7 +16,9 @@
     "ci": "npm run lint && npm run type-check && npm run test:ci && npm run build",
     "ci:local": "echo 'Running complete CI pipeline locally...' && npm run lint && npm run type-check && npm run test:ci && npm run build && echo 'All CI steps passed! ✅'",
     "ci:debug": "echo 'Testing TypeScript compilation...' && tsc --noEmit --verbose --listFiles | head -20 && echo 'Testing module resolution...' && node -e \"console.log('Module resolution test:', require.resolve('@testing-library/react'))\"",
-    "ci:test-exactly": "echo 'Mimicking exact GitHub Actions environment...' && npm ci --no-audit --no-fund && npm run lint && npm run type-check && npm run test:ci && npm run build"
+    "ci:test-exactly": "echo 'Mimicking exact GitHub Actions environment...' && npm ci --no-audit --no-fund && npm run lint && npm run type-check && npm run test:ci && npm run build",
+    "validate-deployment": "node scripts/validate-deployment.js",
+    "test-deployment": "node scripts/test-deployment-reliability.js"
   },
   "dependencies": {
     "clsx": "^2.0.0",
@@ -24,6 +26,10 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.0",

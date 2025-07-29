@@ -151,40 +151,74 @@ export const TournamentError: FC<TournamentErrorProps> = ({
 }) => {
   const errorMessage = typeof error === 'string' ? error : error.message;
   
-  // Determine error type and provide user-friendly messages
+  // Determine error type and provide user-friendly messages with guidance
   const getErrorDetails = (message: string) => {
-    if (message.includes('fetch') || message.includes('network')) {
+    if (message.includes('fetch') || message.includes('network') || message.includes('Network error')) {
       return {
         title: 'Connection Error',
         message: 'Unable to connect to the tournament service. Please check your internet connection and try again.',
-        severity: 'error' as const
+        severity: 'error' as const,
+        guidance: [
+          'Check your internet connection',
+          'Try refreshing the page',
+          'Disable VPN if active',
+          'Contact support if the problem persists'
+        ]
       };
     }
     
-    if (message.includes('timeout')) {
+    if (message.includes('timeout') || message.includes('AbortError')) {
       return {
         title: 'Request Timeout',
-        message: 'The request took too long to complete. Please try again.',
-        severity: 'warning' as const
+        message: 'The request took too long to complete. The server may be experiencing high load.',
+        severity: 'warning' as const,
+        guidance: [
+          'Try again in a few moments',
+          'Check your internet speed',
+          'The service will automatically retry'
+        ]
       };
     }
     
     if (message.includes('404') || message.includes('not found')) {
       return {
         title: 'Data Not Available',
-        message: 'Tournament data is currently unavailable. Please try again later.',
-        severity: 'info' as const
+        message: 'Tournament data is currently unavailable. This may be temporary.',
+        severity: 'info' as const,
+        guidance: [
+          'Tournament schedules may be updated',
+          'Try again in a few minutes',
+          'Check the official FIVB website for updates'
+        ]
+      };
+    }
+    
+    if (message.includes('500') || message.includes('502') || message.includes('503')) {
+      return {
+        title: 'Service Temporarily Unavailable',
+        message: 'The tournament service is experiencing technical difficulties.',
+        severity: 'warning' as const,
+        guidance: [
+          'This is usually temporary',
+          'Try again in a few minutes',
+          'The system will recover automatically'
+        ]
       };
     }
     
     return {
       title: 'Error Loading Tournaments',
       message: 'Tournament data temporarily unavailable. Please try again in a few moments.',
-      severity: 'error' as const
+      severity: 'error' as const,
+      guidance: [
+        'Try refreshing the page',
+        'Check your internet connection',
+        'Contact support if the issue continues'
+      ]
     };
   };
   
-  const { title, message, severity } = getErrorDetails(errorMessage);
+  const { title, message, severity, guidance } = getErrorDetails(errorMessage);
   
   return (
     <ErrorMessage
@@ -195,7 +229,21 @@ export const TournamentError: FC<TournamentErrorProps> = ({
       retryLabel="Reload tournaments"
       className={className}
     >
-      <details className="mt-2">
+      {guidance && (
+        <div className="mt-3 p-3 bg-white bg-opacity-30 rounded border">
+          <h4 className="text-sm font-medium mb-2">What you can do:</h4>
+          <ul className="text-sm space-y-1">
+            {guidance.map((item, index) => (
+              <li key={index} className="flex items-start">
+                <span className="inline-block w-1 h-1 bg-current rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      <details className="mt-3">
         <summary className="cursor-pointer text-sm font-medium opacity-75 hover:opacity-100">
           Technical details
         </summary>

@@ -15,6 +15,7 @@ export interface TournamentRowProps {
   /** Additional CSS classes */
   className?: string;
   /** Keyboard event handler for mobile cards */
+  // eslint-disable-next-line no-unused-vars
   onKeyDown?: (event: React.KeyboardEvent) => void;
 }
 

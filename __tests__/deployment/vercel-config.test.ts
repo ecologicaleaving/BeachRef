@@ -73,6 +73,7 @@ describe('Vercel Configuration', () => {
       
       expect(apiCacheHeader.value).toContain('s-maxage=60');
       expect(staticCacheHeader.value).toContain('max-age=31536000');
+      expect(staticCacheHeader.value).toContain('immutable');
     });
 
     it('should have health check redirect configured', () => {

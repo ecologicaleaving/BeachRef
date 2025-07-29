@@ -220,7 +220,7 @@ describe('ResponsiveTournamentTable', () => {
       
       await waitFor(() => {
         const cards = screen.getAllByRole('row');
-        const tournamentCards = cards.filter(card => card.getAttribute('tabindex') === '0');
+        const tournamentCards = cards.filter((card: Element) => card.getAttribute('tabindex') === '0');
         
         tournamentCards.forEach((card: Element) => {
           expect(card).toHaveAttribute('tabindex', '0');

@@ -4,6 +4,9 @@ import { FC, memo } from 'react';
 import { Tournament } from '@/lib/types';
 import { CountryFlag } from '@/components/ui/CountryFlag';
 import { getCountryName } from '@/lib/country-utils';
+import { TableRow, TableCell } from '@/components/ui/table';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export interface TournamentRowProps {
   /** Tournament data to display */
@@ -14,6 +17,8 @@ export interface TournamentRowProps {
   screenSize?: 'mobile' | 'tablet' | 'desktop';
   /** Additional CSS classes */
   className?: string;
+  /** Inline styles for animations */
+  style?: React.CSSProperties;
   /** Keyboard event handler for mobile cards */
   // eslint-disable-next-line no-unused-vars
   onKeyDown?: (event: React.KeyboardEvent) => void;
@@ -30,6 +35,7 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
   isDesktop = false,
   screenSize = 'mobile',
   className = '',
+  style,
   onKeyDown
 }) => {
   // Format date for display
@@ -78,41 +84,41 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
     }
   };
 
-  // Gender badge styling
-  const getGenderBadgeClasses = (gender: string) => {
-    const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+  // Gender badge styling using shadcn Badge variants
+  const getGenderBadgeVariant = (gender: string): 'default' | 'secondary' | 'outline' => {
     switch (gender) {
       case 'Men':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
+        return 'default'; // FIVB blue
       case 'Women':
-        return `${baseClasses} bg-pink-100 text-pink-800`;
+        return 'secondary'; // Muted
       case 'Mixed':
-        return `${baseClasses} bg-purple-100 text-purple-800`;
+        return 'outline'; // Outlined
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return 'secondary';
     }
   };
 
   if (isDesktop || screenSize === 'tablet') {
     // Desktop/Tablet table row layout with responsive columns
     return (
-      <tr
-        className={`hover:bg-gray-50 transition-colors duration-150 ${className}`}
+      <TableRow
+        className={`hover:bg-muted/50 transition-colors duration-150 ${className}`}
+        style={style}
         role="row"
       >
         {/* Tournament Name - Always visible */}
         {getColumnVisibility('name') && (
-          <td className="px-3 py-4 text-sm">
-            <div className="font-medium text-gray-900 max-w-xs truncate" title={tournament.name}>
+          <TableCell className="text-sm">
+            <div className="font-medium text-foreground max-w-xs truncate" title={tournament.name}>
               {tournament.name}
             </div>
-            <div className="text-xs text-gray-500 mt-1">{tournament.code}</div>
-          </td>
+            <div className="text-xs text-muted-foreground mt-1">{tournament.code}</div>
+          </TableCell>
         )}
 
         {/* Country with Flag - Always visible */}
         {getColumnVisibility('countryCode') && (
-          <td className="px-3 py-4 text-sm text-gray-900">
+          <TableCell className="text-sm text-foreground">
             <div className="flex items-center gap-2">
               <CountryFlag 
                 countryCode={tournament.countryCode}
@@ -121,102 +127,111 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
                 showFallback={true}
               />
               <span className="font-medium truncate">{countryName}</span>
-              <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded flex-shrink-0">
+              <span className="ml-2 text-xs text-muted-foreground bg-muted px-2 py-1 rounded flex-shrink-0">
                 {tournament.countryCode}
               </span>
             </div>
-          </td>
+          </TableCell>
         )}
 
         {/* Start Date - Always visible */}
         {getColumnVisibility('startDate') && (
-          <td className="px-3 py-4 text-sm text-gray-900 whitespace-nowrap">
+          <TableCell className="text-sm text-foreground whitespace-nowrap">
             {formattedStartDate}
-          </td>
+          </TableCell>
         )}
 
         {/* Gender - Visible on tablet+ */}
         {getColumnVisibility('gender') && (
-          <td className="px-3 py-4 text-sm">
-            <span className={getGenderBadgeClasses(tournament.gender)}>
+          <TableCell className="text-sm">
+            <Badge variant={getGenderBadgeVariant(tournament.gender)}>
               {tournament.gender}
-            </span>
-          </td>
+            </Badge>
+          </TableCell>
         )}
 
         {/* End Date - Visible on desktop+ */}
         {getColumnVisibility('endDate') && (
-          <td className="px-3 py-4 text-sm text-gray-900 whitespace-nowrap">
+          <TableCell className="text-sm text-foreground whitespace-nowrap">
             {formattedEndDate}
-          </td>
+          </TableCell>
         )}
 
         {/* Type - Visible on desktop+ */}
         {getColumnVisibility('type') && (
-          <td className="px-3 py-4 text-sm text-gray-900 max-w-xs truncate" title={tournament.type}>
+          <TableCell className="text-sm text-foreground max-w-xs truncate" title={tournament.type}>
             {tournament.type}
-          </td>
+          </TableCell>
         )}
-      </tr>
+      </TableRow>
     );
   }
 
-  // Mobile card layout with touch-friendly design and accessibility
+  // Mobile card layout with shadcn Card components and touch-friendly design
   return (
-    <div 
-      className={`p-5 hover:bg-gray-50 transition-colors duration-150 active:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:ring-inset focus:outline-none ${className}`}
+    <Card 
+      className={`hover:bg-muted/50 transition-colors duration-150 active:bg-muted focus:ring-2 focus:ring-primary focus:ring-inset focus:outline-none cursor-pointer ${className}`}
+      style={style}
       role="row"
       aria-label={`Tournament: ${tournament.name}, ${countryName}, ${formattedStartDate} to ${formattedEndDate}, ${tournament.gender}, ${tournament.type}`}
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      {/* Header with name and gender badge */}
-      <div className="flex items-start justify-between gap-3 min-h-[44px]">
-        <div className="flex-1 min-w-0">
-          <h4 className="text-base font-medium text-gray-900 leading-snug" title={tournament.name}>
-            {tournament.name}
-          </h4>
-          <p className="text-sm text-gray-500 mt-1">{tournament.code}</p>
+      <CardHeader className="pb-3">
+        {/* Header with name and gender badge */}
+        <div className="flex items-start justify-between gap-3 min-h-[44px]">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-base font-medium leading-snug" title={tournament.name}>
+              {tournament.name}
+            </CardTitle>
+            <CardDescription className="mt-1">
+              {tournament.code}
+            </CardDescription>
+          </div>
+          <Badge variant={getGenderBadgeVariant(tournament.gender)} className="flex-shrink-0">
+            {tournament.gender}
+          </Badge>
         </div>
-        <span className={`${getGenderBadgeClasses(tournament.gender)} flex-shrink-0`}>
-          {tournament.gender}
-        </span>
-      </div>
+      </CardHeader>
       
-      {/* Country with flag */}
-      <div className="mt-4 flex items-center gap-3 min-h-[44px]">
-        <CountryFlag 
-          countryCode={tournament.countryCode}
-          size="md"
-          className="flex-shrink-0"
-          showFallback={true}
-        />
-        <div className="flex-1 min-w-0">
-          <span className="font-medium text-gray-900 text-base">{countryName}</span>
-          <span className="ml-3 text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            {tournament.countryCode}
-          </span>
+      <CardContent className="pt-0 space-y-4">
+        {/* Country with flag */}
+        <div className="flex items-center gap-3 min-h-[44px]">
+          <CountryFlag 
+            countryCode={tournament.countryCode}
+            size="md"
+            className="flex-shrink-0"
+            showFallback={true}
+          />
+          <div className="flex-1 min-w-0">
+            <span className="font-medium text-foreground text-base">{countryName}</span>
+            <span className="ml-3 text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+              {tournament.countryCode}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Dates */}
-      <div className="mt-4 flex items-center justify-between text-sm text-gray-600 min-h-[44px]">
-        <div>
-          <span className="text-gray-500">Start:</span>
-          <span className="ml-2 font-medium">{formattedStartDate}</span>
+        {/* Dates */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground min-h-[44px]">
+          <div>
+            <span className="text-muted-foreground">Start:</span>
+            <span className="ml-2 font-medium text-foreground">{formattedStartDate}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">End:</span>
+            <span className="ml-2 font-medium text-foreground">{formattedEndDate}</span>
+          </div>
         </div>
-        <div>
-          <span className="text-gray-500">End:</span>
-          <span className="ml-2 font-medium">{formattedEndDate}</span>
-        </div>
-      </div>
+      </CardContent>
       
-      {/* Tournament type */}
-      <div className="mt-3 py-2 text-sm text-gray-600 border-t border-gray-100" title={tournament.type}>
-        <span className="text-gray-500">Type:</span>
-        <span className="ml-2 font-medium">{tournament.type}</span>
-      </div>
-    </div>
+      <CardFooter className="pt-0 pb-6">
+        {/* Tournament type */}
+        <div className="w-full pt-3 text-sm text-muted-foreground border-t border-border" title={tournament.type}>
+          <span className="text-muted-foreground">Type:</span>
+          <span className="ml-2 font-medium text-foreground">{tournament.type}</span>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -8,10 +8,18 @@ import {
   SortConfig,
   FormattedTournament 
 } from '@/lib/types';
-import { TableLoadingSkeleton } from '@/components/ui/LoadingSpinner';
+import { TournamentTableSkeleton, TournamentCardSkeleton, TournamentProgressiveSkeleton } from '@/components/ui/TournamentSkeleton';
 import { TournamentError } from '@/components/ui/ErrorMessage';
 import { TournamentRow } from '@/components/tournament/TournamentRow';
 import { getCountryName } from '@/lib/country-utils';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow as ShadcnTableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 export const TournamentTable: FC<TournamentTableProps> = ({
   initialData = null,
@@ -24,6 +32,12 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [scrollIndicators, setScrollIndicators] = useState({ left: false, right: false });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [progressiveLoading, setProgressiveLoading] = useState<{
+    step: number;
+    steps: Array<{ label: string; completed: boolean; current: boolean }>;
+  } | null>(null);
+  const [isContentReady, setIsContentReady] = useState<boolean>(initialData !== null);
+  const [viewPreference, setViewPreference] = useState<'table' | 'card' | 'auto'>('auto');
 
   // Handle responsive breakpoint detection with enhanced breakpoints
   useEffect(() => {
@@ -222,8 +236,31 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   const fetchTournaments = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsContentReady(false);
+    
+    // Initialize progressive loading steps
+    const initialSteps = [
+      { label: 'Connecting to VIS API', completed: false, current: true },
+      { label: 'Fetching tournament data', completed: false, current: false },
+      { label: 'Processing results', completed: false, current: false },
+      { label: 'Loading complete', completed: false, current: false }
+    ];
+    
+    setProgressiveLoading({ step: 0, steps: initialSteps });
     
     try {
+      // Step 1: Connecting to API
+      await new Promise(resolve => setTimeout(resolve, 300)); // Brief delay for UX
+      setProgressiveLoading(prev => prev ? {
+        step: 1,
+        steps: prev.steps.map((step, idx) => ({
+          ...step,
+          completed: idx === 0,
+          current: idx === 1
+        }))
+      } : null);
+
+      // Step 2: Fetching data
       const response = await fetch('/api/tournaments', {
         method: 'GET',
         headers: {
@@ -240,14 +277,46 @@ export const TournamentTable: FC<TournamentTableProps> = ({
         );
       }
 
+      // Step 3: Processing results
+      setProgressiveLoading(prev => prev ? {
+        step: 2,
+        steps: prev.steps.map((step, idx) => ({
+          ...step,
+          completed: idx <= 1,
+          current: idx === 2
+        }))
+      } : null);
+
       const data: Tournament[] = await response.json();
+      await new Promise(resolve => setTimeout(resolve, 200)); // Brief processing delay
+
+      // Step 4: Complete
+      setProgressiveLoading(prev => prev ? {
+        step: 3,
+        steps: prev.steps.map((step, idx) => ({
+          ...step,
+          completed: idx <= 2,
+          current: idx === 3
+        }))
+      } : null);
+
       setTournaments(data);
+      setIsContentReady(true);
+      
+      // Final completion
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setProgressiveLoading(prev => prev ? {
+        step: 4,
+        steps: prev.steps.map(step => ({ ...step, completed: true, current: false }))
+      } : null);
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('Failed to fetch tournaments:', err);
     } finally {
       setLoading(false);
+      setProgressiveLoading(null);
     }
   }, []);
 
@@ -268,7 +337,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     if (!sortConfig || sortConfig.column !== column) {
       return (
         <svg
-          className="w-4 h-4 text-gray-400"
+          className="w-4 h-4 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -286,7 +355,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
 
     return sortConfig.direction === 'asc' ? (
       <svg
-        className="w-4 h-4 text-blue-600"
+        className="w-4 h-4 text-primary"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -301,7 +370,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       </svg>
     ) : (
       <svg
-        className="w-4 h-4 text-blue-600"
+        className="w-4 h-4 text-primary"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -351,6 +420,21 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     }
   }, [screenSize, columnPriority]);
 
+  // Determine effective view based on user preference and screen size
+  const getEffectiveView = useCallback((): 'table' | 'card' => {
+    if (viewPreference === 'auto') {
+      return screenSize === 'mobile' ? 'card' : 'table';
+    }
+    return viewPreference;
+  }, [viewPreference, screenSize]);
+
+  const effectiveView = getEffectiveView();
+
+  // Handle view preference change
+  const handleViewChange = useCallback((view: 'table' | 'card' | 'auto') => {
+    setViewPreference(view);
+  }, []);
+
   // Render table header button with responsive visibility
   const renderHeaderButton = useCallback((
     column: SortColumn,
@@ -369,8 +453,8 @@ export const TournamentTable: FC<TournamentTableProps> = ({
         }}
         className={`
           items-center justify-between w-full text-left px-2 py-3
-          font-semibold text-gray-900 hover:bg-gray-100 rounded-md
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-100
+          font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-md
+          focus:outline-none focus:ring-2 focus:ring-primary focus:bg-muted/50
           transition-colors duration-150 min-h-[44px]
           ${isVisible ? 'flex' : 'hidden'}
         `}
@@ -386,11 +470,26 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   if (loading) {
     return (
       <div className={className}>
-        <TableLoadingSkeleton
-          columns={6}
-          rows={8}
-          className="bg-white rounded-lg shadow-sm border border-gray-200"
-        />
+        {progressiveLoading ? (
+          <div className="bg-background rounded-lg shadow-sm border border-border p-6">
+            <TournamentProgressiveSkeleton
+              steps={progressiveLoading.steps}
+              className="max-w-md mx-auto"
+            />
+          </div>
+        ) : screenSize === 'mobile' ? (
+          <TournamentCardSkeleton
+            rows={8}
+            className="bg-background rounded-lg shadow-sm border border-border p-4"
+          />
+        ) : (
+          <TournamentTableSkeleton
+            columns={6}
+            rows={8}
+            screenSize={screenSize}
+            className="bg-background rounded-lg shadow-sm border border-border"
+          />
+        )}
       </div>
     );
   }
@@ -410,9 +509,9 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   if (!tournaments.length) {
     return (
       <div className={`text-center py-12 ${className}`}>
-        <div className="text-gray-500">
+        <div className="text-muted-foreground">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400 mb-4"
+            className="mx-auto h-12 w-12 text-muted-foreground mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -425,13 +524,13 @@ export const TournamentTable: FC<TournamentTableProps> = ({
               d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No tournaments found</h3>
-          <p className="text-gray-600 mb-4">
+          <h3 className="text-lg font-medium text-foreground mb-2">No tournaments found</h3>
+          <p className="text-muted-foreground mb-4">
             No tournament data is currently available for 2025.
           </p>
           <button
             onClick={handleRetry}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary bg-primary/10 border border-primary/20 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -455,11 +554,50 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${className}`}>
-      {screenSize === 'desktop' || screenSize === 'tablet' ? (
-        /* Table Layout for Desktop and Tablet */
+    <div className={`bg-background rounded-lg shadow-sm border border-border overflow-hidden transition-opacity duration-500 ${
+      isContentReady ? 'opacity-100' : 'opacity-0'
+    } ${className}`}>
+      {/* View Toggle Controls - only show for tablet/desktop */}
+      {(screenSize === 'tablet' || screenSize === 'desktop') && (
+        <div className="px-4 py-3 bg-muted/20 border-b border-border">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">
+              {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground mr-2">View:</span>
+              <Button
+                variant={viewPreference === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('table')}
+                className="h-8 px-3 text-xs"
+              >
+                Table
+              </Button>
+              <Button
+                variant={viewPreference === 'card' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('card')}
+                className="h-8 px-3 text-xs"
+              >
+                Cards
+              </Button>
+              <Button
+                variant={viewPreference === 'auto' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('auto')}
+                className="h-8 px-3 text-xs"
+              >
+                Auto
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {effectiveView === 'table' ? (
+        /* Table Layout */
         <div 
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 scroll-smooth touch-pan-x"
+          className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-muted/50 hover:scrollbar-thumb-muted-foreground scroll-smooth touch-pan-x"
           onScroll={handleTableScroll}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -468,104 +606,123 @@ export const TournamentTable: FC<TournamentTableProps> = ({
         >
           <div className="relative">
             {/* Scroll indicator shadows */}
-            <div className={`absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-white to-transparent pointer-events-none z-10 transition-opacity duration-200 ${scrollIndicators.left ? 'opacity-100' : 'opacity-0'}`}></div>
-            <div className={`absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 transition-opacity duration-200 ${scrollIndicators.right ? 'opacity-100' : 'opacity-0'}`}></div>
+            <div className={`absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 transition-opacity duration-200 ${scrollIndicators.left ? 'opacity-100' : 'opacity-0'}`}></div>
+            <div className={`absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 transition-opacity duration-200 ${scrollIndicators.right ? 'opacity-100' : 'opacity-0'}`}></div>
             
-            <table
-              className="w-full min-w-max"
+            <Table
+              className="min-w-max"
               role="table"
               aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments.length} tournaments found.`}
             >
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr role="row">
+            <TableHeader className="bg-muted/50">
+              <ShadcnTableRow role="row">
                 {getColumnVisibility('name') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('name')}
                     className="text-left"
                   >
                     {renderHeaderButton('name', 'Tournament Name')}
-                  </th>
+                  </TableHead>
                 )}
                 {getColumnVisibility('countryCode') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('countryCode')}
                     className="text-left"
                   >
                     {renderHeaderButton('countryCode', 'Country')}
-                  </th>
+                  </TableHead>
                 )}
                 {getColumnVisibility('startDate') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('startDate')}
                     className="text-left"
                   >
                     {renderHeaderButton('startDate', 'Start Date')}
-                  </th>
+                  </TableHead>
                 )}
                 {getColumnVisibility('gender') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('gender')}
                     className="text-left"
                   >
                     {renderHeaderButton('gender', 'Gender')}
-                  </th>
+                  </TableHead>
                 )}
                 {getColumnVisibility('endDate') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('endDate')}
                     className="text-left"
                   >
                     {renderHeaderButton('endDate', 'End Date')}
-                  </th>
+                  </TableHead>
                 )}
                 {getColumnVisibility('type') && (
-                  <th
+                  <TableHead
                     role="columnheader"
                     aria-sort={getSortAttribute('type')}
                     className="text-left"
                   >
                     {renderHeaderButton('type', 'Type')}
-                  </th>
+                  </TableHead>
                 )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sortedTournaments.map((tournament) => (
+              </ShadcnTableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-border">
+              {sortedTournaments.map((tournament, index) => (
                 <TournamentRow
                   key={tournament.code}
                   tournament={tournament}
                   isDesktop={screenSize === 'desktop'}
                   screenSize={screenSize}
+                  className={`transition-all duration-500 ${
+                    isContentReady 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-2'
+                  }`}
+                  style={{ 
+                    transitionDelay: isContentReady ? `${index * 50}ms` : '0ms'
+                  }}
                 />
               ))}
-            </tbody>
-            </table>
+            </TableBody>
+            </Table>
           </div>
         </div>
       ) : (
-        /* Mobile Card Layout */
+        /* Card Layout */
         <div role="table" aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments.length} tournaments found.`}>
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-900" id="tournaments-heading">
-              {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
-            </h3>
-            <div className="text-xs text-gray-500 mt-1">
-              Use arrow keys to navigate between tournaments
+          {/* Only show header for mobile (no view toggle controls) */}
+          {screenSize === 'mobile' && (
+            <div className="px-4 py-3 bg-muted/50 border-b border-border">
+              <h3 className="text-sm font-medium text-foreground" id="tournaments-heading">
+                {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+              </h3>
+              <div className="text-xs text-muted-foreground mt-1">
+                Use arrow keys to navigate between tournaments
+              </div>
             </div>
-          </div>
-          <div className="divide-y divide-gray-200" role="rowgroup" aria-labelledby="tournaments-heading">
+          )}
+          <div className="p-4 space-y-4" role="rowgroup" aria-labelledby="tournaments-heading">
             {sortedTournaments.map((tournament, index) => (
               <TournamentRow
                 key={tournament.code}
                 tournament={tournament}
                 isDesktop={false}
-                screenSize={screenSize}
+                screenSize="mobile" // Force card layout
                 onKeyDown={(e) => handleCardKeyDown(e, index)}
+                className={`transition-all duration-500 ${
+                  isContentReady 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-2'
+                }`}
+                style={{ 
+                  transitionDelay: isContentReady ? `${index * 50}ms` : '0ms'
+                }}
               />
             ))}
           </div>

@@ -121,17 +121,32 @@ export async function fetchCachedTournaments(
 ): Promise<PaginatedTournamentResponse> {
   const { year = 2025, page = 1, limit = 20 } = options;
   
+  // Debug logging for 2025 year
+  if (year === 2025) {
+    console.log('fetchCachedTournaments: Requesting 2025 data', { year, page, limit });
+  }
+  
   // Check cache first
   const cachedData = tournamentCache.get(year, page, limit);
   if (cachedData) {
+    if (year === 2025) {
+      console.log('fetchCachedTournaments: Found 2025 data in cache', cachedData);
+    }
     return cachedData;
   }
   
   // Fetch fresh data
+  if (year === 2025) {
+    console.log('fetchCachedTournaments: Fetching fresh 2025 data from API');
+  }
   const data = await fetchPaginatedTournaments(options);
   
   // Cache the result
   tournamentCache.set(year, page, limit, data);
+  
+  if (year === 2025) {
+    console.log('fetchCachedTournaments: Cached 2025 data', data);
+  }
   
   return data;
 }

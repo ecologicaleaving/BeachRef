@@ -1,6 +1,5 @@
 import { TournamentTableWithPagination } from '@/components/tournament/TournamentTableWithPagination';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { fetchPaginatedTournaments } from '@/lib/tournament-api';
 import { PaginatedTournamentResponse } from '@/lib/types';
 
 interface PageProps {
@@ -11,23 +10,15 @@ interface PageProps {
   };
 }
 
-export default async function Home({ searchParams }: PageProps) {
+export default function Home({ searchParams }: PageProps) {
   // Parse URL parameters for initial state
   const year = parseInt(searchParams.year || '2025');
   const page = parseInt(searchParams.page || '1');
   const limit = parseInt(searchParams.limit || '20');
   
-  // Initialize with null to indicate SSR data fetching is needed
-  let initialData: PaginatedTournamentResponse | null = null;
-  let error: string | null = null;
-  
-  try {
-    // Server-side data fetching for initial page load
-    initialData = await fetchPaginatedTournaments({ year, page, limit });
-  } catch (err) {
-    console.error('Failed to fetch initial tournament data:', err);
-    error = err instanceof Error ? err.message : 'Failed to load tournaments';
-  }
+  // No SSR data fetching - let client handle it
+  const initialData: PaginatedTournamentResponse | null = null;
+  const error: string | null = null;
   
   return (
     <main className="container mx-auto mobile-padding tablet-padding desktop-padding py-8">
@@ -50,11 +41,6 @@ export default async function Home({ searchParams }: PageProps) {
             Browse and explore FIVB beach volleyball tournaments for {year}. 
             Navigate through pages, filter by year, and sort tournaments by various criteria.
           </p>
-          {initialData && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Showing {initialData.tournaments.length} of {initialData.pagination.totalTournaments} tournaments
-            </p>
-          )}
         </div>
         
         {error ? (
@@ -97,7 +83,7 @@ export default async function Home({ searchParams }: PageProps) {
 export const dynamic = 'force-dynamic'
 
 // Generate metadata for SEO
-export async function generateMetadata({ searchParams }: PageProps) {
+export function generateMetadata({ searchParams }: PageProps) {
   const year = parseInt(searchParams.year || '2025');
   const page = parseInt(searchParams.page || '1');
   

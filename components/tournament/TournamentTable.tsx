@@ -589,7 +589,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     );
   }
 
-  if (!tournaments.length) {
+  if (!tournaments || !tournaments.length) {
     return (
       <div className={`text-center py-12 ${className}`}>
         <div className="text-muted-foreground">
@@ -652,7 +652,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <h3 className="text-sm font-medium text-foreground">
-                {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+                {sortedTournaments?.length || 0} Tournament{(sortedTournaments?.length || 0) !== 1 ? 's' : ''}
               </h3>
               {(isOffline || connectionQuality === 'slow') && (
                 <ThemeToggleBadge />
@@ -711,7 +711,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
             <Table
               className="min-w-max"
               role="table"
-              aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments.length} tournaments found.`}
+              aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments?.length || 0} tournaments found.`}
             >
             <TableHeader className="bg-muted/50">
               <ShadcnTableRow role="row">
@@ -794,14 +794,14 @@ export const TournamentTable: FC<TournamentTableProps> = ({
         </div>
       ) : (
         /* Card Layout */
-        <div role="table" aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments.length} tournaments found.`}>
+        <div role="table" aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments?.length || 0} tournaments found.`}>
           {/* Mobile-first card header with enhanced accessibility */}
           {screenSize === 'mobile' && (
             <div className="mobile-padding bg-muted/50 border-b border-border">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-medium text-foreground" id="tournaments-heading">
-                    {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+                    {sortedTournaments?.length || 0} Tournament{(sortedTournaments?.length || 0) !== 1 ? 's' : ''}
                   </h3>
                   <div className="text-xs text-muted-foreground mt-1">
                     {touchCapable ? 'Tap to view details' : 'Use arrow keys to navigate'}

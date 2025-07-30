@@ -146,7 +146,7 @@ export const TournamentTableWithPagination: React.FC<TournamentTableWithPaginati
             {isLoading ? (
               "Loading tournaments..."
             ) : (
-              `Showing ${tournaments.length} of ${paginationData.totalTournaments} tournaments`
+              `Showing ${tournaments?.length || 0} of ${paginationData?.totalTournaments || 0} tournaments`
             )}
           </div>
         )}
@@ -176,7 +176,7 @@ export const TournamentTableWithPagination: React.FC<TournamentTableWithPaginati
       )}
       
       {/* No Results Message */}
-      {!isLoading && tournaments.length === 0 && !error && (
+      {!isLoading && (tournaments?.length || 0) === 0 && !error && (
         <div className="text-center py-12">
           <div className="text-muted-foreground text-lg mb-2">
             No tournaments found for {currentState.year}

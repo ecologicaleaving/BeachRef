@@ -1,4 +1,5 @@
 import { PaginatedTournamentResponse } from '@/lib/types';
+import { NextRequest } from 'next/server';
 
 export interface FetchTournamentsOptions {
   year?: number;
@@ -24,9 +25,9 @@ export async function fetchPaginatedTournaments(
   if (typeof window === 'undefined') {
     // Server-side: Use direct API handler import (no HTTP call)
     const { GET } = await import('@/app/api/tournaments/route');
-    const url = `/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
-    const request = new Request(url, { method: 'GET' });
-    const response = await GET(request as any);
+    const url = `http://localhost:3000/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+    const request = new NextRequest(url, { method: 'GET' });
+    const response = await GET(request);
     return response.json();
   } else {
     // Client-side: Use relative URL HTTP fetch

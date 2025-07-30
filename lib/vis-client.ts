@@ -48,52 +48,55 @@ function buildVISTournamentRequest(): string {
 // Parse VIS XML response to Tournament objects
 function parseVISResponse(xmlResponse: string): Tournament[] {
   try {
-    const parser = new DOMParser()
-    const xmlDoc = parser.parseFromString(xmlResponse, 'text/xml')
-    
-    // Check for parsing errors
-    const parserError = xmlDoc.querySelector('parsererror')
-    if (parserError) {
-      throw new VISApiError('Invalid XML response from VIS API')
-    }
-
     const tournaments: Tournament[] = []
-    const tournamentNodes = xmlDoc.querySelectorAll('BeachTournament')
     
-    // Early return if no tournaments found
-    if (tournamentNodes.length === 0) {
-      return tournaments
-    }
+    // Use regex to extract BeachTournament elements since DOMParser is not available in Node.js
+    const tournamentRegex = /<BeachTournament\s+([^>]+)\/>/g
+    let match
     
-    tournamentNodes.forEach(node => {
-      const code = node.getAttribute('Code')
-      const name = node.getAttribute('Name')
-      const countryCode = node.getAttribute('CountryCode')
-      const startDate = node.getAttribute('StartDateMainDraw')
-      const endDate = node.getAttribute('EndDateMainDraw')
-      const gender = node.getAttribute('Gender')
-      const type = node.getAttribute('Type')
+    while ((match = tournamentRegex.exec(xmlResponse)) !== null) {
+      const attributes = match[1]
+      
+      // Extract individual attributes using regex
+      const extractAttribute = (attr: string): string | null => {
+        const attrRegex = new RegExp(`${attr}="([^"]*)"`, 'i')
+        const attrMatch = attributes.match(attrRegex)
+        return attrMatch ? attrMatch[1] : null
+      }
+
+      const code = extractAttribute('Code')
+      const name = extractAttribute('Name')
+      const countryCode = extractAttribute('CountryCode')
+      const startDate = extractAttribute('StartDateMainDraw')
+      const endDate = extractAttribute('EndDateMainDraw')
+      const gender = extractAttribute('Gender')
+      const type = extractAttribute('Type')
+
 
       // Validate required fields and data integrity
       if (code && name && countryCode && startDate && endDate && gender && type) {
-        // Validate gender field against allowed values
-        const validGender = gender === 'Men' || gender === 'Women' || gender === 'Mixed'
+        // Map numeric gender codes to string values
+        let genderValue: 'Men' | 'Women' | 'Mixed' | null = null;
+        if (gender === '0') genderValue = 'Men';
+        else if (gender === '1') genderValue = 'Women'; 
+        else if (gender === '2') genderValue = 'Mixed';
+        
         // Basic date validation - ensure dates are in reasonable format
         const isValidDate = (dateStr: string) => !isNaN(Date.parse(dateStr))
         
-        if (validGender && isValidDate(startDate) && isValidDate(endDate)) {
+        if (genderValue && isValidDate(startDate) && isValidDate(endDate)) {
           tournaments.push({
             code: code.trim(),
             name: name.trim(),
             countryCode: countryCode.trim().toUpperCase(),
             startDate,
             endDate,
-            gender: gender as 'Men' | 'Women' | 'Mixed',
+            gender: genderValue,
             type: type.trim()
           })
         }
       }
-    })
+    }
 
     // Sort tournaments by start date
     tournaments.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())

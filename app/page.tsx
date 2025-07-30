@@ -1,7 +1,34 @@
-import { TournamentTable } from '@/components/tournament/TournamentTable';
+import { TournamentTableWithPagination } from '@/components/tournament/TournamentTableWithPagination';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { fetchPaginatedTournaments } from '@/lib/tournament-api';
+import { PaginatedTournamentResponse } from '@/lib/types';
 
-export default function Home() {
+interface PageProps {
+  searchParams: {
+    year?: string;
+    page?: string;
+    limit?: string;
+  };
+}
+
+export default async function Home({ searchParams }: PageProps) {
+  // Parse URL parameters for initial state
+  const year = parseInt(searchParams.year || '2025');
+  const page = parseInt(searchParams.page || '1');
+  const limit = parseInt(searchParams.limit || '20');
+  
+  // Initialize with null to indicate SSR data fetching is needed
+  let initialData: PaginatedTournamentResponse | null = null;
+  let error: string | null = null;
+  
+  try {
+    // Server-side data fetching for initial page load
+    initialData = await fetchPaginatedTournaments({ year, page, limit });
+  } catch (err) {
+    console.error('Failed to fetch initial tournament data:', err);
+    error = err instanceof Error ? err.message : 'Failed to load tournaments';
+  }
+  
   return (
     <main className="container mx-auto mobile-padding tablet-padding desktop-padding py-8">
       <div className="max-w-7xl mx-auto">
@@ -9,7 +36,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-4">
-              2025 Beach Volleyball Tournaments
+              Beach Volleyball Tournaments {year}
             </h1>
           </div>
           <div className="flex-shrink-0 ml-4">
@@ -20,14 +47,35 @@ export default function Home() {
         {/* Description with responsive text */}
         <div className="text-center mb-6 sm:mb-8">
           <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse and explore FIVB beach volleyball tournaments scheduled for 2025. 
-            Sort by tournament name, country, dates, gender category, and tournament type.
+            Browse and explore FIVB beach volleyball tournaments for {year}. 
+            Navigate through pages, filter by year, and sort tournaments by various criteria.
           </p>
+          {initialData && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Showing {initialData.tournaments.length} of {initialData.pagination.totalTournaments} tournaments
+            </p>
+          )}
         </div>
         
-        <div className="mb-6">
-          <TournamentTable className="w-full" />
-        </div>
+        {error ? (
+          <div className="mb-6 p-6 border border-destructive/50 bg-destructive/10 rounded-lg text-center">
+            <div className="text-destructive font-medium mb-2">
+              Failed to load tournaments
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {error}
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6">
+            <TournamentTableWithPagination 
+              className="w-full"
+              initialData={initialData}
+              initialYear={year}
+              initialPage={page}
+            />
+          </div>
+        )}
         
         <footer className="text-center text-xs sm:text-sm text-muted-foreground mt-8 pt-6 sm:pt-8 border-t border-border">
           <p className="mb-2">
@@ -43,4 +91,36 @@ export default function Home() {
       </div>
     </main>
   )
+}
+
+// Enable dynamic rendering to support search params
+export const dynamic = 'force-dynamic'
+
+// Generate metadata for SEO
+export async function generateMetadata({ searchParams }: PageProps) {
+  const year = parseInt(searchParams.year || '2025');
+  const page = parseInt(searchParams.page || '1');
+  
+  let title = `Beach Volleyball Tournaments ${year}`;
+  let description = `Browse FIVB beach volleyball tournaments for ${year}. Official tournament schedule with dates, locations, and categories.`;
+  
+  if (page > 1) {
+    title += ` - Page ${page}`;
+    description += ` Page ${page} of tournament listings.`;
+  }
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  }
 }

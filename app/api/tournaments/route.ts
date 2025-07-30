@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchTournamentsFromVIS } from '@/lib/vis-client';
-import { Tournament, VISApiError } from '@/lib/types';
+import { Tournament, VISApiError, PaginatedTournamentResponse } from '@/lib/types';
 
 const CACHE_DURATION = 5 * 60; // 5 minutes in seconds
 
@@ -8,6 +8,7 @@ interface CacheEntry {
   data: Tournament[];
   timestamp: number;
   etag: string;
+  year?: number;
 }
 
 interface ApiErrorResponse {
@@ -17,12 +18,42 @@ interface ApiErrorResponse {
   retryAfter?: number;
 }
 
-// In-memory cache for tournament data
-let cache: CacheEntry | null = null;
+// In-memory cache for tournament data (keyed by year)
+const cache = new Map<string, CacheEntry>();
+
+// Helper function to create cache key
+function getCacheKey(year?: number): string {
+  return year ? `year-${year}` : 'all';
+}
+
+// Helper function to paginate tournaments
+function paginateTournaments(
+  tournaments: Tournament[], 
+  page: number, 
+  limit: number,
+  year: number
+): PaginatedTournamentResponse {
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedTournaments = tournaments.slice(startIndex, endIndex);
+  
+  return {
+    tournaments: paginatedTournaments,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(tournaments.length / limit),
+      totalTournaments: tournaments.length,
+      hasNextPage: endIndex < tournaments.length,
+      hasPrevPage: page > 1,
+      limit,
+      year,
+    },
+  };
+}
 
 // Generate ETag for response data
-function generateETag(tournaments: Tournament[]): string {
-  const dataString = JSON.stringify(tournaments);
+function generateETag(data: Tournament[] | PaginatedTournamentResponse): string {
+  const dataString = JSON.stringify(data);
   let hash = 0;
   for (let i = 0; i < dataString.length; i++) {
     const char = dataString.charCodeAt(i);
@@ -33,7 +64,7 @@ function generateETag(tournaments: Tournament[]): string {
 }
 
 // Check if cache is still valid
-function isCacheValid(cacheEntry: CacheEntry | null): boolean {
+function isCacheValid(cacheEntry: CacheEntry | undefined): boolean {
   if (!cacheEntry) return false;
   const age = (Date.now() - cacheEntry.timestamp) / 1000;
   return age < CACHE_DURATION;
@@ -49,6 +80,10 @@ function logRequest(data: {
   visApiDuration?: number;
   error?: string;
   timestamp: string;
+  year?: number;
+  page?: number;
+  limit?: number;
+  totalTournaments?: number;
 }) {
   console.log(`[API-Tournaments] ${JSON.stringify(data)}`);
 }
@@ -58,12 +93,99 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const timestamp = new Date().toISOString();
   
   try {
-    // Check for conditional request with If-None-Match header
+    // Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const yearParam = searchParams.get('year');
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    
+    // Check if any pagination parameters are provided
+    const hasParams = yearParam !== null || pageParam !== null || limitParam !== null;
+    
+    // Parse and validate parameters
+    let year: number | undefined;
+    let page: number | undefined;
+    let limit: number | undefined;
+    
+    if (hasParams) {
+      // Parse year parameter
+      if (yearParam !== null) {
+        year = parseInt(yearParam);
+        if (isNaN(year) || year < 2023 || year > 2025) {
+          return NextResponse.json({
+            error: 'Invalid year parameter',
+            message: 'Year must be between 2023 and 2025',
+            timestamp,
+            validRange: [2023, 2024, 2025]
+          }, { 
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET',
+              'Access-Control-Max-Age': '86400',
+            }
+          });
+        }
+      } else {
+        year = 2025; // Default year when pagination params are used
+      }
+      
+      // Parse page parameter
+      page = pageParam ? parseInt(pageParam) : 1;
+      if (isNaN(page) || page < 1) {
+        return NextResponse.json({
+          error: 'Invalid page parameter',
+          message: 'Page must be a positive integer',
+          timestamp
+        }, { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+            'Access-Control-Max-Age': '86400',
+          }
+        });
+      }
+      
+      // Parse limit parameter
+      limit = limitParam ? parseInt(limitParam) : 20;
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+        return NextResponse.json({
+          error: 'Invalid limit parameter',
+          message: 'Limit must be between 1 and 100',
+          timestamp
+        }, { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+            'Access-Control-Max-Age': '86400',
+          }
+        });
+      }
+    }
+    
+    // Get cache key and check cache
+    const cacheKey = getCacheKey(year);
+    const cachedData = cache.get(cacheKey);
     const ifNoneMatch = request.headers.get('if-none-match');
     
-    // Check cache validity
-    if (isCacheValid(cache) && cache) {
-      const etag = cache.etag;
+    if (isCacheValid(cachedData) && cachedData) {
+      let responseData: Tournament[] | PaginatedTournamentResponse;
+      let etag: string;
+      
+      if (hasParams) {
+        // Return paginated response
+        responseData = paginateTournaments(cachedData.data, page!, limit!, year!);
+        etag = generateETag(responseData);
+      } else {
+        // Return all tournaments (backward compatibility)
+        responseData = cachedData.data;
+        etag = cachedData.etag;
+      }
       
       // Return 304 Not Modified if ETag matches
       if (ifNoneMatch === etag) {
@@ -74,7 +196,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           duration,
           status: 304,
           cacheHit: true,
-          timestamp
+          timestamp,
+          year,
+          page: hasParams ? page! : undefined,
+          limit: hasParams ? limit! : undefined
         });
         
         return new NextResponse(null, {
@@ -97,10 +222,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         duration,
         status: 200,
         cacheHit: true,
-        timestamp
+        timestamp,
+        year,
+        page: hasParams ? page! : undefined,
+        limit: hasParams ? limit! : undefined,
+        totalTournaments: Array.isArray(responseData) ? responseData.length : responseData.tournaments.length
       });
       
-      return NextResponse.json(cache.data, {
+      return NextResponse.json(responseData, {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
@@ -115,18 +244,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     
     // Cache miss or expired - fetch fresh data from VIS API
     const visStartTime = Date.now();
-    const visResponse = await fetchTournamentsFromVIS();
+    const visResponse = await fetchTournamentsFromVIS(year);
     const visApiDuration = Date.now() - visStartTime;
     
     const tournaments = visResponse.tournaments;
-    const etag = generateETag(tournaments);
+    const baseTournamentEtag = generateETag(tournaments);
     
     // Update cache
-    cache = {
+    cache.set(cacheKey, {
       data: tournaments,
       timestamp: Date.now(),
-      etag
-    };
+      etag: baseTournamentEtag,
+      year
+    });
+    
+    // Prepare response
+    let responseData: Tournament[] | PaginatedTournamentResponse;
+    let etag: string;
+    
+    if (hasParams) {
+      // Return paginated response
+      responseData = paginateTournaments(tournaments, page!, limit!, year!);
+      etag = generateETag(responseData);
+    } else {
+      // Return all tournaments (backward compatibility)
+      responseData = tournaments;
+      etag = baseTournamentEtag;
+    }
     
     const duration = Date.now() - startTime;
     logRequest({
@@ -136,10 +280,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       status: 200,
       cacheHit: false,
       visApiDuration,
-      timestamp
+      timestamp,
+      year,
+      page: hasParams ? page! : undefined,
+      limit: hasParams ? limit! : undefined,
+      totalTournaments: Array.isArray(responseData) ? responseData.length : responseData.tournaments.length
     });
     
-    return NextResponse.json(tournaments, {
+    return NextResponse.json(responseData, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

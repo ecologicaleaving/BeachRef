@@ -41,38 +41,51 @@ This document defines the user experience goals, information architecture, user 
 
 ```mermaid
 graph TD
-    A[Tournament Dashboard] --> B[Tournament List View]
-    A --> C[Tournament Card View]
+    A[Tournament Dashboard] --> B[Tournament List View - Current Year]
+    A --> C[Tournament Card View - Current Year]
     A --> D[Settings Panel]
+    A --> E[Year Filter Dropdown]
     
-    B --> B1[Table with Sorting]
+    B --> B1[Paginated Table with Sorting]
     B --> B2[Search & Filters]
-    B --> B3[Tournament Details Sheet]
+    B --> B3[Pagination Controls]
+    B --> B4[Tournament Details Sheet]
     
-    C --> C1[Tournament Cards Grid]
+    C --> C1[Paginated Tournament Cards Grid]
     C --> C2[Status Badges]
-    C --> C3[Quick Actions]
+    C --> C3[Mobile Pagination]
+    C --> C4[Quick Actions]
     
-    B3 --> E[Tournament Detail Modal]
-    C3 --> E
+    E --> F[2024 Tournaments Archive]
+    E --> G[2023 Tournaments Archive]
+    E --> H[All Years View]
     
-    E --> E1[Tournament Info]
-    E --> E2[Match Schedule]
-    E --> E3[Referee Assignments]
-    E --> E4[Live Updates]
+    B4 --> I[Tournament Detail Modal]
+    C4 --> I
+    
+    I --> I1[Tournament Info]
+    I --> I2[Match Schedule]
+    I --> I3[Referee Assignments]
+    I --> I4[Live Updates]
     
     D --> D1[Theme Settings]
     D --> D2[Display Preferences]
     D --> D3[Notification Settings]
+    
+    F --> J[Paginated Historical Results]
+    G --> J
+    H --> J
 ```
 
 ### Navigation Structure
 
-**Primary Navigation:** Single-page dashboard with view toggle (Table/Card) and settings access via Sheet component
+**Primary Navigation:** Single-page dashboard with view toggle (Table/Card), year filter dropdown, and pagination controls using shadcn Button and Select components
 
-**Secondary Navigation:** Within tournament details - tabbed interface for different information categories (Info, Schedule, Referees, Live)
+**Secondary Navigation:** Within tournament details - tabbed interface using shadcn Tabs component for different information categories (Info, Schedule, Referees, Live)
 
-**Breadcrumb Strategy:** Minimal breadcrumbs within tournament detail views to maintain context without cluttering mobile interface
+**Pagination Navigation:** Bottom-aligned pagination controls with shadcn Button components for mobile, enhanced shadcn Pagination component for desktop
+
+**Breadcrumb Strategy:** Year context indicator in header showing "2025 Tournaments" with shadcn Badge component, minimal breadcrumbs within detail views
 
 ## User Flows
 
@@ -168,6 +181,57 @@ graph TD
 
 **Notes:** Sheet component provides modal experience without losing main list context, critical for tournament-day multitasking
 
+### Tournament Pagination Flow (Current Year Focus)
+
+**User Goal:** Navigate through current year tournaments efficiently with minimal data loading
+
+**Entry Points:**
+- Homepage load (defaults to current year 2025, page 1)
+- Direct URL with page parameter
+- Year filter selection maintaining pagination context
+
+**Success Criteria:** Page loads in under 2 seconds, clear indication of current position, quick navigation between adjacent pages
+
+#### Flow Diagram
+
+```mermaid
+graph TD
+    A[Load Tournament Dashboard] --> B{Current Year is 2025?}
+    B -->|Yes| C[Load Page 1 of 2025 Tournaments]
+    B -->|No| D[Load Page 1 of Current Year]
+    
+    C --> E[Display Tournaments with shadcn Table/Card]
+    D --> E
+    
+    E --> F[Show shadcn Pagination Controls]
+    F --> G{User Pagination Action}
+    
+    G -->|Next Page| H[Load Next Page with Skeleton]
+    G -->|Previous Page| I[Load Previous Page with Skeleton]
+    G -->|Jump to Page| J[Load Specific Page Number]
+    G -->|Change Year| K[Open Year Select Dropdown]
+    
+    H --> L[Update URL, Display New Page]
+    I --> L
+    J --> L
+    
+    K --> M[User Selects Different Year]
+    M --> N[Reset to Page 1 of Selected Year]
+    N --> L
+    
+    L --> O[Show Success Toast if Needed]
+    O --> F
+```
+
+#### Edge Cases & Error Handling:
+- **Page number exceeds total pages:** Redirect to last valid page with Toast notification using shadcn components
+- **Network timeout during pagination:** Show cached data with Alert component indicating stale data
+- **Year with no tournaments:** Display empty state using shadcn Card with clear messaging
+- **Invalid year selection:** Fallback to current year with error Toast
+- **URL manipulation:** Validate page parameters and redirect to valid state
+
+**Notes:** Pagination maintains year context in URL structure (`/tournaments/2025/page/2`) using Next.js routing, all loading states use shadcn Skeleton components
+
 ## Wireframes & Mockups
 
 **Primary Design Files:** To be created in Figma following this specification - [Link to be added]
@@ -260,10 +324,24 @@ graph TD
 - Tournament status (Upcoming, Live, Completed)
 - Gender categories (Men, Women, Mixed)
 - Tournament level (World Tour, Continental, National)
+- Year indicators (Current, Historical)
 
-**States:** Default, muted (for completed tournaments)
+**States:** Default, muted (for completed tournaments), highlighted (current year)
 
 **Usage Guidelines:** Consistent color coding, high contrast for outdoor visibility, support for color-blind users
+
+#### Pagination Component Suite
+
+**Purpose:** Navigate through tournament data efficiently with year context
+
+**Variants:**
+- Desktop: Full shadcn Pagination with numbered pages, prev/next, jump controls
+- Mobile: Simplified prev/next buttons with page indicator
+- Compact: Minimal version for small spaces
+
+**States:** Loading (skeleton overlay), active page (highlighted), disabled (first/last page), error (retry option)
+
+**Usage Guidelines:** Minimum 48px touch targets on mobile, clear current position indication, maintain year context
 
 #### Tournament Detail Sheet
 
@@ -443,16 +521,22 @@ Progressive loading with skeleton states, optimized image formats for country fl
 ### Primary Components to Install
 
 ```bash
-npx shadcn-ui@latest add table card badge sheet toast tabs skeleton alert button input
+npx shadcn-ui@latest add table card badge sheet toast tabs skeleton alert button input select pagination
 ```
 
 ### Component Mapping Strategy
 
 **Tournament List View:**
-- `Table` component for desktop tournament display
-- `Card` component for mobile tournament cards
-- `Skeleton` components for loading states
-- `Badge` components for status indicators
+- `Table` component for desktop tournament display with pagination
+- `Card` component for mobile tournament cards in paginated grid
+- `Skeleton` components for loading states during page transitions
+- `Badge` components for status indicators and year context
+
+**Pagination Implementation:**
+- `Pagination` component for desktop full pagination controls
+- `Button` components for mobile prev/next navigation
+- `Select` component for year filter dropdown
+- `Badge` component for current year indicator
 
 **Tournament Details:**
 - `Sheet` component for mobile detail overlay
@@ -462,13 +546,15 @@ npx shadcn-ui@latest add table card badge sheet toast tabs skeleton alert button
 
 **Search & Interaction:**
 - `Input` component for search functionality
-- `Button` component for actions and toggles
-- Enhanced touch targets with custom styling
+- `Button` component for actions, toggles, and pagination controls
+- `Select` component for year filtering and results per page
+- Enhanced touch targets with custom styling for gloved usage
 
 **Status & Feedback:**
-- `Badge` variants for different tournament states
-- `Alert` variants for connection status and errors
-- `Toast` for temporary notifications and updates
+- `Badge` variants for tournament states and year indicators
+- `Alert` variants for connection status and pagination errors
+- `Toast` for page load confirmations and network updates
+- `Skeleton` variants for different pagination loading states
 
 ## Next Steps
 

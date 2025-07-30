@@ -33,12 +33,12 @@ function log(entry: Omit<LogEntry, 'timestamp'>): void {
 }
 
 // Build XML request for tournament list
-function buildVISTournamentRequest(): string {
+function buildVISTournamentRequest(year: number = 2025): string {
   const xmlRequest = `<?xml version="1.0" encoding="utf-8"?>
 <Requests>
   <Request Type="GetBeachTournamentList" 
            Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type">
-    <Filter Year="2025"/>
+    <Filter Year="${year}"/>
   </Request>
 </Requests>`
 
@@ -145,13 +145,15 @@ function isRetryableError(error: unknown): boolean {
 }
 
 // Main function to fetch tournaments from VIS API
-export async function fetchTournamentsFromVIS(): Promise<VISApiResponse> {
+export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResponse> {
   const startTime = Date.now()
   let lastError: unknown
+  const requestYear = year || 2025
   
   log({
     level: 'info',
-    message: 'Starting VIS API request for tournament data'
+    message: 'Starting VIS API request for tournament data',
+    data: { year: requestYear }
   })
 
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
@@ -160,12 +162,12 @@ export async function fetchTournamentsFromVIS(): Promise<VISApiResponse> {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
 
-      const xmlBody = buildVISTournamentRequest()
+      const xmlBody = buildVISTournamentRequest(requestYear)
       
       log({
         level: 'info',
         message: `VIS API request attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
-        data: { attempt, xmlBody }
+        data: { attempt, year: requestYear, xmlBody }
       })
 
       const response = await fetch(VIS_API_CONFIG.baseURL, {
@@ -189,7 +191,15 @@ export async function fetchTournamentsFromVIS(): Promise<VISApiResponse> {
       }
 
       const xmlText = await response.text()
-      const tournaments = parseVISResponse(xmlText)
+      let tournaments = parseVISResponse(xmlText)
+      
+      // Additional client-side filtering for precision
+      if (year) {
+        tournaments = tournaments.filter(tournament => {
+          const tournamentYear = new Date(tournament.startDate).getFullYear()
+          return tournamentYear === year
+        })
+      }
       
       const duration = Date.now() - startTime
       
@@ -199,7 +209,8 @@ export async function fetchTournamentsFromVIS(): Promise<VISApiResponse> {
         data: { 
           tournamentCount: tournaments.length,
           duration,
-          attempt: attempt + 1
+          attempt: attempt + 1,
+          filteredByYear: year ? requestYear : null
         },
         duration
       })

@@ -3,8 +3,9 @@ const nextConfig = {
   // Enable experimental features for better performance
   experimental: {
     optimizePackageImports: ['@/components', '@/lib'],
-    webVitalsAttribution: ['CLS', 'LCP'],
-    optimizeCss: true
+    webVitalsAttribution: ['CLS', 'LCP']
+    // optimizeCss disabled due to critters dependency issues in App Router
+    // optimizeCss: true
   },
 
   // Image optimization configuration

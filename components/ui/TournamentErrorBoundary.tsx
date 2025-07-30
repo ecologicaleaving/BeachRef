@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 interface TournamentErrorBoundaryProps {
   children: React.ReactNode;
@@ -18,48 +20,37 @@ export function TournamentErrorBoundary({ children }: TournamentErrorBoundaryPro
   };
 
   const fallbackUI = (
-    <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center">
-      <div className="mb-4">
-        <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
-          <svg
-            className="w-6 h-6 text-red-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+    <Alert variant="destructive">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Tournament Data Error</AlertTitle>
+      <AlertDescription>
+        Unable to display tournament information. The data may be temporarily unavailable.
+        
+        <div className="mt-3 p-3 bg-background/30 rounded border">
+          <h4 className="text-sm font-medium mb-2">What you can do:</h4>
+          <ul className="text-sm space-y-1">
+            <li className="flex items-start">
+              <span className="inline-block w-1 h-1 bg-current rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              Check your internet connection
+            </li>
+            <li className="flex items-start">
+              <span className="inline-block w-1 h-1 bg-current rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              Try refreshing the page
+            </li>
+            <li className="flex items-start">
+              <span className="inline-block w-1 h-1 bg-current rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              The tournament data will be restored when the issue is resolved
+            </li>
+          </ul>
         </div>
-        <h3 className="text-lg font-medium text-red-900 mb-2">
-          Tournament Data Error
-        </h3>
-        <p className="text-red-700 mb-4">
-          Unable to display tournament information. The data may be temporarily unavailable.
-        </p>
-      </div>
 
-      <div className="space-y-2">
-        <p className="text-sm text-red-600">
-          <strong>What you can do:</strong>
-        </p>
-        <ul className="text-sm text-red-600 space-y-1">
-          <li>• Check your internet connection</li>
-          <li>• Try refreshing the page</li>
-          <li>• The tournament data will be restored when the issue is resolved</li>
-        </ul>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-red-200">
-        <p className="text-xs text-red-500">
-          If this problem persists, please contact support
-        </p>
-      </div>
-    </div>
+        <div className="mt-3 pt-3 border-t border-current/20">
+          <p className="text-xs opacity-75">
+            If this problem persists, please contact support
+          </p>
+        </div>
+      </AlertDescription>
+    </Alert>
   );
 
   return (

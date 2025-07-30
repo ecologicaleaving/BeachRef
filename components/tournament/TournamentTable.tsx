@@ -20,6 +20,7 @@ import {
   TableRow as ShadcnTableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { useErrorToast } from '@/hooks/use-error-toast';
 
 export const TournamentTable: FC<TournamentTableProps> = ({
   initialData = null,
@@ -38,6 +39,9 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   } | null>(null);
   const [isContentReady, setIsContentReady] = useState<boolean>(initialData !== null);
   const [viewPreference, setViewPreference] = useState<'table' | 'card' | 'auto'>('auto');
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
+  const { showErrorToast, showRetryToast, showNetworkToast } = useErrorToast();
 
   // Handle responsive breakpoint detection with enhanced breakpoints
   useEffect(() => {
@@ -61,6 +65,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
 
   // Handle scroll indicators for horizontal scrolling
   const handleTableScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
@@ -233,7 +238,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   }, []);
 
   // Fetch tournaments from API
-  const fetchTournaments = useCallback(async () => {
+  const fetchTournaments = useCallback(async (isRetry: boolean = false) => {
     setLoading(true);
     setError(null);
     setIsContentReady(false);
@@ -303,6 +308,12 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       setTournaments(data);
       setIsContentReady(true);
       
+      // Show success toast for retries
+      if (isRetry && retryCount > 0) {
+        showRetryToast(true, retryCount);
+        setRetryCount(0);
+      }
+      
       // Final completion
       await new Promise(resolve => setTimeout(resolve, 200));
       setProgressiveLoading(prev => prev ? {
@@ -314,16 +325,67 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('Failed to fetch tournaments:', err);
+      
+      // Show error toast for transient errors
+      const currentRetryCount = isRetry ? retryCount + 1 : 1;
+      setRetryCount(currentRetryCount);
+      
+      // Only show toast for certain error types to avoid spam
+      if (errorMessage.includes('fetch') || 
+          errorMessage.includes('network') || 
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('500') ||
+          errorMessage.includes('502') ||
+          errorMessage.includes('503')) {
+        showErrorToast(err instanceof Error ? err : new Error(errorMessage), {
+          context: 'Tournament Loading',
+          duration: 3000
+        });
+      }
     } finally {
       setLoading(false);
       setProgressiveLoading(null);
     }
-  }, []);
+  }, [retryCount, showRetryToast, showErrorToast]);
+
+  // Progressive retry with delays
+  const handleRetryWithDelay = useCallback(async (attempt: number = 1) => {
+    const maxAttempts = 3;
+    const baseDelay = 1000; // 1 second
+    const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 8000); // Exponential backoff, max 8s
+    
+    setIsRetrying(true);
+    
+    try {
+      if (attempt > 1) {
+        // Show retry toast with delay information
+        showRetryToast(false, attempt, maxAttempts);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+      
+      await fetchTournaments(true);
+      setIsRetrying(false);
+    } catch (error) {
+      setIsRetrying(false);
+      
+      if (attempt < maxAttempts) {
+        // Automatically retry with increased delay
+        setTimeout(() => {
+          handleRetryWithDelay(attempt + 1);
+        }, 500);
+      } else {
+        // Final retry failed
+        showRetryToast(false, maxAttempts, maxAttempts);
+      }
+    }
+  }, [fetchTournaments, showRetryToast]);
 
   // Retry handler
   const handleRetry = useCallback(() => {
-    fetchTournaments();
-  }, [fetchTournaments]);
+    if (!isRetrying) {
+      handleRetryWithDelay(1);
+    }
+  }, [handleRetryWithDelay, isRetrying]);
 
   // Load tournaments on mount if no initial data
   useEffect(() => {
@@ -331,6 +393,31 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       fetchTournaments();
     }
   }, [initialData, fetchTournaments]);
+
+  // Network connectivity monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      showNetworkToast(true);
+      // Automatically retry if we have data loading error and network comes back
+      if (error && !loading) {
+        handleRetry();
+      }
+    };
+
+    const handleOffline = () => {
+      showNetworkToast(false);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, [error, loading, showNetworkToast, handleRetry]);
 
   // Render sort icon
   const renderSortIcon = useCallback((column: SortColumn) => {

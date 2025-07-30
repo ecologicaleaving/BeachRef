@@ -1,4 +1,7 @@
 import { FC, ReactNode } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, AlertCircle, Info, RefreshCw } from 'lucide-react';
 
 interface ErrorMessageProps {
   title?: string;
@@ -19,122 +22,54 @@ export const ErrorMessage: FC<ErrorMessageProps> = ({
   children,
   severity = 'error'
 }) => {
-  const severityClasses = {
-    error: 'border-red-200 bg-red-50 text-red-800',
-    warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-    info: 'border-blue-200 bg-blue-50 text-blue-800'
+  const getAlertVariant = (severity: 'error' | 'warning' | 'info') => {
+    switch (severity) {
+      case 'error':
+        return 'destructive';
+      case 'warning':
+        return 'warning';
+      case 'info':
+        return 'default';
+      default:
+        return 'default';
+    }
   };
 
-  const iconClasses = {
-    error: 'text-red-500',
-    warning: 'text-yellow-500',
-    info: 'text-blue-500'
-  };
-
-  const buttonClasses = {
-    error: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-    warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-    info: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+  const getIcon = (severity: 'error' | 'warning' | 'info') => {
+    switch (severity) {
+      case 'error':
+        return <AlertTriangle className="h-4 w-4" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'info':
+        return <Info className="h-4 w-4" />;
+      default:
+        return <AlertTriangle className="h-4 w-4" />;
+    }
   };
 
   return (
-    <div
-      className={`rounded-lg border p-6 ${severityClasses[severity]} ${className}`}
-      role="alert"
-      aria-live="assertive"
-    >
-      <div className="flex items-start">
-        {/* Error Icon */}
-        <div className={`flex-shrink-0 ${iconClasses[severity]}`}>
-          {severity === 'error' && (
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          )}
-          {severity === 'warning' && (
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          )}
-          {severity === 'info' && (
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          )}
-        </div>
-
-        {/* Error Content */}
-        <div className="ml-3 flex-1">
-          <h3 className="text-lg font-semibold mb-2">{title}</h3>
-          <p className="text-sm mb-4">{message}</p>
-          
-          {children && <div className="mb-4">{children}</div>}
-          
-          {onRetry && (
-            <button
-              onClick={onRetry}
-              className={`
-                inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md
-                ${buttonClasses[severity]}
-                focus:outline-none focus:ring-2 focus:ring-offset-2
-                transition-colors duration-200
-                disabled:opacity-50 disabled:cursor-not-allowed
-              `}
-              type="button"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              {retryLabel}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    <Alert variant={getAlertVariant(severity)} className={className}>
+      {getIcon(severity)}
+      <AlertTitle>{title}</AlertTitle>
+      <AlertDescription>
+        {message}
+        
+        {children && <div className="mt-3">{children}</div>}
+        
+        {onRetry && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onRetry}
+            className="mt-3 min-h-[44px]"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {retryLabel}
+          </Button>
+        )}
+      </AlertDescription>
+    </Alert>
   );
 };
 
@@ -230,7 +165,7 @@ export const TournamentError: FC<TournamentErrorProps> = ({
       className={className}
     >
       {guidance && (
-        <div className="mt-3 p-3 bg-white bg-opacity-30 rounded border">
+        <div className="mt-3 p-3 bg-background/30 rounded border">
           <h4 className="text-sm font-medium mb-2">What you can do:</h4>
           <ul className="text-sm space-y-1">
             {guidance.map((item, index) => (
@@ -247,7 +182,7 @@ export const TournamentError: FC<TournamentErrorProps> = ({
         <summary className="cursor-pointer text-sm font-medium opacity-75 hover:opacity-100">
           Technical details
         </summary>
-        <code className="mt-2 block text-xs bg-white bg-opacity-50 p-2 rounded border overflow-x-auto">
+        <code className="mt-2 block text-xs bg-background/50 p-2 rounded border overflow-x-auto">
           {errorMessage}
         </code>
       </details>

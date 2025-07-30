@@ -21,12 +21,17 @@ export async function fetchPaginatedTournaments(
   if (page !== 1) params.set('page', page.toString());
   if (limit !== 20) params.set('limit', limit.toString());
   
-  // Handle both server-side and client-side requests
-  const baseUrl = typeof window === 'undefined' 
-    ? process.env.NEXTAUTH_URL || 'http://localhost:3000'
-    : '';
-  
-  const url = `${baseUrl}/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+  // For server-side requests, use absolute URL. For client-side, use relative URL
+  let url: string;
+  if (typeof window === 'undefined') {
+    // Server-side: try different approaches to get the correct URL
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'localhost:3000';
+    url = `${protocol}://${host}/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+  } else {
+    // Client-side: use relative URL
+    url = `/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+  }
   
   const response = await fetch(url, {
     headers: {

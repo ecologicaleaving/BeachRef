@@ -155,8 +155,19 @@ export async function prefetchAdjacentPages(
         page: currentPage - 1,
         limit,
       }).catch(() => {
-        // Ignore prefetch errors to avoid affecting main functionality
-        return {} as PaginatedTournamentResponse;
+        // Return a valid empty response structure for prefetch errors
+        return {
+          tournaments: [],
+          pagination: {
+            currentPage: currentPage - 1,
+            totalPages: 1,
+            totalTournaments: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: limit,
+            year: currentYear
+          }
+        } as PaginatedTournamentResponse;
       })
     );
   }
@@ -169,8 +180,19 @@ export async function prefetchAdjacentPages(
         page: currentPage + 1,
         limit,
       }).catch(() => {
-        // Ignore prefetch errors to avoid affecting main functionality
-        return {} as PaginatedTournamentResponse;
+        // Return a valid empty response structure for prefetch errors
+        return {
+          tournaments: [],
+          pagination: {
+            currentPage: currentPage + 1,
+            totalPages: 1,
+            totalTournaments: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: limit,
+            year: currentYear
+          }
+        } as PaginatedTournamentResponse;
       })
     );
   }

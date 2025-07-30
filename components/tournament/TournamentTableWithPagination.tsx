@@ -57,13 +57,16 @@ export const TournamentTableWithPagination: React.FC<TournamentTableWithPaginati
       setPaginationData(data.pagination)
       
       // Prefetch adjacent pages for better navigation performance
-      if (data.pagination.totalPages > 1) {
+      if (data.pagination && data.pagination.totalPages > 1) {
         prefetchAdjacentPages(
           currentState.year,
           currentState.page,
           data.pagination.totalPages,
           currentState.limit
-        )
+        ).catch((error) => {
+          // Silently handle prefetch errors - they shouldn't affect the main functionality
+          console.warn('Prefetch failed:', error);
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch tournaments')

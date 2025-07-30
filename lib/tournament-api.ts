@@ -8,76 +8,42 @@ export interface FetchTournamentsOptions {
 
 /**
  * Fetches paginated tournament data from the API
- * Handles both paginated and legacy response formats for backward compatibility
+ * Uses direct API handler import for SSR and HTTP fetch for client-side
  */
 export async function fetchPaginatedTournaments(
   options: FetchTournamentsOptions = {}
 ): Promise<PaginatedTournamentResponse> {
   const { year = 2025, page = 1, limit = 20 } = options;
   
-  // Build query parameters, only including non-default values for cleaner URLs
+  // Build query parameters
   const params = new URLSearchParams();
   if (year !== 2025) params.set('year', year.toString());
   if (page !== 1) params.set('page', page.toString());
   if (limit !== 20) params.set('limit', limit.toString());
   
-  // For server-side requests, use absolute URL. For client-side, use relative URL
-  let url: string;
   if (typeof window === 'undefined') {
-    // Server-side: get the actual running port from the environment
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const port = process.env.PORT || '3006'; // Default to 3006 since that's what Next.js picked
-    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || `localhost:${port}`;
-    url = `${protocol}://${host}/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+    // Server-side: Use direct API handler import (no HTTP call)
+    const { GET } = await import('@/app/api/tournaments/route');
+    const url = `/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+    const request = new Request(url, { method: 'GET' });
+    const response = await GET(request as any);
+    return response.json();
   } else {
-    // Client-side: use relative URL
-    url = `/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
-  }
-  
-  const response = await fetch(url, {
-    headers: {
-      'Accept': 'application/json',
-      'Cache-Control': 'max-age=300', // 5-minute cache for better performance
-    },
-  });
-  
-  if (!response.ok) {
-    // Enhanced error handling with more specific error messages
-    let errorMessage = `Failed to fetch tournaments: ${response.status}`;
+    // Client-side: Use relative URL HTTP fetch
+    const url = `/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'max-age=300',
+      },
+    });
     
-    try {
-      const errorData = await response.json();
-      if (errorData.message) {
-        errorMessage = errorData.message;
-      }
-    } catch {
-      // If we can't parse the error response, use the status text
-      errorMessage = `${errorMessage} ${response.statusText}`;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tournaments: ${response.status}`);
     }
     
-    throw new Error(errorMessage);
+    return response.json();
   }
-  
-  const data = await response.json();
-  
-  // Handle backward compatibility: if API returns Tournament[] (legacy format)
-  if (Array.isArray(data)) {
-    return {
-      tournaments: data,
-      pagination: {
-        currentPage: 1,
-        totalPages: 1,
-        totalTournaments: data.length,
-        hasNextPage: false,
-        hasPrevPage: false,
-        limit: data.length,
-        year: year,
-      },
-    };
-  }
-  
-  // New format: PaginatedTournamentResponse
-  return data;
 }
 
 /**

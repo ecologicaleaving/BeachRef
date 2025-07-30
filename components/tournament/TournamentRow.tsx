@@ -7,6 +7,7 @@ import { getCountryName } from '@/lib/country-utils';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
 
 export interface TournamentRowProps {
   /** Tournament data to display */
@@ -38,6 +39,16 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
   style,
   onKeyDown
 }) => {
+  // Enhanced responsive design with tournament glove considerations
+  const { 
+    touchCapable, 
+    getTouchTargetSize, 
+    getOptimizedImageSize,
+    isHighContrast 
+  } = useResponsiveDesign();
+  
+  const touchTargetSize = getTouchTargetSize();
+  
   // Format date for display
   const formatDate = (dateString: string): string => {
     try {
@@ -167,68 +178,132 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
     );
   }
 
-  // Mobile card layout with shadcn Card components and touch-friendly design
+  // Mobile card layout with enhanced touch targets for tournament glove usage
   return (
     <Card 
-      className={`hover:bg-muted/50 transition-colors duration-150 active:bg-muted focus:ring-2 focus:ring-primary focus:ring-inset focus:outline-none cursor-pointer ${className}`}
-      style={style}
+      className={`hover:bg-muted/50 transition-colors duration-150 active:bg-muted focus:ring-2 focus:ring-primary focus:ring-inset focus:outline-none cursor-pointer touch-target-enhanced ${className} ${
+        isHighContrast ? 'border-2' : ''
+      }`}
+      style={{ 
+        ...style,
+        minHeight: `${touchTargetSize}px`,
+        padding: touchCapable ? '20px' : '16px'
+      }}
       role="row"
       aria-label={`Tournament: ${tournament.name}, ${countryName}, ${formattedStartDate} to ${formattedEndDate}, ${tournament.gender}, ${tournament.type}`}
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      <CardHeader className="pb-3">
-        {/* Header with name and gender badge */}
-        <div className="flex items-start justify-between gap-3 min-h-[44px]">
+      <CardHeader className="pb-3" style={{ paddingBottom: touchCapable ? '16px' : '12px' }}>
+        {/* Header with name and gender badge - enhanced touch targets */}
+        <div 
+          className="flex items-start justify-between gap-3"
+          style={{ minHeight: `${touchTargetSize}px` }}
+        >
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-base font-medium leading-snug" title={tournament.name}>
+            <CardTitle 
+              className={`text-base font-medium leading-snug ${
+                isHighContrast ? 'font-semibold' : ''
+              }`} 
+              title={tournament.name}
+            >
               {tournament.name}
             </CardTitle>
             <CardDescription className="mt-1">
               {tournament.code}
             </CardDescription>
           </div>
-          <Badge variant={getGenderBadgeVariant(tournament.gender)} className="flex-shrink-0">
+          <Badge 
+            variant={getGenderBadgeVariant(tournament.gender)} 
+            className={`flex-shrink-0 touch-target ${
+              isHighContrast ? 'border font-medium' : ''
+            }`}
+            style={{ 
+              minHeight: `${Math.max(touchTargetSize - 12, 32)}px`,
+              minWidth: `${Math.max(touchTargetSize - 12, 60)}px`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             {tournament.gender}
           </Badge>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-4">
-        {/* Country with flag */}
-        <div className="flex items-center gap-3 min-h-[44px]">
+      <CardContent 
+        className="pt-0 space-y-4" 
+        style={{ paddingTop: 0, gap: touchCapable ? '20px' : '16px' }}
+      >
+        {/* Country with flag - enhanced touch area */}
+        <div 
+          className="flex items-center gap-3 touch-target"
+          style={{ minHeight: `${touchTargetSize}px` }}
+        >
           <CountryFlag 
             countryCode={tournament.countryCode}
-            size="md"
+            size={touchCapable ? "lg" : "md"}
             className="flex-shrink-0"
             showFallback={true}
           />
           <div className="flex-1 min-w-0">
-            <span className="font-medium text-foreground text-base">{countryName}</span>
-            <span className="ml-3 text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+            <span className={`font-medium text-foreground text-base ${
+              isHighContrast ? 'font-semibold' : ''
+            }`}>
+              {countryName}
+            </span>
+            <span className={`ml-3 text-sm text-muted-foreground bg-muted px-2 py-1 rounded ${
+              isHighContrast ? 'border font-medium' : ''
+            }`}>
               {tournament.countryCode}
             </span>
           </div>
         </div>
 
-        {/* Dates */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground min-h-[44px]">
-          <div>
+        {/* Dates - enhanced for readability and touch */}
+        <div 
+          className="flex items-center justify-between text-sm text-muted-foreground touch-target"
+          style={{ minHeight: `${touchTargetSize}px` }}
+        >
+          <div className="flex-1">
             <span className="text-muted-foreground">Start:</span>
-            <span className="ml-2 font-medium text-foreground">{formattedStartDate}</span>
+            <span className={`ml-2 font-medium text-foreground ${
+              isHighContrast ? 'font-semibold' : ''
+            }`}>
+              {formattedStartDate}
+            </span>
           </div>
-          <div>
+          <div className="flex-1 text-right">
             <span className="text-muted-foreground">End:</span>
-            <span className="ml-2 font-medium text-foreground">{formattedEndDate}</span>
+            <span className={`ml-2 font-medium text-foreground ${
+              isHighContrast ? 'font-semibold' : ''
+            }`}>
+              {formattedEndDate}
+            </span>
           </div>
         </div>
       </CardContent>
       
-      <CardFooter className="pt-0 pb-6">
-        {/* Tournament type */}
-        <div className="w-full pt-3 text-sm text-muted-foreground border-t border-border" title={tournament.type}>
-          <span className="text-muted-foreground">Type:</span>
-          <span className="ml-2 font-medium text-foreground">{tournament.type}</span>
+      <CardFooter 
+        className="pt-0"
+        style={{ paddingBottom: touchCapable ? '24px' : '20px' }}
+      >
+        {/* Tournament type - enhanced for touch and high contrast */}
+        <div 
+          className={`w-full pt-3 text-sm text-muted-foreground touch-target ${
+            isHighContrast ? 'border-t-2' : 'border-t'
+          } border-border`}
+          style={{ minHeight: `${touchTargetSize}px` }}
+          title={tournament.type}
+        >
+          <div className="flex items-center">
+            <span className="text-muted-foreground">Type:</span>
+            <span className={`ml-2 font-medium text-foreground ${
+              isHighContrast ? 'font-semibold' : ''
+            }`}>
+              {tournament.type}
+            </span>
+          </div>
         </div>
       </CardFooter>
     </Card>

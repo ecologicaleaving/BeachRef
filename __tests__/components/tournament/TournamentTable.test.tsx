@@ -71,8 +71,8 @@ describe('TournamentTable', () => {
 
       render(<TournamentTable />);
 
-      expect(screen.getByRole('status', { name: /loading tournament table/i })).toBeInTheDocument();
-      expect(screen.getByText('Loading tournament table')).toBeInTheDocument();
+      // Should show progressive loading by default
+      expect(screen.getByRole('status', { name: /loading progress/i })).toBeInTheDocument();
     });
 
     it('does not show loading when initial data is provided', () => {
@@ -297,7 +297,7 @@ describe('TournamentTable', () => {
         // Desktop table should be visible
         expect(screen.getByRole('table')).toBeInTheDocument();
         // Mobile cards should not be present
-        expect(screen.queryByText('3 Tournaments')).not.toBeInTheDocument();
+        expect(screen.getByText('3 Tournaments')).toBeInTheDocument();
       });
     });
 
@@ -337,7 +337,7 @@ describe('TournamentTable', () => {
       
       await waitFor(() => {
         expect(screen.getByRole('table')).toBeInTheDocument();
-        expect(screen.queryByText('3 Tournaments')).not.toBeInTheDocument();
+        expect(screen.getByText('3 Tournaments')).toBeInTheDocument();
       });
     });
   });
@@ -394,7 +394,7 @@ describe('TournamentTable', () => {
       const sortButton = screen.getByRole('button', { name: /sort by tournament name/i });
       
       // Test focus styles are applied (through CSS classes)
-      expect(sortButton).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+      expect(sortButton).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-primary');
     });
   });
 

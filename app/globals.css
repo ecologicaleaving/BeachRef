@@ -2,19 +2,233 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* FIVB Blue (#0066CC) as primary */
+    --primary: 214 100% 40%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Beach Volleyball Orange (#FF6B35) as secondary/accent */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+
+    --accent: 19 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 214 100% 40%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    /* FIVB Blue adjusted for dark mode */
+    --primary: 214 100% 50%;
+    --primary-foreground: 222.2 84% 4.9%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Beach Volleyball Orange adjusted for dark mode */
+    --accent: 19 91% 55%;
+    --accent-foreground: 222.2 84% 4.9%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 214 100% 50%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+  }
+
+  .high-contrast {
+    /* Enhanced primary colors for outdoor visibility */
+    --primary: 214 100% 25%; /* Darker FIVB blue for better contrast */
+    --primary-foreground: 0 0% 100%; /* Pure white text */
+    
+    /* Enhanced accent colors */
+    --accent: 19 100% 45%; /* Stronger orange for visibility */
+    --accent-foreground: 0 0% 100%;
+    
+    /* High contrast backgrounds and borders */
+    --background: 0 0% 100%; /* Pure white background */
+    --foreground: 0 0% 0%; /* Pure black text */
+    --border: 0 0% 20%; /* Strong border definition */
+    --input: 0 0% 98%; /* Very light gray for inputs */
+    --ring: 214 100% 25%; /* Match primary for focus rings */
+    
+    /* Enhanced muted colors */
+    --muted: 0 0% 95%; /* Light gray for secondary areas */
+    --muted-foreground: 0 0% 20%; /* Dark gray for secondary text */
+    
+    /* Card and popover contrast */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    /* Secondary colors with higher contrast */
+    --secondary: 0 0% 90%; /* Light gray background */
+    --secondary-foreground: 0 0% 10%; /* Very dark text */
+    
+    /* Enhanced destructive colors */
+    --destructive: 0 85% 40%; /* Darker red for better contrast */
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  .high-contrast.dark {
+    /* High contrast dark mode */
+    --primary: 214 100% 60%; /* Brighter FIVB blue for dark mode contrast */
+    --primary-foreground: 0 0% 0%; /* Pure black text */
+    
+    --accent: 19 100% 65%; /* Brighter orange for dark mode */
+    --accent-foreground: 0 0% 0%;
+    
+    --background: 0 0% 0%; /* Pure black background */
+    --foreground: 0 0% 100%; /* Pure white text */
+    --border: 0 0% 80%; /* Light border for dark mode */
+    --input: 0 0% 10%; /* Very dark gray for inputs */
+    --ring: 214 100% 60%;
+    
+    --muted: 0 0% 10%; /* Dark gray for secondary areas */
+    --muted-foreground: 0 0% 80%; /* Light gray for secondary text */
+    
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 15%; /* Dark gray background */
+    --secondary-foreground: 0 0% 90%; /* Very light text */
+    
+    --destructive: 0 85% 65%; /* Brighter red for dark mode */
+    --destructive-foreground: 0 0% 0%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
+@layer components {
+  /* Enhanced focus indicators for high contrast mode */
+  .high-contrast :focus {
+    @apply ring-4 ring-primary;
+  }
+  
+  /* Enhanced button contrast */
+  .high-contrast .btn-primary {
+    @apply bg-primary text-primary-foreground border-2 border-primary;
+  }
+  
+  .high-contrast .btn-secondary {
+    @apply bg-secondary text-secondary-foreground border-2;
+  }
+  
+  /* Enhanced card shadows for better separation */
+  .high-contrast .shadow-sm {
+    @apply shadow-lg;
+  }
+  
+  .high-contrast .shadow-md {
+    @apply shadow-xl;
+  }
+  
+  /* Enhanced border visibility */
+  .high-contrast .border {
+    @apply border-2;
+  }
+  
+  /* Touch target enhancements for glove usage */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .touch-target-enhanced {
+    @apply min-h-[48px] min-w-[48px];
+  }
+  
+  /* Mobile-first responsive utilities */
+  .mobile-padding {
+    @apply px-4 py-3;
+  }
+  
+  .tablet-padding {
+    @apply md:px-6 md:py-4;
+  }
+  
+  .desktop-padding {
+    @apply lg:px-8 lg:py-6;
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .transition-all {
+      @apply transition-none;
+    }
+    
+    .animate-spin {
+      @apply animate-none;
+    }
+    
+    .animate-pulse {
+      @apply animate-none;
+    }
+  }
+  
+  /* Enhanced scrollbar for touch devices */
+  .scrollbar-enhanced {
+    scrollbar-width: thick;
+    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
+  }
+  
+  .scrollbar-enhanced::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-enhanced::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  
+  .scrollbar-enhanced::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+  
+  .scrollbar-enhanced::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
 }

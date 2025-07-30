@@ -21,6 +21,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useErrorToast } from '@/hooks/use-error-toast';
+import { useResponsiveDesign } from '@/hooks/useResponsiveDesign';
+import { OfflineIndicator } from '@/components/ui/OfflineIndicator';
+import { ThemeToggleBadge } from '@/components/ui/ThemeToggle';
 
 export const TournamentTable: FC<TournamentTableProps> = ({
   initialData = null,
@@ -30,7 +33,6 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   const [loading, setLoading] = useState<boolean>(initialData === null);
   const [error, setError] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-  const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [scrollIndicators, setScrollIndicators] = useState({ left: false, right: false });
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [progressiveLoading, setProgressiveLoading] = useState<{
@@ -42,29 +44,20 @@ export const TournamentTable: FC<TournamentTableProps> = ({
   const [retryCount, setRetryCount] = useState<number>(0);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const { showErrorToast, showRetryToast, showNetworkToast } = useErrorToast();
+  
+  // Enhanced responsive design with mobile-first patterns
+  const { 
+    screenSize, 
+    isOffline, 
+    connectionQuality, 
+    touchCapable, 
+    getTouchTargetSize,
+    getOptimizedImageSize,
+    reducedMotion
+  } = useResponsiveDesign();
 
-  // Handle responsive breakpoint detection with enhanced breakpoints
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width >= 1024) {
-        setScreenSize('desktop');
-      } else if (width >= 768) {
-        setScreenSize('tablet');
-      } else {
-        setScreenSize('mobile');
-      }
-    };
-
-    // Set initial state
-    handleResize();
-    
-    // Add resize listener
-    window.addEventListener('resize', handleResize);
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Dynamic touch target size based on device capabilities
+  const touchTargetSize = getTouchTargetSize();
 
 
   // Handle scroll indicators for horizontal scrolling
@@ -237,7 +230,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     });
   }, []);
 
-  // Fetch tournaments from API
+  // Fetch tournaments from API with connection quality awareness
   const fetchTournaments = useCallback(async (isRetry: boolean = false) => {
     setLoading(true);
     setError(null);
@@ -245,7 +238,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     
     // Initialize progressive loading steps
     const initialSteps = [
-      { label: 'Connecting to VIS API', completed: false, current: true },
+      { label: isOffline ? 'Checking connection...' : 'Connecting to VIS API', completed: false, current: true },
       { label: 'Fetching tournament data', completed: false, current: false },
       { label: 'Processing results', completed: false, current: false },
       { label: 'Loading complete', completed: false, current: false }
@@ -265,13 +258,15 @@ export const TournamentTable: FC<TournamentTableProps> = ({
         }))
       } : null);
 
-      // Step 2: Fetching data
+      // Step 2: Fetching data with connection-aware timeout
+      const timeoutMs = connectionQuality === 'slow' ? 15000 : isOffline ? 5000 : 10000;
       const response = await fetch('/api/tournaments', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
+          'Cache-Control': connectionQuality === 'slow' ? 'force-cache' : 'no-cache'
+        },
+        signal: AbortSignal.timeout(timeoutMs)
       });
 
       if (!response.ok) {
@@ -346,7 +341,7 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       setLoading(false);
       setProgressiveLoading(null);
     }
-  }, [retryCount, showRetryToast, showErrorToast]);
+  }, [retryCount, showRetryToast, showErrorToast, isOffline, connectionQuality]);
 
   // Progressive retry with delays
   const handleRetryWithDelay = useCallback(async (attempt: number = 1) => {
@@ -542,9 +537,10 @@ export const TournamentTable: FC<TournamentTableProps> = ({
           items-center justify-between w-full text-left px-2 py-3
           font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-md
           focus:outline-none focus:ring-2 focus:ring-primary focus:bg-muted/50
-          transition-colors duration-150 min-h-[44px]
+          transition-colors duration-150 touch-target-enhanced
           ${isVisible ? 'flex' : 'hidden'}
         `}
+        style={{ minHeight: `${touchTargetSize}px` }}
         aria-label={`Sort by ${label}`}
         aria-describedby={`sort-${column}-desc`}
       >
@@ -644,20 +640,32 @@ export const TournamentTable: FC<TournamentTableProps> = ({
     <div className={`bg-background rounded-lg shadow-sm border border-border overflow-hidden transition-opacity duration-500 ${
       isContentReady ? 'opacity-100' : 'opacity-0'
     } ${className}`}>
-      {/* View Toggle Controls - only show for tablet/desktop */}
+      {/* Offline/Connection Status Indicator */}
+      <OfflineIndicator 
+        className="mx-4 mt-4" 
+        onRetry={handleRetry}
+      />
+      
+      {/* View Toggle Controls - enhanced for mobile-first design */}
       {(screenSize === 'tablet' || screenSize === 'desktop') && (
-        <div className="px-4 py-3 bg-muted/20 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-foreground">
-              {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
-            </h3>
+        <div className="mobile-padding tablet-padding bg-muted/20 border-b border-border">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h3 className="text-sm font-medium text-foreground">
+                {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+              </h3>
+              {(isOffline || connectionQuality === 'slow') && (
+                <ThemeToggleBadge />
+              )}
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground mr-2">View:</span>
+              <span className="text-xs text-muted-foreground mr-2 hidden sm:inline">View:</span>
               <Button
                 variant={viewPreference === 'table' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('table')}
-                className="h-8 px-3 text-xs"
+                className="touch-target text-xs"
+                style={{ minHeight: `${Math.max(touchTargetSize - 8, 32)}px` }}
               >
                 Table
               </Button>
@@ -665,7 +673,8 @@ export const TournamentTable: FC<TournamentTableProps> = ({
                 variant={viewPreference === 'card' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('card')}
-                className="h-8 px-3 text-xs"
+                className="touch-target text-xs"
+                style={{ minHeight: `${Math.max(touchTargetSize - 8, 32)}px` }}
               >
                 Cards
               </Button>
@@ -673,7 +682,8 @@ export const TournamentTable: FC<TournamentTableProps> = ({
                 variant={viewPreference === 'auto' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleViewChange('auto')}
-                className="h-8 px-3 text-xs"
+                className="touch-target text-xs"
+                style={{ minHeight: `${Math.max(touchTargetSize - 8, 32)}px` }}
               >
                 Auto
               </Button>
@@ -684,7 +694,9 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       {effectiveView === 'table' ? (
         /* Table Layout */
         <div 
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-muted/50 hover:scrollbar-thumb-muted-foreground scroll-smooth touch-pan-x"
+          className={`overflow-x-auto scrollbar-enhanced scroll-smooth touch-pan-x ${
+            touchCapable ? 'scrollbar-enhanced' : 'scrollbar-thin scrollbar-thumb-muted scrollbar-track-muted/50'
+          }`}
           onScroll={handleTableScroll}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -783,18 +795,25 @@ export const TournamentTable: FC<TournamentTableProps> = ({
       ) : (
         /* Card Layout */
         <div role="table" aria-label={`Beach volleyball tournaments for 2025. ${sortedTournaments.length} tournaments found.`}>
-          {/* Only show header for mobile (no view toggle controls) */}
+          {/* Mobile-first card header with enhanced accessibility */}
           {screenSize === 'mobile' && (
-            <div className="px-4 py-3 bg-muted/50 border-b border-border">
-              <h3 className="text-sm font-medium text-foreground" id="tournaments-heading">
-                {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
-              </h3>
-              <div className="text-xs text-muted-foreground mt-1">
-                Use arrow keys to navigate between tournaments
+            <div className="mobile-padding bg-muted/50 border-b border-border">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-medium text-foreground" id="tournaments-heading">
+                    {sortedTournaments.length} Tournament{sortedTournaments.length !== 1 ? 's' : ''}
+                  </h3>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {touchCapable ? 'Tap to view details' : 'Use arrow keys to navigate'}
+                  </div>
+                </div>
+                {(isOffline || connectionQuality === 'slow') && (
+                  <ThemeToggleBadge />
+                )}
               </div>
             </div>
           )}
-          <div className="p-4 space-y-4" role="rowgroup" aria-labelledby="tournaments-heading">
+          <div className="mobile-padding space-y-4" role="rowgroup" aria-labelledby="tournaments-heading">
             {sortedTournaments.map((tournament, index) => (
               <TournamentRow
                 key={tournament.code}

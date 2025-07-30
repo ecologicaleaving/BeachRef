@@ -57,7 +57,7 @@ const mockSuccessfulXMLResponse = `<?xml version="1.0" encoding="utf-8"?>
     CountryCode="BR" 
     StartDateMainDraw="2025-05-15" 
     EndDateMainDraw="2025-05-22" 
-    Gender="Mixed" 
+    Gender="2" 
     Type="World Championship" />
   <BeachTournament 
     Code="BVB2025-002" 
@@ -65,7 +65,7 @@ const mockSuccessfulXMLResponse = `<?xml version="1.0" encoding="utf-8"?>
     CountryCode="US" 
     StartDateMainDraw="2025-03-10" 
     EndDateMainDraw="2025-03-12" 
-    Gender="Men" 
+    Gender="0" 
     Type="Elite Event" />
 </VIS>`
 
@@ -286,7 +286,7 @@ describe('fetchTournamentsFromVIS', () => {
           CountryCode="BR" 
           StartDateMainDraw="2025-05-15" 
           EndDateMainDraw="2025-05-22" 
-          Gender="Mixed" 
+          Gender="2" 
           Type="World Championship" />
         <BeachTournament 
           Code="BVB2025-002" 
@@ -315,7 +315,7 @@ describe('fetchTournamentsFromVIS', () => {
           CountryCode="BR" 
           StartDateMainDraw="2025-05-15" 
           EndDateMainDraw="2025-05-22" 
-          Gender="Mixed" 
+          Gender="2" 
           Type="World Championship" />
         <BeachTournament 
           Code="BVB2025-002" 
@@ -323,7 +323,7 @@ describe('fetchTournamentsFromVIS', () => {
           CountryCode="US" 
           StartDateMainDraw="2025-05-15" 
           EndDateMainDraw="2025-05-22" 
-          Gender="Invalid" 
+          Gender="9" 
           Type="World Championship" />
       </VIS>`
 
@@ -348,7 +348,7 @@ describe('fetchTournamentsFromVIS', () => {
           CountryCode="BR" 
           StartDateMainDraw="2025-05-15" 
           EndDateMainDraw="2025-05-22" 
-          Gender="Mixed" 
+          Gender="2" 
           Type="World Championship" />
         <BeachTournament 
           Code="BVB2025-002" 
@@ -356,7 +356,7 @@ describe('fetchTournamentsFromVIS', () => {
           CountryCode="US" 
           StartDateMainDraw="invalid-date" 
           EndDateMainDraw="2025-05-22" 
-          Gender="Men" 
+          Gender="0" 
           Type="World Championship" />
       </VIS>`
 

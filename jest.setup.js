@@ -63,3 +63,58 @@ global.IntersectionObserver = class IntersectionObserver {
   disconnect = jest.fn();
   unobserve = jest.fn();
 };
+
+// Mock window.matchMedia for responsive design testing
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock ResizeObserver for responsive components
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
+// Mock window.navigator for offline detection
+Object.defineProperty(window.navigator, 'onLine', {
+  writable: true,
+  value: true,
+});
+
+// Mock localStorage for theme persistence
+const localStorageMock = (() => {
+  let store = {};
+  return {
+    getItem: jest.fn((key) => store[key] || null),
+    setItem: jest.fn((key, value) => {
+      store[key] = value.toString();
+    }),
+    removeItem: jest.fn((key) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+  };
+})();
+global.localStorage = localStorageMock;
+
+// Mock AbortSignal.timeout for modern fetch API support
+if (!AbortSignal.timeout) {
+  AbortSignal.timeout = function(milliseconds) {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), milliseconds);
+    return controller.signal;
+  };
+}

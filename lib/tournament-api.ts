@@ -24,9 +24,10 @@ export async function fetchPaginatedTournaments(
   // For server-side requests, use absolute URL. For client-side, use relative URL
   let url: string;
   if (typeof window === 'undefined') {
-    // Server-side: try different approaches to get the correct URL
+    // Server-side: get the actual running port from the environment
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'localhost:3000';
+    const port = process.env.PORT || '3006'; // Default to 3006 since that's what Next.js picked
+    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || `localhost:${port}`;
     url = `${protocol}://${host}/api/tournaments${params.toString() ? '?' + params.toString() : ''}`;
   } else {
     // Client-side: use relative URL

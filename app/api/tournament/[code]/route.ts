@@ -26,11 +26,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    // Check cache first
+    // Check for cache bypass parameter (for debugging)
+    const url = new URL(request.url)
+    const bypassCache = url.searchParams.get('nocache') === 'true'
+    
+    // Check cache first (unless bypassed)
     const cached = cache.get(code)
     const now = Date.now()
     
-    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+    if (cached && (now - cached.timestamp) < CACHE_TTL && !bypassCache) {
       console.log(`[Tournament Detail API] Cache hit for tournament: ${code}`)
       return NextResponse.json(cached.data, {
         headers: {
@@ -38,6 +42,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           'X-Cache': 'HIT'
         }
       })
+    }
+    
+    if (bypassCache) {
+      console.log(`[Tournament Detail API] CACHE BYPASSED for debugging: ${code}`)
     }
 
     console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API for: ${code}`)

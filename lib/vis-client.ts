@@ -335,10 +335,9 @@ function parseVISTournamentDetailResponse(xmlResponse: string, code: string): To
   }
 }
 
-// Fetch specific tournament details from VIS API
+// Fetch specific tournament details from VIS API with failover strategy
 export async function fetchTournamentDetailFromVIS(code: string): Promise<TournamentDetail> {
   const startTime = Date.now()
-  let lastError: unknown
   
   log({
     level: 'info',
@@ -346,6 +345,28 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
     data: { code }
   })
 
+  // First, try the direct tournament code approach
+  try {
+    return await fetchTournamentDetailDirect(code)
+  } catch (error) {
+    log({
+      level: 'warn',
+      message: 'Direct tournament detail request failed, trying fallback approach',
+      data: { 
+        code,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    })
+    
+    // Fallback: Use the working tournament list API and filter client-side
+    return await fetchTournamentDetailViaList(code)
+  }
+}
+
+// Direct tournament detail fetch (original approach)
+async function fetchTournamentDetailDirect(code: string): Promise<TournamentDetail> {
+  let lastError: unknown
+  
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
     try {
       const controller = new AbortController()
@@ -355,8 +376,8 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
       
       log({
         level: 'info',
-        message: `VIS API tournament detail attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
-        data: { attempt, code, xmlBody }
+        message: `VIS API direct tournament detail attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { attempt, code }
       })
 
       const response = await fetch(VIS_API_CONFIG.baseURL, {
@@ -373,8 +394,30 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
       clearTimeout(timeoutId)
 
       if (!response.ok) {
+        // Enhanced error logging for 401 issues
+        const errorBody = await response.text().catch(() => 'Unable to read error body')
+        const errorDetails = {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorBody,
+          requestHeaders: {
+            'Content-Type': 'application/xml',
+            'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+            'User-Agent': 'BeachRef-MVP/1.0'
+          },
+          url: VIS_API_CONFIG.baseURL,
+          code: code
+        }
+        
+        log({
+          level: 'error',
+          message: `VIS API direct tournament detail request failed with ${response.status}`,
+          data: errorDetails
+        })
+        
         throw new VISApiError(
-          `VIS API returned ${response.status}: ${response.statusText}`,
+          `VIS API returned ${response.status}: ${response.statusText} - ${errorBody}`,
           response.status
         )
       }
@@ -386,18 +429,14 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
         throw new VISApiError(`Tournament with code ${code} not found`, 404)
       }
       
-      const duration = Date.now() - startTime
-      
       log({
         level: 'info',
-        message: 'VIS API tournament detail request successful',
+        message: 'VIS API direct tournament detail request successful',
         data: { 
           code,
           tournamentName: tournament.name,
-          duration,
           attempt: attempt + 1
-        },
-        duration
+        }
       })
 
       return tournament
@@ -415,7 +454,7 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
 
       log({
         level: 'warn',
-        message: `VIS API tournament detail attempt ${attempt + 1} failed`,
+        message: `VIS API direct tournament detail attempt ${attempt + 1} failed`,
         data: { 
           attempt: attempt + 1,
           code,
@@ -429,30 +468,86 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
       }
 
       const delay = calculateBackoffDelay(attempt, RETRY_CONFIG)
-      log({
-        level: 'info',
-        message: `Retrying VIS API tournament detail request in ${delay}ms`,
-        data: { delay, nextAttempt: attempt + 2 }
-      })
-      
       await sleep(delay)
     }
   }
 
-  const duration = Date.now() - startTime
-  log({
-    level: 'error',
-    message: 'All VIS API tournament detail attempts failed',
-    data: { 
-      code,
-      attempts: RETRY_CONFIG.maxRetries + 1,
-      duration,
-      finalError: lastError instanceof Error ? lastError.message : String(lastError)
-    },
-    duration
-  })
-
   throw lastError instanceof VISApiError 
     ? lastError 
-    : new VISApiError('Failed to fetch tournament detail from VIS API', undefined, lastError)
+    : new VISApiError('Failed to fetch tournament detail directly from VIS API', undefined, lastError)
+}
+
+// Fallback: Fetch tournament detail via tournament list API
+async function fetchTournamentDetailViaList(code: string): Promise<TournamentDetail> {
+  log({
+    level: 'info',
+    message: 'Using fallback approach: fetching tournament via list API',
+    data: { code }
+  })
+
+  // Try different years to find the tournament
+  const currentYear = new Date().getFullYear()
+  const yearsToTry = [currentYear, currentYear + 1, currentYear - 1, currentYear - 2]
+
+  for (const year of yearsToTry) {
+    try {
+      log({
+        level: 'info',
+        message: `Searching for tournament ${code} in year ${year}`,
+        data: { code, year }
+      })
+
+      const response = await fetchTournamentsFromVIS(year)
+      const tournament = response.tournaments.find(t => t.code === code)
+      
+      if (tournament) {
+        // Convert Tournament to TournamentDetail
+        const now = new Date()
+        const startDate = new Date(tournament.startDate)
+        const endDate = new Date(tournament.endDate)
+        
+        let status: 'upcoming' | 'live' | 'completed'
+        if (now < startDate) {
+          status = 'upcoming'
+        } else if (now > endDate) {
+          status = 'completed'
+        } else {
+          status = 'live'
+        }
+
+        const tournamentDetail: TournamentDetail = {
+          ...tournament,
+          status,
+          venue: undefined,
+          description: undefined
+        }
+
+        log({
+          level: 'info',
+          message: 'Tournament found via fallback list API',
+          data: { 
+            code,
+            tournamentName: tournament.name,
+            year,
+            status
+          }
+        })
+
+        return tournamentDetail
+      }
+    } catch (error) {
+      log({
+        level: 'warn',
+        message: `Failed to search for tournament in year ${year}`,
+        data: { 
+          code,
+          year,
+          error: error instanceof Error ? error.message : String(error)
+        }
+      })
+      // Continue to next year
+    }
+  }
+
+  throw new VISApiError(`Tournament with code ${code} not found in any year`, 404)
 }

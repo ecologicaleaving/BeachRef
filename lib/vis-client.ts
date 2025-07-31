@@ -739,6 +739,17 @@ async function fetchTournamentDetailViaList(code: string): Promise<TournamentDet
 
         log({
           level: 'info',
+          message: `FINAL tournament detail object created`,
+          data: { 
+            code,
+            originalTournament: tournament,
+            finalTournamentDetail: tournamentDetail,
+            tournamentDetailKeys: Object.keys(tournamentDetail)
+          }
+        })
+
+        log({
+          level: 'info',
           message: 'Tournament found via fallback list API',
           data: { 
             code,

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { TournamentDetail } from '@/lib/types'
 import TournamentDetailPage from '@/components/tournament/TournamentDetailPage'
+import { fetchTournamentsFromVIS, fetchTournamentDetailByNumber } from '@/lib/vis-client'
 
 interface TournamentPageProps {
   params: {
@@ -9,47 +10,39 @@ interface TournamentPageProps {
 }
 
 async function fetchTournamentDetail(code: string): Promise<TournamentDetail> {
-  // Robust base URL determination with multiple fallbacks
-  let baseUrl: string
-  
-  if (process.env.VERCEL_URL) {
-    baseUrl = `https://${process.env.VERCEL_URL}`
-  } else if (process.env.NEXT_PUBLIC_SITE_URL) {
-    baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-  } else if (typeof window !== 'undefined') {
-    // Client-side fallback
-    baseUrl = window.location.origin
-  } else {
-    // Server-side fallback
-    baseUrl = 'http://localhost:3000'
-  }
-  
-  const apiUrl = `${baseUrl}/api/tournament/${code}`
-  
-  console.log(`[Tournament Page] Fetching tournament detail for code: ${code} from ${apiUrl}`)
+  console.log(`[Tournament Page] Fetching tournament detail for code: ${code} directly from VIS`)
   
   try {
-    const response = await fetch(apiUrl, {
-      next: { revalidate: 300 }, // 5-minute cache
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-
-    console.log(`[Tournament Page] API response status: ${response.status} for tournament: ${code}`)
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log(`[Tournament Page] Tournament not found: ${code}`)
-        notFound()
-      }
-      
-      const errorText = await response.text().catch(() => 'Unknown error')
-      console.error(`[Tournament Page] API error for ${code}: ${response.status} - ${errorText}`)
-      throw new Error(`Failed to fetch tournament ${code}: ${response.status} ${response.statusText}`)
+    // Step 1: Get tournament number from tournament code
+    console.log(`[Tournament Page] Step 1: Getting tournament number for code ${code}`)
+    const tournamentsResponse = await fetchTournamentsFromVIS(2025)
+    const basicTournament = tournamentsResponse.tournaments.find(t => t.code === code)
+    
+    if (!basicTournament) {
+      console.log(`[Tournament Page] Tournament ${code} not found in 2025 tournaments`)
+      notFound()
     }
-
-    const tournament = await response.json()
+    
+    console.log(`[Tournament Page] Found basic tournament:`, basicTournament)
+    
+    let tournament: TournamentDetail
+    
+    if (!basicTournament.tournamentNo) {
+      console.log(`[Tournament Page] No tournament number found for ${code}, using basic data`)
+      // Fallback to basic tournament data
+      tournament = {
+        ...basicTournament,
+        status: 'upcoming' as const,
+        venue: undefined,
+        description: undefined
+      }
+      console.log(`[Tournament Page] Using basic tournament data:`, tournament)
+    } else {
+      console.log(`[Tournament Page] Step 2: Fetching detailed data using tournament number ${basicTournament.tournamentNo}`)
+      tournament = await fetchTournamentDetailByNumber(basicTournament.tournamentNo)
+      console.log(`[Tournament Page] Enhanced tournament data:`, tournament)
+    }
+    
     console.log(`[Tournament Page] Successfully fetched tournament: ${tournament.name} (${code})`)
     return tournament
     

@@ -42,7 +42,6 @@ export const TournamentTableWithPagination: React.FC<TournamentTableWithPaginati
   
   // Fetch tournaments data using enhanced API client with caching
   const fetchTournaments = useCallback(async () => {
-    console.log('fetchTournaments: Starting fetch with state', currentState);
     setIsLoading(true)
     setError(null)
     
@@ -53,8 +52,6 @@ export const TournamentTableWithPagination: React.FC<TournamentTableWithPaginati
         page: currentState.page,
         limit: currentState.limit
       })
-      
-      console.log('fetchTournaments: Received data', data);
       
       setTournaments(data.tournaments)
       setPaginationData(data.pagination)

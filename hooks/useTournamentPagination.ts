@@ -40,9 +40,9 @@ export function useTournamentPagination(): UseTournamentPaginationReturn {
     
     // Handle each parameter with default value logic
     Object.entries(newState).forEach(([key, value]) => {
-      if (key === 'year' && value === 2025) {
-        // Remove default year from URL for cleaner URLs
-        newParams.delete('year')
+      // Always include year parameter to ensure proper API filtering
+      if (key === 'year') {
+        newParams.set('year', value.toString())
       } else if (key === 'page' && value === 1) {
         // Remove default page from URL for cleaner URLs
         newParams.delete('page')

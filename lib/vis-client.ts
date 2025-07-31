@@ -77,6 +77,7 @@ function parseVISResponse(xmlResponse: string): Tournament[] {
       const endDate = extractAttribute('EndDateMainDraw')
       const gender = extractAttribute('Gender')
       const type = extractAttribute('Type')
+      const tournamentNo = extractAttribute('No') // Extract tournament number
 
 
       // Validate required fields and data integrity
@@ -98,7 +99,8 @@ function parseVISResponse(xmlResponse: string): Tournament[] {
             startDate,
             endDate,
             gender: genderValue,
-            type: type.trim()
+            type: type.trim(),
+            tournamentNo: tournamentNo?.trim()
           })
         }
       }

@@ -6,6 +6,7 @@ export interface Tournament {
   endDate: string;           // ISO date string
   gender: 'Men' | 'Women' | 'Mixed';
   type: string;              // Tournament type/level
+  tournamentNo?: string;     // Internal tournament number (4-5 digits)
 }
 
 export interface TournamentDetail extends Tournament {

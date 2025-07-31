@@ -45,6 +45,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Fetch enhanced tournament data using two-step API integration
     const tournament = await fetchTournamentDetailFromVISEnhanced(code)
     
+    // DEBUG: Log the complete tournament object structure
+    console.log(`[Tournament Detail API] DEBUG - Raw tournament object for ${code}:`, JSON.stringify(tournament, null, 2))
+    
+    // DEBUG: Validate required fields
+    const requiredFields = ['code', 'name', 'countryCode', 'startDate', 'endDate', 'gender', 'type']
+    const missingFields = requiredFields.filter(field => !tournament[field as keyof typeof tournament])
+    if (missingFields.length > 0) {
+      console.error(`[Tournament Detail API] CRITICAL - Missing required fields for ${code}:`, missingFields)
+    }
+    
+    // DEBUG: Check for problematic values
+    if (tournament.startDate && isNaN(new Date(tournament.startDate).getTime())) {
+      console.error(`[Tournament Detail API] CRITICAL - Invalid startDate for ${code}:`, tournament.startDate)
+    }
+    if (tournament.endDate && isNaN(new Date(tournament.endDate).getTime())) {
+      console.error(`[Tournament Detail API] CRITICAL - Invalid endDate for ${code}:`, tournament.endDate)
+    }
+    
     // Update cache
     cache.set(code, {
       data: tournament,
@@ -60,6 +78,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     console.log(`[Tournament Detail API] Successfully fetched tournament: ${tournament.name} (${code})`)
+    console.log(`[Tournament Detail API] Tournament object keys: ${Object.keys(tournament).join(', ')}`)
     
     return NextResponse.json(tournament, {
       headers: {
@@ -70,8 +89,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   } catch (error) {
     console.error(`[Tournament Detail API] Error fetching tournament ${code}:`, error)
+    console.error(`[Tournament Detail API] Error stack:`, error instanceof Error ? error.stack : 'No stack trace')
+    console.error(`[Tournament Detail API] Error type:`, error?.constructor?.name || typeof error)
     
     if (error instanceof VISApiError) {
+      console.error(`[Tournament Detail API] VISApiError details:`, {
+        message: error.message,
+        statusCode: error.statusCode,
+        originalError: error.originalError
+      })
+      
       if (error.statusCode === 404) {
         return NextResponse.json(
           { error: `Tournament with code ${code} not found` },
@@ -97,9 +124,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Handle unexpected errors
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error(`[Tournament Detail API] Unexpected error for ${code}:`, errorMessage)
+    console.error(`[Tournament Detail API] Full error object:`, JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', debug: process.env.NODE_ENV === 'development' ? errorMessage : undefined },
       { status: 500 }
     )
   }

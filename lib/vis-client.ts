@@ -977,6 +977,19 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
       }
 
       const xmlText = await response.text()
+      
+      // DEBUG: Log the actual XML response to understand the structure
+      log({
+        level: 'info',
+        message: 'DEBUG - Raw XML response from GetBeachTournament',
+        data: { 
+          tournamentNo,
+          xmlLength: xmlText.length,
+          xmlSnippet: xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : ''),
+          xmlFull: xmlText
+        }
+      })
+      
       const tournament = parseEnhancedBeachTournamentResponse(xmlText)
       
       const duration = Date.now() - startTime
@@ -1067,51 +1080,79 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
       return match ? match[1].trim() : null
     }
 
+    // Helper function to extract XML attribute (improved regex safety)
+    const extractAttribute = (xml: string, attributeName: string): string | null => {
+      const escapedAttributeName = attributeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(`${escapedAttributeName}="([^"]*)"`, 'i')
+      const match = xml.match(regex)
+      return match ? match[1].trim() : null
+    }
 
-    // Extract basic tournament information - CRITICAL: Fix name parsing issue
-    const code = extractElement(xmlData, 'Code') || ''
-    const name = extractElement(xmlData, 'Name') || extractElement(xmlData, 'Title') || ''
-    const countryCode = extractElement(xmlData, 'CountryCode') || ''
-    const countryName = extractElement(xmlData, 'CountryName') || ''
-    const startDate = extractElement(xmlData, 'StartDateMainDraw') || extractElement(xmlData, 'StartDate') || ''
-    const endDate = extractElement(xmlData, 'EndDateMainDraw') || extractElement(xmlData, 'EndDate') || ''
-    const gender = extractElement(xmlData, 'Gender') || ''
-    const type = extractElement(xmlData, 'Type') || ''
+    // DEBUG: Log XML structure to understand format
+    log({
+      level: 'info',
+      message: 'DEBUG - Analyzing XML structure for parsing strategy',
+      data: {
+        xmlLength: xmlData.length,
+        hasBeachTournamentElement: xmlData.includes('<BeachTournament'),
+        xmlSample: xmlData.substring(0, 300)
+      }
+    })
+
+    // Try to extract data - first check if it's attribute-based (like in GetBeachTournamentList)
+    let code = extractAttribute(xmlData, 'Code') || extractElement(xmlData, 'Code') || ''
+    let name = extractAttribute(xmlData, 'Name') || extractElement(xmlData, 'Name') || extractAttribute(xmlData, 'Title') || extractElement(xmlData, 'Title') || ''
+    let countryCode = extractAttribute(xmlData, 'CountryCode') || extractElement(xmlData, 'CountryCode') || ''
+    let countryName = extractAttribute(xmlData, 'CountryName') || extractElement(xmlData, 'CountryName') || ''
+    let startDate = extractAttribute(xmlData, 'StartDateMainDraw') || extractElement(xmlData, 'StartDateMainDraw') || extractAttribute(xmlData, 'StartDate') || extractElement(xmlData, 'StartDate') || ''
+    let endDate = extractAttribute(xmlData, 'EndDateMainDraw') || extractElement(xmlData, 'EndDateMainDraw') || extractAttribute(xmlData, 'EndDate') || extractElement(xmlData, 'EndDate') || ''
+    let gender = extractAttribute(xmlData, 'Gender') || extractElement(xmlData, 'Gender') || ''
+    let type = extractAttribute(xmlData, 'Type') || extractElement(xmlData, 'Type') || ''
 
     // Enhanced fields from GetBeachTournament
-    const title = extractElement(xmlData, 'Title') || name
-    const venue = extractElement(xmlData, 'Venue') || ''
-    const city = extractElement(xmlData, 'City') || ''
-    const season = extractElement(xmlData, 'Season') || ''
-    const federationCode = extractElement(xmlData, 'FederationCode') || ''
-    const organizerCode = extractElement(xmlData, 'OrganizerCode') || ''
-    const tournamentNumber = extractElement(xmlData, 'No') || ''
+    const title = extractAttribute(xmlData, 'Title') || extractElement(xmlData, 'Title') || name
+    const venue = extractAttribute(xmlData, 'Venue') || extractElement(xmlData, 'Venue') || extractAttribute(xmlData, 'DefaultVenue') || extractElement(xmlData, 'DefaultVenue') || ''
+    const city = extractAttribute(xmlData, 'City') || extractElement(xmlData, 'City') || extractAttribute(xmlData, 'DefaultCity') || extractElement(xmlData, 'DefaultCity') || ''
+    const season = extractAttribute(xmlData, 'Season') || extractElement(xmlData, 'Season') || ''
+    const federationCode = extractAttribute(xmlData, 'FederationCode') || extractElement(xmlData, 'FederationCode') || ''
+    const organizerCode = extractAttribute(xmlData, 'OrganizerCode') || extractElement(xmlData, 'OrganizerCode') || ''
+    const tournamentNumber = extractAttribute(xmlData, 'No') || extractElement(xmlData, 'No') || ''
+
+    // DEBUG: Log extracted values
+    log({
+      level: 'info',
+      message: 'DEBUG - Extracted values from XML',
+      data: {
+        code, name, countryCode, startDate, endDate, gender, type,
+        title, venue, city, season, federationCode, organizerCode, tournamentNumber
+      }
+    })
 
     // Competition structure
-    const nbTeamsMainDraw = extractElement(xmlData, 'NbTeamsMainDraw')
-    const nbTeamsQualification = extractElement(xmlData, 'NbTeamsQualification')
-    const nbTeamsFromQualification = extractElement(xmlData, 'NbTeamsFromQualification')
-    const nbWildCards = extractElement(xmlData, 'NbWildCards')
-    const matchFormat = extractElement(xmlData, 'MatchFormat')
-    const matchPointsMethod = extractElement(xmlData, 'MatchPointsMethod')
+    const nbTeamsMainDraw = extractAttribute(xmlData, 'NbTeamsMainDraw') || extractElement(xmlData, 'NbTeamsMainDraw')
+    const nbTeamsQualification = extractAttribute(xmlData, 'NbTeamsQualification') || extractElement(xmlData, 'NbTeamsQualification')
+    const nbTeamsFromQualification = extractAttribute(xmlData, 'NbTeamsFromQualification') || extractElement(xmlData, 'NbTeamsFromQualification')
+    const nbWildCards = extractAttribute(xmlData, 'NbWildCards') || extractElement(xmlData, 'NbWildCards')
+    const matchFormat = extractAttribute(xmlData, 'MatchFormat') || extractElement(xmlData, 'MatchFormat') || extractAttribute(xmlData, 'DefaultMatchFormat') || extractElement(xmlData, 'DefaultMatchFormat')
+    const matchPointsMethod = extractAttribute(xmlData, 'MatchPointsMethod') || extractElement(xmlData, 'MatchPointsMethod')
 
     // Detailed dates
-    const endDateQualification = extractElement(xmlData, 'EndDateQualification')
-    const preliminaryInquiryMainDraw = extractElement(xmlData, 'PreliminaryInquiryMainDraw')
-    const deadline = extractElement(xmlData, 'Deadline')
+    const endDateQualification = extractAttribute(xmlData, 'EndDateQualification') || extractElement(xmlData, 'EndDateQualification')
+    const preliminaryInquiryMainDraw = extractAttribute(xmlData, 'PreliminaryInquiryMainDraw') || extractElement(xmlData, 'PreliminaryInquiryMainDraw')
+    const deadline = extractAttribute(xmlData, 'Deadline') || extractElement(xmlData, 'Deadline')
 
     // Points system
-    const entryPointsTemplateNo = extractElement(xmlData, 'EntryPointsTemplateNo')
-    const seedPointsTemplateNo = extractElement(xmlData, 'SeedPointsTemplateNo')
-    const earnedPointsTemplateNo = extractElement(xmlData, 'EarnedPointsTemplateNo')
-    const entryPointsDayOffset = extractElement(xmlData, 'EntryPointsDayOffset')
+    const entryPointsTemplateNo = extractAttribute(xmlData, 'EntryPointsTemplateNo') || extractElement(xmlData, 'EntryPointsTemplateNo')
+    const seedPointsTemplateNo = extractAttribute(xmlData, 'SeedPointsTemplateNo') || extractElement(xmlData, 'SeedPointsTemplateNo')
+    const earnedPointsTemplateNo = extractAttribute(xmlData, 'EarnedPointsTemplateNo') || extractElement(xmlData, 'EarnedPointsTemplateNo') || extractAttribute(xmlData, 'NoTemplateEarnedPoints') || extractElement(xmlData, 'NoTemplateEarnedPoints')
+    const entryPointsDayOffset = extractAttribute(xmlData, 'EntryPointsDayOffset') || extractElement(xmlData, 'EntryPointsDayOffset')
 
     // Administration
-    const version = extractElement(xmlData, 'Version')
-    const isVisManagedStr = extractElement(xmlData, 'IsVisManaged')
-    const isFreeEntranceStr = extractElement(xmlData, 'IsFreeEntrance')
-    const webSite = extractElement(xmlData, 'WebSite')
-    const buyTicketsUrl = extractElement(xmlData, 'BuyTicketsUrl')
+    const version = extractAttribute(xmlData, 'Version') || extractElement(xmlData, 'Version')
+    const isVisManagedStr = extractAttribute(xmlData, 'IsVisManaged') || extractElement(xmlData, 'IsVisManaged')
+    const isFreeEntranceStr = extractAttribute(xmlData, 'IsFreeEntrance') || extractElement(xmlData, 'IsFreeEntrance')
+    const webSite = extractAttribute(xmlData, 'WebSite') || extractElement(xmlData, 'WebSite')
+    const buyTicketsUrl = extractAttribute(xmlData, 'BuyTicketsUrl') || extractElement(xmlData, 'BuyTicketsUrl')
 
     // Map gender codes to string values
     let genderValue: 'Men' | 'Women' | 'Mixed' = 'Mixed'

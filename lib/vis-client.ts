@@ -21,14 +21,20 @@ const RETRY_CONFIG: RetryConfig = {
   maxDelay: 10000
 }
 
-// Logging utility
+// Enhanced logging utility with structured data
 function log(entry: Omit<LogEntry, 'timestamp'>): void {
+  const timestamp = new Date().toISOString()
+  const logData = entry.data ? JSON.stringify(entry.data, null, 2) : ''
+  
   if (entry.level === 'error') {
-    console.error(`[VIS-Client] ${entry.message}`, entry.data || '')
+    console.error(`${timestamp} [VIS-Client:ERROR] ${entry.message}`)
+    if (logData) console.error('Error Data:', logData)
   } else if (entry.level === 'warn') {
-    console.warn(`[VIS-Client] ${entry.message}`, entry.data || '')
+    console.warn(`${timestamp} [VIS-Client:WARN] ${entry.message}`)
+    if (logData) console.warn('Warning Data:', logData)
   } else {
-    console.log(`[VIS-Client] ${entry.message}`, entry.data || '')
+    console.log(`${timestamp} [VIS-Client:INFO] ${entry.message}`)
+    if (logData) console.log('Info Data:', logData)
   }
 }
 
@@ -349,17 +355,46 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
   try {
     return await fetchTournamentDetailDirect(code)
   } catch (error) {
+    // Check if this is a 401 error that should trigger fallback
+    const shouldFallback = error instanceof VISApiError && (
+      error.statusCode === 401 || 
+      error.statusCode === 403 || 
+      error.statusCode >= 500
+    )
+    
     log({
       level: 'warn',
-      message: 'Direct tournament detail request failed, trying fallback approach',
+      message: `Direct tournament detail request failed${shouldFallback ? ', trying fallback approach' : ', no fallback available'}`,
       data: { 
         code,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
+        statusCode: error instanceof VISApiError ? error.statusCode : 'unknown',
+        willFallback: shouldFallback
       }
     })
     
-    // Fallback: Use the working tournament list API and filter client-side
-    return await fetchTournamentDetailViaList(code)
+    if (shouldFallback) {
+      try {
+        // Fallback: Use the working tournament list API and filter client-side
+        return await fetchTournamentDetailViaList(code)
+      } catch (fallbackError) {
+        log({
+          level: 'error',
+          message: 'Both direct and fallback tournament detail requests failed',
+          data: { 
+            code,
+            originalError: error instanceof Error ? error.message : String(error),
+            fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          }
+        })
+        
+        // If fallback also fails, throw the original error for consistency
+        throw error
+      }
+    } else {
+      // For client errors (404, etc.), don't use fallback
+      throw error
+    }
   }
 }
 

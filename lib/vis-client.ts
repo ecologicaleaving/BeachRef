@@ -1,4 +1,4 @@
-import { Tournament, VISApiResponse, VISApiError } from './types'
+import { Tournament, TournamentDetail, VISApiResponse, VISApiError } from './types'
 import { VIS_API_CONFIG } from './constants'
 
 interface RetryConfig {
@@ -282,4 +282,177 @@ export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResp
   throw lastError instanceof VISApiError 
     ? lastError 
     : new VISApiError('Failed to fetch tournaments from VIS API', undefined, lastError)
+}
+
+// Build XML request for specific tournament details
+function buildVISTournamentDetailRequest(code: string): string {
+  const xmlRequest = `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachTournamentList" 
+           Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type">
+    <Filter Code="${code}"/>
+  </Request>
+</Requests>`
+
+  return xmlRequest
+}
+
+// Parse tournament detail response (extends basic parsing)
+function parseVISTournamentDetailResponse(xmlResponse: string, code: string): TournamentDetail | null {
+  try {
+    const tournaments = parseVISResponse(xmlResponse)
+    const tournament = tournaments.find(t => t.code === code)
+    
+    if (!tournament) {
+      return null
+    }
+
+    // Determine status based on dates
+    const now = new Date()
+    const startDate = new Date(tournament.startDate)
+    const endDate = new Date(tournament.endDate)
+    
+    let status: 'upcoming' | 'live' | 'completed'
+    if (now < startDate) {
+      status = 'upcoming'
+    } else if (now > endDate) {
+      status = 'completed'
+    } else {
+      status = 'live'
+    }
+
+    return {
+      ...tournament,
+      status,
+      venue: undefined, // VIS API doesn't provide venue info in basic request
+      description: undefined // VIS API doesn't provide description in basic request
+    }
+  } catch (error) {
+    if (error instanceof VISApiError) {
+      throw error
+    }
+    throw new VISApiError('Failed to parse tournament detail response', undefined, error)
+  }
+}
+
+// Fetch specific tournament details from VIS API
+export async function fetchTournamentDetailFromVIS(code: string): Promise<TournamentDetail> {
+  const startTime = Date.now()
+  let lastError: unknown
+  
+  log({
+    level: 'info',
+    message: 'Starting VIS API request for tournament detail',
+    data: { code }
+  })
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+      const xmlBody = buildVISTournamentDetailRequest(code)
+      
+      log({
+        level: 'info',
+        message: `VIS API tournament detail attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { attempt, code, xmlBody }
+      })
+
+      const response = await fetch(VIS_API_CONFIG.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/xml',
+          'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+          'User-Agent': 'BeachRef-MVP/1.0'
+        },
+        body: xmlBody,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new VISApiError(
+          `VIS API returned ${response.status}: ${response.statusText}`,
+          response.status
+        )
+      }
+
+      const xmlText = await response.text()
+      const tournament = parseVISTournamentDetailResponse(xmlText, code)
+      
+      if (!tournament) {
+        throw new VISApiError(`Tournament with code ${code} not found`, 404)
+      }
+      
+      const duration = Date.now() - startTime
+      
+      log({
+        level: 'info',
+        message: 'VIS API tournament detail request successful',
+        data: { 
+          code,
+          tournamentName: tournament.name,
+          duration,
+          attempt: attempt + 1
+        },
+        duration
+      })
+
+      return tournament
+
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        lastError = new VISApiError('VIS API request timeout', undefined, error)
+      } else if (error instanceof TypeError) {
+        lastError = new VISApiError('Network error connecting to VIS API', undefined, error)
+      } else if (error instanceof VISApiError) {
+        lastError = error
+      } else {
+        lastError = error
+      }
+
+      log({
+        level: 'warn',
+        message: `VIS API tournament detail attempt ${attempt + 1} failed`,
+        data: { 
+          attempt: attempt + 1,
+          code,
+          error: error instanceof Error ? error.message : String(error),
+          willRetry: attempt < RETRY_CONFIG.maxRetries && isRetryableError(lastError)
+        }
+      })
+
+      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(lastError)) {
+        break
+      }
+
+      const delay = calculateBackoffDelay(attempt, RETRY_CONFIG)
+      log({
+        level: 'info',
+        message: `Retrying VIS API tournament detail request in ${delay}ms`,
+        data: { delay, nextAttempt: attempt + 2 }
+      })
+      
+      await sleep(delay)
+    }
+  }
+
+  const duration = Date.now() - startTime
+  log({
+    level: 'error',
+    message: 'All VIS API tournament detail attempts failed',
+    data: { 
+      code,
+      attempts: RETRY_CONFIG.maxRetries + 1,
+      duration,
+      finalError: lastError instanceof Error ? lastError.message : String(lastError)
+    },
+    duration
+  })
+
+  throw lastError instanceof VISApiError 
+    ? lastError 
+    : new VISApiError('Failed to fetch tournament detail from VIS API', undefined, lastError)
 }

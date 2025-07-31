@@ -48,6 +48,20 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
   } = useResponsiveDesign();
   
   const touchTargetSize = getTouchTargetSize();
+
+  // Navigation handler for keyboard and click events
+  const handleNavigation = (event?: React.KeyboardEvent) => {
+    if (event && event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    
+    if (event) {
+      event.preventDefault();
+    }
+    
+    // Use standard navigation for App Router compatibility
+    window.location.href = `/tournament/${tournament.code}`;
+  };
   
   // Format date for display
   const formatDate = (dateString: string): string => {
@@ -113,9 +127,13 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
     // Desktop/Tablet table row layout with responsive columns
     return (
       <TableRow
-        className={`hover:bg-muted/50 transition-colors duration-150 ${className}`}
+        className={`hover:bg-muted/50 transition-colors duration-150 cursor-pointer focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${className}`}
         style={style}
         role="row"
+        tabIndex={0}
+        onClick={() => handleNavigation()}
+        onKeyDown={handleNavigation}
+        aria-label={`Tournament: ${tournament.name}, ${getCountryName(tournament.countryCode)}, ${formatDate(tournament.startDate)}`}
       >
         {/* Tournament Name - Always visible */}
         {getColumnVisibility('name') && (
@@ -192,7 +210,8 @@ const TournamentRowComponent: FC<TournamentRowProps> = ({
       role="row"
       aria-label={`Tournament: ${tournament.name}, ${countryName}, ${formattedStartDate} to ${formattedEndDate}, ${tournament.gender}, ${tournament.type}`}
       tabIndex={0}
-      onKeyDown={onKeyDown}
+      onClick={() => handleNavigation()}
+      onKeyDown={onKeyDown || handleNavigation}
     >
       <CardHeader className="pb-3" style={{ paddingBottom: touchCapable ? '16px' : '12px' }}>
         {/* Header with name and gender badge - enhanced touch targets */}

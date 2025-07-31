@@ -8,6 +8,12 @@ export interface Tournament {
   type: string;              // Tournament type/level
 }
 
+export interface TournamentDetail extends Tournament {
+  venue?: string;
+  description?: string;
+  status?: 'upcoming' | 'live' | 'completed';
+}
+
 export interface VISApiResponse {
   tournaments: Tournament[];
   totalCount: number;

@@ -912,6 +912,11 @@ export async function getTournamentNumber(code: string): Promise<string> {
       }
     }
 
+    log({
+      level: 'warn',
+      message: 'Tournament number not found - tournament may not exist',
+      data: { code, xmlResponse: xmlText.substring(0, 500) }
+    })
     throw new VISApiError(`Tournament number not found for code ${code}`, 404)
 
   } catch (error) {
@@ -1326,13 +1331,22 @@ async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetai
 
 // Enhanced fetchTournamentDetailFromVIS with two-step process and comprehensive fallback
 export async function fetchTournamentDetailFromVISEnhanced(code: string): Promise<TournamentDetail> {
-  try {
-    log({
-      level: 'info',
-      message: 'Starting enhanced tournament detail fetch with two-step process',
-      data: { code }
-    })
+  log({
+    level: 'info',
+    message: 'Starting enhanced tournament detail fetch with two-step process',
+    data: { code }
+  })
 
+  // TEMP: Skip enhanced approach and use reliable fallback
+  log({
+    level: 'info', 
+    message: 'TEMP: Using fallback approach directly for debugging',
+    data: { code }
+  })
+  return await fetchTournamentDetailViaList(code)
+
+  /* DISABLED FOR DEBUGGING
+  try {
     // Step 1: Get tournament number from existing data
     const tournamentNumber = await getTournamentNumber(code)
     
@@ -1348,6 +1362,7 @@ export async function fetchTournamentDetailFromVISEnhanced(code: string): Promis
     })
     
     // Fallback: Use basic tournament detail function
-    return await fetchBasicTournamentDetail(code)
+    return await fetchTournamentDetailViaList(code)
   }
+  */
 }

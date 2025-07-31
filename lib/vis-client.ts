@@ -476,86 +476,89 @@ function parseEnhancedVISResponse(xmlResponse: string, code: string): Tournament
   }
 }
 
-// Fetch specific tournament details from VIS API with emergency fallback-first strategy
+// Fetch specific tournament details from VIS API with enhanced GetBeachTournament integration
 export async function fetchTournamentDetailFromVIS(code: string): Promise<TournamentDetail> {
   const startTime = Date.now()
   
   log({
     level: 'info',
-    message: 'EMERGENCY MODE: Using fallback-first strategy for tournament detail',
+    message: 'Starting enhanced tournament detail fetch with GetBeachTournament integration',
     data: { code, timestamp: new Date().toISOString() }
   })
 
-  // EMERGENCY: Skip direct API call entirely due to persistent 401 issues
-  // Use fallback approach first until deployment issues are resolved
+  // Step 1: Get tournament number from GetBeachTournamentList
   try {
     log({
       level: 'info',
-      message: 'Attempting fallback tournament list API approach',
+      message: 'Step 1: Getting tournament number from GetBeachTournamentList',
       data: { code }
     })
     
-    const result = await fetchTournamentDetailViaList(code)
+    const tournamentNumber = await getTournamentNumber(code)
     
+    if (tournamentNumber) {
+      // Step 2: Get detailed data using GetBeachTournament with tournament number
+      try {
+        log({
+          level: 'info',
+          message: 'Step 2: Fetching detailed data with GetBeachTournament endpoint',
+          data: { code, tournamentNumber }
+        })
+        
+        const detailedTournament = await fetchTournamentDetailByNumber(tournamentNumber, code)
+        
+        log({
+          level: 'info',
+          message: 'Enhanced tournament detail fetch successful',
+          data: { 
+            code,
+            tournamentName: detailedTournament.name,
+            hasEnhancedData: !!(detailedTournament.venue || detailedTournament.description),
+            duration: Date.now() - startTime
+          }
+        })
+        
+        return detailedTournament
+        
+      } catch (detailError) {
+        log({
+          level: 'warn',
+          message: 'GetBeachTournament detailed fetch failed, falling back to basic data',
+          data: { 
+            code,
+            tournamentNumber,
+            error: detailError instanceof Error ? detailError.message : String(detailError)
+          }
+        })
+        
+        // Fall back to basic tournament data from step 1
+        return await convertBasicTournamentToDetail(code)
+      }
+    } else {
+      log({
+        level: 'warn',
+        message: 'Could not get tournament number, using year-based search fallback',
+        data: { code }
+      })
+      
+      // Fallback to year-based search
+      return await fetchTournamentDetailViaList(code)
+    }
+    
+  } catch (error) {
     log({
-      level: 'info',
-      message: 'EMERGENCY MODE: Fallback approach successful',
+      level: 'error',
+      message: 'All tournament detail fetch approaches failed',
       data: { 
         code,
-        tournamentName: result.name,
+        error: error instanceof Error ? error.message : String(error),
         duration: Date.now() - startTime
       }
     })
     
-    return result
-    
-  } catch (fallbackError) {
-    log({
-      level: 'warn',
-      message: 'Fallback approach failed, attempting direct API as last resort',
-      data: { 
-        code,
-        fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
-      }
-    })
-    
-    // Last resort: try direct API with enhanced GetBeachTournament endpoint
-    try {
-      return await fetchTournamentDetailDirect(code)
-    } catch (directError) {
-      log({
-        level: 'warn',
-        message: 'Direct GetBeachTournament failed, trying GetBeachTournamentList filter approach',
-        data: { 
-          code,
-          directError: directError instanceof Error ? directError.message : String(directError)
-        }
-      })
-      
-      // Final fallback: try the original GetBeachTournamentList approach
-      try {
-        return await fetchTournamentDetailViaListFilter(code)
-      } catch (listFilterError) {
-        log({
-          level: 'error',
-          message: 'EMERGENCY MODE: All approaches failed (fallback, direct GetBeachTournament, GetBeachTournamentList filter)',
-          data: { 
-            code,
-            fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
-            directError: directError instanceof Error ? directError.message : String(directError),
-            listFilterError: listFilterError instanceof Error ? listFilterError.message : String(listFilterError),
-            totalDuration: Date.now() - startTime
-          }
-        })
-        
-        // Throw the most informative error
-        if (directError instanceof VISApiError && directError.statusCode === 401) {
-          throw new VISApiError(`Tournament ${code} temporarily unavailable due to API restrictions`, 503)
-        }
-        
-        throw fallbackError
-      }
-    }
+    throw error instanceof VISApiError 
+      ? error 
+      : new VISApiError('Failed to fetch tournament details', undefined, error)
   }
 }
 
@@ -844,4 +847,270 @@ async function fetchTournamentDetailViaListFilter(code: string): Promise<Tournam
   throw lastError instanceof VISApiError 
     ? lastError 
     : new VISApiError('Failed to fetch tournament via GetBeachTournamentList filter', undefined, lastError)
+}
+
+// Step 1: Get tournament number from GetBeachTournamentList
+async function getTournamentNumber(code: string): Promise<string | null> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+    const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachTournamentList" 
+           Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type No">
+    <Filter Code="${code}"/>
+  </Request>
+</Requests>`
+    
+    const response = await fetch(VIS_API_CONFIG.baseURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/xml',
+        'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+        'User-Agent': 'BeachRef-MVP/1.0'
+      },
+      body: xmlBody,
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new VISApiError(`Failed to get tournament number: ${response.status}`, response.status)
+    }
+
+    const xmlText = await response.text()
+    
+    // Extract tournament number from response
+    const tournamentRegex = /<BeachTournament\s+([^>]+)\/>/g
+    const match = tournamentRegex.exec(xmlText)
+    
+    if (match) {
+      const attributes = match[1]
+      const noMatch = attributes.match(/No="([^"]*)"/)
+      if (noMatch && noMatch[1]) {
+        log({
+          level: 'info',
+          message: 'Successfully extracted tournament number',
+          data: { code, tournamentNumber: noMatch[1] }
+        })
+        return noMatch[1]
+      }
+    }
+
+    return null
+  } catch (error) {
+    log({
+      level: 'warn',
+      message: 'Failed to get tournament number',
+      data: { code, error: error instanceof Error ? error.message : String(error) }
+    })
+    return null
+  }
+}
+
+// Step 2: Get detailed tournament data using GetBeachTournament with tournament number
+async function fetchTournamentDetailByNumber(tournamentNumber: string, code: string): Promise<TournamentDetail> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+  const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachTournament" No="${tournamentNumber}">
+  </Request>
+</Requests>`
+  
+  const response = await fetch(VIS_API_CONFIG.baseURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/xml',
+      'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+      'User-Agent': 'BeachRef-MVP/1.0'
+    },
+    body: xmlBody,
+    signal: controller.signal
+  })
+
+  clearTimeout(timeoutId)
+
+  if (!response.ok) {
+    throw new VISApiError(`GetBeachTournament failed: ${response.status}`, response.status)
+  }
+
+  const xmlText = await response.text()
+  return parseEnhancedBeachTournamentResponse(xmlText, code)
+}
+
+// Convert basic tournament data to TournamentDetail format
+async function convertBasicTournamentToDetail(code: string): Promise<TournamentDetail> {
+  // Use the existing fallback mechanism
+  return await fetchTournamentDetailViaList(code)
+}
+
+// Parse enhanced GetBeachTournament response with full tournament details
+function parseEnhancedBeachTournamentResponse(xmlResponse: string, code: string): TournamentDetail {
+  try {
+    // Look for BeachTournament element with all attributes
+    const tournamentRegex = /<BeachTournament\s+([^>]+)\/>/g
+    const match = tournamentRegex.exec(xmlResponse)
+    
+    if (!match) {
+      throw new VISApiError(`No tournament data found in GetBeachTournament response for ${code}`, 404)
+    }
+
+    const attributes = match[1]
+    
+    // Extract individual attributes using regex helper
+    const extractAttribute = (attr: string): string | null => {
+      const attrRegex = new RegExp(`${attr}="([^"]*)"`, 'i')
+      const attrMatch = attributes.match(attrRegex)
+      return attrMatch ? attrMatch[1] : null
+    }
+
+    // Extract basic required fields
+    const tournamentCode = extractAttribute('Code')
+    const name = extractAttribute('Name')
+    const title = extractAttribute('Title')
+    const countryCode = extractAttribute('CountryCode')
+    const countryName = extractAttribute('CountryName')
+    const startDate = extractAttribute('StartDate')
+    const endDateMainDraw = extractAttribute('EndDateMainDraw')
+    const gender = extractAttribute('Gender')
+    const type = extractAttribute('Type')
+
+    // Debug logging to track name parsing
+    log({
+      level: 'info',
+      message: 'Parsing GetBeachTournament response fields',
+      data: { 
+        code,
+        extractedName: name,
+        extractedTitle: title,
+        extractedCountryName: countryName,
+        extractedCountryCode: countryCode
+      }
+    })
+
+    // Validate essential fields
+    if (!tournamentCode || !name || !countryCode || !startDate || !endDateMainDraw || !gender || !type) {
+      throw new VISApiError(`Missing essential tournament data fields for ${code}`, 400)
+    }
+
+    // Map numeric gender codes
+    let genderValue: 'Men' | 'Women' | 'Mixed'
+    switch (gender) {
+      case '0': genderValue = 'Men'; break
+      case '1': genderValue = 'Women'; break
+      case '2': genderValue = 'Mixed'; break
+      default: throw new VISApiError(`Invalid gender code: ${gender}`, 400)
+    }
+
+    // Extract enhanced venue information
+    const defaultVenue = extractAttribute('DefaultVenue')
+    const defaultCity = extractAttribute('DefaultCity')
+    let venue: string | undefined
+    if (defaultVenue && defaultCity && defaultVenue !== defaultCity) {
+      venue = `${defaultVenue}, ${defaultCity}`
+    } else if (defaultVenue) {
+      venue = defaultVenue
+    } else if (defaultCity) {
+      venue = defaultCity
+    }
+
+    // Determine tournament status
+    const statusCode = extractAttribute('Status')
+    let status: 'upcoming' | 'live' | 'completed'
+    const now = new Date()
+    const startDateObj = new Date(startDate)
+    const endDateObj = new Date(endDateMainDraw)
+    
+    // Use date-based calculation (could be enhanced with status code mapping)
+    if (now < startDateObj) {
+      status = 'upcoming'
+    } else if (now > endDateObj) {
+      status = 'completed'
+    } else {
+      status = 'live'
+    }
+
+    // Build enhanced tournament detail object
+    const tournamentDetail: TournamentDetail = {
+      // Basic Tournament interface fields
+      code: tournamentCode.trim(),
+      name: name.trim(),  // This should be "AUS NT Thompsons Beach"
+      countryCode: countryCode.trim().toUpperCase(),
+      startDate,
+      endDate: endDateMainDraw,
+      gender: genderValue,
+      type: type.trim(),
+      
+      // Enhanced TournamentDetail fields
+      venue,
+      status,
+      title: title || undefined,
+      countryName: countryName || undefined,
+      season: extractAttribute('Season') || undefined,
+      federationCode: extractAttribute('FederationCode') || undefined,
+      organizerCode: extractAttribute('OrganizerCode') || undefined,
+      tournamentNumber: extractAttribute('No') || undefined,
+      
+      // Competition structure
+      competitionStructure: {
+        nbTeamsMainDraw: parseInt(extractAttribute('NbTeamsMainDraw') || '0') || undefined,
+        nbTeamsQualification: parseInt(extractAttribute('NbTeamsQualification') || '0') || undefined,
+        nbTeamsFromQualification: parseInt(extractAttribute('NbTeamsFromQualification') || '0') || undefined,
+        nbWildCards: parseInt(extractAttribute('NbWildCards') || '0') || undefined,
+        matchFormat: extractAttribute('DefaultMatchFormat') || undefined,
+        matchPointsMethod: extractAttribute('MatchPointsMethod') || undefined,
+      },
+      
+      // Extended dates
+      dates: {
+        startDate,
+        endDateMainDraw,
+        endDateQualification: extractAttribute('EndDateQualification') || undefined,
+        preliminaryInquiryMainDraw: extractAttribute('PreliminaryInquiryMainDraw') || undefined,
+        deadline: extractAttribute('Deadline') || undefined,
+      },
+      
+      // Points system
+      pointsSystem: {
+        entryPointsTemplateNo: extractAttribute('EntryPointsTemplateNo') || undefined,
+        seedPointsTemplateNo: extractAttribute('SeedPointsTemplateNo') || undefined,
+        earnedPointsTemplateNo: extractAttribute('NoTemplateEarnedPoints') || undefined,
+        entryPointsDayOffset: extractAttribute('EntryPointsDayOffset') || undefined,
+      },
+      
+      // Administration
+      administration: {
+        version: extractAttribute('Version') || undefined,
+        isVisManaged: extractAttribute('IsVisManaged') === '1',
+        isFreeEntrance: extractAttribute('IsFreeEntrance') === '1',
+        webSite: extractAttribute('WebSite') || undefined,
+        buyTicketsUrl: extractAttribute('BuyTicketsUrl') || undefined,
+      }
+    }
+
+    log({
+      level: 'info',
+      message: 'Successfully parsed enhanced GetBeachTournament response',
+      data: {
+        code,
+        name: tournamentDetail.name,
+        hasVenue: !!tournamentDetail.venue,
+        hasTitle: !!tournamentDetail.title,
+        hasCompetitionStructure: !!tournamentDetail.competitionStructure?.nbTeamsMainDraw,
+        season: tournamentDetail.season
+      }
+    })
+
+    return tournamentDetail
+
+  } catch (error) {
+    if (error instanceof VISApiError) {
+      throw error
+    }
+    throw new VISApiError('Failed to parse GetBeachTournament response', undefined, error)
+  }
 }

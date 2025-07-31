@@ -15,6 +15,41 @@ export interface TournamentDetail extends Tournament {
   city?: string;
   prize?: string;
   categories?: string[];
+  // Enhanced GetBeachTournament fields
+  title?: string;                    // Full tournament title
+  countryName?: string;              // Full country name
+  season?: string;                   // Tournament season
+  federationCode?: string;           // Federation organizing
+  organizerCode?: string;            // Organizer code
+  tournamentNumber?: string;         // Internal tournament number
+  competitionStructure?: {
+    nbTeamsMainDraw?: number;        // Number of teams in main draw
+    nbTeamsQualification?: number;   // Number of teams in qualification
+    nbTeamsFromQualification?: number; // Teams advancing from qualification
+    nbWildCards?: number;            // Number of wild card spots
+    matchFormat?: string;            // Match format identifier
+    matchPointsMethod?: string;      // Points calculation method
+  };
+  dates?: {
+    startDate?: string;              // Tournament start date
+    endDateMainDraw?: string;        // Main draw end date
+    endDateQualification?: string;   // Qualification end date
+    preliminaryInquiryMainDraw?: string; // Preliminary inquiry date
+    deadline?: string;               // Entry deadline
+  };
+  pointsSystem?: {
+    entryPointsTemplateNo?: string;  // Entry points template
+    seedPointsTemplateNo?: string;   // Seeding points template
+    earnedPointsTemplateNo?: string; // Earned points template
+    entryPointsDayOffset?: string;   // Entry points calculation offset
+  };
+  administration?: {
+    version?: string;                // Data version
+    isVisManaged?: boolean;          // VIS managed tournament
+    isFreeEntrance?: boolean;        // Free entrance flag
+    webSite?: string;                // Tournament website
+    buyTicketsUrl?: string;          // Ticket purchase URL
+  };
 }
 
 export interface VISApiResponse {

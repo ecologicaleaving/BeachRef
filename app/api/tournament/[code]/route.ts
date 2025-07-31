@@ -51,7 +51,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API for: ${code}`)
     
     // Fetch enhanced tournament data using two-step API integration
+    console.log(`[Tournament Detail API] CALLING fetchTournamentDetailFromVISEnhanced for ${code}`)
     const tournament = await fetchTournamentDetailFromVISEnhanced(code)
+    console.log(`[Tournament Detail API] RECEIVED RESPONSE from fetchTournamentDetailFromVISEnhanced:`, tournament)
     
     // DEBUG: Log the complete tournament object structure
     console.log(`[Tournament Detail API] DEBUG - Raw tournament object for ${code}:`, JSON.stringify(tournament, null, 2))

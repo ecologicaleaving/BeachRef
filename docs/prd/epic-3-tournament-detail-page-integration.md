@@ -37,6 +37,7 @@ Enable referees to access detailed tournament information through clickable tour
 **Priority**: High
 **Estimated Effort**: 2-3 days
 **Dependencies**: Epic 1 (shadcn components), Epic 2 (tournament table)
+**Status**: ✅ COMPLETED
 
 As a referee,
 I want to click on any tournament in the list to view detailed information,
@@ -52,20 +53,69 @@ so that I can access comprehensive tournament data for preparation and reference
 
 **Key Components**: Dynamic routing, VIS API extension, basic detail page layout
 
+**Implementation Notes**: Basic foundation completed with standard GetBeachTournamentList endpoint. Enhanced data integration deferred to Story 3.1.1.
+
 **UX Component Requirements**:
 - **Breadcrumb Navigation**: shadcn Breadcrumb component for tournament list → detail navigation
 - **Tournament Header Layout**: shadcn Card component with Badge components for status/type indicators
 - **Tabbed Organization**: shadcn Tabs component for organizing Overview/Schedule/Results/Teams
 - **Mobile Navigation**: shadcn Sheet component for mobile-optimized quick actions
 
-### Story 3.2: Tournament Detail Data Display Enhancement
-**Priority**: Medium  
-**Estimated Effort**: 2-3 days
-**Dependencies**: Story 3.1
+### Story 3.1.1: Enhanced Tournament Data Integration with GetBeachTournament
+**Priority**: High
+**Estimated Effort**: 3-4 days
+**Dependencies**: Story 3.1, VIS API GetBeachTournament endpoint research
+**Status**: 🔄 READY FOR IMPLEMENTATION
 
 As a referee,
-I want to see comprehensive tournament information including schedule and results,
-so that I can have all necessary tournament details in one professional interface.
+I want to see comprehensive tournament information including venue details, competition structure, and federation information,
+so that I have all tournament context needed for professional preparation.
+
+**Background**: Research has identified the VIS API GetBeachTournament endpoint that provides significantly more detailed tournament data than the basic GetBeachTournamentList endpoint currently used.
+
+**Technical Approach**: Two-step API integration process:
+1. Use existing GetBeachTournamentList to retrieve tournament number (No parameter)
+2. Call GetBeachTournament with tournament number to get enhanced data
+
+**Acceptance Criteria**:
+1. Tournament detail page displays venue name and city information from GetBeachTournament
+2. Competition structure shows main draw size, qualification details, and match format
+3. Tournament dates include all phases (main draw, qualification, entry deadlines)
+4. Federation and organizer information is properly displayed
+5. Points system details are available for referee reference
+6. Enhanced tournament status calculation uses actual tournament phase dates
+7. Fallback mechanism ensures page functions if GetBeachTournament fails
+
+**Enhanced Data Fields Available**:
+- **Venue & Location**: venue, city, countryName (full name vs. code)
+- **Competition Structure**: nbTeamsMainDraw, nbTeamsQualification, matchFormat, matchPointsMethod
+- **Detailed Dates**: endDateMainDraw, endDateQualification, preliminaryInquiryMainDraw, deadline
+- **Administration**: federationCode, organizerCode, version, isVisManaged, webSite, buyTicketsUrl  
+- **Points System**: entryPointsTemplateNo, seedPointsTemplateNo, earnedPointsTemplateNo
+
+**Implementation Components**:
+- Extend `lib/vis-client.ts` with `getTournamentNumber()` and `fetchTournamentDetailByNumber()` functions
+- Update `TournamentDetail` interface with comprehensive field structure
+- Enhance `parseEnhancedBeachTournamentResponse()` XML parsing function
+- Update `TournamentHeader` component to display venue and enhanced status
+- Enhance `TournamentDetailTabs` Overview tab with competition structure details
+
+**Error Handling**: Comprehensive fallback strategy ensures tournament pages remain functional if GetBeachTournament endpoint returns 401/403 errors, falling back to basic GetBeachTournamentList data.
+
+### Story 3.2: Tournament Schedule and Results Display
+**Priority**: Medium  
+**Estimated Effort**: 3-4 days
+**Dependencies**: Story 3.1.1 (enhanced data), VIS API match data endpoints
+**Status**: 🔄 PENDING RESEARCH
+
+As a referee,
+I want to see comprehensive tournament schedule and results information,
+so that I can track match progress and access detailed match information for officiating.
+
+**Research Required**: VIS API endpoints for match data:
+- GetBeachTournamentMatchSchedule - for schedule information
+- GetBeachTournamentResults - for completed match results
+- Match detail endpoints for individual match information
 
 **Acceptance Criteria**:
 1. Schedule tab displays matches organized by day using Accordion components
@@ -74,8 +124,9 @@ so that I can have all necessary tournament details in one professional interfac
 4. Tournament progress shown with Progress component indicating completion percentage
 5. Match details accessible via Dialog components for deep information access
 6. All data displays maintain professional FIVB-aligned styling and mobile responsiveness
+7. Real-time match status updates when available
 
-**Key Components**: Tournament data display, schedule sections, results integration
+**Key Components**: Match schedule display, results integration, team information
 
 **UX Component Requirements**:
 - **Schedule Organization**: shadcn Accordion component for collapsible day-by-day match schedules
@@ -87,7 +138,8 @@ so that I can have all necessary tournament details in one professional interfac
 ### Story 3.3: Tournament List Navigation Integration
 **Priority**: Medium
 **Estimated Effort**: 1-2 days
-**Dependencies**: Story 3.1, Story 3.2
+**Dependencies**: Story 3.1.1
+**Status**: 🔄 READY FOR IMPLEMENTATION
 
 As a referee,
 I want seamless navigation between the tournament list and detail views,
@@ -102,6 +154,8 @@ so that I can efficiently browse tournaments and access detailed information.
 6. Navigation transitions are smooth and provide appropriate loading feedback
 
 **Key Components**: Navigation integration, breadcrumbs, mobile-responsive patterns
+
+**Implementation Notes**: Navigation foundation already implemented in Story 3.1. This story focuses on enhancement and mobile optimization.
 
 **UX Component Requirements**:
 - **Enhanced Breadcrumbs**: Extended shadcn Breadcrumb with tournament context
@@ -230,6 +284,34 @@ npx shadcn-ui@latest add tabs breadcrumb accordion dialog sheet avatar progress
 
 ## Technical Context
 
+### VIS API GetBeachTournament Integration Discovery
+**Key Finding**: The VIS API provides a `GetBeachTournament` endpoint that delivers comprehensive tournament data far beyond the basic `GetBeachTournamentList` endpoint currently used.
+
+**Two-Step Integration Process**:
+1. **Step 1**: Use existing `GetBeachTournamentList` to retrieve tournament `No` parameter
+2. **Step 2**: Call `GetBeachTournament` with tournament number for detailed data
+
+**Enhanced Data Available**:
+- **Tournament Metadata**: Full title, venue, city, full country name, season, federation details
+- **Competition Structure**: Main draw size, qualification details, wild card slots, match format
+- **Comprehensive Dates**: All tournament phases with specific start/end dates and deadlines
+- **Administration**: Organizer codes, VIS management status, official website, ticket URLs
+- **Points System**: Complete points calculation templates for entry, seeding, and earned points
+
+**API Request Format** (GetBeachTournament):
+```xml
+<VISA>
+  <Request>
+    <RequestMessage>
+      <Type>GetBeachTournament</Type>
+      <No>[TOURNAMENT_NUMBER]</No>
+    </RequestMessage>
+  </Request>
+</VISA>
+```
+
+**Implementation Strategy**: Primary endpoint with comprehensive fallback to ensure tournament pages remain functional if GetBeachTournament returns authentication errors.
+
 ### Current Architecture Integration Points
 - **Data Layer**: `lib/vis-client.ts` - Extends VIS API integration for detailed tournament data
 - **Components**: Builds upon existing shadcn components from Epic 1
@@ -258,23 +340,86 @@ This epic follows an **additive enhancement approach**:
 
 ## Implementation Phase Guidelines
 
-### Phase 1: Foundation (Story 3.1)
-**Priority**: Install required shadcn components first
-```bash
-npx shadcn-ui@latest add tabs breadcrumb accordion dialog sheet avatar progress
+### Phase 1: Foundation (Story 3.1) - ✅ COMPLETED 
+**Status**: Tournament detail page foundation implemented with basic GetBeachTournamentList data
+
+### Phase 1.1: Enhanced Data Integration (Story 3.1.1) - 🔄 READY FOR DEV
+**Priority**: Implement GetBeachTournament endpoint integration
+
+**Critical Implementation Details**:
+
+**Step 1 - VIS Client Extension** (`lib/vis-client.ts`):
+```typescript
+// New function to get tournament number from existing data
+export async function getTournamentNumber(code: string): Promise<string> {
+  // Use existing GetBeachTournamentList to find tournament number
+}
+
+// New function for detailed tournament data
+export async function fetchTournamentDetailByNumber(tournamentNo: string): Promise<TournamentDetail> {
+  // Call GetBeachTournament with tournament number
+}
+
+// Enhanced XML parsing for GetBeachTournament response
+export function parseEnhancedBeachTournamentResponse(xmlData: string): TournamentDetail {
+  // Parse comprehensive tournament data fields
+}
 ```
 
-**Development Sequence**:
-1. Create `/tournament/[code]` dynamic route structure
-2. Implement breadcrumb navigation component
-3. Build tournament header with Card + Badge layout  
-4. Add basic tabbed organization structure
-5. Integrate mobile Sheet component for quick actions
+**Step 2 - Interface Enhancement** (`lib/types.ts`):
+```typescript
+export interface TournamentDetail extends Tournament {
+  // Enhanced fields from GetBeachTournament
+  title?: string;
+  countryName?: string;
+  season?: string;
+  federationCode?: string;
+  organizerCode?: string;
+  tournamentNumber?: string;
+  competitionStructure?: {
+    nbTeamsMainDraw?: number;
+    nbTeamsQualification?: number;
+    matchFormat?: string;
+    // Additional competition details
+  };
+  dates?: {
+    endDateMainDraw?: string;
+    endDateQualification?: string;
+    preliminaryInquiryMainDraw?: string;
+    deadline?: string;
+  };
+  administration?: {
+    version?: string;
+    isVisManaged?: boolean;
+    webSite?: string;
+    buyTicketsUrl?: string;
+  };
+}
+```
 
-### Phase 2: Data Display (Story 3.2) 
-**Focus**: Content organization and information architecture
-1. Implement Accordion-based schedule organization
-2. Create Table components for match details
+**Step 3 - Component Enhancement**:
+- Update `TournamentHeader` to display venue and comprehensive status
+- Enhance `TournamentDetailTabs` Overview tab with competition structure
+- Ensure fallback handling for GetBeachTournament failures
+
+**⚠️ Critical Issue Identified**: Tournament name parsing in GetBeachTournament response
+- **Problem**: XML parsing was returning country name ("Australia") instead of tournament name ("AUS NT Thompsons Beach")
+- **Root Cause**: Tournament title field extraction from XML structure needs refinement
+- **Priority**: MUST FIX before Story 3.1.1 completion
+- **Testing Required**: Verify tournament name display for multiple tournament codes (MAUS0324, MQUI2025, etc.)
+
+**Development Sequence**:
+1. Extend VIS client with GetBeachTournament integration
+2. Update TournamentDetail interface with comprehensive fields
+3. Implement enhanced XML parsing function
+4. Update tournament header component with venue display
+5. Enhance overview tab with competition structure details
+6. Implement comprehensive fallback error handling
+
+### Phase 2: Schedule and Results (Story 3.2) - 🔄 PENDING RESEARCH
+**Focus**: Match data integration requiring VIS API endpoint research
+1. Research GetBeachTournamentMatchSchedule endpoint
+2. Research GetBeachTournamentResults endpoint
 3. Add Avatar components for team representation
 4. Integrate Progress components for tournament status
 5. Build Dialog components for detailed match information

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTournamentDetailFromVIS } from '@/lib/vis-client'
+import { fetchTournamentDetailFromVISEnhanced } from '@/lib/vis-client'
 import { VISApiError, TournamentDetail } from '@/lib/types'
 
 // In-memory cache for tournament details (5-minute TTL)
@@ -37,10 +37,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       })
     }
 
-    console.log(`[Tournament Detail API] Cache miss, fetching from VIS API for: ${code}`)
+    console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API for: ${code}`)
     
-    // Fetch from VIS API
-    const tournament = await fetchTournamentDetailFromVIS(code)
+    // Fetch enhanced tournament data using two-step API integration
+    const tournament = await fetchTournamentDetailFromVISEnhanced(code)
     
     // Update cache
     cache.set(code, {

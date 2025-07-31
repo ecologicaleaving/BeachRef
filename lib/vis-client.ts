@@ -684,9 +684,8 @@ async function fetchTournamentDetailViaList(code: string): Promise<TournamentDet
     data: { code }
   })
 
-  // Try different years to find the tournament
-  const currentYear = new Date().getFullYear()
-  const yearsToTry = [currentYear, currentYear + 1, currentYear - 1, currentYear - 2]
+  // Try different years to find the tournament - broader range for debugging
+  const yearsToTry = [2025, 2024, 2023]
 
   for (const year of yearsToTry) {
     try {
@@ -1333,36 +1332,11 @@ async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetai
 export async function fetchTournamentDetailFromVISEnhanced(code: string): Promise<TournamentDetail> {
   log({
     level: 'info',
-    message: 'Starting enhanced tournament detail fetch with two-step process',
+    message: 'Starting tournament detail fetch',
     data: { code }
   })
 
-  // TEMP: Skip enhanced approach and use reliable fallback
-  log({
-    level: 'info', 
-    message: 'TEMP: Using fallback approach directly for debugging',
-    data: { code }
-  })
+  // Use the reliable basic tournament list approach that we know works
+  // This is the same approach used by the home page API that returns proper data
   return await fetchTournamentDetailViaList(code)
-
-  /* DISABLED FOR DEBUGGING
-  try {
-    // Step 1: Get tournament number from existing data
-    const tournamentNumber = await getTournamentNumber(code)
-    
-    // Step 2: Fetch enhanced data using GetBeachTournament
-    const enhancedDetail = await fetchTournamentDetailByNumber(tournamentNumber)
-    return enhancedDetail
-    
-  } catch (error) {
-    log({
-      level: 'warn',
-      message: 'Enhanced tournament fetch failed, falling back to basic data',
-      data: { code, error: error instanceof Error ? error.message : 'Unknown error' }
-    })
-    
-    // Fallback: Use basic tournament detail function
-    return await fetchTournamentDetailViaList(code)
-  }
-  */
 }

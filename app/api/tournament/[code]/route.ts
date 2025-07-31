@@ -15,6 +15,9 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { code } = params
   
+  // Emergency deployment verification
+  console.log(`[Tournament Detail API] EMERGENCY MODE v2 - Processing request for: ${code} at ${new Date().toISOString()}`)
+  
   if (!code || typeof code !== 'string') {
     return NextResponse.json(
       { error: 'Tournament code is required' },
@@ -76,11 +79,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         )
       }
       
+      // For 401 errors, provide more context but don't expose internal details
+      if (error.statusCode === 401) {
+        console.error(`[Tournament Detail API] Authentication error for ${code}, fallback should have handled this:`, error)
+        return NextResponse.json(
+          { error: 'Tournament data temporarily unavailable' },
+          { status: 503 } // Service Unavailable instead of auth error
+        )
+      }
+      
       return NextResponse.json(
         { error: 'Failed to fetch tournament details', details: error.message },
         { status: error.statusCode || 500 }
       )
     }
+    
+    // Handle unexpected errors
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`[Tournament Detail API] Unexpected error for ${code}:`, errorMessage)
     
     return NextResponse.json(
       { error: 'Internal server error' },

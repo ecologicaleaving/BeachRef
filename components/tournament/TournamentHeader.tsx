@@ -12,11 +12,17 @@ interface TournamentHeaderProps {
 
 export default function TournamentHeader({ tournament }: TournamentHeaderProps) {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
+    if (!dateString) return 'Date unavailable'
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    } catch (error) {
+      console.warn('[TournamentHeader] Invalid date format:', dateString)
+      return 'Invalid date'
+    }
   }
 
   const getStatusVariant = (status?: string) => {
@@ -97,10 +103,12 @@ export default function TournamentHeader({ tournament }: TournamentHeaderProps) 
             </div>
           </div>
           
-          <CountryFlag 
-            countryCode={tournament.countryCode} 
-            className="w-12 h-12 rounded shadow-sm" 
-          />
+          {tournament.countryCode && (
+            <CountryFlag 
+              countryCode={tournament.countryCode} 
+              className="w-12 h-12 rounded shadow-sm" 
+            />
+          )}
         </div>
       </CardHeader>
       

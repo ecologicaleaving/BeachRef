@@ -16,6 +16,29 @@ interface TournamentBreadcrumbProps {
 }
 
 export default function TournamentBreadcrumb({ tournament }: TournamentBreadcrumbProps) {
+  if (!tournament?.name) {
+    console.warn('[TournamentBreadcrumb] Tournament name is missing')
+    return (
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/" className="hover:text-foreground transition-colors">
+                Tournaments
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="max-w-[200px] truncate">
+              Loading...
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    )
+  }
+
   return (
     <Breadcrumb>
       <BreadcrumbList>

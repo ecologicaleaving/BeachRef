@@ -22,13 +22,16 @@ export default function TournamentMobileActions({ tournament }: TournamentMobile
   const [isOpen, setIsOpen] = useState(false)
 
   const handleShare = async () => {
+    // Check if we're on the client side
+    if (typeof window === 'undefined') return
+    
     const shareData = {
       title: tournament.name,
       text: `Check out this beach volleyball tournament: ${tournament.name}`,
       url: window.location.href,
     }
 
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share(shareData)
       } catch (error) {
@@ -37,9 +40,11 @@ export default function TournamentMobileActions({ tournament }: TournamentMobile
     } else {
       // Fallback: copy to clipboard
       try {
-        await navigator.clipboard.writeText(window.location.href)
-        // You could show a toast here
-        console.log('Link copied to clipboard')
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+          await navigator.clipboard.writeText(window.location.href)
+          // You could show a toast here
+          console.log('Link copied to clipboard')
+        }
       } catch (error) {
         console.log('Error copying to clipboard:', error)
       }
@@ -110,7 +115,9 @@ export default function TournamentMobileActions({ tournament }: TournamentMobile
                 // Create calendar event URL (Google Calendar)
                 const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(details)}`
                 
-                window.open(calendarUrl, '_blank')
+                if (typeof window !== 'undefined') {
+                  window.open(calendarUrl, '_blank')
+                }
                 setIsOpen(false)
               }}
             >
@@ -124,7 +131,9 @@ export default function TournamentMobileActions({ tournament }: TournamentMobile
                 className="w-full justify-start min-h-[48px]"
                 onClick={() => {
                   const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(tournament.venue + ' ' + tournament.countryCode)}`
-                  window.open(mapsUrl, '_blank')
+                  if (typeof window !== 'undefined') {
+                    window.open(mapsUrl, '_blank')
+                  }
                   setIsOpen(false)
                 }}
               >

@@ -152,12 +152,14 @@ export const CountryFlag: React.FC<CountryFlagProps> = ({
 
   // Reset state when country code changes
   useEffect(() => {
-    setState({
-      imageLoaded: false,
-      imageError: false,
-      triedFallback: false,
-      isVisible: false
-    });
+    if (countryCode) {
+      setState({
+        imageLoaded: false,
+        imageError: false,
+        triedFallback: false,
+        isVisible: false
+      });
+    }
   }, [countryCode]);
 
   // Generate alt text

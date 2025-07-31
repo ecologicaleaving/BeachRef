@@ -14,7 +14,12 @@ export default function TournamentError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('Tournament page error:', error)
+    console.error('[Tournament Error Boundary] Tournament page error:', {
+      message: error.message,
+      stack: error.stack,
+      digest: error.digest,
+      timestamp: new Date().toISOString()
+    })
   }, [error])
 
   return (
@@ -43,8 +48,20 @@ export default function TournamentError({
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
             We encountered an error while loading the tournament details.
-            This could be due to a network issue or the tournament might not exist.
+            This could be due to a network issue, server problem, or the tournament might not exist.
           </p>
+          
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-left">
+              <details className="text-red-800">
+                <summary className="font-medium cursor-pointer">Developer Info</summary>
+                <div className="mt-2 space-y-1">
+                  <div><strong>Error:</strong> {error.message}</div>
+                  {error.digest && <div><strong>Digest:</strong> {error.digest}</div>}
+                </div>
+              </details>
+            </div>
+          )}
           
           <div className="flex justify-center gap-4">
             <Button 

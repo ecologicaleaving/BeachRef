@@ -397,7 +397,6 @@ function parseEnhancedVISResponse(xmlResponse: string, code: string): Tournament
       // Enhanced fields from GetBeachTournament
       const venue = extractAttribute('Venue')
       const city = extractAttribute('City')
-      const prize = extractAttribute('Prize')
       const description = extractAttribute('Description')
       const apiStatus = extractAttribute('Status')
 
@@ -505,7 +504,7 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
           data: { code, tournamentNumber }
         })
         
-        const detailedTournament = await fetchTournamentDetailByNumber(tournamentNumber, code)
+        const detailedTournament = await fetchTournamentDetailByNumber(tournamentNumber)
         
         log({
           level: 'info',
@@ -532,7 +531,7 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
         })
         
         // Fall back to basic tournament data from step 1
-        return await convertBasicTournamentToDetail(code)
+        return await fetchBasicTournamentDetail(code)
       }
     } else {
       log({
@@ -563,6 +562,7 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
 }
 
 // Direct tournament detail fetch (original approach)
+// eslint-disable-next-line no-unused-vars
 async function fetchTournamentDetailDirect(code: string): Promise<TournamentDetail> {
   let lastError: unknown
   
@@ -752,6 +752,7 @@ async function fetchTournamentDetailViaList(code: string): Promise<TournamentDet
 }
 
 // Final fallback: Use GetBeachTournamentList with Code filter (original direct approach)
+// eslint-disable-next-line no-unused-vars
 async function fetchTournamentDetailViaListFilter(code: string): Promise<TournamentDetail> {
   let lastError: unknown
   
@@ -1066,12 +1067,6 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
       return match ? match[1].trim() : null
     }
 
-    // Helper function to extract XML attribute (improved regex safety)
-    const extractAttribute = (xml: string, elementName: string, attributeName: string): string | null => {
-      const regex = new RegExp(`<${elementName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^>]*${attributeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}="([^"]*)"[^>]*>`, 'i')
-      const match = xml.match(regex)
-      return match ? match[1].trim() : null
-    }
 
     // Extract basic tournament information - CRITICAL: Fix name parsing issue
     const code = extractElement(xmlData, 'Code') || ''
@@ -1230,7 +1225,6 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
 
 // Fallback function using basic tournament detail (existing implementation)
 async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetail> {
-  const startTime = Date.now()
   let lastError: unknown
   
   log({

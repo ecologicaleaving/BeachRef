@@ -1360,11 +1360,29 @@ async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetai
 export async function fetchTournamentDetailFromVISEnhanced(code: string): Promise<TournamentDetail> {
   log({
     level: 'info',
-    message: 'Starting tournament detail fetch - VERSION 2.0',
+    message: 'Starting tournament detail fetch - VERSION 3.0 HARDCODED TEST',
     data: { code, timestamp: new Date().toISOString() }
   })
 
-  // Use the reliable basic tournament list approach that we know works
-  // This is the same approach used by the home page API that returns proper data
-  return await fetchTournamentDetailViaList(code)
+  // TEMPORARY: Return hardcoded tournament to test if the issue is in the API or parsing
+  const hardcodedTournament: TournamentDetail = {
+    code: code,
+    name: "TEST Tournament Name",
+    countryCode: "US",
+    startDate: "2025-01-01",
+    endDate: "2025-01-03", 
+    gender: "Men",
+    type: "15",
+    status: "upcoming",
+    venue: "Test Venue",
+    description: "Test Description"
+  }
+  
+  log({
+    level: 'info',
+    message: 'Returning hardcoded tournament for testing',
+    data: { hardcodedTournament }
+  })
+  
+  return hardcodedTournament
 }

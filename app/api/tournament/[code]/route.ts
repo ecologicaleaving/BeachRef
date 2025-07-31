@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTournamentDetailFromVISEnhanced } from '@/lib/vis-client'
+import { fetchTournamentDetailFromVISEnhanced, fetchTournamentsFromVIS } from '@/lib/vis-client'
 import { VISApiError, TournamentDetail } from '@/lib/types'
 
 // In-memory cache for tournament details (5-minute TTL)
@@ -50,10 +50,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API for: ${code}`)
     
-    // Fetch enhanced tournament data using two-step API integration
-    console.log(`[Tournament Detail API] CALLING fetchTournamentDetailFromVISEnhanced for ${code}`)
-    const tournament = await fetchTournamentDetailFromVISEnhanced(code)
-    console.log(`[Tournament Detail API] RECEIVED RESPONSE from fetchTournamentDetailFromVISEnhanced:`, tournament)
+    // TEMP: Use the same function as home page to see what we get
+    console.log(`[Tournament Detail API] TEMP: Using fetchTournamentsFromVIS like home page for ${code}`)
+    const tournamentsResponse = await fetchTournamentsFromVIS(2025)
+    const basicTournament = tournamentsResponse.tournaments.find(t => t.code === code)
+    
+    if (!basicTournament) {
+      console.log(`[Tournament Detail API] Tournament ${code} not found in 2025 tournaments`)
+      return NextResponse.json(
+        { error: `Tournament with code ${code} not found` },
+        { status: 404 }
+      )
+    }
+    
+    console.log(`[Tournament Detail API] FOUND basic tournament:`, basicTournament)
+    
+    // Convert to TournamentDetail manually
+    const tournament: TournamentDetail = {
+      ...basicTournament,
+      status: 'upcoming', // simple status for test
+      venue: undefined,
+      description: undefined
+    }
+    
+    console.log(`[Tournament Detail API] CONVERTED to TournamentDetail:`, tournament)
     
     // DEBUG: Log the complete tournament object structure
     console.log(`[Tournament Detail API] DEBUG - Raw tournament object for ${code}:`, JSON.stringify(tournament, null, 2))

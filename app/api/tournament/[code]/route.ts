@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTournamentDetailFromVISEnhanced, fetchTournamentsFromVIS } from '@/lib/vis-client'
+import { fetchTournamentDetailFromVISEnhanced, fetchTournamentsFromVIS, fetchTournamentDetailByNumber } from '@/lib/vis-client'
 import { VISApiError, TournamentDetail } from '@/lib/types'
 
 // In-memory cache for tournament details (5-minute TTL)
@@ -48,10 +48,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       console.log(`[Tournament Detail API] CACHE BYPASSED for debugging: ${code}`)
     }
 
-    console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API for: ${code}`)
+    console.log(`[Tournament Detail API] Cache miss, fetching enhanced data from VIS API using two-step process for: ${code}`)
     
-    // TEMP: Use the same function as home page to see what we get
-    console.log(`[Tournament Detail API] TEMP: Using fetchTournamentsFromVIS like home page for ${code}`)
+    // Step 1: Get tournament number from tournament code
+    console.log(`[Tournament Detail API] Step 1: Getting tournament number for code ${code}`)
     const tournamentsResponse = await fetchTournamentsFromVIS(2025)
     const basicTournament = tournamentsResponse.tournaments.find(t => t.code === code)
     
@@ -65,15 +65,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     
     console.log(`[Tournament Detail API] FOUND basic tournament:`, basicTournament)
     
-    // Convert to TournamentDetail manually
-    const tournament: TournamentDetail = {
-      ...basicTournament,
-      status: 'upcoming', // simple status for test
-      venue: undefined,
-      description: undefined
-    }
+    let tournament: TournamentDetail
     
-    console.log(`[Tournament Detail API] CONVERTED to TournamentDetail:`, tournament)
+    if (!basicTournament.tournamentNo) {
+      console.log(`[Tournament Detail API] No tournament number found for ${code}, using basic data`)
+      // Fallback to basic tournament data
+      tournament = {
+        ...basicTournament,
+        status: 'upcoming',
+        venue: undefined,
+        description: undefined
+      }
+      console.log(`[Tournament Detail API] Using basic tournament data:`, tournament)
+    } else {
+      console.log(`[Tournament Detail API] Step 2: Fetching detailed data using tournament number ${basicTournament.tournamentNo}`)
+      tournament = await fetchTournamentDetailByNumber(basicTournament.tournamentNo)
+      console.log(`[Tournament Detail API] Enhanced tournament data:`, tournament)
+    }
     
     // DEBUG: Log the complete tournament object structure
     console.log(`[Tournament Detail API] DEBUG - Raw tournament object for ${code}:`, JSON.stringify(tournament, null, 2))

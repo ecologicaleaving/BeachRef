@@ -43,7 +43,7 @@ function buildVISTournamentRequest(year: number = 2025): string {
   const xmlRequest = `<?xml version="1.0" encoding="utf-8"?>
 <Requests>
   <Request Type="GetBeachTournamentList" 
-           Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type">
+           Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type No">
     <Filter Year="${year}"/>
   </Request>
 </Requests>`
@@ -162,6 +162,14 @@ export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResp
     level: 'info',
     message: 'Starting VIS API request for tournament data',
     data: { year: requestYear }
+  })
+
+  // DEBUG: Let's see what the actual XML request looks like
+  const xmlBody = buildVISTournamentRequest(requestYear)
+  log({
+    level: 'info',
+    message: 'DEBUG - VIS API XML Request',
+    data: { xmlBody }
   })
 
   for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
@@ -975,14 +983,9 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
       const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
 
       const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
-<VISA>
-  <Request>
-    <RequestMessage>
-      <Type>GetBeachTournament</Type>
-      <No>${tournamentNo}</No>
-    </RequestMessage>
-  </Request>
-</VISA>`
+<Requests>
+  <Request Type="GetBeachTournament" No="${tournamentNo}" Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type Venue City Prize Description Status Title Season FederationCode OrganizerCode Version"/>
+</Requests>`
       
       log({
         level: 'info',
@@ -1133,24 +1136,28 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
       }
     })
 
-    // Try to extract data - first check if it's attribute-based (like in GetBeachTournamentList)
-    let code = extractAttribute(xmlData, 'Code') || extractElement(xmlData, 'Code') || ''
-    let name = extractAttribute(xmlData, 'Name') || extractElement(xmlData, 'Name') || extractAttribute(xmlData, 'Title') || extractElement(xmlData, 'Title') || ''
-    let countryCode = extractAttribute(xmlData, 'CountryCode') || extractElement(xmlData, 'CountryCode') || ''
-    let countryName = extractAttribute(xmlData, 'CountryName') || extractElement(xmlData, 'CountryName') || ''
-    let startDate = extractAttribute(xmlData, 'StartDateMainDraw') || extractElement(xmlData, 'StartDateMainDraw') || extractAttribute(xmlData, 'StartDate') || extractElement(xmlData, 'StartDate') || ''
-    let endDate = extractAttribute(xmlData, 'EndDateMainDraw') || extractElement(xmlData, 'EndDateMainDraw') || extractAttribute(xmlData, 'EndDate') || extractElement(xmlData, 'EndDate') || ''
-    let gender = extractAttribute(xmlData, 'Gender') || extractElement(xmlData, 'Gender') || ''
-    let type = extractAttribute(xmlData, 'Type') || extractElement(xmlData, 'Type') || ''
+    // Extract data from GetBeachTournament response (attribute-based format)
+    const code = extractAttribute(xmlData, 'Code') || ''
+    const name = extractAttribute(xmlData, 'Name') || ''
+    const countryCode = extractAttribute(xmlData, 'CountryCode') || ''
+    const countryName = extractAttribute(xmlData, 'CountryName') || ''
+    const startDate = extractAttribute(xmlData, 'StartDateMainDraw') || ''
+    const endDate = extractAttribute(xmlData, 'EndDateMainDraw') || ''
+    const gender = extractAttribute(xmlData, 'Gender') || ''
+    const type = extractAttribute(xmlData, 'Type') || ''
 
     // Enhanced fields from GetBeachTournament
-    const title = extractAttribute(xmlData, 'Title') || extractElement(xmlData, 'Title') || name
-    const venue = extractAttribute(xmlData, 'Venue') || extractElement(xmlData, 'Venue') || extractAttribute(xmlData, 'DefaultVenue') || extractElement(xmlData, 'DefaultVenue') || ''
-    const city = extractAttribute(xmlData, 'City') || extractElement(xmlData, 'City') || extractAttribute(xmlData, 'DefaultCity') || extractElement(xmlData, 'DefaultCity') || ''
-    const season = extractAttribute(xmlData, 'Season') || extractElement(xmlData, 'Season') || ''
-    const federationCode = extractAttribute(xmlData, 'FederationCode') || extractElement(xmlData, 'FederationCode') || ''
-    const organizerCode = extractAttribute(xmlData, 'OrganizerCode') || extractElement(xmlData, 'OrganizerCode') || ''
-    const tournamentNumber = extractAttribute(xmlData, 'No') || extractElement(xmlData, 'No') || ''
+    const title = extractAttribute(xmlData, 'Title') || name
+    const venue = extractAttribute(xmlData, 'Venue') || ''
+    const city = extractAttribute(xmlData, 'City') || ''
+    const season = extractAttribute(xmlData, 'Season') || ''
+    const federationCode = extractAttribute(xmlData, 'FederationCode') || ''
+    const organizerCode = extractAttribute(xmlData, 'OrganizerCode') || ''
+    const tournamentNumber = extractAttribute(xmlData, 'No') || ''
+    const description = extractAttribute(xmlData, 'Description') || ''
+    const prize = extractAttribute(xmlData, 'Prize') || ''
+    const statusCode = extractAttribute(xmlData, 'Status') || ''
+    const version = extractAttribute(xmlData, 'Version') || ''
 
     // DEBUG: Log extracted values
     log({
@@ -1158,35 +1165,20 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
       message: 'DEBUG - Extracted values from XML',
       data: {
         code, name, countryCode, startDate, endDate, gender, type,
-        title, venue, city, season, federationCode, organizerCode, tournamentNumber
+        title, venue, city, season, federationCode, organizerCode, tournamentNumber,
+        description, prize, statusCode, version
       }
     })
 
-    // Competition structure
-    const nbTeamsMainDraw = extractAttribute(xmlData, 'NbTeamsMainDraw') || extractElement(xmlData, 'NbTeamsMainDraw')
-    const nbTeamsQualification = extractAttribute(xmlData, 'NbTeamsQualification') || extractElement(xmlData, 'NbTeamsQualification')
-    const nbTeamsFromQualification = extractAttribute(xmlData, 'NbTeamsFromQualification') || extractElement(xmlData, 'NbTeamsFromQualification')
-    const nbWildCards = extractAttribute(xmlData, 'NbWildCards') || extractElement(xmlData, 'NbWildCards')
-    const matchFormat = extractAttribute(xmlData, 'MatchFormat') || extractElement(xmlData, 'MatchFormat') || extractAttribute(xmlData, 'DefaultMatchFormat') || extractElement(xmlData, 'DefaultMatchFormat')
-    const matchPointsMethod = extractAttribute(xmlData, 'MatchPointsMethod') || extractElement(xmlData, 'MatchPointsMethod')
-
-    // Detailed dates
-    const endDateQualification = extractAttribute(xmlData, 'EndDateQualification') || extractElement(xmlData, 'EndDateQualification')
-    const preliminaryInquiryMainDraw = extractAttribute(xmlData, 'PreliminaryInquiryMainDraw') || extractElement(xmlData, 'PreliminaryInquiryMainDraw')
-    const deadline = extractAttribute(xmlData, 'Deadline') || extractElement(xmlData, 'Deadline')
-
-    // Points system
-    const entryPointsTemplateNo = extractAttribute(xmlData, 'EntryPointsTemplateNo') || extractElement(xmlData, 'EntryPointsTemplateNo')
-    const seedPointsTemplateNo = extractAttribute(xmlData, 'SeedPointsTemplateNo') || extractElement(xmlData, 'SeedPointsTemplateNo')
-    const earnedPointsTemplateNo = extractAttribute(xmlData, 'EarnedPointsTemplateNo') || extractElement(xmlData, 'EarnedPointsTemplateNo') || extractAttribute(xmlData, 'NoTemplateEarnedPoints') || extractElement(xmlData, 'NoTemplateEarnedPoints')
-    const entryPointsDayOffset = extractAttribute(xmlData, 'EntryPointsDayOffset') || extractElement(xmlData, 'EntryPointsDayOffset')
-
-    // Administration
-    const version = extractAttribute(xmlData, 'Version') || extractElement(xmlData, 'Version')
-    const isVisManagedStr = extractAttribute(xmlData, 'IsVisManaged') || extractElement(xmlData, 'IsVisManaged')
-    const isFreeEntranceStr = extractAttribute(xmlData, 'IsFreeEntrance') || extractElement(xmlData, 'IsFreeEntrance')
-    const webSite = extractAttribute(xmlData, 'WebSite') || extractElement(xmlData, 'WebSite')
-    const buyTicketsUrl = extractAttribute(xmlData, 'BuyTicketsUrl') || extractElement(xmlData, 'BuyTicketsUrl')
+    // Validate required fields
+    if (!code || !name || !countryCode || !startDate || !endDate || !gender || !type) {
+      log({
+        level: 'error',
+        message: 'Missing required fields in GetBeachTournament response',
+        data: { code, name, countryCode, startDate, endDate, gender, type }
+      })
+      throw new VISApiError('Missing required tournament fields in API response')
+    }
 
     // Map gender codes to string values
     let genderValue: 'Men' | 'Women' | 'Mixed' = 'Mixed'
@@ -1194,81 +1186,41 @@ export function parseEnhancedBeachTournamentResponse(xmlData: string): Tournamen
     else if (gender === '1') genderValue = 'Women'
     else if (gender === '2') genderValue = 'Mixed'
 
-    // Calculate enhanced tournament status using phase dates
+    // Calculate tournament status
     const now = new Date()
     const tournamentStart = new Date(startDate)
     const tournamentEnd = new Date(endDate)
-    const mainDrawEnd = endDateQualification ? new Date(endDateQualification) : tournamentEnd
 
     let status: 'upcoming' | 'live' | 'completed' = 'upcoming'
     if (now < tournamentStart) {
       status = 'upcoming'
-    } else if (now >= tournamentStart && now <= mainDrawEnd) {
+    } else if (now >= tournamentStart && now <= tournamentEnd) {
       status = 'live'
     } else {
       status = 'completed'
     }
 
+    // Create enhanced tournament detail object
     const tournament: TournamentDetail = {
-      code,
-      name,
-      countryCode: countryCode.toUpperCase(),
+      code: code.trim(),
+      name: name.trim(),
+      countryCode: countryCode.trim().toUpperCase(),
       startDate,
       endDate,
       gender: genderValue,
-      type,
+      type: type.trim(),
       status,
-      title,
-      countryName,
-      venue,
-      city,
-      season,
-      tournamentNumber
-    }
-
-    // Add competition structure if data exists
-    if (nbTeamsMainDraw || nbTeamsQualification || matchFormat || matchPointsMethod) {
-      tournament.competitionStructure = {
-        ...(nbTeamsMainDraw && { nbTeamsMainDraw: parseInt(nbTeamsMainDraw) }),
-        ...(nbTeamsQualification && { nbTeamsQualification: parseInt(nbTeamsQualification) }),
-        ...(nbTeamsFromQualification && { nbTeamsFromQualification: parseInt(nbTeamsFromQualification) }),
-        ...(nbWildCards && { nbWildCards: parseInt(nbWildCards) }),
-        ...(matchFormat && { matchFormat }),
-        ...(matchPointsMethod && { matchPointsMethod })
-      }
-    }
-
-    // Add detailed dates if data exists
-    if (endDateQualification || preliminaryInquiryMainDraw || deadline) {
-      tournament.dates = {
-        startDate,
-        ...(endDate && { endDateMainDraw: endDate }),
-        ...(endDateQualification && { endDateQualification }),
-        ...(preliminaryInquiryMainDraw && { preliminaryInquiryMainDraw }),
-        ...(deadline && { deadline })
-      }
-    }
-
-    // Add points system if data exists
-    if (entryPointsTemplateNo || seedPointsTemplateNo || earnedPointsTemplateNo) {
-      tournament.pointsSystem = {
-        ...(entryPointsTemplateNo && { entryPointsTemplateNo }),
-        ...(seedPointsTemplateNo && { seedPointsTemplateNo }),
-        ...(earnedPointsTemplateNo && { earnedPointsTemplateNo }),
-        ...(entryPointsDayOffset && { entryPointsDayOffset })
-      }
-    }
-
-    // Add administration if data exists
-    if (version || isVisManagedStr || isFreeEntranceStr || webSite || buyTicketsUrl || federationCode || organizerCode) {
-      tournament.administration = {
-        ...(version && { version }),
-        ...(isVisManagedStr !== null && { isVisManaged: isVisManagedStr === 'true' || isVisManagedStr === '1' }),
-        ...(isFreeEntranceStr !== null && { isFreeEntrance: isFreeEntranceStr === 'true' || isFreeEntranceStr === '1' }),
-        ...(webSite && { webSite }),
-        ...(buyTicketsUrl && { buyTicketsUrl }),
-        ...(federationCode && { federationCode }),
-        ...(organizerCode && { organizerCode })
+      // Enhanced fields
+      title: title ? title.trim() : undefined,
+      venue: venue ? venue.trim() : undefined,
+      city: city ? city.trim() : undefined,
+      description: description ? description.trim() : undefined,
+      tournamentNo: tournamentNumber ? tournamentNumber.trim() : undefined,
+      // Administration info
+      administration: {
+        ...(version && { version: version.trim() }),
+        ...(federationCode && { federationCode: federationCode.trim() }),
+        ...(organizerCode && { organizerCode: organizerCode.trim() })
       }
     }
 

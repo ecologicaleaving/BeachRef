@@ -15,6 +15,9 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { code } = params
   
+  // Emergency deployment verification
+  console.log(`[Tournament Detail API] EMERGENCY MODE v2 - Processing request for: ${code} at ${new Date().toISOString()}`)
+  
   if (!code || typeof code !== 'string') {
     return NextResponse.json(
       { error: 'Tournament code is required' },

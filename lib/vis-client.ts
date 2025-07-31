@@ -341,59 +341,70 @@ function parseVISTournamentDetailResponse(xmlResponse: string, code: string): To
   }
 }
 
-// Fetch specific tournament details from VIS API with failover strategy
+// Fetch specific tournament details from VIS API with emergency fallback-first strategy
 export async function fetchTournamentDetailFromVIS(code: string): Promise<TournamentDetail> {
   const startTime = Date.now()
   
   log({
     level: 'info',
-    message: 'Starting VIS API request for tournament detail',
-    data: { code }
+    message: 'EMERGENCY MODE: Using fallback-first strategy for tournament detail',
+    data: { code, timestamp: new Date().toISOString() }
   })
 
-  // First, try the direct tournament code approach
+  // EMERGENCY: Skip direct API call entirely due to persistent 401 issues
+  // Use fallback approach first until deployment issues are resolved
   try {
-    return await fetchTournamentDetailDirect(code)
-  } catch (error) {
-    // Check if this is a 401 error that should trigger fallback
-    const shouldFallback = error instanceof VISApiError && (
-      error.statusCode === 401 || 
-      error.statusCode === 403 || 
-      error.statusCode >= 500
-    )
+    log({
+      level: 'info',
+      message: 'Attempting fallback tournament list API approach',
+      data: { code }
+    })
+    
+    const result = await fetchTournamentDetailViaList(code)
     
     log({
-      level: 'warn',
-      message: `Direct tournament detail request failed${shouldFallback ? ', trying fallback approach' : ', no fallback available'}`,
+      level: 'info',
+      message: 'EMERGENCY MODE: Fallback approach successful',
       data: { 
         code,
-        error: error instanceof Error ? error.message : String(error),
-        statusCode: error instanceof VISApiError ? error.statusCode : 'unknown',
-        willFallback: shouldFallback
+        tournamentName: result.name,
+        duration: Date.now() - startTime
       }
     })
     
-    if (shouldFallback) {
-      try {
-        // Fallback: Use the working tournament list API and filter client-side
-        return await fetchTournamentDetailViaList(code)
-      } catch (fallbackError) {
-        log({
-          level: 'error',
-          message: 'Both direct and fallback tournament detail requests failed',
-          data: { 
-            code,
-            originalError: error instanceof Error ? error.message : String(error),
-            fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
-          }
-        })
-        
-        // If fallback also fails, throw the original error for consistency
-        throw error
+    return result
+    
+  } catch (fallbackError) {
+    log({
+      level: 'warn',
+      message: 'Fallback approach failed, attempting direct API as last resort',
+      data: { 
+        code,
+        fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
       }
-    } else {
-      // For client errors (404, etc.), don't use fallback
-      throw error
+    })
+    
+    // Last resort: try direct API
+    try {
+      return await fetchTournamentDetailDirect(code)
+    } catch (directError) {
+      log({
+        level: 'error',
+        message: 'EMERGENCY MODE: Both fallback and direct approaches failed',
+        data: { 
+          code,
+          fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+          directError: directError instanceof Error ? directError.message : String(directError),
+          totalDuration: Date.now() - startTime
+        }
+      })
+      
+      // Throw the more informative error
+      if (directError instanceof VISApiError && directError.statusCode === 401) {
+        throw new VISApiError(`Tournament ${code} temporarily unavailable due to API restrictions`, 503)
+      }
+      
+      throw fallbackError
     }
   }
 }

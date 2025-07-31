@@ -18,7 +18,7 @@ export async function fetchPaginatedTournaments(
   
   // Build query parameters
   const params = new URLSearchParams();
-  if (year !== 2025) params.set('year', year.toString());
+  params.set('year', year.toString()); // Always include year parameter
   if (page !== 1) params.set('page', page.toString());
   if (limit !== 20) params.set('limit', limit.toString());
   

@@ -1360,8 +1360,8 @@ async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetai
 export async function fetchTournamentDetailFromVISEnhanced(code: string): Promise<TournamentDetail> {
   log({
     level: 'info',
-    message: 'Starting tournament detail fetch',
-    data: { code }
+    message: 'Starting tournament detail fetch - VERSION 2.0',
+    data: { code, timestamp: new Date().toISOString() }
   })
 
   // Use the reliable basic tournament list approach that we know works

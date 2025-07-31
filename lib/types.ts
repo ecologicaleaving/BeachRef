@@ -12,6 +12,9 @@ export interface TournamentDetail extends Tournament {
   venue?: string;
   description?: string;
   status?: 'upcoming' | 'live' | 'completed';
+  city?: string;
+  prize?: string;
+  categories?: string[];
 }
 
 export interface VISApiResponse {

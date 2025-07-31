@@ -290,8 +290,22 @@ export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResp
     : new VISApiError('Failed to fetch tournaments from VIS API', undefined, lastError)
 }
 
-// Build XML request for specific tournament details
+// Build XML request for specific tournament details using GetBeachTournament endpoint
 function buildVISTournamentDetailRequest(code: string): string {
+  // Try the dedicated GetBeachTournament endpoint for more detailed data
+  const xmlRequest = `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachTournament" 
+           Fields="Code Name CountryCode StartDateMainDraw EndDateMainDraw Gender Type Venue City Prize Description Status Categories">
+    <Filter Code="${code}"/>
+  </Request>
+</Requests>`
+
+  return xmlRequest
+}
+
+// Fallback: Build XML request using tournament list endpoint (current approach)
+function buildVISTournamentListFilterRequest(code: string): string {
   const xmlRequest = `<?xml version="1.0" encoding="utf-8"?>
 <Requests>
   <Request Type="GetBeachTournamentList" 
@@ -303,9 +317,21 @@ function buildVISTournamentDetailRequest(code: string): string {
   return xmlRequest
 }
 
-// Parse tournament detail response (extends basic parsing)
+// Parse enhanced tournament detail response with additional fields
 function parseVISTournamentDetailResponse(xmlResponse: string, code: string): TournamentDetail | null {
   try {
+    // Try to parse enhanced response first (GetBeachTournament)
+    const enhancedTournament = parseEnhancedVISResponse(xmlResponse, code)
+    if (enhancedTournament) {
+      log({
+        level: 'info',
+        message: 'Successfully parsed enhanced tournament data',
+        data: { code, hasVenue: !!enhancedTournament.venue, hasDescription: !!enhancedTournament.description }
+      })
+      return enhancedTournament
+    }
+
+    // Fallback to basic parsing (GetBeachTournamentList format)
     const tournaments = parseVISResponse(xmlResponse)
     const tournament = tournaments.find(t => t.code === code)
     
@@ -330,14 +356,123 @@ function parseVISTournamentDetailResponse(xmlResponse: string, code: string): To
     return {
       ...tournament,
       status,
-      venue: undefined, // VIS API doesn't provide venue info in basic request
-      description: undefined // VIS API doesn't provide description in basic request
+      venue: undefined, // Not available in basic tournament list
+      description: undefined // Not available in basic tournament list
     }
   } catch (error) {
     if (error instanceof VISApiError) {
       throw error
     }
     throw new VISApiError('Failed to parse tournament detail response', undefined, error)
+  }
+}
+
+// Parse enhanced VIS response from GetBeachTournament endpoint
+function parseEnhancedVISResponse(xmlResponse: string, code: string): TournamentDetail | null {
+  try {
+    // Look for BeachTournament elements with enhanced fields
+    const tournamentRegex = /<BeachTournament\s+([^>]+)\/>/g
+    let match
+
+    while ((match = tournamentRegex.exec(xmlResponse)) !== null) {
+      const attributes = match[1]
+      
+      // Extract individual attributes using regex
+      const extractAttribute = (attr: string): string | null => {
+        const attrRegex = new RegExp(`${attr}="([^"]*)"`, 'i')
+        const attrMatch = attributes.match(attrRegex)
+        return attrMatch ? attrMatch[1] : null
+      }
+
+      const tournamentCode = extractAttribute('Code')
+      if (tournamentCode !== code) continue
+
+      const name = extractAttribute('Name')
+      const countryCode = extractAttribute('CountryCode')
+      const startDate = extractAttribute('StartDateMainDraw')
+      const endDate = extractAttribute('EndDateMainDraw')
+      const gender = extractAttribute('Gender')
+      const type = extractAttribute('Type')
+      
+      // Enhanced fields from GetBeachTournament
+      const venue = extractAttribute('Venue')
+      const city = extractAttribute('City')
+      const prize = extractAttribute('Prize')
+      const description = extractAttribute('Description')
+      const apiStatus = extractAttribute('Status')
+
+      // Validate required fields
+      if (tournamentCode && name && countryCode && startDate && endDate && gender && type) {
+        // Map numeric gender codes to string values
+        let genderValue: 'Men' | 'Women' | 'Mixed' | null = null;
+        if (gender === '0') genderValue = 'Men';
+        else if (gender === '1') genderValue = 'Women'; 
+        else if (gender === '2') genderValue = 'Mixed';
+        
+        if (genderValue) {
+          // Determine status
+          const now = new Date()
+          const startDateObj = new Date(startDate)
+          const endDateObj = new Date(endDate)
+          
+          let status: 'upcoming' | 'live' | 'completed'
+          if (apiStatus) {
+            // Use API status if available
+            switch (apiStatus.toLowerCase()) {
+              case 'upcoming':
+              case 'scheduled':
+                status = 'upcoming'
+                break
+              case 'live':
+              case 'ongoing':
+              case 'in_progress':
+                status = 'live'
+                break
+              case 'completed':
+              case 'finished':
+                status = 'completed'
+                break
+              default:
+                // Fall back to date-based calculation
+                status = now < startDateObj ? 'upcoming' : (now > endDateObj ? 'completed' : 'live')
+            }
+          } else {
+            // Date-based status calculation
+            status = now < startDateObj ? 'upcoming' : (now > endDateObj ? 'completed' : 'live')
+          }
+
+          // Build enhanced venue information
+          let venueInfo = venue || undefined
+          if (venue && city && venue !== city) {
+            venueInfo = `${venue}, ${city}`
+          } else if (city && !venue) {
+            venueInfo = city
+          }
+
+          return {
+            code: tournamentCode.trim(),
+            name: name.trim(),
+            countryCode: countryCode.trim().toUpperCase(),
+            startDate,
+            endDate,
+            gender: genderValue,
+            type: type.trim(),
+            status,
+            venue: venueInfo,
+            description: description || undefined
+          }
+        }
+      }
+    }
+
+    return null // No matching tournament found
+  } catch (error) {
+    log({
+      level: 'warn',
+      message: 'Failed to parse enhanced tournament response, falling back to basic parsing',
+      data: { code, error: error instanceof Error ? error.message : String(error) }
+    })
+    return null
   }
 }
 
@@ -384,27 +519,42 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
       }
     })
     
-    // Last resort: try direct API
+    // Last resort: try direct API with enhanced GetBeachTournament endpoint
     try {
       return await fetchTournamentDetailDirect(code)
     } catch (directError) {
       log({
-        level: 'error',
-        message: 'EMERGENCY MODE: Both fallback and direct approaches failed',
+        level: 'warn',
+        message: 'Direct GetBeachTournament failed, trying GetBeachTournamentList filter approach',
         data: { 
           code,
-          fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
-          directError: directError instanceof Error ? directError.message : String(directError),
-          totalDuration: Date.now() - startTime
+          directError: directError instanceof Error ? directError.message : String(directError)
         }
       })
       
-      // Throw the more informative error
-      if (directError instanceof VISApiError && directError.statusCode === 401) {
-        throw new VISApiError(`Tournament ${code} temporarily unavailable due to API restrictions`, 503)
+      // Final fallback: try the original GetBeachTournamentList approach
+      try {
+        return await fetchTournamentDetailViaListFilter(code)
+      } catch (listFilterError) {
+        log({
+          level: 'error',
+          message: 'EMERGENCY MODE: All approaches failed (fallback, direct GetBeachTournament, GetBeachTournamentList filter)',
+          data: { 
+            code,
+            fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+            directError: directError instanceof Error ? directError.message : String(directError),
+            listFilterError: listFilterError instanceof Error ? listFilterError.message : String(listFilterError),
+            totalDuration: Date.now() - startTime
+          }
+        })
+        
+        // Throw the most informative error
+        if (directError instanceof VISApiError && directError.statusCode === 401) {
+          throw new VISApiError(`Tournament ${code} temporarily unavailable due to API restrictions`, 503)
+        }
+        
+        throw fallbackError
       }
-      
-      throw fallbackError
     }
   }
 }
@@ -596,4 +746,102 @@ async function fetchTournamentDetailViaList(code: string): Promise<TournamentDet
   }
 
   throw new VISApiError(`Tournament with code ${code} not found in any year`, 404)
+}
+
+// Final fallback: Use GetBeachTournamentList with Code filter (original direct approach)
+async function fetchTournamentDetailViaListFilter(code: string): Promise<TournamentDetail> {
+  let lastError: unknown
+  
+  log({
+    level: 'info',
+    message: 'Using GetBeachTournamentList filter approach as final fallback',
+    data: { code }
+  })
+  
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+      const xmlBody = buildVISTournamentListFilterRequest(code)
+      
+      log({
+        level: 'info',
+        message: `GetBeachTournamentList filter attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { attempt, code }
+      })
+
+      const response = await fetch(VIS_API_CONFIG.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/xml',
+          'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+          'User-Agent': 'BeachRef-MVP/1.0'
+        },
+        body: xmlBody,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new VISApiError(
+          `VIS API GetBeachTournamentList filter returned ${response.status}: ${response.statusText}`,
+          response.status
+        )
+      }
+
+      const xmlText = await response.text()
+      const tournament = parseVISTournamentDetailResponse(xmlText, code)
+      
+      if (!tournament) {
+        throw new VISApiError(`Tournament with code ${code} not found via list filter`, 404)
+      }
+      
+      log({
+        level: 'info',
+        message: 'GetBeachTournamentList filter approach successful',
+        data: { 
+          code,
+          tournamentName: tournament.name,
+          attempt: attempt + 1
+        }
+      })
+
+      return tournament
+
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        lastError = new VISApiError('VIS API request timeout', undefined, error)
+      } else if (error instanceof TypeError) {
+        lastError = new VISApiError('Network error connecting to VIS API', undefined, error)
+      } else if (error instanceof VISApiError) {
+        lastError = error
+      } else {
+        lastError = error
+      }
+
+      log({
+        level: 'warn',
+        message: `GetBeachTournamentList filter attempt ${attempt + 1} failed`,
+        data: { 
+          attempt: attempt + 1,
+          code,
+          error: error instanceof Error ? error.message : String(error),
+          willRetry: attempt < RETRY_CONFIG.maxRetries && isRetryableError(lastError)
+        }
+      })
+
+      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(lastError)) {
+        break
+      }
+
+      const delay = calculateBackoffDelay(attempt, RETRY_CONFIG)
+      await sleep(delay)
+    }
+  }
+
+  throw lastError instanceof VISApiError 
+    ? lastError 
+    : new VISApiError('Failed to fetch tournament via GetBeachTournamentList filter', undefined, lastError)
 }

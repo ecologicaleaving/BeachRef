@@ -696,9 +696,26 @@ async function fetchTournamentDetailViaList(code: string): Promise<TournamentDet
       })
 
       const response = await fetchTournamentsFromVIS(year)
+      
+      log({
+        level: 'info',
+        message: `DEBUG - Got ${response.tournaments.length} tournaments for year ${year}`,
+        data: { 
+          code, 
+          year,
+          totalTournaments: response.tournaments.length,
+          firstFewCodes: response.tournaments.slice(0, 5).map(t => t.code)
+        }
+      })
+      
       const tournament = response.tournaments.find(t => t.code === code)
       
       if (tournament) {
+        log({
+          level: 'info',
+          message: `FOUND tournament ${code} in year ${year}`,
+          data: { code, year, tournament }
+        })
         // Convert Tournament to TournamentDetail
         const now = new Date()
         const startDate = new Date(tournament.startDate)

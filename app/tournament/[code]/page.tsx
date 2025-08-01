@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import { TournamentDetail } from '@/lib/types'
 import TournamentDetailPage from '@/components/tournament/TournamentDetailPage'
-import { fetchTournamentsFromVIS, fetchTournamentDetailByNumber } from '@/lib/vis-client'
+import TournamentDetailErrorBoundary from '@/components/error/TournamentDetailErrorBoundary'
+import { fetchTournamentDetailFromVIS } from '@/lib/vis-client'
+import { logUserExperienceError } from '@/lib/production-logger'
 
 interface TournamentPageProps {
   params: {
@@ -10,44 +12,29 @@ interface TournamentPageProps {
 }
 
 async function fetchTournamentDetail(code: string): Promise<TournamentDetail> {
-  console.log(`[Tournament Page] Fetching tournament detail for code: ${code} directly from VIS`)
+  console.log(`[Tournament Page] Fetching tournament detail with enhanced error handling for code: ${code}`)
   
   try {
-    // Step 1: Get tournament number from tournament code
-    console.log(`[Tournament Page] Step 1: Getting tournament number for code ${code}`)
-    const tournamentsResponse = await fetchTournamentsFromVIS(2025)
-    const basicTournament = tournamentsResponse.tournaments.find(t => t.code === code)
-    
-    if (!basicTournament) {
-      console.log(`[Tournament Page] Tournament ${code} not found in 2025 tournaments`)
-      notFound()
-    }
-    
-    console.log(`[Tournament Page] Found basic tournament:`, basicTournament)
-    
-    let tournament: TournamentDetail
-    
-    if (!basicTournament.tournamentNo) {
-      console.log(`[Tournament Page] No tournament number found for ${code}, using basic data`)
-      // Fallback to basic tournament data
-      tournament = {
-        ...basicTournament,
-        status: 'upcoming' as const,
-        venue: undefined,
-        description: undefined
-      }
-      console.log(`[Tournament Page] Using basic tournament data:`, tournament)
-    } else {
-      console.log(`[Tournament Page] Step 2: Fetching detailed data using tournament number ${basicTournament.tournamentNo}`)
-      tournament = await fetchTournamentDetailByNumber(basicTournament.tournamentNo)
-      console.log(`[Tournament Page] Enhanced tournament data:`, tournament)
-    }
+    // Use the enhanced VIS client with comprehensive error handling
+    const tournament = await fetchTournamentDetailFromVIS(code)
     
     console.log(`[Tournament Page] Successfully fetched tournament: ${tournament.name} (${code})`)
     return tournament
     
   } catch (error) {
     console.error(`[Tournament Page] Error fetching tournament ${code}:`, error)
+    
+    // Log user experience error for monitoring
+    logUserExperienceError('data_unavailable', code, {
+      pathname: `/tournament/${code}`
+    })
+    
+    // Check if it's a 404 (tournament not found)
+    if (error instanceof Error && error.message.includes('not found')) {
+      notFound()
+    }
+    
+    // Let error boundary handle other errors
     throw error
   }
 }
@@ -55,7 +42,13 @@ async function fetchTournamentDetail(code: string): Promise<TournamentDetail> {
 export default async function TournamentPage({ params }: TournamentPageProps) {
   try {
     const tournament = await fetchTournamentDetail(params.code)
-    return <TournamentDetailPage tournament={tournament} />
+    
+    // Wrap the page in error boundary for client-side error handling
+    return (
+      <TournamentDetailErrorBoundary tournamentCode={params.code}>
+        <TournamentDetailPage tournament={tournament} />
+      </TournamentDetailErrorBoundary>
+    )
   } catch (error) {
     console.error(`[Tournament Page] Failed to render tournament page for ${params.code}:`, error)
     throw error // Let Next.js error boundary handle it

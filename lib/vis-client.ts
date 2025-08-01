@@ -1,5 +1,51 @@
 import { Tournament, TournamentDetail, VISApiResponse, VISApiError } from './types'
 import { VIS_API_CONFIG } from './constants'
+import { 
+  categorizeVISApiError, 
+  isRetryableError, 
+  requiresFallback, 
+  sanitizeErrorForLogging,
+  calculateRetryDelay,
+  createFallbackResult,
+  createErrorContext,
+  EnhancedVISApiError,
+  FallbackResult
+} from './vis-error-handler'
+import { 
+  logVISApiError, 
+  logPerformanceMetrics, 
+  logNetworkEvent 
+} from './production-logger'
+
+/**
+ * VIS API Client Implementation
+ * 
+ * CRITICAL IMPLEMENTATION NOTES:
+ * 
+ * The VIS (Volleyball Information System) API uses a two-tier access model:
+ * - PUBLIC ENDPOINTS (No auth): GetBeachTournamentList - returns tournament metadata
+ * - AUTHENTICATED ENDPOINTS (Auth required): GetBeachTournament - returns detailed data
+ * 
+ * KEY INSIGHT: 401 Unauthorized errors on GetBeachTournament are EXPECTED BEHAVIOR
+ * for applications without VIS API credentials. This is NOT a failure - it's the normal
+ * response when requesting authenticated data without proper credentials.
+ * 
+ * CORRECT IMPLEMENTATION PATTERN:
+ * 1. Always try enhanced endpoint (GetBeachTournament) first
+ * 2. When 401 occurs, log as 'info' level (not error) - it's expected
+ * 3. Gracefully fall back to public data (GetBeachTournamentList)
+ * 4. Return basic tournament info instead of failing completely
+ * 
+ * This approach:
+ * - Works in production without VIS credentials
+ * - Provides basic tournament data to users
+ * - Ready to leverage enhanced data when authentication becomes available
+ * - Prevents production crashes due to expected 401 responses
+ * 
+ * PRODUCTION ERROR RESOLUTION:
+ * "Error: Failed to fetch tournament MQUI2025: 401 Unauthorized" was resolved
+ * by implementing proper fallback handling instead of treating 401 as failure.
+ */
 
 interface RetryConfig {
   maxRetries: number
@@ -132,24 +178,24 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Determine if error is retryable based on error type and status
-function isRetryableError(error: unknown): boolean {
-  if (error instanceof VISApiError) {
-    // Don't retry on client errors (4xx), but retry on server errors (5xx) and network issues
-    return !error.statusCode || error.statusCode >= 500
+// Enhanced network connectivity detection
+async function checkNetworkConnectivity(): Promise<boolean> {
+  try {
+    // Simple connectivity check using a reliable endpoint
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+    
+    const response = await fetch('https://www.google.com/favicon.ico', {
+      method: 'HEAD',
+      signal: controller.signal,
+      cache: 'no-store'
+    })
+    
+    clearTimeout(timeoutId)
+    return response.ok
+  } catch {
+    return false
   }
-  
-  // Retry on network-related TypeErrors (fetch failures)
-  if (error instanceof TypeError && error.message.includes('fetch')) {
-    return true
-  }
-  
-  // Retry on AbortError (timeout) as it might be temporary
-  if (error instanceof Error && error.name === 'AbortError') {
-    return true
-  }
-  
-  return false
 }
 
 // Main function to fetch tournaments from VIS API
@@ -255,18 +301,25 @@ export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResp
         lastError = error
       }
 
+      // Check if error is retryable (this is a simple implementation for legacy functions)
+      const shouldRetry = attempt < RETRY_CONFIG.maxRetries && (
+        error instanceof VISApiError ? (error.statusCode && error.statusCode >= 500) : 
+        (error instanceof TypeError && error.message.includes('fetch')) ||
+        (error instanceof Error && error.name === 'AbortError')
+      )
+      
       log({
         level: 'warn',
         message: `VIS API request attempt ${attempt + 1} failed`,
         data: { 
           attempt: attempt + 1,
           error: error instanceof Error ? error.message : String(error),
-          willRetry: attempt < RETRY_CONFIG.maxRetries && isRetryableError(lastError)
+          willRetry: shouldRetry
         }
       })
 
       // Don't retry if this was the last attempt or error is not retryable
-      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(lastError)) {
+      if (attempt >= RETRY_CONFIG.maxRetries || !shouldRetry) {
         break
       }
 
@@ -485,9 +538,10 @@ function parseEnhancedVISResponse(xmlResponse: string, code: string): Tournament
   }
 }
 
-// Fetch specific tournament details from VIS API with enhanced GetBeachTournament integration
+// Enhanced tournament detail fetch with comprehensive error handling and fallback mechanisms
 export async function fetchTournamentDetailFromVIS(code: string): Promise<TournamentDetail> {
   const startTime = Date.now()
+  const context = createErrorContext(code)
   
   log({
     level: 'info',
@@ -495,8 +549,8 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
     data: { code, timestamp: new Date().toISOString() }
   })
 
-  // Step 1: Get tournament number from GetBeachTournamentList
   try {
+    // Step 1: Get tournament number from GetBeachTournamentList
     log({
       level: 'info',
       message: 'Step 1: Getting tournament number from GetBeachTournamentList',
@@ -507,40 +561,56 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
     
     if (tournamentNumber) {
       // Step 2: Get detailed data using GetBeachTournament with tournament number
-      try {
-        log({
-          level: 'info',
-          message: 'Step 2: Fetching detailed data with GetBeachTournament endpoint',
-          data: { code, tournamentNumber }
-        })
-        
-        const detailedTournament = await fetchTournamentDetailByNumber(tournamentNumber)
+      log({
+        level: 'info',
+        message: 'Step 2: Fetching detailed data with GetBeachTournament endpoint',
+        data: { code, tournamentNumber }
+      })
+      
+      const detailResult = await fetchTournamentDetailByNumber(tournamentNumber)
+      
+      if (!detailResult.fallbackUsed) {
+        // Success with enhanced data
+        const duration = Date.now() - startTime
+        logPerformanceMetrics('fetchTournamentDetailFromVIS', duration, 'GetBeachTournament', code, false, 'full')
         
         log({
           level: 'info',
           message: 'Enhanced tournament detail fetch successful',
           data: { 
             code,
-            tournamentName: detailedTournament.name,
-            hasEnhancedData: !!(detailedTournament.venue || detailedTournament.description),
-            duration: Date.now() - startTime
+            tournamentName: detailResult.data.name,
+            hasEnhancedData: !!(detailResult.data.venue || detailResult.data.description),
+            duration
           }
         })
         
-        return detailedTournament
+        return detailResult.data
+      } else {
+        // GetBeachTournament failed, use fallback
+        const enhancedError = detailResult.errorEncountered
         
-      } catch (detailError) {
-        log({
-          level: 'warn',
-          message: 'GetBeachTournament detailed fetch failed, falling back to basic data',
-          data: { 
-            code,
-            tournamentNumber,
-            error: detailError instanceof Error ? detailError.message : String(detailError)
-          }
-        })
+        if (enhancedError) {
+          logNetworkEvent('fallback_triggered', {
+            tournamentCode: code,
+            endpoint: 'GetBeachTournament',
+            error: enhancedError.message
+          })
+          
+          log({
+            level: enhancedError.statusCode === 401 ? 'info' : 'warn',
+            message: 'GetBeachTournament failed, falling back to basic data',
+            data: { 
+              code,
+              tournamentNumber,
+              errorType: enhancedError.category.type,
+              errorMessage: enhancedError.message,
+              severity: enhancedError.category.severity
+            }
+          })
+        }
         
-        // Fall back to basic tournament data from step 1
+        // Fall back to basic tournament data
         return await fetchBasicTournamentDetail(code)
       }
     } else {
@@ -550,24 +620,42 @@ export async function fetchTournamentDetailFromVIS(code: string): Promise<Tourna
         data: { code }
       })
       
+      logNetworkEvent('fallback_triggered', {
+        tournamentCode: code,
+        endpoint: 'GetBeachTournamentList',
+        error: 'Tournament number not found'
+      })
+      
       // Fallback to year-based search
       return await fetchTournamentDetailViaList(code)
     }
     
   } catch (error) {
+    const duration = Date.now() - startTime
+    
+    // Categorize the error for proper handling
+    const enhancedError = categorizeVISApiError(error, 'GetBeachTournamentList', {
+      ...context,
+      fallbackAttempted: true
+    })
+    
+    // Log the error with production logging
+    logVISApiError(sanitizeErrorForLogging(enhancedError), 'VIS-Client-Main')
+    logPerformanceMetrics('fetchTournamentDetailFromVIS-Failed', duration, 'GetBeachTournamentList', code, true, 'minimal')
+    
     log({
       level: 'error',
       message: 'All tournament detail fetch approaches failed',
       data: { 
         code,
-        error: error instanceof Error ? error.message : String(error),
-        duration: Date.now() - startTime
+        errorType: enhancedError.category.type,
+        errorMessage: enhancedError.message,
+        duration
       }
     })
     
-    throw error instanceof VISApiError 
-      ? error 
-      : new VISApiError('Failed to fetch tournament details', undefined, error)
+    // Throw the enhanced error for proper error boundary handling
+    throw enhancedError
   }
 }
 
@@ -966,10 +1054,12 @@ export async function getTournamentNumber(code: string): Promise<string> {
   }
 }
 
-// Step 2: Fetch detailed tournament data using GetBeachTournament endpoint
-export async function fetchTournamentDetailByNumber(tournamentNo: string): Promise<TournamentDetail> {
+// Step 2: Fetch detailed tournament data using GetBeachTournament endpoint with enhanced error handling
+export async function fetchTournamentDetailByNumber(tournamentNo: string): Promise<FallbackResult<TournamentDetail>> {
   const startTime = Date.now()
-  let lastError: unknown
+  let lastEnhancedError: EnhancedVISApiError | undefined
+  
+  const context = createErrorContext(undefined, tournamentNo)
   
   log({
     level: 'info',
@@ -990,7 +1080,7 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
       log({
         level: 'info',
         message: `GetBeachTournament attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
-        data: { attempt, tournamentNo, xmlBody }
+        data: { attempt, tournamentNo }
       })
 
       const response = await fetch(VIS_API_CONFIG.baseURL, {
@@ -1007,29 +1097,29 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        throw new VISApiError(
-          `GetBeachTournament API returned ${response.status}: ${response.statusText}`,
-          response.status
+        const errorContext = { 
+          ...context, 
+          attempt: attempt + 1,
+          originalRequest: xmlBody.substring(0, 200) + '...'
+        }
+        
+        throw categorizeVISApiError(
+          new VISApiError(
+            `GetBeachTournament API returned ${response.status}: ${response.statusText}`,
+            response.status
+          ),
+          'GetBeachTournament',
+          errorContext
         )
       }
 
       const xmlText = await response.text()
-      
-      // DEBUG: Log the actual XML response to understand the structure
-      log({
-        level: 'info',
-        message: 'DEBUG - Raw XML response from GetBeachTournament',
-        data: { 
-          tournamentNo,
-          xmlLength: xmlText.length,
-          xmlSnippet: xmlText.substring(0, 500) + (xmlText.length > 500 ? '...' : ''),
-          xmlFull: xmlText
-        }
-      })
-      
       const tournament = parseEnhancedBeachTournamentResponse(xmlText)
       
       const duration = Date.now() - startTime
+      
+      // Log successful performance metrics
+      logPerformanceMetrics('GetBeachTournament', duration, 'GetBeachTournament', tournament.code, false, 'full')
       
       log({
         level: 'info',
@@ -1043,17 +1133,39 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
         duration
       })
 
-      return tournament
+      // Return successful result without fallback
+      return createFallbackResult(tournament, false, undefined, 'full', 'primary')
 
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        lastError = new VISApiError('GetBeachTournament request timeout', undefined, error)
-      } else if (error instanceof TypeError) {
-        lastError = new VISApiError('Network error connecting to GetBeachTournament API', undefined, error)
-      } else if (error instanceof VISApiError) {
-        lastError = error
-      } else {
-        lastError = error
+      // Categorize and enhance the error
+      const enhancedError = error instanceof EnhancedVISApiError 
+        ? error 
+        : categorizeVISApiError(error, 'GetBeachTournament', { 
+            ...context, 
+            attempt: attempt + 1,
+            originalRequest: `GetBeachTournament No="${tournamentNo}"`
+          })
+
+      lastEnhancedError = enhancedError
+
+      // Log the error with production logging
+      logVISApiError(sanitizeErrorForLogging(enhancedError), 'VIS-Client-GetBeachTournament')
+
+      // Special handling for 401 Authentication errors (expected behavior)
+      if (enhancedError.statusCode === 401) {
+        log({
+          level: 'info', // Changed from 'warn' to 'info' since 401 on GetBeachTournament is expected
+          message: 'GetBeachTournament requires authentication - this is expected behavior, falling back to basic data',
+          data: { 
+            tournamentNo,
+            attempt: attempt + 1,
+            errorType: enhancedError.category.type,
+            severity: enhancedError.category.severity
+          }
+        })
+        
+        // Don't retry 401 errors - they require fallback
+        break
       }
 
       log({
@@ -1062,16 +1174,28 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
         data: { 
           attempt: attempt + 1,
           tournamentNo,
-          error: error instanceof Error ? error.message : String(error),
-          willRetry: attempt < RETRY_CONFIG.maxRetries && isRetryableError(lastError)
+          errorType: enhancedError.category.type,
+          errorMessage: enhancedError.message,
+          willRetry: attempt < RETRY_CONFIG.maxRetries && isRetryableError(enhancedError, attempt, RETRY_CONFIG.maxRetries)
         }
       })
 
-      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(lastError)) {
+      // Check if we should retry based on enhanced error analysis
+      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(enhancedError, attempt, RETRY_CONFIG.maxRetries)) {
         break
       }
 
-      const delay = calculateBackoffDelay(attempt, RETRY_CONFIG)
+      // Calculate retry delay with enhanced logic
+      const delay = calculateRetryDelay(attempt, RETRY_CONFIG.baseDelay, RETRY_CONFIG.maxDelay)
+      
+      logNetworkEvent('retry', {
+        tournamentCode: undefined,
+        endpoint: 'GetBeachTournament',
+        attempt: attempt + 1,
+        delay,
+        error: enhancedError.message
+      })
+      
       log({
         level: 'info',
         message: `Retrying GetBeachTournament request in ${delay}ms`,
@@ -1083,21 +1207,38 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
   }
 
   const duration = Date.now() - startTime
+  
+  // Log final failure with performance metrics
+  logPerformanceMetrics('GetBeachTournament-Failed', duration, 'GetBeachTournament', undefined, true, 'minimal')
+  
   log({
-    level: 'error',
+    level: lastEnhancedError?.statusCode === 401 ? 'info' : 'error', // 401 is expected, not an error
     message: 'All GetBeachTournament attempts failed',
     data: { 
       tournamentNo,
       attempts: RETRY_CONFIG.maxRetries + 1,
       duration,
-      finalError: lastError instanceof Error ? lastError.message : String(lastError)
+      finalErrorType: lastEnhancedError?.category.type,
+      requiresFallback: lastEnhancedError ? requiresFallback(lastEnhancedError) : false
     },
     duration
   })
 
-  throw lastError instanceof VISApiError 
-    ? lastError 
-    : new VISApiError('Failed to fetch enhanced tournament data from GetBeachTournament API', undefined, lastError)
+  // Instead of throwing, return a fallback result indicating failure
+  if (lastEnhancedError && requiresFallback(lastEnhancedError)) {
+    // Mark that fallback should be attempted
+    lastEnhancedError.context.fallbackAttempted = true
+    return createFallbackResult(
+      {} as TournamentDetail, // Empty data since we failed
+      true, // Fallback required
+      lastEnhancedError,
+      'minimal',
+      'fallback'
+    )
+  }
+
+  // For non-recoverable errors, still throw
+  throw lastEnhancedError || new VISApiError('Failed to fetch enhanced tournament data from GetBeachTournament API')
 }
 
 // Enhanced XML parsing for GetBeachTournament response

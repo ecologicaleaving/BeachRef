@@ -1,4 +1,4 @@
-import { Tournament, TournamentDetail, VISApiResponse, VISApiError } from './types'
+import { Tournament, TournamentDetail, VISApiResponse, VISApiError, BeachMatch, BeachMatchDetail, MatchListOptions, MatchStatus } from './types'
 import { VIS_API_CONFIG } from './constants'
 import { 
   categorizeVISApiError, 
@@ -1462,4 +1462,553 @@ export async function fetchTournamentDetailFromVISEnhanced(code: string): Promis
   })
   
   return hardcodedTournament
+}
+
+// ========================= BEACH MATCH API FUNCTIONS (Story 4.3) =========================
+
+/**
+ * Fetch tournament matches using GetBeachMatchList VIS API endpoint
+ * Implements caching, error handling, and retry logic following Epic 3 patterns
+ */
+export async function fetchTournamentMatches(
+  tournamentNumber: string,
+  options: MatchListOptions = {}
+): Promise<BeachMatch[]> {
+  const startTime = Date.now()
+  const context = createErrorContext(undefined, tournamentNumber)
+  
+  log({
+    level: 'info',
+    message: 'Starting tournament match fetch from GetBeachMatchList',
+    data: { tournamentNumber, options }
+  })
+
+  let lastEnhancedError: EnhancedVISApiError | null = null
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+      // Build XML request for GetBeachMatchList
+      const xmlRequest = buildBeachMatchListRequest(tournamentNumber, options)
+      
+      log({
+        level: 'info',
+        message: `GetBeachMatchList attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { tournamentNumber, attempt, xmlLength: xmlRequest.length }
+      })
+
+      const response = await fetch(VIS_API_CONFIG.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/xml',
+          'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+          'User-Agent': 'BeachRef-MVP/1.0'
+        },
+        body: xmlRequest,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+      const duration = Date.now() - startTime
+
+      if (!response.ok) {
+        throw new VISApiError(
+          `GetBeachMatchList API returned ${response.status}: ${response.statusText}`,
+          response.status
+        )
+      }
+
+      const xmlText = await response.text()
+      const matches = parseBeachMatchListResponse(xmlText)
+
+      // Log successful fetch
+      logPerformanceMetrics('fetchTournamentMatches', duration, 'GetBeachMatchList', tournamentNumber, false, 'full')
+
+      log({
+        level: 'info',
+        message: 'Successfully fetched tournament matches',
+        data: { 
+          tournamentNumber, 
+          matchCount: matches.length, 
+          duration,
+          attempt: attempt + 1
+        }
+      })
+
+      return matches
+
+    } catch (error) {
+      const enhancedError = categorizeVISApiError(error, 'GetBeachMatchList', context)
+      lastEnhancedError = enhancedError
+
+      log({
+        level: 'warn',
+        message: `GetBeachMatchList attempt ${attempt + 1} failed`,
+        data: {
+          tournamentNumber,
+          attempt: attempt + 1,
+          error: enhancedError.message,
+          statusCode: enhancedError.statusCode,
+          category: enhancedError.category.type,
+          retryable: isRetryableError(enhancedError)
+        }
+      })
+
+      // Break if non-retryable or max attempts reached
+      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(enhancedError)) {
+        break
+      }
+
+      const delay = calculateRetryDelay(attempt, RETRY_CONFIG.baseDelay, RETRY_CONFIG.maxDelay)
+      log({
+        level: 'info',
+        message: `Retrying GetBeachMatchList in ${delay}ms`,
+        data: { tournamentNumber, attempt: attempt + 1, delay }
+      })
+      
+      await sleep(delay)
+    }
+  }
+
+  const duration = Date.now() - startTime
+
+  // Log final failure
+  logVISApiError(sanitizeErrorForLogging(lastEnhancedError!), 'GetBeachMatchList', {
+    tournamentNumber,
+    attempts: RETRY_CONFIG.maxRetries + 1,
+    duration,
+    finalErrorType: lastEnhancedError?.category.type,
+    requiresFallback: lastEnhancedError ? requiresFallback(lastEnhancedError) : false
+  })
+
+  // For match list, return empty array for graceful fallback
+  if (lastEnhancedError && requiresFallback(lastEnhancedError)) {
+    log({
+      level: 'warn',
+      message: 'Returning empty match list as fallback',
+      data: { tournamentNumber, errorCategory: lastEnhancedError.category.type }
+    })
+    return []
+  }
+
+  throw lastEnhancedError || new VISApiError('Failed to fetch tournament matches from GetBeachMatchList API')
+}
+
+/**
+ * Fetch individual match details using GetBeachMatch VIS API endpoint
+ * Implements fallback to basic match data when detailed data unavailable
+ */
+export async function fetchMatchDetail(matchNumber: string): Promise<BeachMatchDetail> {
+  const startTime = Date.now()
+  const context = createErrorContext(undefined, matchNumber)
+  
+  log({
+    level: 'info',
+    message: 'Starting match detail fetch from GetBeachMatch',
+    data: { matchNumber }
+  })
+
+  let lastEnhancedError: EnhancedVISApiError | null = null
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+      // Build XML request for GetBeachMatch
+      const xmlRequest = buildBeachMatchRequest(matchNumber)
+      
+      log({
+        level: 'info',
+        message: `GetBeachMatch attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { matchNumber, attempt, xmlLength: xmlRequest.length }
+      })
+
+      const response = await fetch(VIS_API_CONFIG.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/xml',
+          'X-FIVB-App-ID': VIS_API_CONFIG.appId,
+          'User-Agent': 'BeachRef-MVP/1.0'
+        },
+        body: xmlRequest,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+      const duration = Date.now() - startTime
+
+      if (!response.ok) {
+        throw new VISApiError(
+          `GetBeachMatch API returned ${response.status}: ${response.statusText}`,
+          response.status
+        )
+      }
+
+      const xmlText = await response.text()
+      const matchDetail = parseBeachMatchResponse(xmlText)
+
+      // Log successful fetch
+      logPerformanceMetrics('fetchMatchDetail', duration, 'GetBeachMatch', matchNumber, false, 'full')
+
+      log({
+        level: 'info',
+        message: 'Successfully fetched match detail',
+        data: { 
+          matchNumber, 
+          duration,
+          attempt: attempt + 1,
+          hasSetScores: !!(matchDetail.pointsTeamASet1 && matchDetail.pointsTeamBSet1)
+        }
+      })
+
+      return matchDetail
+
+    } catch (error) {
+      const enhancedError = categorizeVISApiError(error, 'GetBeachMatch', context)
+      lastEnhancedError = enhancedError
+
+      log({
+        level: 'warn',
+        message: `GetBeachMatch attempt ${attempt + 1} failed`,
+        data: {
+          matchNumber,
+          attempt: attempt + 1,
+          error: enhancedError.message,
+          statusCode: enhancedError.statusCode,
+          category: enhancedError.category.type,
+          retryable: isRetryableError(enhancedError)
+        }
+      })
+
+      // Break if non-retryable or max attempts reached
+      if (attempt >= RETRY_CONFIG.maxRetries || !isRetryableError(enhancedError)) {
+        break
+      }
+
+      const delay = calculateRetryDelay(attempt, RETRY_CONFIG.baseDelay, RETRY_CONFIG.maxDelay)
+      log({
+        level: 'info',
+        message: `Retrying GetBeachMatch in ${delay}ms`,
+        data: { matchNumber, attempt: attempt + 1, delay }
+      })
+      
+      await sleep(delay)
+    }
+  }
+
+  const duration = Date.now() - startTime
+
+  // Log final failure
+  logVISApiError(sanitizeErrorForLogging(lastEnhancedError!), 'GetBeachMatch', {
+    matchNumber,
+    attempts: RETRY_CONFIG.maxRetries + 1,
+    duration,
+    finalErrorType: lastEnhancedError?.category.type,
+    requiresFallback: lastEnhancedError ? requiresFallback(lastEnhancedError) : false
+  })
+
+  throw lastEnhancedError || new VISApiError('Failed to fetch match detail from GetBeachMatch API')
+}
+
+// ========================= XML REQUEST BUILDERS =========================
+
+/**
+ * Build XML request for GetBeachMatchList endpoint
+ */
+function buildBeachMatchListRequest(tournamentNumber: string, options: MatchListOptions): string {
+  const fields = [
+    'NoInTournament',
+    'LocalDate', 
+    'LocalTime',
+    'TeamAName',
+    'TeamBName',
+    'Court',
+    'MatchPointsA',
+    'MatchPointsB',
+    'Status'
+  ].join(' ')
+
+  let filterAttributes = `NoTournament="${tournamentNumber}"`
+  
+  if (options.phase) {
+    filterAttributes += ` InMainDraw="${options.phase === 'mainDraw'}"`
+  }
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachMatchList" Fields="${fields}">
+    <Filter ${filterAttributes}/>
+  </Request>
+</Requests>`
+}
+
+/**
+ * Build XML request for GetBeachMatch endpoint
+ */
+function buildBeachMatchRequest(matchNumber: string): string {
+  const fields = [
+    'NoInTournament',
+    'LocalDate',
+    'LocalTime', 
+    'TeamAName',
+    'TeamBName',
+    'Court',
+    'MatchPointsA',
+    'MatchPointsB',
+    'PointsTeamASet1',
+    'PointsTeamBSet1',
+    'PointsTeamASet2',
+    'PointsTeamBSet2',
+    'PointsTeamASet3',
+    'PointsTeamBSet3',
+    'DurationSet1',
+    'DurationSet2', 
+    'DurationSet3',
+    'Status'
+  ].join(' ')
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachMatch" No="${matchNumber}" Fields="${fields}"/>
+</Requests>`
+}
+
+// ========================= XML RESPONSE PARSERS =========================
+
+/**
+ * Parse GetBeachMatchList XML response into BeachMatch array
+ */
+export function parseBeachMatchListResponse(xmlData: string): BeachMatch[] {
+  try {
+    log({
+      level: 'info',
+      message: 'Parsing GetBeachMatchList response',
+      data: { xmlLength: xmlData.length }
+    })
+
+    const matches: BeachMatch[] = []
+    
+    // Extract all BeachMatch elements
+    const matchRegex = /<BeachMatch([^>]*)>/g
+    let matchResult
+    
+    while ((matchResult = matchRegex.exec(xmlData)) !== null) {
+      const matchAttributes = matchResult[1]
+      
+      try {
+        const match = parseBeachMatchAttributes(matchAttributes)
+        if (match) {
+          matches.push(match)
+        }
+      } catch (error) {
+        log({
+          level: 'warn',
+          message: 'Failed to parse individual match',
+          data: { matchAttributes, error: error instanceof Error ? error.message : String(error) }
+        })
+        // Continue processing other matches
+      }
+    }
+
+    log({
+      level: 'info',
+      message: 'Successfully parsed match list',
+      data: { matchCount: matches.length }
+    })
+
+    return matches
+
+  } catch (error) {
+    log({
+      level: 'error',
+      message: 'Failed to parse GetBeachMatchList response',
+      data: { error: error instanceof Error ? error.message : String(error), xmlLength: xmlData.length }
+    })
+    throw new VISApiError('Failed to parse match list response', undefined, error)
+  }
+}
+
+/**
+ * Parse GetBeachMatch XML response into BeachMatchDetail
+ */
+export function parseBeachMatchResponse(xmlData: string): BeachMatchDetail {
+  try {
+    log({
+      level: 'info',
+      message: 'Parsing GetBeachMatch response',
+      data: { xmlLength: xmlData.length }
+    })
+
+    // Extract BeachMatch element attributes
+    const matchRegex = /<BeachMatch([^>]*)>/
+    const matchResult = xmlData.match(matchRegex)
+    
+    if (!matchResult) {
+      throw new VISApiError('No BeachMatch element found in response')
+    }
+
+    const matchAttributes = matchResult[1]
+    const baseMatch = parseBeachMatchAttributes(matchAttributes)
+    
+    if (!baseMatch) {
+      throw new VISApiError('Failed to parse match attributes')
+    }
+
+    // Extract additional detailed fields
+    const pointsTeamASet1 = parseInt(extractAttribute(matchAttributes, 'PointsTeamASet1') || '0') || 0
+    const pointsTeamBSet1 = parseInt(extractAttribute(matchAttributes, 'PointsTeamBSet1') || '0') || 0
+    const pointsTeamASet2 = parseInt(extractAttribute(matchAttributes, 'PointsTeamASet2') || '0') || 0
+    const pointsTeamBSet2 = parseInt(extractAttribute(matchAttributes, 'PointsTeamBSet2') || '0') || 0
+    const pointsTeamASet3 = parseInt(extractAttribute(matchAttributes, 'PointsTeamASet3') || '0') || undefined
+    const pointsTeamBSet3 = parseInt(extractAttribute(matchAttributes, 'PointsTeamBSet3') || '0') || undefined
+    
+    const durationSet1 = extractAttribute(matchAttributes, 'DurationSet1') || '0:00'
+    const durationSet2 = extractAttribute(matchAttributes, 'DurationSet2') || '0:00'
+    const durationSet3 = extractAttribute(matchAttributes, 'DurationSet3') || undefined
+
+    // Calculate total duration
+    const totalDuration = calculateTotalDuration([durationSet1, durationSet2, durationSet3].filter(Boolean) as string[])
+
+    const matchDetail: BeachMatchDetail = {
+      ...baseMatch,
+      pointsTeamASet1,
+      pointsTeamBSet1,
+      pointsTeamASet2,
+      pointsTeamBSet2,
+      pointsTeamASet3,
+      pointsTeamBSet3,
+      durationSet1,
+      durationSet2,
+      durationSet3,
+      totalDuration
+    }
+
+    log({
+      level: 'info',
+      message: 'Successfully parsed match detail',
+      data: { 
+        matchNumber: baseMatch.noInTournament,
+        hasSetScores: !!(pointsTeamASet1 && pointsTeamBSet1),
+        hasSet3: !!(pointsTeamASet3 && pointsTeamBSet3)
+      }
+    })
+
+    return matchDetail
+
+  } catch (error) {
+    log({
+      level: 'error',
+      message: 'Failed to parse GetBeachMatch response',
+      data: { error: error instanceof Error ? error.message : String(error), xmlLength: xmlData.length }
+    })
+    throw new VISApiError('Failed to parse match detail response', undefined, error)
+  }
+}
+
+// ========================= HELPER FUNCTIONS =========================
+
+/**
+ * Parse BeachMatch XML attributes into BeachMatch object
+ */
+function parseBeachMatchAttributes(attributes: string): BeachMatch | null {
+  try {
+    const noInTournament = extractAttribute(attributes, 'NoInTournament')
+    const localDate = extractAttribute(attributes, 'LocalDate')
+    const localTime = extractAttribute(attributes, 'LocalTime')
+    const teamAName = extractAttribute(attributes, 'TeamAName')
+    const teamBName = extractAttribute(attributes, 'TeamBName')
+    const court = extractAttribute(attributes, 'Court')
+    const matchPointsA = parseInt(extractAttribute(attributes, 'MatchPointsA') || '0') || 0
+    const matchPointsB = parseInt(extractAttribute(attributes, 'MatchPointsB') || '0') || 0
+    const status = extractAttribute(attributes, 'Status')
+
+    // Validate required fields
+    if (!noInTournament || !localDate || !localTime || !teamAName || !teamBName || !court) {
+      log({
+        level: 'warn',
+        message: 'Missing required match fields',
+        data: { noInTournament, localDate, localTime, teamAName, teamBName, court }
+      })
+      return null
+    }
+
+    // Map status codes to MatchStatus
+    let matchStatus: MatchStatus = 'scheduled'
+    if (status === '2') matchStatus = 'completed'
+    else if (status === '1') matchStatus = 'live'
+    else if (status === '3') matchStatus = 'cancelled'
+
+    return {
+      noInTournament: noInTournament.trim(),
+      localDate: localDate.trim(),
+      localTime: localTime.trim(),
+      teamAName: teamAName.trim(),
+      teamBName: teamBName.trim(),
+      court: court.trim(),
+      matchPointsA,
+      matchPointsB,
+      status: matchStatus
+    }
+
+  } catch (error) {
+    log({
+      level: 'error',
+      message: 'Failed to parse match attributes',
+      data: { attributes, error: error instanceof Error ? error.message : String(error) }
+    })
+    return null
+  }
+}
+
+/**
+ * Extract XML attribute value
+ */
+function extractAttribute(xml: string, attributeName: string): string | null {
+  const escapedAttributeName = attributeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`${escapedAttributeName}="([^"]*)"`, 'i')
+  const match = xml.match(regex)
+  return match ? match[1].trim() : null
+}
+
+/**
+ * Calculate total match duration from individual set durations
+ */
+function calculateTotalDuration(setDurations: string[]): string {
+  try {
+    let totalMinutes = 0
+    let totalSeconds = 0
+
+    for (const duration of setDurations) {
+      const [minutes, seconds] = duration.split(':').map(Number)
+      if (!isNaN(minutes) && !isNaN(seconds)) {
+        totalMinutes += minutes
+        totalSeconds += seconds
+      }
+    }
+
+    // Handle seconds overflow
+    totalMinutes += Math.floor(totalSeconds / 60)
+    totalSeconds = totalSeconds % 60
+
+    // Convert to hours if needed
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${totalSeconds.toString().padStart(2, '0')}`
+    } else {
+      return `${minutes}:${totalSeconds.toString().padStart(2, '0')}`
+    }
+
+  } catch (error) {
+    log({
+      level: 'warn',
+      message: 'Failed to calculate total duration',
+      data: { setDurations, error: error instanceof Error ? error.message : String(error) }
+    })
+    return '0:00'
+  }
 }

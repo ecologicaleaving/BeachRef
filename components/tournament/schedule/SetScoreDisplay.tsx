@@ -18,11 +18,11 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MockBeachMatchDetail } from '@/lib/mock-schedule-data'
+import { BeachMatchDetail } from '@/lib/types'
 import { Trophy, Clock } from 'lucide-react'
 
 interface SetScoreDisplayProps {
-  match: MockBeachMatchDetail
+  match: BeachMatchDetail
 }
 
 interface SetData {

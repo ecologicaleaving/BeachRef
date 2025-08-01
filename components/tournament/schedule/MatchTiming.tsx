@@ -18,11 +18,11 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MockBeachMatchDetail } from '@/lib/mock-schedule-data'
+import { BeachMatchDetail } from '@/lib/types'
 import { Clock, Calendar, Play, CheckCircle } from 'lucide-react'
 
 interface MatchTimingProps {
-  match: MockBeachMatchDetail
+  match: BeachMatchDetail
 }
 
 export default function MatchTiming({ match }: MatchTimingProps) {
@@ -101,12 +101,10 @@ export default function MatchTiming({ match }: MatchTimingProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Actual Start:</span>
                     <span className="font-medium">
-                      {match.actualStartTime}
-                      {match.actualStartTime !== match.localTime && (
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {match.actualStartTime > match.localTime ? 'Late' : 'Early'}
-                        </Badge>
-                      )}
+                      {match.localTime}
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        As Scheduled
+                      </Badge>
                     </span>
                   </div>
                 )}

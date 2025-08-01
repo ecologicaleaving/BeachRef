@@ -18,11 +18,11 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MockBeachMatchDetail } from '@/lib/mock-schedule-data'
+import { BeachMatchDetail } from '@/lib/types'
 import { MapPin, Home, Waves, Sun, Trophy } from 'lucide-react'
 
 interface CourtVenueInfoProps {
-  match: MockBeachMatchDetail
+  match: BeachMatchDetail
 }
 
 export default function CourtVenueInfo({ match }: CourtVenueInfoProps) {
@@ -82,8 +82,9 @@ export default function CourtVenueInfo({ match }: CourtVenueInfoProps) {
   }
 
   const phaseInfo = getPhaseInfo(match.phase)
-  const surfaceColor = getSurfaceColor(match.courtSurface)
-  const surfaceIcon = getSurfaceIcon(match.courtSurface)
+  const courtSurface = 'sand' // Default for beach volleyball
+  const surfaceColor = getSurfaceColor(courtSurface)
+  const surfaceIcon = getSurfaceIcon(courtSurface)
 
   return (
     <Card>
@@ -116,12 +117,12 @@ export default function CourtVenueInfo({ match }: CourtVenueInfoProps) {
                     className={`${surfaceColor} flex items-center gap-1 capitalize`}
                   >
                     {surfaceIcon}
-                    {match.courtSurface}
+                    {courtSurface}
                   </Badge>
                 </div>
 
                 {/* Court Conditions */}
-                {match.courtSurface === 'sand' && (
+                {courtSurface === 'sand' && (
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <div className="flex items-center gap-2 text-sm">
                       <Sun className="h-4 w-4 text-yellow-600" />

@@ -23,14 +23,44 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import { MockBeachMatch, groupMatchesByDay, formatDisplayDate, sortMatchesByTime } from '@/lib/mock-schedule-data'
+import { BeachMatch } from '@/lib/types'
 import MatchCard from './MatchCard'
 
+// Utility functions for match organization
+function groupMatchesByDay(matches: BeachMatch[]): Record<string, BeachMatch[]> {
+  return matches.reduce((groups, match) => {
+    const date = match.localDate
+    if (!groups[date]) {
+      groups[date] = []
+    }
+    groups[date].push(match)
+    return groups
+  }, {} as Record<string, BeachMatch[]>)
+}
+
+function formatDisplayDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long', 
+    day: 'numeric'
+  })
+}
+
+function sortMatchesByTime(matches: BeachMatch[]): BeachMatch[] {
+  return [...matches].sort((a, b) => {
+    // Sort by time first, then by court
+    const timeComparison = a.localTime.localeCompare(b.localTime)
+    if (timeComparison !== 0) return timeComparison
+    return a.court.localeCompare(b.court)
+  })
+}
+
 interface ScheduleByDayProps {
-  matches: MockBeachMatch[]
+  matches: BeachMatch[]
   className?: string
   defaultOpenDays?: string[]
-  onMatchClick?: (match: MockBeachMatch) => void
+  onMatchClick?: (match: BeachMatch) => void
 }
 
 export default function ScheduleByDay({ 

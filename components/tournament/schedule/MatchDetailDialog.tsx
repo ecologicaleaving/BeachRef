@@ -25,21 +25,32 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { MockBeachMatch, MockBeachMatchDetail, getMockMatchDetail, formatDisplayDate } from '@/lib/mock-schedule-data'
+import { BeachMatch, BeachMatchDetail } from '@/lib/types'
 import { Loader2 } from 'lucide-react'
 import SetScoreDisplay from './SetScoreDisplay'
 import MatchTiming from './MatchTiming'
 import TeamInfo from './TeamInfo'
 import CourtVenueInfo from './CourtVenueInfo'
 
-interface MatchDetailDialogProps {
-  match: MockBeachMatch | null
-  isOpen: boolean
-  onClose: () => void
+// Utility function for date formatting
+function formatDisplayDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long', 
+    day: 'numeric'
+  })
 }
 
-export default function MatchDetailDialog({ match, isOpen, onClose }: MatchDetailDialogProps) {
-  const [matchDetail, setMatchDetail] = useState<MockBeachMatchDetail | null>(null)
+interface MatchDetailDialogProps {
+  match: BeachMatch | null
+  isOpen: boolean
+  onClose: () => void
+  tournamentCode: string
+}
+
+export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCode }: MatchDetailDialogProps) {
+  const [matchDetail, setMatchDetail] = useState<BeachMatchDetail | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,8 +59,38 @@ export default function MatchDetailDialog({ match, isOpen, onClose }: MatchDetai
     setError(null)
     
     try {
-      const detail = await getMockMatchDetail(matchId)
-      setMatchDetail(detail)
+      // Story 4.3: Real VIS API integration for match details
+      const response = await fetch(`/api/tournament/${tournamentCode}/matches/${matchId}`)
+      
+      if (!response.ok) {
+        // Handle error responses gracefully
+        const errorData = await response.json()
+        if (response.status === 404) {
+          throw new Error(`Match ${matchId} not found`)
+        } else if (errorData.userMessage) {
+          throw new Error(errorData.userMessage)
+        } else {
+          throw new Error(errorData.error || 'Failed to load match details')
+        }
+      }
+      
+      const data = await response.json()
+      
+      if (data.match) {
+        setMatchDetail(data.match)
+        
+        // Log performance and data source for monitoring
+        const responseTime = response.headers.get('X-Response-Time')
+        const dataSource = response.headers.get('X-Data-Source')
+        console.log(`Match detail loaded from ${dataSource} in ${responseTime}`)
+        
+        if (data.warning) {
+          console.warn('Match detail warning:', data.warning)
+        }
+      } else {
+        throw new Error('No match data received')
+      }
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load match details. Please try again.'
       setError(errorMessage)
@@ -57,7 +98,7 @@ export default function MatchDetailDialog({ match, isOpen, onClose }: MatchDetai
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [tournamentCode])
 
   useEffect(() => {
     if (isOpen && match) {

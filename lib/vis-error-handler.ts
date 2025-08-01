@@ -16,7 +16,7 @@
 import { VISApiError } from './types'
 
 export type VISApiErrorType = 'network' | 'authentication' | 'authorization' | 'data' | 'parsing' | 'timeout' | 'unknown'
-export type VISApiEndpoint = 'GetBeachTournamentList' | 'GetBeachTournament' | 'Unknown'
+export type VISApiEndpoint = 'GetBeachTournamentList' | 'GetBeachTournament' | 'GetBeachMatchList' | 'GetBeachMatch' | 'Unknown'
 
 export interface VISApiErrorCategory {
   type: VISApiErrorType

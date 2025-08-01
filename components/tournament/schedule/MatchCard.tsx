@@ -18,13 +18,13 @@
 import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Clock } from 'lucide-react'
-import { MockBeachMatch } from '@/lib/mock-schedule-data'
+import { BeachMatch } from '@/lib/types'
 import MatchStatus from './MatchStatus'
 
 interface MatchCardProps {
-  match: MockBeachMatch
+  match: BeachMatch
   className?: string
-  onMatchClick?: (match: MockBeachMatch) => void
+  onMatchClick?: (match: BeachMatch) => void
 }
 
 export default function MatchCard({ match, className = '', onMatchClick }: MatchCardProps) {

@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { MockBeachMatch, getMockScheduleData } from '@/lib/mock-schedule-data'
+import { BeachMatch } from '@/lib/types'
 import ScheduleByDay from './ScheduleByDay'
 import TournamentScheduleSkeleton from './TournamentScheduleSkeleton'
 import EmptySchedule from './EmptySchedule'
@@ -32,10 +32,10 @@ export default function TournamentSchedule({
   tournamentName,
   className = '' 
 }: TournamentScheduleProps) {
-  const [matches, setMatches] = useState<MockBeachMatch[]>([])
+  const [matches, setMatches] = useState<BeachMatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedMatch, setSelectedMatch] = useState<MockBeachMatch | null>(null)
+  const [selectedMatch, setSelectedMatch] = useState<BeachMatch | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const fetchScheduleData = useCallback(async () => {
@@ -43,11 +43,34 @@ export default function TournamentSchedule({
       setLoading(true)
       setError(null)
       
-      // In Story 4.3, this will be replaced with real VIS API call
-      const scheduleData = await getMockScheduleData(tournamentCode)
-      setMatches(scheduleData)
+      // Story 4.3: Real VIS API integration
+      const response = await fetch(`/api/tournament/${tournamentCode}/schedule`)
+      
+      if (!response.ok) {
+        // Handle error responses gracefully
+        const errorData = await response.json()
+        if (response.status === 404) {
+          throw new Error(`Tournament ${tournamentCode} not found`)
+        } else if (errorData.userMessage) {
+          throw new Error(errorData.userMessage)
+        } else {
+          throw new Error(errorData.error || 'Failed to load tournament schedule')
+        }
+      }
+      
+      const data = await response.json()
+      setMatches(data.matches || [])
+      
+      // Log performance for monitoring
+      if (data.cached) {
+        console.log(`Tournament schedule loaded from cache in ${response.headers.get('X-Response-Time')}`)
+      } else {
+        console.log(`Tournament schedule loaded from API in ${response.headers.get('X-Response-Time')}`)
+      }
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load schedule')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load schedule'
+      setError(errorMessage)
       console.error('Error fetching schedule data:', err)
     } finally {
       setLoading(false)
@@ -62,7 +85,7 @@ export default function TournamentSchedule({
     fetchScheduleData()
   }
 
-  const handleMatchClick = (match: MockBeachMatch) => {
+  const handleMatchClick = (match: BeachMatch) => {
     setSelectedMatch(match)
     setIsDialogOpen(true)
   }
@@ -118,6 +141,7 @@ export default function TournamentSchedule({
         match={selectedMatch}
         isOpen={isDialogOpen}
         onClose={handleDialogClose}
+        tournamentCode={tournamentCode}
       />
     </div>
   )

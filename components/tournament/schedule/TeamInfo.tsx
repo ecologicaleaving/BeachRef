@@ -18,11 +18,11 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { MockBeachMatchDetail } from '@/lib/mock-schedule-data'
+import { BeachMatchDetail } from '@/lib/types'
 import { Users, Trophy, Globe, TrendingUp } from 'lucide-react'
 
 interface TeamInfoProps {
-  match: MockBeachMatchDetail
+  match: BeachMatchDetail
 }
 
 interface TeamData {
@@ -40,17 +40,17 @@ export default function TeamInfo({ match }: TeamInfoProps) {
 
   const teamA: TeamData = {
     name: match.teamAName,
-    seed: match.teamASeed,
-    confederation: match.teamAConfederation,
-    ranking: match.teamARanking,
+    seed: undefined, // Not available in real API data
+    confederation: undefined, // Not available in real API data
+    ranking: undefined, // Not available in real API data
     isWinner: matchWinner === 'A'
   }
 
   const teamB: TeamData = {
     name: match.teamBName,
-    seed: match.teamBSeed,
-    confederation: match.teamBConfederation,
-    ranking: match.teamBRanking,
+    seed: undefined, // Not available in real API data
+    confederation: undefined, // Not available in real API data
+    ranking: undefined, // Not available in real API data
     isWinner: matchWinner === 'B'
   }
 

@@ -69,6 +69,48 @@ export interface Match {
   round?: string;
 }
 
+export type MatchStatus = 'scheduled' | 'live' | 'completed' | 'cancelled'
+
+export interface BeachMatch {
+  noInTournament: string
+  localDate: string           // ISO date format
+  localTime: string          // "HH:MM" format
+  teamAName: string
+  teamBName: string
+  court: string
+  matchPointsA: number       // Sets won by Team A
+  matchPointsB: number       // Sets won by Team B
+  status: MatchStatus
+}
+
+export interface BeachMatchDetail extends BeachMatch {
+  pointsTeamASet1: number
+  pointsTeamBSet1: number
+  pointsTeamASet2: number
+  pointsTeamBSet2: number
+  pointsTeamASet3?: number
+  pointsTeamBSet3?: number
+  durationSet1: string       // "mm:ss" format
+  durationSet2: string
+  durationSet3?: string
+  totalDuration?: string     // Calculated field
+  roundName?: string
+  phase?: 'qualification' | 'mainDraw' | 'finals'
+}
+
+export interface MatchListOptions {
+  phase?: 'qualification' | 'mainDraw'
+  dateRange?: { start: string; end: string }
+  round?: string
+}
+
+export interface MatchScheduleResponse {
+  matches: BeachMatch[]
+  tournamentNumber: string
+  lastUpdated: string
+  totalMatches: number
+}
+
 export interface Team {
   id: string;
   name: string;

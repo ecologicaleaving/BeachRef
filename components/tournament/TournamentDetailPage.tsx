@@ -5,6 +5,7 @@ import TournamentBreadcrumb from './TournamentBreadcrumb'
 import TournamentHeader from './TournamentHeader'
 import TournamentDetailTabs from './TournamentDetailTabs'
 import TournamentMobileActions from './TournamentMobileActions'
+import FloatingNavigationButton from './FloatingNavigationButton'
 
 interface TournamentDetailPageProps {
   tournament: TournamentDetail
@@ -28,6 +29,7 @@ export default function TournamentDetailPage({ tournament }: TournamentDetailPag
       <TournamentHeader tournament={tournament} />
       <TournamentDetailTabs tournament={tournament} />
       <TournamentMobileActions tournament={tournament} />
+      <FloatingNavigationButton />
     </div>
   )
 }

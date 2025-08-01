@@ -139,7 +139,7 @@ so that I can track match progress and access detailed match information for off
 **Priority**: Medium
 **Estimated Effort**: 1-2 days
 **Dependencies**: Story 3.1.1
-**Status**: ✅ READY FOR IMPLEMENTATION (Story Created)
+**Status**: ✅ COMPLETED
 
 As a referee,
 I want seamless navigation between the tournament list and detail views,
@@ -155,13 +155,44 @@ so that I can efficiently browse tournaments and access detailed information.
 
 **Key Components**: Navigation integration, breadcrumbs, mobile-responsive patterns
 
-**Implementation Notes**: Navigation foundation already implemented in Story 3.1. This story focuses on enhancement and mobile optimization.
+**Implementation Status**: ✅ COMPLETED - All acceptance criteria met with comprehensive test coverage and QA approval. Excellent mobile-first responsive design and accessibility compliance achieved.
 
 **UX Component Requirements**:
-- **Enhanced Breadcrumbs**: Extended shadcn Breadcrumb with tournament context
-- **Quick Navigation**: Floating action buttons for mobile quick return functionality
-- **Responsive Navigation**: Optimized touch targets and mobile-first navigation patterns
-- **Back Navigation**: Seamless integration with browser history and routing
+- **Enhanced Breadcrumbs**: Extended shadcn Breadcrumb with tournament context ✅
+- **Quick Navigation**: Floating action buttons for mobile quick return functionality ✅
+- **Responsive Navigation**: Optimized touch targets and mobile-first navigation patterns ✅
+- **Back Navigation**: Seamless integration with browser history and routing ✅
+
+### Story 3.3.1: Production Error Handling and VIS API Reliability
+**Priority**: High
+**Estimated Effort**: 1-2 days
+**Dependencies**: Story 3.3 (Navigation - Completed)
+**Status**: 🔄 READY FOR IMPLEMENTATION
+
+As a referee,
+I want the tournament detail pages to be reliable and handle VIS API errors gracefully,
+so that I can access tournament information even when some API endpoints fail.
+
+**Background**: Production deployment has revealed 401 Unauthorized errors when accessing GetBeachTournament endpoint without proper authentication. This story addresses the critical production reliability gap to complete Epic 3.
+
+**Acceptance Criteria**:
+1. Tournament detail pages handle 401 Unauthorized errors from GetBeachTournament endpoint gracefully
+2. Fallback mechanism automatically uses GetBeachTournamentList when GetBeachTournament fails
+3. Users see appropriate error messages when tournament data is unavailable
+4. Production error logging provides clear diagnostics for VIS API issues
+5. Tournament detail pages remain functional with basic data when enhanced data fails
+6. Error boundary components prevent entire page crashes from API failures
+7. Offline/network error scenarios are handled with proper user feedback
+
+**Key Components**: Enhanced error handling, fallback mechanisms, error boundaries, production monitoring
+
+**Production Impact**: Resolves critical "Error: Failed to fetch tournament MQUI2025: 401 Unauthorized" affecting live users
+
+**UX Component Requirements**:
+- **Error Boundaries**: Tournament-specific error boundary components for graceful failure handling
+- **Error Messages**: User-friendly error states with actionable feedback
+- **Loading States**: Enhanced loading indicators during fallback attempts
+- **Monitoring Integration**: Production error logging and diagnostic capabilities
 
 ## Compatibility Requirements
 

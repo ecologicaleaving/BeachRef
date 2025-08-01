@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchTournamentDetailFromVIS, fetchTournamentsFromVIS } from '@/lib/vis-client'
-import { VISApiError, TournamentDetail } from '@/lib/types'
-import { EnhancedVISApiError, categorizeVISApiError, sanitizeErrorForLogging } from '@/lib/vis-error-handler'
+import { fetchTournamentDetailFromVIS } from '@/lib/vis-client'
+import { TournamentDetail } from '@/lib/types'
+import { categorizeVISApiError, sanitizeErrorForLogging, isEnhancedVISApiError } from '@/lib/vis-error-handler'
 import { logVISApiError, logUserExperienceError } from '@/lib/production-logger'
 
 /**
@@ -49,10 +49,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    // Check for cache bypass and fallback parameters
+    // Check for cache bypass parameter
     const url = new URL(request.url)
     const bypassCache = url.searchParams.get('nocache') === 'true'
-    const forceFallback = url.searchParams.get('fallback') === 'true'
     
     // Check cache first (unless bypassed)
     const cached = cache.get(code)
@@ -120,7 +119,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const duration = Date.now() - startTime
     
     // Categorize and enhance the error
-    const enhancedError = error instanceof EnhancedVISApiError 
+    const enhancedError = isEnhancedVISApiError(error)
       ? error 
       : categorizeVISApiError(error, 'GetBeachTournamentList', {
           tournamentCode: code,

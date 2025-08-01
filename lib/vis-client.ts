@@ -8,6 +8,7 @@ import {
   calculateRetryDelay,
   createFallbackResult,
   createErrorContext,
+  isEnhancedVISApiError,
   EnhancedVISApiError,
   FallbackResult
 } from './vis-error-handler'
@@ -178,25 +179,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Enhanced network connectivity detection
-async function checkNetworkConnectivity(): Promise<boolean> {
-  try {
-    // Simple connectivity check using a reliable endpoint
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
-    
-    const response = await fetch('https://www.google.com/favicon.ico', {
-      method: 'HEAD',
-      signal: controller.signal,
-      cache: 'no-store'
-    })
-    
-    clearTimeout(timeoutId)
-    return response.ok
-  } catch {
-    return false
-  }
-}
 
 // Main function to fetch tournaments from VIS API
 export async function fetchTournamentsFromVIS(year?: number): Promise<VISApiResponse> {
@@ -1138,7 +1120,7 @@ export async function fetchTournamentDetailByNumber(tournamentNo: string): Promi
 
     } catch (error) {
       // Categorize and enhance the error
-      const enhancedError = error instanceof EnhancedVISApiError 
+      const enhancedError = isEnhancedVISApiError(error)
         ? error 
         : categorizeVISApiError(error, 'GetBeachTournament', { 
             ...context, 

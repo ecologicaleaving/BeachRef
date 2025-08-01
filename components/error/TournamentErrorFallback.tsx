@@ -35,7 +35,6 @@ import { EnhancedVISApiError } from '@/lib/vis-error-handler'
 
 export default function TournamentErrorFallback({
   error,
-  errorInfo,
   onRetry,
   retryCount,
   isRetrying,
@@ -43,7 +42,6 @@ export default function TournamentErrorFallback({
 }: ErrorFallbackProps) {
   const enhancedError = error && 'category' in error ? error as EnhancedVISApiError : null
   const errorType = enhancedError?.category?.type || 'unknown'
-  const severity = enhancedError?.category?.severity || 'medium'
   const isAuthentication = errorType === 'authentication' && enhancedError?.statusCode === 401
 
   // Get appropriate icon based on error type
@@ -191,7 +189,7 @@ export default function TournamentErrorFallback({
 
           {/* Development error details */}
           {process.env.NODE_ENV === 'development' && error && (
-            <Alert variant="outline">
+            <Alert variant="default">
               <AlertTitle>Developer Information</AlertTitle>
               <AlertDescription className="mt-2 space-y-2">
                 <details className="text-sm">

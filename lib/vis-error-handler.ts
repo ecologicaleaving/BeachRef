@@ -49,6 +49,19 @@ export interface FallbackResult<T> {
 }
 
 /**
+ * Type guard to check if an error is an EnhancedVISApiError
+ */
+export function isEnhancedVISApiError(error: unknown): error is EnhancedVISApiError {
+  return error instanceof VISApiError && 
+         'category' in error && 
+         'context' in error && 
+         'sanitizedForLogging' in error &&
+         error.category !== undefined &&
+         error.context !== undefined &&
+         typeof error.sanitizedForLogging === 'boolean'
+}
+
+/**
  * Categorizes VIS API errors for proper handling and logging
  */
 export function categorizeVISApiError(
@@ -178,38 +191,49 @@ export function categorizeVISApiError(
 
 /**
  * Determines if an error is retryable based on its category and context
+ * Overloaded to handle both unknown and EnhancedVISApiError types
  */
-export function isRetryableError(error: EnhancedVISApiError, attempt: number = 0, maxRetries: number = 3): boolean {
+export function isRetryableError(error: unknown, attempt?: number, maxRetries?: number): boolean
+export function isRetryableError(error: EnhancedVISApiError, attempt?: number, maxRetries?: number): boolean
+export function isRetryableError(error: unknown | EnhancedVISApiError, attempt: number = 0, maxRetries: number = 3): boolean {
   // Never retry beyond max attempts
   if (attempt >= maxRetries) {
     return false
   }
 
+  // If error is not enhanced, convert it first
+  let enhancedError: EnhancedVISApiError
+  if (isEnhancedVISApiError(error)) {
+    enhancedError = error
+  } else {
+    enhancedError = categorizeVISApiError(error)
+  }
+
   // Don't retry client errors (4xx) except for timeouts and rate limits
-  if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
-    if (error.statusCode === 408 || error.statusCode === 429) {
+  if (enhancedError.statusCode && enhancedError.statusCode >= 400 && enhancedError.statusCode < 500) {
+    if (enhancedError.statusCode === 408 || enhancedError.statusCode === 429) {
       return true // Timeout or rate limit - retryable
     }
     return false // Other 4xx errors are not retryable
   }
 
   // Retry server errors (5xx) and network issues
-  if (error.category.type === 'network' || error.category.type === 'timeout') {
+  if (enhancedError.category.type === 'network' || enhancedError.category.type === 'timeout') {
     return true
   }
 
   // Don't retry authentication/authorization errors - they need fallback
-  if (error.category.type === 'authentication' || error.category.type === 'authorization') {
+  if (enhancedError.category.type === 'authentication' || enhancedError.category.type === 'authorization') {
     return false
   }
 
   // Don't retry parsing errors - they indicate a fundamental issue
-  if (error.category.type === 'parsing') {
+  if (enhancedError.category.type === 'parsing') {
     return false
   }
 
   // Retry unknown errors cautiously
-  return error.category.type === 'unknown' && attempt < 2
+  return enhancedError.category.type === 'unknown' && attempt < 2
 }
 
 /**

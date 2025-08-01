@@ -36,7 +36,7 @@ interface State {
 
 export interface ErrorFallbackProps {
   error: Error | null
-  errorInfo: ErrorInfo | null
+  errorInfo?: ErrorInfo | null
   onRetry: () => void
   retryCount: number
   isRetrying: boolean

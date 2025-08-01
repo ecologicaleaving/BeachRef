@@ -53,6 +53,32 @@ export interface TournamentDetail extends Tournament {
   };
 }
 
+export interface Match {
+  id: string;
+  date: string;
+  time: string;
+  team1: string;
+  team2: string;
+  status: 'scheduled' | 'live' | 'completed';
+  result?: {
+    set1: { team1: number; team2: number };
+    set2: { team1: number; team2: number };
+    set3?: { team1: number; team2: number };
+  };
+  court?: string;
+  round?: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  country: string;
+  players: {
+    name: string;
+    position?: string;
+  }[];
+}
+
 export interface VISApiResponse {
   tournaments: Tournament[];
   totalCount: number;

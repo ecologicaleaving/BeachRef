@@ -81,7 +81,7 @@ export default function CourtVenueInfo({ match }: CourtVenueInfoProps) {
     }
   }
 
-  const phaseInfo = getPhaseInfo(match.phase)
+  const phaseInfo = getPhaseInfo(match.phase || 'mainDraw')
   const courtSurface = 'sand' // Default for beach volleyball
   const surfaceColor = getSurfaceColor(courtSurface)
   const surfaceIcon = getSurfaceIcon(courtSurface)
@@ -201,7 +201,7 @@ export default function CourtVenueInfo({ match }: CourtVenueInfoProps) {
               </div>
               <p className="text-sm text-gray-600">Category</p>
               <p className="font-medium text-sm capitalize">
-                {match.phase.replace(/([A-Z])/g, ' $1').trim()}
+                {(match.phase || 'mainDraw').replace(/([A-Z])/g, ' $1').trim()}
               </p>
             </div>
           </div>

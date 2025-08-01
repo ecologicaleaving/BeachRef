@@ -153,32 +153,4 @@ export async function GET(request: NextRequest, { params }: { params: { code: st
   }
 }
 
-/**
- * Cache cleanup utility - can be called periodically to prevent memory leaks
- * Removes expired cache entries
- */
-export function cleanupScheduleCache() {
-  const now = Date.now()
-  for (const [key, value] of Array.from(scheduleCache.entries())) {
-    if ((now - value.timestamp) > SCHEDULE_CACHE_TTL) {
-      scheduleCache.delete(key)
-    }
-  }
-}
-
-/**
- * Cache warming utility for active tournaments
- * Pre-loads frequently accessed tournament schedules
- */
-export async function warmScheduleCache(tournamentCodes: string[]) {
-  for (const code of tournamentCodes) {
-    try {
-      // Pre-load frequently accessed tournament schedules
-      const request = new NextRequest(`http://localhost/api/tournament/${code}/schedule`)
-      await GET(request, { params: { code } })
-    } catch (error) {
-      // Silent fail for cache warming
-      console.warn(`Failed to warm cache for tournament ${code}:`, error)
-    }
-  }
-}
+// Utility functions moved to separate module to avoid Next.js API route export restrictions

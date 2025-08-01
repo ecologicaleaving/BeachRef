@@ -172,7 +172,7 @@ export default function TeamInfo({ match }: TeamInfoProps) {
             <div className="text-center">
               <p className="text-gray-600">Phase</p>
               <Badge variant="outline" className="capitalize">
-                {match.phase.replace(/([A-Z])/g, ' $1').trim()}
+                {(match.phase || 'mainDraw').replace(/([A-Z])/g, ' $1').trim()}
               </Badge>
             </div>
             <div className="text-center">

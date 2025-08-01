@@ -132,7 +132,7 @@ export default function MatchTiming({ match }: MatchTimingProps) {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Total Duration:</span>
                       <span className="font-medium text-lg">
-                        {formatDuration(match.totalDuration)}
+                        {match.totalDuration ? formatDuration(match.totalDuration) : 'N/A'}
                       </span>
                     </div>
                     <div className="text-xs text-gray-500 space-y-1">
@@ -181,7 +181,7 @@ export default function MatchTiming({ match }: MatchTimingProps) {
           <div className="mt-6 pt-4 border-t border-gray-100">
             <div className="text-sm text-gray-600 space-y-1">
               <p>
-                <strong>Match completed</strong> in {formatDuration(match.totalDuration)}
+                <strong>Match completed</strong> in {match.totalDuration ? formatDuration(match.totalDuration) : 'Unknown duration'}
                 {match.pointsTeamASet3 !== undefined ? ' (3 sets)' : ' (2 sets)'}
               </p>
               <p className="text-xs text-gray-500">

@@ -221,47 +221,4 @@ export async function GET(
   }
 }
 
-/**
- * Cache cleanup utility for match details
- * Removes expired cache entries to prevent memory leaks
- */
-export function cleanupMatchDetailCache() {
-  const now = Date.now()
-  for (const [key, value] of Array.from(matchDetailCache.entries())) {
-    if ((now - value.timestamp) > MATCH_DETAIL_CACHE_TTL) {
-      matchDetailCache.delete(key)
-    }
-  }
-}
-
-/**
- * Batch fetch multiple match details with request limiting
- * Optimizes performance for loading multiple match details
- */
-export async function fetchMultipleMatchDetails(
-  tournamentCode: string, 
-  matchIds: string[]
-): Promise<BeachMatchDetail[]> {
-  const BATCH_SIZE = 5 // Limit concurrent requests
-  const results: BeachMatchDetail[] = []
-  
-  for (let i = 0; i < matchIds.length; i += BATCH_SIZE) {
-    const batch = matchIds.slice(i, i + BATCH_SIZE)
-    const batchPromises = batch.map(async matchId => {
-      try {
-        const request = new NextRequest(`http://localhost/api/tournament/${tournamentCode}/matches/${matchId}`)
-        const response = await GET(request, { params: { code: tournamentCode, matchId } })
-        const data = await response.json()
-        return data.match
-      } catch (error) {
-        console.warn(`Failed to fetch match ${matchId}:`, error)
-        return null // Continue with other matches
-      }
-    })
-    
-    const batchResults = await Promise.all(batchPromises)
-    results.push(...batchResults.filter(result => result !== null))
-  }
-  
-  return results
-}
+// Utility functions moved to separate module to avoid Next.js API route export restrictions

@@ -16,7 +16,7 @@
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Clock, Play, CheckCircle, XCircle } from 'lucide-react'
-import { MatchStatus as MatchStatusType } from '@/lib/mock-schedule-data'
+import { MatchStatus as MatchStatusType } from '@/lib/types'
 
 interface MatchStatusProps {
   status: MatchStatusType

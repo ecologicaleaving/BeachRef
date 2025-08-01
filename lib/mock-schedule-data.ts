@@ -17,6 +17,32 @@ export interface MockBeachMatch {
   status: MatchStatus
 }
 
+export interface MockBeachMatchDetail extends MockBeachMatch {
+  // Additional fields for Story 4.2 (extends Story 4.1 structure)
+  matchPointsA: number          // Sets won by Team A
+  matchPointsB: number          // Sets won by Team B
+  pointsTeamASet1: number       // Set 1 score for Team A
+  pointsTeamBSet1: number       // Set 1 score for Team B
+  pointsTeamASet2: number       // Set 2 score for Team A
+  pointsTeamBSet2: number       // Set 2 score for Team B
+  pointsTeamASet3?: number      // Set 3 score for Team A (optional)
+  pointsTeamBSet3?: number      // Set 3 score for Team B (optional)
+  durationSet1: string          // "32:15" (mm:ss format)
+  durationSet2: string          // "28:43"
+  durationSet3?: string         // Optional third set
+  totalDuration: string         // "1:23:45" (h:mm:ss format)
+  actualStartTime: string       // "09:15" (actual vs scheduled time)
+  courtSurface: 'sand' | 'indoor' | 'grass'
+  roundName: string             // "Pool A", "Quarterfinals", etc.
+  phase: 'qualification' | 'mainDraw' | 'finals'
+  teamASeed?: number            // Team A seeding
+  teamBSeed?: number            // Team B seeding
+  teamAConfederation?: string   // Team A confederation
+  teamBConfederation?: string   // Team B confederation
+  teamARanking?: number         // Team A ranking
+  teamBRanking?: number         // Team B ranking
+}
+
 /**
  * Mock match data for comprehensive UI testing
  */
@@ -152,6 +178,41 @@ export function sortMatchesByTime(matches: MockBeachMatch[]): MockBeachMatch[] {
 }
 
 /**
+ * Convert basic match to detailed match data
+ * This simulates the detailed match data that would come from VIS API
+ */
+export function convertToDetailedMatch(match: MockBeachMatch): MockBeachMatchDetail {
+  // Generate realistic detailed data based on match status
+  const isCompleted = match.status === 'completed'
+  
+  return {
+    ...match,
+    matchPointsA: isCompleted ? Math.floor(Math.random() * 2) + 1 : 0,
+    matchPointsB: isCompleted ? Math.floor(Math.random() * 2) + 1 : 0,
+    pointsTeamASet1: isCompleted ? 15 + Math.floor(Math.random() * 10) : 0,
+    pointsTeamBSet1: isCompleted ? 15 + Math.floor(Math.random() * 10) : 0,
+    pointsTeamASet2: isCompleted ? 15 + Math.floor(Math.random() * 10) : 0,
+    pointsTeamBSet2: isCompleted ? 15 + Math.floor(Math.random() * 10) : 0,
+    pointsTeamASet3: isCompleted && Math.random() > 0.5 ? 10 + Math.floor(Math.random() * 8) : undefined,
+    pointsTeamBSet3: isCompleted && Math.random() > 0.5 ? 10 + Math.floor(Math.random() * 8) : undefined,
+    durationSet1: isCompleted ? `${20 + Math.floor(Math.random() * 20)}:${10 + Math.floor(Math.random() * 50)}` : "00:00",
+    durationSet2: isCompleted ? `${20 + Math.floor(Math.random() * 20)}:${10 + Math.floor(Math.random() * 50)}` : "00:00",
+    durationSet3: isCompleted && Math.random() > 0.5 ? `${15 + Math.floor(Math.random() * 10)}:${10 + Math.floor(Math.random() * 50)}` : undefined,
+    totalDuration: isCompleted ? `1:${10 + Math.floor(Math.random() * 50)}:${10 + Math.floor(Math.random() * 50)}` : "0:00:00",
+    actualStartTime: match.localTime, // For now, use scheduled time
+    courtSurface: 'sand' as const,
+    roundName: "Pool A",
+    phase: 'qualification' as const,
+    teamASeed: Math.floor(Math.random() * 20) + 1,
+    teamBSeed: Math.floor(Math.random() * 20) + 1,
+    teamAConfederation: "FIVB",
+    teamBConfederation: "FIVB",
+    teamARanking: Math.floor(Math.random() * 50) + 1,
+    teamBRanking: Math.floor(Math.random() * 50) + 1,
+  }
+}
+
+/**
  * Get mock schedule data for a tournament
  * This simulates the API call that will be implemented in Story 4.3
  */
@@ -161,4 +222,22 @@ export async function getMockScheduleData(tournamentCode: string): Promise<MockB
   
   // Return mock data (in real implementation, this would fetch from VIS API)
   return mockScheduleData
+}
+
+/**
+ * Get detailed match data for a specific match
+ * This simulates the detailed match API call for the dialog
+ */
+export async function getMockMatchDetail(matchId: string): Promise<MockBeachMatchDetail> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300))
+  
+  // Find the basic match data
+  const basicMatch = mockScheduleData.find(match => match.noInTournament === matchId)
+  if (!basicMatch) {
+    throw new Error(`Match ${matchId} not found`)
+  }
+  
+  // Convert to detailed match data
+  return convertToDetailedMatch(basicMatch)
 }

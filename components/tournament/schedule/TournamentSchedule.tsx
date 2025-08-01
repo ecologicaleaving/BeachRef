@@ -19,6 +19,7 @@ import { MockBeachMatch, getMockScheduleData } from '@/lib/mock-schedule-data'
 import ScheduleByDay from './ScheduleByDay'
 import TournamentScheduleSkeleton from './TournamentScheduleSkeleton'
 import EmptySchedule from './EmptySchedule'
+import MatchDetailDialog from './MatchDetailDialog'
 
 interface TournamentScheduleProps {
   tournamentCode: string
@@ -34,6 +35,8 @@ export default function TournamentSchedule({
   const [matches, setMatches] = useState<MockBeachMatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedMatch, setSelectedMatch] = useState<MockBeachMatch | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const fetchScheduleData = useCallback(async () => {
     try {
@@ -57,6 +60,16 @@ export default function TournamentSchedule({
 
   const handleRetry = () => {
     fetchScheduleData()
+  }
+
+  const handleMatchClick = (match: MockBeachMatch) => {
+    setSelectedMatch(match)
+    setIsDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false)
+    setSelectedMatch(null)
   }
 
   if (loading) {
@@ -98,6 +111,13 @@ export default function TournamentSchedule({
       <ScheduleByDay 
         matches={matches}
         defaultOpenDays={[]} // Let ScheduleByDay determine default
+        onMatchClick={handleMatchClick}
+      />
+      
+      <MatchDetailDialog
+        match={selectedMatch}
+        isOpen={isDialogOpen}
+        onClose={handleDialogClose}
       />
     </div>
   )

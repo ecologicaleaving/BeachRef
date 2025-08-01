@@ -24,14 +24,29 @@ import MatchStatus from './MatchStatus'
 interface MatchCardProps {
   match: MockBeachMatch
   className?: string
+  onMatchClick?: (match: MockBeachMatch) => void
 }
 
-export default function MatchCard({ match, className = '' }: MatchCardProps) {
+export default function MatchCard({ match, className = '', onMatchClick }: MatchCardProps) {
+  const handleClick = () => {
+    onMatchClick?.(match)
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleClick()
+    }
+  }
+
   return (
     <Card 
-      className={`hover:shadow-md transition-shadow duration-200 ${className}`}
-      role="article"
-      aria-label={`Match ${match.noInTournament}: ${match.teamAName} vs ${match.teamBName}`}
+      className={`hover:shadow-md transition-shadow duration-200 cursor-pointer ${className}`}
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for match ${match.noInTournament}: ${match.teamAName} vs ${match.teamBName}`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">

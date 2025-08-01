@@ -30,12 +30,14 @@ interface ScheduleByDayProps {
   matches: MockBeachMatch[]
   className?: string
   defaultOpenDays?: string[]
+  onMatchClick?: (match: MockBeachMatch) => void
 }
 
 export default function ScheduleByDay({ 
   matches, 
   className = '',
-  defaultOpenDays = []
+  defaultOpenDays = [],
+  onMatchClick
 }: ScheduleByDayProps) {
   const groupedMatches = groupMatchesByDay(matches)
   const sortedDates = Object.keys(groupedMatches).sort()
@@ -89,6 +91,7 @@ export default function ScheduleByDay({
                     <MatchCard 
                       key={match.noInTournament} 
                       match={match}
+                      onMatchClick={onMatchClick}
                     />
                   ))}
                 </div>

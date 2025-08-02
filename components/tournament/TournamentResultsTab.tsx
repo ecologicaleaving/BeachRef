@@ -1,58 +1,56 @@
 'use client'
 
-import { useState } from 'react'
-import { Match, TournamentDetail } from '@/lib/types'
+import { useState, useEffect, useCallback } from 'react'
+import { BeachMatch, TournamentDetail } from '@/lib/types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 import { Trophy, TrendingUp } from 'lucide-react'
-import MatchDetailDialog from './MatchDetailDialog'
+import MatchDetailDialog from './schedule/MatchDetailDialog'
 
 interface TournamentResultsTabProps {
   tournament: TournamentDetail
-  matches?: Match[]
 }
 
-// Utility function to calculate match winner
-const calculateMatchWinner = (match: Match) => {
-  if (!match.result) {
-    return { winner: '', winnerSets: 0, loserSets: 0 }
-  }
-
-  const team1Sets = [
-    match.result.set1.team1 > match.result.set1.team2 ? 1 : 0,
-    match.result.set2.team1 > match.result.set2.team2 ? 1 : 0,
-    match.result.set3 ? (match.result.set3.team1 > match.result.set3.team2 ? 1 : 0) : 0
-  ].reduce((a, b) => a + b, 0)
-  
-  const team2Sets = [
-    match.result.set1.team2 > match.result.set1.team1 ? 1 : 0,
-    match.result.set2.team2 > match.result.set2.team1 ? 1 : 0,
-    match.result.set3 ? (match.result.set3.team2 > match.result.set3.team1 ? 1 : 0) : 0
-  ].reduce((a, b) => a + b, 0)
-  
-  if (team1Sets > team2Sets) {
+// Utility function to calculate match winner from BeachMatch data
+const calculateMatchWinner = (match: BeachMatch) => {
+  // Use matchPointsA and matchPointsB which represent sets won
+  if (match.matchPointsA > match.matchPointsB) {
     return {
-      winner: match.team1,
-      winnerSets: team1Sets,
-      loserSets: team2Sets
+      winner: match.teamAName,
+      winnerSets: match.matchPointsA,
+      loserSets: match.matchPointsB
+    }
+  } else if (match.matchPointsB > match.matchPointsA) {
+    return {
+      winner: match.teamBName,
+      winnerSets: match.matchPointsB,
+      loserSets: match.matchPointsA
     }
   } else {
     return {
-      winner: match.team2,
-      winnerSets: team2Sets,
-      loserSets: team1Sets
+      winner: '',
+      winnerSets: 0,
+      loserSets: 0
     }
   }
 }
 
-export default function TournamentResultsTab({ tournament, matches }: TournamentResultsTabProps) {
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
+// Smart detection: determine if match is completed based on scores
+const isMatchCompleted = (match: BeachMatch) => {
+  return match.matchPointsA > 0 || match.matchPointsB > 0 || match.status === 'completed'
+}
+
+export default function TournamentResultsTab({ tournament }: TournamentResultsTabProps) {
+  const [matches, setMatches] = useState<BeachMatch[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedMatch, setSelectedMatch] = useState<BeachMatch | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const openMatchDialog = (match: Match) => {
+  const openMatchDialog = (match: BeachMatch) => {
     setSelectedMatch(match)
     setIsDialogOpen(true)
   }
@@ -62,61 +60,99 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
     setSelectedMatch(null)
   }
 
-
-  // Generate sample data if no matches provided (for now)
-  const sampleMatches: Match[] = matches || [
-    {
-      id: '1',
-      date: '2025-01-15',
-      time: '09:00',
-      team1: 'Team USA A',
-      team2: 'Team BRA A',
-      status: 'completed',
-      court: 'Court 1',
-      round: 'Pool A',
-      result: {
-        set1: { team1: 21, team2: 19 },
-        set2: { team1: 21, team2: 16 }
+  const fetchMatchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Fetch match data from the same API endpoint as schedule
+      const response = await fetch(`/api/tournament/${tournament.code}/schedule`)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 404) {
+          throw new Error(`Tournament ${tournament.code} not found`)
+        } else if (errorData.userMessage) {
+          throw new Error(errorData.userMessage)
+        } else {
+          throw new Error(errorData.error || 'Failed to load tournament matches')
+        }
       }
-    },
-    {
-      id: '2',
-      date: '2025-01-15',
-      time: '10:30',
-      team1: 'Team GER A',
-      team2: 'Team FRA A',
-      status: 'completed',
-      court: 'Court 2',
-      round: 'Pool A',
-      result: {
-        set1: { team1: 18, team2: 21 },
-        set2: { team1: 21, team2: 19 },
-        set3: { team1: 13, team2: 15 }
-      }
-    },
-    {
-      id: '3',
-      date: '2025-01-16',
-      time: '14:00',
-      team1: 'Team NOR A',
-      team2: 'Team POL A',
-      status: 'completed',
-      court: 'Court 1',
-      round: 'Pool B',
-      result: {
-        set1: { team1: 21, team2: 12 },
-        set2: { team1: 21, team2: 18 }
-      }
+      
+      const data = await response.json()
+      setMatches(data.matches || [])
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load matches'
+      setError(errorMessage)
+      console.error('Error fetching match data for results:', err)
+    } finally {
+      setLoading(false)
     }
-  ]
+  }, [tournament.code])
 
-  // Filter completed matches only
-  const completedMatches = sampleMatches.filter(match => match.status === 'completed')
+  useEffect(() => {
+    fetchMatchData()
+  }, [fetchMatchData])
+
+
+  // Use fetched match data
+  const allMatches: BeachMatch[] = matches
+
+  // Filter completed matches only using smart detection
+  const completedMatches = allMatches.filter(match => isMatchCompleted(match))
   
   // Calculate progress
-  const totalMatches = sampleMatches.length + 3 // Assume some upcoming matches
+  const totalMatches = allMatches.length
   const completedCount = completedMatches.length
-  const completionPercentage = Math.round((completedCount / totalMatches) * 100)
+  const liveMatches = allMatches.filter(match => match.status === 'live').length
+  const upcomingMatches = totalMatches - completedCount - liveMatches
+  const completionPercentage = totalMatches > 0 ? Math.round((completedCount / totalMatches) * 100) : 0
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Tournament Results
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading tournament results...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Tournament Results
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Error loading results: {error}</p>
+            <Button 
+              variant="outline" 
+              onClick={fetchMatchData}
+              className="mt-4"
+            >
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (completedMatches.length === 0) {
     return (
@@ -131,7 +167,12 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
           <div className="text-center py-8 text-muted-foreground">
             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Results will be available as matches are completed.</p>
-            <p className="text-sm mt-2">Check back during the tournament for live updates.</p>
+            <p className="text-sm mt-2">
+              {totalMatches > 0 
+                ? `${totalMatches} matches scheduled, ${liveMatches} in progress`
+                : 'Check back during the tournament for live updates.'
+              }
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -164,11 +205,11 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
                   <div className="text-sm text-muted-foreground">Completed</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">1</div>
+                  <div className="text-2xl font-bold text-orange-600">{liveMatches}</div>
                   <div className="text-sm text-muted-foreground">Live</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-gray-600">{totalMatches - completedCount - 1}</div>
+                  <div className="text-2xl font-bold text-gray-600">{upcomingMatches}</div>
                   <div className="text-sm text-muted-foreground">Upcoming</div>
                 </div>
               </div>
@@ -202,23 +243,23 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
                     const { winner, winnerSets, loserSets } = calculateMatchWinner(match)
 
                     return (
-                      <TableRow key={match.id}>
+                      <TableRow key={match.noInTournament}>
                         <TableCell>
                           <div className="font-medium">
-                            {new Date(match.date).toLocaleDateString()}
+                            {new Date(match.localDate).toLocaleDateString()}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {match.time}
+                            {match.localTime}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <div className={`font-medium ${winner === match.team1 ? 'text-green-600' : ''}`}>
-                              {match.team1}
+                            <div className={`font-medium ${winner === match.teamAName ? 'text-green-600' : ''}`}>
+                              {match.teamAName}
                             </div>
                             <div className="text-muted-foreground text-sm">vs</div>
-                            <div className={`font-medium ${winner === match.team2 ? 'text-green-600' : ''}`}>
-                              {match.team2}
+                            <div className={`font-medium ${winner === match.teamBName ? 'text-green-600' : ''}`}>
+                              {match.teamBName}
                             </div>
                           </div>
                         </TableCell>
@@ -228,15 +269,12 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
                               {winnerSets}-{loserSets}
                             </Badge>
                           </div>
-                          {match.result && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              ({match.result.set1.team1}-{match.result.set1.team2}, {match.result.set2.team1}-{match.result.set2.team2}
-                              {match.result.set3 && `, ${match.result.set3.team1}-${match.result.set3.team2}`})
-                            </div>
-                          )}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Sets: {match.matchPointsA}-{match.matchPointsB}
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{match.round}</Badge>
+                          <Badge variant="outline">Match {match.noInTournament}</Badge>
                         </TableCell>
                         <TableCell>{match.court}</TableCell>
                         <TableCell>
@@ -263,6 +301,7 @@ export default function TournamentResultsTab({ tournament, matches }: Tournament
         match={selectedMatch}
         isOpen={isDialogOpen}
         onClose={closeMatchDialog}
+        tournamentCode={tournament.code}
       />
     </>
   )

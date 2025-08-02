@@ -1,6 +1,7 @@
 'use client'
 
 import { TournamentDetail } from '@/lib/types'
+import { TournamentProvider } from '@/context/TournamentContext'
 import TournamentBreadcrumb from './TournamentBreadcrumb'
 import TournamentHeader from './TournamentHeader'
 import TournamentDetailTabs from './TournamentDetailTabs'
@@ -24,12 +25,17 @@ export default function TournamentDetailPage({ tournament }: TournamentDetailPag
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6" key={tournament.code}>
-      <TournamentBreadcrumb tournament={tournament} />
-      <TournamentHeader tournament={tournament} />
-      <TournamentDetailTabs tournament={tournament} />
-      <TournamentMobileActions tournament={tournament} />
-      <FloatingNavigationButton />
-    </div>
+    <TournamentProvider 
+      tournamentCode={tournament.code} 
+      initialTournamentDetail={tournament}
+    >
+      <div className="container mx-auto px-4 py-6 space-y-6" key={tournament.code}>
+        <TournamentBreadcrumb tournament={tournament} />
+        <TournamentHeader tournament={tournament} />
+        <TournamentDetailTabs tournament={tournament} />
+        <TournamentMobileActions tournament={tournament} />
+        <FloatingNavigationButton />
+      </div>
+    </TournamentProvider>
   )
 }

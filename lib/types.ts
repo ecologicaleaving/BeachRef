@@ -1,3 +1,10 @@
+// Extend Window interface for gtag
+declare global {
+  interface Window {
+    gtag?: (command: string, action: string, parameters?: any) => void;
+  }
+}
+
 export interface Tournament {
   code: string;              // Unique tournament identifier
   name: string;              // Tournament name

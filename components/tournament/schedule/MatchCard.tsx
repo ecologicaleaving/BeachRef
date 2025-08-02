@@ -39,6 +39,11 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
     }
   }
 
+  // Smart detection: if scores exist, treat as completed
+  const hasScores = match.matchPointsA > 0 || match.matchPointsB > 0
+  const actualStatus = hasScores ? 'completed' : match.status
+  const isCompleted = actualStatus === 'completed'
+
   return (
     <Card 
       className={`hover:shadow-md transition-shadow duration-200 cursor-pointer ${className}`}
@@ -69,33 +74,59 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
 
             {/* Team Matchup */}
             <div className="space-y-2">
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900 truncate">
+                  <div className={`font-semibold truncate ${
+                    isCompleted && match.matchPointsA > match.matchPointsB 
+                      ? 'text-green-700' 
+                      : 'text-gray-900'
+                  }`}>
                     {match.teamAName}
                   </div>
                 </div>
+                {isCompleted && (
+                  <div className={`text-lg font-bold ${
+                    match.matchPointsA > match.matchPointsB 
+                      ? 'text-green-700' 
+                      : 'text-gray-600'
+                  }`}>
+                    {match.matchPointsA}
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center justify-center">
                 <div className="text-sm text-gray-500 font-medium">
-                  vs
+                  {isCompleted ? '-' : 'vs'}
                 </div>
               </div>
               
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900 truncate">
+                  <div className={`font-semibold truncate ${
+                    isCompleted && match.matchPointsB > match.matchPointsA 
+                      ? 'text-green-700' 
+                      : 'text-gray-900'
+                  }`}>
                     {match.teamBName}
                   </div>
                 </div>
+                {isCompleted && (
+                  <div className={`text-lg font-bold ${
+                    match.matchPointsB > match.matchPointsA 
+                      ? 'text-green-700' 
+                      : 'text-gray-600'
+                  }`}>
+                    {match.matchPointsB}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Status Badge */}
           <div className="flex-shrink-0">
-            <MatchStatus status={match.status} />
+            <MatchStatus status={actualStatus} />
           </div>
         </div>
       </CardContent>

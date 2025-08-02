@@ -1,4 +1,4 @@
-import { Tournament, TournamentDetail, VISApiResponse, VISApiError, BeachMatch, BeachMatchDetail, MatchListOptions, MatchStatus } from './types'
+import { Tournament, TournamentDetail, VISApiResponse, VISApiError, BeachMatch, BeachMatchDetail, MatchListOptions, MatchStatus, TournamentRanking } from './types'
 import { VIS_API_CONFIG } from './constants'
 import { 
   categorizeVISApiError, 
@@ -2011,4 +2011,214 @@ function calculateTotalDuration(setDurations: string[]): string {
     })
     return '0:00'
   }
+}
+
+// ========================= BEACH TOURNAMENT RANKING API FUNCTIONS (Story 4.4) =========================
+
+/**
+ * Build XML request for GetBeachTournamentRanking endpoint
+ */
+function buildBeachTournamentRankingRequest(
+  tournamentNumber: string,
+  phase: 'qualification' | 'mainDraw' = 'mainDraw'
+): string {
+  const phaseValue = phase === 'qualification' ? 'Qualification' : 'MainDraw'
+  
+  return `<?xml version="1.0" encoding="utf-8"?>
+<Requests>
+  <Request Type="GetBeachTournamentRanking" No="${tournamentNumber}" Phase="${phaseValue}"
+           Fields="Rank TeamName NoTeam NoPlayer1 NoPlayer2 Player1Name Player2Name ConfederationCode EarnedPointsTeam EarningsTeam"/>
+</Requests>`
+}
+
+/**
+ * Parse GetBeachTournamentRanking XML response
+ */
+function parseBeachTournamentRankingResponse(xmlText: string, phase: 'qualification' | 'mainDraw'): TournamentRanking[] {
+  try {
+    log({
+      level: 'info',
+      message: 'Parsing GetBeachTournamentRanking response',
+      data: { xmlLength: xmlText.length, phase }
+    })
+
+    const rankings: TournamentRanking[] = []
+    
+    // Extract all Ranking elements
+    const rankingMatches = xmlText.match(/<Ranking[^>]*>/g)
+    
+    if (!rankingMatches) {
+      log({
+        level: 'warn',
+        message: 'No Ranking elements found in response',
+        data: { xmlPreview: xmlText.substring(0, 500) }
+      })
+      return []
+    }
+
+    for (const rankingMatch of rankingMatches) {
+      try {
+        const rank = parseInt(extractAttribute(rankingMatch, 'Rank') || '0')
+        const teamName = extractAttribute(rankingMatch, 'TeamName') || ''
+        const noTeam = extractAttribute(rankingMatch, 'NoTeam') || ''
+        const noPlayer1 = extractAttribute(rankingMatch, 'NoPlayer1') || ''
+        const noPlayer2 = extractAttribute(rankingMatch, 'NoPlayer2') || ''
+        const player1Name = extractAttribute(rankingMatch, 'Player1Name') || ''
+        const player2Name = extractAttribute(rankingMatch, 'Player2Name') || ''
+        const confederationCode = extractAttribute(rankingMatch, 'ConfederationCode') || ''
+        const earnedPointsTeam = parseInt(extractAttribute(rankingMatch, 'EarnedPointsTeam') || '0')
+        const earningsTeamStr = extractAttribute(rankingMatch, 'EarningsTeam')
+        const earningsTeam = earningsTeamStr ? parseFloat(earningsTeamStr) : undefined
+
+        if (rank > 0 && teamName && noTeam) {
+          rankings.push({
+            rank,
+            teamName,
+            noTeam,
+            noPlayer1,
+            noPlayer2,
+            player1Name,
+            player2Name,
+            confederationCode,
+            earnedPointsTeam,
+            earningsTeam,
+            phase
+          })
+        }
+      } catch (error) {
+        log({
+          level: 'warn',
+          message: 'Failed to parse individual ranking element',
+          data: { rankingMatch, error: error instanceof Error ? error.message : String(error) }
+        })
+      }
+    }
+
+    log({
+      level: 'info',
+      message: 'Successfully parsed tournament rankings',
+      data: { rankingsCount: rankings.length, phase }
+    })
+
+    return rankings.sort((a, b) => a.rank - b.rank)
+
+  } catch (error) {
+    log({
+      level: 'error',
+      message: 'Failed to parse GetBeachTournamentRanking response',
+      data: { 
+        error: error instanceof Error ? error.message : String(error),
+        xmlPreview: xmlText.substring(0, 500),
+        phase
+      }
+    })
+    throw new VISApiError(
+      'Failed to parse tournament ranking response',
+      undefined,
+      error
+    )
+  }
+}
+
+/**
+ * Fetch tournament rankings using GetBeachTournamentRanking VIS API endpoint
+ * Implements caching, error handling, and retry logic following Epic 3 patterns
+ */
+export async function fetchTournamentRanking(
+  tournamentNumber: string,
+  phase: 'qualification' | 'mainDraw' = 'mainDraw'
+): Promise<TournamentRanking[]> {
+  const startTime = Date.now()
+  const context = createErrorContext(undefined, tournamentNumber)
+  
+  log({
+    level: 'info',
+    message: 'Starting tournament ranking fetch from GetBeachTournamentRanking',
+    data: { tournamentNumber, phase }
+  })
+
+  let lastEnhancedError: EnhancedVISApiError | null = null
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), VIS_API_CONFIG.timeout)
+
+      // Build XML request for GetBeachTournamentRanking
+      const xmlRequest = buildBeachTournamentRankingRequest(tournamentNumber, phase)
+      
+      log({
+        level: 'info',
+        message: `GetBeachTournamentRanking attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1}`,
+        data: { tournamentNumber, phase, attempt, xmlLength: xmlRequest.length }
+      })
+
+      const response = await fetch(VIS_API_CONFIG.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': '',
+          'User-Agent': 'BeachRef/1.0'
+        },
+        body: xmlRequest,
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new VISApiError(
+          `VIS API returned ${response.status}: ${response.statusText}`,
+          response.status
+        )
+      }
+
+      const xmlText = await response.text()
+      const rankings = parseBeachTournamentRankingResponse(xmlText, phase)
+      
+      const duration = Date.now() - startTime
+      
+      logPerformanceMetrics('fetchTournamentRanking', duration, 'GetBeachTournamentRanking', tournamentNumber, false, 'full')
+      
+      log({
+        level: 'info',
+        message: 'Successfully fetched tournament rankings',
+        data: { tournamentNumber, phase, rankingsCount: rankings.length, duration }
+      })
+      
+      return rankings
+
+    } catch (error) {
+      lastEnhancedError = categorizeVISApiError(error, 'GetBeachTournamentRanking', context)
+      
+      log({
+        level: 'warn',
+        message: `GetBeachTournamentRanking attempt ${attempt + 1} failed`,
+        data: { 
+          tournamentNumber, 
+          phase,
+          attempt, 
+          error: lastEnhancedError.message,
+          statusCode: lastEnhancedError.statusCode
+        }
+      })
+
+      if (attempt >= RETRY_CONFIG.maxRetries || !lastEnhancedError.category.recoverable) {
+        break
+      }
+      
+      await sleep(calculateBackoffDelay(attempt, RETRY_CONFIG))
+    }
+  }
+
+  if (lastEnhancedError) {
+    logVISApiError(sanitizeErrorForLogging(lastEnhancedError), 'fetchTournamentRanking', {
+      tournamentNumber,
+      phase,
+      duration: Date.now() - startTime
+    })
+    throw lastEnhancedError
+  }
+
+  throw new VISApiError('Failed to fetch tournament ranking', undefined)
 }

@@ -111,6 +111,40 @@ export interface MatchScheduleResponse {
   totalMatches: number
 }
 
+export interface TournamentRanking {
+  rank: number
+  teamName: string
+  noTeam: string
+  noPlayer1: string
+  noPlayer2: string
+  player1Name: string
+  player2Name: string
+  confederationCode: string
+  earnedPointsTeam: number
+  earningsTeam?: number
+  phase: 'qualification' | 'mainDraw'
+}
+
+export interface TeamRankingInfo {
+  position: number
+  teamName: string
+  players: {
+    player1: string
+    player2: string
+  }
+  confederation: string
+  points: number
+  earnings?: number
+}
+
+export interface TournamentResultsResponse {
+  rankings: TournamentRanking[]
+  tournamentNumber: string
+  lastUpdated: string
+  totalTeams: number
+  completionPercentage: number
+}
+
 export interface Team {
   id: string;
   name: string;

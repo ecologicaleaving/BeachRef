@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom'
+import { toHaveNoViolations } from 'jest-axe'
+
+// Extend Jest matchers with jest-axe for accessibility testing
+expect.extend(toHaveNoViolations)
 
 // Mock required Next.js API functions for testing
 Object.defineProperty(global, 'Request', {

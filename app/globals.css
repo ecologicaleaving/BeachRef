@@ -149,8 +149,12 @@
 }
 
 @layer components {
-  /* Enhanced focus indicators for high contrast mode */
-  .high-contrast :focus {
+  /* Enhanced focus indicators for high contrast mode - optimized selectors */
+  .high-contrast button:focus,
+  .high-contrast input:focus,
+  .high-contrast select:focus,
+  .high-contrast textarea:focus,
+  .high-contrast a:focus {
     @apply ring-4 ring-primary ring-offset-2 ring-offset-background;
   }
   
@@ -171,40 +175,6 @@
     @apply bg-destructive text-destructive-foreground border-2 border-destructive shadow-lg;
   }
   
-  /* Enhanced card shadows and borders for better separation */
-  .high-contrast .shadow-sm {
-    @apply shadow-xl border-2;
-  }
-  
-  .high-contrast .shadow-md {
-    @apply shadow-2xl border-2;
-  }
-  
-  .high-contrast .shadow-lg {
-    @apply shadow-2xl border-4;
-  }
-  
-  /* Enhanced border visibility for outdoor conditions */
-  .high-contrast .border {
-    @apply border-2;
-  }
-  
-  .high-contrast .border-t {
-    @apply border-t-2;
-  }
-  
-  .high-contrast .border-b {
-    @apply border-b-2;
-  }
-  
-  .high-contrast .border-l {
-    @apply border-l-2;
-  }
-  
-  .high-contrast .border-r {
-    @apply border-r-2;
-  }
-  
   /* Tournament venue specific styles */
   .high-contrast .tournament-card {
     @apply border-4 shadow-2xl bg-card;
@@ -222,30 +192,11 @@
     @apply bg-muted text-muted-foreground border-2 border-muted-foreground font-bold;
   }
   
-  /* Enhanced table styling for tournament data */
-  .high-contrast table {
-    @apply border-4 border-border;
-  }
-  
-  .high-contrast th {
-    @apply border-2 border-border bg-secondary text-secondary-foreground font-bold;
-  }
-  
-  .high-contrast td {
-    @apply border-2 border-border;
-  }
-  
   /* Enhanced form elements for glove usage */
   .high-contrast input,
   .high-contrast select,
   .high-contrast textarea {
     @apply border-4 border-border shadow-lg min-h-[48px];
-  }
-  
-  .high-contrast input:focus,
-  .high-contrast select:focus,
-  .high-contrast textarea:focus {
-    @apply ring-4 ring-primary ring-offset-4 ring-offset-background border-primary;
   }
   
   /* Touch target enhancements for glove usage */

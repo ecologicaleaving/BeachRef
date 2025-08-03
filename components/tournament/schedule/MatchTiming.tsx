@@ -26,13 +26,6 @@ interface MatchTimingProps {
 }
 
 export default function MatchTiming({ match }: MatchTimingProps) {
-  console.log('⏰ MatchTiming - Match data:', {
-    status: match.status,
-    localTime: match.localTime,
-    totalDuration: match.totalDuration,
-    durationSet1: match.durationSet1,
-    durationSet2: match.durationSet2
-  })
   const formatDuration = (duration: string): string => {
     // Convert from "1:23:45" format to "1h 23m" format
     const parts = duration.split(':')
@@ -88,7 +81,6 @@ export default function MatchTiming({ match }: MatchTimingProps) {
   const isCompleted = match.status === 'completed' || hasMatchResults
   const hasStarted = match.status === 'live' || match.status === 'completed' || hasMatchResults
 
-  console.log('⏰ MatchTiming - Computed state:', { isCompleted, hasStarted, hasMatchResults })
 
   return (
     <Card>

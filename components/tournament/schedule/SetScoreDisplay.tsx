@@ -34,15 +34,6 @@ interface SetData {
 }
 
 export default function SetScoreDisplay({ match }: SetScoreDisplayProps) {
-  console.log('🏐 SetScoreDisplay - Match data:', {
-    status: match.status,
-    pointsTeamASet1: match.pointsTeamASet1,
-    pointsTeamBSet1: match.pointsTeamBSet1,
-    pointsTeamASet2: match.pointsTeamASet2,
-    pointsTeamBSet2: match.pointsTeamBSet2,
-    matchPointsA: match.matchPointsA,
-    matchPointsB: match.matchPointsB
-  })
 
   // Collect set data first to determine if we have score data
   const sets: SetData[] = []
@@ -80,7 +71,6 @@ export default function SetScoreDisplay({ match }: SetScoreDisplayProps) {
     })
   }
 
-  console.log('🏐 SetScoreDisplay - Collected sets:', sets)
 
   // Smart logic: if we have set data OR match points, the match has been played
   const hasScoreData = sets.length > 0 || (match.matchPointsA > 0 || match.matchPointsB > 0)

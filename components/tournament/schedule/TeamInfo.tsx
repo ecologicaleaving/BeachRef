@@ -34,21 +34,11 @@ interface TeamData {
 }
 
 export default function TeamInfo({ match }: TeamInfoProps) {
-  console.log('👥 TeamInfo - Match data:', {
-    status: match.status,
-    matchPointsA: match.matchPointsA,
-    matchPointsB: match.matchPointsB,
-    teamAName: match.teamAName,
-    teamBName: match.teamBName
-  })
-
   // Smart detection: if there are match points, the match has been played
   const hasMatchResults = match.matchPointsA > 0 || match.matchPointsB > 0
   const isCompleted = match.status === 'completed' || hasMatchResults
   const matchWinner = hasMatchResults && match.matchPointsA > match.matchPointsB ? 'A' : 
                      hasMatchResults && match.matchPointsB > match.matchPointsA ? 'B' : null
-
-  console.log('👥 TeamInfo - Computed state:', { isCompleted, hasMatchResults, matchWinner })
 
   const teamA: TeamData = {
     name: match.teamAName,

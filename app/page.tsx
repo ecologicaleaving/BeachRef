@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { TournamentTableWithPagination } from '@/components/tournament/TournamentTableWithPagination';
 import { ActiveTournamentsSection } from '@/components/tournament/ActiveTournamentsSection';
 import { TournamentTimelineNavigator } from '@/components/tournament/TournamentTimelineNavigator';
@@ -21,12 +24,15 @@ export default function Home({ searchParams }: PageProps) {
   const year = parseInt(searchParams.year || '2025');
   const page = parseInt(searchParams.page || '1');
   const view = searchParams.view || 'timeline';
-  const range = parseInt(searchParams.range || '20');
+  const initialRange = parseInt(searchParams.range || '20');
+  
+  // Client-side state for interactive components
+  const [range, setRange] = useState(initialRange);
+  const [currentDate, setCurrentDate] = useState(new Date());
   
   // No SSR data fetching - let client handle it
   const initialData: PaginatedTournamentResponse | null = null;
   const error: string | null = null;
-  const currentDate = new Date();
   
   return (
     <main className="container mx-auto mobile-padding tablet-padding desktop-padding py-8">
@@ -69,14 +75,8 @@ export default function Home({ searchParams }: PageProps) {
             <TournamentTimelineNavigator 
               currentDate={currentDate}
               range={range}
-              onRangeChange={(newRange) => {
-                // In a real implementation, this would update URL params
-                console.log('Range changed to:', newRange);
-              }}
-              onDateChange={(newDate) => {
-                // In a real implementation, this would update URL params
-                console.log('Date changed to:', newDate);
-              }}
+              onRangeChange={setRange}
+              onDateChange={setCurrentDate}
             />
             
             {/* Temporal Tournament Display */}
@@ -126,32 +126,3 @@ export default function Home({ searchParams }: PageProps) {
 
 // Enable dynamic rendering to support search params
 export const dynamic = 'force-dynamic'
-
-// Generate metadata for SEO
-export function generateMetadata({ searchParams }: PageProps) {
-  const year = parseInt(searchParams.year || '2025');
-  const page = parseInt(searchParams.page || '1');
-  
-  let title = `Beach Volleyball Tournaments ${year}`;
-  let description = `Browse FIVB beach volleyball tournaments for ${year}. Official tournament schedule with dates, locations, and categories.`;
-  
-  if (page > 1) {
-    title += ` - Page ${page}`;
-    description += ` Page ${page} of tournament listings.`;
-  }
-  
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary',
-      title,
-      description,
-    },
-  }
-}

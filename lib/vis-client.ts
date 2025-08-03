@@ -1489,8 +1489,9 @@ export async function fetchTournamentDetailFromVISEnhanced(code: string): Promis
           data: { 
             code,
             tournamentNumber,
-            reason: detailResult.fallbackReason,
-            dataSource: 'fallback'
+            reason: detailResult.errorEncountered?.message || 'Authentication required',
+            dataSource: 'fallback',
+            dataCompleteness: detailResult.dataCompleteness
           }
         })
         

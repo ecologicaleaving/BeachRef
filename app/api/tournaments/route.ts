@@ -111,12 +111,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       // Parse year parameter
       if (yearParam !== null) {
         year = parseInt(yearParam);
-        if (isNaN(year) || year < 2023 || year > 2025) {
+        if (isNaN(year) || year < 2023 || year > 2026) {
           return NextResponse.json({
             error: 'Invalid year parameter',
-            message: 'Year must be between 2023 and 2025',
+            message: 'Year must be between 2023 and 2026',
             timestamp,
-            validRange: [2023, 2024, 2025]
+            validRange: [2023, 2024, 2025, 2026]
           }, { 
             status: 400,
             headers: {

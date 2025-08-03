@@ -1,12 +1,5 @@
-'use client';
-
-import { useState } from 'react';
-import { TournamentTableWithPagination } from '@/components/tournament/TournamentTableWithPagination';
-import { ActiveTournamentsSection } from '@/components/tournament/ActiveTournamentsSection';
-import { TournamentTimelineNavigator } from '@/components/tournament/TournamentTimelineNavigator';
-import { TemporalTournamentDisplay } from '@/components/tournament/TemporalTournamentDisplay';
+import { TournamentDashboardClient } from '@/components/tournament/TournamentDashboardClient';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PaginatedTournamentResponse } from '@/lib/types';
 
 interface PageProps {
@@ -24,11 +17,7 @@ export default function Home({ searchParams }: PageProps) {
   const year = parseInt(searchParams.year || '2025');
   const page = parseInt(searchParams.page || '1');
   const view = searchParams.view || 'timeline';
-  const initialRange = parseInt(searchParams.range || '20');
-  
-  // Client-side state for interactive components
-  const [range, setRange] = useState(initialRange);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const range = parseInt(searchParams.range || '20');
   
   // No SSR data fetching - let client handle it
   const initialData: PaginatedTournamentResponse | null = null;
@@ -57,56 +46,15 @@ export default function Home({ searchParams }: PageProps) {
           </p>
         </div>
 
-        {/* Active Tournaments Section - Always visible at top */}
-        <ActiveTournamentsSection 
-          currentDate={currentDate}
-          className="mb-8"
+        {/* Client-side Tournament Dashboard */}
+        <TournamentDashboardClient 
+          initialYear={year}
+          initialPage={page}
+          initialView={view}
+          initialRange={range}
+          initialData={initialData}
+          error={error}
         />
-        
-        {/* Main Tournament Display with Tabs */}
-        <Tabs defaultValue={view} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="timeline" className="touch-target">Timeline View</TabsTrigger>
-            <TabsTrigger value="year" className="touch-target">Year View</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="timeline" className="space-y-6">
-            {/* Timeline Navigation */}
-            <TournamentTimelineNavigator 
-              currentDate={currentDate}
-              range={range}
-              onRangeChange={setRange}
-              onDateChange={setCurrentDate}
-            />
-            
-            {/* Temporal Tournament Display */}
-            <TemporalTournamentDisplay 
-              filter="timeline"
-              range={range}
-              currentDate={currentDate}
-            />
-          </TabsContent>
-          
-          <TabsContent value="year" className="space-y-6">
-            {error ? (
-              <div className="mb-6 p-6 border border-destructive/50 bg-destructive/10 rounded-lg text-center">
-                <div className="text-destructive font-medium mb-2">
-                  Failed to load tournaments
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {error}
-                </div>
-              </div>
-            ) : (
-              <TournamentTableWithPagination 
-                className="w-full"
-                initialData={initialData}
-                initialYear={year}
-                initialPage={page}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
         
         <footer className="text-center text-xs sm:text-sm text-muted-foreground mt-8 pt-6 sm:pt-8 border-t border-border">
           <p className="mb-2">
@@ -126,3 +74,32 @@ export default function Home({ searchParams }: PageProps) {
 
 // Enable dynamic rendering to support search params
 export const dynamic = 'force-dynamic'
+
+// Generate metadata for SEO
+export function generateMetadata({ searchParams }: PageProps) {
+  const year = parseInt(searchParams.year || '2025');
+  const page = parseInt(searchParams.page || '1');
+  
+  let title = `Beach Volleyball Tournaments ${year}`;
+  let description = `Browse FIVB beach volleyball tournaments for ${year}. Official tournament schedule with dates, locations, and categories.`;
+  
+  if (page > 1) {
+    title += ` - Page ${page}`;
+    description += ` Page ${page} of tournament listings.`;
+  }
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  }
+}

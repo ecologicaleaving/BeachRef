@@ -34,26 +34,17 @@ interface SetData {
 }
 
 export default function SetScoreDisplay({ match }: SetScoreDisplayProps) {
-  // Don't show scores for scheduled matches
-  if (match.status === 'scheduled') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Set Scores
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 text-center py-4">
-            Set scores will be available once the match begins.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
+  console.log('🏐 SetScoreDisplay - Match data:', {
+    status: match.status,
+    pointsTeamASet1: match.pointsTeamASet1,
+    pointsTeamBSet1: match.pointsTeamBSet1,
+    pointsTeamASet2: match.pointsTeamASet2,
+    pointsTeamBSet2: match.pointsTeamBSet2,
+    matchPointsA: match.matchPointsA,
+    matchPointsB: match.matchPointsB
+  })
 
-  // Collect set data
+  // Collect set data first to determine if we have score data
   const sets: SetData[] = []
   
   // Set 1
@@ -89,7 +80,57 @@ export default function SetScoreDisplay({ match }: SetScoreDisplayProps) {
     })
   }
 
-  if (sets.length === 0) {
+  console.log('🏐 SetScoreDisplay - Collected sets:', sets)
+
+  // Smart logic: if we have set data OR match points, the match has been played
+  const hasScoreData = sets.length > 0 || (match.matchPointsA > 0 || match.matchPointsB > 0)
+  
+  // Only show "scheduled" message if explicitly scheduled AND no score data exists
+  if (match.status === 'scheduled' && !hasScoreData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Set Scores
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 text-center py-4">
+            Set scores will be available once the match begins.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // If no detailed set scores but we have match points, show basic result
+  if (sets.length === 0 && hasScoreData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Set Scores
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-gray-600 mb-4">Detailed set scores not available</p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-800 rounded-lg">
+              <Trophy className="h-4 w-4" />
+              <span className="font-semibold">
+                Final Result: {match.matchPointsA} - {match.matchPointsB}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // If no data at all available
+  if (sets.length === 0 && !hasScoreData) {
     return (
       <Card>
         <CardHeader>

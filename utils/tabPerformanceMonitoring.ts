@@ -120,6 +120,25 @@ export class TabPerformanceMonitor {
   }
 
   /**
+   * Track tab selection with context for analytics
+   */
+  trackTabSwitch(tabId: string, reason: string) {
+    // Track tab selection reasons in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📈 Tab switch: ${tabId} (reason: ${reason})`)
+    }
+    
+    // Track in analytics if available
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'tab_selection', {
+        tab_id: tabId,
+        selection_reason: reason,
+        custom_map: { tab_navigation: 'context_aware' }
+      })
+    }
+  }
+
+  /**
    * Record an error for a specific tab
    */
   recordError(tabId: string, error?: Error) {

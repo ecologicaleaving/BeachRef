@@ -31,7 +31,7 @@ interface TabErrorBoundaryState {
   errorInfo?: ErrorInfo
 }
 
-export class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundaryState> {
+class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundaryState> {
   constructor(props: TabErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
@@ -153,3 +153,6 @@ export class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorB
     return this.props.children
   }
 }
+
+export { TabErrorBoundary }
+export default TabErrorBoundary

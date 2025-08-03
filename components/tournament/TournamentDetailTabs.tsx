@@ -16,7 +16,7 @@
  * - Keyboard navigation and accessibility support
  */
 
-import React, { useState, useEffect, useRef, Suspense } from 'react'
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { TournamentDetail } from '@/lib/types'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -24,6 +24,8 @@ import { Trophy, Clock, Info } from 'lucide-react'
 import { useTabNavigation } from '@/hooks/useTabNavigation'
 import { TabErrorBoundary } from './TabErrorBoundary'
 import { tabPerformanceMonitor } from '@/utils/tabPerformanceMonitoring'
+import { analyzeTournamentContext, TournamentContextAnalysis, TabId, isValidTabId } from '@/utils/tournament-context-analysis'
+import { useUserTabPreferences } from '@/hooks/useUserTabPreferences'
 
 // Static import for Overview (always loaded)
 import TournamentOverviewTab from './TournamentOverviewTab'
@@ -93,15 +95,42 @@ const AVAILABLE_TABS = [
   }
 ] as const
 
-type TabId = typeof AVAILABLE_TABS[number]['id']
-
-// Type guard for tab validation
-const isValidTabId = (tabId: string): tabId is TabId => {
-  return AVAILABLE_TABS.some(tab => tab.id === tabId)
-}
+// Type guard for tab validation - using the one from tournament-context-analysis
+// const isValidTabId = (tabId: string): tabId is TabId => {
+//   return AVAILABLE_TABS.some(tab => tab.id === tabId)
+// }
 
 export default function TournamentDetailTabs({ tournament }: TournamentDetailTabsProps) {
-  const { currentTab, navigateToTab } = useTabNavigation(tournament.code)
+  const { userPreference, isLoaded } = useUserTabPreferences()
+  const [smartDefaultTab, setSmartDefaultTab] = useState<TabId>('overview')
+  
+  // Memoized context analysis for performance
+  const contextAnalysis = useMemo(() => {
+    if (!tournament || !isLoaded) return null
+    
+    try {
+      return analyzeTournamentContext(tournament, userPreference)
+    } catch (error) {
+      console.warn('Failed to analyze tournament context:', error)
+      // Fallback to default overview tab
+      return {
+        recommendedTab: 'overview' as TabId,
+        reason: 'unknown' as const,
+        confidence: 'low' as const,
+        hasMatches: false,
+        isCompleted: false
+      }
+    }
+  }, [tournament, userPreference, isLoaded])
+
+  // Update smart default tab when analysis changes
+  useEffect(() => {
+    if (contextAnalysis) {
+      setSmartDefaultTab(contextAnalysis.recommendedTab)
+    }
+  }, [contextAnalysis])
+  
+  const { currentTab, navigateToTab } = useTabNavigation(tournament?.code || 'unknown', smartDefaultTab)
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set(['overview']))
   const tabsRef = useRef<HTMLDivElement>(null)
 
@@ -137,8 +166,13 @@ export default function TournamentDetailTabs({ tournament }: TournamentDetailTab
       // Mark tab as loaded
       setLoadedTabs(prev => new Set(Array.from(prev).concat([tabId])))
       
-      // End performance monitoring
-      const switchTime = tabPerformanceMonitor.endTabSwitch(tabId)
+      // End performance monitoring with context information
+      tabPerformanceMonitor.endTabSwitch(tabId)
+      
+      // Track tab selection with context analysis for analytics
+      if (contextAnalysis) {
+        tabPerformanceMonitor.trackTabSwitch(tabId, contextAnalysis.reason)
+      }
       
       // Start content load monitoring if not already loaded
       if (!loadedTabs.has(tabId)) {
@@ -180,14 +214,54 @@ export default function TournamentDetailTabs({ tournament }: TournamentDetailTab
     }
   }
 
+  // Handle null tournament after all hooks
+  if (!tournament) {
+    return (
+      <div className="w-full space-y-4">
+        <div className="text-center p-8">
+          <div className="animate-pulse">Loading tournament details...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Tabs 
-      value={currentTab} 
-      onValueChange={handleTabChange} 
-      className="w-full space-y-4"
-      ref={tabsRef}
-      aria-label="Tournament detail navigation"
-    >
+    <div className="w-full space-y-4">
+      {/* Screen reader announcement for smart tab selection */}
+      {contextAnalysis && contextAnalysis.reason !== 'user_preference' && (
+        <div 
+          className="sr-only" 
+          aria-live="polite" 
+          aria-atomic="true"
+        >
+          {contextAnalysis.reason === 'has_matches' && 'Schedule tab recommended due to available matches'}
+          {contextAnalysis.reason === 'tournament_complete' && 'Results tab recommended as tournament is completed'}
+          {contextAnalysis.reason === 'no_matches' && 'Overview tab shown as no matches are scheduled'}
+        </div>
+      )}
+      
+      {/* Context indicator for development/debugging */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-muted-foreground p-2 bg-gray-50 rounded border">
+          {contextAnalysis ? (
+            <>
+              Smart default: {contextAnalysis.recommendedTab} ({contextAnalysis.reason})
+              {contextAnalysis.matchCount !== undefined && ` - ${contextAnalysis.matchCount} matches`}
+              {contextAnalysis.completionPercentage !== undefined && ` - ${contextAnalysis.completionPercentage}% complete`}
+            </>
+          ) : (
+            <span className="animate-pulse">Analyzing tournament context...</span>
+          )}
+        </div>
+      )}
+      
+      <Tabs 
+        value={currentTab} 
+        onValueChange={handleTabChange} 
+        className="w-full space-y-4"
+        ref={tabsRef}
+        aria-label="Tournament detail navigation"
+      >
       <TabsList 
         className="grid w-full grid-cols-3"
         role="tablist"
@@ -203,7 +277,7 @@ export default function TournamentDetailTabs({ tournament }: TournamentDetailTab
               role="tab"
               aria-selected={currentTab === tab.id}
               aria-controls={`${tab.id}-content`}
-              aria-label={`${tab.label} tab - ${tab.description}`}
+              aria-label={`${tab.label} tab - ${tab.description}${contextAnalysis?.recommendedTab === tab.id ? ' (recommended)' : ''}`}
               tabIndex={currentTab === tab.id ? 0 : -1}
               onKeyDown={(e) => handleKeyDown(e, tab.id)}
             >
@@ -265,5 +339,6 @@ export default function TournamentDetailTabs({ tournament }: TournamentDetailTab
         </TabErrorBoundary>
       </TabsContent>
     </Tabs>
+    </div>
   )
 }

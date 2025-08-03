@@ -1,5 +1,9 @@
 import { TournamentTableWithPagination } from '@/components/tournament/TournamentTableWithPagination';
+import { ActiveTournamentsSection } from '@/components/tournament/ActiveTournamentsSection';
+import { TournamentTimelineNavigator } from '@/components/tournament/TournamentTimelineNavigator';
+import { TemporalTournamentDisplay } from '@/components/tournament/TemporalTournamentDisplay';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PaginatedTournamentResponse } from '@/lib/types';
 
 interface PageProps {
@@ -7,6 +11,8 @@ interface PageProps {
     year?: string;
     page?: string;
     limit?: string;
+    view?: string;
+    range?: string;
   };
 }
 
@@ -14,11 +20,13 @@ export default function Home({ searchParams }: PageProps) {
   // Parse URL parameters for initial state
   const year = parseInt(searchParams.year || '2025');
   const page = parseInt(searchParams.page || '1');
-  const limit = parseInt(searchParams.limit || '20');
+  const view = searchParams.view || 'timeline';
+  const range = parseInt(searchParams.range || '20');
   
   // No SSR data fetching - let client handle it
   const initialData: PaginatedTournamentResponse | null = null;
   const error: string | null = null;
+  const currentDate = new Date();
   
   return (
     <main className="container mx-auto mobile-padding tablet-padding desktop-padding py-8">
@@ -38,30 +46,67 @@ export default function Home({ searchParams }: PageProps) {
         {/* Description with responsive text */}
         <div className="text-center mb-6 sm:mb-8">
           <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse and explore FIVB beach volleyball tournaments for {year}. 
-            Navigate through pages, filter by year, and sort tournaments by various criteria.
+            Browse and explore FIVB beach volleyball tournaments. 
+            View active tournaments, navigate through timeline, or browse by year.
           </p>
         </div>
+
+        {/* Active Tournaments Section - Always visible at top */}
+        <ActiveTournamentsSection 
+          currentDate={currentDate}
+          className="mb-8"
+        />
         
-        {error ? (
-          <div className="mb-6 p-6 border border-destructive/50 bg-destructive/10 rounded-lg text-center">
-            <div className="text-destructive font-medium mb-2">
-              Failed to load tournaments
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {error}
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <TournamentTableWithPagination 
-              className="w-full"
-              initialData={initialData}
-              initialYear={year}
-              initialPage={page}
+        {/* Main Tournament Display with Tabs */}
+        <Tabs defaultValue={view} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="timeline" className="touch-target">Timeline View</TabsTrigger>
+            <TabsTrigger value="year" className="touch-target">Year View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="timeline" className="space-y-6">
+            {/* Timeline Navigation */}
+            <TournamentTimelineNavigator 
+              currentDate={currentDate}
+              range={range}
+              onRangeChange={(newRange) => {
+                // In a real implementation, this would update URL params
+                console.log('Range changed to:', newRange);
+              }}
+              onDateChange={(newDate) => {
+                // In a real implementation, this would update URL params
+                console.log('Date changed to:', newDate);
+              }}
             />
-          </div>
-        )}
+            
+            {/* Temporal Tournament Display */}
+            <TemporalTournamentDisplay 
+              filter="timeline"
+              range={range}
+              currentDate={currentDate}
+            />
+          </TabsContent>
+          
+          <TabsContent value="year" className="space-y-6">
+            {error ? (
+              <div className="mb-6 p-6 border border-destructive/50 bg-destructive/10 rounded-lg text-center">
+                <div className="text-destructive font-medium mb-2">
+                  Failed to load tournaments
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {error}
+                </div>
+              </div>
+            ) : (
+              <TournamentTableWithPagination 
+                className="w-full"
+                initialData={initialData}
+                initialYear={year}
+                initialPage={page}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
         
         <footer className="text-center text-xs sm:text-sm text-muted-foreground mt-8 pt-6 sm:pt-8 border-t border-border">
           <p className="mb-2">

@@ -84,7 +84,7 @@ export function ActiveTournamentsSection({ currentDate = new Date(), className }
         
         // Get current year tournaments
         const year = currentDate.getFullYear();
-        const response = await fetchCachedTournaments({ year, page: 1, limit: 500 }); // Get large batch to filter from
+        const response = await fetchCachedTournaments({ year, page: 1, limit: 100 }); // Get maximum allowed batch to filter from
         
         if (response && response.tournaments) {
           const active = getActiveTournaments(response.tournaments, currentDate);

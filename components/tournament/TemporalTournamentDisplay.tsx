@@ -117,9 +117,9 @@ export function TemporalTournamentDisplay({
         // Get tournaments from current year and adjacent years for better coverage
         const year = currentDate.getFullYear();
         const promises = [
-          fetchCachedTournaments({ year: year - 1, page: 1, limit: 500 }),
-          fetchCachedTournaments({ year: year, page: 1, limit: 500 }),
-          fetchCachedTournaments({ year: year + 1, page: 1, limit: 500 })
+          fetchCachedTournaments({ year: year - 1, page: 1, limit: 100 }),
+          fetchCachedTournaments({ year: year, page: 1, limit: 100 }),
+          fetchCachedTournaments({ year: year + 1, page: 1, limit: 100 })
         ];
         
         const responses = await Promise.allSettled(promises);

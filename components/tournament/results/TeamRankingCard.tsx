@@ -46,7 +46,7 @@ export default function TeamRankingCard({
       case 2:
         return {
           badgeClass: 'bg-gradient-to-r from-gray-400 to-gray-600 text-white border-gray-500',
-          iconColor: 'text-gray-600',
+          iconColor: 'text-gray-700 dark:text-gray-300',
           bgClass: 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200',
           icon: <Award className="h-4 w-4" />
         }
@@ -60,7 +60,7 @@ export default function TeamRankingCard({
       default:
         return {
           badgeClass: 'bg-gray-100 text-gray-700 border-gray-300',
-          iconColor: 'text-gray-600',
+          iconColor: 'text-gray-700 dark:text-gray-300',
           bgClass: '',
           icon: <Trophy className="h-4 w-4" />
         }
@@ -92,14 +92,14 @@ export default function TeamRankingCard({
           {/* Team Information */}
           <div className="flex-1 min-w-0">
             {/* Team Name */}
-            <h3 className={`font-semibold text-lg truncate ${isMedalPosition ? 'text-gray-900' : 'text-gray-800'}`}>
+            <h3 className={`font-semibold text-lg truncate ${isMedalPosition ? 'text-gray-900 dark:text-gray-100' : 'text-gray-800 dark:text-gray-200'}`}>
               {ranking.teamName}
             </h3>
             
             {/* Player Names */}
             <div className="flex items-center gap-1 mt-1">
-              <Users className="h-3 w-3 text-gray-500 flex-shrink-0" />
-              <p className="text-sm text-gray-600 truncate">
+              <Users className="h-3 w-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+              <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
                 {ranking.player1Name} / {ranking.player2Name}
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function TeamRankingCard({
             <div className="flex items-center gap-4 mt-2">
               {ranking.confederationCode && (
                 <div className="flex items-center gap-1">
-                  <Globe className="h-3 w-3 text-gray-500" />
+                  <Globe className="h-3 w-3 text-gray-600 dark:text-gray-400" />
                   <Badge variant="secondary" className="text-xs">
                     {ranking.confederationCode}
                   </Badge>
@@ -117,8 +117,8 @@ export default function TeamRankingCard({
               
               {ranking.earnedPointsTeam > 0 && (
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-gray-500" />
-                  <span className="text-xs text-gray-600">
+                  <TrendingUp className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+                  <span className="text-xs text-gray-700 dark:text-gray-300">
                     {ranking.earnedPointsTeam} pts
                   </span>
                 </div>
@@ -129,7 +129,7 @@ export default function TeamRankingCard({
           {/* Prize Money (if available) */}
           {ranking.earningsTeam && ranking.earningsTeam > 0 && (
             <div className="flex-shrink-0 text-right">
-              <div className="text-sm text-gray-600">Prize</div>
+              <div className="text-sm text-gray-700 dark:text-gray-300">Prize</div>
               <div className="font-semibold text-green-600">
                 ${ranking.earningsTeam.toLocaleString()}
               </div>

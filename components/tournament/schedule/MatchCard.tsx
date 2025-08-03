@@ -58,7 +58,7 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
           {/* Match Details */}
           <div className="flex-1 min-w-0">
             {/* Time and Court Info */}
-            <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+            <div className="flex items-center gap-4 mb-3 text-sm text-gray-700 dark:text-gray-300">
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" aria-hidden="true" />
                 <span className="font-medium">{match.localTime}</span>
@@ -67,7 +67,7 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
                 <MapPin className="h-4 w-4" aria-hidden="true" />
                 <span>{match.court}</span>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-600 dark:text-gray-400">
                 {match.noInTournament}
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
                   <div className={`font-semibold truncate ${
                     isCompleted && match.matchPointsA > match.matchPointsB 
                       ? 'text-green-700' 
-                      : 'text-gray-900'
+                      : 'text-gray-900 dark:text-gray-100'
                   }`}>
                     {match.teamAName}
                   </div>
@@ -96,7 +96,7 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
               </div>
               
               <div className="flex items-center justify-center">
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                   {isCompleted ? '-' : 'vs'}
                 </div>
               </div>
@@ -106,7 +106,7 @@ export default function MatchCard({ match, className = '', onMatchClick }: Match
                   <div className={`font-semibold truncate ${
                     isCompleted && match.matchPointsB > match.matchPointsA 
                       ? 'text-green-700' 
-                      : 'text-gray-900'
+                      : 'text-gray-900 dark:text-gray-100'
                   }`}>
                     {match.teamBName}
                   </div>

@@ -72,19 +72,19 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-primary">{progress.totalMatches}</div>
-                <div className="text-sm text-muted-foreground">Total Matches</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">Total Matches</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-green-600">{progress.completedMatches}</div>
-                <div className="text-sm text-muted-foreground">Completed</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">Completed</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-orange-600">{progress.liveMatches}</div>
-                <div className="text-sm text-muted-foreground">Live</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">Live</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-600">{progress.upcomingMatches}</div>
-                <div className="text-sm text-muted-foreground">Upcoming</div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">Upcoming</div>
               </div>
             </div>
           </div>
@@ -105,10 +105,10 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               <h4 className="font-semibold mb-3">Dates & Timeline</h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Tournament Period</div>
-                    <div className="text-muted-foreground">
+                    <div className="text-gray-700 dark:text-gray-300">
                       {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
                     </div>
                   </div>
@@ -116,30 +116,30 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
                 
                 {tournament.dates?.endDateMainDraw && tournament.dates.endDateMainDraw !== tournament.endDate && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Main Draw Ends</div>
-                      <div className="text-muted-foreground">{formatDate(tournament.dates.endDateMainDraw)}</div>
+                      <div className="text-gray-700 dark:text-gray-300">{formatDate(tournament.dates.endDateMainDraw)}</div>
                     </div>
                   </div>
                 )}
                 
                 {tournament.dates?.endDateQualification && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Qualification Ends</div>
-                      <div className="text-muted-foreground">{formatDate(tournament.dates.endDateQualification)}</div>
+                      <div className="text-gray-700 dark:text-gray-300">{formatDate(tournament.dates.endDateQualification)}</div>
                     </div>
                   </div>
                 )}
                 
                 {tournament.dates?.deadline && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Entry Deadline</div>
-                      <div className="text-muted-foreground">{formatDate(tournament.dates.deadline)}</div>
+                      <div className="text-gray-700 dark:text-gray-300">{formatDate(tournament.dates.deadline)}</div>
                     </div>
                   </div>
                 )}
@@ -151,10 +151,10 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               <div className="space-y-3">
                 {tournament.venue && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Venue</div>
-                      <div className="text-muted-foreground">
+                      <div className="text-gray-700 dark:text-gray-300">
                         {tournament.venue}
                         {tournament.city && <div className="text-sm">{tournament.city}</div>}
                       </div>
@@ -195,30 +195,30 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               <div className="space-y-3">
                 {tournament.competitionStructure.nbTeamsMainDraw && (
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Users className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Main Draw Size</div>
-                      <div className="text-muted-foreground">{tournament.competitionStructure.nbTeamsMainDraw} teams</div>
+                      <div className="text-gray-700 dark:text-gray-300">{tournament.competitionStructure.nbTeamsMainDraw} teams</div>
                     </div>
                   </div>
                 )}
                 
                 {tournament.competitionStructure.nbTeamsQualification && (
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Users className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Qualification Draw</div>
-                      <div className="text-muted-foreground">{tournament.competitionStructure.nbTeamsQualification} teams</div>
+                      <div className="text-gray-700 dark:text-gray-300">{tournament.competitionStructure.nbTeamsQualification} teams</div>
                     </div>
                   </div>
                 )}
                 
                 {tournament.competitionStructure.nbWildCards && (
                   <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-muted-foreground" />
+                    <Award className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Wild Cards</div>
-                      <div className="text-muted-foreground">{tournament.competitionStructure.nbWildCards} spots</div>
+                      <div className="text-gray-700 dark:text-gray-300">{tournament.competitionStructure.nbWildCards} spots</div>
                     </div>
                   </div>
                 )}
@@ -227,20 +227,20 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               <div className="space-y-3">
                 {tournament.competitionStructure.matchFormat && (
                   <div className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                    <Trophy className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Match Format</div>
-                      <div className="text-muted-foreground">{tournament.competitionStructure.matchFormat}</div>
+                      <div className="text-gray-700 dark:text-gray-300">{tournament.competitionStructure.matchFormat}</div>
                     </div>
                   </div>
                 )}
                 
                 {tournament.competitionStructure.matchPointsMethod && (
                   <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <Target className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <div>
                       <div className="font-medium">Points Method</div>
-                      <div className="text-muted-foreground">{tournament.competitionStructure.matchPointsMethod}</div>
+                      <div className="text-gray-700 dark:text-gray-300">{tournament.competitionStructure.matchPointsMethod}</div>
                     </div>
                   </div>
                 )}
@@ -263,30 +263,30 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {tournament.pointsSystem.entryPointsTemplateNo && (
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <Award className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Entry Points Template</div>
-                    <div className="text-muted-foreground">{tournament.pointsSystem.entryPointsTemplateNo}</div>
+                    <div className="text-gray-700 dark:text-gray-300">{tournament.pointsSystem.entryPointsTemplateNo}</div>
                   </div>
                 </div>
               )}
               
               {tournament.pointsSystem.seedPointsTemplateNo && (
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <Award className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Seeding Points Template</div>
-                    <div className="text-muted-foreground">{tournament.pointsSystem.seedPointsTemplateNo}</div>
+                    <div className="text-gray-700 dark:text-gray-300">{tournament.pointsSystem.seedPointsTemplateNo}</div>
                   </div>
                 </div>
               )}
               
               {tournament.pointsSystem.earnedPointsTemplateNo && (
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <Award className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Earned Points Template</div>
-                    <div className="text-muted-foreground">{tournament.pointsSystem.earnedPointsTemplateNo}</div>
+                    <div className="text-gray-700 dark:text-gray-300">{tournament.pointsSystem.earnedPointsTemplateNo}</div>
                   </div>
                 </div>
               )}
@@ -308,10 +308,10 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
             <div className="space-y-3">
               {tournament.administration.federationCode && (
                 <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <Building className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Federation</div>
-                    <div className="text-muted-foreground">
+                    <div className="text-gray-700 dark:text-gray-300">
                       {tournament.administration.federationCode}
                       {tournament.administration.organizerCode && ` • Organizer: ${tournament.administration.organizerCode}`}
                     </div>
@@ -321,14 +321,14 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               
               {tournament.administration.webSite && (
                 <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Official Website</div>
                     <a 
                       href={tournament.administration.webSite} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-primary hover:underline text-muted-foreground"
+                      className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       {tournament.administration.webSite}
                     </a>
@@ -338,14 +338,14 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               
               {tournament.administration.buyTicketsUrl && (
                 <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">Tickets</div>
                     <a 
                       href={tournament.administration.buyTicketsUrl} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-primary hover:underline text-muted-foreground"
+                      className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Purchase Tickets
                     </a>
@@ -355,10 +355,10 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
               
               {tournament.administration.isVisManaged !== undefined && (
                 <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <Building className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   <div>
                     <div className="font-medium">VIS Managed</div>
-                    <div className="text-muted-foreground">{tournament.administration.isVisManaged ? 'Yes' : 'No'}</div>
+                    <div className="text-gray-700 dark:text-gray-300">{tournament.administration.isVisManaged ? 'Yes' : 'No'}</div>
                   </div>
                 </div>
               )}
@@ -377,7 +377,7 @@ export default function TournamentOverviewTab({ tournament, matches }: Tournamen
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{tournament.description}</p>
+            <p className="text-gray-700 dark:text-gray-300">{tournament.description}</p>
           </CardContent>
         </Card>
       )}

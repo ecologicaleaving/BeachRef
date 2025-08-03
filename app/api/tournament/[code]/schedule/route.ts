@@ -7,6 +7,18 @@ import { BeachMatch } from '@/lib/types'
 // 2-minute cache for schedule data (frequent updates during live tournaments)
 const scheduleCache = new Map<string, { data: BeachMatch[]; timestamp: number }>()
 const SCHEDULE_CACHE_TTL = 2 * 60 * 1000 // 2 minutes
+const MAX_CACHE_SIZE = 500 // Prevent memory leaks
+
+// Cache management utility
+function manageCacheSize(cache: Map<string, any>, maxSize: number) {
+  if (cache.size >= maxSize) {
+    // Remove oldest 25% of entries to prevent frequent cleanup
+    const entriesToRemove = Math.floor(maxSize * 0.25)
+    const oldestKeys = Array.from(cache.keys()).slice(0, entriesToRemove)
+    oldestKeys.forEach(key => cache.delete(key))
+    console.log(`Cache size management: Removed ${entriesToRemove} entries, current size: ${cache.size}`)
+  }
+}
 
 /**
  * GET /api/tournament/[code]/schedule
@@ -50,7 +62,8 @@ export async function GET(request: NextRequest, { params }: { params: { code: st
     // Fetch match schedule using the new VIS API client function
     const matches = await fetchTournamentMatches(tournamentNumber)
     
-    // Update cache
+    // Update cache with size management
+    manageCacheSize(scheduleCache, MAX_CACHE_SIZE)
     scheduleCache.set(code, {
       data: matches,
       timestamp: now

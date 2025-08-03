@@ -7,6 +7,18 @@ import { TournamentRanking } from '@/lib/types'
 // 10-minute cache for results data (more stable after completion)
 const resultsCache = new Map<string, { data: TournamentRanking[]; timestamp: number }>()
 const RESULTS_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+const MAX_CACHE_SIZE = 500 // Prevent memory leaks
+
+// Cache management utility
+function manageCacheSize(cache: Map<string, any>, maxSize: number) {
+  if (cache.size >= maxSize) {
+    // Remove oldest 25% of entries to prevent frequent cleanup
+    const entriesToRemove = Math.floor(maxSize * 0.25)
+    const oldestKeys = Array.from(cache.keys()).slice(0, entriesToRemove)
+    oldestKeys.forEach(key => cache.delete(key))
+    console.log(`Results cache size management: Removed ${entriesToRemove} entries, current size: ${cache.size}`)
+  }
+}
 
 /**
  * GET /api/tournament/[code]/results
@@ -50,7 +62,8 @@ export async function GET(request: NextRequest, { params }: { params: { code: st
     // Fetch tournament rankings using the new VIS API client function
     const rankings = await fetchTournamentRanking(tournamentNumber)
     
-    // Update cache
+    // Update cache with size management
+    manageCacheSize(resultsCache, MAX_CACHE_SIZE)
     resultsCache.set(code, {
       data: rankings,
       timestamp: now

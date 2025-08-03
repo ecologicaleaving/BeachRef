@@ -7,6 +7,21 @@ import { BeachMatchDetail, BeachMatch } from '@/lib/types'
 // 5-minute cache for match details (balance between freshness and performance)
 const matchDetailCache = new Map<string, { data: BeachMatchDetail; timestamp: number }>()
 const MATCH_DETAIL_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const MAX_CACHE_SIZE = 1000 // Higher limit for match details as they're frequently accessed
+
+// Request deduplication to prevent concurrent requests for same data
+const pendingRequests = new Map<string, Promise<BeachMatchDetail>>()
+
+// Cache management utility
+function manageCacheSize(cache: Map<string, any>, maxSize: number) {
+  if (cache.size >= maxSize) {
+    // Remove oldest 25% of entries to prevent frequent cleanup
+    const entriesToRemove = Math.floor(maxSize * 0.25)
+    const oldestKeys = Array.from(cache.keys()).slice(0, entriesToRemove)
+    oldestKeys.forEach(key => cache.delete(key))
+    console.log(`Match detail cache size management: Removed ${entriesToRemove} entries, current size: ${cache.size}`)
+  }
+}
 
 /**
  * GET /api/tournament/[code]/matches/[matchId]
@@ -48,11 +63,30 @@ export async function GET(
       })
     }
 
-    // Try to fetch detailed match data first
+    // Try to fetch detailed match data first with request deduplication
     try {
-      const matchDetail = await fetchMatchDetail(matchId)
+      let matchDetail: BeachMatchDetail
       
-      // Update cache
+      // Check if there's already a pending request for this match
+      const pendingRequest = pendingRequests.get(cacheKey)
+      if (pendingRequest) {
+        console.log(`Deduplicating request for match ${matchId}`)
+        matchDetail = await pendingRequest
+      } else {
+        // Create new request and store it for deduplication
+        const requestPromise = fetchMatchDetail(matchId)
+        pendingRequests.set(cacheKey, requestPromise)
+        
+        try {
+          matchDetail = await requestPromise
+        } finally {
+          // Always clean up the pending request
+          pendingRequests.delete(cacheKey)
+        }
+      }
+      
+      // Update cache with size management
+      manageCacheSize(matchDetailCache, MAX_CACHE_SIZE)
       matchDetailCache.set(cacheKey, {
         data: matchDetail,
         timestamp: now
@@ -110,6 +144,7 @@ export async function GET(
         }
         
         // Cache the fallback data with a shorter TTL
+        manageCacheSize(matchDetailCache, MAX_CACHE_SIZE)
         matchDetailCache.set(cacheKey, {
           data: fallbackMatchDetail,
           timestamp: now

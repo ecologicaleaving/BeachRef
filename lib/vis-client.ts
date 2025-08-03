@@ -1435,33 +1435,101 @@ async function fetchBasicTournamentDetail(code: string): Promise<TournamentDetai
 
 // Enhanced fetchTournamentDetailFromVIS with two-step process and comprehensive fallback
 export async function fetchTournamentDetailFromVISEnhanced(code: string): Promise<TournamentDetail> {
+  const startTime = Date.now()
+  const context = createErrorContext(code)
+  
   log({
     level: 'info',
-    message: 'Starting tournament detail fetch - VERSION 3.0 HARDCODED TEST',
+    message: 'Starting enhanced tournament detail fetch with comprehensive fallback strategy',
     data: { code, timestamp: new Date().toISOString() }
   })
 
-  // TEMPORARY: Return hardcoded tournament to test if the issue is in the API or parsing
-  const hardcodedTournament: TournamentDetail = {
-    code: code,
-    name: "TEST Tournament Name",
-    countryCode: "US",
-    startDate: "2025-01-01",
-    endDate: "2025-01-03", 
-    gender: "Men",
-    type: "15",
-    status: "upcoming",
-    venue: "Test Venue",
-    description: "Test Description"
+  try {
+    // Step 1: Get tournament number from GetBeachTournamentList
+    log({
+      level: 'info',
+      message: 'Step 1: Getting tournament number from GetBeachTournamentList',
+      data: { code }
+    })
+    
+    const tournamentNumber = await getTournamentNumber(code)
+    
+    if (tournamentNumber) {
+      // Step 2: Get detailed data using GetBeachTournament with tournament number
+      log({
+        level: 'info',
+        message: 'Step 2: Fetching detailed data with GetBeachTournament endpoint',
+        data: { code, tournamentNumber }
+      })
+      
+      const detailResult = await fetchTournamentDetailByNumber(tournamentNumber)
+      
+      if (!detailResult.fallbackUsed) {
+        // Success with enhanced data
+        const duration = Date.now() - startTime
+        logPerformanceMetrics('fetchTournamentDetailFromVISEnhanced', duration, 'GetBeachTournament', code, false, 'full')
+        
+        log({
+          level: 'info',
+          message: 'Enhanced tournament detail fetch successful',
+          data: { 
+            code,
+            tournamentNumber,
+            duration: `${duration}ms`,
+            dataSource: 'enhanced'
+          }
+        })
+        
+        return detailResult.data
+      } else {
+        // Fallback data was used - log as info (expected behavior)
+        log({
+          level: 'info',
+          message: 'Using fallback tournament data due to authentication limitations',
+          data: { 
+            code,
+            tournamentNumber,
+            reason: detailResult.fallbackReason,
+            dataSource: 'fallback'
+          }
+        })
+        
+        return detailResult.data
+      }
+    } else {
+      // Couldn't get tournament number, fall back to basic tournament list approach
+      log({
+        level: 'warn',
+        message: 'Could not get tournament number, falling back to basic list lookup',
+        data: { code }
+      })
+      
+      return await fetchTournamentDetailViaList(code)
+    }
+    
+  } catch (error) {
+    // Enhanced error handling following Epic 3 patterns
+    const enhancedError = categorizeVISApiError(error, 'GetBeachTournament', context)
+    
+    log({
+      level: 'error',
+      message: 'Enhanced tournament detail fetch failed',
+      data: { 
+        code,
+        error: sanitizeErrorForLogging(enhancedError),
+        duration: `${Date.now() - startTime}ms`
+      }
+    })
+    
+    // Log error with production logging
+    logVISApiError(sanitizeErrorForLogging(enhancedError), 'fetchTournamentDetailFromVISEnhanced', {
+      tournamentCode: code,
+      duration: Date.now() - startTime
+    })
+    
+    // Re-throw for caller to handle
+    throw enhancedError
   }
-  
-  log({
-    level: 'info',
-    message: 'Returning hardcoded tournament for testing',
-    data: { hardcodedTournament }
-  })
-  
-  return hardcodedTournament
 }
 
 // ========================= BEACH MATCH API FUNCTIONS (Story 4.3) =========================

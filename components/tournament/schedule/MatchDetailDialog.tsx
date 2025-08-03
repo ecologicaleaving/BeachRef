@@ -59,12 +59,18 @@ export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCo
     setError(null)
     
     try {
+      console.log(`🔍 Fetching match details for: ${matchId} in tournament: ${tournamentCode}`)
+      
       // Story 4.3: Real VIS API integration for match details
       const response = await fetch(`/api/tournament/${tournamentCode}/matches/${matchId}`)
+      
+      console.log(`📡 API Response status: ${response.status}`)
       
       if (!response.ok) {
         // Handle error responses gracefully
         const errorData = await response.json()
+        console.error('❌ API Error Response:', errorData)
+        
         if (response.status === 404) {
           throw new Error(`Match ${matchId} not found`)
         } else if (errorData.userMessage) {
@@ -75,8 +81,10 @@ export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCo
       }
       
       const data = await response.json()
+      console.log('📊 API Response data:', data)
       
       if (data.match) {
+        console.log('✅ Setting match detail data:', data.match)
         setMatchDetail(data.match)
         
         // Log performance and data source for monitoring
@@ -88,13 +96,14 @@ export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCo
           console.warn('Match detail warning:', data.warning)
         }
       } else {
+        console.error('❌ No match data in response:', data)
         throw new Error('No match data received')
       }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load match details. Please try again.'
+      console.error('💥 Error fetching match detail:', err)
       setError(errorMessage)
-      console.error('Error fetching match detail:', err)
     } finally {
       setIsLoading(false)
     }
@@ -131,6 +140,12 @@ export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCo
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Debug Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
+            <strong>Debug Info:</strong> Loading: {isLoading.toString()}, Error: {error || 'none'}, HasMatchDetail: {!!matchDetail}
+            {matchDetail && <div>Match Detail Status: {matchDetail.status}</div>}
+          </div>
+
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -159,6 +174,12 @@ export default function MatchDetailDialog({ match, isOpen, onClose, tournamentCo
               <MatchTiming match={matchDetail} />
               <CourtVenueInfo match={matchDetail} />
             </>
+          )}
+
+          {!isLoading && !error && !matchDetail && (
+            <div className="text-center py-8 text-gray-500">
+              <p>No match details available</p>
+            </div>
           )}
         </div>
 

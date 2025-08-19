@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { designTokens } from '@/theme/tokens';
-import { Assignment } from '@/types/assignments';
+import { designTokens } from '../../theme/tokens';
+import { Assignment } from '../../types/assignments';
 
 interface UrgentNotificationsProps {
   level: 'immediate' | 'urgent' | 'normal';

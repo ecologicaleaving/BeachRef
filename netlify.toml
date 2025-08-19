@@ -1,12 +1,5 @@
 [build]
-  command = "npm ci && npx expo export --platform web"
   publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--production=false"
-  EXPO_PUBLIC_SUPABASE_URL = "https://zjrgyclnaerqkzzupqfv.supabase.co"
-  EXPO_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqcmd5Y2xuYWVycWt6enVwcWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5NTQ1MzMsImV4cCI6MjA2OTUzMDUzM30.ftFxqd5mBQ4pR6eoR8-lXXPOu6Ntcw_G3KPMNgMUxjU"
 
 [[redirects]]
   from = "/*"

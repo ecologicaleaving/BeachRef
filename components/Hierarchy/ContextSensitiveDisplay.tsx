@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { designTokens } from '@/theme/tokens';
-import { Assignment, AssignmentStatus } from '@/types/assignments';
+import { designTokens } from '../../theme/tokens';
+import { Assignment, AssignmentStatus } from '../../types/assignments';
 import { InformationPriority } from './InformationArchitecture';
 
 // Context-sensitive display logic based on assignment status

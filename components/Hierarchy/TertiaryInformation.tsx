@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { designTokens } from '@/theme/tokens';
+import { designTokens } from '../../theme/tokens';
 import { HierarchyContainer, InfoGroup } from './InformationArchitecture';
 import { VisualHierarchyText, SectionHeader } from './VisualHierarchyText';
 import { ScanOptimizedLayout } from './ScanOptimizedLayout';

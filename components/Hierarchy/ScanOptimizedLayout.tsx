@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { designTokens } from '@/theme/tokens';
+import { designTokens } from '../../theme/tokens';
 import { InformationPriority } from './InformationArchitecture';
 
 interface ScanOptimizedLayoutProps {

@@ -5,13 +5,13 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Assignment } from '@/types/assignments';
-import { designTokens } from '@/theme/tokens';
+import { Assignment } from '../../types/assignments';
+import { designTokens } from '../../theme/tokens';
 
 // Design tokens successfully loaded with safe fallbacks
-import { StatusIndicator } from '@/components/Status';
-import { HeroContent, ContextSensitiveDisplay, TimeSensitiveContent, useRefereeContext } from '@/components/Hierarchy';
-import { CourtNumber, VisualHierarchyText } from '@/components/Hierarchy/VisualHierarchyText';
+import { StatusIndicator } from '../Status';
+import { HeroContent, ContextSensitiveDisplay, TimeSensitiveContent, useRefereeContext } from '../Hierarchy';
+import { CourtNumber, VisualHierarchyText } from '../Hierarchy/VisualHierarchyText';
 import { CountdownTimer } from './CountdownTimer';
 import { UrgentNotifications } from './UrgentNotifications';
 

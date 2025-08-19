@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { designTokens } from '@/theme/tokens';
+import { designTokens } from '../../theme/tokens';
 
 interface CountdownTimerProps {
   targetTime: string;

@@ -1,5 +1,6 @@
 export interface Tournament {
   No: string;
+  NoTournament?: string; // Numero progressivo del torneo per il loading dei match
   Name?: string;
   Title?: string;
   City?: string;

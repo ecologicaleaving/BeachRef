@@ -21,6 +21,8 @@ interface NavigationHeaderProps {
   showStatusBar?: boolean;
   onStatusPress?: () => void;
   showLogo?: boolean;
+  onRefresh?: () => void;
+  showRefreshButton?: boolean;
 }
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
@@ -34,6 +36,8 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showStatusBar = true,
   onStatusPress,
   showLogo = true,
+  onRefresh,
+  showRefreshButton = true,
 }) => {
   const router = useRouter();
 
@@ -53,6 +57,19 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
   const handleLogoPress = () => {
     router.push('/tournament-selection');
+  };
+
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      console.log('🔄 Default refresh triggered');
+      // Default refresh action - force reload current route
+      if (router.canGoBack()) {
+        const currentRoute = router.segments;
+        router.replace(router.pathname as any);
+      }
+    }
   };
 
   return (
@@ -101,6 +118,17 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </View>
         
         <View style={styles.rightSection}>
+          {showRefreshButton && (
+            <TouchableOpacity
+              style={styles.refreshButton}
+              onPress={handleRefresh}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.refreshButtonText, { color: titleColor }]}>
+                🔄
+              </Text>
+            </TouchableOpacity>
+          )}
           {rightComponent}
         </View>
       </View>
@@ -168,6 +196,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.8,
     marginTop: 2,
+  },
+  refreshButton: {
+    padding: 8,
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginLeft: 8,
+  },
+  refreshButtonText: {
+    fontSize: 18,
+    color: '#FFFFFF',
   },
 });
 

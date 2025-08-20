@@ -139,6 +139,11 @@ const MyAssignmentsScreenContent: React.FC = () => {
         <NavigationHeader
           title="My Assignments"
           showBackButton={true}
+          showRefreshButton={true}
+          onRefresh={() => {
+            refreshAssignments();
+            console.log('🏐 Refreshing assignments...');
+          }}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={designTokens.colors.accent} />
@@ -156,6 +161,11 @@ const MyAssignmentsScreenContent: React.FC = () => {
         <NavigationHeader
           title="My Assignments"
           showBackButton={true}
+          showRefreshButton={true}
+          onRefresh={() => {
+            refreshAssignments();
+            console.log('🏐 Refreshing assignments...');
+          }}
         />
         <ScrollView
           contentContainerStyle={styles.errorContainer}
@@ -179,6 +189,11 @@ const MyAssignmentsScreenContent: React.FC = () => {
         title="My Assignments"
         showBackButton={true}
         showStatusBar={true}
+        showRefreshButton={true}
+        onRefresh={() => {
+          refreshAssignments();
+          console.log('🏐 Refreshing assignments...');
+        }}
         onStatusPress={() => {
           if (currentAssignmentStatus) {
             handleAssignmentPress(currentAssignment!);

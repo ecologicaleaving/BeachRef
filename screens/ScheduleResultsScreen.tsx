@@ -181,6 +181,11 @@ const ScheduleResultsScreenContent: React.FC = () => {
         title="Schedule/Results"
         showBackButton={false}
         showStatusBar={false}
+        showRefreshButton={true}
+        onRefresh={() => {
+          loadAllMatches();
+          console.log('🏐 Refreshing schedule/results...');
+        }}
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>

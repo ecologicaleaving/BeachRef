@@ -134,8 +134,8 @@ export class VisApiService implements IVisApiService {
     tournamentType?: TournamentType;
   }): Promise<Tournament[]> {
     try {
-      // Use GetEventList for better data quality (like external website)
-      const fields = 'Name StartDate EndDate Code AuxiliaryPersons OfficialFunctions HasVolleyTournament HasBeachTournament No';
+      // Use GetEventList for better data quality with enriched fields for tournament cards
+      const fields = 'Name Title StartDate EndDate Code City Country CountryName Location Venue Courts Surface Gender Teams MaxTeams PrizeMoney Prize Currency Category Type Series Status AuxiliaryPersons OfficialFunctions HasVolleyTournament HasBeachTournament No';
       
       let xmlRequest: string;
       
@@ -177,6 +177,37 @@ export class VisApiService implements IVisApiService {
       }
 
       const xmlText = await response.text();
+      
+      // Search for Baden specifically without logging the full XML (too long)
+      if (xmlText.includes('Baden')) {
+        console.log('🏐 Baden found in XML response!');
+        const badenMatches = xmlText.match(/<Event[^>]*Baden[^>]*\/>/g);
+        if (badenMatches) {
+          console.log(`🏐 RAW BADEN XML ENTRIES:`, badenMatches);
+        }
+      } else {
+        // Search for Baden in different ways
+        console.log('🏐 Searching for Baden with different patterns...');
+        const patterns = ['Baden', 'BVB-BAD'];
+        patterns.forEach(pattern => {
+          const regex = new RegExp(pattern, 'gi');
+          const matches = xmlText.match(regex);
+          if (matches) {
+            console.log(`🏐 Found ${pattern}:`, matches);
+            // Find the full Event tag containing this match
+            const eventRegex = new RegExp(`<Event[^>]*${pattern}[^>]*\/>`, 'gi');
+            const eventMatches = xmlText.match(eventRegex);
+            if (eventMatches) {
+              console.log(`🏐 Full Event tag for ${pattern}:`, eventMatches);
+            }
+          }
+        });
+        
+        // Also log total XML length to understand if Baden is just later in the response
+        console.log(`🏐 Total XML length: ${xmlText.length} characters`);
+        console.log(`🏐 XML contains NbItems:`, xmlText.match(/NbItems="(\d+)"/)?.[1] || 'unknown');
+      }
+      
       const allTournaments = this.parseGetEventListTournaments(xmlText);
       console.log(`🏐 Parsed ${allTournaments.length} total tournaments from GetEventList API`);
       
@@ -387,7 +418,15 @@ export class VisApiService implements IVisApiService {
       });
       
       if (result && result.data) {
-        console.log(`VisApiService: Returning ${result.data.length} matches from ${result.source} cache`);
+        console.log(`VisApiService: Got ${result.data.length} matches from ${result.source} cache for tournament ${tournamentNo}`);
+        
+        // If cache returns empty matches, try direct API (common for completed tournaments)
+        if (result.data.length === 0) {
+          console.warn(`VisApiService: Cache returned 0 matches for tournament ${tournamentNo}, trying direct API for completed tournament`);
+          const directMatches = await this.fetchMatchesDirectFromAPI(tournamentNo);
+          console.log(`VisApiService: Direct API returned ${directMatches.length} matches for completed tournament ${tournamentNo}`);
+          return directMatches;
+        }
         
         // Check for live matches and establish real-time subscriptions
         await this.handleLiveMatchSubscriptions(result.data);
@@ -1871,7 +1910,8 @@ export class VisApiService implements IVisApiService {
       const xmlRequest = `<Request Type='GetBeachMatchList' Fields='${fields}'><Filter NoTournament='${tournamentNo}' /></Request>`;
       const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
       
-      console.log(`Fetching matches for tournament ${tournamentNo} from direct API...`);
+      console.log(`DEBUG MATCH API: Fetching matches for tournament ${tournamentNo} from direct API...`);
+      console.log(`DEBUG MATCH API: Using XML request: ${xmlRequest}`);
       
       const response = await fetch(requestUrl, {
         method: 'GET',
@@ -1888,9 +1928,34 @@ export class VisApiService implements IVisApiService {
       const xmlText = await response.text();
       console.log(`VisApiService: fetchMatchesDirectFromAPI got XML response length: ${xmlText.length}`);
       
+      // Log first part of XML response to debug
+      if (xmlText.length > 0) {
+        console.log(`DEBUG MATCH API: XML response preview (first 500 chars):`, xmlText.substring(0, 500));
+        
+        // Special check for tournament 1601 to see what it returns
+        if (tournamentNo === '1601') {
+          console.log(`DEBUG 1601 MATCHES: Full XML response for tournament 1601:`, xmlText.substring(0, 2000));
+        }
+      } else {
+        console.warn(`DEBUG MATCH API: Empty XML response for tournament ${tournamentNo}`);
+      }
+      
       const matches = this.parseBeachMatchList(xmlText);
       
-      console.log(`VisApiService: Loaded ${matches.length} matches for tournament ${tournamentNo}`);
+      console.log(`VisApiService: Parsed ${matches.length} matches for tournament ${tournamentNo}`);
+      
+      // Log some match details if available
+      if (matches.length > 0) {
+        console.log(`VisApiService: Sample matches:`, matches.slice(0, 3).map(m => ({
+          No: m.No,
+          TeamA: m.TeamAName,
+          TeamB: m.TeamBName,
+          Status: m.Status,
+          Date: m.LocalDate
+        })));
+      } else {
+        console.warn(`VisApiService: No matches found for tournament ${tournamentNo} - checking if tournament is completed/archived`);
+      }
       
       return matches;
     } catch (error) {
@@ -1928,10 +1993,22 @@ export class VisApiService implements IVisApiService {
 
   private static parseBeachMatchList(xmlText: string): BeachMatch[] {
     try {
+      // Check for VIS API errors first
+      if (xmlText.includes('<Error>') || xmlText.includes('<error>')) {
+        console.warn('VIS API returned error for match list request:', xmlText);
+        return [];
+      }
+      
+      // Check for NoData response (common for completed tournaments)
+      if (xmlText.includes('<NoData>') || xmlText.includes('NoData') || xmlText.includes('no data')) {
+        console.warn('VIS API returned NoData for match list - tournament may be archived');
+        return [];
+      }
       
       // Parse the BeachMatches XML format
       const matchMatches = xmlText.match(/<BeachMatch[^>]*\/>/g);
       if (!matchMatches) {
+        console.warn('No BeachMatch elements found in XML response');
         return [];
       }
 
@@ -2002,16 +2079,30 @@ export class VisApiService implements IVisApiService {
 
         const tournament: Tournament = {
           No: extractAttribute('No') || '',
+          NoTournament: extractAttribute('No') || '', // Campo numero progressivo per match loading
           Code: extractAttribute('Code'),
           Name: extractAttribute('Name'),
           StartDate: extractAttribute('StartDate'), // Direct from API!
           EndDate: extractAttribute('EndDate'),     // Direct from API!
-          // Additional fields
+          // Enhanced fields for tournament cards
           Title: extractAttribute('Title'),
           City: extractAttribute('City'),
           Country: extractAttribute('Country'),
           CountryName: extractAttribute('CountryName'),
           Location: extractAttribute('Location'),
+          Venue: extractAttribute('Venue'),
+          Courts: extractAttribute('Courts'),
+          Surface: extractAttribute('Surface'),
+          Gender: extractAttribute('Gender'),
+          Teams: extractAttribute('Teams'),
+          MaxTeams: extractAttribute('MaxTeams'),
+          PrizeMoney: extractAttribute('PrizeMoney'),
+          Prize: extractAttribute('Prize'),
+          Currency: extractAttribute('Currency'),
+          Category: extractAttribute('Category'),
+          Type: extractAttribute('Type'),
+          Series: extractAttribute('Series'),
+          Status: extractAttribute('Status'),
           Version: extractAttribute('Version'),
         };
 
@@ -2025,6 +2116,12 @@ export class VisApiService implements IVisApiService {
         
         if (officialFunctions) {
           (tournament as any).OfficialFunctions = officialFunctions;
+        }
+
+        // Log complete tournament object for debugging (only for Baden tournaments to avoid spam)
+        if (tournament.Name?.toLowerCase().includes('baden')) {
+          console.log(`🏐 RAW XML MATCH for Baden:`, match);
+          console.log(`🏐 PARSED TOURNAMENT OBJECT (${tournament.Name}):`, JSON.stringify(tournament, null, 2));
         }
 
         return tournament;

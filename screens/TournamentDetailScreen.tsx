@@ -24,7 +24,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [detailedTournament, setDetailedTournament] = useState<Tournament | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [matches, setMatches] = useState<BeachMatch[]>([]);
+  const [matches, setMatches] = useState<BeachMatch[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
   const router = useRouter();
@@ -33,9 +33,40 @@ const TournamentDetailScreenContent: React.FC = () => {
   const tournament: Tournament = React.useMemo(() => {
     try {
       const parsed = JSON.parse(tournamentData || '{}') as Tournament;
+      console.log(`DEBUG INITIAL DATA: Complete tournament object received:`, {
+        No: parsed.No,
+        NoTournament: parsed.NoTournament,
+        Code: parsed.Code,
+        Name: parsed.Name,
+        Title: parsed.Title,
+        StartDate: parsed.StartDate,
+        EndDate: parsed.EndDate,
+        StartDateQualification: parsed.StartDateQualification,
+        EndDateMainDraw: parsed.EndDateMainDraw,
+        City: parsed.City,
+        Country: parsed.Country,
+        CountryName: parsed.CountryName,
+        Location: parsed.Location,
+        Venue: parsed.Venue,
+        Surface: parsed.Surface,
+        Gender: parsed.Gender,
+        Teams: parsed.Teams,
+        MaxTeams: parsed.MaxTeams,
+        PrizeMoney: parsed.PrizeMoney,
+        Currency: parsed.Currency,
+        Category: parsed.Category,
+        Type: parsed.Type,
+        Series: parsed.Series,
+        Status: parsed.Status
+      });
       const merged = (parsed as any)._mergedTournaments;
+      if (merged && merged.length > 1) {
+        console.log(`DEBUG MERGED: This is a merged tournament with codes:`, merged.map((t: any) => ({ No: t.No, Name: t.Name, StartDate: t.StartDate, EndDate: t.EndDate })));
+      }
+      
       return parsed;
-    } catch {
+    } catch (error) {
+      console.error('🏐 TOURNAMENT DETAILS: Failed to parse tournament data:', error);
       return {} as Tournament;
     }
   }, [tournamentData]);
@@ -339,7 +370,9 @@ const TournamentDetailScreenContent: React.FC = () => {
     setDetailsLoading(true);
     try {
       // Get enhanced tournament details from GetEventList API
+      console.log(`DEBUG: Loading details for tournament No: ${tournament.No}`);
       const details = await VisApiService.getBeachTournamentDetails(tournament.No);
+      console.log(`DEBUG: API returned details for tournament:`, details?.Name, details?.No);
       
       if (details) {
         
@@ -361,12 +394,17 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Load matches for the tournament
   const loadMatches = async () => {
-    if (!tournament.No) return;
+    // Use NoTournament if available, fallback to No
+    const tournamentId = tournament.NoTournament || tournament.No;
+    if (!tournamentId) return;
+    
+    console.log(`🏐 LOADING MATCHES: Using tournament ID "${tournamentId}" (NoTournament: ${tournament.NoTournament}, No: ${tournament.No})`);
     
     setMatchesLoading(true);
     try {
-      const tournamentMatches = await VisApiService.getBeachMatchList(tournament.No);
+      const tournamentMatches = await VisApiService.getBeachMatchList(tournamentId);
       setMatches(tournamentMatches);
+      console.log(`🏐 MATCHES LOADED: Got ${tournamentMatches.length} matches for tournament ${tournamentId}`);
     } catch (error) {
       console.error('Failed to load matches:', error);
       setMatches([]);
@@ -379,7 +417,8 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   useEffect(() => {
     if (tournament.No) {
-      loadTournamentDetails();
+      // TEMPORARILY DISABLED - loadTournamentDetails() restituisce dati sbagliati (Locarno instead of Baden)
+      // loadTournamentDetails();
       loadMatches();
     }
     
@@ -388,6 +427,10 @@ const TournamentDetailScreenContent: React.FC = () => {
       // Silent fail for cache cleanup
     });
   }, [tournament.No, tournamentData]); // Added tournamentData as dependency
+
+  // Debug effect for MatchList render
+  useEffect(() => {
+  }, [matches, matchesLoading, activeTab]);
 
 
   // Handle status bar press - navigate to assignments if available
@@ -411,20 +454,14 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Navigation Header without Status Bar */}
-      <NavigationHeader
-        title={tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
-        subtitle="Tournament Details"
-        showBackButton={false}
-        showStatusBar={false}
-        rightComponent={
-          <TouchableOpacity 
-            style={styles.tournamentSelectButton}
-            onPress={() => router.push('/tournament-selection')}
-          >
-            <Text style={styles.tournamentSelectButtonText}>📋</Text>
-          </TouchableOpacity>
-        }
+      <NavigationHeader 
+        title={tournament.Name || 'Tournament Details'} 
+        showBackButton={true}
+        showRefreshButton={true}
+        onRefresh={() => {
+          loadMatches();
+          console.log('🏐 Refreshing tournament details and matches...');
+        }}
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -450,45 +487,75 @@ const TournamentDetailScreenContent: React.FC = () => {
               <Text style={styles.infoIcon}>📅</Text>
               <Text style={styles.infoValue}>{getDateRange()}</Text>
             </View>
-            {getLocation() && (
+            {getLocation() ? (
               <View style={styles.infoRowContainer}>
                 <Text style={styles.infoIcon}>📍</Text>
                 <Text style={styles.infoValue}>{getLocation()}</Text>
               </View>
-            )}
+            ) : null}
           </View>
         </View>
 
         {/* Tournament Tabs: Schedule and Results / Ranking */}
         <View style={styles.tabsSection}>
           {/* Tab Headers */}
-          <View style={styles.tabHeaders}>
-            <TouchableOpacity
-              style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
-              onPress={() => setActiveTab('schedule')}
-            >
-              <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
-                Schedule & Results
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
-              onPress={() => setActiveTab('ranking')}
-            >
-              <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
-                Ranking
-              </Text>
-            </TouchableOpacity>
+          <View style={styles.tabHeadersContainer}>
+            <View style={styles.tabHeaders}>
+              <TouchableOpacity
+                style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
+                onPress={() => setActiveTab('schedule')}
+              >
+                <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
+                  Schedule & Results
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
+                onPress={() => setActiveTab('ranking')}
+              >
+                <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
+                  Ranking
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {activeTab === 'schedule' && (
+              <TouchableOpacity
+                style={styles.refreshMatchesButton}
+                onPress={async () => {
+                  try {
+                    const { CacheService } = await import('../services/CacheService');
+                    await CacheService.invalidateMatchCache(tournament.No);
+                  } catch (error) {
+                    console.error("Failed to clear match cache:", error);
+                  }
+                  setMatches(null);
+                  loadMatches();
+                }}
+                disabled={matchesLoading}
+              >
+                <Text style={styles.refreshMatchesButtonText}>
+                  {matchesLoading ? '🔄' : '🔄'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Tab Content */}
           <View style={styles.tabContent}>
             {activeTab === 'schedule' && (
               <MatchList
-                matches={matches}
-                loading={matchesLoading}
+                matches={matches || []}
+                loading={matchesLoading || matches === null}
                 title=""
-                emptyMessage="No matches available for this tournament"
+                emptyMessage={(() => {
+                  const status = getTournamentStatus();
+                  if (status === 'Completed') {
+                    return "Match data not available for this completed tournament";
+                  } else if (status === 'Upcoming') {
+                    return "Matches will be available when the tournament starts";
+                  }
+                  return "No matches available for this tournament";
+                })()}
                 showDateNavigator={true}
                 showGenderFilter={false}
                 showStatsInFilter={false}
@@ -506,94 +573,15 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         </View>
         
-        {/* Location Information */}
-        {(detailedTournament?.InfoLocation || tournament.InfoLocation) && (
-          <View style={styles.scheduleSection}>
-            <Text style={styles.sectionTitle}>Location Information</Text>
-            <View style={styles.scheduleContent}>
-              {(() => {
-                const locationInfo = detailedTournament?.InfoLocation || tournament.InfoLocation;
-                if (!locationInfo) return null;
-                
-                try {
-                  // Decode HTML entities and clean up HTML tags
-                  const cleanLocation = locationInfo
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&#xD;&#xA;/g, '\n')
-                    .replace(/&#xA;/g, '\n')
-                    .replace(/<br\s*\/?>/gi, '\n')
-                    .replace(/<p[^>]*>/gi, '\n')
-                    .replace(/<\/p>/gi, '')
-                    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-                    .replace(/\n\s*\n/g, '\n') // Clean up multiple newlines
-                    .trim();
-                  
-                  return (
-                    <Text style={styles.scheduleText}>{cleanLocation}</Text>
-                  );
-                } catch {
-                  return (
-                    <Text style={styles.scheduleText}>Location information available</Text>
-                  );
-                }
-              })()}
-            </View>
-          </View>
-        )}
-
-        {/* Schedule Information */}
-        {(detailedTournament?.InfoSchedule || tournament.InfoSchedule) && (
-          <View style={styles.scheduleSection}>
-            <Text style={styles.sectionTitle}>Event Schedule</Text>
-            <View style={styles.scheduleContent}>
-              {(() => {
-                const scheduleInfo = detailedTournament?.InfoSchedule || tournament.InfoSchedule;
-                if (!scheduleInfo) return null;
-                
-                try {
-                  // Decode HTML entities and clean up HTML tags
-                  const cleanSchedule = scheduleInfo
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&#xD;&#xA;/g, '\n')
-                    .replace(/&#xA;/g, '\n')
-                    .replace(/<br\s*\/?>/gi, '\n')
-                    .replace(/<p[^>]*>/gi, '\n')
-                    .replace(/<\/p>/gi, '')
-                    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-                    .replace(/\n\s*\n/g, '\n') // Clean up multiple newlines
-                    .trim();
-                  
-                  return (
-                    <Text style={styles.scheduleText}>{cleanSchedule}</Text>
-                  );
-                } catch {
-                  return (
-                    <Text style={styles.scheduleText}>Schedule information available</Text>
-                  );
-                }
-              })()}
-            </View>
-          </View>
-        )}
+        {/* Location and Schedule sections temporarily disabled */}
 
 
       </ScrollView>
 
-      <BottomTabNavigation 
-        currentTab="details" 
-        onTabPress={(tab) => {
-          if (tab === 'details' && tournament) {
-            // Already on details page, do nothing
-            return;
-          } else if (tab === 'monitor' && tournament) {
-            router.push('/ref-mode');
-          }
-        }}
-      />
+      {/* BottomTabNavigation temporarily disabled */}
+      <View style={{backgroundColor: '#FFF', padding: 10, borderTopWidth: 1, borderTopColor: '#ccc'}}>
+        <Text style={{textAlign: 'center'}}>Bottom Nav Placeholder</Text>
+      </View>
     </View>
   );
 };
@@ -739,12 +727,32 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
   },
+  tabHeadersContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   tabHeaders: {
     flexDirection: 'row',
     backgroundColor: '#F3F4F6',
     borderRadius: 8,
     padding: 2,
-    marginBottom: 12,
+    flex: 1,
+  },
+  refreshMatchesButton: {
+    backgroundColor: '#FF6B35',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
+  refreshMatchesButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   tabHeader: {
     flex: 1,
@@ -799,6 +807,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
 
   scheduleContent: {

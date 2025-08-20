@@ -34,7 +34,7 @@ const tabs: Tab[] = [
   {
     key: 'monitor',
     label: 'Ref Mode',
-    icon: '👨‍⚖️',
+    icon: 'REF',
     route: '/ref-mode',
   },
 ];

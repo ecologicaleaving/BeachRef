@@ -488,7 +488,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                       styles.refereeText,
                       selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
                     ]}>
-                      1° {match.Referee1Name}
+                      R1: {match.Referee1Name}
                       {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
                     </Text>
                   </View>
@@ -499,7 +499,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                       styles.refereeText,
                       selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
                     ]}>
-                      2° {match.Referee2Name}
+                      R2: {match.Referee2Name}
                       {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
                     </Text>
                   </View>

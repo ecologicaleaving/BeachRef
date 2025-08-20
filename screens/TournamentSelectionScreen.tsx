@@ -160,19 +160,114 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     const start = new Date(tournament.StartDate);
     const end = new Date(tournament.EndDate);
     
+    let status = '';
+    let backgroundColor = '#6B7280';
+    
     if (start <= now && now <= end) {
-      return <View style={styles.liveIndicator}><Text style={styles.liveText}>LIVE</Text></View>;
+      status = 'LIVE';
+      backgroundColor = '#2E8B57';
+    } else if (end < now) {
+      status = 'COMPLETED';
+      backgroundColor = '#1B365D';
+    } else if (start > now) {
+      status = 'UPCOMING';
+      backgroundColor = '#FF6B35';
+    }
+    
+    if (status) {
+      return (
+        <View style={[styles.statusIndicator, { backgroundColor }]}>
+          <Text style={styles.statusText}>{status}</Text>
+        </View>
+      );
+    }
+    
+    return null;
+  };
+
+  // Get tournament category/type badge
+  const getCategoryBadge = () => {
+    const category = tournament.Category || tournament.Type || tournament.Series;
+    if (!category) return null;
+    
+    // Color coding for different tournament types
+    const getBadgeColor = (cat: string) => {
+      const catLower = cat.toLowerCase();
+      if (catLower.includes('fivb') || catLower.includes('world')) return '#FF6B35';
+      if (catLower.includes('cev') || catLower.includes('europe')) return '#4A90A4';
+      if (catLower.includes('bpt') || catLower.includes('elite')) return '#2E8B57';
+      if (catLower.includes('national')) return '#6B7280';
+      return '#9CA3AF';
+    };
+    
+    return (
+      <View style={[styles.categoryBadge, { backgroundColor: getBadgeColor(category) }]}>
+        <Text style={styles.categoryBadgeText}>{category.toUpperCase()}</Text>
+      </View>
+    );
+  };
+
+  // Get prize money info
+  const getPrizeInfo = () => {
+    const prize = tournament.PrizeMoney || tournament.Prize;
+    const currency = tournament.Currency;
+    if (!prize) return null;
+    
+    return (
+      <Text style={styles.tournamentPrize}>
+        💰 {currency ? `${currency} ` : ''}${prize}
+      </Text>
+    );
+  };
+
+  // Get venue/surface info
+  const getVenueInfo = () => {
+    const venue = tournament.Venue;
+    const surface = tournament.Surface;
+    const courts = tournament.Courts;
+    
+    if (venue || surface || courts) {
+      const parts = [];
+      if (venue) parts.push(venue);
+      if (surface) parts.push(`${surface} surface`);
+      if (courts) parts.push(`${courts} courts`);
+      
+      return (
+        <Text style={styles.tournamentVenue} numberOfLines={1}>
+          🏐 {parts.join(' • ')}
+        </Text>
+      );
+    }
+    return null;
+  };
+
+  // Get teams/gender info
+  const getParticipantsInfo = () => {
+    const teams = tournament.Teams || tournament.MaxTeams;
+    const gender = tournament.Gender;
+    const participants = tournament.Participants;
+    
+    if (teams || gender || participants) {
+      const parts = [];
+      if (gender) parts.push(gender === 'M' ? 'Men' : gender === 'W' ? 'Women' : 'Mixed');
+      if (teams) parts.push(`${teams} teams`);
+      if (participants && !teams) parts.push(`${participants} participants`);
+      
+      return (
+        <Text style={styles.tournamentParticipants}>
+          👥 {parts.join(' • ')}
+        </Text>
+      );
     }
     return null;
   };
 
   return (
     <TouchableOpacity style={styles.tournamentCard} onPress={onPress} activeOpacity={0.8}>
-      {getStatusIndicator() && (
-        <View style={styles.cardHeader}>
-          {getStatusIndicator()}
-        </View>
-      )}
+      <View style={styles.cardHeader}>
+        {getStatusIndicator()}
+        {getCategoryBadge()}
+      </View>
       
       <Text style={styles.tournamentName}>
         {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
@@ -185,6 +280,11 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
       )}
+
+      {/* Enhanced information from BeachTournament/Events data */}
+      {getPrizeInfo()}
+      {getParticipantsInfo()}
+      {getVenueInfo()}
       
       <View style={styles.cardFooter}>
         <TouchableOpacity style={styles.openButton} onPress={onPress}>
@@ -218,6 +318,37 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
     return tournament.Location || city || country || null;
   };
 
+  // Get category badge for live tournaments
+  const getCategoryBadge = () => {
+    const category = tournament.Category || tournament.Type || tournament.Series;
+    if (!category) return null;
+    
+    return (
+      <View style={styles.liveCategoryBadge}>
+        <Text style={styles.liveCategoryBadgeText}>{category.toUpperCase()}</Text>
+      </View>
+    );
+  };
+
+  // Get participants info
+  const getParticipantsInfo = () => {
+    const gender = tournament.Gender;
+    const teams = tournament.Teams || tournament.MaxTeams;
+    
+    if (gender || teams) {
+      const parts = [];
+      if (gender) parts.push(gender === 'M' ? 'Men' : gender === 'W' ? 'Women' : 'Mixed');
+      if (teams) parts.push(`${teams} teams`);
+      
+      return (
+        <Text style={styles.liveParticipantsInfo} numberOfLines={1}>
+          👥 {parts.join(' • ')}
+        </Text>
+      );
+    }
+    return null;
+  };
+
   return (
     <TouchableOpacity 
       style={styles.liveCard} 
@@ -229,6 +360,7 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
           <View style={styles.liveIndicatorPulse} />
           <Text style={styles.liveBadgeText}>🔴 IN CORSO</Text>
         </View>
+        {getCategoryBadge()}
       </View>
       
       <Text style={styles.liveTournamentName} numberOfLines={2}>
@@ -240,6 +372,8 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
           📍 {getLocation()}
         </Text>
       )}
+      
+      {getParticipantsInfo()}
     </TouchableOpacity>
   );
 };
@@ -466,6 +600,8 @@ const TournamentSelectionScreen: React.FC = () => {
         await CacheService.clearCache();
       }
       
+      console.log('🏐 Cache cleared, forcing fresh API call...');
+      
       await loadTournaments(true);
     } finally {
       setRefreshing(false);
@@ -473,6 +609,7 @@ const TournamentSelectionScreen: React.FC = () => {
   }, [loadTournaments]);
 
   const handleTournamentPress = (tournament: Tournament) => {
+    console.log(`DEBUG CLICK: User clicked on tournament "${tournament.Name}" with No: ${tournament.No}, StartDate: ${tournament.StartDate}, EndDate: ${tournament.EndDate}`);
     const merged = (tournament as any)._mergedTournaments;
     
     // Ensure _mergedTournaments is preserved in JSON serialization
@@ -703,12 +840,19 @@ const TournamentSelectionScreen: React.FC = () => {
     return categories;
   };
 
-  const renderTournament = ({ item }: { item: Tournament }) => (
-    <TournamentCard 
-      tournament={item} 
-      onPress={() => handleTournamentPress(item)} 
-    />
-  );
+  const renderTournament = ({ item }: { item: Tournament }) => {
+    // Debug log for Baden tournaments only (to avoid console spam)
+    if (item.Name?.toLowerCase().includes('baden')) {
+      console.log(`🏐 DEBUG TOURNAMENT LIST: Complete Baden tournament object:`, JSON.stringify(item, null, 2));
+    }
+    
+    return (
+      <TournamentCard 
+        tournament={item} 
+        onPress={() => handleTournamentPress(item)} 
+      />
+    );
+  };
 
   // Get categories with counts and filter out empty ones
   const getCategoriesWithCounts = () => {
@@ -907,7 +1051,12 @@ const TournamentSelectionScreen: React.FC = () => {
   return (
     <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
       <View style={styles.container}>
-        <NavigationHeader title="" showStatusBar={false} />
+        <NavigationHeader 
+          title="" 
+          showStatusBar={false} 
+          showRefreshButton={true}
+          onRefresh={onRefresh}
+        />
         
         <View style={styles.contentWrapper}>
           <Text style={styles.pageTitle}>Choose a Tournament</Text>
@@ -1079,10 +1228,23 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
+    minHeight: 24,
   },
+  statusIndicator: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  // Legacy live indicator for backward compatibility
   liveIndicator: {
     backgroundColor: '#2E8B57',
     paddingHorizontal: 8,
@@ -1110,6 +1272,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 12,
+  },
+  // Enhanced tournament card styles
+  categoryBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  categoryBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: 'bold',
+    letterSpacing: 0.3,
+  },
+  tournamentPrize: {
+    fontSize: 13,
+    color: '#2E8B57',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  tournamentParticipants: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  tournamentVenue: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginTop: 2,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -1383,6 +1576,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4A90A4',
     marginBottom: 4,
+  },
+  // Enhanced live card styles
+  liveCategoryBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  liveCategoryBadgeText: {
+    color: '#2E8B57',
+    fontSize: 9,
+    fontWeight: 'bold',
+    letterSpacing: 0.3,
+  },
+  liveParticipantsInfo: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginTop: 4,
   },
   // Empty Badge Styles
   emptyBadge: {

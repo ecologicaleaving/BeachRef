@@ -1,7 +1,3 @@
-
-VIS web service documentation
-Collapse All
-Data types > Event > Event
 Event
 Represents an event.
 
@@ -88,11 +84,3 @@ Type	EventType	Type.
 Venues	String	List of the venues.
 This field contains an XML element.
 Version	Int32	Version of the event.
-See Also
-Web service
-Filter for events
-Request to get an event
-Request to get a list of events
-Windows client
-Event Class
-Send Feedback

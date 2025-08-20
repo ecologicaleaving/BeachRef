@@ -58,8 +58,9 @@ export class CacheService {
     this.ensureInitialized();
     const requestId = this.generateRequestId();
     
-    // Create cache key that includes year for different API calls
-    const baseCacheKey = filters?.year ? `tournaments_${filters.year}` : 'tournaments_recent';
+    // Create cache key that includes year for different API calls - ADD TIMESTAMP TO FORCE FRESH CALL
+    const timestamp = Date.now();
+    const baseCacheKey = filters?.year ? `tournaments_${filters.year}_${timestamp}` : `tournaments_recent_${timestamp}`;
     
     console.log(`🏐 CacheService: Using cache key: ${baseCacheKey}`);
 
@@ -138,6 +139,14 @@ export class CacheService {
       
       // Apply deduplication to fresh API data before caching
       console.log(`🏐 CacheService: API returned ${apiResult.length} tournaments, applying merging...`);
+      
+      // Log Baden tournaments before merging
+      apiResult.forEach(t => {
+        if (t.Name?.toLowerCase().includes('baden')) {
+          console.log(`🏐 BADEN BEFORE MERGE:`, JSON.stringify(t, null, 2));
+        }
+      });
+      
       const mergedApiResult = this.deduplicateTournaments(apiResult);
       console.log(`🏐 CacheService: After merging: ${mergedApiResult.length} tournaments`);
       

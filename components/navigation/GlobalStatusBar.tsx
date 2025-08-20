@@ -204,7 +204,7 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
               backgroundColor: currentUrgency === 'critical' ? designTokens.colors.error : designTokens.colors.warning
             }]}>
               <Text style={styles.urgencyText}>
-                {currentUrgency === 'critical' ? '⚠️' : '⏰'}
+                {currentUrgency === 'critical' ? '!' : '⏰'}
               </Text>
             </View>
           )}

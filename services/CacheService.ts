@@ -1138,18 +1138,27 @@ export class CacheService {
       const location = (tournament.Location || tournament.City || tournament.Country || '').toLowerCase().trim();
       const startDate = tournament.StartDate || '';
       
-      // More robust key generation - remove common gender indicators
+      // More robust key generation - remove common gender indicators and normalize
       const cleanName = name
         .replace(/\b(men|women|male|female|boys|girls|m|w)\b/gi, '')
         .replace(/\s+/g, ' ')
-        .trim();
+        .replace(/[^\w\s]/g, '') // Remove special characters
+        .trim()
+        .toLowerCase();
+      
+      // Normalize location and date for better matching
+      const normalizedLocation = location.replace(/[^\w\s]/g, '').toLowerCase();
+      const normalizedDate = startDate; // Keep original date format
       
       // Create a key based on cleaned name, location, and start date
-      const key = `${cleanName}_${location}_${startDate}`;
+      const key = `${cleanName}_${normalizedLocation}_${normalizedDate}`;
       
-      // Debug logging for first few tournaments
-      if (index < 5) {
+      // Debug logging for first few tournaments and specific cases
+      if (index < 5 || name.includes('baden')) {
         console.log(`🏐 GROUPING [${index}]: "${tournament.Name}" -> clean: "${cleanName}" -> key: "${key}"`);
+        if (name.includes('baden')) {
+          console.log(`🏐 BADEN DEBUG: Original: "${tournament.Name}", Location: "${location}", StartDate: "${startDate}"`);
+        }
       }
       
       if (!tournamentGroups.has(key)) {
@@ -1167,7 +1176,7 @@ export class CacheService {
     
     // Process each group
     tournamentGroups.forEach((group, key) => {
-      if (groupIndex < 3) {
+      if (groupIndex < 3 || key.includes('baden')) {
         console.log(`🏐 GROUP ${groupIndex}: "${key}" has ${group.length} tournaments: ${group.map(t => t.Name).join(' | ')}`);
       }
       groupIndex++;
@@ -1207,9 +1216,65 @@ export class CacheService {
     });
     
     console.log(`🏐 FINAL MERGE RESULT: ${tournaments.length} -> ${result.length} tournaments`);
-    return result;
+    
+    // Secondary deduplication pass - for exact name matches that might have been missed
+    const finalResult = this.secondaryDeduplication(result);
+    console.log(`🏐 SECONDARY DEDUP: ${result.length} -> ${finalResult.length} tournaments`);
+    
+    return finalResult;
   }
   
+  /**
+   * Secondary deduplication for exact name matches
+   */
+  private static secondaryDeduplication(tournaments: Tournament[]): Tournament[] {
+    const nameGroups = new Map<string, Tournament[]>();
+    
+    // Group by exact name (case insensitive)
+    tournaments.forEach(tournament => {
+      const exactName = (tournament.Name || '').toLowerCase().trim();
+      
+      if (!nameGroups.has(exactName)) {
+        nameGroups.set(exactName, []);
+      }
+      nameGroups.get(exactName)!.push(tournament);
+    });
+    
+    const result: Tournament[] = [];
+    
+    nameGroups.forEach((group, name) => {
+      if (group.length === 1) {
+        result.push(group[0]);
+      } else {
+        console.log(`🏐 SECONDARY MERGE: "${name}" has ${group.length} exact duplicates`);
+        
+        // For exact name matches, merge them all
+        const representative = group.reduce((best, current) => {
+          const currentScore = this.getTournamentCompletenessScore(current);
+          const bestScore = this.getTournamentCompletenessScore(best);
+          return currentScore > bestScore ? current : best;
+        });
+        
+        // Merge all the _mergedTournaments arrays
+        const allMerged: any[] = [];
+        group.forEach(t => {
+          const merged = (t as any)._mergedTournaments || [{ No: t.No, Name: t.Name, Code: t.Code }];
+          allMerged.push(...merged);
+        });
+        
+        const mergedTournament = {
+          ...representative,
+          _mergedTournaments: allMerged
+        };
+        
+        console.log(`🏐 SECONDARY MERGED: "${name}" -> ${allMerged.length} total tournaments`);
+        result.push(mergedTournament);
+      }
+    });
+    
+    return result;
+  }
+
   /**
    * Create a unified name for merged tournaments
    */
@@ -1260,5 +1325,21 @@ export class CacheService {
     if (tournament.Code) score += 1;
     
     return score;
+  }
+
+  /**
+   * Clear all caches (memory and local storage)
+   */
+  static async clearCache(): Promise<void> {
+    this.ensureInitialized();
+    console.log('🏐 CacheService: Clearing all caches');
+    
+    // Clear memory cache
+    this.memoryCache.clear();
+    
+    // Clear local storage cache
+    await this.localStorage.clear();
+    
+    console.log('🏐 CacheService: All caches cleared');
   }
 }

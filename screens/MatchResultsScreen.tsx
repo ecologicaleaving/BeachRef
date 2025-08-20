@@ -34,6 +34,8 @@ const MatchResultsScreenContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [genderFilter, setGenderFilter] = useState<'all' | 'men' | 'women'>('all');
   
   // Assignment status management
   const { 
@@ -252,7 +254,7 @@ const MatchResultsScreenContent: React.FC = () => {
   );
 
   const renderLiveMatchesSection = () => {
-    const liveMatches = matchResults.live || [];
+    const liveMatches = filterAndSortMatches(matchResults.live || []);
     console.log(`MatchResults: renderLiveMatchesSection called with ${liveMatches.length} live matches`);
     if (liveMatches.length === 0) {
       console.log('MatchResults: No live matches, returning null');
@@ -294,7 +296,7 @@ const MatchResultsScreenContent: React.FC = () => {
   };
 
   const renderCompletedMatchesSection = () => {
-    const completedMatches = matchResults.completed || [];
+    const completedMatches = filterAndSortMatches(matchResults.completed || []);
     console.log(`MatchResults: renderCompletedMatchesSection called with ${completedMatches.length} completed matches`);
     if (completedMatches.length === 0) {
       console.log('MatchResults: No completed matches, returning null');
@@ -328,6 +330,100 @@ const MatchResultsScreenContent: React.FC = () => {
       </View>
     );
   };
+
+  // Render filter controls
+  const renderFilterControls = () => {
+    return (
+      <View style={styles.filterContainer}>
+        {/* Sort Order Selector */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterLabel}>Time Order</Text>
+          <View style={styles.segmentedControl}>
+            <TouchableOpacity
+              style={[styles.segmentButton, sortOrder === 'asc' && styles.activeSegment]}
+              onPress={() => setSortOrder('asc')}
+            >
+              <Text style={[styles.segmentText, sortOrder === 'asc' && styles.activeSegmentText]}>
+                ↑ Ascending
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.segmentButton, sortOrder === 'desc' && styles.activeSegment]}
+              onPress={() => setSortOrder('desc')}
+            >
+              <Text style={[styles.segmentText, sortOrder === 'desc' && styles.activeSegmentText]}>
+                ↓ Descending
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Gender Filter Selector */}
+        <View style={[styles.filterGroup, { marginBottom: 0 }]}>
+          <Text style={styles.filterLabel}>Gender</Text>
+          <View style={styles.segmentedControl}>
+            <TouchableOpacity
+              style={[styles.segmentButton, genderFilter === 'all' && styles.activeSegment]}
+              onPress={() => setGenderFilter('all')}
+            >
+              <Text style={[styles.segmentText, genderFilter === 'all' && styles.activeSegmentText]}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.segmentButton, genderFilter === 'men' && styles.activeSegment]}
+              onPress={() => setGenderFilter('men')}
+            >
+              <Text style={[styles.segmentText, genderFilter === 'men' && styles.activeSegmentText]}>
+                Men
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.segmentButton, genderFilter === 'women' && styles.activeSegment]}
+              onPress={() => setGenderFilter('women')}
+            >
+              <Text style={[styles.segmentText, genderFilter === 'women' && styles.activeSegmentText]}>
+                Women
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // Helper functions for filtering and sorting matches
+  const filterAndSortMatches = useCallback((matches: MatchResult[]) => {
+    if (!matches) return [];
+    
+    let filtered = matches;
+    
+    // Apply gender filter
+    if (genderFilter !== 'all') {
+      filtered = matches.filter(match => {
+        const matchGender = match.gender?.toLowerCase() || 
+                           match.category?.toLowerCase() || '';
+        if (genderFilter === 'men') {
+          return matchGender.includes('men') || matchGender.includes('male') || 
+                 matchGender.includes('m') && !matchGender.includes('women');
+        } else if (genderFilter === 'women') {
+          return matchGender.includes('women') || matchGender.includes('female') || 
+                 matchGender.includes('w') && !matchGender.includes('men');
+        }
+        return true;
+      });
+    }
+    
+    // Apply time sorting
+    filtered.sort((a, b) => {
+      const timeA = new Date(a.start || a.scheduledTime || '').getTime();
+      const timeB = new Date(b.start || b.scheduledTime || '').getTime();
+      
+      return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+    });
+    
+    return filtered;
+  }, [genderFilter, sortOrder]);
 
   // Debug match results structure
   console.log('MatchResults: Match results structure:', {
@@ -438,6 +534,10 @@ const MatchResultsScreenContent: React.FC = () => {
             )}
           </View>
         )}
+        
+        {/* Filter Controls (temporarily disabled for debugging) */}
+        {false && hasAnyMatches && renderFilterControls()}
+        
         {(() => {
           console.log('MatchResults: Making render decision:', { error, hasAnyMatches });
           
@@ -670,6 +770,59 @@ const styles = StyleSheet.create({
     color: designTokens.colors.background,
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  
+  // Filter Controls Styles
+  filterContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  filterGroup: {
+    marginBottom: 16,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 2,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  activeSegment: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeSegmentText: {
+    color: '#1F2937',
+    fontWeight: '600',
   },
 });
 

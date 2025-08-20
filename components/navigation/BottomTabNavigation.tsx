@@ -33,9 +33,9 @@ const tabs: Tab[] = [
   },
   {
     key: 'monitor',
-    label: 'Monitor',
-    icon: '📺',
-    route: '/referee-settings',
+    label: 'Tools',
+    icon: '⚙️',
+    route: '/tools-selection',
   },
 ];
 
@@ -177,23 +177,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   activeTabButton: {
-    // No background change, just content styling
+    backgroundColor: designTokens.brandColors.primaryLight, // Use design token for consistency
+    borderRadius: 12,
+    marginHorizontal: 8,
+    shadowColor: designTokens.colors.accent,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabIcon: {
     fontSize: 20,
     marginBottom: 4,
+    color: designTokens.colors.textSecondary, // Use design token
   },
   activeTabIcon: {
-    // Icons stay the same
+    color: designTokens.colors.accent, // Use accent color for active icon
+    fontSize: 22, // Slightly larger for active state
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.colors.textSecondary,
     textAlign: 'center',
   },
   activeTabLabel: {
-    color: '#1B365D',
+    color: designTokens.colors.accent, // Use accent color for active label
     fontWeight: '600',
   },
   

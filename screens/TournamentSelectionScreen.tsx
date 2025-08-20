@@ -128,6 +128,12 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
       )}
+      
+      <View style={styles.cardFooter}>
+        <TouchableOpacity style={styles.openButton} onPress={onPress}>
+          <Text style={styles.openButtonText}>OPEN</Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -250,7 +256,7 @@ const TournamentSelectionScreen: React.FC = () => {
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('ALL');
+  const [selectedType, setSelectedType] = useState<string>('BPT');
   const [availableCategories, setAvailableCategories] = useState<string[]>(['ALL']);
   const [showDropdown, setShowDropdown] = useState(false);
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
@@ -323,6 +329,19 @@ const TournamentSelectionScreen: React.FC = () => {
       console.log(`🏐 Loaded ${tournamentList.length} total tournaments from ${cacheResult.source}`);
       console.log('🏐 Tournament sample:', tournamentList.slice(0, 2));
       
+      // Debug merge status
+      const mergedTournaments = tournamentList.filter(t => (t as any)._mergedTournaments && (t as any)._mergedTournaments.length > 1);
+      const singleTournaments = tournamentList.filter(t => !(t as any)._mergedTournaments || (t as any)._mergedTournaments.length <= 1);
+      console.log(`🏐 MERGE STATUS: ${mergedTournaments.length} merged, ${singleTournaments.length} single`);
+      
+      if (mergedTournaments.length > 0) {
+        console.log('🏐 MERGED EXAMPLES:', mergedTournaments.slice(0, 3).map(t => ({
+          name: t.Name,
+          mergedCount: (t as any)._mergedTournaments.length,
+          merged: (t as any)._mergedTournaments.map((m: any) => m.Name)
+        })));
+      }
+      
       // Extract and set available categories from tournament data
       const categories = extractTournamentCategories(tournamentList);
       setAvailableCategories(categories);
@@ -381,6 +400,15 @@ const TournamentSelectionScreen: React.FC = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
+      // Force a complete cache refresh
+      console.log('🏐 FORCING CACHE REFRESH - clearing all caches');
+      const { CacheService } = await import('../services/CacheService');
+      
+      // Clear memory and local storage caches
+      if (typeof CacheService.clearCache === 'function') {
+        await CacheService.clearCache();
+      }
+      
       await loadTournaments(true);
     } finally {
       setRefreshing(false);
@@ -419,8 +447,8 @@ const TournamentSelectionScreen: React.FC = () => {
     // Pattern-based matching for common categories
     switch (category) {
       case 'BPT':
-        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL')) &&
-               !allText.includes('FUTURES') && !allText.includes('ELITE') && !allText.includes('CHALLENGE');
+        return allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL') ||
+               allText.includes('ELITE') || allText.includes('CHALLENGE') || allText.includes('FUTURES');
       case 'BPT FUTURES':
         return allText.includes('BPT FUTURES') || allText.includes('FUTURES');
       case 'BPT ELITE':
@@ -1027,6 +1055,27 @@ const styles = StyleSheet.create({
   tournamentDate: {
     fontSize: 14,
     color: '#6B7280',
+    marginBottom: 12,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  openButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  openButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   emptyState: {
     alignItems: 'center',

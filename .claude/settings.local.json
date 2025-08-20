@@ -98,7 +98,8 @@
       "Bash(rg:*)",
       "Bash(touch:*)",
       "Bash(npm uninstall:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(git clean:*)"
     ],
     "deny": []
   }

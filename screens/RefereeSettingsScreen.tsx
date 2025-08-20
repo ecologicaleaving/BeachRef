@@ -22,6 +22,8 @@ import { StatusIndicator } from '../components/Status/StatusIndicator';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import { designTokens } from '../theme/tokens';
+import DateNavigator from '../components/DateNavigator/DateNavigator';
+import { useDateNavigation } from '../hooks/useDateNavigation';
 
 interface RefereeFromDB {
   No: string;
@@ -41,7 +43,7 @@ interface RefereeProfile {
 
 const RefereeSettingsScreenContent: React.FC = () => {
   const router = useRouter();
-  const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
+  const { tournamentData, autoCourtMonitor } = useLocalSearchParams<{ tournamentData: string; autoCourtMonitor?: string }>();
 
   // Parse tournament data from route params
   const tournament: Tournament = React.useMemo(() => {
@@ -1069,10 +1071,12 @@ const RefereeSettingsScreenContent: React.FC = () => {
       
       // Match data ready
       
-      // Get unique dates and set first date as selected
-      const uniqueDates = [...new Set(sortedMatches.map(match => match.LocalDate || 'Unknown Date'))];
+      // Get unique dates and set most recent date as selected (same as Tournament Details)
+      const uniqueDates = [...new Set(sortedMatches.map(match => match.LocalDate || 'Unknown Date'))].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
       if (uniqueDates.length > 0 && !selectedDate) {
-        setSelectedDate(uniqueDates[0]);
+        const defaultDate = uniqueDates[uniqueDates.length - 1]; // Last day (most recent)
+        console.log('🗓️ Court Monitor - Setting default to most recent date:', defaultDate);
+        setSelectedDate(defaultDate);
       }
       
     } catch (error) {
@@ -1125,13 +1129,17 @@ const RefereeSettingsScreenContent: React.FC = () => {
   const getAvailableDates = () => {
     if (showCourtSelection) {
       // For court monitor
-      return getCourtUniqueDates();
+      const courtDates = getCourtUniqueDates();
+      console.log('🗓️ Court Monitor - Available dates:', courtDates);
+      return courtDates;
     } else {
       // For referee monitor
       const allDates = refereeMatches.map(match => 
         match.Date || match.LocalDate || match.MatchDate || match.StartDate
       ).filter(Boolean);
-      return [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // Ascending order for proper navigation
+      const sortedDates = [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // Ascending order for proper navigation
+      console.log('🗓️ Referee Monitor - Available dates (oldest to newest):', sortedDates);
+      return sortedDates;
     }
   };
 
@@ -1148,16 +1156,20 @@ const RefereeSettingsScreenContent: React.FC = () => {
     if (currentIndex === -1) {
       // No date selected, select the last day (most recent in the tournament)
       if (dates.length > 0) {
-        setSelectedDate(dates[dates.length - 1]);
+        const defaultDate = dates[dates.length - 1];
+        console.log('🗓️ Setting default to most recent date:', defaultDate, `(index ${dates.length - 1} of ${dates.length})`);
+        setSelectedDate(defaultDate);
       }
       return;
     }
 
     let newIndex;
     if (direction === 'prev') {
-      newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex; // Stop at first
+      // Prev = go to older dates (lower index, earlier in time)
+      newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex; // Stop at first (oldest)
     } else {
-      newIndex = currentIndex < dates.length - 1 ? currentIndex + 1 : currentIndex; // Stop at last
+      // Next = go to newer dates (higher index, later in time) - but we want to limit this
+      newIndex = currentIndex < dates.length - 1 ? currentIndex + 1 : currentIndex; // Stop at last (newest)
     }
 
     // Only change if we actually moved
@@ -1172,11 +1184,22 @@ const RefereeSettingsScreenContent: React.FC = () => {
     const currentIndex = getCurrentDateIndex();
     const currentDate = selectedDate || (dates.length > 0 ? dates[0] : '');
     
+    // Debug logging
+    console.log('🗓️ Date Navigator Debug:', {
+      dates: dates,
+      currentIndex,
+      currentDate: selectedDate,
+      datesLength: dates.length
+    });
+    
     if (dates.length <= 1) return null; // Don't show navigator for single date
     
     // Check if we're at the boundaries
     const isAtFirst = currentIndex <= 0;
     const isAtLast = currentIndex >= dates.length - 1;
+    
+    // Disable next button if we're at the latest day (no future navigation)
+    const isNextDisabled = isAtLast;
     
     // Get match count for current date
     const matchCount = showCourtSelection 
@@ -1216,14 +1239,14 @@ const RefereeSettingsScreenContent: React.FC = () => {
         <TouchableOpacity 
           style={[
             styles.dateNavButton,
-            isAtLast && styles.dateNavButtonDisabled
+            isNextDisabled && styles.dateNavButtonDisabled
           ]}
-          onPress={() => !isAtLast && navigateToDate('next')}
-          disabled={isAtLast}
+          onPress={() => !isNextDisabled && navigateToDate('next')}
+          disabled={isNextDisabled}
         >
           <Text style={[
             styles.dateNavButtonText,
-            isAtLast && styles.dateNavButtonTextDisabled
+            isNextDisabled && styles.dateNavButtonTextDisabled
           ]}>▶</Text>
         </TouchableOpacity>
       </View>
@@ -1528,8 +1551,18 @@ const RefereeSettingsScreenContent: React.FC = () => {
               </View>
             ) : courtMatches.length > 0 ? (
               <>
-                {/* Date Navigator */}
-                {renderDateNavigator()}
+                {/* New Date Navigator Component */}
+                <DateNavigator
+                  availableDates={getAvailableDates()}
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                  formatDate={formatMatchDate}
+                  getMatchCount={(date) => {
+                    const matchesForDate = courtMatches.filter(match => (match.LocalDate || 'Unknown Date') === date);
+                    console.log(`🗓️ Court Monitor - Match count for ${date}:`, matchesForDate.length);
+                    return matchesForDate.length;
+                  }}
+                />
                 
                 {/* Matches List */}
                 <View style={styles.courtMatchesList}>
@@ -2056,9 +2089,21 @@ const RefereeSettingsScreenContent: React.FC = () => {
           </View>
         ) : (
           <>
-            {/* Date Navigator */}
-            {console.log(`🏐 DEBUG: Rendering date navigator. refereeMatches.length: ${refereeMatches.length}, uniqueDates.length: ${uniqueDates.length}, dates:`, uniqueDates)}
-            {renderDateNavigator()}
+            {/* New Date Navigator Component */}
+            <DateNavigator
+              availableDates={getAvailableDates()}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              formatDate={formatMatchDate}
+              getMatchCount={(date) => {
+                const matchCount = refereeMatches.filter(match => {
+                  const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+                  return matchDate === date;
+                }).length;
+                console.log(`🗓️ Referee Monitor - Match count for ${date}:`, matchCount);
+                return matchCount;
+              }}
+            />
 
             {/* Matches list */}
             <View style={styles.matchesContainer}>

@@ -17,6 +17,7 @@ import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssig
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { designTokens } from '../theme/tokens';
+import MatchList from '../components/MatchList/MatchList';
 
 const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,8 +25,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [allMatches, setAllMatches] = useState<BeachMatch[]>([]);
   const [showMoreLoading, setShowMoreLoading] = useState(false);
+  // Date navigation using direct state (same as Court Monitor)
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
+
   const [detailedTournament, setDetailedTournament] = useState<Tournament | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const router = useRouter();
@@ -122,6 +124,73 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
+  // Date navigation functions (same as Court Monitor)
+  const getAvailableDates = () => {
+    const allDates = allMatches.map(match => 
+      match.Date || match.LocalDate || match.MatchDate || match.StartDate
+    ).filter(Boolean);
+    const sortedDates = [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    console.log('🗓️ Tournament Detail - Available dates (oldest to newest):', sortedDates);
+    return sortedDates;
+  };
+
+  const getMatchesForSelectedDate = () => {
+    if (!selectedDate) return allMatches.slice(0, 10); // Show first 10 if no date selected
+    
+    const matchesForDate = allMatches.filter(match => {
+      const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+      return matchDate === selectedDate;
+    });
+    
+    // Sort by time ascending
+    return matchesForDate.sort((a, b) => {
+      const timeA = a.LocalTime || a.Time || '00:00';
+      const timeB = b.LocalTime || b.Time || '00:00';
+      
+      const getTimeNumber = (timeStr: string) => {
+        const parts = timeStr.split(':');
+        if (parts.length !== 2) return 0;
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        return hours * 60 + minutes;
+      };
+      
+      return getTimeNumber(timeA) - getTimeNumber(timeB);
+    });
+  };
+
+  const formatMatchDate = (dateStr: string) => {
+    if (!dateStr || dateStr === 'Unknown Date') return dateStr;
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Debug logging - moved after getTournamentStatus declaration
+  const tournamentStatus = getTournamentStatus();
+  const currentAvailableDates = getAvailableDates();
+  const currentMatchesForDate = getMatchesForSelectedDate();
+  
+  console.log('🏐 TournamentDetail: Current state:', {
+    tournamentNo: tournament.No,
+    tournamentStatus,
+    tournamentStartDate: tournament.StartDate,
+    tournamentEndDate: tournament.EndDate,
+    allMatches: allMatches?.length || 0,
+    selectedDate,
+    availableDates: currentAvailableDates.length,
+    matchesForSelectedDate: currentMatchesForDate.length,
+    availableDatesArray: currentAvailableDates,
+    matchesForSelectedDateArray: currentMatchesForDate.slice(0, 3) // Show first 3 for debug
+  });
+
   const getStatusColor = () => {
     const status = getTournamentStatus();
     switch (status) {
@@ -174,10 +243,21 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Load matches for active or completed tournaments
   const loadMatches = async () => {
-    if (!tournament.No) return;
+    console.log('🏐 TournamentDetail: loadMatches called', { 
+      tournamentNo: tournament.No, 
+      tournamentName: tournament.Name,
+      hasNo: !!tournament.No 
+    });
+    
+    if (!tournament.No) {
+      console.log('🏐 TournamentDetail: No tournament number, aborting');
+      return;
+    }
     
     const status = getTournamentStatus();
-    if (status !== 'Live' && status !== 'Completed') return;
+    console.log('🏐 TournamentDetail: Loading matches, status:', status);
+    // Temporarily removed status check to debug
+    // if (status !== 'Live' && status !== 'Completed') return;
     
     setMatchesLoading(true);
     try {
@@ -319,20 +399,21 @@ const TournamentDetailScreenContent: React.FC = () => {
       // Get unique dates from sorted matches and sort them (earliest first) - same as court monitor
       const uniqueDates = [...new Set(sortedMatches.map(match => 
         match.LocalDate || 'Unknown Date'
-      ))];
+      ))].sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // Sort oldest to newest
       
-      setAvailableDates(uniqueDates);
-      
-      // Set default date if not already set
-      if (uniqueDates.length > 0 && !selectedDate) {
-        setSelectedDate(uniqueDates[0]);
-      }
+      console.log('🗓️ Tournament Detail - Available dates (oldest to newest):', uniqueDates);
+      // Note: Date management is now handled by useDateNavigation hook
       
       // Use the sorted matches directly (same as court monitor)
       setAllMatches(sortedMatches);
+      console.log(`🏐 TournamentDetail: Final result - ${sortedMatches.length} matches loaded, ${uniqueDates.length} dates available`);
       
-      // For display, show all matches like court monitor "ALL"
-      setMatches(sortedMatches);
+      // Auto-select the most recent date if not already set (same as Court Monitor)
+      if (uniqueDates.length > 0 && !selectedDate) {
+        const defaultDate = uniqueDates[uniqueDates.length - 1]; // Last day (most recent)
+        console.log('🗓️ Tournament Detail - Setting default to most recent date:', defaultDate);
+        setSelectedDate(defaultDate);
+      }
     } catch (error) {
       console.error('Failed to load matches:', error);
     } finally {
@@ -340,156 +421,33 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
-  // Load more matches for selected date
+  // Load more matches for selected date (same as Court Monitor)
   const loadMoreMatches = async () => {
-    const filteredMatches = selectedDate 
-      ? allMatches.filter(match => {
-          const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-          return matchDate === selectedDate;
-        })
-      : allMatches;
-      
-    // Sort by time ascending
-    const sortedMatches = [...filteredMatches].sort((a, b) => {
-      const timeA = a.LocalTime || a.Time || '00:00';
-      const timeB = b.LocalTime || b.Time || '00:00';
-      
-      const getTimeNumber = (timeStr: string) => {
-        const parts = timeStr.split(':');
-        const hours = parseInt(parts[0] || '0', 10);
-        const minutes = parseInt(parts[1] || '0', 10);
-        return hours * 60 + minutes;
-      };
-      
-      return getTimeNumber(timeA) - getTimeNumber(timeB);
-    });
-      
-    if (matches.length >= sortedMatches.length) return;
+    const currentMatches = getMatchesForSelectedDate();
+    const currentCount = matches?.length || 5;
+    if (currentCount >= currentMatches.length) return;
     
     setShowMoreLoading(true);
     
     // Simulate loading delay for better UX
     setTimeout(() => {
-      const nextBatch = sortedMatches.slice(0, matches.length + 5);
+      const nextBatch = currentMatches.slice(0, currentCount + 5);
       setMatches(nextBatch);
       setShowMoreLoading(false);
     }, 500);
   };
 
-  // Handle date navigation
-  const navigateToDate = (direction: 'prev' | 'next') => {
-    const currentIndex = availableDates.indexOf(selectedDate);
-    let newIndex = currentIndex;
-    
-    if (direction === 'prev' && currentIndex > 0) {
-      newIndex = currentIndex - 1;
-    } else if (direction === 'next' && currentIndex < availableDates.length - 1) {
-      newIndex = currentIndex + 1;
-    }
-    
-    if (newIndex !== currentIndex && newIndex >= 0 && newIndex < availableDates.length) {
-      const newDate = availableDates[newIndex];
-      setSelectedDate(newDate);
-      
-      // Filter and sort matches for new date
-      const filteredMatches = allMatches.filter(match => {
-        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-        return matchDate === newDate;
-      });
-      
-      const sortedMatches = [...filteredMatches].sort((a, b) => {
-        const timeA = a.LocalTime || a.Time || '00:00';
-        const timeB = b.LocalTime || b.Time || '00:00';
-        
-        const getTimeNumber = (timeStr: string) => {
-          const parts = timeStr.split(':');
-          const hours = parseInt(parts[0] || '0', 10);
-          const minutes = parseInt(parts[1] || '0', 10);
-          return hours * 60 + minutes;
-        };
-        
-        return getTimeNumber(timeA) - getTimeNumber(timeB);
-      });
-      
-      setMatches(sortedMatches.slice(0, 5));
-    }
-  };
-
-  // Format match date for display
-  const formatMatchDate = (dateStr: string) => {
-    if (!dateStr || dateStr === 'Unknown Date') return dateStr;
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Render date navigator with left/right arrows (same as monitor screens)
-  const renderDateNavigator = () => {
-    const currentIndex = availableDates.indexOf(selectedDate);
-    const currentDate = selectedDate || (availableDates.length > 0 ? availableDates[0] : '');
-    
-    if (availableDates.length <= 1) return null; // Don't show navigator for single date
-    
-    // Check if we're at the boundaries
-    const isAtFirst = currentIndex <= 0;
-    const isAtLast = currentIndex >= availableDates.length - 1;
-    
-    // Get match count for current date
-    const matchCount = allMatches.filter(match => {
+  // Handle date change from DateNavigator (same as Court Monitor)
+  const handleDateChange = (newDate: string) => {
+    setSelectedDate(newDate);
+    // Reset matches to show first 5 for the new date
+    const matchesForNewDate = allMatches.filter(match => {
       const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-      return matchDate === currentDate;
-    }).length;
-    
-    const displayDate = currentDate ? formatMatchDate(currentDate) : 'All Days';
-    const isToday = currentDate && new Date(currentDate).toDateString() === new Date().toDateString();
-    const dateInfo = isToday ? '📅 Today' : displayDate;
-    
-    return (
-      <View style={styles.dateNavigator}>
-        <TouchableOpacity 
-          style={[
-            styles.dateNavButton,
-            isAtFirst && styles.dateNavButtonDisabled
-          ]}
-          onPress={() => !isAtFirst && navigateToDate('prev')}
-          disabled={isAtFirst}
-        >
-          <Text style={[
-            styles.dateNavButtonText,
-            isAtFirst && styles.dateNavButtonTextDisabled
-          ]}>◀</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.dateDisplayContainer}>
-          <Text style={styles.dateDisplayText}>{dateInfo}</Text>
-          <Text style={styles.datePositionText}>
-            {matchCount} matches • {currentIndex + 1} of {availableDates.length}
-          </Text>
-        </View>
-        
-        <TouchableOpacity 
-          style={[
-            styles.dateNavButton,
-            isAtLast && styles.dateNavButtonDisabled
-          ]}
-          onPress={() => !isAtLast && navigateToDate('next')}
-          disabled={isAtLast}
-        >
-          <Text style={[
-            styles.dateNavButtonText,
-            isAtLast && styles.dateNavButtonTextDisabled
-          ]}>▶</Text>
-        </TouchableOpacity>
-      </View>
-    );
+      return matchDate === newDate;
+    });
+    setMatches(matchesForNewDate.slice(0, 5));
   };
+
 
   // Render match card (same style as monitor screens)
   const renderMatchCard = (match: BeachMatch, index: number) => {
@@ -594,9 +552,27 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   useEffect(() => {
-    loadMatches();
-    loadTournamentDetails();
-  }, [tournament.No]);
+    console.log('🏐 TournamentDetail: useEffect triggered', { 
+      tournamentNo: tournament.No, 
+      tournamentName: tournament.Name,
+      hasTournamentData: !!tournamentData 
+    });
+    
+    if (tournament.No) {
+      loadMatches();
+      loadTournamentDetails();
+    } else {
+      console.log('🏐 TournamentDetail: No tournament.No, skipping loadMatches');
+    }
+  }, [tournament.No, tournamentData]); // Added tournamentData as dependency
+
+  // Additional trigger - try to load when tournament data becomes available
+  useEffect(() => {
+    if (tournament.No && allMatches.length === 0) {
+      console.log('🏐 TournamentDetail: Retry trigger - tournament available but no matches loaded');
+      loadMatches();
+    }
+  }, [tournament]);
 
   // Handle status bar press - navigate to assignments if available
   const handleStatusPress = () => {
@@ -622,7 +598,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       {/* Navigation Header without Status Bar */}
       <NavigationHeader
         title="Tournament Details"
-        showBackButton={true}
+        showBackButton={false}
         showStatusBar={false}
         rightComponent={
           <TouchableOpacity 
@@ -775,66 +751,14 @@ const TournamentDetailScreenContent: React.FC = () => {
         </View>
 
         {/* Match Results Section */}
-        {(getTournamentStatus() === 'Live' || getTournamentStatus() === 'Completed') && (
-          <View style={styles.matchResultsSection}>
-            <Text style={styles.matchResultsTitle}>
-              {getTournamentStatus() === 'Live' ? 'Latest Results' : 'Final Results'}
-            </Text>
-            
-            {matchesLoading ? (
-              <View style={styles.matchesLoading}>
-                <ActivityIndicator size="small" color="#FF6B35" />
-                <Text style={styles.loadingText}>Loading results...</Text>
-              </View>
-            ) : matches.length > 0 ? (
-              <>
-                {/* Date Navigator (same as monitor screens) */}
-                {renderDateNavigator()}
-                
-                <View style={styles.matchesList}>
-                  {matches.map((match, index) => renderMatchCard(match, index))}
-                </View>
-                
-                {/* Load More Button */}
-                {(() => {
-                  const filteredMatches = selectedDate 
-                    ? allMatches.filter(match => {
-                        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-                        return matchDate === selectedDate;
-                      })
-                    : allMatches;
-                  return matches.length < filteredMatches.length;
-                })() && (
-                  <TouchableOpacity 
-                    style={styles.loadMoreButton} 
-                    onPress={loadMoreMatches}
-                    disabled={showMoreLoading}
-                  >
-                    {showMoreLoading ? (
-                      <View style={styles.loadMoreContent}>
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-                        <Text style={styles.loadMoreButtonText}>Loading...</Text>
-                      </View>
-                    ) : (
-                      <Text style={styles.loadMoreButtonText}>
-                        Load More ({(() => {
-                          const filteredMatches = selectedDate 
-                            ? allMatches.filter(match => {
-                                const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-                                return matchDate === selectedDate;
-                              })
-                            : allMatches;
-                          return filteredMatches.length - matches.length;
-                        })()} remaining)
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noMatchesText}>No match results available</Text>
-            )}
-          </View>
+        {allMatches.length > 0 && (
+          <MatchList
+            matches={allMatches}
+            loading={matchesLoading}
+            title={getTournamentStatus() === 'Live' ? 'Latest Results' : 'Final Results'}
+            emptyMessage="No match results available"
+            showDateNavigator={true}
+          />
         )}
 
       </ScrollView>
@@ -847,7 +771,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             return;
           } else if (tab === 'monitor' && tournament) {
             router.push({
-              pathname: '/referee-settings',
+              pathname: '/tools-selection',
               params: { tournamentData: JSON.stringify(tournament) }
             });
           }
@@ -903,17 +827,18 @@ const styles = StyleSheet.create({
   },
   tournamentCard: {
     backgroundColor: '#FFFFFF',
-    margin: 24,
-    padding: 24,
-    borderRadius: 20,
+    marginHorizontal: 8,
+    marginVertical: 16,
+    padding: 20,
+    borderRadius: 16,
     shadowColor: '#1B365D',
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 4,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -1035,10 +960,11 @@ const styles = StyleSheet.create({
   
   // Match Results Styles
   matchResultsSection: {
-    margin: 24,
-    padding: 20,
+    marginHorizontal: 8,
+    marginVertical: 16,
+    padding: 16,
     backgroundColor: '#F8FAFC',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
@@ -1221,65 +1147,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
-  },
-  // Date Navigator Styles (same as monitor screens)
-  dateNavigator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  dateNavButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1B365D',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#1B365D',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  dateNavButtonDisabled: {
-    backgroundColor: '#E5E7EB',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  dateNavButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  dateNavButtonTextDisabled: {
-    color: '#9CA3AF',
-  },
-  dateDisplayContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  dateDisplayText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  datePositionText: {
-    fontSize: 12,
-    color: '#6B7280',
-    textAlign: 'center',
   },
   // Additional styles for match cards (same as monitor screens)
   leftTopInfo: {

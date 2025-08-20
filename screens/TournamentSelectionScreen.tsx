@@ -17,6 +17,7 @@ import { Clock } from 'lucide-react';
 import { Tournament } from '../types/tournament';
 import { VisApiService } from '../services/visApi';
 import NavigationHeader from '../components/navigation/NavigationHeader';
+import { TournamentDateExtractor } from '../services/TournamentDateExtractor';
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -84,16 +85,13 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
   };
 
   const getDateRange = () => {
-    if (tournament.Dates) {
-      return tournament.Dates;
+    const dateInfo = TournamentDateExtractor.extractTournamentDates(tournament);
+    
+    if (dateInfo.dateRange) {
+      return dateInfo.dateRange;
     }
-    if (tournament.StartDate && tournament.EndDate) {
-      const start = formatDate(tournament.StartDate);
-      const end = formatDate(tournament.EndDate);
-      if (start === end) return start;
-      return `${start} - ${end}`;
-    }
-    return formatDate(tournament.StartDate) || formatDate(tournament.EndDate);
+    
+    return 'Dates TBD';
   };
 
   const getStatusIndicator = () => {

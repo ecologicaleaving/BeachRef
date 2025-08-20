@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { BeachMatch } from '../../types/match';
 import DateNavigator from '../DateNavigator/DateNavigator';
 
@@ -30,13 +30,80 @@ export const MatchList: React.FC<MatchListProps> = ({
   showRefereeFilter = true,
   customFilters,
 }) => {
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
-  const [courtFilter, setCourtFilter] = useState<string>('All');
-  const [refereeFilterMatch, setRefereeFilterMatch] = useState<string>('All');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Initialize filters from localStorage or defaults
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('matchlist-selectedDate') || '';
+    }
+    return '';
+  });
+  
+  const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('matchlist-genderFilter') as 'All' | 'M' | 'W') || 'All';
+    }
+    return 'All';
+  });
+  
+  const [courtFilter, setCourtFilter] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('matchlist-courtFilter') || 'All';
+    }
+    return 'All';
+  });
+  
+  const [refereeFilterMatch, setRefereeFilterMatch] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('matchlist-refereeFilter') || 'All';
+    }
+    return 'All';
+  });
+  
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
+    }
+    return 'desc';
+  });
+  
   const [showCustomFilters, setShowCustomFilters] = useState(false);
   const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
+
+  // Wrapper functions to save to localStorage
+  const updateSelectedDate = (date: string) => {
+    setSelectedDate(date);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matchlist-selectedDate', date);
+    }
+  };
+
+  const updateGenderFilter = (gender: 'All' | 'M' | 'W') => {
+    setGenderFilter(gender);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matchlist-genderFilter', gender);
+    }
+  };
+
+  const updateCourtFilter = (court: string) => {
+    setCourtFilter(court);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matchlist-courtFilter', court);
+    }
+  };
+
+  const updateRefereeFilter = (referee: string) => {
+    setRefereeFilterMatch(referee);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matchlist-refereeFilter', referee);
+    }
+  };
+
+  const updateSortOrder = (order: 'asc' | 'desc') => {
+    setSortOrder(order);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('matchlist-sortOrder', order);
+    }
+  };
 
   // Get available dates from matches
   const getAvailableDates = () => {
@@ -46,17 +113,61 @@ export const MatchList: React.FC<MatchListProps> = ({
     return [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
   };
 
-  // Get available courts from matches
+  // Get available courts from filtered matches (based on date and current filters)
   const getAvailableCourts = () => {
-    const allCourts = matches.map(match => match.Court).filter(Boolean);
+    // Apply base filters (date, referee, gender) but not court filter to avoid circular dependency
+    let baseFilteredMatches = matches;
+    
+    // Apply date filter - show matches from selected date onwards
+    if (selectedDate) {
+      baseFilteredMatches = baseFilteredMatches.filter(match => {
+        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+        return matchDate && matchDate >= selectedDate;
+      });
+    }
+    
+    // Apply referee filter
+    if (refereeFilterMatch !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => 
+        match.Referee1Name === refereeFilterMatch || match.Referee2Name === refereeFilterMatch
+      );
+    }
+    
+    // Apply gender filter
+    if (genderFilter !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.tournamentGender === genderFilter);
+    }
+    
+    const allCourts = baseFilteredMatches.map(match => match.Court).filter(Boolean);
     const uniqueCourts = [...new Set(allCourts)].sort();
     return ['All', ...uniqueCourts];
   };
 
-  // Get available referees from matches
+  // Get available referees from filtered matches (based on date and current filters)
   const getAvailableReferees = () => {
+    // Apply base filters (date, court, gender) but not referee filter to avoid circular dependency
+    let baseFilteredMatches = matches;
+    
+    // Apply date filter - show matches from selected date onwards
+    if (selectedDate) {
+      baseFilteredMatches = baseFilteredMatches.filter(match => {
+        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+        return matchDate && matchDate >= selectedDate;
+      });
+    }
+    
+    // Apply court filter
+    if (courtFilter !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court === courtFilter);
+    }
+    
+    // Apply gender filter
+    if (genderFilter !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.tournamentGender === genderFilter);
+    }
+    
     const allReferees = new Set<string>();
-    matches.forEach(match => {
+    baseFilteredMatches.forEach(match => {
       if (match.Referee1Name) allReferees.add(match.Referee1Name);
       if (match.Referee2Name) allReferees.add(match.Referee2Name);
     });
@@ -64,13 +175,22 @@ export const MatchList: React.FC<MatchListProps> = ({
     return ['All', ...uniqueReferees];
   };
 
-  // Auto-select most recent date when matches change
+  // Auto-select today's date or nearest future date when matches change
   useEffect(() => {
     const dates = getAvailableDates();
     if (dates.length > 0 && !selectedDate) {
-      const defaultDate = dates[dates.length - 1]; // Most recent
-      console.log('🗓️ MatchList - Setting default to most recent date:', defaultDate);
-      setSelectedDate(defaultDate);
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Find today's date or the next available date in the future
+      let defaultDate = dates.find(date => date >= today);
+      
+      // If no future dates, use the most recent date
+      if (!defaultDate) {
+        defaultDate = dates[dates.length - 1];
+      }
+      
+      console.log('🗓️ MatchList - Setting default date (from today onwards):', defaultDate);
+      updateSelectedDate(defaultDate);
     }
   }, [matches]);
 
@@ -78,14 +198,25 @@ export const MatchList: React.FC<MatchListProps> = ({
   const getMatchesForSelectedDate = () => {
     let filteredMatches = matches;
     
-    // Apply date filter
+    // Apply date filter - show matches from selected date onwards
     if (selectedDate) {
+      console.log('🗓️ MatchList - Filtering from date:', selectedDate);
+      const beforeFilter = filteredMatches.length;
+      
       filteredMatches = filteredMatches.filter(match => {
         const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-        return matchDate === selectedDate;
+        const isIncluded = matchDate && matchDate >= selectedDate;
+        
+        if (!isIncluded && matchDate) {
+          console.log(`🗓️ Excluded match: ${matchDate} < ${selectedDate}`);
+        }
+        
+        return isIncluded;
       });
+      
+      console.log(`🗓️ MatchList - Date filter: ${beforeFilter} -> ${filteredMatches.length} matches`);
     }
-    // If no date selected, show all matches (not just first 10)
+    // If no date selected, show all matches
     
     // Apply gender filter
     if (genderFilter !== 'All') {
@@ -142,14 +273,39 @@ export const MatchList: React.FC<MatchListProps> = ({
 
   // Handle date change
   const handleDateChange = (newDate: string) => {
-    setSelectedDate(newDate);
+    console.log('🗓️ MatchList - Date changed to:', newDate);
+    updateSelectedDate(newDate);
   };
 
-  // Calculate match statistics for filter buttons
+  // Calculate match statistics for filter buttons based on currently filtered matches
   const getMatchStats = () => {
-    const totalMatches = matches.length;
-    const menMatches = matches.filter(match => match.tournamentGender === 'M').length;
-    const womenMatches = matches.filter(match => match.tournamentGender === 'W').length;
+    // Get matches filtered by current date, court, and referee selections (but not gender)
+    let baseFilteredMatches = matches;
+    
+    // Apply date filter - show matches from selected date onwards
+    if (selectedDate) {
+      baseFilteredMatches = baseFilteredMatches.filter(match => {
+        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+        return matchDate && matchDate >= selectedDate;
+      });
+    }
+    
+    // Apply court filter
+    if (courtFilter !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court === courtFilter);
+    }
+    
+    // Apply referee filter
+    if (refereeFilterMatch !== 'All') {
+      baseFilteredMatches = baseFilteredMatches.filter(match => 
+        match.Referee1Name === refereeFilterMatch || match.Referee2Name === refereeFilterMatch
+      );
+    }
+    
+    // Calculate gender stats based on the filtered matches
+    const totalMatches = baseFilteredMatches.length;
+    const menMatches = baseFilteredMatches.filter(match => match.tournamentGender === 'M').length;
+    const womenMatches = baseFilteredMatches.filter(match => match.tournamentGender === 'W').length;
     
     return { totalMatches, menMatches, womenMatches };
   };
@@ -345,7 +501,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                           styles.genderFilterButton,
                           genderFilter === gender && styles.activeGenderFilterButton
                         ]}
-                        onPress={() => setGenderFilter(gender)}
+                        onPress={() => updateGenderFilter(gender)}
                       >
                         <Text style={[
                           styles.genderFilterText,
@@ -370,7 +526,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                           styles.courtFilterButton,
                           courtFilter === court && styles.activeCourtFilterButton
                         ]}
-                        onPress={() => setCourtFilter(court)}
+                        onPress={() => updateCourtFilter(court)}
                       >
                         <Text style={[
                           styles.courtFilterText,
@@ -384,48 +540,66 @@ export const MatchList: React.FC<MatchListProps> = ({
                 </View>
               )}
 
-              {/* Referee Filter as Dropdown (inside the expandable panel) */}
+              {/* Referee Filter as Modal Dropdown (inside the expandable panel) */}
               {showRefereeFilter && (
                 <View style={styles.refereeDropdownContainer}>
                   <Text style={styles.filterSectionLabel}>Referee</Text>
-                  <View style={styles.dropdownWrapper}>
-                    <TouchableOpacity
-                      style={styles.dropdownButton}
-                      onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+                  <TouchableOpacity
+                    style={styles.dropdownButton}
+                    onPress={() => setShowRefereeDropdown(true)}
+                  >
+                    <Text style={styles.dropdownButtonText}>
+                      {refereeFilterMatch === 'All' ? 'All Referees' : refereeFilterMatch}
+                    </Text>
+                    <Text style={styles.dropdownArrow}>▼</Text>
+                  </TouchableOpacity>
+                  
+                  {/* Modal Dropdown */}
+                  <Modal
+                    visible={showRefereeDropdown}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowRefereeDropdown(false)}
+                  >
+                    <Pressable 
+                      style={styles.modalOverlay}
+                      onPress={() => setShowRefereeDropdown(false)}
                     >
-                      <Text style={styles.dropdownButtonText}>
-                        {refereeFilterMatch === 'All' ? 'All Referees' : refereeFilterMatch}
-                      </Text>
-                      <Text style={styles.dropdownArrow}>
-                        {showRefereeDropdown ? '▲' : '▼'}
-                      </Text>
-                    </TouchableOpacity>
-                    
-                    {showRefereeDropdown && (
-                      <View style={styles.dropdownList}>
-                        {getAvailableReferees().map((referee) => (
-                          <TouchableOpacity
-                            key={referee}
-                            style={[
-                              styles.dropdownItem,
-                              refereeFilterMatch === referee && styles.activeDropdownItem
-                            ]}
-                            onPress={() => {
-                              setRefereeFilterMatch(referee);
-                              setShowRefereeDropdown(false);
-                            }}
+                      <Pressable 
+                        style={styles.modalDropdownContainer}
+                        onPress={(e) => e.stopPropagation()}
+                      >
+                        <View style={styles.modalDropdownList}>
+                          <ScrollView 
+                            style={styles.modalScrollView}
+                            showsVerticalScrollIndicator={true}
+                            nestedScrollEnabled={true}
                           >
-                            <Text style={[
-                              styles.dropdownItemText,
-                              refereeFilterMatch === referee && styles.activeDropdownItemText
-                            ]}>
-                              {referee === 'All' ? 'All Referees' : referee}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-                  </View>
+                            {getAvailableReferees().map((referee) => (
+                              <TouchableOpacity
+                                key={referee}
+                                style={[
+                                  styles.modalDropdownItem,
+                                  refereeFilterMatch === referee && styles.activeModalDropdownItem
+                                ]}
+                                onPress={() => {
+                                  updateRefereeFilter(referee);
+                                  setShowRefereeDropdown(false);
+                                }}
+                              >
+                                <Text style={[
+                                  styles.modalDropdownItemText,
+                                  refereeFilterMatch === referee && styles.activeModalDropdownItemText
+                                ]}>
+                                  {referee === 'All' ? 'All Referees' : referee}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      </Pressable>
+                    </Pressable>
+                  </Modal>
                 </View>
               )}
 
@@ -438,7 +612,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                       styles.sortOrderButton,
                       sortOrder === 'desc' && styles.activeSortOrderButton
                     ]}
-                    onPress={() => setSortOrder('desc')}
+                    onPress={() => updateSortOrder('desc')}
                   >
                     <Text style={[
                       styles.sortOrderText,
@@ -453,7 +627,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                       styles.sortOrderButton,
                       sortOrder === 'asc' && styles.activeSortOrderButton
                     ]}
-                    onPress={() => setSortOrder('asc')}
+                    onPress={() => updateSortOrder('asc')}
                   >
                     <Text style={[
                       styles.sortOrderText,
@@ -463,6 +637,34 @@ export const MatchList: React.FC<MatchListProps> = ({
                     </Text>
                   </TouchableOpacity>
                 </View>
+              </View>
+
+              {/* Reset Filters Link */}
+              <View style={styles.resetLinkContainer}>
+                <TouchableOpacity 
+                  style={styles.resetLink}
+                  onPress={() => {
+                    updateGenderFilter('All');
+                    updateCourtFilter('All');
+                    updateRefereeFilter('All');
+                    updateSortOrder('desc');
+                    updateSelectedDate('');
+                    setShowRefereeDropdown(false);
+                    
+                    // Clear all saved filters from localStorage
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('matchlist-selectedDate');
+                      localStorage.removeItem('matchlist-genderFilter');
+                      localStorage.removeItem('matchlist-courtFilter');
+                      localStorage.removeItem('matchlist-refereeFilter');
+                      localStorage.removeItem('matchlist-sortOrder');
+                    }
+                  }}
+                >
+                  <Text style={styles.resetLinkText}>
+                    Reset filters
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -558,6 +760,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 8,
     paddingBottom: 16,
+    zIndex: 1000,
+    elevation: 5,
   },
   courtFilterContainer: {
     marginBottom: 16,
@@ -632,9 +836,6 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 8,
   },
-  dropdownWrapper: {
-    position: 'relative',
-  },
   dropdownButton: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -656,37 +857,48 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: 'bold',
   },
-  dropdownList: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
+  // Modal Dropdown Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalDropdownContainer: {
+    width: '80%',
+    maxWidth: 300,
+  },
+  modalDropdownList: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1000,
-    maxHeight: 200,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+    maxHeight: 300,
+    overflow: 'hidden',
   },
-  dropdownItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  modalScrollView: {
+    maxHeight: 300,
+  },
+  modalDropdownItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  activeDropdownItem: {
+  activeModalDropdownItem: {
     backgroundColor: '#EFF6FF',
   },
-  dropdownItemText: {
-    fontSize: 14,
+  modalDropdownItemText: {
+    fontSize: 16,
     color: '#374151',
+    textAlign: 'center',
   },
-  activeDropdownItemText: {
+  activeModalDropdownItemText: {
     color: '#2563EB',
     fontWeight: '600',
   },
@@ -701,10 +913,10 @@ const styles = StyleSheet.create({
   },
   sortOrderButton: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     alignItems: 'center',
@@ -714,13 +926,29 @@ const styles = StyleSheet.create({
     borderColor: '#1D4ED8',
   },
   sortOrderText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
   },
   activeSortOrderText: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  // Reset Link Styles
+  resetLinkContainer: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  resetLink: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  resetLinkText: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '400',
+    textDecorationLine: 'underline',
   },
   loadingContainer: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import NavigationHeader from '../components/navigation/NavigationHeader';
@@ -43,6 +44,8 @@ const RefereeMonitorScreenContent: React.FC = () => {
   const [refereeMatches, setRefereeMatches] = useState<BeachMatch[]>([]);
   const [loadingRefereeMatches, setLoadingRefereeMatches] = useState(false);
   const [refereeCacheKey, setRefereeCacheKey] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(true);
+  const [refereeFilter, setRefereeFilter] = useState<'All' | '1' | '2'>('All');
 
   // Assignment status management
   const { 
@@ -205,46 +208,121 @@ const RefereeMonitorScreenContent: React.FC = () => {
   const handleRefereeSelect = (referee: RefereeFromDB | null) => {
     if (referee) {
       setSelectedReferee(referee);
+      setShowDropdown(false);
       loadRefereeMatches(referee);
     } else {
       setSelectedReferee(null);
       setRefereeMatches([]);
+      setShowDropdown(true);
     }
   };
+
+  // Handle edit button press (show dropdown again)
+  const handleEditReferee = () => {
+    setShowDropdown(true);
+  };
+
+  // Filter matches by referee position (1° or 2°)
+  const getFilteredRefereeMatches = () => {
+    if (!selectedReferee) return refereeMatches;
+    
+    if (refereeFilter === '1') {
+      return refereeMatches.filter(match => match.Referee1Name?.includes(selectedReferee.Name));
+    } else if (refereeFilter === '2') {
+      return refereeMatches.filter(match => match.Referee2Name?.includes(selectedReferee.Name));
+    }
+    
+    return refereeMatches;
+  };
+
+  // Calculate referee match statistics
+  const getRefereeStats = () => {
+    const allMatches = refereeMatches.length;
+    const firstRefereeMatches = refereeMatches.filter(match => match.Referee1Name?.includes(selectedReferee?.Name || '')).length;
+    const secondRefereeMatches = refereeMatches.filter(match => match.Referee2Name?.includes(selectedReferee?.Name || '')).length;
+    
+    return { allMatches, firstRefereeMatches, secondRefereeMatches };
+  };
+
 
 
   return (
     <View style={styles.container}>
       <NavigationHeader
-        title="Referee Monitor"
+        title={selectedReferee && !showDropdown ? selectedReferee.Name : "Referee Monitor"}
         showBackButton={false}
         showStatusBar={false}
+        rightComponent={
+          selectedReferee && !showDropdown ? (
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={handleEditReferee}
+            >
+              <Text style={styles.editIcon}>✏️</Text>
+            </TouchableOpacity>
+          ) : undefined
+        }
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         
-        {/* Referee Dropdown */}
-        <View style={styles.refereeSelectionSection}>
-          <RefereeDropdown
-            referees={refereeList}
-            selectedReferee={selectedReferee}
-            onRefereeSelect={handleRefereeSelect}
-            loading={loadingReferees}
-            placeholder="Select a referee..."
-            emptyMessage="No referees available"
-          />
-        </View>
+        {/* Referee Dropdown - shown only when selecting */}
+        {showDropdown && (
+          <View style={styles.refereeSelectionSection}>
+            <RefereeDropdown
+              referees={refereeList}
+              selectedReferee={selectedReferee}
+              onRefereeSelect={handleRefereeSelect}
+              loading={loadingReferees}
+              placeholder="Select a referee..."
+              emptyMessage="No referees available"
+            />
+          </View>
+        )}
 
-        {/* Match List with Date Navigator */}
-        {selectedReferee && (
-          <MatchList
-            matches={refereeMatches}
-            loading={loadingRefereeMatches}
-            title={`${selectedReferee.Name}'s Matches`}
-            selectedReferee={selectedReferee}
-            emptyMessage="No matches found for selected referee"
-            showDateNavigator={true}
-          />
+        {/* Referee Position Filter and Match List - shown when referee is selected */}
+        {selectedReferee && !showDropdown && (
+          <>
+            {/* Referee Position Filter */}
+            <View style={styles.refereeFilterSection}>
+              <View style={styles.refereeFilterButtons}>
+                {(['All', '1', '2'] as const).map((filter) => {
+                  const { allMatches, firstRefereeMatches, secondRefereeMatches } = getRefereeStats();
+                  const count = filter === 'All' ? allMatches : filter === '1' ? firstRefereeMatches : secondRefereeMatches;
+                  const label = filter === 'All' ? `All (${count})` : `${filter}° (${count})`;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={filter}
+                      style={[
+                        styles.refereeFilterButton,
+                        refereeFilter === filter && styles.activeRefereeFilterButton
+                      ]}
+                      onPress={() => setRefereeFilter(filter)}
+                    >
+                      <Text style={[
+                        styles.refereeFilterText,
+                        refereeFilter === filter && styles.activeRefereeFilterText
+                      ]}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <MatchList
+              matches={getFilteredRefereeMatches()}
+              loading={loadingRefereeMatches}
+              title=""
+              selectedReferee={selectedReferee}
+              emptyMessage="No matches found for selected referee"
+              showDateNavigator={true}
+              showGenderFilter={true}
+              showStatsInFilter={true}
+            />
+          </>
         )}
 
       </ScrollView>
@@ -286,6 +364,58 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
+  },
+  editButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#4A90A4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  editIcon: {
+    fontSize: 18,
+    color: '#FFFFFF',
+  },
+  refereeFilterSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  refereeFilterButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  refereeFilterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  activeRefereeFilterButton: {
+    backgroundColor: '#2E8B57',
+    borderColor: '#2E8B57',
+  },
+  refereeFilterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeRefereeFilterText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
 });
 

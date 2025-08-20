@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { BeachMatch } from '../../types/match';
 import DateNavigator from '../DateNavigator/DateNavigator';
 
@@ -10,6 +10,8 @@ interface MatchListProps {
   selectedReferee?: { Name: string } | null;
   emptyMessage?: string;
   showDateNavigator?: boolean;
+  showGenderFilter?: boolean;
+  showStatsInFilter?: boolean;
 }
 
 export const MatchList: React.FC<MatchListProps> = ({
@@ -19,8 +21,11 @@ export const MatchList: React.FC<MatchListProps> = ({
   selectedReferee,
   emptyMessage = "No matches found",
   showDateNavigator = true,
+  showGenderFilter = false,
+  showStatsInFilter = false,
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
 
   // Get available dates from matches
   const getAvailableDates = () => {
@@ -40,14 +45,27 @@ export const MatchList: React.FC<MatchListProps> = ({
     }
   }, [matches]);
 
-  // Get matches for selected date
+  // Get matches for selected date and gender filter
   const getMatchesForSelectedDate = () => {
-    if (!selectedDate) return matches.slice(0, 10);
+    let filteredMatches = matches;
     
-    return matches.filter(match => {
-      const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-      return matchDate === selectedDate;
-    }).sort((a, b) => {
+    // Apply date filter
+    if (selectedDate) {
+      filteredMatches = filteredMatches.filter(match => {
+        const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
+        return matchDate === selectedDate;
+      });
+    } else {
+      filteredMatches = filteredMatches.slice(0, 10);
+    }
+    
+    // Apply gender filter
+    if (genderFilter !== 'All') {
+      filteredMatches = filteredMatches.filter(match => match.tournamentGender === genderFilter);
+    }
+    
+    // Sort by time
+    return filteredMatches.sort((a, b) => {
       const timeA = a.LocalTime || a.Time || '00:00';
       const timeB = b.LocalTime || b.Time || '00:00';
       
@@ -81,6 +99,28 @@ export const MatchList: React.FC<MatchListProps> = ({
   // Handle date change
   const handleDateChange = (newDate: string) => {
     setSelectedDate(newDate);
+  };
+
+  // Calculate match statistics for filter buttons
+  const getMatchStats = () => {
+    const totalMatches = matches.length;
+    const menMatches = matches.filter(match => match.tournamentGender === 'M').length;
+    const womenMatches = matches.filter(match => match.tournamentGender === 'W').length;
+    
+    return { totalMatches, menMatches, womenMatches };
+  };
+
+  // Get button label with optional stats
+  const getButtonLabel = (gender: 'All' | 'M' | 'W') => {
+    if (!showStatsInFilter) {
+      return gender === 'All' ? 'Tutte' : gender === 'M' ? 'Maschili' : 'Femminili';
+    }
+    
+    const { totalMatches, menMatches, womenMatches } = getMatchStats();
+    const count = gender === 'All' ? totalMatches : gender === 'M' ? menMatches : womenMatches;
+    const label = gender === 'All' ? 'All' : gender;
+    
+    return `${label} (${count})`;
   };
 
   // Render match card
@@ -177,22 +217,26 @@ export const MatchList: React.FC<MatchListProps> = ({
         {(match.Referee1Name || match.Referee2Name) && (
           <View style={styles.refereesSection}>
             {match.Referee1Name && (
-              <Text style={[
-                styles.refereeText,
-                selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
-              ]}>
-                1° {match.Referee1Name}
-                {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
-              </Text>
+              <View style={styles.refereeContainer}>
+                <Text style={[
+                  styles.refereeText,
+                  selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
+                ]}>
+                  1° {match.Referee1Name}
+                  {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
+                </Text>
+              </View>
             )}
             {match.Referee2Name && (
-              <Text style={[
-                styles.refereeText,
-                selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
-              ]}>
-                2° {match.Referee2Name}
-                {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
-              </Text>
+              <View style={styles.refereeContainer}>
+                <Text style={[
+                  styles.refereeText,
+                  selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
+                ]}>
+                  2° {match.Referee2Name}
+                  {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
+                </Text>
+              </View>
             )}
           </View>
         )}
@@ -206,9 +250,36 @@ export const MatchList: React.FC<MatchListProps> = ({
   return (
     <View style={styles.container}>
       {/* Title */}
-      <Text style={styles.title}>
-        {title} {selectedDate ? `(${formatMatchDate(selectedDate)})` : ''}
-      </Text>
+      {title && (
+        <Text style={styles.title}>
+          {title}
+        </Text>
+      )}
+      
+      {/* Gender Filter */}
+      {showGenderFilter && (
+        <View style={styles.genderFilterContainer}>
+          <View style={styles.genderFilterButtons}>
+            {(['All', 'M', 'W'] as const).map((gender) => (
+              <TouchableOpacity
+                key={gender}
+                style={[
+                  styles.genderFilterButton,
+                  genderFilter === gender && styles.activeGenderFilterButton
+                ]}
+                onPress={() => setGenderFilter(gender)}
+              >
+                <Text style={[
+                  styles.genderFilterText,
+                  genderFilter === gender && styles.activeGenderFilterText
+                ]}>
+                  {getButtonLabel(gender)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
       
       {/* Date Navigator */}
       {showDateNavigator && matches.length > 0 && availableDates.length > 1 && (
@@ -217,13 +288,6 @@ export const MatchList: React.FC<MatchListProps> = ({
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           formatDate={formatMatchDate}
-          getMatchCount={(date) => {
-            const matchesForDate = matches.filter(match => {
-              const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-              return matchDate === date;
-            });
-            return matchesForDate.length;
-          }}
         />
       )}
 
@@ -254,6 +318,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1B365D',
     marginBottom: 16,
+  },
+  genderFilterContainer: {
+    marginBottom: 16,
+  },
+  genderFilterButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  genderFilterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  activeGenderFilterButton: {
+    backgroundColor: '#4A90A4',
+    borderColor: '#4A90A4',
+  },
+  genderFilterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeGenderFilterText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -390,11 +482,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
+  refereeContainer: {
+    marginBottom: 2,
+  },
   refereeText: {
     fontSize: 12,
     color: '#4B5563',
     fontWeight: '500',
-    marginBottom: 2,
   },
   highlightedReferee: {
     backgroundColor: '#FEF3C7',

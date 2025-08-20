@@ -91,9 +91,11 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
       
       <View style={styles.dateDisplayContainer}>
         <Text style={styles.dateDisplayText}>{dateInfo}</Text>
-        <Text style={styles.datePositionText}>
-          {getMatchCount ? `${matchCount} matches • ` : ''}{currentIndex + 1} of {availableDates.length}
-        </Text>
+        {getMatchCount && matchCount > 0 && (
+          <Text style={styles.datePositionText}>
+            {matchCount} matches
+          </Text>
+        )}
       </View>
       
       <TouchableOpacity 

@@ -50,12 +50,6 @@ const RefereeSettingsScreenContent: React.FC = () => {
     try {
       const parsed = JSON.parse(tournamentData || '{}') as Tournament;
       const merged = (parsed as any)._mergedTournaments;
-      if (merged && merged.length > 1) {
-        console.log(`🏐 MONITOR: "${parsed.Name}" has ${merged.length} merged tournaments`);
-        console.log(`🏐 MONITOR MERGED:`, merged);
-      } else {
-        console.log(`🏐 MONITOR: "${parsed.Name}" - no merged tournaments found`);
-      }
       return parsed;
     } catch {
       return {} as Tournament;
@@ -393,7 +387,6 @@ const RefereeSettingsScreenContent: React.FC = () => {
       let allMatches: BeachMatch[] = [];
       
       if (mergedTournaments.length > 1) {
-        console.log(`🏐 REFEREE MATCHES: Loading from ${mergedTournaments.length} merged tournaments`);
         
         // Load matches from all merged tournaments
         for (const mergedTournament of mergedTournaments) {

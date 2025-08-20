@@ -12,6 +12,7 @@ import WhistleLogo from '../WhistleLogo';
 
 interface NavigationHeaderProps {
   title: string;
+  subtitle?: string;
   showBackButton?: boolean;
   onBackPress?: () => void;
   rightComponent?: React.ReactNode;
@@ -24,6 +25,7 @@ interface NavigationHeaderProps {
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   title,
+  subtitle,
   showBackButton = false,
   onBackPress,
   rightComponent,
@@ -91,6 +93,11 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
             {title}
           </Text>
+          {subtitle && (
+            <Text style={[styles.subtitle, { color: titleColor }]} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          )}
         </View>
         
         <View style={styles.rightSection}>
@@ -153,6 +160,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    opacity: 0.8,
+    marginTop: 2,
   },
 });
 

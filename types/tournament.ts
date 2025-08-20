@@ -39,6 +39,62 @@ export interface Tournament {
   EntryFee?: string;
   Surface?: string;
   Gender?: string;
+  
+  // GetBeachTournament specific fields
+  CountryCode?: string;
+  Address?: string;
+  
+  // Tournament dates (detailed)
+  StartDateQualification?: string;
+  StartDateMainDraw?: string;
+  EndDateQualification?: string;
+  EndDateMainDraw?: string;
+  
+  // Tournament structure
+  NbTeamsQualification?: string;
+  NbTeamsFromQualification?: string;
+  NbTeamsMainDraw?: string;
+  NbWildCards?: string;
+  
+  // Organization details
+  FederationCode?: string;
+  OrganizerCode?: string;
+  OrganizerType?: string;
+  Season?: string;
+  
+  // Officials and functions
+  AuxiliaryPersons?: string;
+  OfficialFunctions?: string;
+  Officials?: string;
+  Referees?: string;
+  TechnicalOfficials?: string;
+  MatchOfficials?: string;
+  EventOfficialFunctions?: string;
+  
+  // Event relationship
+  NoEvent?: string;
+  EventNo?: string; 
+  ParentEvent?: string;
+  
+  // Event information
+  InfoSchedule?: string;
+  InfoLocation?: string;
+  
+  // Tournament flags
+  HasVolleyTournament?: boolean;
+  HasBeachTournament?: boolean;
+  
+  // Additional metadata
+  WebSite?: string;
+  BuyTicketsUrl?: string;
+  IsFreeEntrance?: boolean;
+  IsVisManaged?: boolean;
+  
+  // Technical settings
+  DefaultTimeZone?: string;
+  DefaultLocalTimeOffset?: string;
+  MatchPointsMethod?: string;
+  DefaultMatchFormat?: string;
   // Internal field for tracking merged tournaments during deduplication
   _mergedTournaments?: Array<{
     No: string;

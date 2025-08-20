@@ -99,8 +99,14 @@
       "Bash(touch:*)",
       "Bash(npm uninstall:*)",
       "WebFetch(domain:localhost)",
-      "Bash(git clean:*)"
+      "Bash(git clean:*)",
+      "Bash(del:*)",
+      "WebFetch(domain:www.fivb.org)",
+      "Bash(sed:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\KreshOS\\Documents\\00-Progetti"
+    ]
   }
 }

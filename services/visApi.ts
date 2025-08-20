@@ -134,19 +134,24 @@ export class VisApiService implements IVisApiService {
     tournamentType?: TournamentType;
   }): Promise<Tournament[]> {
     try {
-      // Build XML request with date filters when year is specified
+      // Use GetEventList for better data quality (like external website)
+      const fields = 'Name StartDate EndDate Code AuxiliaryPersons OfficialFunctions HasVolleyTournament HasBeachTournament No';
+      
       let xmlRequest: string;
       
       if (filterOptions?.year) {
-        // Request tournaments for specific year with date range
+        // Request tournaments for specific year with date filters
         const yearStart = `${filterOptions.year}-01-01`;
         const yearEnd = `${filterOptions.year}-12-31`;
-        xmlRequest = `<Request Type='GetBeachTournamentList' Fields='No Code Name StartDate EndDate' StartDate='${yearStart}' EndDate='${yearEnd}' />`;
-        console.log(`🏐 API: Requesting tournaments for year ${filterOptions.year} (${yearStart} to ${yearEnd})`);
+        xmlRequest = `<Requests><Request Type='GetEventList' Fields='${fields}'><Filter HasBeachTournament='1' FirstDate='${yearStart}' LastDate='${yearEnd}' /></Request></Requests>`;
+        console.log(`🏐 API: Requesting GetEventList tournaments for year ${filterOptions.year} (${yearStart} to ${yearEnd})`);
       } else {
-        // Default request for recent tournaments
-        xmlRequest = "<Request Type='GetBeachTournamentList' Fields='No Code Name StartDate EndDate' />";
-        console.log('🏐 API: Requesting recent tournaments (default)');
+        // Default to current year + next year (2025-2026) instead of ALL tournaments
+        const currentYear = new Date().getFullYear();
+        const yearStart = `${currentYear}-01-01`;
+        const yearEnd = `${currentYear + 1}-12-31`;
+        xmlRequest = `<Requests><Request Type='GetEventList' Fields='${fields}'><Filter HasBeachTournament='1' FirstDate='${yearStart}' LastDate='${yearEnd}' /></Request></Requests>`;
+        console.log(`🏐 API: Requesting GetEventList tournaments for current period (${yearStart} to ${yearEnd})`);
       }
       
       const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
@@ -154,7 +159,7 @@ export class VisApiService implements IVisApiService {
       
       // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for large response
 
       const response = await fetch(requestUrl, {
         method: 'GET',
@@ -172,8 +177,8 @@ export class VisApiService implements IVisApiService {
       }
 
       const xmlText = await response.text();
-      const allTournaments = this.parseBeachTournamentList(xmlText);
-      console.log(`🏐 Parsed ${allTournaments.length} total tournaments from API`);
+      const allTournaments = this.parseGetEventListTournaments(xmlText);
+      console.log(`🏐 Parsed ${allTournaments.length} total tournaments from GetEventList API`);
       
       // Debug: Show what years are available in the API data
       const yearsAvailable = new Set<number>();
@@ -232,7 +237,6 @@ export class VisApiService implements IVisApiService {
         
         // Special debug for 2024
         if (filterOptions.year === 2024) {
-          console.log('🏐 SPECIAL DEBUG FOR 2024:');
           console.log('🏐 Sample tournaments with dates:');
           allTournaments.slice(0, 5).forEach(t => {
             if (t.StartDate) {
@@ -445,11 +449,314 @@ export class VisApiService implements IVisApiService {
   }
 
   /**
+   * Try the GetEventList pattern like external website volleyball.uab.at
+   * Uses: GetEventList with Fields='Name StartDate EndDate Code AuxiliaryPersons OfficialFunctions'
+   */
+  /**
+   * Try GetBeachTournament API call with No parameter
+   * Based on our successful tests with Baden 2025 tournaments
+   */
+  static async tryGetBeachTournament(tournamentNo: string): Promise<Tournament | null> {
+    try {
+      // Request specific fields including event-related ones to find parent event
+      const fields = 'No Code Name StartDate EndDate StartDateQualification EndDateMainDraw EndMainDrawDate City Country CountryCode CountryName Location Venue Address AuxiliaryPersons OfficialFunctions Officials Referees TechnicalOfficials PlayerList MatchOfficials NoEvent EventNo ParentEvent HasVolleyTournament HasBeachTournament';
+      const xmlRequest = `<Request Type="GetBeachTournament" No="${tournamentNo}" Fields="${fields}" />`;
+      const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
+      
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/xml, text/xml',
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23',
+        },
+      });
+
+      if (response.status === 401) {
+        return null;
+      }
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const xmlText = await response.text();
+
+      if (xmlText.length < 50) {
+        return null;
+      }
+
+      // Parse the BeachTournament XML response
+      const tournamentMatch = xmlText.match(/<BeachTournament[^>]*>/);
+      if (!tournamentMatch) {
+        return null;
+      }
+
+      const tournamentXml = tournamentMatch[0];
+
+      // Extract all available attributes based on documentation and our tests
+      const extractAttribute = (attr: string): string => {
+        const match = tournamentXml.match(new RegExp(`${attr}="([^"]*)"`, 'i'));
+        return match ? match[1] : '';
+      };
+
+      // Build enhanced tournament object with all available fields
+      const tournament: Tournament = {
+        No: extractAttribute('No') || tournamentNo,
+        Code: extractAttribute('Code'),
+        Name: extractAttribute('Name'),
+        Title: extractAttribute('Title'),
+        
+        // Dates
+        StartDate: extractAttribute('StartDate'),
+        EndDate: extractAttribute('EndDate'),
+        StartDateQualification: extractAttribute('StartDateQualification'),
+        StartDateMainDraw: extractAttribute('StartDateMainDraw'),
+        EndDateQualification: extractAttribute('EndDateQualification'),
+        EndDateMainDraw: extractAttribute('EndDateMainDraw'),
+        
+        // Location data (key additions from our tests)
+        City: extractAttribute('DefaultCity') || extractAttribute('City'),
+        Country: extractAttribute('Country'),
+        CountryName: extractAttribute('CountryName'),
+        CountryCode: extractAttribute('CountryCode'),
+        Location: extractAttribute('Location'),
+        Venue: extractAttribute('DefaultVenue') || extractAttribute('Venue'),
+        Address: extractAttribute('Address'),
+        
+        // Tournament structure
+        NbTeamsQualification: extractAttribute('NbTeamsQualification'),
+        NbTeamsFromQualification: extractAttribute('NbTeamsFromQualification'),
+        NbTeamsMainDraw: extractAttribute('NbTeamsMainDraw'),
+        NbWildCards: extractAttribute('NbWildCards'),
+        
+        // Officials and functions
+        AuxiliaryPersons: extractAttribute('AuxiliaryPersons'),
+        OfficialFunctions: extractAttribute('OfficialFunctions'),
+        Officials: extractAttribute('Officials'),
+        Referees: extractAttribute('Referees'),
+        TechnicalOfficials: extractAttribute('TechnicalOfficials'),
+        MatchOfficials: extractAttribute('MatchOfficials'),
+        
+        // Event relationship
+        NoEvent: extractAttribute('NoEvent'),
+        EventNo: extractAttribute('EventNo'),
+        ParentEvent: extractAttribute('ParentEvent'),
+        
+        // Tournament flags
+        HasVolleyTournament: extractAttribute('HasVolleyTournament') === '1',
+        HasBeachTournament: extractAttribute('HasBeachTournament') === '1',
+        
+        // Tournament metadata
+        Status: extractAttribute('Status'),
+        Version: extractAttribute('Version'),
+        Gender: extractAttribute('Gender'),
+        Type: extractAttribute('Type'),
+        Season: extractAttribute('Season'),
+        
+        // Organization
+        FederationCode: extractAttribute('FederationCode'),
+        OrganizerCode: extractAttribute('OrganizerCode'),
+        OrganizerType: extractAttribute('OrganizerType'),
+        
+        // Additional fields from our successful tests
+        WebSite: extractAttribute('WebSite'),
+        BuyTicketsUrl: extractAttribute('BuyTicketsUrl'),
+        IsFreeEntrance: extractAttribute('IsFreeEntrance') === '1',
+        IsVisManaged: extractAttribute('IsVisManaged') === '1',
+        
+        // Technical details
+        DefaultTimeZone: extractAttribute('DefaultTimeZone'),
+        DefaultLocalTimeOffset: extractAttribute('DefaultLocalTimeOffset'),
+        MatchPointsMethod: extractAttribute('MatchPointsMethod'),
+        DefaultMatchFormat: extractAttribute('DefaultMatchFormat'),
+      };
+
+      return tournament;
+
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Try GetEvent to fetch OfficialFunctions for the event
+   */
+  static async tryGetEventOfficials(eventNo: string): Promise<{auxiliaryPersons: string | null, infoSchedule: string | null, infoLocation: string | null} | null> {
+    try {
+      // Request Event with AuxiliaryPersons, InfoSchedule, and InfoLocation fields
+      const xmlRequest = `<Request Type="GetEvent" No="${eventNo}" Fields="AuxiliaryPersons InfoSchedule InfoLocation" />`;
+      const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
+      
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/xml, text/xml',
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23',
+        },
+      });
+
+      if (response.status === 401) {
+        return null;
+      }
+      
+      if (!response.ok) {
+        return null;
+      }
+      
+      const xmlText = await response.text();
+      
+      
+      // Parse the Event XML response
+      const eventMatch = xmlText.match(/<Event[^>]*>/);
+      if (!eventMatch) {
+        return null;
+      }
+      
+      const eventXml = eventMatch[0];
+      
+      // Extract AuxiliaryPersons, InfoSchedule, and InfoLocation attributes
+      const auxiliaryPersonsMatch = eventXml.match(/AuxiliaryPersons="([^"]*)"/);
+      const infoScheduleMatch = eventXml.match(/InfoSchedule="([^"]*)"/);
+      const infoLocationMatch = eventXml.match(/InfoLocation="([^"]*)"/);
+      
+      const auxiliaryPersons = auxiliaryPersonsMatch ? auxiliaryPersonsMatch[1] : null;
+      const infoSchedule = infoScheduleMatch ? infoScheduleMatch[1] : null;
+      const infoLocation = infoLocationMatch ? infoLocationMatch[1] : null;
+      
+      
+      return { auxiliaryPersons, infoSchedule, infoLocation };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  static async tryGetEventListPattern(tournamentNo: string): Promise<Tournament | null> {
+    try {
+      
+      // Use the exact request pattern from the external website
+      const fields = 'Name StartDate EndDate Code AuxiliaryPersons OfficialFunctions HasVolleyTournament HasBeachTournament';
+      const xmlRequest = `<Requests><Request Type='GetEventList' Fields='${fields}'><Filter No='${tournamentNo}' HasBeachTournament='1' /></Request></Requests>`;
+      
+      
+      const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
+      
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/xml, text/xml',
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23',
+        },
+      });
+
+      if (response.ok) {
+        const xmlText = await response.text();
+        
+        const parsed = this.parseGetEventListResponse(xmlText, tournamentNo);
+        if (parsed) {
+          return parsed;
+        }
+      } else {
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Error trying GetEventList pattern for tournament ${tournamentNo}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Parse GetEventList response XML 
+   */
+  static parseGetEventListResponse(xmlText: string, tournamentNo: string): Tournament | null {
+    try {
+      // Look for Event elements in the response
+      const eventMatches = xmlText.match(/<Event[^>]*\/>/g);
+      if (!eventMatches) {
+        return null;
+      }
+
+
+      // Find the event with our tournament number
+      const targetEvent = eventMatches.find(event => 
+        event.includes(`No="${tournamentNo}"`)
+      );
+
+      if (!targetEvent) {
+        // Try first event if only one found
+        if (eventMatches.length === 1) {
+          return this.parseEventElement(eventMatches[0]);
+        }
+        return null;
+      }
+
+      return this.parseEventElement(targetEvent);
+
+    } catch (error) {
+      console.error('Error parsing GetEventList response:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Parse individual Event element from GetEventList response
+   */
+  static parseEventElement(eventXml: string): Tournament | null {
+    try {
+      const extractAttribute = (attr: string): string | undefined => {
+        const match = eventXml.match(new RegExp(`${attr}="([^"]*)"`, 'i'));
+        const value = match ? match[1] : undefined;
+        if (value) {
+        }
+        return value;
+      };
+
+      const tournament: Tournament = {
+        No: extractAttribute('No') || '',
+        Code: extractAttribute('Code'),
+        Name: extractAttribute('Name'),
+        StartDate: extractAttribute('StartDate'),
+        EndDate: extractAttribute('EndDate'),
+        // Additional fields that might be available
+        Title: extractAttribute('Title'),
+        City: extractAttribute('City'),
+        Country: extractAttribute('Country'),
+        Location: extractAttribute('Location'),
+        Status: extractAttribute('Status'),
+        Type: extractAttribute('Type'),
+        Category: extractAttribute('Category'),
+        Series: extractAttribute('Series')
+      };
+
+      // Also try to extract referee/official information
+      const auxiliaryPersons = extractAttribute('AuxiliaryPersons');
+      const officialFunctions = extractAttribute('OfficialFunctions');
+      
+      if (auxiliaryPersons) {
+        (tournament as any).AuxiliaryPersons = auxiliaryPersons;
+      }
+      
+      if (officialFunctions) {
+        (tournament as any).OfficialFunctions = officialFunctions;
+      }
+
+      // Only return if we have the basic required fields
+      if (tournament.No && tournament.Name) {
+        return tournament;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error parsing Event element:', error);
+      return null;
+    }
+  }
+
+  /**
    * Try to get basic tournament details with common information fields
    */
   static async tryBasicTournamentDetails(tournamentNo: string): Promise<Tournament | null> {
     try {
-      console.log(`🏐 DEBUG: Trying basic tournament details for ${tournamentNo}...`);
       
       // Try with common tournament information fields
       const fieldsToTry = [
@@ -459,7 +766,6 @@ export class VisApiService implements IVisApiService {
       ];
 
       for (const fields of fieldsToTry) {
-        console.log(`🏐 DEBUG: Trying GetBeachTournament with fields: ${fields.substring(0, 50)}...`);
         
         const xmlRequest = `<Request Type='GetBeachTournament' Fields='${fields}' NoTournament='${tournamentNo}' />`;
         const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
@@ -475,23 +781,17 @@ export class VisApiService implements IVisApiService {
 
           if (response.ok) {
             const xmlText = await response.text();
-            console.log(`🏐 DEBUG: Basic tournament details response (${xmlText.length} chars):`);
-            console.log('🏐 DEBUG: Raw XML:', this.formatXmlForLogging(xmlText));
             
             const parsed = this.parseBasicTournamentDetails(xmlText);
             if (parsed) {
-              console.log(`🏐 DEBUG: ✅ Parsed basic tournament details:`, JSON.stringify(parsed, null, 2));
               return parsed;
             }
           } else {
-            console.log(`🏐 DEBUG: Basic fields failed with status ${response.status}`);
           }
         } catch (error) {
-          console.log(`🏐 DEBUG: Error with basic fields:`, error);
         }
       }
       
-      console.log(`🏐 DEBUG: All basic field combinations failed`);
       return null;
     } catch (error) {
       console.error('Error trying basic tournament details:', error);
@@ -507,19 +807,16 @@ export class VisApiService implements IVisApiService {
       // Look for BeachTournament tags with attributes
       const tournamentMatch = xmlText.match(/<BeachTournament[^>]*\/>/);
       if (!tournamentMatch) {
-        console.log(`🏐 DEBUG: No BeachTournament tag found in response`);
         return null;
       }
 
       const tournamentTag = tournamentMatch[0];
-      console.log(`🏐 DEBUG: Found tournament tag:`, this.formatXmlForLogging(tournamentTag));
 
       // Extract attributes using regex
       const extractAttribute = (attr: string): string | undefined => {
         const match = tournamentTag.match(new RegExp(`${attr}="([^"]*)"`, 'i'));
         const value = match ? match[1] : undefined;
         if (value) {
-          console.log(`🏐 DEBUG: Extracted ${attr}: "${value}"`);
         }
         return value;
       };
@@ -555,13 +852,6 @@ export class VisApiService implements IVisApiService {
 
       // Only return if we have the basic required fields
       if (tournament.No) {
-        console.log(`🏐 DEBUG: Successfully parsed tournament:`, {
-          No: tournament.No,
-          Name: tournament.Name,
-          Title: tournament.Title,
-          Type: tournament.Type,
-          Category: tournament.Category
-        });
         return tournament;
       }
 
@@ -574,39 +864,69 @@ export class VisApiService implements IVisApiService {
 
   /**
    * Get beach tournament details including officials/referees if available
-   * Uses multiple approaches including the external website pattern
+   * Uses multiple approaches including the GetEventList pattern from external website
    */
   static async getBeachTournamentDetails(tournamentNo: string): Promise<Tournament | null> {
     try {
-      console.log(`🏐 DEBUG: === TRYING TO GET DETAILED TOURNAMENT INFO FOR ${tournamentNo} ===`);
+      // First, try to get from cache
+      const cachedDetails = await TournamentStorageService.getCachedTournamentDetails(tournamentNo);
+      if (cachedDetails) {
+        return cachedDetails;
+      }
+
+      // Method 0: Try GetBeachTournament with correct No parameter (based on our successful tests)
+      const beachTournamentResult = await this.tryGetBeachTournament(tournamentNo);
+      if (beachTournamentResult) {
+        // Get additional data from the Event (contains AuxiliaryPersons)
+        let finalResult = beachTournamentResult;
+        if (beachTournamentResult.NoEvent) {
+          const eventData = await this.tryGetEventOfficials(beachTournamentResult.NoEvent);
+          if (eventData) {
+            // Merge Event AuxiliaryPersons, InfoSchedule, and InfoLocation into tournament data
+            finalResult = {
+              ...beachTournamentResult,
+              AuxiliaryPersons: eventData.auxiliaryPersons || beachTournamentResult.AuxiliaryPersons,
+              InfoSchedule: eventData.infoSchedule,
+              InfoLocation: eventData.infoLocation
+            };
+          }
+        }
+        
+        // Cache the final result
+        await TournamentStorageService.cacheTournamentDetails(tournamentNo, finalResult);
+        return finalResult;
+      }
+      
+      // Method 1: Try GetEventList pattern like external website (volleyball.uab.at)
+      const eventListResult = await this.tryGetEventListPattern(tournamentNo);
+      if (eventListResult) {
+        // Cache the result
+        await TournamentStorageService.cacheTournamentDetails(tournamentNo, eventListResult);
+        return eventListResult;
+      }
       
       // Try basic tournament details first with common fields
       const basicDetails = await this.tryBasicTournamentDetails(tournamentNo);
       if (basicDetails) {
-        console.log(`🏐 DEBUG: ✅ SUCCESS with basic tournament details!`);
+        // Cache the result
+        await TournamentStorageService.cacheTournamentDetails(tournamentNo, basicDetails);
         return basicDetails;
       }
 
-      console.log(`🏐 DEBUG: === TRYING ALL METHODS TO GET REFEREE DATA FOR TOURNAMENT ${tournamentNo} ===`);
       
       // Method 1: Try to map our tournament to external website tournament number
-      console.log(`🏐 DEBUG: Method 1: Mapping tournament to external website number...`);
       const mappedResult = await this.tryExternalWebsiteMapping(tournamentNo);
       if (mappedResult && mappedResult.hasRefereeData) {
-        console.log(`🏐 DEBUG: ✅ SUCCESS with external website mapping!`);
         return mappedResult;
       }
 
       // Method 2: Try direct ShowBeachEvent pattern
-      console.log(`🏐 DEBUG: Method 2: Trying direct ShowBeachEvent pattern...`);
       const showEventResult = await this.tryShowBeachEventPattern(tournamentNo);
       if (showEventResult && showEventResult.hasRefereeData) {
-        console.log(`🏐 DEBUG: ✅ SUCCESS with ShowBeachEvent pattern!`);
         return showEventResult;
       }
 
       // Method 3: Try GetBeachTournament with different field combinations
-      console.log(`🏐 DEBUG: Method 2: Trying GetBeachTournament with referee fields...`);
       const fieldCombinations = [
         'No Code Name Officials Referees TechnicalOfficials',
         'No Code Name StartDate EndDate Officials Referees',
@@ -614,7 +934,6 @@ export class VisApiService implements IVisApiService {
       ];
 
       for (const fields of fieldCombinations) {
-        console.log(`🏐 DEBUG: Trying GetBeachTournament with fields: ${fields}`);
         
         const xmlRequest = `<Request Type='GetBeachTournament' Fields='${fields}' NoTournament='${tournamentNo}' />`;
         const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
@@ -628,18 +947,14 @@ export class VisApiService implements IVisApiService {
         });
 
         if (response.status === 401) {
-          console.log(`🏐 DEBUG: GetBeachTournament requires authentication (401)`);
           break; // Try next method
         }
 
         if (!response.ok) {
-          console.log(`🏐 DEBUG: Fields '${fields}' failed with status ${response.status}`);
           continue;
         }
 
         const xmlText = await response.text();
-        console.log(`🏐 DEBUG: GetBeachTournament SUCCESS with fields '${fields}'`);
-        console.log(`🏐 DEBUG: Response:`, this.formatXmlForLogging(xmlText));
         
         const parsed = this.parseBeachTournamentDetails(xmlText);
         if (parsed && parsed.hasOfficials) {
@@ -648,7 +963,6 @@ export class VisApiService implements IVisApiService {
       }
       
       // Method 4: Try GetBeachTournamentList with targeted query
-      console.log(`🏐 DEBUG: Method 4: Trying GetBeachTournamentList with tournament filter...`);
       return await this.getBeachTournamentListDetails(tournamentNo);
       
     } catch (error) {
@@ -665,34 +979,28 @@ export class VisApiService implements IVisApiService {
    */
   static async tryExternalWebsiteMapping(tournamentNo: string): Promise<any> {
     try {
-      console.log(`🏐 DEBUG: Mapping tournament ${tournamentNo} using cached external website approach...`);
       
       // Step 1: Get our tournament details to generate/find tournament code
       const ourTournament = await this.getOurTournamentDetails(tournamentNo);
       if (!ourTournament) {
-        console.log(`🏐 DEBUG: Could not get details for our tournament ${tournamentNo}`);
         return null;
       }
       
       const tournamentCode = ourTournament.code || this.generateTournamentCodeFromOurData(ourTournament);
-      console.log(`🏐 DEBUG: Tournament code for mapping: ${tournamentCode}`);
       
       // Step 2: Get external tournament number from cache (with auto-refresh)
       const mappingCache = TournamentMappingCacheService.getInstance();
       const externalTournamentNo = await mappingCache.getExternalTournamentNumber(tournamentCode);
       
       if (!externalTournamentNo) {
-        console.log(`🏐 DEBUG: No cached mapping found for tournament code: ${tournamentCode}`);
         // Try fallback mapping by name/location
         return await this.tryFallbackMapping(tournamentNo, ourTournament);
       }
       
-      console.log(`🏐 DEBUG: ✅ Found cached mapping ${tournamentCode} -> external number ${externalTournamentNo}`);
       
       // Step 3: Check if we have cached tournament detail data
       const cachedDetail = await this.getCachedTournamentDetail(externalTournamentNo);
       if (cachedDetail && cachedDetail.referees && cachedDetail.referees.length > 0) {
-        console.log(`🏐 DEBUG: 🎯 Using cached tournament detail with ${cachedDetail.referees.length} REFEREES!`);
         return {
           ...cachedDetail,
           source: 'cache',
@@ -703,7 +1011,6 @@ export class VisApiService implements IVisApiService {
       
       // Step 4: Fetch fresh tournament details using external number
       const detailUrl = `${VIS_BASE_URL}?Query=ShowBeachEvent&No=${externalTournamentNo}`;
-      console.log(`🏐 DEBUG: Fetching tournament details: ${detailUrl}`);
       
       const detailResponse = await fetch(detailUrl, {
         method: 'GET',
@@ -715,11 +1022,9 @@ export class VisApiService implements IVisApiService {
 
       if (detailResponse.ok) {
         const detailXml = await detailResponse.text();
-        console.log(`🏐 DEBUG: ✅ External website detail SUCCESS! Response length: ${detailXml.length}`);
         
         const eventReferees = this.parseEventRefereeData(detailXml, externalTournamentNo);
         if (eventReferees && eventReferees.referees.length > 0) {
-          console.log(`🏐 DEBUG: 🎯 FOUND ${eventReferees.referees.length} REFEREES using cached mapping!`);
           
           // Cache the tournament detail for future use
           await this.cacheTournamentDetail(externalTournamentNo, eventReferees);
@@ -746,29 +1051,19 @@ export class VisApiService implements IVisApiService {
    */
   private static async mapTournamentNumber(ourTournamentNo: string, listXml: string): Promise<string | null> {
     try {
-      console.log(`🏐 DEBUG: Mapping tournament ${ourTournamentNo} in external list...`);
       
       // Get our tournament details to match name/location
       const ourTournament = await this.getOurTournamentDetails(ourTournamentNo);
       if (!ourTournament) {
-        console.log(`🏐 DEBUG: Could not get details for our tournament ${ourTournamentNo}`);
         return null;
       }
-      
-      console.log(`🏐 DEBUG: Our tournament details:`, {
-        name: ourTournament.name,
-        location: ourTournament.location,
-        startDate: ourTournament.startDate
-      });
       
       // Parse external tournament list for matches
       // Look for tournament entries with similar names/locations
       const tournamentMatches = this.findTournamentMatches(listXml, ourTournament);
       
       if (tournamentMatches.length > 0) {
-        console.log(`🏐 DEBUG: Found ${tournamentMatches.length} potential matches:`);
         tournamentMatches.forEach((match, index) => {
-          console.log(`🏐 DEBUG: Match ${index + 1}: No=${match.no}, Name="${match.name}", Location="${match.location}"`);
         });
         
         // Return the best match (first one for now)
@@ -889,7 +1184,6 @@ export class VisApiService implements IVisApiService {
    */
   private static async tryFallbackMapping(tournamentNo: string, ourTournament: any): Promise<any> {
     try {
-      console.log(`🏐 DEBUG: Trying fallback mapping for ${tournamentNo}...`);
       
       // Get fresh tournament list and try to find match
       const year = new Date().getFullYear();
@@ -909,7 +1203,6 @@ export class VisApiService implements IVisApiService {
         
         if (matches.length > 0) {
           const bestMatch = matches[0];
-          console.log(`🏐 DEBUG: Found fallback match: ${bestMatch.no} for ${tournamentNo}`);
           
           // Try to get referee data with this number
           const detailUrl = `${VIS_BASE_URL}?Query=ShowBeachEvent&No=${bestMatch.no}`;
@@ -1001,7 +1294,6 @@ export class VisApiService implements IVisApiService {
    */
   static async tryShowBeachEventPattern(tournamentNo: string): Promise<any> {
     try {
-      console.log(`🏐 DEBUG: Trying ShowBeachEvent pattern for tournament ${tournamentNo} (like external website)...`);
       
       // Test both the provided tournament number and the known working number from external site
       const testNumbers = [tournamentNo];
@@ -1009,17 +1301,14 @@ export class VisApiService implements IVisApiService {
       // If we're testing Hamburg, also try the known working external website number
       if (tournamentNo.includes('8239') || tournamentNo === '8239') {
         testNumbers.push('1552'); // Hamburg tournament number from external website
-        console.log(`🏐 DEBUG: Hamburg detected, also testing with external website number 1552`);
       }
       
       for (const testNo of testNumbers) {
-        console.log(`🏐 DEBUG: Testing ShowBeachEvent with tournament number: ${testNo}`);
         
         // Use the exact query pattern from the external website
         // External site uses: Query=ShowBeachEvent&No=1552
         const requestUrl = `${VIS_BASE_URL}?Query=ShowBeachEvent&No=${testNo}`;
         
-        console.log(`🏐 DEBUG: Using external website pattern: ${requestUrl}`);
         
         const response = await fetch(requestUrl, {
           method: 'GET',
@@ -1031,35 +1320,28 @@ export class VisApiService implements IVisApiService {
 
         if (response.ok) {
           const xmlText = await response.text();
-          console.log(`🏐 DEBUG: ✅ ShowBeachEvent SUCCESS with number ${testNo}! Response length: ${xmlText.length}`);
-          console.log(`🏐 DEBUG: Formatted XML:`, this.formatXmlForLogging(xmlText));
           
           // Parse for referee data in event format
           const eventReferees = this.parseEventRefereeData(xmlText, testNo);
           if (eventReferees && eventReferees.referees.length > 0) {
-            console.log(`🏐 DEBUG: 🎯 FOUND ${eventReferees.referees.length} REFEREES in event data with number ${testNo}!`);
             return {
               ...eventReferees,
               usedTournamentNo: testNo,
               originalTournamentNo: tournamentNo
             };
           } else {
-            console.log(`🏐 DEBUG: No referees found in ShowBeachEvent response for number ${testNo}`);
           }
         } else {
-          console.log(`🏐 DEBUG: ShowBeachEvent request failed with status ${response.status} for number ${testNo}`);
         }
       }
       
       // Try XML Request format as fallback for the original tournament number
-      console.log(`🏐 DEBUG: No success with Query format, trying XML Request format as fallback...`);
       const xmlRequests = [
         `<Request Type='ShowBeachEvent' No='${tournamentNo}' />`,
         `<Request Type='GetBeachEvent' No='${tournamentNo}' />`
       ];
 
       for (const xmlRequest of xmlRequests) {
-        console.log(`🏐 DEBUG: Fallback trying request: ${xmlRequest}`);
         
         const fallbackUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
         
@@ -1073,11 +1355,9 @@ export class VisApiService implements IVisApiService {
 
         if (fallbackResponse.ok) {
           const fallbackXml = await fallbackResponse.text();
-          console.log(`🏐 DEBUG: Fallback response length: ${fallbackXml.length}`);
           
           const fallbackReferees = this.parseEventRefereeData(fallbackXml, tournamentNo);
           if (fallbackReferees && fallbackReferees.referees.length > 0) {
-            console.log(`🏐 DEBUG: 🎯 FOUND ${fallbackReferees.referees.length} REFEREES in fallback!`);
             return fallbackReferees;
           }
         }
@@ -1157,16 +1437,13 @@ export class VisApiService implements IVisApiService {
    */
   private static parseSpecificTournamentReferees(xmlText: string, tournamentNo: string): any {
     try {
-      console.log(`🏐 DEBUG: Parsing tournament ${tournamentNo} XML for referee data...`);
       
       // Parse BeachTournament elements
       const tournamentMatches = xmlText.match(/<BeachTournament[^>]*\/>/g);
       if (!tournamentMatches) {
-        console.log(`🏐 DEBUG: No tournament elements found in XML`);
         return null;
       }
 
-      console.log(`🏐 DEBUG: Found ${tournamentMatches.length} tournament elements`);
       
       // Find our specific tournament
       const targetTournament = tournamentMatches.find(tournament => 
@@ -1174,11 +1451,9 @@ export class VisApiService implements IVisApiService {
       );
 
       if (!targetTournament) {
-        console.log(`🏐 DEBUG: Tournament ${tournamentNo} not found in response`);
         return null;
       }
 
-      console.log(`🏐 DEBUG: Found target tournament: ${targetTournament}`);
 
       // Extract all attributes from the tournament element
       const extractAttribute = (name: string): string | undefined => {
@@ -1196,28 +1471,24 @@ export class VisApiService implements IVisApiService {
         participants: extractAttribute('Participants')
       };
 
-      console.log(`🏐 DEBUG: Extracted referee attributes:`, refereeAttributes);
 
       // Parse referee data if available
       const referees: any[] = [];
       
       // Check if Officials field contains referee data
       if (refereeAttributes.officials) {
-        console.log(`🏐 DEBUG: Processing Officials field: ${refereeAttributes.officials}`);
         const officialsReferees = this.parseRefereeField(refereeAttributes.officials);
         referees.push(...officialsReferees);
       }
 
       // Check if Referees field contains referee data
       if (refereeAttributes.referees) {
-        console.log(`🏐 DEBUG: Processing Referees field: ${refereeAttributes.referees}`);
         const refereesData = this.parseRefereeField(refereeAttributes.referees);
         referees.push(...refereesData);
       }
 
       // Check if TechnicalOfficials field contains referee data
       if (refereeAttributes.technicalOfficials) {
-        console.log(`🏐 DEBUG: Processing TechnicalOfficials field: ${refereeAttributes.technicalOfficials}`);
         const techOfficials = this.parseRefereeField(refereeAttributes.technicalOfficials);
         referees.push(...techOfficials);
       }
@@ -1435,7 +1706,6 @@ export class VisApiService implements IVisApiService {
   private static parseRefereeField(fieldData: string): any[] {
     if (!fieldData || fieldData.trim() === '') return [];
 
-    console.log(`🏐 DEBUG: Parsing referee field data: "${fieldData}"`);
 
     // Try different parsing strategies
     const referees: any[] = [];
@@ -1464,7 +1734,6 @@ export class VisApiService implements IVisApiService {
     }
     // Strategy 3: XML-like structure
     else if (fieldData.includes('<') && fieldData.includes('>')) {
-      console.log(`🏐 DEBUG: Detected XML structure in referee field`);
       // Try to parse XML structure
       const nameMatches = fieldData.match(/Name="([^"]*)"/g);
       if (nameMatches) {
@@ -1489,7 +1758,6 @@ export class VisApiService implements IVisApiService {
       });
     }
 
-    console.log(`🏐 DEBUG: Parsed ${referees.length} referees from field:`, referees);
     return referees;
   }
 
@@ -1498,16 +1766,13 @@ export class VisApiService implements IVisApiService {
    */
   private static parseBeachTournamentDetails(xmlText: string): any {
     try {
-      console.log(`🏐 DEBUG: Parsing tournament details XML for officials...`);
       
       // Parse the BeachTournaments XML format looking for officials data
       const tournamentMatches = xmlText.match(/<BeachTournament[^>]*\/>/g);
       if (!tournamentMatches) {
-        console.log(`🏐 DEBUG: No tournament data found in XML`);
         return null;
       }
 
-      console.log(`🏐 DEBUG: Found ${tournamentMatches.length} tournaments in response`);
       
       // Look for tournaments that have official/referee data
       const tournamentsWithOfficials = tournamentMatches.filter(tournament => {
@@ -1518,13 +1783,10 @@ export class VisApiService implements IVisApiService {
       });
 
       if (tournamentsWithOfficials.length > 0) {
-        console.log(`🏐 DEBUG: Found ${tournamentsWithOfficials.length} tournaments with official data:`);
         tournamentsWithOfficials.slice(0, 3).forEach((tournament, index) => {
-          console.log(`🏐 DEBUG: Tournament ${index + 1} with officials:`, tournament.substring(0, 200));
         });
         
         // Let's test the officials training tournament specifically
-        console.log(`🏐 DEBUG: Testing officials training tournament (No="2") for detailed referee data...`);
         this.testOfficialsTournament();
         
         return { 
@@ -1535,8 +1797,6 @@ export class VisApiService implements IVisApiService {
       }
 
       // Even if no officials found in attributes, check if the structure supports it
-      console.log(`🏐 DEBUG: No tournaments with explicit official data found`);
-      console.log(`🏐 DEBUG: Sample tournament structure:`, tournamentMatches[0]?.substring(0, 300));
       
       return {
         hasOfficials: false,
@@ -1555,7 +1815,6 @@ export class VisApiService implements IVisApiService {
    */
    static async testOfficialsTournament(): Promise<void> {
     try {
-      console.log(`🏐 DEBUG: === TESTING OFFICIALS TRAINING TOURNAMENT ===`);
       
       // Test GetBeachTournament on the officials training tournament (No="2")
       const fieldsToTest = [
@@ -1565,7 +1824,6 @@ export class VisApiService implements IVisApiService {
       ];
 
       for (const fields of fieldsToTest) {
-        console.log(`🏐 DEBUG: Testing officials tournament with fields: ${fields}`);
         
         const xmlRequest = `<Request Type='GetBeachTournament' Fields='${fields}' NoTournament='2' />`;
         const requestUrl = `${VIS_BASE_URL}?Request=${encodeURIComponent(xmlRequest)}`;
@@ -1581,38 +1839,24 @@ export class VisApiService implements IVisApiService {
 
           if (response.ok) {
             const xmlText = await response.text();
-            console.log(`🏐 DEBUG: ✅ SUCCESS! Officials tournament response (${xmlText.length} chars):`, this.formatXmlForLogging(xmlText));
             break; // Found working combination
           } else {
-            console.log(`🏐 DEBUG: ❌ Officials tournament fields '${fields}' failed with status ${response.status}`);
           }
         } catch (error) {
-          console.log(`🏐 DEBUG: ❌ Error testing officials tournament:`, error);
         }
       }
 
       // Also test GetBeachMatchList on officials tournament to see if it has referee assignments
-      console.log(`🏐 DEBUG: Testing match list for officials training tournament...`);
       try {
         const matches = await this.fetchMatchesDirectFromAPI('2');
-        console.log(`🏐 DEBUG: Officials tournament has ${matches.length} matches`);
         
         if (matches.length > 0) {
-          console.log(`🏐 DEBUG: Sample match from officials tournament:`, {
-            'No': matches[0].No,
-            'Teams': `${matches[0].TeamAName} vs ${matches[0].TeamBName}`,
-            'Referee1': `${matches[0].Referee1Name} (${matches[0].NoReferee1})`,
-            'Referee2': `${matches[0].Referee2Name} (${matches[0].NoReferee2})`,
-            'Date': matches[0].LocalDate,
-            'Status': matches[0].Status
-          });
+          // Successfully fetched matches
         }
       } catch (error) {
-        console.log(`🏐 DEBUG: Error getting matches for officials tournament:`, error);
       }
 
     } catch (error) {
-      console.log(`🏐 DEBUG: Error in testOfficialsTournament:`, error);
     }
   }
 
@@ -1733,6 +1977,60 @@ export class VisApiService implements IVisApiService {
       return parsedMatches;
     } catch (error) {
       console.error('VisApiService: Error parsing BeachMatches XML:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Parse GetEventList tournaments from XML response
+   */
+  private static parseGetEventListTournaments(xmlText: string): Tournament[] {
+    try {
+      // Parse the Events XML format from GetEventList
+      const eventMatches = xmlText.match(/<Event[^>]*\/>/g);
+      
+      if (!eventMatches) {
+        return [];
+      }
+
+
+      return eventMatches.map((match) => {
+        const extractAttribute = (name: string): string | undefined => {
+          const attrMatch = match.match(new RegExp(`${name}="([^"]*)"`, 'i'));
+          return attrMatch ? attrMatch[1] : undefined;
+        };
+
+        const tournament: Tournament = {
+          No: extractAttribute('No') || '',
+          Code: extractAttribute('Code'),
+          Name: extractAttribute('Name'),
+          StartDate: extractAttribute('StartDate'), // Direct from API!
+          EndDate: extractAttribute('EndDate'),     // Direct from API!
+          // Additional fields
+          Title: extractAttribute('Title'),
+          City: extractAttribute('City'),
+          Country: extractAttribute('Country'),
+          CountryName: extractAttribute('CountryName'),
+          Location: extractAttribute('Location'),
+          Version: extractAttribute('Version'),
+        };
+
+        // Add referee/official information if available
+        const auxiliaryPersons = extractAttribute('AuxiliaryPersons');
+        const officialFunctions = extractAttribute('OfficialFunctions');
+        
+        if (auxiliaryPersons) {
+          (tournament as any).AuxiliaryPersons = auxiliaryPersons;
+        }
+        
+        if (officialFunctions) {
+          (tournament as any).OfficialFunctions = officialFunctions;
+        }
+
+        return tournament;
+      });
+    } catch (error) {
+      console.error('Error parsing GetEventList tournaments XML:', error);
       return [];
     }
   }

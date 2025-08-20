@@ -33,9 +33,9 @@ const tabs: Tab[] = [
   },
   {
     key: 'monitor',
-    label: 'Schedule/Results',
-    icon: '📅',
-    route: '/schedule-results',
+    label: 'Ref Mode',
+    icon: '👨‍⚖️',
+    route: '/ref-mode',
   },
 ];
 

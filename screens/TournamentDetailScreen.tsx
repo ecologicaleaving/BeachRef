@@ -10,19 +10,23 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Tournament } from '../types/tournament';
+import { BeachMatch } from '../types/match';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { VisApiService } from '../services/visApi';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
+import { MatchList } from '../components/MatchList/MatchList';
 import { designTokens } from '../theme/tokens';
-import { TournamentDateExtractor } from '../services/TournamentDateExtractor';
+// Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-
   const [detailedTournament, setDetailedTournament] = useState<Tournament | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [matches, setMatches] = useState<BeachMatch[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
 
@@ -30,9 +34,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       const parsed = JSON.parse(tournamentData || '{}') as Tournament;
       const merged = (parsed as any)._mergedTournaments;
-      if (merged && merged.length > 1) {
-        console.log(`🏐 DETAIL: "${parsed.Name}" has ${merged.length} merged tournaments`);
-      }
       return parsed;
     } catch {
       return {} as Tournament;
@@ -62,10 +63,61 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
+  // Compact date formatting functions (moved from TournamentDateExtractor)
+  const formatCompactDate = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    
+    try {
+      const date = new Date(dateStr);
+      const day = date.getDate().toString().padStart(2, '0');
+      const monthName = getMonthNameShort(date.getMonth());
+      
+      return `${day} ${monthName}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatCompactDateRange = (startDate: string, endDate: string): string => {
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      const startDay = start.getDate().toString().padStart(2, '0');
+      const endDay = end.getDate().toString().padStart(2, '0');
+      const monthName = getMonthNameShort(start.getMonth());
+      
+      // If same date, show as single date
+      if (startDate === endDate) {
+        return `${startDay} ${monthName}`;
+      }
+      
+      // Check if they're in the same month/year
+      if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+        return `${startDay} - ${endDay} ${monthName}`;
+      } else {
+        // Different months - show month for each date
+        const endMonthName = getMonthNameShort(end.getMonth());
+        return `${startDay} ${monthName} - ${endDay} ${endMonthName}`;
+      }
+    } catch {
+      return `${startDate} - ${endDate}`;
+    }
+  };
+
+  const getMonthNameShort = (monthIndex: number): string => {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return monthNames[monthIndex] || 'Jan';
+  };
+
   const getLocation = () => {
-    // Try different combinations of available location data
-    const city = tournament.City;
-    const country = tournament.CountryName || tournament.Country;
+    // Use detailed tournament data if available, fallback to basic tournament data
+    const tournamentData = detailedTournament || tournament;
+    const city = tournamentData.City;
+    const country = tournamentData.CountryName || tournamentData.Country;
     
     if (city && country) {
       return `${city}, ${country}`;
@@ -73,38 +125,191 @@ const TournamentDetailScreenContent: React.FC = () => {
     
     // Only return location if we have explicit location data, city, or country
     // Don't show "Location not specified" or try to infer from title
-    return tournament.Location || city || country || null;
+    return tournamentData.Location || city || country || null;
+  };
+
+  // Function codes mapping (verified from VIS API data)
+  const getFunctionName = (functionCode: string): string => {
+    const functionMap: { [key: string]: string } = {
+      '1': 'Main Referee',
+      '2': 'Line Judge', 
+      '3': 'Scorer',
+      '4': 'Assistant/Volunteer',
+      '5': 'Technical Official',
+      '6': 'Supervisor',
+      '7': 'Medical Staff',
+      '8': 'Media Officer',
+      // Based on actual data analysis
+    };
+    return functionMap[functionCode] || `Function ${functionCode}`;
+  };
+
+  // Parse XML content to extract useful information
+  const parseAuxiliaryPersons = (xmlString?: string): string => {
+    if (!xmlString) return '';
+    
+    try {
+      // Decode HTML entities
+      const decoded = xmlString
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#xD;&#xA;/g, '')
+        .replace(/&#xA;/g, '');
+      
+      // Extract person information using regex
+      const personMatches = decoded.match(/<AuxiliaryPerson[^>]*>/g);
+      if (!personMatches) return '';
+      
+      // Group by function to show function counts
+      const functionGroups: { [key: string]: Array<{name: string, nationality: string}> } = {};
+      
+      const persons = personMatches.map(match => {
+        const firstNameMatch = match.match(/FirstName="([^"]*)"/);
+        const lastNameMatch = match.match(/LastName="([^"]*)"/);
+        const nationalityMatch = match.match(/NationalityCode="([^"]*)"/);
+        const functionMatch = match.match(/Functions="([^"]*)"/);
+        
+        const firstName = firstNameMatch ? firstNameMatch[1] : '';
+        const lastName = lastNameMatch ? lastNameMatch[1] : '';
+        const nationality = nationalityMatch ? nationalityMatch[1] : '';
+        const functionCode = functionMatch ? functionMatch[1] : '';
+        
+        const functionName = getFunctionName(functionCode);
+        
+        // Group by function
+        if (!functionGroups[functionName]) {
+          functionGroups[functionName] = [];
+        }
+        functionGroups[functionName].push({ name: `${firstName} ${lastName}`, nationality });
+        
+        return `${firstName} ${lastName} (${nationality}, ${functionName})`;
+      });
+      
+      // Create summary by function
+      const functionSummary = Object.entries(functionGroups)
+        .map(([funcName, people]) => `${people.length} ${funcName}${people.length > 1 ? 's' : ''}`)
+        .join(', ');
+      
+      return `${persons.length} people: ${functionSummary}. Examples: ${persons.slice(0, 2).join(', ')}${persons.length > 2 ? '...' : ''}`;
+    } catch {
+      return 'Personnel information available';
+    }
+  };
+
+  const parseOfficialFunctions = (xmlString?: string): string => {
+    if (!xmlString) return '';
+    
+    try {
+      // Decode HTML entities
+      const decoded = xmlString
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#xD;&#xA;/g, '')
+        .replace(/&#xA;/g, '');
+      
+      // Try to extract official function information
+      // This might have different XML structure - let's see what we get
+      
+      // Look for common official XML patterns
+      const functionMatches = decoded.match(/<[^>]*Function[^>]*>/g) || 
+                             decoded.match(/<Official[^>]*>/g) ||
+                             decoded.match(/<[^>]*Code="[^"]*"[^>]*>/g);
+      
+      if (functionMatches && functionMatches.length > 0) {
+        // Extract function codes/names from the matches
+        const functions = functionMatches.map(match => {
+          const codeMatch = match.match(/Code="([^"]*)"/);
+          const nameMatch = match.match(/Name="([^"]*)"/);
+          const typeMatch = match.match(/Type="([^"]*)"/);
+          
+          if (codeMatch) return `Function ${codeMatch[1]}`;
+          if (nameMatch) return nameMatch[1];
+          if (typeMatch) return typeMatch[1];
+          return 'Official Function';
+        });
+        
+        return `${functions.length} official functions: ${functions.slice(0, 3).join(', ')}${functions.length > 3 ? '...' : ''}`;
+      }
+      
+      // Fallback: if it's just text content, show first part
+      const textContent = decoded.replace(/<[^>]*>/g, '').trim();
+      if (textContent) {
+        return `Official functions: ${textContent.substring(0, 50)}${textContent.length > 50 ? '...' : ''}`;
+      }
+      
+      return 'Official functions available';
+    } catch {
+      return 'Official functions available';
+    }
   };
 
   const getDateRange = () => {
-    const dateInfo = TournamentDateExtractor.extractTournamentDates(tournament);
+    // Use complete tournament dates: StartDateQualification to EndDateMainDraw
+    const tournamentData = detailedTournament || tournament;
+    const startDate = tournamentData?.StartDateQualification || tournamentData?.StartDate;
+    const endDate = tournamentData?.EndDateMainDraw || tournamentData?.EndDate;
     
-    if (dateInfo.dateRange) {
-      // Add confidence indicator for low confidence dates
-      if (dateInfo.confidence === 'low') {
-        return `${dateInfo.dateRange} (estimated)`;
+    if (!startDate && !endDate) {
+      return 'Dates TBD';
+    }
+    
+    if (startDate && endDate) {
+      if (startDate === endDate) {
+        return formatCompactDate(startDate);
       }
-      return dateInfo.dateRange;
+      return `${formatCompactDate(startDate)} - ${formatCompactDate(endDate)}`;
+    }
+    
+    // If only one date is available
+    if (startDate) {
+      return formatCompactDate(startDate);
+    } else if (endDate) {
+      return `until ${formatCompactDate(endDate)}`;
     }
     
     return 'Dates TBD';
   };
 
   const getTournamentStatus = () => {
-    const dateInfo = TournamentDateExtractor.extractTournamentDates(tournament);
-    const status = TournamentDateExtractor.getTournamentStatus(dateInfo);
+    // Use direct API StartDate and EndDate for status calculation
+    const startDate = detailedTournament?.StartDate || tournament.StartDate;
+    const endDate = detailedTournament?.EndDate || tournament.EndDate;
     
-    switch (status) {
-      case 'upcoming':
-        return 'Upcoming';
-      case 'live':
-        return 'Live';
-      case 'completed':
-        return 'Completed';
-      case 'unknown':
-      default:
-        return 'Scheduled';
+    if (!startDate) {
+      return 'Scheduled';
     }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (today < startDate) {
+      return 'Upcoming';
+    }
+    
+    if (endDate) {
+      if (today > endDate) {
+        return 'Completed';
+      }
+      if (today >= startDate && today <= endDate) {
+        return 'Live';
+      }
+    } else {
+      // Only start date available - consider live for reasonable duration
+      const start = new Date(startDate);
+      const weekAfter = new Date(start);
+      weekAfter.setDate(start.getDate() + 7);
+      
+      const now = new Date();
+      if (now >= start && now <= weekAfter) {
+        return 'Live';
+      }
+      if (now > weekAfter) {
+        return 'Completed';
+      }
+    }
+    
+    return 'Scheduled';
   };
 
 
@@ -127,30 +332,26 @@ const TournamentDetailScreenContent: React.FC = () => {
     router.back();
   };
 
-  // Load detailed tournament information
+  // Load detailed tournament information and parse ALL available data
   const loadTournamentDetails = async () => {
     if (!tournament.No) return;
     
     setDetailsLoading(true);
     try {
-      console.log(`Loading detailed tournament info for ${tournament.No}...`);
-      
-      // Try to get additional tournament details from the API
+      // Get enhanced tournament details from GetEventList API
       const details = await VisApiService.getBeachTournamentDetails(tournament.No);
       
       if (details) {
-        console.log('Detailed tournament data:', details);
+        
         // Merge the detailed data with the basic tournament data
         setDetailedTournament({
           ...tournament,
           ...details
         });
       } else {
-        // If no additional details found, use the basic tournament data
         setDetailedTournament(tournament);
       }
     } catch (error) {
-      console.error('Failed to load tournament details:', error);
       // Fallback to basic tournament data
       setDetailedTournament(tournament);
     } finally {
@@ -158,20 +359,34 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
+  // Load matches for the tournament
+  const loadMatches = async () => {
+    if (!tournament.No) return;
+    
+    setMatchesLoading(true);
+    try {
+      const tournamentMatches = await VisApiService.getBeachMatchList(tournament.No);
+      setMatches(tournamentMatches);
+    } catch (error) {
+      console.error('Failed to load matches:', error);
+      setMatches([]);
+    } finally {
+      setMatchesLoading(false);
+    }
+  };
 
-
-
+  
 
   useEffect(() => {
-    console.log('🏐 TournamentDetail: useEffect triggered', { 
-      tournamentNo: tournament.No, 
-      tournamentName: tournament.Name,
-      hasTournamentData: !!tournamentData 
-    });
-    
     if (tournament.No) {
       loadTournamentDetails();
+      loadMatches();
     }
+    
+    // Clear expired caches on first load
+    TournamentStorageService.clearExpiredTournamentCaches().catch(() => {
+      // Silent fail for cache cleanup
+    });
   }, [tournament.No, tournamentData]); // Added tournamentData as dependency
 
 
@@ -198,7 +413,8 @@ const TournamentDetailScreenContent: React.FC = () => {
     <View style={styles.container}>
       {/* Navigation Header without Status Bar */}
       <NavigationHeader
-        title="Tournament Details"
+        title={tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
+        subtitle="Tournament Details"
         showBackButton={false}
         showStatusBar={false}
         rightComponent={
@@ -213,154 +429,156 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
 
-        {/* Tournament Card */}
-        <View style={styles.tournamentCard}>
-          <View style={styles.cardHeader}>
+        {/* Loading State */}
+        {detailsLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B35" />
+            <Text style={styles.loadingText}>Loading tournament details...</Text>
+          </View>
+        )}
+
+        {/* Tournament Summary Card - Compact version */}
+        <View style={styles.compactSummaryCard}>
+          <View style={styles.compactCardHeader}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
               <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
             </View>
-            {detailsLoading && (
-              <ActivityIndicator size="small" color="#FF6B35" style={styles.loadingIndicator} />
-            )}
           </View>
-
-          <Text style={styles.tournamentName}>
-            {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
-          </Text>
-
-          <View style={styles.detailsContainer}>
-            {/* Date */}
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>📅</Text>
-              <View style={styles.detailTextContainer}>
-                <Text style={styles.detailLabel}>Date</Text>
-                <Text style={styles.detailValue}>{getDateRange()}</Text>
-                {(() => {
-                  const dateInfo = TournamentDateExtractor.extractTournamentDates(tournament);
-                  if (dateInfo.confidence === 'low' || dateInfo.confidence === 'medium') {
-                    return (
-                      <Text style={styles.dateSourceInfo}>
-                        {dateInfo.source}
-                      </Text>
-                    );
-                  }
-                  return null;
-                })()}
-              </View>
+          
+          <View style={styles.compactInfo}>
+            <View style={styles.infoRowContainer}>
+              <Text style={styles.infoIcon}>📅</Text>
+              <Text style={styles.infoValue}>{getDateRange()}</Text>
             </View>
-
-            {/* Location - only show if available */}
             {getLocation() && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>📍</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Location</Text>
-                  <Text style={styles.detailValue}>{getLocation()}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Tournament Type/Category */}
-            {(detailedTournament?.Type || detailedTournament?.Category || detailedTournament?.Series) && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>🏆</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Category</Text>
-                  <Text style={styles.detailValue}>
-                    {detailedTournament?.Type || detailedTournament?.Category || detailedTournament?.Series}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-
-            {/* Prize Money */}
-            {(detailedTournament?.PrizeMoney || detailedTournament?.Prize) && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>💰</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Prize Money</Text>
-                  <Text style={styles.detailValue}>
-                    {detailedTournament?.PrizeMoney || detailedTournament?.Prize}
-                    {detailedTournament?.Currency && ` ${detailedTournament.Currency}`}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Venue Details */}
-            {detailedTournament?.Venue && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>🏟️</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Venue</Text>
-                  <Text style={styles.detailValue}>{detailedTournament.Venue}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Number of Courts */}
-            {detailedTournament?.Courts && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>🏐</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Courts</Text>
-                  <Text style={styles.detailValue}>{detailedTournament.Courts}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Surface Type */}
-            {detailedTournament?.Surface && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>🏖️</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Surface</Text>
-                  <Text style={styles.detailValue}>{detailedTournament.Surface}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Entry Deadline */}
-            {detailedTournament?.EntryDeadline && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>⏰</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Entry Deadline</Text>
-                  <Text style={styles.detailValue}>{formatDate(detailedTournament.EntryDeadline)}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Contact Information */}
-            {detailedTournament?.ContactName && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>👤</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Contact</Text>
-                  <Text style={styles.detailValue}>{detailedTournament.ContactName}</Text>
-                  {detailedTournament.ContactEmail && (
-                    <Text style={styles.detailSubValue}>{detailedTournament.ContactEmail}</Text>
-                  )}
-                  {detailedTournament.ContactPhone && (
-                    <Text style={styles.detailSubValue}>{detailedTournament.ContactPhone}</Text>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {/* Website */}
-            {detailedTournament?.Website && (
-              <View style={styles.detailItem}>
-                <Text style={styles.detailIcon}>🌐</Text>
-                <View style={styles.detailTextContainer}>
-                  <Text style={styles.detailLabel}>Website</Text>
-                  <Text style={styles.detailValue}>{detailedTournament.Website}</Text>
-                </View>
+              <View style={styles.infoRowContainer}>
+                <Text style={styles.infoIcon}>📍</Text>
+                <Text style={styles.infoValue}>{getLocation()}</Text>
               </View>
             )}
           </View>
         </View>
+
+        {/* Tournament Tabs: Schedule and Results / Ranking */}
+        <View style={styles.tabsSection}>
+          {/* Tab Headers */}
+          <View style={styles.tabHeaders}>
+            <TouchableOpacity
+              style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
+              onPress={() => setActiveTab('schedule')}
+            >
+              <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
+                Schedule & Results
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
+              onPress={() => setActiveTab('ranking')}
+            >
+              <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
+                Ranking
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Tab Content */}
+          <View style={styles.tabContent}>
+            {activeTab === 'schedule' && (
+              <MatchList
+                matches={matches}
+                loading={matchesLoading}
+                title=""
+                emptyMessage="No matches available for this tournament"
+                showDateNavigator={true}
+                showGenderFilter={false}
+                showStatsInFilter={false}
+                showCourtFilter={true}
+                showRefereeFilter={true}
+              />
+            )}
+            {activeTab === 'ranking' && (
+              <View style={styles.rankingPlaceholder}>
+                <Text style={styles.rankingPlaceholderText}>
+                  Tournament ranking will be available here
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+        
+        {/* Location Information */}
+        {(detailedTournament?.InfoLocation || tournament.InfoLocation) && (
+          <View style={styles.scheduleSection}>
+            <Text style={styles.sectionTitle}>Location Information</Text>
+            <View style={styles.scheduleContent}>
+              {(() => {
+                const locationInfo = detailedTournament?.InfoLocation || tournament.InfoLocation;
+                if (!locationInfo) return null;
+                
+                try {
+                  // Decode HTML entities and clean up HTML tags
+                  const cleanLocation = locationInfo
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#xD;&#xA;/g, '\n')
+                    .replace(/&#xA;/g, '\n')
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<p[^>]*>/gi, '\n')
+                    .replace(/<\/p>/gi, '')
+                    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+                    .replace(/\n\s*\n/g, '\n') // Clean up multiple newlines
+                    .trim();
+                  
+                  return (
+                    <Text style={styles.scheduleText}>{cleanLocation}</Text>
+                  );
+                } catch {
+                  return (
+                    <Text style={styles.scheduleText}>Location information available</Text>
+                  );
+                }
+              })()}
+            </View>
+          </View>
+        )}
+
+        {/* Schedule Information */}
+        {(detailedTournament?.InfoSchedule || tournament.InfoSchedule) && (
+          <View style={styles.scheduleSection}>
+            <Text style={styles.sectionTitle}>Event Schedule</Text>
+            <View style={styles.scheduleContent}>
+              {(() => {
+                const scheduleInfo = detailedTournament?.InfoSchedule || tournament.InfoSchedule;
+                if (!scheduleInfo) return null;
+                
+                try {
+                  // Decode HTML entities and clean up HTML tags
+                  const cleanSchedule = scheduleInfo
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#xD;&#xA;/g, '\n')
+                    .replace(/&#xA;/g, '\n')
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<p[^>]*>/gi, '\n')
+                    .replace(/<\/p>/gi, '')
+                    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+                    .replace(/\n\s*\n/g, '\n') // Clean up multiple newlines
+                    .trim();
+                  
+                  return (
+                    <Text style={styles.scheduleText}>{cleanSchedule}</Text>
+                  );
+                } catch {
+                  return (
+                    <Text style={styles.scheduleText}>Schedule information available</Text>
+                  );
+                }
+              })()}
+            </View>
+          </View>
+        )}
 
 
       </ScrollView>
@@ -372,10 +590,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             // Already on details page, do nothing
             return;
           } else if (tab === 'monitor' && tournament) {
-            router.push({
-              pathname: '/schedule-results',
-              params: { tournamentData: JSON.stringify(tournament) }
-            });
+            router.push('/ref-mode');
           }
         }}
       />
@@ -386,7 +601,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F5F5',
   },
   errorContainer: {
     flex: 1,
@@ -408,47 +623,58 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100, // Space for fixed button
   },
-  header: {
-    paddingTop: 50,
-    paddingHorizontal: 24,
-    paddingBottom: 16,
+  loadingContainer: {
+    alignItems: 'center',
+    padding: 40,
   },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  backButtonText: {
+  loadingText: {
+    marginTop: 16,
     fontSize: 16,
-    color: '#1B365D',
-    fontWeight: '600',
+    color: '#666',
+    textAlign: 'center',
   },
-  tournamentCard: {
+  
+  // Tournament Summary Card - Compact version
+  compactSummaryCard: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 8,
-    marginVertical: 16,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#1B365D',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    shadowRadius: 4,
+    elevation: 3,
   },
-  cardHeader: {
+  compactCardHeader: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  compactInfo: {
+    gap: 6,
+  },
+  infoRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  infoIcon: {
+    fontSize: 16,
+    width: 20,
+  },
+  infoRow: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 22,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1B365D',
+    flex: 1,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -460,70 +686,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  tournamentName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    marginBottom: 24,
-    lineHeight: 36,
-  },
-  detailsContainer: {
-    gap: 16,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  detailIcon: {
-    fontSize: 20,
-    marginRight: 12,
-    width: 24,
-    textAlign: 'center',
-  },
-  detailTextContainer: {
-    flex: 1,
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  detailValue: {
-    fontSize: 16,
-    color: '#1B365D',
-    fontWeight: '600',
-  },
-  detailSubValue: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  dateSourceInfo: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    fontStyle: 'italic',
-    marginTop: 2,
-  },
-  loadingIndicator: {
-    marginLeft: 8,
-  },
   
   // Status Integration Styles
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designTokens.spacing.xs,
-  },
-  
-  statusBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
   },
   
   statusBadgeText: {
@@ -565,6 +733,86 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
   },
+
+  // Tabs Section Styles
+  tabsSection: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+  },
+  tabHeaders: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 2,
+    marginBottom: 12,
+  },
+  tabHeader: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  activeTabHeader: {
+    backgroundColor: '#1B365D',
+  },
+  tabHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  activeTabHeaderText: {
+    color: '#FFFFFF',
+  },
+  tabContent: {
+    minHeight: 200,
+  },
+  rankingPlaceholder: {
+    backgroundColor: '#FFFFFF',
+    padding: 60,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minHeight: 150,
+  },
+  rankingPlaceholderText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+
+  // Schedule Section Styles
+  scheduleSection: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  scheduleContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+
+  scheduleText: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+    textAlign: 'left',
+  },
+
 });
 
 // Wrapper component with AssignmentStatusProvider

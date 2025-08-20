@@ -24,9 +24,6 @@ const ScheduleResultsScreenContent: React.FC = () => {
     try {
       const parsed = JSON.parse(tournamentData || '{}') as Tournament;
       const merged = (parsed as any)._mergedTournaments;
-      if (merged && merged.length > 1) {
-        console.log(`🏐 SCHEDULE/RESULTS: "${parsed.Name}" has ${merged.length} merged tournaments`);
-      }
       return parsed;
     } catch {
       return {} as Tournament;

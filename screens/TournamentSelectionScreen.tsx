@@ -17,7 +17,7 @@ import { Clock } from 'lucide-react';
 import { Tournament } from '../types/tournament';
 import { VisApiService } from '../services/visApi';
 import NavigationHeader from '../components/navigation/NavigationHeader';
-import { TournamentDateExtractor } from '../services/TournamentDateExtractor';
+// Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -84,14 +84,73 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     return tournament.Location || city || country || null;
   };
 
-  const getDateRange = () => {
-    const dateInfo = TournamentDateExtractor.extractTournamentDates(tournament);
+  // Compact date formatting functions (moved from TournamentDateExtractor)
+  const formatCompactDate = (dateStr?: string): string => {
+    if (!dateStr) return '';
     
-    if (dateInfo.dateRange) {
-      return dateInfo.dateRange;
+    try {
+      const date = new Date(dateStr);
+      const day = date.getDate().toString().padStart(2, '0');
+      const monthName = getMonthNameShort(date.getMonth());
+      
+      return `${day} ${monthName}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatCompactDateRange = (startDate: string, endDate: string): string => {
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      const startDay = start.getDate().toString().padStart(2, '0');
+      const endDay = end.getDate().toString().padStart(2, '0');
+      const monthName = getMonthNameShort(start.getMonth());
+      
+      // If same date, show as single date
+      if (startDate === endDate) {
+        return `${startDay} ${monthName}`;
+      }
+      
+      // Check if they're in the same month/year
+      if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+        return `${startDay} - ${endDay} ${monthName}`;
+      } else {
+        // Different months - show month for each date
+        const endMonthName = getMonthNameShort(end.getMonth());
+        return `${startDay} ${monthName} - ${endDay} ${endMonthName}`;
+      }
+    } catch {
+      return `${startDate} - ${endDate}`;
+    }
+  };
+
+  const getMonthNameShort = (monthIndex: number): string => {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return monthNames[monthIndex] || 'Jan';
+  };
+
+  const getDateRange = () => {
+    // Use direct API StartDate and EndDate - no complex extraction needed!
+    const startDate = tournament.StartDate;
+    const endDate = tournament.EndDate;
+    
+    if (!startDate && !endDate) {
+      return 'Dates TBD';
     }
     
-    return 'Dates TBD';
+    if (startDate && endDate) {
+      if (startDate === endDate) {
+        return formatCompactDate(startDate);
+      }
+      return formatCompactDateRange(startDate, endDate);
+    }
+    
+    return formatCompactDate(startDate || endDate);
   };
 
   const getStatusIndicator = () => {
@@ -415,9 +474,6 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const handleTournamentPress = (tournament: Tournament) => {
     const merged = (tournament as any)._mergedTournaments;
-    if (merged && merged.length > 1) {
-      console.log(`🏐 CLICKED: "${tournament.Name}" (${merged.length} merged tournaments)`);
-    }
     
     // Ensure _mergedTournaments is preserved in JSON serialization
     const tournamentWithMerged = {

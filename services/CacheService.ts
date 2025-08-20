@@ -144,7 +144,6 @@ export class CacheService {
       // Log first few merged tournaments for debugging
       mergedApiResult.slice(0, 3).forEach(t => {
         const merged = (t as any)._mergedTournaments || [];
-        console.log(`🏐 SAMPLE: "${t.Name}" has ${merged.length} merged tournaments`);
       });
       
       // Update all cache tiers including offline storage with merged data

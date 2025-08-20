@@ -30,6 +30,9 @@ export const MatchList: React.FC<MatchListProps> = ({
   showRefereeFilter = true,
   customFilters,
 }) => {
+  // State for collapsible referees
+  const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
+
   // Initialize filters from localStorage or defaults
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     try {
@@ -363,12 +366,22 @@ export const MatchList: React.FC<MatchListProps> = ({
     return `${label} (${count})`;
   };
 
+  // Toggle referee section expansion
+  const toggleRefereeExpansion = (matchNo: string) => {
+    setExpandedReferees(prev => ({
+      ...prev,
+      [matchNo]: !prev[matchNo]
+    }));
+  };
+
   // Render match card
   const renderMatchCard = (match: BeachMatch, index: number) => {
     const teamAScore = parseInt(match.MatchPointsA || '0');
     const teamBScore = parseInt(match.MatchPointsB || '0');
     const teamAWon = teamAScore > teamBScore && teamAScore > 0;
     const teamBWon = teamBScore > teamAScore && teamBScore > 0;
+    const matchKey = match.No || `match-${index}`;
+    const isRefereeExpanded = expandedReferees[matchKey] || false;
 
     return (
       <View key={match.No || index} style={styles.matchCard}>
@@ -453,29 +466,44 @@ export const MatchList: React.FC<MatchListProps> = ({
           </View>
         </View>
         
-        {/* Referees Section */}
+        {/* Collapsible Referees Section */}
         {(match.Referee1Name || match.Referee2Name) && (
-          <View style={styles.refereesSection}>
-            {match.Referee1Name && (
-              <View style={styles.refereeContainer}>
-                <Text style={[
-                  styles.refereeText,
-                  selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
-                ]}>
-                  1° {match.Referee1Name}
-                  {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
-                </Text>
-              </View>
-            )}
-            {match.Referee2Name && (
-              <View style={styles.refereeContainer}>
-                <Text style={[
-                  styles.refereeText,
-                  selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
-                ]}>
-                  2° {match.Referee2Name}
-                  {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
-                </Text>
+          <View style={styles.collapsibleRefereeSection}>
+            {/* Referee Toggle Header */}
+            <TouchableOpacity 
+              style={styles.refereeToggleHeader}
+              onPress={() => toggleRefereeExpansion(matchKey)}
+            >
+              <Text style={styles.refereeToggleText}>
+                Referees {isRefereeExpanded ? '▲' : '▼'}
+              </Text>
+            </TouchableOpacity>
+            
+            {/* Expanded Referee Content */}
+            {isRefereeExpanded && (
+              <View style={styles.refereesSection}>
+                {match.Referee1Name && (
+                  <View style={styles.refereeContainer}>
+                    <Text style={[
+                      styles.refereeText,
+                      selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
+                    ]}>
+                      1° {match.Referee1Name}
+                      {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
+                    </Text>
+                  </View>
+                )}
+                {match.Referee2Name && (
+                  <View style={styles.refereeContainer}>
+                    <Text style={[
+                      styles.refereeText,
+                      selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
+                    ]}>
+                      2° {match.Referee2Name}
+                      {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -1123,11 +1151,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2E8B57',
   },
-  refereesSection: {
+  // Collapsible referee styles
+  collapsibleRefereeSection: {
     marginTop: 8,
-    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
+  },
+  refereeToggleHeader: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 6,
+  },
+  refereeToggleText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  refereesSection: {
+    paddingTop: 8,
   },
   refereeContainer: {
     marginBottom: 2,

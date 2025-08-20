@@ -5,13 +5,22 @@ const STORAGE_KEYS = {
   SELECTED_TOURNAMENT: '@referee_selected_tournament',
   USER_PREFERENCES: '@referee_user_preferences',
   COURT_PREFERENCES: '@referee_court_preferences',
+  TOURNAMENT_DETAILS_CACHE: '@referee_tournament_details_cache',
 } as const;
+
+const CACHE_EXPIRY_HOURS = 6; // Cache expires after 6 hours
 
 export interface UserPreferences {
   selectedCourt?: string;
   notificationsEnabled: boolean;
   lastAppVersion?: string;
   onboardingCompleted: boolean;
+}
+
+interface CachedTournamentDetails {
+  tournament: Tournament;
+  cachedAt: string;
+  expiresAt: string;
 }
 
 export class TournamentStorageService {
@@ -203,6 +212,95 @@ export class TournamentStorageService {
   }
 
   /**
+   * Cache detailed tournament data (including InfoSchedule, InfoLocation, etc.)
+   */
+  static async cacheTournamentDetails(tournamentNo: string, tournament: Tournament): Promise<void> {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000));
+      
+      const cachedData: CachedTournamentDetails = {
+        tournament,
+        cachedAt: now.toISOString(),
+        expiresAt: expiresAt.toISOString()
+      };
+      
+      const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_${tournamentNo}`;
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedData));
+    } catch (error) {
+      console.error('Failed to cache tournament details:', error);
+    }
+  }
+
+  /**
+   * Get cached tournament details if available and not expired
+   */
+  static async getCachedTournamentDetails(tournamentNo: string): Promise<Tournament | null> {
+    try {
+      const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_${tournamentNo}`;
+      const cachedDataStr = await AsyncStorage.getItem(cacheKey);
+      
+      if (!cachedDataStr) {
+        return null;
+      }
+      
+      const cachedData: CachedTournamentDetails = JSON.parse(cachedDataStr);
+      const now = new Date();
+      const expiresAt = new Date(cachedData.expiresAt);
+      
+      // Check if cache is expired
+      if (now > expiresAt) {
+        // Remove expired cache
+        await AsyncStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return cachedData.tournament;
+    } catch (error) {
+      console.error('Failed to get cached tournament details:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear expired tournament details caches
+   */
+  static async clearExpiredTournamentCaches(): Promise<void> {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const tournamentCacheKeys = keys.filter(key => 
+        key.startsWith(STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE)
+      );
+      
+      const now = new Date();
+      const keysToRemove: string[] = [];
+      
+      for (const key of tournamentCacheKeys) {
+        try {
+          const cachedDataStr = await AsyncStorage.getItem(key);
+          if (cachedDataStr) {
+            const cachedData: CachedTournamentDetails = JSON.parse(cachedDataStr);
+            const expiresAt = new Date(cachedData.expiresAt);
+            
+            if (now > expiresAt) {
+              keysToRemove.push(key);
+            }
+          }
+        } catch {
+          // If parsing fails, remove the key
+          keysToRemove.push(key);
+        }
+      }
+      
+      if (keysToRemove.length > 0) {
+        await AsyncStorage.multiRemove(keysToRemove);
+      }
+    } catch (error) {
+      console.error('Failed to clear expired caches:', error);
+    }
+  }
+
+  /**
    * Clear all referee-related data (for testing or reset purposes)
    */
   static async clearAllData(): Promise<void> {
@@ -210,13 +308,18 @@ export class TournamentStorageService {
       const keys = Object.values(STORAGE_KEYS);
       await AsyncStorage.multiRemove(keys);
       
-      // Also clear tournament-specific court preferences
+      // Also clear tournament-specific court preferences and details cache
       const allKeys = await AsyncStorage.getAllKeys();
       const courtPreferenceKeys = allKeys.filter(key => 
         key.startsWith(STORAGE_KEYS.COURT_PREFERENCES)
       );
-      if (courtPreferenceKeys.length > 0) {
-        await AsyncStorage.multiRemove(courtPreferenceKeys);
+      const tournamentDetailsKeys = allKeys.filter(key => 
+        key.startsWith(STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE)
+      );
+      
+      const keysToRemove = [...courtPreferenceKeys, ...tournamentDetailsKeys];
+      if (keysToRemove.length > 0) {
+        await AsyncStorage.multiRemove(keysToRemove);
       }
       
       console.log('All referee data cleared from storage');

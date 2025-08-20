@@ -32,36 +32,56 @@ export const MatchList: React.FC<MatchListProps> = ({
 }) => {
   // Initialize filters from localStorage or defaults
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('matchlist-selectedDate') || '';
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        return localStorage.getItem('matchlist-selectedDate') || '';
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
     return '';
   });
   
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('matchlist-genderFilter') as 'All' | 'M' | 'W') || 'All';
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        return (localStorage.getItem('matchlist-genderFilter') as 'All' | 'M' | 'W') || 'All';
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
     return 'All';
   });
   
   const [courtFilter, setCourtFilter] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('matchlist-courtFilter') || 'All';
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        return localStorage.getItem('matchlist-courtFilter') || 'All';
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
     return 'All';
   });
   
   const [refereeFilterMatch, setRefereeFilterMatch] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('matchlist-refereeFilter') || 'All';
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        return localStorage.getItem('matchlist-refereeFilter') || 'All';
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
     return 'All';
   });
   
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
+      }
+    } catch (error) {
+      console.warn('localStorage not available:', error);
     }
     return 'desc';
   });
@@ -72,36 +92,56 @@ export const MatchList: React.FC<MatchListProps> = ({
   // Wrapper functions to save to localStorage
   const updateSelectedDate = (date: string) => {
     setSelectedDate(date);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('matchlist-selectedDate', date);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('matchlist-selectedDate', date);
+      }
+    } catch (error) {
+      console.warn('Failed to save selectedDate to localStorage:', error);
     }
   };
 
   const updateGenderFilter = (gender: 'All' | 'M' | 'W') => {
     setGenderFilter(gender);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('matchlist-genderFilter', gender);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('matchlist-genderFilter', gender);
+      }
+    } catch (error) {
+      console.warn('Failed to save genderFilter to localStorage:', error);
     }
   };
 
   const updateCourtFilter = (court: string) => {
     setCourtFilter(court);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('matchlist-courtFilter', court);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('matchlist-courtFilter', court);
+      }
+    } catch (error) {
+      console.warn('Failed to save courtFilter to localStorage:', error);
     }
   };
 
   const updateRefereeFilter = (referee: string) => {
     setRefereeFilterMatch(referee);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('matchlist-refereeFilter', referee);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('matchlist-refereeFilter', referee);
+      }
+    } catch (error) {
+      console.warn('Failed to save refereeFilter to localStorage:', error);
     }
   };
 
   const updateSortOrder = (order: 'asc' | 'desc') => {
     setSortOrder(order);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('matchlist-sortOrder', order);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('matchlist-sortOrder', order);
+      }
+    } catch (error) {
+      console.warn('Failed to save sortOrder to localStorage:', error);
     }
   };
 
@@ -652,12 +692,16 @@ export const MatchList: React.FC<MatchListProps> = ({
                     setShowRefereeDropdown(false);
                     
                     // Clear all saved filters from localStorage
-                    if (typeof window !== 'undefined') {
-                      localStorage.removeItem('matchlist-selectedDate');
-                      localStorage.removeItem('matchlist-genderFilter');
-                      localStorage.removeItem('matchlist-courtFilter');
-                      localStorage.removeItem('matchlist-refereeFilter');
-                      localStorage.removeItem('matchlist-sortOrder');
+                    try {
+                      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+                        localStorage.removeItem('matchlist-selectedDate');
+                        localStorage.removeItem('matchlist-genderFilter');
+                        localStorage.removeItem('matchlist-courtFilter');
+                        localStorage.removeItem('matchlist-refereeFilter');
+                        localStorage.removeItem('matchlist-sortOrder');
+                      }
+                    } catch (error) {
+                      console.warn('Failed to clear localStorage:', error);
                     }
                   }}
                 >

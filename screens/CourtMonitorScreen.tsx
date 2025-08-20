@@ -446,7 +446,7 @@ const CourtMonitorScreenContent: React.FC = () => {
             });
           } else if (tab === 'monitor') {
             router.push({
-              pathname: '/tools-selection',
+              pathname: '/schedule-results',
               params: { tournamentData: JSON.stringify(tournament) }
             });
           }

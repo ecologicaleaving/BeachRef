@@ -280,49 +280,48 @@ const RefereeMonitorScreenContent: React.FC = () => {
           </View>
         )}
 
-        {/* Referee Position Filter and Match List - shown when referee is selected */}
+        {/* Match List with integrated filters - shown when referee is selected */}
         {selectedReferee && !showDropdown && (
-          <>
-            {/* Referee Position Filter */}
-            <View style={styles.refereeFilterSection}>
-              <View style={styles.refereeFilterButtons}>
-                {(['All', '1', '2'] as const).map((filter) => {
-                  const { allMatches, firstRefereeMatches, secondRefereeMatches } = getRefereeStats();
-                  const count = filter === 'All' ? allMatches : filter === '1' ? firstRefereeMatches : secondRefereeMatches;
-                  const label = filter === 'All' ? `All (${count})` : `${filter}° (${count})`;
-                  
-                  return (
-                    <TouchableOpacity
-                      key={filter}
-                      style={[
-                        styles.refereeFilterButton,
-                        refereeFilter === filter && styles.activeRefereeFilterButton
-                      ]}
-                      onPress={() => setRefereeFilter(filter)}
-                    >
-                      <Text style={[
-                        styles.refereeFilterText,
-                        refereeFilter === filter && styles.activeRefereeFilterText
-                      ]}>
-                        {label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+          <MatchList
+            matches={getFilteredRefereeMatches()}
+            loading={loadingRefereeMatches}
+            title=""
+            selectedReferee={selectedReferee}
+            emptyMessage="No matches found for selected referee"
+            showDateNavigator={true}
+            showGenderFilter={true}
+            showStatsInFilter={true}
+            showCourtFilter={true}
+            customFilters={(
+              <View style={styles.refereeFiltersSection}>
+                <View style={styles.refereeFilterButtons}>
+                  {(['All', '1', '2'] as const).map((filter) => {
+                    const { allMatches, firstRefereeMatches, secondRefereeMatches } = getRefereeStats();
+                    const count = filter === 'All' ? allMatches : filter === '1' ? firstRefereeMatches : secondRefereeMatches;
+                    const label = filter === 'All' ? `All (${count})` : `${filter}° (${count})`;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={filter}
+                        style={[
+                          styles.refereeFilterButton,
+                          refereeFilter === filter && styles.activeRefereeFilterButton
+                        ]}
+                        onPress={() => setRefereeFilter(filter)}
+                      >
+                        <Text style={[
+                          styles.refereeFilterText,
+                          refereeFilter === filter && styles.activeRefereeFilterText
+                        ]}>
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
-            </View>
-
-            <MatchList
-              matches={getFilteredRefereeMatches()}
-              loading={loadingRefereeMatches}
-              title=""
-              selectedReferee={selectedReferee}
-              emptyMessage="No matches found for selected referee"
-              showDateNavigator={true}
-              showGenderFilter={true}
-              showStatsInFilter={true}
-            />
-          </>
+            )}
+          />
         )}
 
       </ScrollView>
@@ -337,7 +336,7 @@ const RefereeMonitorScreenContent: React.FC = () => {
             });
           } else if (tab === 'monitor') {
             router.push({
-              pathname: '/tools-selection',
+              pathname: '/schedule-results',
               params: { tournamentData: JSON.stringify(tournament) }
             });
           }
@@ -385,12 +384,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
   },
-  refereeFilterSection: {
+  // Referee Filters Section
+  refereeFiltersSection: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#F8FAFC',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    paddingVertical: 12,
+    marginVertical: 8,
   },
   refereeFilterButtons: {
     flexDirection: 'row',
@@ -399,7 +397,7 @@ const styles = StyleSheet.create({
   refereeFilterButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F4F6',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E5E7EB',

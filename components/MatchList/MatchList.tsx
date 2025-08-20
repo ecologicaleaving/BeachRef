@@ -12,6 +12,9 @@ interface MatchListProps {
   showDateNavigator?: boolean;
   showGenderFilter?: boolean;
   showStatsInFilter?: boolean;
+  showCourtFilter?: boolean;
+  showRefereeFilter?: boolean;
+  customFilters?: React.ReactNode;
 }
 
 export const MatchList: React.FC<MatchListProps> = ({
@@ -21,11 +24,19 @@ export const MatchList: React.FC<MatchListProps> = ({
   selectedReferee,
   emptyMessage = "No matches found",
   showDateNavigator = true,
-  showGenderFilter = false,
-  showStatsInFilter = false,
+  showGenderFilter = true,
+  showStatsInFilter = true,
+  showCourtFilter = true,
+  showRefereeFilter = true,
+  customFilters,
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
+  const [courtFilter, setCourtFilter] = useState<string>('All');
+  const [refereeFilterMatch, setRefereeFilterMatch] = useState<string>('All');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showCustomFilters, setShowCustomFilters] = useState(false);
+  const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
 
   // Get available dates from matches
   const getAvailableDates = () => {
@@ -33,6 +44,24 @@ export const MatchList: React.FC<MatchListProps> = ({
       match.Date || match.LocalDate || match.MatchDate || match.StartDate
     ).filter(Boolean);
     return [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  };
+
+  // Get available courts from matches
+  const getAvailableCourts = () => {
+    const allCourts = matches.map(match => match.Court).filter(Boolean);
+    const uniqueCourts = [...new Set(allCourts)].sort();
+    return ['All', ...uniqueCourts];
+  };
+
+  // Get available referees from matches
+  const getAvailableReferees = () => {
+    const allReferees = new Set<string>();
+    matches.forEach(match => {
+      if (match.Referee1Name) allReferees.add(match.Referee1Name);
+      if (match.Referee2Name) allReferees.add(match.Referee2Name);
+    });
+    const uniqueReferees = Array.from(allReferees).sort();
+    return ['All', ...uniqueReferees];
   };
 
   // Auto-select most recent date when matches change
@@ -45,7 +74,7 @@ export const MatchList: React.FC<MatchListProps> = ({
     }
   }, [matches]);
 
-  // Get matches for selected date and gender filter
+  // Get matches for selected date, gender filter, court filter, and referee filter
   const getMatchesForSelectedDate = () => {
     let filteredMatches = matches;
     
@@ -55,16 +84,27 @@ export const MatchList: React.FC<MatchListProps> = ({
         const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
         return matchDate === selectedDate;
       });
-    } else {
-      filteredMatches = filteredMatches.slice(0, 10);
     }
+    // If no date selected, show all matches (not just first 10)
     
     // Apply gender filter
     if (genderFilter !== 'All') {
       filteredMatches = filteredMatches.filter(match => match.tournamentGender === genderFilter);
     }
     
-    // Sort by time
+    // Apply court filter
+    if (courtFilter !== 'All') {
+      filteredMatches = filteredMatches.filter(match => match.Court === courtFilter);
+    }
+    
+    // Apply referee filter
+    if (refereeFilterMatch !== 'All') {
+      filteredMatches = filteredMatches.filter(match => 
+        match.Referee1Name === refereeFilterMatch || match.Referee2Name === refereeFilterMatch
+      );
+    }
+    
+    // Sort by time (ascending or descending)
     return filteredMatches.sort((a, b) => {
       const timeA = a.LocalTime || a.Time || '00:00';
       const timeB = b.LocalTime || b.Time || '00:00';
@@ -77,7 +117,11 @@ export const MatchList: React.FC<MatchListProps> = ({
         return hours * 60 + minutes;
       };
       
-      return getTimeNumber(timeA) - getTimeNumber(timeB);
+      const timeNumA = getTimeNumber(timeA);
+      const timeNumB = getTimeNumber(timeB);
+      
+      // Apply sort order (desc = latest first, asc = earliest first)
+      return sortOrder === 'desc' ? timeNumB - timeNumA : timeNumA - timeNumB;
     });
   };
 
@@ -256,31 +300,6 @@ export const MatchList: React.FC<MatchListProps> = ({
         </Text>
       )}
       
-      {/* Gender Filter */}
-      {showGenderFilter && (
-        <View style={styles.genderFilterContainer}>
-          <View style={styles.genderFilterButtons}>
-            {(['All', 'M', 'W'] as const).map((gender) => (
-              <TouchableOpacity
-                key={gender}
-                style={[
-                  styles.genderFilterButton,
-                  genderFilter === gender && styles.activeGenderFilterButton
-                ]}
-                onPress={() => setGenderFilter(gender)}
-              >
-                <Text style={[
-                  styles.genderFilterText,
-                  genderFilter === gender && styles.activeGenderFilterText
-                ]}>
-                  {getButtonLabel(gender)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
-      
       {/* Date Navigator */}
       {showDateNavigator && matches.length > 0 && availableDates.length > 1 && (
         <DateNavigator
@@ -289,6 +308,165 @@ export const MatchList: React.FC<MatchListProps> = ({
           onDateChange={handleDateChange}
           formatDate={formatMatchDate}
         />
+      )}
+
+      {/* Collapsible Filters (after date navigator) */}
+      {(customFilters || showGenderFilter || showCourtFilter || showRefereeFilter) && (
+        <>
+          {/* Filter Toggle Header */}
+          <View style={styles.filterToggleSection}>
+            <TouchableOpacity 
+              style={styles.filterToggleButton}
+              onPress={() => setShowCustomFilters(!showCustomFilters)}
+            >
+              <Text style={styles.filterToggleText}>
+                {showCustomFilters ? 'Hide Filters' : 'Show Filters'}
+              </Text>
+              <Text style={styles.filterToggleIcon}>
+                {showCustomFilters ? '△' : '▽'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Expandable Filters Panel */}
+          {showCustomFilters && (
+            <View style={styles.expandableFiltersPanel}>
+              {/* Custom Filters (if any) */}
+              {customFilters}
+              
+              {/* Gender Filter (inside the expandable panel) */}
+              {showGenderFilter && (
+                <View style={styles.genderFilterContainer}>
+                  <View style={styles.genderFilterButtons}>
+                    {(['All', 'M', 'W'] as const).map((gender) => (
+                      <TouchableOpacity
+                        key={gender}
+                        style={[
+                          styles.genderFilterButton,
+                          genderFilter === gender && styles.activeGenderFilterButton
+                        ]}
+                        onPress={() => setGenderFilter(gender)}
+                      >
+                        <Text style={[
+                          styles.genderFilterText,
+                          genderFilter === gender && styles.activeGenderFilterText
+                        ]}>
+                          {getButtonLabel(gender)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Court Filter (inside the expandable panel) */}
+              {showCourtFilter && (
+                <View style={styles.courtFilterContainer}>
+                  <View style={styles.courtFilterButtons}>
+                    {getAvailableCourts().map((court) => (
+                      <TouchableOpacity
+                        key={court}
+                        style={[
+                          styles.courtFilterButton,
+                          courtFilter === court && styles.activeCourtFilterButton
+                        ]}
+                        onPress={() => setCourtFilter(court)}
+                      >
+                        <Text style={[
+                          styles.courtFilterText,
+                          courtFilter === court && styles.activeCourtFilterText
+                        ]}>
+                          {court}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Referee Filter as Dropdown (inside the expandable panel) */}
+              {showRefereeFilter && (
+                <View style={styles.refereeDropdownContainer}>
+                  <Text style={styles.filterSectionLabel}>Referee</Text>
+                  <View style={styles.dropdownWrapper}>
+                    <TouchableOpacity
+                      style={styles.dropdownButton}
+                      onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+                    >
+                      <Text style={styles.dropdownButtonText}>
+                        {refereeFilterMatch === 'All' ? 'All Referees' : refereeFilterMatch}
+                      </Text>
+                      <Text style={styles.dropdownArrow}>
+                        {showRefereeDropdown ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    {showRefereeDropdown && (
+                      <View style={styles.dropdownList}>
+                        {getAvailableReferees().map((referee) => (
+                          <TouchableOpacity
+                            key={referee}
+                            style={[
+                              styles.dropdownItem,
+                              refereeFilterMatch === referee && styles.activeDropdownItem
+                            ]}
+                            onPress={() => {
+                              setRefereeFilterMatch(referee);
+                              setShowRefereeDropdown(false);
+                            }}
+                          >
+                            <Text style={[
+                              styles.dropdownItemText,
+                              refereeFilterMatch === referee && styles.activeDropdownItemText
+                            ]}>
+                              {referee === 'All' ? 'All Referees' : referee}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                </View>
+              )}
+
+              {/* Sort Order Filter (inside the expandable panel) */}
+              <View style={styles.sortOrderContainer}>
+                <Text style={styles.filterSectionLabel}>Sort by Time</Text>
+                <View style={styles.sortOrderButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.sortOrderButton,
+                      sortOrder === 'desc' && styles.activeSortOrderButton
+                    ]}
+                    onPress={() => setSortOrder('desc')}
+                  >
+                    <Text style={[
+                      styles.sortOrderText,
+                      sortOrder === 'desc' && styles.activeSortOrderText
+                    ]}>
+                      Latest First ↓
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.sortOrderButton,
+                      sortOrder === 'asc' && styles.activeSortOrderButton
+                    ]}
+                    onPress={() => setSortOrder('asc')}
+                  >
+                    <Text style={[
+                      styles.sortOrderText,
+                      sortOrder === 'asc' && styles.activeSortOrderText
+                    ]}>
+                      Earliest First ↑
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+        </>
       )}
 
       {/* Matches List */}
@@ -344,6 +522,203 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   activeGenderFilterText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  filterToggleSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    marginVertical: 8,
+    borderRadius: 8,
+  },
+  filterToggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A90A4',
+    marginRight: 8,
+  },
+  filterToggleIcon: {
+    fontSize: 12,
+    color: '#4A90A4',
+    fontWeight: 'bold',
+  },
+  expandableFiltersPanel: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    paddingBottom: 16,
+  },
+  courtFilterContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  courtFilterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  courtFilterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 4,
+  },
+  activeCourtFilterButton: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  courtFilterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeCourtFilterText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  refereeFilterContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  refereeFilterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  refereeFilterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 4,
+  },
+  activeRefereeFilterButton: {
+    backgroundColor: '#2E8B57',
+    borderColor: '#2E8B57',
+  },
+  refereeFilterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeRefereeFilterText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  // Referee Dropdown Styles
+  refereeDropdownContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  filterSectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  dropdownWrapper: {
+    position: 'relative',
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  dropdownButtonText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: 'bold',
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  activeDropdownItem: {
+    backgroundColor: '#EFF6FF',
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  activeDropdownItemText: {
+    color: '#2563EB',
+    fontWeight: '600',
+  },
+  // Sort Order Styles
+  sortOrderContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  sortOrderButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sortOrderButton: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+  },
+  activeSortOrderButton: {
+    backgroundColor: '#1D4ED8',
+    borderColor: '#1D4ED8',
+  },
+  sortOrderText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeSortOrderText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },

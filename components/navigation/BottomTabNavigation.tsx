@@ -33,9 +33,9 @@ const tabs: Tab[] = [
   },
   {
     key: 'monitor',
-    label: 'Tools',
-    icon: '⚙️',
-    route: '/tools-selection',
+    label: 'Schedule/Results',
+    icon: '📅',
+    route: '/schedule-results',
   },
 ];
 

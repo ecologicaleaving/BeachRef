@@ -771,7 +771,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             return;
           } else if (tab === 'monitor' && tournament) {
             router.push({
-              pathname: '/tools-selection',
+              pathname: '/schedule-results',
               params: { tournamentData: JSON.stringify(tournament) }
             });
           }

@@ -11,9 +11,16 @@ import {
 import { Text, H2Text, BodyText, CaptionText } from './Typography';
 import { Tournament } from '../types/tournament';
 import { BeachMatch } from '../types/match';
+import { TournamentCore, GenderType as CoreGenderType } from '../types/tournament-v2';
+import { BeachMatchCore } from '../types/match-v2';
 import { VisApiService, TournamentType, GenderType } from '../services/visApi';
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';
+import { useTournamentRepository, useMatchRepository } from '../hooks/useRepositorySelection';
+import { useRepositoryData } from '../hooks/useRepositoryData';
+import { useDataTransformation } from '../hooks/useDataTransformation';
+import { useCacheAwareData } from '../hooks/useCacheAwareData';
+import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
 import ConnectionStatusIndicator, { CompactConnectionIndicator } from './ConnectionStatusIndicator';
 import LiveMatchIndicator from './LiveMatchIndicator';
 import ManualRefreshButton, { CompactRefreshButton } from './ManualRefreshButton';
@@ -110,6 +117,32 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   // Gender switching states
   const [relatedTournaments, setRelatedTournaments] = useState<Tournament[]>([tournament]);
   const [currentTournament, setCurrentTournament] = useState<Tournament>(tournament);
+  const [loadingRelated, setLoadingRelated] = useState<boolean>(false);
+  
+  // Repository selection with feature flags for A/B testing
+  const tournamentRepository = useTournamentRepository({
+    enableABTesting: true,
+    enablePerformanceMonitoring: true,
+    sessionId: `tournament-detail-${tournament.No}`
+  });
+  
+  const matchRepository = useMatchRepository({
+    enableABTesting: true,
+    enablePerformanceMonitoring: true,
+    sessionId: `tournament-detail-matches-${tournament.No}`
+  });
+  
+  // Performance monitoring for UI migration
+  const performanceMonitoring = usePerformanceMonitoring({
+    componentName: 'TournamentDetail',
+    enableABTesting: true,
+    trackRenderTime: true,
+    trackDataFetchTime: true,
+    performanceTargets: {
+      renderTime: 100,
+      dataFetchTime: 500
+    }
+  });
   
   // Real-time matches data with WebSocket subscriptions
   const {
@@ -160,8 +193,55 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const [courtChangesVisible, setCourtChangesVisible] = useState<boolean>(false);
 
 
+  // Repository-based data fetching with fallback to legacy API
+  const { data: repositoryMatches, loading: repositoryMatchesLoading, error: repositoryMatchesError } = useRepositoryData(
+    async () => {
+      if (!matchRepository.repository) return null;
+      const allMatchPromises = relatedTournaments.map(tournament => 
+        matchRepository.repository!.getMatchesByTournamentAsync(tournament.No)
+      );
+      const allMatchesArrays = await Promise.all(allMatchPromises);
+      return allMatchesArrays.flat();
+    },
+    [relatedTournaments, matchRepository.repository],
+    {
+      enableCache: true,
+      fallbackToLegacy: true,
+      retryAttempts: 2
+    }
+  );
+  
+  // Transform repository data to legacy format for UI compatibility
+  const transformedMatches = useDataTransformation(
+    repositoryMatches,
+    'coreToLegacy',
+    {
+      enableMemoization: true,
+      enableBatchProcessing: true
+    }
+  );
+  
   const loadAllMatches = useCallback(async () => {
     try {
+      // Use repository data if available, otherwise fall back to legacy API
+      if (matchRepository.implementation === 'new' && transformedMatches.data) {
+        const combinedMatches = transformedMatches.data.map((match: BeachMatch, index: number) => {
+          const tournament = relatedTournaments[index % relatedTournaments.length];
+          const gender = VisApiService.extractGenderFromCode(tournament.Code);
+          
+          return {
+            ...match,
+            tournamentGender: gender,
+            tournamentNo: tournament.No,
+            tournamentCode: tournament.Code
+          };
+        });
+        
+        setAllMatches(combinedMatches);
+        return;
+      }
+      
+      // Legacy API fallback
       const allMatchPromises = relatedTournaments.map(tournament => 
         VisApiService.getBeachMatchList(tournament.No)
       );
@@ -185,11 +265,44 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       console.error('Failed to load all matches:', error);
       setAllMatches([]);
     }
-  }, [relatedTournaments]);
+  }, [relatedTournaments, matchRepository.implementation, transformedMatches.data]);
 
+  // Repository-based related tournaments loading
+  const { data: repositoryRelatedTournaments, loading: relatedTournamentsLoading } = useRepositoryData(
+    async () => {
+      if (!tournamentRepository.repository) return null;
+      const relatedTournaments = await tournamentRepository.repository.findRelatedTournamentsAsync(tournament.No);
+      return relatedTournaments;
+    },
+    [tournament.No, tournamentRepository.repository],
+    {
+      enableCache: true,
+      fallbackToLegacy: true,
+      retryAttempts: 2
+    }
+  );
+  
+  // Transform repository tournaments to legacy format
+  const transformedRelatedTournaments = useDataTransformation(
+    repositoryRelatedTournaments,
+    'coreToLegacy',
+    {
+      enableMemoization: true,
+      enableBatchProcessing: true
+    }
+  );
+  
   const loadRelatedTournaments = useCallback(async () => {
     try {
       setLoadingRelated(true);
+      
+      // Use repository data if available, otherwise fall back to legacy API
+      if (tournamentRepository.implementation === 'new' && transformedRelatedTournaments.data) {
+        setRelatedTournaments(transformedRelatedTournaments.data);
+        return;
+      }
+      
+      // Legacy API fallback
       const related = await VisApiService.findRelatedTournaments(tournament);
       setRelatedTournaments(related);
     } catch (error) {
@@ -198,9 +311,32 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     } finally {
       setLoadingRelated(false);
     }
-  }, [tournament]);
+  }, [tournament, tournamentRepository.implementation, transformedRelatedTournaments.data]);
 
 
+  // Cache-aware tournament data fetching for performance
+  const { data: cachedTournamentData, cacheHit } = useCacheAwareData(
+    `tournament-detail-${tournament.No}`,
+    async () => {
+      if (!tournamentRepository.repository) return tournament;
+      const tournamentCore = await tournamentRepository.repository.getByIdAsync(tournament.No);
+      return tournamentCore;
+    },
+    {
+      ttl: 6 * 60 * 60 * 1000, // 6 hours cache TTL
+      enableStaleWhileRevalidate: true,
+      enablePerformanceTracking: true
+    }
+  );
+  
+  // Track cache performance for A/B testing
+  useEffect(() => {
+    if (performanceMonitoring.trackMetric) {
+      performanceMonitoring.trackMetric('cache_hit_rate', cacheHit ? 1 : 0);
+      performanceMonitoring.trackMetric('repository_implementation', tournamentRepository.implementation === 'new' ? 1 : 0);
+    }
+  }, [cacheHit, tournamentRepository.implementation, performanceMonitoring]);
+  
   useEffect(() => {
     loadRelatedTournaments();
   }, [loadRelatedTournaments]);
@@ -1015,6 +1151,12 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             <PerformanceIndicator
               onPress={() => setPerformanceDashboardVisible(true)}
             />
+            {/* Repository implementation indicator for A/B testing visibility */}
+            {tournamentRepository.implementation === 'new' && (
+              <View style={styles.repositoryIndicator}>
+                <Text style={styles.repositoryIndicatorText}>v2</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -1833,6 +1975,19 @@ const styles = StyleSheet.create({
   tournamentStatusCard: {
     flex: 1,
     marginRight: 8,
+  },
+  // Repository implementation indicator styles
+  repositoryIndicator: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 4,
+  },
+  repositoryIndicatorText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
 

@@ -18,7 +18,6 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
 }) => {
   // Safety check for availableDates
   if (!availableDates || !Array.isArray(availableDates)) {
-    console.log('🗓️ DateNavigator: availableDates is invalid:', availableDates);
     return null;
   }
 
@@ -38,7 +37,6 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
       // No date selected, select the last day (most recent in the tournament)
       if (availableDates.length > 0) {
         const defaultDate = availableDates[availableDates.length - 1];
-        console.log('🗓️ DateNavigator - Setting default to most recent date:', defaultDate);
         onDateChange(defaultDate);
       }
       return;
@@ -62,16 +60,22 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
   const currentDate = selectedDate || (availableDates.length > 0 ? availableDates[0] : '');
   const matchCount = getMatchCount ? getMatchCount(currentDate) : 0;
   const displayDate = formatDate(currentDate);
-  const isToday = currentDate && new Date(currentDate).toDateString() === new Date().toDateString();
+  
+  // Safe date comparison for "today" check
+  let isToday = false;
+  try {
+    if (currentDate) {
+      const matchDate = new Date(currentDate);
+      const today = new Date();
+      if (!isNaN(matchDate.getTime()) && !isNaN(today.getTime())) {
+        isToday = matchDate.toDateString() === today.toDateString();
+      }
+    }
+  } catch (error) {
+    isToday = false;
+  }
+  
   const dateInfo = isToday ? '📅 Today' : displayDate;
-
-  // Debug logging
-  console.log('🗓️ DateNavigator Debug:', {
-    dates: availableDates,
-    currentIndex,
-    currentDate: selectedDate,
-    datesLength: availableDates.length
-  });
 
   return (
     <View style={styles.dateNavigator}>

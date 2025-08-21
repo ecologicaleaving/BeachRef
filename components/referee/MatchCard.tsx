@@ -56,7 +56,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       
       <View style={styles.matchHeader}>
         <View style={styles.matchInfo}>
-          <Text style={styles.matchNumber}>#{match.NoInTournament || match.No}</Text>
+          <View style={styles.matchNumberContainer}>
+            <Text style={styles.matchNumber}>#{match.NoInTournament || match.No}</Text>
+            {match.tournamentGender && (
+              <Text style={[
+                styles.genderSymbol,
+                match.tournamentGender === 'M' ? styles.menSymbol : styles.womenSymbol
+              ]}>
+                {match.tournamentGender === 'M' ? '♂' : '♀'}
+              </Text>
+            )}
+          </View>
           <Text style={styles.courtInfo}>
             {match.Court ? `Court ${match.Court}` : 'Court TBD'}
           </Text>
@@ -161,11 +171,26 @@ const styles = StyleSheet.create({
   matchInfo: {
     flex: 1,
   },
+  matchNumberContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   matchNumber: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1B365D',
-    marginBottom: 2,
+    marginRight: 6,
+  },
+  genderSymbol: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  menSymbol: {
+    color: '#2563EB', // Blue for men
+  },
+  womenSymbol: {
+    color: '#DC2626', // Red for women
   },
   courtInfo: {
     fontSize: 14,

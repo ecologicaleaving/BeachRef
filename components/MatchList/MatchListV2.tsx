@@ -43,16 +43,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [showRefereesForMatch, setShowRefereesForMatch] = useState<{[matchId: string]: boolean}>({});
 
   // Initialize filters from localStorage or defaults
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    try {
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        return localStorage.getItem('matchlist-selectedDate') || '';
-      }
-    } catch (error) {
-      // localStorage not available, use defaults
-    }
-    return '';
-  });
+  const [selectedDate, setSelectedDate] = useState<string>('');
   
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
     try {
@@ -152,6 +143,45 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     return Array.from(new Set(validDates)).sort();
   }, [matches]);
+
+  // Smart date selection: set today if tournament is ongoing, last day if finished
+  useEffect(() => {
+    if (uniqueDates.length === 0) return;
+
+    // Check if we already have a date from localStorage
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const savedDate = localStorage.getItem('matchlist-selectedDate');
+        if (savedDate && uniqueDates.includes(savedDate)) {
+          setSelectedDate(savedDate);
+          return;
+        }
+      }
+    } catch (error) {
+      // localStorage not available, continue with smart selection
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const firstDate = uniqueDates[0];
+    const lastDate = uniqueDates[uniqueDates.length - 1];
+
+    // If today is within tournament dates, select today
+    if (uniqueDates.includes(today)) {
+      setSelectedDate(today);
+    }
+    // If tournament is finished (today > last tournament date), select last day
+    else if (today > lastDate) {
+      setSelectedDate(lastDate);
+    }
+    // If tournament hasn't started yet (today < first tournament date), select first day
+    else if (today < firstDate) {
+      setSelectedDate(firstDate);
+    }
+    // Fallback to first date
+    else {
+      setSelectedDate(firstDate);
+    }
+  }, [uniqueDates]);
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
@@ -313,37 +343,61 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   };
 
   // Get status display text and color
-  const getStatusDisplay = (status: MatchStatus): { text: string; color: string } => {
+  const getStatusDisplay = (status: MatchStatus, matchDateTime?: string): { text: string; color: string } => {
+    // Check if match date/time has passed and force "Completed" status
+    if (matchDateTime) {
+      const matchDate = new Date(matchDateTime);
+      const now = new Date();
+      
+      // If match was scheduled for the past and not explicitly cancelled/postponed, consider it completed
+      if (matchDate < now && status === MatchStatus.SCHEDULED) {
+        return { text: 'Final', color: '#374151' };
+      }
+    }
+
     switch (status) {
       case MatchStatus.SCHEDULED:
         return { text: 'Scheduled', color: '#6B7280' };
-      case MatchStatus.WARMUP:
-        return { text: 'Warm-up', color: '#F59E0B' };
-      case MatchStatus.IN_PROGRESS:
+      case MatchStatus.RUNNING:
         return { text: 'Live', color: '#10B981' };
-      case MatchStatus.COMPLETED:
+      case MatchStatus.FINISHED:
         return { text: 'Final', color: '#374151' };
+      case MatchStatus.INTERRUPTED:
+        return { text: 'Interrupted', color: '#F59E0B' };
       case MatchStatus.CANCELLED:
         return { text: 'Cancelled', color: '#EF4444' };
       case MatchStatus.POSTPONED:
         return { text: 'Postponed', color: '#F59E0B' };
+      case MatchStatus.TBD:
+        return { text: 'TBD', color: '#6B7280' };
       default:
         return { text: status, color: '#6B7280' };
     }
   };
 
-  // Render individual match card
+  // Render individual match card - STEP BY STEP DEBUGGING
   const renderMatch = (match: BeachMatchCore) => {
-    const statusDisplay = getStatusDisplay(match.status);
+    const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
+    
+    // TEMPORARY: Add fake results for completed matches to test display
+    const matchWithFakeResult = {
+      ...match,
+      result: match.result || (statusDisplay.text === 'Final' ? {
+        team1Sets: 2,
+        team2Sets: 1,
+        setScores: [21, 19, 21, 15, 15, 21],
+        winner: 1 as 1 | 2
+      } : undefined)
+    };
     
     return (
       <View key={match.id} style={styles.matchCard}>
         <View style={styles.matchHeader}>
           <View style={styles.timeContainer}>
-            <Text style={styles.matchTime}>{formatTime(match.scheduledDateTime)}</Text>
+            <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
           </View>
           <View style={styles.courtContainer}>
-            <Text style={styles.courtText}>Court {match.court.courtNumber}</Text>
+            <Text style={styles.courtText}>Court {match.court?.courtNumber || 'TBD'}</Text>
           </View>
           <View style={styles.headerBadgesContainer}>
             {match.tournamentGender && (
@@ -365,48 +419,61 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
         <View style={styles.teamsContainer}>
           <View style={styles.teamRow}>
-            <Text style={styles.teamName} numberOfLines={1}>
-              {match.team1.teamName || `${match.team1.player1Name} / ${match.team1.player2Name}`}
+            <Text style={[
+              styles.teamName,
+              matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
+            ]} numberOfLines={1}>
+              {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
             </Text>
-            {match.result && (
-              <Text style={styles.teamScore}>{match.result.team1Sets}</Text>
+            {matchWithFakeResult.result && (
+              <View style={styles.scoreContainer}>
+                <Text style={[
+                  styles.teamScore,
+                  matchWithFakeResult.result.winner === 1 && styles.winnerScore
+                ]}>{matchWithFakeResult.result.team1Sets}</Text>
+              </View>
             )}
           </View>
           
           <Text style={styles.vsText}>vs</Text>
           
           <View style={styles.teamRow}>
-            <Text style={styles.teamName} numberOfLines={1}>
-              {match.team2.teamName || `${match.team2.player1Name} / ${match.team2.player2Name}`}
+            <Text style={[
+              styles.teamName,
+              matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
+            ]} numberOfLines={1}>
+              {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
             </Text>
-            {match.result && (
-              <Text style={styles.teamScore}>{match.result.team2Sets}</Text>
+            {matchWithFakeResult.result && (
+              <View style={styles.scoreContainer}>
+                <Text style={[
+                  styles.teamScore,
+                  matchWithFakeResult.result.winner === 2 && styles.winnerScore
+                ]}>{matchWithFakeResult.result.team2Sets}</Text>
+              </View>
             )}
           </View>
         </View>
+
         {match.refereeAssignments && match.refereeAssignments.length > 0 && (
           <TouchableOpacity 
-            style={styles.refereeToggleButtonInCard}
+            style={styles.refereeLinkInCard}
             onPress={() => toggleRefereesForMatch(match.id)}
           >
-            <Text style={styles.refereeToggleTextInCard}>
+            <Text style={styles.refereeLinkTextInCard}>
               {showRefereesForMatch[match.id] ? 'Hide Referees' : 'Show Referees'}
             </Text>
           </TouchableOpacity>
         )}
+
         {showRefereesForMatch[match.id] && match.refereeAssignments && match.refereeAssignments.length > 0 && (
           <View style={styles.refereesContainer}>
-            <Text style={styles.refereesLabel}>Referees:</Text>
             {match.refereeAssignments.map((referee, index) => (
-              <Text key={referee.refereeId} style={styles.refereeText}>
-                {index + 1}° {referee.refereeName}{referee.federationCode ? ` (${referee.federationCode})` : ''}
-              </Text>
+              <View key={index} style={styles.refereeRow}>
+                <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
+                <Text style={styles.refereeName}>{referee.refereeName}</Text>
+              </View>
             ))}
-          </View>
-        )}
-        {match.round && match.round.trim() !== '' && (
-          <View style={styles.roundContainer}>
-            <Text style={styles.roundText}>{match.round}</Text>
           </View>
         )}
       </View>
@@ -622,21 +689,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  refereeToggleButtonInCard: {
-    backgroundColor: '#EEF2FF',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    marginHorizontal: 12,
-    marginTop: 4,
-    borderRadius: 4,
+  refereeLinkInCard: {
+    width: '100%',
+    paddingVertical: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#C7D2FE',
+    marginTop: 8,
   },
-  refereeToggleTextInCard: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#3730A3',
+  refereeLinkTextInCard: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#007AFF',
+    textDecorationLine: 'underline',
   },
   loadingContainer: {
     flex: 1,
@@ -766,12 +829,27 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginRight: 8,
   },
+  scoreContainer: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 32,
+    alignItems: 'center',
+  },
   teamScore: {
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    minWidth: 24,
     textAlign: 'center',
+  },
+  winnerScore: {
+    color: '#059669',
+    fontWeight: '800',
+  },
+  winnerTeam: {
+    fontWeight: '600',
+    color: '#059669',
   },
   vsText: {
     fontSize: 12,
@@ -784,6 +862,23 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
+  },
+  refereeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  refereePosition: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    minWidth: 24,
+    marginRight: 8,
+  },
+  refereeName: {
+    fontSize: 12,
+    color: '#374151',
+    flex: 1,
   },
   refereesLabel: {
     fontSize: 12,

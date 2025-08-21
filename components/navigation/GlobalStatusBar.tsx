@@ -179,7 +179,6 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
         testID="status-touchable"
       >
         <View style={styles.statusIndicator}>
-          {/* Current Assignment Status Display */}
           <View style={styles.primaryInfo}>
             <Text style={[
               styles.courtNumber,
@@ -198,7 +197,6 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
             )}
           </View>
 
-          {/* Assignment Urgency Indicators */}
           {currentUrgency !== 'normal' && (
             <View style={[styles.urgencyIndicator, {
               backgroundColor: currentUrgency === 'critical' ? designTokens.colors.error : designTokens.colors.warning
@@ -209,7 +207,6 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
             </View>
           )}
 
-          {/* Network and Sync Status */}
           {(!isOnline || syncStatus !== 'synced') && (
             <View style={styles.syncIndicator}>
               <Text style={[styles.syncText, { color: statusColors.text }]}>
@@ -219,7 +216,6 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
           )}
         </View>
 
-        {/* Expanded Status Details */}
         {expanded && !compact && (
           <View style={styles.expandedContent}>
             <Text style={[styles.teamsText, { color: statusColors.text }]}>
@@ -232,7 +228,6 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
               })}
             </Text>
             
-            {/* Status counts for quick reference */}
             <View style={styles.statusCounts}>
               <Text style={[styles.countText, { color: statusColors.text }]}>
                 {statusCounts.upcoming} upcoming • {statusCounts.completed} completed

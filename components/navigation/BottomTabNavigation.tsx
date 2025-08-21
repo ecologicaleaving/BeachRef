@@ -122,7 +122,6 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
                 <Text style={[styles.tabIcon, isActive && styles.activeTabIcon]}>
                   {tab.icon}
                 </Text>
-                {/* Assignment Status Badge */}
                 {badgeCount > 0 && (
                   <View style={[styles.badge, { backgroundColor: badgeColor }]}>
                     <Text style={styles.badgeText}>
@@ -131,7 +130,6 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
                   </View>
                 )}
                 
-                {/* Offline Indicator for Monitor */}
                 {tab.key === 'monitor' && !isOnline && (
                   <View style={[styles.offlineDot, { backgroundColor: designTokens.colors.error }]} />
                 )}

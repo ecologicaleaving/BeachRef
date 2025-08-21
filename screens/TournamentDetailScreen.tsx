@@ -612,7 +612,6 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
 
-        {/* Loading State */}
         {detailsLoading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF6B35" />
@@ -620,7 +619,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         )}
 
-        {/* Tournament Summary Card - Compact version */}
         <View style={styles.compactSummaryCard}>
           <View style={styles.compactCardHeader}>
             <View style={styles.infoRowContainer}>
@@ -642,9 +640,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         </View>
 
-        {/* Tournament Tabs: Schedule and Results / Ranking */}
         <View style={styles.tabsSection}>
-          {/* Tab Headers */}
           <View style={styles.tabHeadersContainer}>
             <View style={styles.tabHeaders}>
               <TouchableOpacity
@@ -685,7 +681,6 @@ const TournamentDetailScreenContent: React.FC = () => {
             )}
           </View>
 
-          {/* Tab Content */}
           <View style={styles.tabContent}>
             {activeTab === 'schedule' && (
               <>
@@ -720,12 +715,11 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         </View>
         
-        {/* Location and Schedule sections temporarily disabled */}
+        
 
 
       </ScrollView>
 
-      {/* BottomTabNavigation temporarily disabled */}
       <View style={{backgroundColor: '#FFF', padding: 10, borderTopWidth: 1, borderTopColor: '#ccc'}}>
         <Text style={{textAlign: 'center'}}>Bottom Nav Placeholder</Text>
       </View>

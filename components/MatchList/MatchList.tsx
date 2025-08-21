@@ -385,7 +385,6 @@ export const MatchList: React.FC<MatchListProps> = ({
 
     return (
       <View key={match.No || index} style={styles.matchCard}>
-        {/* Gender Badge */}
         {match.tournamentGender && (
           <View style={[
             styles.genderBadge,
@@ -400,7 +399,6 @@ export const MatchList: React.FC<MatchListProps> = ({
           </View>
         )}
         
-        {/* Top Info */}
         <View style={styles.matchTopInfo}>
           <View style={styles.leftTopInfo}>
             {match.Court && (
@@ -421,7 +419,6 @@ export const MatchList: React.FC<MatchListProps> = ({
           )}
         </View>
         
-        {/* Teams Section */}
         <View style={styles.matchHeader}>
           <View style={styles.teamsColumn}>
             <Text 
@@ -466,10 +463,8 @@ export const MatchList: React.FC<MatchListProps> = ({
           </View>
         </View>
         
-        {/* Collapsible Referees Section */}
         {(match.Referee1Name || match.Referee2Name) && (
           <View style={styles.collapsibleRefereeSection}>
-            {/* Referee Toggle Header */}
             <TouchableOpacity 
               style={styles.refereeToggleHeader}
               onPress={() => toggleRefereeExpansion(matchKey)}
@@ -479,7 +474,6 @@ export const MatchList: React.FC<MatchListProps> = ({
               </Text>
             </TouchableOpacity>
             
-            {/* Expanded Referee Content */}
             {isRefereeExpanded && (
               <View style={styles.refereesSection}>
                 {match.Referee1Name && (
@@ -517,14 +511,12 @@ export const MatchList: React.FC<MatchListProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Title */}
       {title && (
         <Text style={styles.title}>
           {title}
         </Text>
       )}
       
-      {/* Date Navigator */}
       {showDateNavigator && matches.length > 0 && availableDates.length > 1 && (
         <DateNavigator
           availableDates={availableDates}
@@ -534,10 +526,8 @@ export const MatchList: React.FC<MatchListProps> = ({
         />
       )}
 
-      {/* Collapsible Filters (after date navigator) */}
       {(customFilters || showGenderFilter || showCourtFilter || showRefereeFilter) && (
         <>
-          {/* Filter Toggle Header */}
           <View style={styles.filterToggleSection}>
             <TouchableOpacity 
               style={styles.filterToggleButton}
@@ -552,13 +542,10 @@ export const MatchList: React.FC<MatchListProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Expandable Filters Panel */}
           {showCustomFilters && (
             <View style={styles.expandableFiltersPanel}>
-              {/* Custom Filters (if any) */}
               {customFilters}
               
-              {/* Gender Filter (inside the expandable panel) */}
               {showGenderFilter && (
                 <View style={styles.genderFilterContainer}>
                   <View style={styles.genderFilterButtons}>
@@ -583,7 +570,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                 </View>
               )}
 
-              {/* Court Filter (inside the expandable panel) */}
               {showCourtFilter && (
                 <View style={styles.courtFilterContainer}>
                   <View style={styles.courtFilterButtons}>
@@ -608,7 +594,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                 </View>
               )}
 
-              {/* Referee Filter as Modal Dropdown (inside the expandable panel) */}
               {showRefereeFilter && (
                 <View style={styles.refereeDropdownContainer}>
                   <Text style={styles.filterSectionLabel}>Referee</Text>
@@ -622,7 +607,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                     <Text style={styles.dropdownArrow}>▼</Text>
                   </TouchableOpacity>
                   
-                  {/* Modal Dropdown */}
                   <Modal
                     visible={showRefereeDropdown}
                     transparent={true}
@@ -671,7 +655,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                 </View>
               )}
 
-              {/* Sort Order Filter (inside the expandable panel) */}
               <View style={styles.sortOrderContainer}>
                 <Text style={styles.filterSectionLabel}>Sort by Time</Text>
                 <View style={styles.sortOrderButtons}>
@@ -707,7 +690,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                 </View>
               </View>
 
-              {/* Reset Filters Link */}
               <View style={styles.resetLinkContainer}>
                 <TouchableOpacity 
                   style={styles.resetLink}
@@ -743,7 +725,6 @@ export const MatchList: React.FC<MatchListProps> = ({
         </>
       )}
 
-      {/* Matches List */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#4A90A4" />

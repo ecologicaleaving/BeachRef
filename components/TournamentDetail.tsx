@@ -669,7 +669,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     
     return (
     <View style={[styles.matchItem, { borderLeftWidth: 4, borderLeftColor: statusColors.backgroundColor }]}>
-      {/* Gender indicator band */}
       <View style={[styles.genderBand, { backgroundColor: getGenderColor(match) }]} />
       
       <View style={styles.matchHeader}>
@@ -713,7 +712,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           />
         </View>
         
-        {/* Real-time change indicators */}
         <View style={styles.changeIndicators}>
           <ScheduleChangeIndicator
             scheduleChanges={scheduleChanges}
@@ -730,7 +728,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
       </View>
       
-      {/* Referee information */}
       {(match.Referee1Name || match.Referee2Name) && (
         <View style={styles.refereesContainer}>
           <Text style={styles.refereesTitle}>Officials:</Text>
@@ -751,7 +748,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
       )}
       
-      {/* Set scores if available */}
       {(match.PointsTeamASet1 && match.PointsTeamBSet1) && (
         <View style={styles.setsContainer}>
           <Text style={styles.setsTitle}>Set Scores:</Text>
@@ -786,7 +782,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       </View>
       
       <View style={styles.filtersRow}>
-        {/* Court Filter Dropdown */}
         <View style={styles.dropdownContainer}>
           <TouchableOpacity
             style={styles.dropdownButton}
@@ -799,7 +794,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </TouchableOpacity>
         </View>
 
-        {/* Referee Filter Dropdown */}
         <View style={styles.dropdownContainer}>
           <TouchableOpacity
             style={styles.dropdownButton}
@@ -812,7 +806,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </TouchableOpacity>
         </View>
 
-        {/* Gender Filter Dropdown */}
         <View style={styles.dropdownContainer}>
           <TouchableOpacity
             style={styles.dropdownButton}
@@ -825,7 +818,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </TouchableOpacity>
         </View>
 
-        {/* Clear Filters Button */}
         {(selectedCourt || selectedReferee || selectedGender) && (
           <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
             <Text style={styles.clearFiltersText}>✕</Text>
@@ -942,9 +934,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
   const renderInfoTab = () => (
     <View style={styles.infoTabContainer}>
-      {/* Key Information Cards */}
       <View style={styles.infoCards}>
-        {/* Location Card */}
         <View style={styles.infoCard}>
           <View style={styles.cardIconContainer}>
             <DataIcons.Details size="medium" theme="default" colorKey="secondary" />
@@ -955,7 +945,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </View>
         </View>
 
-        {/* Dates Card */}
         <View style={styles.infoCard}>
           <View style={styles.cardIconContainer}>
             <UtilityIcons.Info size="medium" theme="default" colorKey="secondary" />
@@ -966,7 +955,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </View>
         </View>
 
-        {/* Tournament Code Card */}
         <View style={styles.infoCard}>
           <View style={styles.cardIconContainer}>
             <DataIcons.Details size="medium" theme="default" colorKey="secondary" />
@@ -977,7 +965,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </View>
         </View>
 
-        {/* Tournament Number Card */}
         <View style={styles.infoCard}>
           <View style={styles.cardIconContainer}>
             <DataIcons.Stats size="medium" theme="default" colorKey="secondary" />
@@ -989,7 +976,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
       </View>
 
-      {/* Additional Details */}
       <View style={styles.detailsSection}>
         <Text style={styles.sectionTitle}>Additional Information</Text>
         
@@ -1033,12 +1019,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         )}
       </View>
 
-      {/* Real-time Status Information */}
       {(statusSubscriptionActive || scheduleChanges || courtChanges.length > 0 || tournamentProgress) && (
         <View style={styles.realtimeStatusSection}>
           <Text style={styles.sectionTitle}>Real-time Status</Text>
           
-          {/* Subscription status */}
           {statusSubscriptionActive && (
             <View style={styles.realtimeIndicator}>
               <Text style={styles.realtimeIndicatorText}>
@@ -1052,7 +1036,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             </View>
           )}
           
-          {/* Schedule changes */}
           {scheduleChanges && scheduleChanges.changeCount > 0 && (
             <View style={styles.realtimeCard}>
               <ScheduleChangeIndicator
@@ -1062,7 +1045,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             </View>
           )}
           
-          {/* Court assignment changes */}
           {courtChanges.length > 0 && (
             <View style={styles.realtimeCard}>
               <CourtAssignmentIndicator
@@ -1072,7 +1054,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             </View>
           )}
           
-          {/* Tournament progress */}
           {tournamentProgress && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Progress:</Text>
@@ -1083,7 +1064,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             </View>
           )}
           
-          {/* Clear recent changes button */}
           {(recentScheduleChanges.size > 0 || recentCourtChanges.size > 0) && (
             <TouchableOpacity 
               style={styles.clearChangesButton}
@@ -1095,7 +1075,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             </TouchableOpacity>
           )}
           
-          {/* Status error */}
           {statusError && (
             <View style={styles.statusErrorRow}>
               <CommunicationIcons.Alert size="small" theme="highContrast" colorKey="accent" />
@@ -1107,7 +1086,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
       )}
 
-      {/* Placeholder for future features */}
       <View style={styles.placeholderSection}>
         <Text style={styles.placeholderTitle}>Coming Soon</Text>
         <Text style={styles.placeholderText}>
@@ -1122,7 +1100,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={styles.backButtonText}>← Back</Text>
@@ -1141,7 +1118,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
             <PerformanceIndicator
               onPress={() => setPerformanceDashboardVisible(true)}
             />
-            {/* Repository implementation indicator for A/B testing visibility */}
             {tournamentRepository.implementation === 'new' && (
               <View style={styles.repositoryIndicator}>
                 <Text style={styles.repositoryIndicatorText}>v2</Text>
@@ -1151,7 +1127,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
       </View>
 
-      {/* Main Scrollable Area */}
       <ScrollView 
         style={styles.mainScrollView}
         stickyHeaderIndices={[1]}
@@ -1162,7 +1137,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           setGenderDropdownOpen(false);
         }}
       >
-        {/* Tournament Name - This will scroll away */}
         <View style={styles.titleSection}>
           <Text style={styles.tournamentTitle}>
             {currentTournament.name || `Tournament ${currentTournament.visNo}`}
@@ -1173,24 +1147,20 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
 
 
-        {/* Tab Bar - This will become sticky */}
         <View style={styles.stickyTabBar}>
           {renderTabBar()}
         </View>
 
-        {/* Tab Content */}
         <View style={styles.tabContentScrollable}>
           {activeTab === 'info' ? renderInfoTab() : renderMatchesTab()}
         </View>
       </ScrollView>
 
-      {/* Performance Dashboard Modal */}
       <PerformanceDashboard
         visible={performanceDashboardVisible}
         onClose={() => setPerformanceDashboardVisible(false)}
       />
 
-      {/* Court Filter Modal */}
       <DropdownModal
         visible={courtDropdownOpen}
         onClose={() => setCourtDropdownOpen(false)}
@@ -1200,7 +1170,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         title="Select Court"
       />
 
-      {/* Referee Filter Modal */}
       <DropdownModal
         visible={refereeDropdownOpen}
         onClose={() => setRefereeDropdownOpen(false)}
@@ -1210,7 +1179,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         title="Select Referee"
       />
 
-      {/* Gender Filter Modal */}
       <DropdownModal
         visible={genderDropdownOpen}
         onClose={() => setGenderDropdownOpen(false)}
@@ -1220,7 +1188,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         title="Select Gender"
       />
 
-      {/* Schedule Changes Detail Modal */}
       <Modal
         visible={scheduleChangesVisible}
         transparent
@@ -1243,7 +1210,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </TouchableOpacity>
       </Modal>
 
-      {/* Court Changes Detail Modal */}
       <Modal
         visible={courtChangesVisible}
         transparent

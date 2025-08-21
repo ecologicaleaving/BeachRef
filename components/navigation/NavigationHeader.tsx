@@ -72,7 +72,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
-      {/* Global Status Bar Integration */}
       {showStatusBar && (
         <GlobalStatusBar 
           onStatusPress={onStatusPress} 

@@ -190,8 +190,8 @@ describe('CacheService Supabase Integration', () => {
       await CacheService.getTournamentsFromSupabase({ year: 2025 });
 
       // Assert - Should filter by year range
-      expect(mockQuery.gte).toHaveBeenCalledWith('start_date', '2025-01-01');
-      expect(mockQuery.lte).toHaveBeenCalledWith('start_date', '2025-12-31');
+      expect(mockQuery.gte).toHaveBeenCalledWith('dates->>startDate', '2025-01-01');
+      expect(mockQuery.lte).toHaveBeenCalledWith('dates->>startDate', '2025-12-31');
     });
 
     it('should apply tournament type filter when specified', async () => {
@@ -229,8 +229,8 @@ describe('CacheService Supabase Integration', () => {
       await CacheService.getTournamentsFromSupabase({ recentOnly: true });
 
       // Assert - Should apply recent date range filter
-      const gteCallsForStartDate = mockQuery.gte.mock.calls.filter(call => call[0] === 'start_date');
-      const lteCallsForStartDate = mockQuery.lte.mock.calls.filter(call => call[0] === 'start_date');
+      const gteCallsForStartDate = mockQuery.gte.mock.calls.filter(call => call[0] === 'dates->>startDate');
+      const lteCallsForStartDate = mockQuery.lte.mock.calls.filter(call => call[0] === 'dates->>startDate');
       
       expect(gteCallsForStartDate.length).toBeGreaterThan(0);
       expect(lteCallsForStartDate.length).toBeGreaterThan(0);

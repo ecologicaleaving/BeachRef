@@ -118,20 +118,25 @@ export class CacheService {
         throw new Error('No cached data available offline');
       }
 
-      // Tier 3: Supabase Cache (only when network available)
-      const supabaseResult = await this.getTournamentsFromSupabase(filters);
-      if (supabaseResult && supabaseResult.length > 0) {
-        // Update higher tier caches and offline storage
-        await this.setLocalStorage(baseCacheKey, supabaseResult, this.config.defaultTTL.tournaments);
-        await this.setOfflineStorage(baseCacheKey, supabaseResult);
-        this.setInMemory(baseCacheKey, supabaseResult, this.config.defaultTTL.tournaments);
-        this.stats.recordHit('supabase', requestId);
-        return {
-          data: supabaseResult,
-          source: 'supabase',
-          fromCache: true,
-          timestamp: Date.now()
-        };
+      // Tier 3: Supabase Cache (when network available)
+      try {
+        const supabaseResult = await this.getTournamentsFromSupabase(filters);
+        if (supabaseResult && supabaseResult.length > 0) {
+          // Update higher tier caches and offline storage
+          await this.setLocalStorage(baseCacheKey, supabaseResult, this.config.defaultTTL.tournaments);
+          await this.setOfflineStorage(baseCacheKey, supabaseResult);
+          this.setInMemory(baseCacheKey, supabaseResult, this.config.defaultTTL.tournaments);
+          this.stats.recordHit('supabase', requestId);
+          return {
+            data: supabaseResult,
+            source: 'supabase',
+            fromCache: true,
+            timestamp: Date.now()
+          };
+        }
+      } catch (supabaseError) {
+        console.warn('Supabase cache unavailable (DNS/connection issue), falling back to API:', supabaseError);
+        // Continue to API fallback - this is expected behavior for graceful degradation
       }
 
       // Tier 4: Direct API Fallback (only when network available)
@@ -258,7 +263,7 @@ export class CacheService {
         throw new Error('No cached match data available offline');
       }
 
-      // Tier 3: Supabase Cache with enhanced error handling and performance monitoring (only when network available)
+      // Tier 3: Supabase Cache with enhanced error handling and performance monitoring (when network available)
       try {
         const supabaseStartTime = performance.now();
         const supabaseResult = await this.getMatchesFromSupabase(tournamentNo);
@@ -278,7 +283,7 @@ export class CacheService {
           };
         }
       } catch (supabaseError) {
-        console.warn('Supabase cache unavailable for matches, falling back to API:', supabaseError);
+        console.warn('Supabase cache unavailable for matches (DNS/connection issue), falling back to API:', supabaseError);
         // Continue to API fallback - this is expected behavior for graceful degradation
       }
 
@@ -397,6 +402,12 @@ export class CacheService {
 
   // Supabase cache operations
   static async getTournamentsFromSupabase(filters?: FilterOptions): Promise<TournamentCore[]> {
+    // Skip Supabase if not available (development mode)
+    if (!supabase) {
+      console.log('Supabase not available, skipping cache tier');
+      throw new Error('Supabase not available');
+    }
+    
     try {
       let query = supabase.from('tournaments').select('*');
 
@@ -406,15 +417,17 @@ export class CacheService {
       }
       
       if (filters?.year) {
-        // Filter by year in start_date
+        // Filter by year using JSONB dates field
         const yearStart = `${filters.year}-01-01`;
         const yearEnd = `${filters.year}-12-31`;
-        query = query.gte('start_date', yearStart).lte('start_date', yearEnd);
+        query = query
+          .gte('dates->>startDate', yearStart)
+          .lte('dates->>startDate', yearEnd);
       }
 
       if (filters?.tournamentType && filters.tournamentType !== 'ALL') {
         // Filter by tournament type (FIVB, BPT, CEV, LOCAL)
-        query = query.eq('type', filters.tournamentType);
+        query = query.eq('tournament_type', filters.tournamentType);
       }
 
       // For historical data (previous years), use more relaxed freshness requirements
@@ -440,8 +453,8 @@ export class CacheService {
         oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
         
         query = query
-          .gte('start_date', oneMonthAgo.toISOString().split('T')[0])
-          .lte('start_date', oneMonthFromNow.toISOString().split('T')[0]);
+          .gte('dates->>startDate', oneMonthAgo.toISOString().split('T')[0])
+          .lte('dates->>startDate', oneMonthFromNow.toISOString().split('T')[0]);
       }
 
       const { data, error } = await query;
@@ -459,6 +472,12 @@ export class CacheService {
   }
 
   static async getMatchesFromSupabase(tournamentNo: string): Promise<BeachMatch[]> {
+    // Skip Supabase if not available (development mode)
+    if (!supabase) {
+      console.log('Supabase not available, skipping matches cache tier');
+      throw new Error('Supabase not available');
+    }
+    
     try {
       let query = supabase
         .from('matches')
@@ -532,6 +551,12 @@ export class CacheService {
   }
 
   static async updateSupabaseCache(tournaments: TournamentCore[]): Promise<void> {
+    // Skip Supabase if not available (development mode)
+    if (!supabase) {
+      console.log('Supabase not available, skipping cache update');
+      return;
+    }
+    
     // This would be handled by background sync jobs in production
     // For now, we'll skip direct Supabase updates from client
     console.log('updateSupabaseCache: Would update', tournaments.length, 'tournaments');
@@ -700,57 +725,57 @@ export class CacheService {
   private static mapSupabaseTournaments(data: any[]): TournamentCore[] {
     return data.map(item => ({
       // VisEntity required fields
-      id: `tournament_${item.no}`,
-      visNo: item.no?.toString() || '',
+      id: `tournament_${item.No || item.no}`,
+      visNo: (item.No || item.no)?.toString() || '',
       version: 1,
       lastUpdated: new Date().toISOString(),
       // TournamentCore fields
-      code: item.code || '',
-      name: item.name || '',
-      title: item.title,
-      gender: item.gender || 'Mixed',
-      tournamentType: item.type || 'BPT',
+      code: item.Code || item.code || '',
+      name: item.Name || item.name || '',
+      title: item.Title || item.title,
+      gender: item.Gender || item.gender || 'Mixed',
+      tournamentType: item.Type || item.type || 'BPT',
       dates: {
-        startDate: item.start_date || '',
-        endDate: item.end_date || ''
+        startDate: item.StartDate || item.start_date || '',
+        endDate: item.EndDate || item.end_date || ''
       },
-      status: item.status || 'ACTIVE',
-      city: item.city,
-      country: item.country,
-      countryCode: item.country_code,
-      location: item.location
+      status: item.Status || item.status || 'ACTIVE',
+      city: item.City || item.city,
+      country: item.Country || item.country,
+      countryCode: item.CountryCode || item.country_code,
+      location: item.Location || item.location
     }));
   }
 
   private static mapSupabaseMatches(data: any[]): BeachMatch[] {
     return data.map(item => ({
-      No: item.no,
-      NoInTournament: item.no_in_tournament,
-      TeamAName: item.team_a_name,
-      TeamBName: item.team_b_name,
-      LocalDate: item.local_date,
-      LocalTime: item.local_time,
-      Court: item.court,
-      Status: item.status,
-      Round: item.round,
-      MatchPointsA: item.match_points_a?.toString(),
-      MatchPointsB: item.match_points_b?.toString(),
-      PointsTeamASet1: item.points_team_a_set1?.toString(),
-      PointsTeamBSet1: item.points_team_b_set1?.toString(),
-      PointsTeamASet2: item.points_team_a_set2?.toString(),
-      PointsTeamBSet2: item.points_team_b_set2?.toString(),
-      PointsTeamASet3: item.points_team_a_set3?.toString(),
-      PointsTeamBSet3: item.points_team_b_set3?.toString(),
-      DurationSet1: item.duration_set1,
-      DurationSet2: item.duration_set2,
-      DurationSet3: item.duration_set3,
-      NoReferee1: item.no_referee1,
-      NoReferee2: item.no_referee2,
-      Referee1Name: item.referee1_name,
-      Referee2Name: item.referee2_name,
-      Referee1FederationCode: item.referee1_federation_code,
-      Referee2FederationCode: item.referee2_federation_code,
-      tournamentNo: item.tournament_no
+      No: item.No || item.no,
+      NoInTournament: item.NoInTournament || item.no_in_tournament,
+      TeamAName: item.TeamAName || item.team_a_name,
+      TeamBName: item.TeamBName || item.team_b_name,
+      LocalDate: item.LocalDate || item.local_date,
+      LocalTime: item.LocalTime || item.local_time,
+      Court: item.Court || item.court,
+      Status: item.Status || item.status,
+      Round: item.Round || item.round,
+      MatchPointsA: (item.MatchPointsA || item.match_points_a)?.toString(),
+      MatchPointsB: (item.MatchPointsB || item.match_points_b)?.toString(),
+      PointsTeamASet1: (item.PointsTeamASet1 || item.points_team_a_set1)?.toString(),
+      PointsTeamBSet1: (item.PointsTeamBSet1 || item.points_team_b_set1)?.toString(),
+      PointsTeamASet2: (item.PointsTeamASet2 || item.points_team_a_set2)?.toString(),
+      PointsTeamBSet2: (item.PointsTeamBSet2 || item.points_team_b_set2)?.toString(),
+      PointsTeamASet3: (item.PointsTeamASet3 || item.points_team_a_set3)?.toString(),
+      PointsTeamBSet3: (item.PointsTeamBSet3 || item.points_team_b_set3)?.toString(),
+      DurationSet1: item.DurationSet1 || item.duration_set1,
+      DurationSet2: item.DurationSet2 || item.duration_set2,
+      DurationSet3: item.DurationSet3 || item.duration_set3,
+      NoReferee1: item.NoReferee1 || item.no_referee1,
+      NoReferee2: item.NoReferee2 || item.no_referee2,
+      Referee1Name: item.Referee1Name || item.referee1_name,
+      Referee2Name: item.Referee2Name || item.referee2_name,
+      Referee1FederationCode: item.Referee1FederationCode || item.referee1_federation_code,
+      Referee2FederationCode: item.Referee2FederationCode || item.referee2_federation_code,
+      tournamentNo: item.tournamentNo || item.tournament_no
     }));
   }
 

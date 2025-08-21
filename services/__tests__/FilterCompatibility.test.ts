@@ -155,8 +155,8 @@ describe('CacheService Filter Options Compatibility', () => {
       await CacheService.getTournamentsFromSupabase({ year: 2025 });
 
       // Assert - Should filter by year range
-      expect(mockQuery.gte).toHaveBeenCalledWith('start_date', '2025-01-01');
-      expect(mockQuery.lte).toHaveBeenCalledWith('start_date', '2025-12-31');
+      expect(mockQuery.gte).toHaveBeenCalledWith('dates->>startDate', '2025-01-01');
+      expect(mockQuery.lte).toHaveBeenCalledWith('dates->>startDate', '2025-12-31');
     });
 
     it('should apply tournamentType filter to Supabase query', async () => {
@@ -216,12 +216,12 @@ describe('CacheService Filter Options Compatibility', () => {
       await CacheService.getTournamentsFromSupabase({ recentOnly: true });
 
       // Assert - Should apply date range filter
-      expect(mockQuery.gte).toHaveBeenCalledWith('start_date', expect.any(String));
-      expect(mockQuery.lte).toHaveBeenCalledWith('start_date', expect.any(String));
+      expect(mockQuery.gte).toHaveBeenCalledWith('dates->>startDate', expect.any(String));
+      expect(mockQuery.lte).toHaveBeenCalledWith('dates->>startDate', expect.any(String));
       
       // Verify the dates are approximately one month before/after today
-      const gteCall = mockQuery.gte.mock.calls.find(call => call[0] === 'start_date');
-      const lteCall = mockQuery.lte.mock.calls.find(call => call[0] === 'start_date');
+      const gteCall = mockQuery.gte.mock.calls.find(call => call[0] === 'dates->>startDate');
+      const lteCall = mockQuery.lte.mock.calls.find(call => call[0] === 'dates->>startDate');
       
       expect(gteCall).toBeTruthy();
       expect(lteCall).toBeTruthy();
@@ -251,8 +251,8 @@ describe('CacheService Filter Options Compatibility', () => {
       // Assert - All filters should be applied
       expect(mockQuery.eq).toHaveBeenCalledWith('status', 'Running');
       expect(mockQuery.eq).toHaveBeenCalledWith('type', 'FIVB');
-      expect(mockQuery.gte).toHaveBeenCalledWith('start_date', '2025-01-01');
-      expect(mockQuery.lte).toHaveBeenCalledWith('start_date', '2025-12-31');
+      expect(mockQuery.gte).toHaveBeenCalledWith('dates->>startDate', '2025-01-01');
+      expect(mockQuery.lte).toHaveBeenCalledWith('dates->>startDate', '2025-12-31');
     });
   });
 

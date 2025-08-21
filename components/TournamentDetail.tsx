@@ -9,7 +9,6 @@ import {
   Modal,
 } from 'react-native';
 import { Text, H2Text, BodyText, CaptionText } from './Typography';
-import { Tournament } from '../types/tournament';
 import { BeachMatch } from '../types/match';
 import { TournamentCore, GenderType as CoreGenderType } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
@@ -33,7 +32,7 @@ import { getStatusColorWithText, determineTournamentStatus, determineMatchStatus
 import { NavigationIcons, UtilityIcons, DataIcons, CommunicationIcons } from './Icons/IconLibrary';
 
 interface TournamentDetailProps {
-  tournament: Tournament;
+  tournament: TournamentCore;
   onBack: () => void;
 }
 
@@ -115,21 +114,21 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const [allMatches, setAllMatches] = useState<BeachMatch[]>([]); // Matches from all related tournaments
   
   // Gender switching states
-  const [relatedTournaments, setRelatedTournaments] = useState<Tournament[]>([tournament]);
-  const [currentTournament, setCurrentTournament] = useState<Tournament>(tournament);
+  const [relatedTournaments, setRelatedTournaments] = useState<TournamentCore[]>([tournament]);
+  const [currentTournament, setCurrentTournament] = useState<TournamentCore>(tournament);
   const [loadingRelated, setLoadingRelated] = useState<boolean>(false);
   
   // Repository selection with feature flags for A/B testing
   const tournamentRepository = useTournamentRepository({
     enableABTesting: true,
     enablePerformanceMonitoring: true,
-    sessionId: `tournament-detail-${tournament.No}`
+    sessionId: `tournament-detail-${tournament.id}`
   });
   
   const matchRepository = useMatchRepository({
     enableABTesting: true,
     enablePerformanceMonitoring: true,
-    sessionId: `tournament-detail-matches-${tournament.No}`
+    sessionId: `tournament-detail-matches-${tournament.id}`
   });
   
   // Performance monitoring for UI migration
@@ -155,7 +154,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     isSubscribed,
     hasLiveMatches,
     refresh: refreshMatches,
-  } = useRealtimeMatches(currentTournament.No, true);
+  } = useRealtimeMatches(currentTournament.visNo, true);
   
   // Tournament detail status with real-time updates
   const {
@@ -198,7 +197,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     async () => {
       if (!matchRepository.repository) return null;
       const allMatchPromises = relatedTournaments.map(tournament => 
-        matchRepository.repository!.getMatchesByTournamentAsync(tournament.No)
+        matchRepository.repository!.getMatchesByTournamentAsync(tournament.visNo)
       );
       const allMatchesArrays = await Promise.all(allMatchPromises);
       return allMatchesArrays.flat();
@@ -227,13 +226,13 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       if (matchRepository.implementation === 'new' && transformedMatches.data) {
         const combinedMatches = transformedMatches.data.map((match: BeachMatch, index: number) => {
           const tournament = relatedTournaments[index % relatedTournaments.length];
-          const gender = VisApiService.extractGenderFromCode(tournament.Code);
+          const gender = tournament.gender; // TournamentCore has structured gender field
           
           return {
             ...match,
             tournamentGender: gender,
-            tournamentNo: tournament.No,
-            tournamentCode: tournament.Code
+            tournamentNo: tournament.visNo,
+            tournamentCode: tournament.code
           };
         });
         
@@ -243,20 +242,20 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       
       // Legacy API fallback
       const allMatchPromises = relatedTournaments.map(tournament => 
-        VisApiService.getBeachMatchList(tournament.No)
+        VisApiService.getBeachMatchList(tournament.visNo)
       );
       const allMatchesArrays = await Promise.all(allMatchPromises);
       
       // Flatten all matches and add tournament info for filtering
       const combinedMatches = allMatchesArrays.flatMap((tournamentMatches, index) => {
         const tournament = relatedTournaments[index];
-        const gender = VisApiService.extractGenderFromCode(tournament.Code);
+        const gender = tournament.gender; // Use structured gender from TournamentCore
         
         return tournamentMatches.map(match => ({
           ...match,
           tournamentGender: gender,
-          tournamentNo: tournament.No,
-          tournamentCode: tournament.Code
+          tournamentNo: tournament.visNo,
+          tournamentCode: tournament.code
         }));
       });
       
@@ -271,10 +270,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const { data: repositoryRelatedTournaments, loading: relatedTournamentsLoading } = useRepositoryData(
     async () => {
       if (!tournamentRepository.repository) return null;
-      const relatedTournaments = await tournamentRepository.repository.findRelatedTournamentsAsync(tournament.No);
+      const relatedTournaments = await tournamentRepository.repository.findRelatedTournamentsAsync(tournament.visNo);
       return relatedTournaments;
     },
-    [tournament.No, tournamentRepository.repository],
+    [tournament.visNo, tournamentRepository.repository],
     {
       enableCache: true,
       fallbackToLegacy: true,
@@ -316,10 +315,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
   // Cache-aware tournament data fetching for performance
   const { data: cachedTournamentData, cacheHit } = useCacheAwareData(
-    `tournament-detail-${tournament.No}`,
+    `tournament-detail-${tournament.id}`,
     async () => {
       if (!tournamentRepository.repository) return tournament;
-      const tournamentCore = await tournamentRepository.repository.getByIdAsync(tournament.No);
+      const tournamentCore = await tournamentRepository.repository.getByIdAsync(tournament.id);
       return tournamentCore;
     },
     {
@@ -351,14 +350,14 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   useEffect(() => {
     if (selectedGender && relatedTournaments.length > 1) {
       const targetTournament = relatedTournaments.find(t => 
-        VisApiService.extractGenderFromCode(t.Code) === selectedGender
+        t.gender === selectedGender
       );
       
-      if (targetTournament && targetTournament.No !== currentTournament.No) {
+      if (targetTournament && targetTournament.visNo !== currentTournament.visNo) {
         setCurrentTournament(targetTournament);
       }
     }
-  }, [selectedGender, relatedTournaments, currentTournament.No]);
+  }, [selectedGender, relatedTournaments, currentTournament.visNo]);
 
   // Get the matches to use for filtering (all matches or current tournament matches)
   const matchesToFilter = useMemo(() => {
@@ -387,8 +386,8 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const availableGenders = useMemo(() => {
     // Get genders from related tournaments
     const genders = relatedTournaments
-      .map(t => VisApiService.extractGenderFromCode(t.Code))
-      .filter((gender): gender is GenderType => gender !== 'Unknown')
+      .map(t => t.gender)
+      .filter((gender): gender is CoreGenderType => gender !== 'Mixed') // Filter out Mixed for simplicity
       .filter((gender, index, array) => array.indexOf(gender) === index)
       .sort();
     return genders;
@@ -600,36 +599,31 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   };
 
   const getLocation = () => {
-    if (currentTournament.City && currentTournament.CountryName) {
-      return `${currentTournament.City}, ${currentTournament.CountryName}`;
-    }
-    return currentTournament.Location || currentTournament.City || currentTournament.CountryName || 'Location TBA';
+    // TournamentCore doesn't have City/CountryName - these would be in location data if needed
+    return 'Location TBA'; // Simplified for now - would need location service integration
   };
 
   const getTournamentType = (): string => {
-    const type = VisApiService.classifyTournament(currentTournament);
-    const typeLabels: Record<TournamentType, string> = {
-      'ALL': 'All Tournaments',
+    // TournamentCore has structured tournamentType field
+    const typeLabels = {
       'FIVB': 'FIVB World Tour',
       'BPT': 'Beach Pro Tour',
       'CEV': 'CEV European Tour',
       'LOCAL': 'Local Tournament'
     };
-    return typeLabels[type];
+    return typeLabels[currentTournament.tournamentType] || 'Tournament';
   };
 
 
   const getDateRange = () => {
-    if (currentTournament.Dates) {
-      return currentTournament.Dates;
-    }
-    if (currentTournament.StartDate && currentTournament.EndDate) {
-      const start = formatDate(currentTournament.StartDate);
-      const end = formatDate(currentTournament.EndDate);
+    // TournamentCore has structured dates field
+    if (currentTournament.dates.startDate && currentTournament.dates.endDate) {
+      const start = formatDate(currentTournament.dates.startDate);
+      const end = formatDate(currentTournament.dates.endDate);
       if (start === end) return start;
       return `${start} - ${end}`;
     }
-    return formatDate(currentTournament.StartDate) || formatDate(currentTournament.EndDate) || 'Dates TBA';
+    return formatDate(currentTournament.dates.startDate) || formatDate(currentTournament.dates.endDate) || 'Dates TBA';
   };
 
   const formatMatchTime = (timeStr?: string) => {
@@ -663,8 +657,8 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       return match.tournamentGender === 'M' ? '#4CAF50' : '#E91E63'; // Green for men, Pink for women
     }
     
-    // If no tournament metadata, try to determine from current tournament
-    const gender = VisApiService.extractGenderFromCode(currentTournament.Code);
+    // If no tournament metadata, use current tournament's structured gender
+    const gender = currentTournament.gender;
     return gender === 'M' ? '#4CAF50' : gender === 'W' ? '#E91E63' : '#9E9E9E'; // Gray for unknown/mixed
   };
 
@@ -973,17 +967,15 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
 
         {/* Tournament Code Card */}
-        {currentTournament.Code && (
-          <View style={styles.infoCard}>
-            <View style={styles.cardIconContainer}>
-              <DataIcons.Details size="medium" theme="default" colorKey="secondary" />
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardLabel}>Tournament Code</Text>
-              <Text style={styles.cardValueMono}>{currentTournament.Code}</Text>
-            </View>
+        <View style={styles.infoCard}>
+          <View style={styles.cardIconContainer}>
+            <DataIcons.Details size="medium" theme="default" colorKey="secondary" />
           </View>
-        )}
+          <View style={styles.cardContent}>
+            <Text style={styles.cardLabel}>Tournament Code</Text>
+            <Text style={styles.cardValueMono}>{currentTournament.code}</Text>
+          </View>
+        </View>
 
         {/* Tournament Number Card */}
         <View style={styles.infoCard}>
@@ -992,7 +984,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </View>
           <View style={styles.cardContent}>
             <Text style={styles.cardLabel}>Tournament Number</Text>
-            <Text style={styles.cardValueMono}>#{currentTournament.No}</Text>
+            <Text style={styles.cardValueMono}>#{currentTournament.visNo}</Text>
           </View>
         </View>
       </View>
@@ -1001,19 +993,19 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       <View style={styles.detailsSection}>
         <Text style={styles.sectionTitle}>Additional Information</Text>
         
-        {tournamentWithStatus.Status && (
+        {currentTournament.status && (
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Status:</Text>
             <View style={styles.detailValueWithIndicator}>
               <StatusCard
-                status={determineTournamentStatus(tournamentWithStatus)}
-                title={tournamentWithStatus.Status}
+                status={determineTournamentStatus({ Status: currentTournament.status })}
+                title={currentTournament.status}
                 variant="compact"
                 showIcon={true}
                 style={styles.tournamentStatusCard}
               />
               <TournamentStatusIndicator
-                tournament={tournamentWithStatus}
+                tournament={{ Status: currentTournament.status }}
                 isRecentlyChanged={statusEvents.length > 0}
                 subscriptionActive={statusSubscriptionActive}
               />
@@ -1021,24 +1013,22 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           </View>
         )}
         
-        {currentTournament.Version && (
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Version:</Text>
-            <Text style={styles.detailValue}>{currentTournament.Version}</Text>
-          </View>
-        )}
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Version:</Text>
+          <Text style={styles.detailValue}>{currentTournament.version}</Text>
+        </View>
 
-        {currentTournament.StartDate && (
+        {currentTournament.dates.startDate && (
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Start Date:</Text>
-            <Text style={styles.detailValue}>{formatDate(currentTournament.StartDate)}</Text>
+            <Text style={styles.detailValue}>{formatDate(currentTournament.dates.startDate)}</Text>
           </View>
         )}
 
-        {currentTournament.EndDate && (
+        {currentTournament.dates.endDate && (
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>End Date:</Text>
-            <Text style={styles.detailValue}>{formatDate(currentTournament.EndDate)}</Text>
+            <Text style={styles.detailValue}>{formatDate(currentTournament.dates.endDate)}</Text>
           </View>
         )}
       </View>
@@ -1175,7 +1165,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         {/* Tournament Name - This will scroll away */}
         <View style={styles.titleSection}>
           <Text style={styles.tournamentTitle}>
-            {currentTournament.Title || currentTournament.Name || `Tournament ${currentTournament.No}`}
+            {currentTournament.name || `Tournament ${currentTournament.visNo}`}
           </Text>
           <View style={styles.typeContainer}>
             <Text style={styles.tournamentType}>{getTournamentType()}</Text>

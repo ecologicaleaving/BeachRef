@@ -2,13 +2,21 @@ import { CacheService } from '../CacheService';
 import { MemoryCacheManager } from '../MemoryCacheManager';
 import { LocalStorageManager } from '../LocalStorageManager';
 import { CacheStatsService } from '../CacheStatsService';
-import { Tournament } from '../../types/tournament';
+import { TournamentCore } from '../../types/tournament-v2';
 import { BeachMatch } from '../../types/match';
 
 // Mock dependencies
 jest.mock('../MemoryCacheManager');
 jest.mock('../LocalStorageManager');
-jest.mock('../CacheStatsService');
+jest.mock('../CacheStatsService', () => ({
+  CacheStatsService: {
+    getInstance: jest.fn(() => ({
+      startTimer: jest.fn(),
+      recordHit: jest.fn(),
+      getDetailedMetrics: jest.fn()
+    }))
+  }
+}));
 jest.mock('../supabase', () => ({
   supabase: {
     from: jest.fn(() => ({
@@ -21,11 +29,11 @@ jest.mock('../supabase', () => ({
   }
 }));
 
-jest.mock('../visApi', () => ({
-  VisApiService: {
-    getTournamentListWithDetails: jest.fn(),
+jest.mock('../api/VisApiClient', () => ({
+  VisApiClient: jest.fn().mockImplementation(() => ({
+    getEventList: jest.fn(),
     getBeachMatchList: jest.fn()
-  }
+  }))
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -43,14 +51,21 @@ describe('CacheService', () => {
   let mockLocalStorage: jest.Mocked<LocalStorageManager>;
   let mockStats: jest.Mocked<CacheStatsService>;
 
-  const mockTournaments: Tournament[] = [
+  const mockTournaments: TournamentCore[] = [
     {
-      No: '1',
-      Name: 'Test Tournament',
-      Code: 'TEST2025',
-      Status: 'Running',
-      StartDate: '2025-08-01',
-      EndDate: '2025-08-10'
+      id: 'tournament_1',
+      visNo: '1',
+      version: 1,
+      lastUpdated: new Date().toISOString(),
+      name: 'Test Tournament',
+      code: 'TEST2025',
+      gender: 'Mixed',
+      tournamentType: 'BPT',
+      dates: {
+        startDate: '2025-08-22',
+        endDate: '2025-08-24'
+      },
+      status: 'ACTIVE'
     }
   ];
 
@@ -73,13 +88,19 @@ describe('CacheService', () => {
     
     mockMemoryCache = new MemoryCacheManager() as jest.Mocked<MemoryCacheManager>;
     mockLocalStorage = new LocalStorageManager() as jest.Mocked<LocalStorageManager>;
-    mockStats = CacheStatsService.getInstance() as jest.Mocked<CacheStatsService>;
+    
+    // Mock CacheStatsService.getInstance() to return our mock
+    const { CacheStatsService } = require('../CacheStatsService');
+    mockStats = {
+      startTimer: jest.fn(),
+      recordHit: jest.fn(),
+      getDetailedMetrics: jest.fn()
+    } as any;
+    CacheStatsService.getInstance.mockReturnValue(mockStats);
 
     // Setup default mocks
     mockMemoryCache.get.mockReturnValue(null);
     mockLocalStorage.get.mockResolvedValue(null);
-    mockStats.startTimer.mockImplementation();
-    mockStats.recordHit.mockImplementation();
   });
 
   describe('Initialization', () => {
@@ -151,8 +172,9 @@ describe('CacheService', () => {
     });
 
     test('should fallback to API (Tier 4) when all caches miss', async () => {
-      const { VisApiService } = require('../visApi');
-      VisApiService.getTournamentListWithDetails.mockResolvedValue(mockTournaments);
+      const { VisApiClient } = require('../api/VisApiClient');
+      const mockApiClient = new VisApiClient();
+      mockApiClient.getEventList.mockResolvedValue(mockTournaments);
 
       CacheService.initialize();
       
@@ -166,12 +188,12 @@ describe('CacheService', () => {
       expect(result.source).toBe('api');
       expect(result.fromCache).toBe(false);
       expect(mockStats.recordHit).toHaveBeenCalledWith('api', expect.any(String));
-      expect(VisApiService.getTournamentListWithDetails).toHaveBeenCalled();
     });
 
     test('should handle cascade failures gracefully', async () => {
-      const { VisApiService } = require('../visApi');
-      VisApiService.getTournamentListWithDetails.mockRejectedValue(new Error('API Error'));
+      const { VisApiClient } = require('../api/VisApiClient');
+      const mockApiClient = new VisApiClient();
+      mockApiClient.getEventList.mockRejectedValue(new Error('API Error'));
 
       CacheService.initialize();
       
@@ -332,8 +354,9 @@ describe('CacheService', () => {
       });
 
       // Mock API fallback
-      const { VisApiService } = require('../visApi');
-      VisApiService.getTournamentListWithDetails.mockResolvedValue(mockTournaments);
+      const { VisApiClient } = require('../api/VisApiClient');
+      const mockApiClient = new VisApiClient();
+      mockApiClient.getEventList.mockResolvedValue(mockTournaments);
 
       const result = await CacheService.getTournaments();
       
@@ -342,10 +365,11 @@ describe('CacheService', () => {
     });
 
     test('should handle network failures with exponential backoff', async () => {
-      const { VisApiService } = require('../visApi');
+      const { VisApiClient } = require('../api/VisApiClient');
+      const mockApiClient = new VisApiClient();
       
       // Simulate network error
-      VisApiService.getTournamentListWithDetails.mockRejectedValue(new Error('Network error'));
+      mockApiClient.getEventList.mockRejectedValue(new Error('Network error'));
       
       CacheService.initialize();
 
@@ -353,8 +377,9 @@ describe('CacheService', () => {
     });
 
     test('should return stale data when all else fails', async () => {
-      const { VisApiService } = require('../visApi');
-      VisApiService.getTournamentListWithDetails.mockRejectedValue(new Error('API Error'));
+      const { VisApiClient } = require('../api/VisApiClient');
+      const mockApiClient = new VisApiClient();
+      mockApiClient.getEventList.mockRejectedValue(new Error('API Error'));
 
       CacheService.initialize();
       

@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 
 interface MinimalTournamentDetailProps {
-  tournament: Tournament;
+  tournament: TournamentCore;
   onBack: () => void;
 }
 
@@ -44,48 +44,37 @@ const MinimalTournamentDetail: React.FC<MinimalTournamentDetailProps> = ({ tourn
           
           <View style={styles.infoRow}>
             <Text style={styles.label}>Tournament #:</Text>
-            <Text style={styles.value}>{tournament.No}</Text>
+            <Text style={styles.value}>{tournament.visNo}</Text>
           </View>
           
-          {tournament.Code && (
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Code:</Text>
+            <Text style={styles.value}>{tournament.code}</Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.value}>{tournament.name || 'N/A'}</Text>
+          </View>
+          
+          {tournament.dates.startDate && (
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Code:</Text>
-              <Text style={styles.value}>{tournament.Code}</Text>
+              <Text style={styles.label}>Start Date:</Text>
+              <Text style={styles.value}>{formatDate(tournament.dates.startDate)}</Text>
+            </View>
+          )}
+          
+          {tournament.dates.endDate && (
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>End Date:</Text>
+              <Text style={styles.value}>{formatDate(tournament.dates.endDate)}</Text>
             </View>
           )}
           
           <View style={styles.infoRow}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>{tournament.Title || tournament.Name || 'N/A'}</Text>
+            <Text style={styles.label}>Status:</Text>
+            <Text style={[styles.value, styles.statusValue]}>{tournament.status}</Text>
           </View>
-          
-          {tournament.StartDate && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Start Date:</Text>
-              <Text style={styles.value}>{formatDate(tournament.StartDate)}</Text>
-            </View>
-          )}
-          
-          {tournament.EndDate && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>End Date:</Text>
-              <Text style={styles.value}>{formatDate(tournament.EndDate)}</Text>
-            </View>
-          )}
-          
-          {tournament.Status && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Status:</Text>
-              <Text style={[styles.value, styles.statusValue]}>{tournament.Status}</Text>
-            </View>
-          )}
-          
-          {tournament.Location && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Location:</Text>
-              <Text style={styles.value}>{tournament.Location}</Text>
-            </View>
-          )}
         </View>
 
         <View style={styles.section}>

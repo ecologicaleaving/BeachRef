@@ -65,7 +65,8 @@
     "jest-expo": "^53.0.9",
     "supabase": "^2.33.9",
     "ts-node": "^10.9.2",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "private": true
 }

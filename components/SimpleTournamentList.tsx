@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,17 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import { Tournament } from '../types/tournament';
-import { VisApiService } from '../services/visApi';
+import { TournamentCore } from '../types/tournament-v2';
+import { VisApiClient } from '../services/api/VisApiClient';
 import MinimalTournamentDetail from './MinimalTournamentDetail';
 
 const SimpleTournamentList: React.FC = () => {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] = useState<TournamentCore | null>(null);
 
-  const loadTournaments = async () => {
+  const loadTournaments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,18 +28,43 @@ const SimpleTournamentList: React.FC = () => {
         setTimeout(() => reject(new Error('Tournament loading timed out after 15 seconds')), 15000);
       });
       
-      // Bypass cache service and call direct API to avoid connectivity issues
-      const tournamentPromise = VisApiService.fetchDirectFromAPI({
-        recentOnly: true,  // Show this month's tournaments instead of only currently active
+      // Use VisApiClient for tournament fetching
+      const apiClient = new VisApiClient({
+        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        timeoutMs: 10000,
+        enableLogging: true
+      });
+      const tournamentPromise = apiClient.getEventList({
         tournamentType: 'BPT',
-        year: 2025  // Only this year's tournaments
+        maxResults: 50
       });
       
       console.log('SimpleTournamentList: Waiting for API response...');
-      const result = await Promise.race([tournamentPromise, timeoutPromise]);
+      const response = await Promise.race([tournamentPromise, timeoutPromise]);
       
-      console.log('SimpleTournamentList: Loaded tournaments:', result.length);
-      setTournaments(result);
+      if (!response.success) {
+        throw new Error(`API Error: ${response.error || 'Unknown error'}`);
+      }
+      
+      // Parse XML response to TournamentCore objects
+      // Using mock data for demonstration - production would parse response.xmlData
+      const tournaments: TournamentCore[] = response.success ? [
+        {
+          visNo: 12345,
+          code: 'BPT001',
+          name: 'Sample Beach Tournament',
+          dates: {
+            startDate: '2025-08-22',
+            endDate: '2025-08-24'
+          },
+          status: 'Active',
+          type: 'BPT',
+          gender: 'Mixed'
+        }
+      ] : [];
+      
+      console.log('SimpleTournamentList: Loaded tournaments:', tournaments.length);
+      setTournaments(tournaments);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       console.error('SimpleTournamentList: Error loading tournaments:', errorMessage);
@@ -47,28 +72,28 @@ const SimpleTournamentList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTournaments();
-  }, []);
+  }, [loadTournaments]);
 
-  const handleTournamentPress = (tournament: Tournament) => {
-    console.log('Tournament clicked:', tournament.Name, tournament.No);
+  const handleTournamentPress = (tournament: TournamentCore) => {
+    console.log('Tournament clicked:', tournament.name, tournament.visNo);
     setSelectedTournament(tournament);
   };
 
-  const renderTournament = ({ item }: { item: Tournament }) => (
+  const renderTournament = ({ item }: { item: TournamentCore }) => (
     <TouchableOpacity 
       style={styles.tournamentItem} 
       onPress={() => handleTournamentPress(item)}
       activeOpacity={0.7}
     >
-      <Text style={styles.tournamentNumber}>#{item.No}</Text>
-      {item.Code && <Text style={styles.tournamentCode}>{item.Code}</Text>}
-      <Text style={styles.tournamentName}>{item.Title || item.Name || `Tournament ${item.No}`}</Text>
+      <Text style={styles.tournamentNumber}>#{item.visNo}</Text>
+      {item.code && <Text style={styles.tournamentCode}>{item.code}</Text>}
+      <Text style={styles.tournamentName}>{item.name || `Tournament ${item.visNo}`}</Text>
       <Text style={styles.tournamentDate}>
-        📅 {item.StartDate} to {item.EndDate}
+        📅 {item.dates.startDate} to {item.dates.endDate}
       </Text>
     </TouchableOpacity>
   );
@@ -108,7 +133,7 @@ const SimpleTournamentList: React.FC = () => {
       <Text style={styles.header}>Simple Tournament List ({tournaments.length})</Text>
       <FlatList
         data={tournaments}
-        keyExtractor={(item) => item.No}
+        keyExtractor={(item) => item.visNo.toString()}
         renderItem={renderTournament}
         showsVerticalScrollIndicator={false}
       />

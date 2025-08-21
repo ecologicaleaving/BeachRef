@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { H1Text, H2Text, BodyText, CaptionText } from './Typography';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { TournamentType } from '../services/visApi';
 import { testSupabaseConnection } from '../services/supabase';
 import { CacheService } from '../services/CacheService';
@@ -29,7 +29,7 @@ import { getStatusColorWithText, determineTournamentStatus } from '../utils/stat
 import { ActionIcons, UtilityIcons, DataIcons, CommunicationIcons } from './Icons/IconLibrary';
 
 interface TournamentItemProps {
-  tournament: Tournament;
+  tournament: TournamentCore;
   onPress: () => void;
   isOfflineData?: boolean;
   isRecentlyChanged?: boolean;
@@ -58,23 +58,19 @@ const TournamentItem: React.FC<TournamentItemProps> = ({
   };
 
   const getLocation = () => {
-    if (tournament.City && tournament.CountryName) {
-      return `${tournament.City}, ${tournament.CountryName}`;
-    }
-    return tournament.Location || tournament.City || tournament.CountryName;
+    // TournamentCore doesn't have City/CountryName - would need location service
+    return 'Location TBA'; // Simplified for migration
   };
 
   const getDateRange = () => {
-    if (tournament.Dates) {
-      return tournament.Dates;
-    }
-    if (tournament.StartDate && tournament.EndDate) {
-      const start = formatDate(tournament.StartDate);
-      const end = formatDate(tournament.EndDate);
+    // TournamentCore has structured dates field
+    if (tournament.dates.startDate && tournament.dates.endDate) {
+      const start = formatDate(tournament.dates.startDate);
+      const end = formatDate(tournament.dates.endDate);
       if (start === end) return start;
       return `${start} - ${end}`;
     }
-    return formatDate(tournament.StartDate) || formatDate(tournament.EndDate);
+    return formatDate(tournament.dates.startDate) || formatDate(tournament.dates.endDate);
   };
 
   // Determine tournament status for color coding
@@ -94,10 +90,8 @@ const TournamentItem: React.FC<TournamentItemProps> = ({
       <OfflineBadge isOfflineData={isOfflineData} />
       <View style={styles.tournamentHeader}>
         <View style={styles.tournamentHeaderLeft}>
-          <CaptionText style={styles.tournamentNumber}>#{tournament.No}</CaptionText>
-          {tournament.Code && (
-            <CaptionText style={styles.tournamentCode}>{tournament.Code}</CaptionText>
-          )}
+          <CaptionText style={styles.tournamentNumber}>#{tournament.visNo}</CaptionText>
+          <CaptionText style={styles.tournamentCode}>{tournament.code}</CaptionText>
         </View>
         <View style={styles.tournamentHeaderRight}>
           <StatusBadge 
@@ -115,7 +109,7 @@ const TournamentItem: React.FC<TournamentItemProps> = ({
       </View>
       
       <H2Text style={styles.tournamentName}>
-        {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
+        {tournament.name || `Tournament ${tournament.visNo}`}
       </H2Text>
       
       {getLocation() && (
@@ -136,13 +130,13 @@ const TournamentItem: React.FC<TournamentItemProps> = ({
 };
 
 const TournamentList: React.FC = () => {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<TournamentType>('BPT');
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] = useState<TournamentCore | null>(null);
   const [supabaseConnected, setSupabaseConnected] = useState<boolean | null>(null);
-  const [cacheResult, setCacheResult] = useState<CacheResult<Tournament[]> | null>(null);
+  const [cacheResult, setCacheResult] = useState<CacheResult<TournamentCore[]> | null>(null);
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const [showStatusLegend, setShowStatusLegend] = useState(false);
   

@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Clock } from 'lucide-react';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { VisApiService } from '../services/visApi';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 interface TournamentCardProps {
-  tournament: Tournament;
+  tournament: TournamentCore;
   onPress: () => void;
 }
 
@@ -442,7 +442,7 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
 };
 
 const TournamentSelectionScreen: React.FC = () => {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);

@@ -107,7 +107,7 @@ export class NetworkStateManager {
   private constructor() {
     // Initialize synchronously for better testability
     this.initializeNetworkMonitoring().catch(error => {
-      console.error('Failed to initialize NetworkStateManager:', error);
+      // console.error('Failed to initialize NetworkStateManager:', error);
       this.setOfflineState();
     });
     this.startQualityAssessment();
@@ -138,9 +138,9 @@ export class NetworkStateManager {
       });
 
       this.isInitialized = true;
-      console.log('NetworkStateManager initialized successfully');
+      // console.log('NetworkStateManager initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize network monitoring:', error);
+      // console.error('Failed to initialize network monitoring:', error);
       this.setOfflineState();
       this.isInitialized = true; // Still mark as initialized even on error
     }
@@ -169,7 +169,7 @@ export class NetworkStateManager {
     this.assessConnectionQuality();
     this.notifyListeners();
 
-    console.log('Network state updated:', {
+    // console.log('Network state updated:', {
       type: networkState.type,
       isConnected: networkState.isConnected,
       isInternetReachable: networkState.isInternetReachable
@@ -268,7 +268,7 @@ export class NetworkStateManager {
         this.latencyHistory.shift();
       }
 
-      console.log('Connection quality assessed:', {
+      // console.log('Connection quality assessed:', {
         score: qualityScore,
         level: this.connectionQuality.level,
         strategy: this.connectionQuality.recommendation,
@@ -277,7 +277,7 @@ export class NetworkStateManager {
       });
 
     } catch (error) {
-      console.error('Failed to assess connection quality:', error);
+      // console.error('Failed to assess connection quality:', error);
       // Fallback quality assessment
       this.connectionQuality = {
         score: 30,
@@ -471,7 +471,7 @@ export class NetworkStateManager {
         try {
           listener(this.networkState!, this.connectionQuality!);
         } catch (error) {
-          console.error('Error in network state listener:', error);
+          // console.error('Error in network state listener:', error);
         }
       });
     }
@@ -588,7 +588,7 @@ export class NetworkStateManager {
     this.qualityHistory = [];
     this.latencyHistory = [];
 
-    console.log('NetworkStateManager cleaned up');
+    // console.log('NetworkStateManager cleaned up');
   }
 
   /**

@@ -30,7 +30,7 @@ export function SyncStatus({
       try {
         await forceSyncAll();
       } catch (error) {
-        console.error('Manual sync failed:', error);
+        // console.error('Manual sync failed:', error);
       }
     }
   };
@@ -132,7 +132,7 @@ export function SyncStatusDetailed({ style }: { style?: any }) {
     try {
       await forceSyncAll();
     } catch (error) {
-      console.error('Force sync failed:', error);
+      // console.error('Force sync failed:', error);
     }
   };
 

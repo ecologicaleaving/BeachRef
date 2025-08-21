@@ -328,7 +328,7 @@ export const useCacheAwareData = <T>(
           });
           
           if (enablePerformanceTracking) {
-            console.debug(`Cache hit for key: ${cacheKey}`, {
+            // console.debug(`Cache hit for key: ${cacheKey}`, {
               age,
               isStale,
               accessCount: cachedEntry.accessCount
@@ -372,7 +372,7 @@ export const useCacheAwareData = <T>(
       });
       
       if (enablePerformanceTracking) {
-        console.debug(`Data fetched for key: ${cacheKey}`, {
+        // console.debug(`Data fetched for key: ${cacheKey}`, {
           fetchTime,
           dataSize: JSON.stringify(result).length
         });
@@ -384,7 +384,7 @@ export const useCacheAwareData = <T>(
       const fetchError = err instanceof Error ? err : new Error('Fetch failed');
       setError(fetchError);
       
-      console.error(`Fetch failed for key: ${cacheKey}:`, fetchError);
+      // console.error(`Fetch failed for key: ${cacheKey}:`, fetchError);
     } finally {
       if (mountedRef.current) {
         setLoading(false);

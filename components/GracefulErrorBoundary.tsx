@@ -39,7 +39,7 @@ export class GracefulErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('GracefulErrorBoundary caught an error:', error, errorInfo);
+    // console.error('GracefulErrorBoundary caught an error:', error, errorInfo);
     this.setState({
       error,
       errorInfo

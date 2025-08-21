@@ -49,27 +49,27 @@ export class TournamentMappingCacheService {
    */
   async getExternalTournamentNumber(tournamentCode: string): Promise<string | null> {
     try {
-      console.log(`🏐 CACHE: Getting external number for tournament code: ${tournamentCode}`);
+      // console.log(`🏐 CACHE: Getting external number for tournament code: ${tournamentCode}`);
       
       // Load cache and check if refresh is needed
       await this.loadCache();
       
       if (this.shouldRefreshCache()) {
-        console.log(`🏐 CACHE: Cache expired or missing, refreshing tournament mappings...`);
+        // console.log(`🏐 CACHE: Cache expired or missing, refreshing tournament mappings...`);
         await this.refreshTournamentMappings();
       }
 
       // Find mapping for the tournament code
       const mapping = this.cache?.mappings.find(m => m.code === tournamentCode);
       if (mapping) {
-        console.log(`🏐 CACHE: Found mapping ${tournamentCode} -> ${mapping.externalNo}`);
+        // console.log(`🏐 CACHE: Found mapping ${tournamentCode} -> ${mapping.externalNo}`);
         return mapping.externalNo;
       }
 
-      console.log(`🏐 CACHE: No mapping found for tournament code: ${tournamentCode}`);
+      // console.log(`🏐 CACHE: No mapping found for tournament code: ${tournamentCode}`);
       return null;
     } catch (error) {
-      console.error(`Error getting external tournament number for ${tournamentCode}:`, error);
+      // console.error(`Error getting external tournament number for ${tournamentCode}:`, error);
       return null;
     }
   }
@@ -87,14 +87,14 @@ export class TournamentMappingCacheService {
    */
   async refreshTournamentMappings(): Promise<void> {
     try {
-      console.log(`🏐 CACHE: Starting tournament mapping refresh...`);
+      // console.log(`🏐 CACHE: Starting tournament mapping refresh...`);
       
       const year = new Date().getFullYear();
       
-      console.log(`🏐 CACHE: Fetching tournament list for year ${year}`);
+      // console.log(`🏐 CACHE: Fetching tournament list for year ${year}`);
       
       const xmlText = await this.visApiClient.fetchBeachTournamentsListXml(year);
-      console.log(`🏐 CACHE: Received tournament list (${xmlText.length} chars)`);
+      // console.log(`🏐 CACHE: Received tournament list (${xmlText.length} chars)`);
       
       // Parse tournaments and create mappings
       const mappings = this.parseTournamentMappings(xmlText);
@@ -109,10 +109,10 @@ export class TournamentMappingCacheService {
       await this.saveCache(newCache);
       this.cache = newCache;
       
-      console.log(`🏐 CACHE: ✅ Tournament mapping refresh completed. Found ${mappings.length} tournaments`);
+      // console.log(`🏐 CACHE: ✅ Tournament mapping refresh completed. Found ${mappings.length} tournaments`);
       
     } catch (error) {
-      console.error('Error refreshing tournament mappings:', error);
+      // console.error('Error refreshing tournament mappings:', error);
       throw error;
     }
   }
@@ -152,7 +152,7 @@ export class TournamentMappingCacheService {
               lastUpdated: Date.now()
             });
             
-            console.log(`🏐 CACHE: Found tournament: ${tournamentCode} -> ${externalNo} (${name})`);
+            // console.log(`🏐 CACHE: Found tournament: ${tournamentCode} -> ${externalNo} (${name})`);
           }
         }
       });
@@ -162,11 +162,11 @@ export class TournamentMappingCacheService {
         index === self.findIndex(m => m.code === mapping.code)
       );
       
-      console.log(`🏐 CACHE: Parsed ${uniqueMappings.length} unique tournament mappings`);
+      // console.log(`🏐 CACHE: Parsed ${uniqueMappings.length} unique tournament mappings`);
       return uniqueMappings;
       
     } catch (error) {
-      console.error('Error parsing tournament mappings:', error);
+      // console.error('Error parsing tournament mappings:', error);
       return [];
     }
   }
@@ -254,10 +254,10 @@ export class TournamentMappingCacheService {
       const cacheData = await AsyncStorage.getItem(CACHE_KEY);
       if (cacheData) {
         this.cache = JSON.parse(cacheData);
-        console.log(`🏐 CACHE: Loaded ${this.cache?.mappings.length || 0} tournament mappings from cache`);
+        // console.log(`🏐 CACHE: Loaded ${this.cache?.mappings.length || 0} tournament mappings from cache`);
       }
     } catch (error) {
-      console.error('Error loading tournament mapping cache:', error);
+      // console.error('Error loading tournament mapping cache:', error);
       this.cache = null;
     }
   }
@@ -268,9 +268,9 @@ export class TournamentMappingCacheService {
   private async saveCache(cache: TournamentMappingCache): Promise<void> {
     try {
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-      console.log(`🏐 CACHE: Saved ${cache.mappings.length} tournament mappings to cache`);
+      // console.log(`🏐 CACHE: Saved ${cache.mappings.length} tournament mappings to cache`);
     } catch (error) {
-      console.error('Error saving tournament mapping cache:', error);
+      // console.error('Error saving tournament mapping cache:', error);
     }
   }
 
@@ -281,9 +281,9 @@ export class TournamentMappingCacheService {
     try {
       await AsyncStorage.removeItem(CACHE_KEY);
       this.cache = null;
-      console.log(`🏐 CACHE: Cache cleared`);
+      // console.log(`🏐 CACHE: Cache cleared`);
     } catch (error) {
-      console.error('Error clearing cache:', error);
+      // console.error('Error clearing cache:', error);
     }
   }
 

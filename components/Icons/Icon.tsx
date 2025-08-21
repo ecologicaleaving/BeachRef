@@ -55,7 +55,7 @@ export const Icon: React.FC<IconProps> = React.memo(({
   
   // Log accessibility warnings
   if (!iconStyles.contrast.compliant) {
-    console.warn(`Icon contrast insufficient for outdoor visibility: ${iconStyles.contrast.ratio.toFixed(2)}:1`);
+    // console.warn(`Icon contrast insufficient for outdoor visibility: ${iconStyles.contrast.ratio.toFixed(2)}:1`);
   }
 
   const containerStyle: ViewStyle[] = [

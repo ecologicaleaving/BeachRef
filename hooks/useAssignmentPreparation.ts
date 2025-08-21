@@ -53,7 +53,7 @@ export const useAssignmentPreparation = () => {
       
       setState(prev => ({ ...prev, syncPending: true }));
     } catch (error) {
-      console.error('Failed to add to pending sync:', error);
+      // console.error('Failed to add to pending sync:', error);
     }
   }, []);
 
@@ -74,9 +74,9 @@ export const useAssignmentPreparation = () => {
         try {
           // In a real implementation, this would sync with API
           await new Promise(resolve => setTimeout(resolve, 100));
-          console.log('Synced offline item:', item.type, item.timestamp);
+          // console.log('Synced offline item:', item.type, item.timestamp);
         } catch (error) {
-          console.error('Failed to sync item:', error);
+          // console.error('Failed to sync item:', error);
         }
       }
 
@@ -91,7 +91,7 @@ export const useAssignmentPreparation = () => {
       }));
 
     } catch (error) {
-      console.error('Failed to sync pending data:', error);
+      // console.error('Failed to sync pending data:', error);
     }
   }, []);
 
@@ -179,7 +179,7 @@ export const useAssignmentPreparation = () => {
       const prepArray = Array.from(preparations.entries());
       await AsyncStorage.setItem(STORAGE_KEYS.PREPARATIONS, JSON.stringify(prepArray));
     } catch (error) {
-      console.error('Failed to save preparations to storage:', error);
+      // console.error('Failed to save preparations to storage:', error);
     }
   }, []);
 

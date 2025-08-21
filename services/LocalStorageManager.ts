@@ -39,7 +39,7 @@ export class LocalStorageManager {
 
       return cachedData;
     } catch (error) {
-      console.error('LocalStorageManager.get error:', error);
+      // console.error('LocalStorageManager.get error:', error);
       return null;
     }
   }
@@ -59,7 +59,7 @@ export class LocalStorageManager {
       await AsyncStorage.setItem(fullKey, JSON.stringify(cachedData));
       await this.updateMetadata(key, cachedData);
     } catch (error) {
-      console.error('LocalStorageManager.set error:', error);
+      // console.error('LocalStorageManager.set error:', error);
       throw new Error(`Failed to store data for key: ${key}`);
     }
   }
@@ -74,7 +74,7 @@ export class LocalStorageManager {
       await this.removeFromMetadata(key);
       return true;
     } catch (error) {
-      console.error('LocalStorageManager.delete error:', error);
+      // console.error('LocalStorageManager.delete error:', error);
       return false;
     }
   }
@@ -90,7 +90,7 @@ export class LocalStorageManager {
       }
       await AsyncStorage.removeItem(LocalStorageManager.METADATA_KEY);
     } catch (error) {
-      console.error('LocalStorageManager.clear error:', error);
+      // console.error('LocalStorageManager.clear error:', error);
       throw new Error('Failed to clear cache');
     }
   }
@@ -144,7 +144,7 @@ export class LocalStorageManager {
         newestEntry: newestTime > 0 ? new Date(newestTime) : null
       };
     } catch (error) {
-      console.error('LocalStorageManager.getStats error:', error);
+      // console.error('LocalStorageManager.getStats error:', error);
       return {
         totalKeys: 0,
         totalSizeBytes: 0,
@@ -189,7 +189,7 @@ export class LocalStorageManager {
 
       return keysToRemove.length;
     } catch (error) {
-      console.error('LocalStorageManager.cleanup error:', error);
+      // console.error('LocalStorageManager.cleanup error:', error);
       return 0;
     }
   }
@@ -206,7 +206,7 @@ export class LocalStorageManager {
         .map(key => key.replace(LocalStorageManager.CACHE_PREFIX, ''))
         .filter(key => regex.test(key));
     } catch (error) {
-      console.error('LocalStorageManager.getKeysByPattern error:', error);
+      // console.error('LocalStorageManager.getKeysByPattern error:', error);
       return [];
     }
   }
@@ -240,7 +240,7 @@ export class LocalStorageManager {
       const allKeys = await AsyncStorage.getAllKeys();
       return allKeys.filter(key => key.startsWith(LocalStorageManager.CACHE_PREFIX));
     } catch (error) {
-      console.error('LocalStorageManager.getAllCacheKeys error:', error);
+      // console.error('LocalStorageManager.getAllCacheKeys error:', error);
       return [];
     }
   }
@@ -269,7 +269,7 @@ export class LocalStorageManager {
       await AsyncStorage.setItem(LocalStorageManager.METADATA_KEY, JSON.stringify(metadata));
     } catch (error) {
       // Metadata update failure is not critical
-      console.warn('Failed to update metadata:', error);
+      // console.warn('Failed to update metadata:', error);
     }
   }
 
@@ -285,7 +285,7 @@ export class LocalStorageManager {
         await AsyncStorage.setItem(LocalStorageManager.METADATA_KEY, JSON.stringify(metadata));
       }
     } catch (error) {
-      console.warn('Failed to remove from metadata:', error);
+      // console.warn('Failed to remove from metadata:', error);
     }
   }
 
@@ -306,7 +306,7 @@ export class LocalStorageManager {
         await AsyncStorage.setItem(LocalStorageManager.METADATA_KEY, JSON.stringify(metadata));
       }
     } catch (error) {
-      console.warn('Failed to cleanup metadata:', error);
+      // console.warn('Failed to cleanup metadata:', error);
     }
   }
 
@@ -332,7 +332,7 @@ export class LocalStorageManager {
       // Check storage quota and cleanup if needed
       await this.enforceStorageQuota();
     } catch (error) {
-      console.error('LocalStorageManager.setOffline error:', error);
+      // console.error('LocalStorageManager.setOffline error:', error);
       throw new Error(`Failed to store offline data for key: ${key}`);
     }
   }
@@ -352,7 +352,7 @@ export class LocalStorageManager {
       const offlineData = JSON.parse(value);
       return this.decompressData(offlineData.data);
     } catch (error) {
-      console.error('LocalStorageManager.getOffline error:', error);
+      // console.error('LocalStorageManager.getOffline error:', error);
       return null;
     }
   }
@@ -372,7 +372,7 @@ export class LocalStorageManager {
         size: data.size || 0
       }));
     } catch (error) {
-      console.error('LocalStorageManager.getOfflineKeys error:', error);
+      // console.error('LocalStorageManager.getOfflineKeys error:', error);
       return [];
     }
   }
@@ -419,7 +419,7 @@ export class LocalStorageManager {
         isNearLimit: totalSize > (LocalStorageManager.MAX_STORAGE_SIZE * 0.8) // 80% threshold
       };
     } catch (error) {
-      console.error('LocalStorageManager.getStorageUsage error:', error);
+      // console.error('LocalStorageManager.getStorageUsage error:', error);
       return {
         totalSize: 0,
         offlineSize: 0,
@@ -458,14 +458,14 @@ export class LocalStorageManager {
           removedCount++;
           freedSize += keyInfo.size;
         } catch (error) {
-          console.warn(`Failed to remove offline key ${keyInfo.key}:`, error);
+          // console.warn(`Failed to remove offline key ${keyInfo.key}:`, error);
         }
       }
 
-      console.log(`Storage quota enforced: removed ${removedCount} entries, freed ${freedSize} bytes`);
+      // console.log(`Storage quota enforced: removed ${removedCount} entries, freed ${freedSize} bytes`);
       return removedCount;
     } catch (error) {
-      console.error('LocalStorageManager.enforceStorageQuota error:', error);
+      // console.error('LocalStorageManager.enforceStorageQuota error:', error);
       return 0;
     }
   }
@@ -480,7 +480,7 @@ export class LocalStorageManager {
       await this.removeFromOfflineMetadata(key);
       return true;
     } catch (error) {
-      console.error('LocalStorageManager.deleteOffline error:', error);
+      // console.error('LocalStorageManager.deleteOffline error:', error);
       return false;
     }
   }
@@ -496,7 +496,7 @@ export class LocalStorageManager {
       }
       await AsyncStorage.removeItem(LocalStorageManager.OFFLINE_METADATA_KEY);
     } catch (error) {
-      console.error('LocalStorageManager.clearOffline error:', error);
+      // console.error('LocalStorageManager.clearOffline error:', error);
       throw new Error('Failed to clear offline cache');
     }
   }
@@ -564,7 +564,7 @@ export class LocalStorageManager {
       const allKeys = await AsyncStorage.getAllKeys();
       return allKeys.filter(key => key.startsWith(LocalStorageManager.OFFLINE_PREFIX));
     } catch (error) {
-      console.error('LocalStorageManager.getAllOfflineKeys error:', error);
+      // console.error('LocalStorageManager.getAllOfflineKeys error:', error);
       return [];
     }
   }
@@ -585,7 +585,7 @@ export class LocalStorageManager {
 
       await AsyncStorage.setItem(LocalStorageManager.OFFLINE_METADATA_KEY, JSON.stringify(metadata));
     } catch (error) {
-      console.warn('Failed to update offline metadata:', error);
+      // console.warn('Failed to update offline metadata:', error);
     }
   }
 
@@ -601,7 +601,7 @@ export class LocalStorageManager {
         await AsyncStorage.setItem(LocalStorageManager.OFFLINE_METADATA_KEY, JSON.stringify(metadata));
       }
     } catch (error) {
-      console.warn('Failed to remove from offline metadata:', error);
+      // console.warn('Failed to remove from offline metadata:', error);
     }
   }
 }

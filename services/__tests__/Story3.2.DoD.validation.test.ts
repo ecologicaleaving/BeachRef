@@ -85,10 +85,10 @@ describe('Story 3.2: Definition of Done Validation', () => {
       // Calculate performance improvement
       const improvementPercentage = ((avgDirectApiTime - avgCachedTime) / avgDirectApiTime) * 100;
       
-      console.log(`📊 Performance Improvement Analysis:`);
-      console.log(`   Direct API avg: ${avgDirectApiTime.toFixed(2)}ms`);
-      console.log(`   Cached avg: ${avgCachedTime.toFixed(2)}ms`);
-      console.log(`   Improvement: ${improvementPercentage.toFixed(1)}%`);
+      // console.log(`📊 Performance Improvement Analysis:`);
+      // console.log(`   Direct API avg: ${avgDirectApiTime.toFixed(2)}ms`);
+      // console.log(`   Cached avg: ${avgCachedTime.toFixed(2)}ms`);
+      // console.log(`   Improvement: ${improvementPercentage.toFixed(1)}%`);
 
       // ✅ DoD REQUIREMENT: Must be at least 50% improvement
       expect(improvementPercentage).toBeGreaterThanOrEqual(50);
@@ -117,9 +117,9 @@ describe('Story 3.2: Definition of Done Validation', () => {
       const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
       const maxResponseTime = Math.max(...responseTimes);
 
-      console.log(`🚀 Memory Cache Performance:`);
-      console.log(`   Average: ${avgResponseTime.toFixed(2)}ms`);
-      console.log(`   Max: ${maxResponseTime.toFixed(2)}ms`);
+      // console.log(`🚀 Memory Cache Performance:`);
+      // console.log(`   Average: ${avgResponseTime.toFixed(2)}ms`);
+      // console.log(`   Max: ${maxResponseTime.toFixed(2)}ms`);
 
       // ✅ DoD REQUIREMENT: Sub-100ms response times
       expect(avgResponseTime).toBeLessThan(100);
@@ -270,7 +270,7 @@ describe('Story 3.2: Definition of Done Validation', () => {
         // Access private method for testing
         const ttl = (CacheService as any).calculateMatchesTTL(matches);
         
-        console.log(`⏱️  TTL for ${description}: ${ttl}ms (expected: ${expectedTTL}ms)`);
+        // console.log(`⏱️  TTL for ${description}: ${ttl}ms (expected: ${expectedTTL}ms)`);
         
         // ✅ DoD REQUIREMENT: Correct TTL for different states
         expect(ttl).toBe(expectedTTL);
@@ -323,7 +323,7 @@ describe('Story 3.2: Definition of Done Validation', () => {
       
       const hitRatio = (hits / totalRequests) * 100;
       
-      console.log(`🎯 Cache Hit Ratio: ${hitRatio}% (target: 70%+)`);
+      // console.log(`🎯 Cache Hit Ratio: ${hitRatio}% (target: 70%+)`);
       
       // ✅ EPIC SUCCESS CRITERIA: 70%+ cache hit ratio
       expect(hitRatio).toBeGreaterThanOrEqual(70);
@@ -336,7 +336,7 @@ describe('Story 3.2: Definition of Done Validation', () => {
       
       const improvement = ((simulatedApiTime - actualCacheTime) / simulatedApiTime) * 100;
       
-      console.log(`⚡ Load Time Improvement: ${improvement.toFixed(1)}% (minimum: 50%)`);
+      // console.log(`⚡ Load Time Improvement: ${improvement.toFixed(1)}% (minimum: 50%)`);
       
       // ✅ EPIC SUCCESS CRITERIA: 50%+ improvement
       expect(improvement).toBeGreaterThanOrEqual(50);
@@ -371,11 +371,11 @@ describe('Story 3.2: Definition of Done Validation', () => {
       const end = performance.now();
       const executionTime = end - start;
 
-      console.log('🏁 COMPREHENSIVE DoD VALIDATION:');
-      console.log(`   ✅ Interface preserved: ${Array.isArray(result)} (${result.length} matches)`);
-      console.log(`   ✅ Performance: ${executionTime.toFixed(2)}ms execution time`);
-      console.log(`   ✅ Real-time: ${rtSpy.mock.calls.length > 0 ? 'Subscriptions established' : 'No live matches'}`);
-      console.log(`   ✅ Data integrity: All matches have required properties`);
+      // console.log('🏁 COMPREHENSIVE DoD VALIDATION:');
+      // console.log(`   ✅ Interface preserved: ${Array.isArray(result)} (${result.length} matches)`);
+      // console.log(`   ✅ Performance: ${executionTime.toFixed(2)}ms execution time`);
+      // console.log(`   ✅ Real-time: ${rtSpy.mock.calls.length > 0 ? 'Subscriptions established' : 'No live matches'}`);
+      // console.log(`   ✅ Data integrity: All matches have required properties`);
 
       // Validate all DoD requirements in one test
       expect(Array.isArray(result)).toBe(true); // Interface preserved

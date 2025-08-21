@@ -61,7 +61,7 @@ export class CacheService {
     // Create stable cache key for proper caching
     const baseCacheKey = filters?.year ? `tournaments_${filters.year}` : `tournaments_recent`;
     
-    console.log(`🏐 CacheService: Using cache key: ${baseCacheKey}`);
+    // console.log(`🏐 CacheService: Using cache key: ${baseCacheKey}`);
 
     this.stats.startTimer(requestId);
 
@@ -101,7 +101,7 @@ export class CacheService {
 
       // Tier 2.5: Offline Storage (when network is unavailable)
       if (!this.networkMonitor.isConnected) {
-        console.log('Network unavailable, checking offline storage for tournaments');
+        // console.log('Network unavailable, checking offline storage for tournaments');
         const offlineResult = await this.getFromOfflineStorage(baseCacheKey);
         if (offlineResult) {
           this.stats.recordHit('offline', requestId);
@@ -134,7 +134,7 @@ export class CacheService {
           };
         }
       } catch (supabaseError) {
-        console.warn('Supabase cache unavailable (DNS/connection issue), falling back to API:', supabaseError);
+        // console.warn('Supabase cache unavailable (DNS/connection issue), falling back to API:', supabaseError);
         // Continue to API fallback - this is expected behavior for graceful degradation
       }
 
@@ -142,17 +142,17 @@ export class CacheService {
       const apiResult = await this.getTournamentsFromAPI(filters);
       
       // Apply deduplication to fresh API data before caching
-      console.log(`🏐 CacheService: API returned ${apiResult.length} tournaments, applying merging...`);
+      // console.log(`🏐 CacheService: API returned ${apiResult.length} tournaments, applying merging...`);
       
       // Log Baden tournaments before merging
       apiResult.forEach(t => {
         if (t.name?.toLowerCase().includes('baden')) {
-          console.log(`🏐 BADEN BEFORE MERGE:`, JSON.stringify(t, null, 2));
+          // console.log(`🏐 BADEN BEFORE MERGE:`, JSON.stringify(t, null, 2));
         }
       });
       
       const mergedApiResult = this.deduplicateTournaments(apiResult);
-      console.log(`🏐 CacheService: After merging: ${mergedApiResult.length} tournaments`);
+      // console.log(`🏐 CacheService: After merging: ${mergedApiResult.length} tournaments`);
       
       // Log first few merged tournaments for debugging
       mergedApiResult.slice(0, 3).forEach(t => {
@@ -174,7 +174,7 @@ export class CacheService {
       };
 
     } catch (error) {
-      console.error('CacheService.getTournaments error:', error);
+      // console.error('CacheService.getTournaments error:', error);
       
       // Final fallback: try offline storage first, then stale data
       const offlineData = await this.getFromOfflineStorage(baseCacheKey);
@@ -217,7 +217,7 @@ export class CacheService {
       const memoryResult = this.getFromMemory(cacheKey);
       if (memoryResult) {
         const memoryDuration = performance.now() - memoryStartTime;
-        console.log(`Memory cache hit for matches in ${memoryDuration.toFixed(2)}ms`);
+        // console.log(`Memory cache hit for matches in ${memoryDuration.toFixed(2)}ms`);
         this.stats.recordHit('memory', requestId);
         return {
           data: memoryResult,
@@ -232,7 +232,7 @@ export class CacheService {
       const localResult = await this.getFromLocalStorage(cacheKey);
       if (localResult) {
         const localDuration = performance.now() - localStartTime;
-        console.log(`Local storage cache hit for matches in ${localDuration.toFixed(2)}ms`);
+        // console.log(`Local storage cache hit for matches in ${localDuration.toFixed(2)}ms`);
         const ttl = this.calculateMatchesTTL(localResult);
         this.setInMemory(cacheKey, localResult, ttl);
         this.stats.recordHit('localStorage', requestId);
@@ -246,7 +246,7 @@ export class CacheService {
 
       // Tier 2.5: Offline Storage (when network is unavailable)
       if (!this.networkMonitor.isConnected) {
-        console.log('Network unavailable, checking offline storage for matches');
+        // console.log('Network unavailable, checking offline storage for matches');
         const offlineResult = await this.getFromOfflineStorage(cacheKey);
         if (offlineResult) {
           this.stats.recordHit('offline', requestId);
@@ -268,7 +268,7 @@ export class CacheService {
         const supabaseResult = await this.getMatchesFromSupabase(tournamentNo);
         if (supabaseResult && supabaseResult.length > 0) {
           const supabaseDuration = performance.now() - supabaseStartTime;
-          console.log(`Supabase cache hit for matches in ${supabaseDuration.toFixed(2)}ms`);
+          // console.log(`Supabase cache hit for matches in ${supabaseDuration.toFixed(2)}ms`);
           const ttl = this.calculateMatchesTTL(supabaseResult);
           await this.setLocalStorage(cacheKey, supabaseResult, ttl);
           await this.setOfflineStorage(cacheKey, supabaseResult);
@@ -282,7 +282,7 @@ export class CacheService {
           };
         }
       } catch (supabaseError) {
-        console.warn('Supabase cache unavailable for matches (DNS/connection issue), falling back to API:', supabaseError);
+        // console.warn('Supabase cache unavailable for matches (DNS/connection issue), falling back to API:', supabaseError);
         // Continue to API fallback - this is expected behavior for graceful degradation
       }
 
@@ -305,7 +305,7 @@ export class CacheService {
       };
 
     } catch (error) {
-      console.error('CacheService.getMatches error:', error);
+      // console.error('CacheService.getMatches error:', error);
       
       // Final fallback: try offline storage first, then stale data
       const offlineData = await this.getFromOfflineStorage(cacheKey);
@@ -403,7 +403,7 @@ export class CacheService {
   static async getTournamentsFromSupabase(filters?: FilterOptions): Promise<TournamentCore[]> {
     // Skip Supabase if not available (development mode)
     if (!supabase) {
-      console.log('Supabase not available, skipping cache tier');
+      // console.log('Supabase not available, skipping cache tier');
       throw new Error('Supabase not available');
     }
     
@@ -441,7 +441,7 @@ export class CacheService {
         // For historical data, use 30-day freshness to allow cached data
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         query = query.gte('last_synced', thirtyDaysAgo);
-        console.log(`🏐 Using relaxed freshness for historical year ${filters.year} (30 days)`);
+        // console.log(`🏐 Using relaxed freshness for historical year ${filters.year} (30 days)`);
       }
 
       // Apply recent-only filter at database level when possible
@@ -459,13 +459,13 @@ export class CacheService {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Supabase tournaments query error:', error);
+        // console.error('Supabase tournaments query error:', error);
         return [];
       }
 
       return this.mapSupabaseTournaments(data || []);
     } catch (error) {
-      console.error('getTournamentsFromSupabase error:', error);
+      // console.error('getTournamentsFromSupabase error:', error);
       return [];
     }
   }
@@ -473,7 +473,7 @@ export class CacheService {
   static async getMatchesFromSupabase(tournamentNo: string): Promise<BeachMatch[]> {
     // Skip Supabase if not available (development mode)
     if (!supabase) {
-      console.log('Supabase not available, skipping matches cache tier');
+      // console.log('Supabase not available, skipping matches cache tier');
       throw new Error('Supabase not available');
     }
     
@@ -490,7 +490,7 @@ export class CacheService {
       // Get all matches first to analyze their status
       const { data: allMatches, error: allError } = await query;
       if (allError) {
-        console.error('Supabase matches query error:', allError);
+        // console.error('Supabase matches query error:', allError);
         return [];
       }
 
@@ -509,11 +509,11 @@ export class CacheService {
 
         const { data: freshData, error: freshError } = freshQuery;
         if (freshError || !freshData || freshData.length === 0) {
-          console.log('Live matches detected but data not fresh enough, falling back to API');
+          // console.log('Live matches detected but data not fresh enough, falling back to API');
           return [];
         }
         
-        console.log(`Returning fresh match data for tournament ${tournamentNo} with live matches`);
+        // console.log(`Returning fresh match data for tournament ${tournamentNo} with live matches`);
         return this.mapSupabaseMatches(freshData);
       }
 
@@ -532,19 +532,19 @@ export class CacheService {
 
       const { data, error } = standardQuery;
       if (error) {
-        console.error('Supabase matches freshness query error:', error);
+        // console.error('Supabase matches freshness query error:', error);
         return [];
       }
 
       if (!data || data.length === 0) {
-        console.log(`Match data for tournament ${tournamentNo} not fresh enough, will fetch from API`);
+        // console.log(`Match data for tournament ${tournamentNo} not fresh enough, will fetch from API`);
         return [];
       }
 
-      console.log(`Returning cached match data for tournament ${tournamentNo} (fresh within threshold)`);
+      // console.log(`Returning cached match data for tournament ${tournamentNo} (fresh within threshold)`);
       return this.mapSupabaseMatches(data);
     } catch (error) {
-      console.error('getMatchesFromSupabase error:', error);
+      // console.error('getMatchesFromSupabase error:', error);
       return [];
     }
   }
@@ -552,18 +552,18 @@ export class CacheService {
   static async updateSupabaseCache(tournaments: TournamentCore[]): Promise<void> {
     // Skip Supabase if not available (development mode)
     if (!supabase) {
-      console.log('Supabase not available, skipping cache update');
+      // console.log('Supabase not available, skipping cache update');
       return;
     }
     
     // This would be handled by background sync jobs in production
     // For now, we'll skip direct Supabase updates from client
-    console.log('updateSupabaseCache: Would update', tournaments.length, 'tournaments');
+    // console.log('updateSupabaseCache: Would update', tournaments.length, 'tournaments');
   }
 
   static async updateMatchesCache(tournamentNo: string, matches: BeachMatch[]): Promise<void> {
     // This would be handled by background sync jobs in production
-    console.log('updateMatchesCache: Would update', matches.length, 'matches for tournament', tournamentNo);
+    // console.log('updateMatchesCache: Would update', matches.length, 'matches for tournament', tournamentNo);
   }
 
   // Utility methods
@@ -597,9 +597,9 @@ export class CacheService {
   }
 
   private static async getTournamentsFromAPI(filters?: FilterOptions): Promise<TournamentCore[]> {
-    console.log('CacheService: getTournamentsFromAPI called, bypassing cache to call direct API');
-    console.log('CacheService: Filters passed to API:', JSON.stringify(filters));
-    console.log('CacheService: Starting direct API call...');
+    // console.log('CacheService: getTournamentsFromAPI called, bypassing cache to call direct API');
+    // console.log('CacheService: Filters passed to API:', JSON.stringify(filters));
+    // console.log('CacheService: Starting direct API call...');
     
     const config: VisApiClientConfig = {
       baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
@@ -613,11 +613,11 @@ export class CacheService {
     const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
     
     const startTime = Date.now();
-    console.log('🏐 CacheService: Making API call to VIS with:', {
-      tournamentType: filters?.tournamentType || 'BPT',
-      year: filters?.year,
-      maxResults: 50
-    });
+    // console.log('🏐 CacheService: Making API call to VIS with:', {
+    //   tournamentType: filters?.tournamentType || 'BPT',
+    //   year: filters?.year,
+    //   maxResults: 50
+    // });
     
     const response = await visApi.getEventList({
       tournamentType: filters?.tournamentType || 'BPT',
@@ -627,16 +627,16 @@ export class CacheService {
     const duration = Date.now() - startTime;
     
     if (!response.success) {
-      console.error('CacheService: API call failed:', response.error);
+      // console.error('CacheService: API call failed:', response.error);
       return [];
     }
     
     // Parse XML response to TournamentCore objects
     const result = this.parseXmlToTournaments(response.xmlData);
     
-    console.log(`CacheService: Direct API call completed in ${duration}ms, got ${result.length} tournaments`);
+    // console.log(`CacheService: Direct API call completed in ${duration}ms, got ${result.length} tournaments`);
     if (filters?.year) {
-      console.log(`CacheService: API result for year ${filters.year}: ${result.length} tournaments`);
+      // console.log(`CacheService: API result for year ${filters.year}: ${result.length} tournaments`);
     }
     return result;
   }
@@ -659,7 +659,7 @@ export class CacheService {
     });
     
     if (!response.success) {
-      console.error('CacheService: Match API call failed:', response.error);
+      // console.error('CacheService: Match API call failed:', response.error);
       return [];
     }
     
@@ -672,19 +672,19 @@ export class CacheService {
     // Check for live matches first - they require the most frequent updates
     const hasLiveMatches = matches.some(m => this.isLiveMatch(m));
     if (hasLiveMatches) {
-      console.log('Live matches detected, using 30-second TTL');
+      // console.log('Live matches detected, using 30-second TTL');
       return this.config.defaultTTL.matchesLive; // 30 seconds
     }
 
     // Check for scheduled/upcoming matches - moderate update frequency
     const hasScheduledMatches = matches.some(m => this.isScheduledMatch(m));
     if (hasScheduledMatches) {
-      console.log('Scheduled matches detected, using 15-minute TTL');
+      // console.log('Scheduled matches detected, using 15-minute TTL');
       return this.config.defaultTTL.matchesScheduled; // 15 minutes
     }
 
     // All matches are finished - stable data, long TTL
-    console.log('All matches finished, using 24-hour TTL');
+    // console.log('All matches finished, using 24-hour TTL');
     return this.config.defaultTTL.matchesFinished; // 24 hours
   }
 
@@ -826,7 +826,7 @@ export class CacheService {
     // Clear from local storage
     await this.localStorage.delete(matchesKey);
     
-    console.log(`Invalidated match cache for tournament ${tournamentNo}`);
+    // console.log(`Invalidated match cache for tournament ${tournamentNo}`);
   }
 
   /**
@@ -889,7 +889,7 @@ export class CacheService {
       throw new Error('No tournament data available offline');
 
     } catch (error) {
-      console.error('CacheService.getTournamentsOffline error:', error);
+      // console.error('CacheService.getTournamentsOffline error:', error);
       throw error;
     }
   }
@@ -955,7 +955,7 @@ export class CacheService {
       throw new Error('No match data available offline');
 
     } catch (error) {
-      console.error('CacheService.getMatchesOffline error:', error);
+      // console.error('CacheService.getMatchesOffline error:', error);
       throw error;
     }
   }
@@ -1008,7 +1008,7 @@ export class CacheService {
         timestamp: result.timestamp,
       };
     } catch (primaryError) {
-      console.warn('Primary tournament load failed:', primaryError);
+      // console.warn('Primary tournament load failed:', primaryError);
       errors.push(`Primary load failed: ${primaryError.message}`);
 
       // Try offline-first as fallback
@@ -1025,7 +1025,7 @@ export class CacheService {
           };
         }
       } catch (offlineError) {
-        console.warn('Offline tournament load failed:', offlineError);
+        // console.warn('Offline tournament load failed:', offlineError);
         errors.push(`Offline load failed: ${offlineError.message}`);
       }
 
@@ -1036,7 +1036,7 @@ export class CacheService {
           // Get the most recent cached tournaments
           const cachedData = await this.localStorage.get(cacheKeys[0]);
           if (cachedData) {
-            console.log('Using expired cached tournaments as last resort');
+            // console.log('Using expired cached tournaments as last resort');
             errors.push('Using expired cached data');
             return {
               tournaments: cachedData.data,
@@ -1090,7 +1090,7 @@ export class CacheService {
         timestamp: result.timestamp,
       };
     } catch (primaryError) {
-      console.warn(`Primary match load failed for tournament ${tournamentNo}:`, primaryError);
+      // console.warn(`Primary match load failed for tournament ${tournamentNo}:`, primaryError);
       errors.push(`Primary load failed: ${primaryError.message}`);
 
       // Try offline-first as fallback
@@ -1105,7 +1105,7 @@ export class CacheService {
           timestamp: offlineResult.timestamp,
         };
       } catch (offlineError) {
-        console.warn(`Offline match load failed for tournament ${tournamentNo}:`, offlineError);
+        // console.warn(`Offline match load failed for tournament ${tournamentNo}:`, offlineError);
         errors.push(`Offline load failed: ${offlineError.message}`);
       }
 
@@ -1114,7 +1114,7 @@ export class CacheService {
         const cacheKey = this.generateCacheKey('matches', { tournamentNo });
         const cachedData = await this.getStaleData(cacheKey);
         if (cachedData) {
-          console.log(`Using stale cached matches for tournament ${tournamentNo} as last resort`);
+          // console.log(`Using stale cached matches for tournament ${tournamentNo} as last resort`);
           errors.push('Using expired cached data');
           return {
             matches: cachedData,
@@ -1151,7 +1151,7 @@ export class CacheService {
 
     // Apply year filter
     if (filters.year) {
-      console.log(`🏐 CacheService: Applying client-side year filter for ${filters.year}`);
+      // console.log(`🏐 CacheService: Applying client-side year filter for ${filters.year}`);
       const beforeCount = filtered.length;
       
       filtered = filtered.filter(tournament => {
@@ -1162,12 +1162,12 @@ export class CacheService {
           const tournamentYear = startDate.getFullYear();
           return tournamentYear === filters.year;
         } catch (error) {
-          console.warn(`Invalid date for tournament ${tournament.visNo}: ${tournament.dates.startDate}`);
+          // console.warn(`Invalid date for tournament ${tournament.visNo}: ${tournament.dates.startDate}`);
           return false;
         }
       });
       
-      console.log(`🏐 CacheService: Year filter result: ${beforeCount} → ${filtered.length} tournaments for year ${filters.year}`);
+      // console.log(`🏐 CacheService: Year filter result: ${beforeCount} → ${filtered.length} tournaments for year ${filters.year}`);
     }
 
     // Apply tournament type filter
@@ -1225,7 +1225,7 @@ export class CacheService {
    * Merge tournaments that have the same base name but different gender codes
    */
   private static deduplicateTournaments(tournaments: TournamentCore[]): TournamentCore[] {
-    console.log(`🏐 deduplicateTournaments: Processing ${tournaments.length} tournaments`);
+    // console.log(`🏐 deduplicateTournaments: Processing ${tournaments.length} tournaments`);
     const tournamentGroups = new Map<string, TournamentCore[]>();
     
     // Group tournaments by their base characteristics
@@ -1257,9 +1257,9 @@ export class CacheService {
       
       // Debug logging for first few tournaments and specific cases
       if (index < 5 || name.includes('baden')) {
-        console.log(`🏐 GROUPING [${index}]: "${tournament.name}" -> clean: "${cleanName}" -> key: "${key}"`);
+        // console.log(`🏐 GROUPING [${index}]: "${tournament.name}" -> clean: "${cleanName}" -> key: "${key}"`);
         if (name.includes('baden')) {
-          console.log(`🏐 BADEN DEBUG: Original: "${tournament.name}", Location: "${location}", StartDate: "${startDate}"`);
+          // console.log(`🏐 BADEN DEBUG: Original: "${tournament.name}", Location: "${location}", StartDate: "${startDate}"`);
         }
       }
       
@@ -1271,7 +1271,7 @@ export class CacheService {
     
     const result: TournamentCore[] = [];
     
-    console.log(`🏐 GROUPING RESULT: Found ${tournamentGroups.size} unique tournament groups`);
+    // console.log(`🏐 GROUPING RESULT: Found ${tournamentGroups.size} unique tournament groups`);
     
     // Show some sample groups for debugging
     let groupIndex = 0;
@@ -1279,7 +1279,7 @@ export class CacheService {
     // Process each group
     tournamentGroups.forEach((group, key) => {
       if (groupIndex < 3 || key.includes('baden')) {
-        console.log(`🏐 GROUP ${groupIndex}: "${key}" has ${group.length} tournaments: ${group.map(t => t.name).join(' | ')}`);
+        // console.log(`🏐 GROUP ${groupIndex}: "${key}" has ${group.length} tournaments: ${group.map(t => t.name).join(' | ')}`);
       }
       groupIndex++;
       
@@ -1288,7 +1288,7 @@ export class CacheService {
         result.push(group[0]);
       } else {
         // Multiple tournaments - merge them
-        console.log(`🏐 MERGING ${group.length} tournaments: ${group.map(t => `"${t.name}" (${t.code})`).join(', ')}`);
+        // console.log(`🏐 MERGING ${group.length} tournaments: ${group.map(t => `"${t.name}" (${t.code})`).join(', ')}`);
         
         // Choose the representative tournament (most complete data)
         const representative = group.reduce((best, current) => {
@@ -1314,16 +1314,16 @@ export class CacheService {
           }))
         };
         
-        console.log(`🏐 MERGED RESULT: "${mergedTournament.name}" includes ${group.length} gender variants`);
+        // console.log(`🏐 MERGED RESULT: "${mergedTournament.name}" includes ${group.length} gender variants`);
         result.push(mergedTournament);
       }
     });
     
-    console.log(`🏐 FINAL MERGE RESULT: ${tournaments.length} -> ${result.length} tournaments`);
+    // console.log(`🏐 FINAL MERGE RESULT: ${tournaments.length} -> ${result.length} tournaments`);
     
     // Secondary deduplication pass - for exact name matches that might have been missed
     const finalResult = this.secondaryDeduplication(result);
-    console.log(`🏐 SECONDARY DEDUP: ${result.length} -> ${finalResult.length} tournaments`);
+    // console.log(`🏐 SECONDARY DEDUP: ${result.length} -> ${finalResult.length} tournaments`);
     
     return finalResult;
   }
@@ -1350,7 +1350,7 @@ export class CacheService {
       if (group.length === 1) {
         result.push(group[0]);
       } else {
-        console.log(`🏐 SECONDARY MERGE: "${name}" has ${group.length} exact duplicates`);
+        // console.log(`🏐 SECONDARY MERGE: "${name}" has ${group.length} exact duplicates`);
         
         // For exact name matches, merge them all
         const representative = group.reduce((best, current) => {
@@ -1371,7 +1371,7 @@ export class CacheService {
           _mergedTournaments: allMerged
         };
         
-        console.log(`🏐 SECONDARY MERGED: "${name}" -> ${allMerged.length} total tournaments`);
+        // console.log(`🏐 SECONDARY MERGED: "${name}" -> ${allMerged.length} total tournaments`);
         result.push(mergedTournament);
       }
     });
@@ -1436,7 +1436,7 @@ export class CacheService {
    */
   static async clearCache(): Promise<void> {
     this.ensureInitialized();
-    console.log('🏐 CacheService: Clearing all caches');
+    // console.log('🏐 CacheService: Clearing all caches');
     
     // Clear memory cache
     this.memoryCache.clear();
@@ -1444,7 +1444,7 @@ export class CacheService {
     // Clear local storage cache
     await this.localStorage.clear();
     
-    console.log('🏐 CacheService: All caches cleared');
+    // console.log('🏐 CacheService: All caches cleared');
   }
 
   /**
@@ -1452,8 +1452,8 @@ export class CacheService {
    */
   private static parseXmlToTournaments(xmlData: string): TournamentCore[] {
     try {
-      console.log('🏐 CacheService: Parsing XML tournaments...');
-      console.log('🏐 XML sample:', xmlData.substring(0, 500));
+      // console.log('🏐 CacheService: Parsing XML tournaments...');
+      // console.log('🏐 XML sample:', xmlData.substring(0, 500));
       
       const tournaments: TournamentCore[] = [];
       
@@ -1461,7 +1461,7 @@ export class CacheService {
       const eventRegex = /<Event>(.*?)<\/Event>/gs;
       const eventMatches = xmlData.match(eventRegex) || [];
       
-      console.log(`🏐 Found ${eventMatches.length} event entries in XML`);
+      // console.log(`🏐 Found ${eventMatches.length} event entries in XML`);
       
       eventMatches.forEach((eventMatch, index) => {
         try {
@@ -1522,19 +1522,19 @@ export class CacheService {
             tournaments.push(tournament);
             
             if (index < 3) {
-              console.log(`🏐 Parsed tournament ${index + 1}:`, tournament);
+              // console.log(`🏐 Parsed tournament ${index + 1}:`, tournament);
             }
           }
         } catch (parseError) {
-          console.warn(`🏐 Failed to parse tournament ${index}:`, parseError);
+          // console.warn(`🏐 Failed to parse tournament ${index}:`, parseError);
         }
       });
       
-      console.log(`🏐 Successfully parsed ${tournaments.length} tournaments`);
+      // console.log(`🏐 Successfully parsed ${tournaments.length} tournaments`);
       return tournaments;
       
     } catch (error) {
-      console.error('🏐 XML parsing failed:', error);
+      // console.error('🏐 XML parsing failed:', error);
       return [];
     }
   }

@@ -115,7 +115,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
       setStatusModalVisible(false);
       setSelectedAssignment(null);
     } catch (error) {
-      console.error('Failed to update assignment status:', error);
+      // Silent error handling
     }
   }, [updateAssignmentStatus, updatePreparationStatus, refreshAssignments, selectedAssignment]);
 
@@ -123,7 +123,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
     try {
       await savePreparation(preparation);
     } catch (error) {
-      console.error('Failed to save preparation:', error);
+      // Silent error handling
     }
   }, [savePreparation]);
 
@@ -142,7 +142,6 @@ const MyAssignmentsScreenContent: React.FC = () => {
           showRefreshButton={true}
           onRefresh={() => {
             refreshAssignments();
-            console.log('🏐 Refreshing assignments...');
           }}
         />
         <View style={styles.loadingContainer}>
@@ -164,7 +163,6 @@ const MyAssignmentsScreenContent: React.FC = () => {
           showRefreshButton={true}
           onRefresh={() => {
             refreshAssignments();
-            console.log('🏐 Refreshing assignments...');
           }}
         />
         <ScrollView
@@ -192,7 +190,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
         showRefreshButton={true}
         onRefresh={() => {
           refreshAssignments();
-          console.log('🏐 Refreshing assignments...');
+          // console.log('🏐 Refreshing assignments...');
         }}
         onStatusPress={() => {
           if (currentAssignmentStatus) {

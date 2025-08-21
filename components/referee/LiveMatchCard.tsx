@@ -13,7 +13,7 @@ export const LiveMatchCard: React.FC<LiveMatchCardProps> = ({
   match,
   onPress
 }) => {
-  console.log('LiveMatchCard: Rendering card for match:', match.no, match.teamAName, 'vs', match.teamBName);
+  // console.log('LiveMatchCard: Rendering card for match:', match.no, match.teamAName, 'vs', match.teamBName);
   
   const getScoreDisplay = () => {
     const score = MatchResultsService.formatScore(match);

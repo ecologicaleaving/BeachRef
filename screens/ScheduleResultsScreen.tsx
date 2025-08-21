@@ -61,7 +61,6 @@ const ScheduleResultsScreenContent: React.FC = () => {
       // Check if this tournament has merged tournaments from the tournament detail screen
       const mergedTournaments = (tournament as any)._mergedTournaments || [];
       
-      console.log(`🏐 SCHEDULE/RESULTS: Loading matches for ${mergedTournaments.length > 0 ? 'merged' : 'single'} tournament`);
       
       // Helper function to infer country from tournament name
       function inferCountryFromName(name?: string): string | undefined {
@@ -84,7 +83,6 @@ const ScheduleResultsScreenContent: React.FC = () => {
       }
       
       if (mergedTournaments.length > 1) {
-        console.log(`🏐 SCHEDULE/RESULTS: ${mergedTournaments.length} tournaments from merged data`);
         
         // Load matches from all merged tournaments
         for (const mergedTournament of mergedTournaments) {
@@ -104,14 +102,12 @@ const ScheduleResultsScreenContent: React.FC = () => {
             }));
             
             allTournamentMatches = [...allTournamentMatches, ...matchesWithMeta];
-            console.log(`🏐 SCHEDULE/RESULTS: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
           } catch (error) {
-            console.warn(`Failed to load matches for ${mergedTournament.Name}:`, error);
+            // Silent error handling for failed match loading
           }
         }
       } else {
         // Single tournament
-        console.log(`🏐 SCHEDULE/RESULTS: Using single tournament method`);
         
         const currentMatches = await VisApiService.getBeachMatchList(tournament.No);
         const currentGender = tournament.Code ? VisApiService.extractGenderFromCode(tournament.Code) : 'Unknown';
@@ -152,7 +148,7 @@ const ScheduleResultsScreenContent: React.FC = () => {
               }
             }
           } catch (relatedError) {
-            console.warn('Failed to find related tournaments:', relatedError);
+            // Silent error handling for related tournaments
           }
         }
       }
@@ -164,11 +160,9 @@ const ScheduleResultsScreenContent: React.FC = () => {
         return dateA.getTime() - dateB.getTime();
       });
       
-      console.log(`🏐 SCHEDULE/RESULTS: Loaded ${sortedMatches.length} total matches`);
       setAllMatches(sortedMatches);
       
     } catch (error) {
-      console.error('Failed to load matches:', error);
       Alert.alert('Error', 'Failed to load tournament matches');
     } finally {
       setLoadingMatches(false);
@@ -184,7 +178,6 @@ const ScheduleResultsScreenContent: React.FC = () => {
         showRefreshButton={true}
         onRefresh={() => {
           loadAllMatches();
-          console.log('🏐 Refreshing schedule/results...');
         }}
       />
 

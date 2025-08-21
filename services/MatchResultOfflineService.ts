@@ -85,7 +85,7 @@ class MatchResultOfflineService {
 
       return true;
     } catch (error) {
-      console.error('Failed to cache match result:', error);
+      // console.error('Failed to cache match result:', error);
       return false;
     }
   }
@@ -115,7 +115,7 @@ class MatchResultOfflineService {
 
       return cacheEntry.matchResult;
     } catch (error) {
-      console.error('Failed to get cached match result:', error);
+      // console.error('Failed to get cached match result:', error);
       return null;
     }
   }
@@ -152,14 +152,14 @@ class MatchResultOfflineService {
               await this.removeCachedResult(matchId);
             }
           } catch (parseError) {
-            console.error('Failed to parse cached result:', parseError);
+            // console.error('Failed to parse cached result:', parseError);
           }
         }
       }
 
       return results;
     } catch (error) {
-      console.error('Failed to get all cached results:', error);
+      // console.error('Failed to get all cached results:', error);
       return [];
     }
   }
@@ -174,7 +174,7 @@ class MatchResultOfflineService {
       await this.removeFromPendingSync(matchId);
       return true;
     } catch (error) {
-      console.error('Failed to remove cached result:', error);
+      // console.error('Failed to remove cached result:', error);
       return false;
     }
   }
@@ -195,7 +195,7 @@ class MatchResultOfflineService {
 
       await AsyncStorage.setItem('pending_sync_queue', JSON.stringify(pendingSync));
     } catch (error) {
-      console.error('Failed to add to pending sync:', error);
+      // console.error('Failed to add to pending sync:', error);
     }
   }
 
@@ -211,7 +211,7 @@ class MatchResultOfflineService {
       
       await AsyncStorage.setItem('pending_sync_queue', JSON.stringify(filtered));
     } catch (error) {
-      console.error('Failed to remove from pending sync:', error);
+      // console.error('Failed to remove from pending sync:', error);
     }
   }
 
@@ -223,7 +223,7 @@ class MatchResultOfflineService {
       const queue = await AsyncStorage.getItem('pending_sync_queue');
       return queue ? JSON.parse(queue) : [];
     } catch (error) {
-      console.error('Failed to get pending sync queue:', error);
+      // console.error('Failed to get pending sync queue:', error);
       return [];
     }
   }
@@ -383,7 +383,7 @@ class MatchResultOfflineService {
 
       return true;
     } catch (error) {
-      console.error('Failed to clear cache:', error);
+      // console.error('Failed to clear cache:', error);
       return false;
     }
   }
@@ -419,7 +419,7 @@ class MatchResultOfflineService {
         newestEntry,
       };
     } catch (error) {
-      console.error('Failed to get cache stats:', error);
+      // console.error('Failed to get cache stats:', error);
       return {
         totalCached: 0,
         pendingSync: 0,
@@ -455,7 +455,7 @@ class MatchResultOfflineService {
       try {
         listener(result);
       } catch (error) {
-        console.error('Sync listener error:', error);
+        // console.error('Sync listener error:', error);
       }
     });
   }
@@ -497,7 +497,7 @@ class MatchResultOfflineService {
       this.isOnline = state.isConnected ?? false;
       return this.isOnline;
     } catch (error) {
-      console.error('Failed to check network status:', error);
+      // console.error('Failed to check network status:', error);
       return false;
     }
   }

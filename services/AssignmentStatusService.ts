@@ -104,24 +104,24 @@ class AssignmentStatusManager extends EventEmitter {
       if (storedStates) {
         const parsedStates = JSON.parse(storedStates);
         this.statusStates = new Map(Object.entries(parsedStates));
-        console.log('AssignmentStatusManager: Loaded', this.statusStates.size, 'status states from storage');
+        // console.log('AssignmentStatusManager: Loaded', this.statusStates.size, 'status states from storage');
       }
 
       // Load status history
       const storedHistory = await AsyncStorage.getItem(this.historyKey);
       if (storedHistory) {
         this.statusHistory = JSON.parse(storedHistory);
-        console.log('AssignmentStatusManager: Loaded', this.statusHistory.length, 'history entries from storage');
+        // console.log('AssignmentStatusManager: Loaded', this.statusHistory.length, 'history entries from storage');
       }
 
       // Load notification config
       const storedConfig = await AsyncStorage.getItem(this.configKey);
       if (storedConfig) {
         this.notificationConfig = { ...this.notificationConfig, ...JSON.parse(storedConfig) };
-        console.log('AssignmentStatusManager: Loaded notification config from storage');
+        // console.log('AssignmentStatusManager: Loaded notification config from storage');
       }
     } catch (error) {
-      console.error('AssignmentStatusManager: Failed to initialize from storage:', error);
+      // console.error('AssignmentStatusManager: Failed to initialize from storage:', error);
     }
   }
 
@@ -142,7 +142,7 @@ class AssignmentStatusManager extends EventEmitter {
       // Persist notification config
       await AsyncStorage.setItem(this.configKey, JSON.stringify(this.notificationConfig));
     } catch (error) {
-      console.error('AssignmentStatusManager: Failed to persist to storage:', error);
+      // console.error('AssignmentStatusManager: Failed to persist to storage:', error);
     }
   }
 
@@ -212,7 +212,7 @@ class AssignmentStatusManager extends EventEmitter {
     // Persist to storage
     await this.persistToStorage();
 
-    console.log(`AssignmentStatusManager: Updated status for ${assignmentId} from ${previousStatus} to ${newStatus} (${source})`);
+    // console.log(`AssignmentStatusManager: Updated status for ${assignmentId} from ${previousStatus} to ${newStatus} (${source})`);
   }
 
   /**
@@ -269,12 +269,12 @@ class AssignmentStatusManager extends EventEmitter {
       return;
     }
 
-    console.log(`AssignmentStatusManager: Syncing ${this.syncQueue.length} offline changes`);
+    // console.log(`AssignmentStatusManager: Syncing ${this.syncQueue.length} offline changes`);
     const syncedCount = this.syncQueue.length;
 
     for (const event of this.syncQueue) {
       // In real implementation, this would sync with backend
-      console.log('Syncing status update:', event);
+      // console.log('Syncing status update:', event);
       
       // Update sync status to synced
       const state = this.statusStates.get(event.assignmentId);
@@ -414,7 +414,7 @@ class AssignmentStatusManager extends EventEmitter {
   public async updateNotificationConfig(config: Partial<NotificationConfig>): Promise<void> {
     this.notificationConfig = { ...this.notificationConfig, ...config };
     await this.persistToStorage();
-    console.log('AssignmentStatusManager: Updated notification config');
+    // console.log('AssignmentStatusManager: Updated notification config');
   }
 
   /**

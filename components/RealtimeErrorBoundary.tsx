@@ -39,7 +39,7 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('RealtimeErrorBoundary caught an error:', error, errorInfo);
+    // console.error('RealtimeErrorBoundary caught an error:', error, errorInfo);
     
     this.setState({
       error,
@@ -61,7 +61,7 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
     if (!tournamentNo) return;
 
     try {
-      console.log(`Activating fallback for tournament ${tournamentNo} due to error boundary`);
+      // console.log(`Activating fallback for tournament ${tournamentNo} due to error boundary`);
       
       const success = await RealtimeFallbackService.startPollingFallback(
         tournamentNo,
@@ -76,12 +76,12 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
         this.setState({ fallbackActive: true });
       }
     } catch (fallbackError) {
-      console.error('Failed to activate fallback in error boundary:', fallbackError);
+      // console.error('Failed to activate fallback in error boundary:', fallbackError);
     }
   };
 
   private handleRetry = () => {
-    console.log(`Retrying real-time component (attempt ${this.state.retryCount + 1})`);
+    // console.log(`Retrying real-time component (attempt ${this.state.retryCount + 1})`);
     
     this.setState({
       hasError: false,
@@ -100,7 +100,7 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
     const { tournamentNo } = this.props;
     if (!tournamentNo) return;
 
-    console.log(`Forcing fallback mode for tournament ${tournamentNo}`);
+    // console.log(`Forcing fallback mode for tournament ${tournamentNo}`);
     this.activateFallback();
   };
 
@@ -194,7 +194,7 @@ export function useRealtimeErrorHandler(tournamentNo?: string) {
   const [retryCount, setRetryCount] = React.useState(0);
 
   const handleError = React.useCallback((error: Error) => {
-    console.error('Real-time error in functional component:', error);
+    // console.error('Real-time error in functional component:', error);
     setError(error);
     setRetryCount(prev => prev + 1);
 

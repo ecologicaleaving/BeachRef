@@ -228,7 +228,7 @@ export const determineTournamentStatus = (tournament: any): TournamentStatus => 
       }
     }
   } catch (error) {
-    console.warn('Error parsing tournament dates:', error);
+    // console.warn('Error parsing tournament dates:', error);
   }
   
   // Default to upcoming if we can't determine
@@ -277,7 +277,7 @@ export const determineMatchStatus = (match: any): TournamentStatus => {
       // Otherwise it's upcoming
       return 'upcoming';
     } catch (error) {
-      console.warn('Error parsing match date/time:', error);
+      // console.warn('Error parsing match date/time:', error);
     }
   }
   

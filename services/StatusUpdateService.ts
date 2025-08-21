@@ -45,7 +45,7 @@ export class StatusUpdateService {
       this.websocket = new WebSocket(this.websocketUrl);
       
       this.websocket.onopen = () => {
-        console.log('StatusUpdateService: WebSocket connected');
+        // console.log('StatusUpdateService: WebSocket connected');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.notifyGlobalSubscribers({
@@ -60,12 +60,12 @@ export class StatusUpdateService {
           const data = JSON.parse(event.data);
           this.handleWebSocketMessage(data);
         } catch (error) {
-          console.error('StatusUpdateService: Failed to parse WebSocket message', error);
+          // console.error('StatusUpdateService: Failed to parse WebSocket message', error);
         }
       };
       
       this.websocket.onclose = () => {
-        console.log('StatusUpdateService: WebSocket disconnected');
+        // console.log('StatusUpdateService: WebSocket disconnected');
         this.isConnected = false;
         this.notifyGlobalSubscribers({
           type: 'connection_changed',
@@ -76,7 +76,7 @@ export class StatusUpdateService {
       };
       
       this.websocket.onerror = (error) => {
-        console.error('StatusUpdateService: WebSocket error', error);
+        // console.error('StatusUpdateService: WebSocket error', error);
         this.notifyGlobalSubscribers({
           type: 'error',
           data: { error: 'WebSocket connection error' },
@@ -84,14 +84,14 @@ export class StatusUpdateService {
         });
       };
     } catch (error) {
-      console.error('StatusUpdateService: Failed to initialize WebSocket', error);
+      // console.error('StatusUpdateService: Failed to initialize WebSocket', error);
     }
   }
   
   // Handle WebSocket reconnection
   private handleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('StatusUpdateService: Max reconnect attempts reached');
+      // console.error('StatusUpdateService: Max reconnect attempts reached');
       return;
     }
     
@@ -99,7 +99,7 @@ export class StatusUpdateService {
     const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1);
     
     setTimeout(() => {
-      console.log(`StatusUpdateService: Reconnecting attempt ${this.reconnectAttempts}`);
+      // console.log(`StatusUpdateService: Reconnecting attempt ${this.reconnectAttempts}`);
       this.initializeWebSocket();
     }, delay);
   }
@@ -117,7 +117,7 @@ export class StatusUpdateService {
         this.handleSyncComplete(data.payload);
         break;
       default:
-        console.warn('StatusUpdateService: Unknown message type', data.type);
+        // console.warn('StatusUpdateService: Unknown message type', data.type);
     }
   }
   
@@ -132,7 +132,7 @@ export class StatusUpdateService {
     
     // Validate status transition if previous status is known
     if (previousStatus && !isValidStatusTransition(previousStatus, status)) {
-      console.warn(`StatusUpdateService: Invalid status transition from ${previousStatus} to ${status} for ${id}`);
+      // console.warn(`StatusUpdateService: Invalid status transition from ${previousStatus} to ${status} for ${id}`);
       return;
     }
     
@@ -197,7 +197,7 @@ export class StatusUpdateService {
         try {
           callback(update);
         } catch (error) {
-          console.error('StatusUpdateService: Error in subscriber callback', error);
+          // console.error('StatusUpdateService: Error in subscriber callback', error);
         }
       });
     }
@@ -209,7 +209,7 @@ export class StatusUpdateService {
       try {
         callback(event);
       } catch (error) {
-        console.error('StatusUpdateService: Error in global subscriber callback', error);
+        // console.error('StatusUpdateService: Error in global subscriber callback', error);
       }
     });
   }
@@ -278,7 +278,7 @@ export class StatusUpdateService {
           },
         }));
       } catch (error) {
-        console.error('StatusUpdateService: Failed to send status update to server', error);
+        // console.error('StatusUpdateService: Failed to send status update to server', error);
       }
     }
   }

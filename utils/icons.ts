@@ -138,7 +138,7 @@ export const ICON_COLOR_THEMES = {
 export function getIconName(category: IconCategory, iconKey: string): string {
   const categoryMap = CORE_ICON_MAP[category];
   if (!categoryMap || !(iconKey in categoryMap)) {
-    console.warn(`Icon not found: ${category}.${iconKey}`);
+    // console.warn(`Icon not found: ${category}.${iconKey}`);
     return 'help-circle'; // Fallback icon
   }
   
@@ -236,7 +236,7 @@ export function getIconStyles(
   
   // Log warning if contrast is insufficient
   if (!colorConfig.wcagCompliant) {
-    console.warn(`Icon contrast insufficient: ${colorConfig.contrastRatio.toFixed(2)}:1 (requires 7:1)`);
+    // console.warn(`Icon contrast insufficient: ${colorConfig.contrastRatio.toFixed(2)}:1 (requires 7:1)`);
   }
   
   // Variant-specific styling adjustments

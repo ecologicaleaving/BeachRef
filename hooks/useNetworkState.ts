@@ -92,14 +92,14 @@ export function useNetworkState(): UseNetworkStateReturn {
         setLastUpdated(Date.now());
         setIsInitialized(true);
         
-        console.log('useNetworkState initialized with:', {
+        // console.log('useNetworkState initialized with:', {
           networkType: initialNetworkState?.type,
           isConnected: initialNetworkState?.isConnected,
           qualityScore: initialConnectionQuality?.score,
         });
 
       } catch (error) {
-        console.error('Failed to initialize network state in hook:', error);
+        // console.error('Failed to initialize network state in hook:', error);
         setIsInitialized(true); // Still mark as initialized even on error
       }
     };
@@ -114,7 +114,7 @@ export function useNetworkState(): UseNetworkStateReturn {
       const stats = networkStateManager.getConnectionStats();
       setConnectionStats(stats);
 
-      console.log('Network state updated in hook:', {
+      // console.log('Network state updated in hook:', {
         networkType: newNetworkState.type,
         isConnected: newNetworkState.isConnected,
         qualityLevel: newConnectionQuality.level,
@@ -180,9 +180,9 @@ export function useNetworkState(): UseNetworkStateReturn {
       setConnectionStats(updatedStats);
       setLastUpdated(Date.now());
 
-      console.log('Network state reassessment completed');
+      // console.log('Network state reassessment completed');
     } catch (error) {
-      console.error('Failed to force network reassessment:', error);
+      // console.error('Failed to force network reassessment:', error);
       throw error;
     }
   };

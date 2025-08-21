@@ -70,9 +70,9 @@ const CourtMonitorScreenContent: React.FC = () => {
       const matches = await VisApiService.getBeachMatchList(tournament.No);
       const courts = [...new Set(matches.map(match => match.Court).filter(Boolean))].sort();
       setAvailableCourts(['All Courts', ...courts]);
-      console.log(`🏐 COURT MONITOR: Found ${courts.length} courts:`, courts);
+      // console.log(`🏐 COURT MONITOR: Found ${courts.length} courts:`, courts);
     } catch (error) {
-      console.error('Failed to load courts:', error);
+      // console.error('Failed to load courts:', error);
       Alert.alert('Error', 'Failed to load available courts');
     } finally {
       setLoadingCourts(false);
@@ -90,7 +90,7 @@ const CourtMonitorScreenContent: React.FC = () => {
       // Check if this tournament has merged tournaments from the tournament detail screen
       const mergedTournaments = (tournament as any)._mergedTournaments || [];
       
-      console.log(`🏐 COURT MONITOR MATCHES: Loading matches for ${mergedTournaments.length > 0 ? 'merged' : 'single'} tournament`);
+      // console.log(`🏐 COURT MONITOR MATCHES: Loading matches for ${mergedTournaments.length > 0 ? 'merged' : 'single'} tournament`);
       
       // Helper function to infer country from tournament name
       function inferCountryFromName(name?: string): string | undefined {
@@ -113,7 +113,7 @@ const CourtMonitorScreenContent: React.FC = () => {
       }
       
       if (mergedTournaments.length > 1) {
-        console.log(`🏐 COURT MONITOR LOADING: ${mergedTournaments.length} tournaments from merged data`);
+        // console.log(`🏐 COURT MONITOR LOADING: ${mergedTournaments.length} tournaments from merged data`);
         
         // Load matches from all merged tournaments
         for (const mergedTournament of mergedTournaments) {
@@ -133,14 +133,14 @@ const CourtMonitorScreenContent: React.FC = () => {
             }));
             
             allTournamentMatches = [...allTournamentMatches, ...matchesWithMeta];
-            console.log(`🏐 COURT MONITOR LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
+            // console.log(`🏐 COURT MONITOR LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
           } catch (error) {
-            console.warn(`Failed to load court monitor matches for ${mergedTournament.Name}:`, error);
+            // console.warn(`Failed to load court monitor matches for ${mergedTournament.Name}:`, error);
           }
         }
       } else {
         // Single tournament
-        console.log(`🏐 COURT MONITOR FALLBACK: Using single tournament method`);
+        // console.log(`🏐 COURT MONITOR FALLBACK: Using single tournament method`);
         
         const currentMatches = await VisApiService.getBeachMatchList(tournament.No);
         const currentGender = tournament.Code ? VisApiService.extractGenderFromCode(tournament.Code) : 'Unknown';
@@ -181,7 +181,7 @@ const CourtMonitorScreenContent: React.FC = () => {
               }
             }
           } catch (relatedError) {
-            console.warn('Failed to find related tournaments:', relatedError);
+            // console.warn('Failed to find related tournaments:', relatedError);
           }
         }
       }
@@ -211,19 +211,19 @@ const CourtMonitorScreenContent: React.FC = () => {
         return timeNumB - timeNumA; // Descending
       });
       
-      console.log(`🏐 COURT MONITOR: Final result - ${sortedMatches.length} matches loaded for court "${selectedCourt}"`);
+      // console.log(`🏐 COURT MONITOR: Final result - ${sortedMatches.length} matches loaded for court "${selectedCourt}"`);
       setCourtMatches(sortedMatches);
       
       // Get unique dates and set most recent date as selected (same as Tournament Details)
       const uniqueDates = [...new Set(sortedMatches.map(match => match.LocalDate || 'Unknown Date'))].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
       if (uniqueDates.length > 0 && !selectedDate) {
         const defaultDate = uniqueDates[uniqueDates.length - 1]; // Last day (most recent)
-        console.log('🗓️ Court Monitor - Setting default to most recent date:', defaultDate);
+        // console.log('🗓️ Court Monitor - Setting default to most recent date:', defaultDate);
         setSelectedDate(defaultDate);
       }
       
     } catch (error) {
-      console.error('Failed to load court matches:', error);
+      // console.error('Failed to load court matches:', error);
     } finally {
       setLoadingCourtMatches(false);
     }

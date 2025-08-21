@@ -218,7 +218,7 @@ export class SmartCacheManager implements ICacheManager {
       return clearedCount;
       
     } catch (error) {
-      console.error('Cache clear error:', error);
+      // console.error('Cache clear error:', error);
       return clearedCount;
     }
   }
@@ -245,7 +245,7 @@ export class SmartCacheManager implements ICacheManager {
     if (!config.enabled) return false;
     
     try {
-      console.log('Starting cache warmup...');
+      // console.log('Starting cache warmup...');
       
       // Delay initial warmup
       await this.sleep(config.startupDelayMs);
@@ -255,11 +255,11 @@ export class SmartCacheManager implements ICacheManager {
         await this.warmResource(resource);
       }
       
-      console.log('Cache warmup completed');
+      // console.log('Cache warmup completed');
       return true;
       
     } catch (error) {
-      console.error('Cache warmup failed:', error);
+      // console.error('Cache warmup failed:', error);
       return false;
     }
   }
@@ -524,7 +524,7 @@ export class SmartCacheManager implements ICacheManager {
       return clearedCount;
       
     } catch (error) {
-      console.error('Error clearing persistent cache:', error);
+      // console.error('Error clearing persistent cache:', error);
       return 0;
     }
   }
@@ -665,7 +665,7 @@ export class SmartCacheManager implements ICacheManager {
         }
       }
     } catch (error) {
-      console.error('Cleanup error:', error);
+      // console.error('Cleanup error:', error);
     }
   }
 
@@ -674,7 +674,7 @@ export class SmartCacheManager implements ICacheManager {
    */
   private async warmResource(resource: string): Promise<void> {
     // Simplified warmup - would implement actual data fetching
-    console.log(`Warming cache for resource: ${resource}`);
+    // console.log(`Warming cache for resource: ${resource}`);
   }
 
   /**

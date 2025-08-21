@@ -96,7 +96,7 @@ export const AssignmentStatusProvider: React.FC<{ children: React.ReactNode }> =
       setLastStatusUpdate(event);
       refreshStatuses();
       
-      console.log('AssignmentStatusContext: Received status update', event);
+      // console.log('AssignmentStatusContext: Received status update', event);
     });
 
     const unsubscribeNetworkChanges = statusManager.subscribeToNetworkChanges(({ isOnline: online }) => {
@@ -105,7 +105,7 @@ export const AssignmentStatusProvider: React.FC<{ children: React.ReactNode }> =
     });
 
     const unsubscribeSyncCompleted = statusManager.subscribeToSyncEvents(({ syncedCount }) => {
-      console.log(`AssignmentStatusContext: Sync completed for ${syncedCount} items`);
+      // console.log(`AssignmentStatusContext: Sync completed for ${syncedCount} items`);
       setSyncStatus('synced');
       setPendingSyncCount(0);
       refreshStatuses();

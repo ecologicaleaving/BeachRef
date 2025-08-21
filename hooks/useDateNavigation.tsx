@@ -19,7 +19,7 @@ export const useDateNavigation = ({
   // Get available dates from matches, sorted oldest to newest
   const getAvailableDates = useCallback(() => {
     if (!matches || !Array.isArray(matches)) {
-      console.log('🗓️ useDateNavigation - matches is invalid:', matches);
+      // console.log('🗓️ useDateNavigation - matches is invalid:', matches);
       return [];
     }
 
@@ -31,7 +31,7 @@ export const useDateNavigation = ({
       new Date(a).getTime() - new Date(b).getTime()
     );
     
-    console.log('🗓️ useDateNavigation - Available dates (oldest to newest):', sortedDates);
+    // console.log('🗓️ useDateNavigation - Available dates (oldest to newest):', sortedDates);
     return sortedDates;
   }, [matches]);
 
@@ -41,7 +41,7 @@ export const useDateNavigation = ({
   useEffect(() => {
     if (autoSelectLatest && availableDates.length > 0 && !selectedDate) {
       const defaultDate = availableDates[availableDates.length - 1]; // Last day (most recent)
-      console.log('🗓️ useDateNavigation - Setting default to most recent date:', defaultDate);
+      // console.log('🗓️ useDateNavigation - Setting default to most recent date:', defaultDate);
       setSelectedDate(defaultDate);
     }
   }, [availableDates, selectedDate, autoSelectLatest]);

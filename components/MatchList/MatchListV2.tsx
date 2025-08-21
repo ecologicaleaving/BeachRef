@@ -3,8 +3,14 @@ import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pre
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
 import DateNavigator from '../DateNavigator/DateNavigator';
 
+// Extended match type to include tournament-specific fields
+type ExtendedBeachMatch = BeachMatchCore & {
+  tournamentGender?: 'M' | 'W';
+  tournamentNo?: string;
+};
+
 interface MatchListV2Props {
-  matches: BeachMatchCore[];
+  matches: ExtendedBeachMatch[];
   loading?: boolean;
   title?: string;
   selectedReferee?: { Name: string } | null;
@@ -103,12 +109,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [showFilters, setShowFilters] = useState<boolean>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        return localStorage.getItem('matchlist-showFilters') === 'true';
+        const saved = localStorage.getItem('matchlist-showFilters');
+        return saved === 'true'; // Only show if explicitly saved as true
       }
     } catch (error) {
       // localStorage not available, use defaults
     }
-    return false;
+    return false; // Default to hidden
   });
 
   // Persist filters to localStorage
@@ -152,8 +159,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
     matches.forEach(match => {
-      match.referees?.forEach(ref => {
-        if (ref.name) refereeNames.add(ref.name);
+      match.refereeAssignments?.forEach(referee => {
+        if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
     });
     return Array.from(refereeNames).sort();
@@ -186,7 +193,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       // Referee filter
       if (refereeFilter !== 'All') {
-        const hasReferee = match.referees?.some(ref => ref.name === refereeFilter);
+        const hasReferee = match.refereeAssignments?.some(ref => ref.refereeName === refereeFilter);
         if (!hasReferee) return false;
       }
 
@@ -204,8 +211,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       // Selected referee filter (from props)
       if (selectedReferee) {
-        const hasSelectedReferee = match.referees?.some(ref => 
-          ref.name === selectedReferee.Name
+        const hasSelectedReferee = match.refereeAssignments?.some(ref => 
+          ref.refereeName === selectedReferee.Name
         );
         if (!hasSelectedReferee) return false;
       }
@@ -224,6 +231,34 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   }, [matches, selectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
 
+  // Group matches by date
+  const groupedMatches = React.useMemo(() => {
+    const groups: { [date: string]: typeof filteredMatches } = {};
+    
+    filteredMatches.forEach(match => {
+      const date = new Date(match.scheduledDateTime);
+      if (isNaN(date.getTime())) return;
+      
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(match);
+    });
+    
+    // Sort dates and return as array of [date, matches] pairs
+    return Object.entries(groups).sort((a, b) => {
+      const dateA = new Date(a[0]);
+      const dateB = new Date(b[0]);
+      
+      if (sortOrder === 'desc') {
+        return dateB.getTime() - dateA.getTime(); // Newest first
+      } else {
+        return dateA.getTime() - dateB.getTime(); // Oldest first
+      }
+    });
+  }, [filteredMatches, sortOrder]);
+
   // Format time from ISO string
   const formatTime = (isoDateTime: string): string => {
     const date = new Date(isoDateTime);
@@ -237,17 +272,33 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Format date from ISO string
-  const formatDate = (isoDateTime: string): string => {
-    const date = new Date(isoDateTime);
+  // Format date for section headers
+  const formatDateHeader = (dateString: string): string => {
+    const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      return 'TBD'; // fallback for invalid dates
+      return dateString;
     }
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    });
+    
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    const dateOnly = date.toDateString();
+    const todayOnly = today.toDateString();
+    const tomorrowOnly = tomorrow.toDateString();
+    
+    if (dateOnly === todayOnly) {
+      return 'Today';
+    } else if (dateOnly === tomorrowOnly) {
+      return 'Tomorrow';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+      });
+    }
   };
 
   // Get status display text and color
@@ -279,7 +330,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         <View style={styles.matchHeader}>
           <View style={styles.timeContainer}>
             <Text style={styles.matchTime}>{formatTime(match.scheduledDateTime)}</Text>
-            <Text style={styles.matchDate}>{formatDate(match.scheduledDateTime)}</Text>
           </View>
           <View style={styles.courtContainer}>
             <Text style={styles.courtText}>Court {match.court.courtNumber}</Text>
@@ -324,18 +374,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         </View>
 
-        {match.referees && match.referees.length > 0 && (
+        {match.refereeAssignments && match.refereeAssignments.length > 0 && (
           <View style={styles.refereesContainer}>
             <Text style={styles.refereesLabel}>Referees:</Text>
-            {match.referees.map((referee, index) => (
-              <Text key={referee.id || index} style={styles.refereeText}>
-                {referee.name} ({referee.countryCode})
+            {match.refereeAssignments.map((referee, index) => (
+              <Text key={referee.refereeId} style={styles.refereeText}>
+                {index + 1}° {referee.refereeName}{referee.federationCode ? ` (${referee.federationCode})` : ''}
               </Text>
             ))}
           </View>
         )}
 
-        {match.round && (
+        {match.round && match.round.trim() !== '' && (
           <View style={styles.roundContainer}>
             <Text style={styles.roundText}>{match.round}</Text>
           </View>
@@ -503,7 +553,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <Text style={styles.matchCount}>
               {filteredMatches.length} {filteredMatches.length === 1 ? 'match' : 'matches'}
             </Text>
-            {filteredMatches.map(renderMatch)}
+            {groupedMatches.map(([date, matches]) => (
+              <View key={date}>
+                {/* Date Header */}
+                <View style={styles.dateHeader}>
+                  <Text style={styles.dateHeaderText}>{formatDateHeader(date)}</Text>
+                  <Text style={styles.dateHeaderCount}>
+                    {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+                  </Text>
+                </View>
+                
+                {/* Matches for this date */}
+                {matches.map(renderMatch)}
+              </View>
+            ))}
           </>
         )}
       </ScrollView>
@@ -626,11 +689,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
-  matchDate: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
   courtContainer: {
     alignItems: 'center',
   },
@@ -747,5 +805,27 @@ const styles = StyleSheet.create({
   },
   womenBadgeText: {
     // Same as base genderBadgeText
+  },
+  dateHeader: {
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  dateHeaderCount: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
   },
 });

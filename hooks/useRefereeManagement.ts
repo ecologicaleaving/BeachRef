@@ -53,20 +53,20 @@ export const useRefereeManagement = (): UseRefereeManagement => {
 
   const findOppositeGenderTournament = useCallback(async (tournamentNo: string): Promise<string | null> => {
     try {
-      console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
+      // console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
       const tournaments = await visApiClient.fetchBeachTournamentsThisYear();
-      console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
+      // console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);
       
       if (!currentTournament || !currentTournament.Code) {
-        console.log(`🏐 DEBUG: Current tournament not found or has no code`);
+        // console.log(`🏐 DEBUG: Current tournament not found or has no code`);
         return null;
       }
       
       const currentCode = currentTournament.Code;
-      console.log(`🏐 DEBUG: Current tournament code: ${currentCode}`);
+      // console.log(`🏐 DEBUG: Current tournament code: ${currentCode}`);
       
       let oppositeCode: string | null = null;
       
@@ -79,14 +79,14 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       if (oppositeCode) {
         const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
         if (oppositeTournament) {
-          console.log(`🏐 DEBUG: Found opposite gender tournament: ${oppositeTournament.Code} (${oppositeTournament.No})`);
+          // console.log(`🏐 DEBUG: Found opposite gender tournament: ${oppositeTournament.Code} (${oppositeTournament.No})`);
           return oppositeTournament.No;
         }
       }
       
       return null;
     } catch (error) {
-      console.error('Failed to find opposite gender tournament:', error);
+      // console.error('Failed to find opposite gender tournament:', error);
       return null;
     }
   }, []);
@@ -99,28 +99,28 @@ export const useRefereeManagement = (): UseRefereeManagement => {
 
     // Check cache first for faster loading
     if (refereeCacheKey === tournamentNo && refereeList.length > 0) {
-      console.log(`🏐 DEBUG: Using cached referee list for tournament ${tournamentNo}`);
+      // console.log(`🏐 DEBUG: Using cached referee list for tournament ${tournamentNo}`);
       setShowRefereeList(true);
       return;
     }
 
     setLoadingReferees(true);
     try {
-      console.log(`🏐 DEBUG: Loading referees for tournament ${tournamentNo} (optimized)...`);
+      // console.log(`🏐 DEBUG: Loading referees for tournament ${tournamentNo} (optimized)...`);
       
       // Skip tournament details call for faster loading - get matches directly
       const matches = await visApiClient.fetchMatchesForTournament(tournamentNo);
-      console.log(`🏐 DEBUG: Found ${matches.length} matches for tournament ${tournamentNo}`);
+      // console.log(`🏐 DEBUG: Found ${matches.length} matches for tournament ${tournamentNo}`);
       
       if (matches.length === 0) {
-        console.log(`🏐 DEBUG: No matches found - tournament may not have started yet or no matches scheduled`);
+        // console.log(`🏐 DEBUG: No matches found - tournament may not have started yet or no matches scheduled`);
         Alert.alert('No Referees Found', 'This tournament has no matches scheduled yet, so referee assignments are not available. Referees are typically assigned closer to the tournament start date.');
         return;
       }
       
       // Quick sample check for referee data availability
       const sampleMatch = matches[0];
-      console.log(`🏐 DEBUG: Sample referee data - R1: ${sampleMatch?.Referee1Name}, R2: ${sampleMatch?.Referee2Name}`);
+      // console.log(`🏐 DEBUG: Sample referee data - R1: ${sampleMatch?.Referee1Name}, R2: ${sampleMatch?.Referee2Name}`);
       
       // Extract unique referees from matches
       const refereeMap = new Map<string, RefereeFromDB>();
@@ -146,10 +146,10 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       });
       
       const referees = Array.from(refereeMap.values()).sort((a, b) => a.Name.localeCompare(b.Name));
-      console.log(`🏐 DEBUG: Extracted ${referees.length} unique referees from matches`);
+      // console.log(`🏐 DEBUG: Extracted ${referees.length} unique referees from matches`);
       
       if (referees.length === 0) {
-        console.log(`🏐 DEBUG: No referees found in match data - matches may not have referee assignments yet`);
+        // console.log(`🏐 DEBUG: No referees found in match data - matches may not have referee assignments yet`);
         Alert.alert('No Referees Found', 'The matches for this tournament do not have referee assignments yet. Referees are typically assigned closer to the tournament start date.');
         return;
       }
@@ -158,7 +158,7 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       setRefereeCacheKey(tournamentNo); // Cache the result
       setShowRefereeList(true);
     } catch (error) {
-      console.error('Failed to load referee list:', error);
+      // console.error('Failed to load referee list:', error);
       Alert.alert('Error', 'Failed to load referee list. Please check your connection and try again.');
     } finally {
       setLoadingReferees(false);
@@ -168,19 +168,19 @@ export const useRefereeManagement = (): UseRefereeManagement => {
   const loadRefereeMatches = useCallback(async (referee: RefereeFromDB, tournamentNo: string) => {
     setLoadingRefereeMatches(true);
     try {
-      console.log(`🏐 DEBUG: Loading matches for referee ${referee.Name} in tournament ${tournamentNo}...`);
+      // console.log(`🏐 DEBUG: Loading matches for referee ${referee.Name} in tournament ${tournamentNo}...`);
       
       // Get all matches for the tournament (including both male and female if applicable)
       let allMatches = await visApiClient.fetchMatchesForTournament(tournamentNo);
-      console.log(`🏐 DEBUG: Found ${allMatches.length} matches for tournament ${tournamentNo}`);
+      // console.log(`🏐 DEBUG: Found ${allMatches.length} matches for tournament ${tournamentNo}`);
       
       // Try to load opposite gender tournament matches
       try {
         const oppositeGenderTournamentNo = await findOppositeGenderTournament(tournamentNo);
         if (oppositeGenderTournamentNo) {
-          console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeGenderTournamentNo}...`);
+          // console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeGenderTournamentNo}...`);
           const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeGenderTournamentNo);
-          console.log(`🏐 DEBUG: Found ${oppositeMatches.length} matches from opposite gender tournament`);
+          // console.log(`🏐 DEBUG: Found ${oppositeMatches.length} matches from opposite gender tournament`);
           
           // Add source metadata to distinguish tournaments
           const oppositeMatchesWithMeta = oppositeMatches.map(match => ({
@@ -190,19 +190,19 @@ export const useRefereeManagement = (): UseRefereeManagement => {
           }));
           
           allMatches = [...allMatches, ...oppositeMatchesWithMeta];
-          console.log(`🏐 DEBUG: Total matches after combining: ${allMatches.length}`);
+          // console.log(`🏐 DEBUG: Total matches after combining: ${allMatches.length}`);
         }
       } catch (error) {
-        console.error('Failed to load opposite gender tournament matches:', error);
+        // console.error('Failed to load opposite gender tournament matches:', error);
       }
       
       // TEMPORARY: Show all matches for debugging
-      console.log(`🏐 DEBUG: Temporarily showing all ${allMatches.length} matches for debugging purposes...`);
+      // console.log(`🏐 DEBUG: Temporarily showing all ${allMatches.length} matches for debugging purposes...`);
       setRefereeMatches(allMatches);
       
       setShowRefereeMatches(true);
     } catch (error) {
-      console.error(`Error loading referee matches for ${referee.Name}:`, error);
+      // console.error(`Error loading referee matches for ${referee.Name}:`, error);
       Alert.alert('Error', 'Failed to load referee matches');
     } finally {
       setLoadingRefereeMatches(false);
@@ -215,7 +215,7 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       setShowRefereeList(false);
       await loadRefereeMatches(referee, tournamentNo);
     } catch (error) {
-      console.error('Failed to select referee:', error);
+      // console.error('Failed to select referee:', error);
       Alert.alert('Error', 'Failed to load referee matches');
     }
   }, [loadRefereeMatches]);

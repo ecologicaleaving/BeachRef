@@ -190,7 +190,7 @@ export abstract class BaseRepository {
   ): void {
     if (!this.performanceMonitoring) return;
 
-    console.log(`Repository Performance [${operation}]:`, {
+    // console.log(`Repository Performance [${operation}]:`, {
       duration: `${metrics.durationMs}ms`,
       cacheHit: metrics.cacheHit,
       cacheTier: metrics.cacheTier,

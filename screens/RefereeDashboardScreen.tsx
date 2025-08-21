@@ -66,7 +66,6 @@ const RefereeDashboardScreenContent: React.FC = () => {
       try {
         // First try to get from navigation params
         if (tournamentData) {
-          console.log('RefereeDashboard: Loading tournament from navigation params');
           const parsedTournament = JSON.parse(tournamentData) as Tournament;
           setTournament(parsedTournament);
           setLoading(false);
@@ -74,19 +73,15 @@ const RefereeDashboardScreenContent: React.FC = () => {
         }
 
         // Fallback to storage
-        console.log('RefereeDashboard: Loading tournament from storage');
         const storedTournament = await TournamentStorageService.getSelectedTournament();
         if (storedTournament) {
-          console.log(`RefereeDashboard: Loaded tournament ${storedTournament.No} from storage`);
           setTournament(storedTournament);
         } else {
-          console.log('RefereeDashboard: No tournament found in storage');
           // Navigate back to tournament selection if no tournament is available
           router.replace('/tournament-selection');
           return;
         }
       } catch (error) {
-        console.error('RefereeDashboard: Failed to load tournament:', error);
         // Navigate back to tournament selection on error
         router.replace('/tournament-selection');
         return;
@@ -133,7 +128,6 @@ const RefereeDashboardScreenContent: React.FC = () => {
   };
 
   const handleSwitchTournament = () => {
-    console.log('RefereeDashboard: Switching tournament - navigating to tournament selection');
     router.push('/tournament-selection');
   };
 
@@ -150,17 +144,14 @@ const RefereeDashboardScreenContent: React.FC = () => {
   };
   
   const handleViewAssignmentDetails = () => {
-    console.log('Viewing assignment details');
     router.push('/my-assignments');
   };
   
   const handleEnterResults = () => {
-    console.log('Entering match results');
     router.push('/match-results');
   };
   
   const handleAssignmentPress = (assignment: any) => {
-    console.log('Assignment pressed:', assignment.id);
     router.push('/my-assignments');
   };
   
@@ -188,7 +179,6 @@ const RefereeDashboardScreenContent: React.FC = () => {
 
   // Handle status press - navigate to assignment details
   const handleStatusPress = () => {
-    console.log('Status bar pressed - navigating to assignments');
     router.push('/my-assignments');
   };
   
@@ -211,8 +201,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
           showRefreshButton={true}
           onRefresh={() => {
             refreshAssignments();
-            console.log('🏐 Refreshing referee dashboard...');
-          }}
+            }}
         />
         <View style={styles.loadingContainer}>
           <Text>Loading tournament...</Text>
@@ -231,8 +220,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
           showRefreshButton={true}
           onRefresh={() => {
             refreshAssignments();
-            console.log('🏐 Refreshing referee dashboard...');
-          }}
+            }}
         />
         <View style={styles.loadingContainer}>
           <Text>No tournament selected</Text>
@@ -252,7 +240,6 @@ const RefereeDashboardScreenContent: React.FC = () => {
         showRefreshButton={true}
         onRefresh={() => {
           refreshAssignments();
-          console.log('🏐 Refreshing referee dashboard...');
         }}
         rightComponent={
           <View style={styles.headerRightSection}>

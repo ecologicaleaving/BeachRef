@@ -59,8 +59,6 @@ export class VisApiClient implements IVisApiClient {
   async getEventList(request: GetEventListRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
     
-    console.log('🔥 VisApiClient.getEventList called with request:', JSON.stringify(request, null, 2));
-    
     try {
       // Build optimized request with field selection
       const optimizedRequest = {
@@ -69,7 +67,6 @@ export class VisApiClient implements IVisApiClient {
       };
 
       const xmlRequest = this.buildGetEventListXml(optimizedRequest);
-      console.log('🔥 VisApiClient.getEventList XML request:', xmlRequest.substring(0, 300));
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_LIST, xmlRequest);
       
       this.updateMonitor(VisApiEndpoint.GET_EVENT_LIST, true, Date.now() - startTime);
@@ -159,6 +156,7 @@ export class VisApiClient implements IVisApiClient {
     }
   }
 
+
   /**
    * Get API client configuration
    */
@@ -184,7 +182,7 @@ export class VisApiClient implements IVisApiClient {
         const response = await this.makeHttpRequest(xmlRequest);
         
         if (this.config.enableLogging) {
-          console.log(`VIS API ${endpoint} success (attempt ${attempt})`);
+          // console.log(`VIS API ${endpoint} success (attempt ${attempt})`);
         }
         
         return {
@@ -199,7 +197,7 @@ export class VisApiClient implements IVisApiClient {
         lastError = error as Error;
         
         if (this.config.enableLogging) {
-          console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, error);
+          // console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, error);
         }
         
         // Don't retry on last attempt
@@ -217,9 +215,6 @@ export class VisApiClient implements IVisApiClient {
    * Make actual HTTP request with form data format (VIS API requirement)
    */
   private async makeHttpRequest(xmlRequest: string): Promise<string> {
-    console.log('🔥 Making REAL VIS API call to:', this.config.baseUrl);
-    console.log('🔥 XML Request (Form Data):', xmlRequest.substring(0, 500));
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
@@ -232,7 +227,6 @@ export class VisApiClient implements IVisApiClient {
 
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
-      console.log('🔥 Form Data Body:', formData.substring(0, 300));
 
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -246,7 +240,6 @@ export class VisApiClient implements IVisApiClient {
       }
 
       const responseText = await response.text();
-      console.log('🔥 VIS API Response:', responseText.substring(0, 500));
       return responseText;
       
     } finally {
@@ -258,8 +251,6 @@ export class VisApiClient implements IVisApiClient {
    * Create mock response for web development environment
    */
   private createMockResponse(): string {
-    console.log('🔥 VisApiClient: Creating mock response for web environment');
-    
     // Mock tournament data for development in web environment
     return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -345,32 +336,34 @@ export class VisApiClient implements IVisApiClient {
 
   /**
    * Build GetBeachTournament XML request (VIS API format)
+   * Based on documentation: <Request Type="GetBeachTournament" No="502" Fields="..." />
    */
   private buildGetBeachTournamentXml(request: GetBeachTournamentRequest): string {
-    const fields = 'No Name Code Location Venue';
-    const includeLocation = request.includeLocation !== false;
-    const includeVenue = request.includeVenue !== false;
+    // REQUEST THE No FIELD EXPLICITLY - this is the real tournament number we need
+    const fields = 'No Code Name';
     
-    return `<Request Type="GetBeachTournament" Fields="${fields}"><Filter No="${request.tournamentNo}" IncludeLocation="${includeLocation}" IncludeVenue="${includeVenue}" /></Request>`;
+    return `<Request Type="GetBeachTournament" No="${request.tournamentNo}" Fields="${fields}" />`;
   }
 
   /**
    * Build GetEvent XML request (VIS API format)
    */
   private buildGetEventXml(request: GetEventRequest): string {
-    const fields = 'No Name Code Officials Referees';
-    const includeOfficials = request.includeOfficials !== false;
-    const includeReferees = request.includeReferees !== false;
+    // Include Content field to get BeachTournament information
+    const fields = 'No Name Code Content';
     
-    return `<Request Type="GetEvent" Fields="${fields}"><Filter No="${request.eventNo}" IncludeOfficials="${includeOfficials}" IncludeReferees="${includeReferees}" /></Request>`;
+    // Use simple attribute format like in documentation, not Filter element
+    return `<Request Type="GetEvent" No="${request.eventNo}" Fields="${fields}" />`;
   }
 
   /**
    * Build GetBeachMatchList XML request (VIS API format)
    */
   private buildGetBeachMatchListXml(request: GetBeachMatchListRequest): string {
-    const filterAttribs = [`TournamentNo="${request.tournamentNo}"`];
+    // Use the EXACT format from documentation - filter parameter is NoTournament
+    const filterAttribs = [`NoTournament="${request.tournamentNo}"`];
     
+    // Add optional filters only if provided  
     if (request.courtNo) {
       filterAttribs.push(`CourtNo="${request.courtNo}"`);
     }
@@ -390,9 +383,19 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    const fields = 'No Name StartTime Status Court Team1 Team2 Score Referees';
+    // Use MINIMAL fields from docs example: "No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName"
+    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName RoundName Referee1Name Referee2Name';
     
-    return `<Request Type="GetBeachMatchList" Fields="${fields}"><Filter ${filterAttribs.join(' ')} /></Request>`;
+    // Use EXACT XML format from documentation
+    const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
+  <Filter ${filterAttribs.join(' ')} />
+</Request>`;
+    
+    // Debug: Log the actual XML request to verify tournament filtering
+    // console.log('GetBeachMatchList XML request:', xmlRequest);
+    // console.log('Filtering by NoTournament:', request.tournamentNo);
+    
+    return xmlRequest;
   }
 
   /**

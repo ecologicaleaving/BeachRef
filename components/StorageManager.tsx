@@ -33,7 +33,7 @@ export function StorageManager({ style }: { style?: any }) {
       const usage = await CacheService.getStorageUsage();
       setStorageInfo(usage);
     } catch (error) {
-      console.error('Failed to load storage info:', error);
+      // console.error('Failed to load storage info:', error);
     } finally {
       setIsLoading(false);
     }
@@ -265,7 +265,7 @@ export function StorageIndicator({
         const usage = await CacheService.getStorageUsage();
         setStorageInfo(usage);
       } catch (error) {
-        console.error('Failed to load storage indicator info:', error);
+        // console.error('Failed to load storage indicator info:', error);
       }
     };
 

@@ -57,7 +57,7 @@ const MatchResultCard: React.FC<MatchResultCardProps> = React.memo(({
       try {
         onPress(matchResult);
       } catch (error) {
-        console.warn('MatchResultCard: Error in onPress callback:', error);
+        // console.warn('MatchResultCard: Error in onPress callback:', error);
       }
     }
   };

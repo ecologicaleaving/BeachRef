@@ -13,7 +13,7 @@ export const CompletedMatchCard: React.FC<CompletedMatchCardProps> = ({
   match,
   onPress
 }) => {
-  console.log('CompletedMatchCard: Rendering card for match:', match.no, match.teamAName, 'vs', match.teamBName);
+  // console.log('CompletedMatchCard: Rendering card for match:', match.no, match.teamAName, 'vs', match.teamBName);
   
   const getScoreDisplay = () => {
     const score = MatchResultsService.formatScore(match);

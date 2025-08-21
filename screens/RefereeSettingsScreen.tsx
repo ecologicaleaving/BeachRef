@@ -111,7 +111,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
   // Update current tournament when route params change
   useEffect(() => {
     if (tournament.No) {
-      console.log('RefereeSettingsScreen: Tournament updated:', tournament.No, tournament.Name);
+      // // console.log('RefereeSettingsScreen: Tournament updated:', tournament.No, tournament.Name);
       setCurrentTournament(tournament);
       setSelectedTournament(tournament.No);
       
@@ -127,7 +127,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       
       // Force reload of court matches if court selection is active
       if (showCourtSelection) {
-        console.log('🏐 DEBUG: Tournament changed, reloading court matches...');
+        // // console.log('🏐 DEBUG: Tournament changed, reloading court matches...');
         setTimeout(() => loadCourtMatches(), 100);
       }
     }
@@ -166,7 +166,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
         setProfile(savedProfile);
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      // // console.error('Failed to load settings:', error);
       Alert.alert('Error', 'Failed to load settings');
     } finally {
       setLoading(false);
@@ -198,12 +198,12 @@ const RefereeSettingsScreenContent: React.FC = () => {
                 const relatedMatches = await VisApiService.getBeachMatchList(relatedTournament.No);
                 allMatches = [...allMatches, ...relatedMatches];
               } catch (relatedError) {
-                console.warn(`Failed to load matches from ${relatedTournament.Code}:`, relatedError);
+                // // console.warn(`Failed to load matches from ${relatedTournament.Code}:`, relatedError);
               }
             }
           }
         } catch (relatedError) {
-          console.warn('Failed to find related tournaments:', relatedError);
+          // // console.warn('Failed to find related tournaments:', relatedError);
         }
       }
       
@@ -261,7 +261,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       setRefereeList(refereeList);
       
     } catch (error) {
-      console.error('Failed to load available courts:', error);
+      // // console.error('Failed to load available courts:', error);
     } finally {
       setLoadingCourts(false);
     }
@@ -273,7 +273,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       // For now return null, will be implemented when referee is selected from list
       return null;
     } catch (error) {
-      console.error('Failed to load saved referee profile:', error);
+      // // console.error('Failed to load saved referee profile:', error);
       return null;
     }
   };
@@ -286,21 +286,21 @@ const RefereeSettingsScreenContent: React.FC = () => {
 
     // Check cache first for faster loading
     if (refereeCacheKey === selectedTournament && refereeList.length > 0) {
-      console.log(`🏐 DEBUG: Using cached referee list for tournament ${selectedTournament}`);
+      // // console.log(`🏐 DEBUG: Using cached referee list for tournament ${selectedTournament}`);
       setShowRefereeList(true);
       return;
     }
 
     setLoadingReferees(true);
     try {
-      console.log(`🏐 DEBUG: Loading referees for tournament ${selectedTournament} (optimized)...`);
+      // // console.log(`🏐 DEBUG: Loading referees for tournament ${selectedTournament} (optimized)...`);
       
       // Skip tournament details call for faster loading - get matches directly
       const matches = await VisApiService.fetchMatchesDirectFromAPI(selectedTournament);
-      console.log(`🏐 DEBUG: Found ${matches.length} matches for tournament ${selectedTournament}`);
+      // // console.log(`🏐 DEBUG: Found ${matches.length} matches for tournament ${selectedTournament}`);
       
       if (matches.length === 0) {
-        console.log(`🏐 DEBUG: No matches found - tournament may not have started yet or no matches scheduled`);
+        // // console.log(`🏐 DEBUG: No matches found - tournament may not have started yet or no matches scheduled`);
         Alert.alert('No Referees Found', 'This tournament has no matches scheduled yet, so referee assignments are not available. Referees are typically assigned closer to the tournament start date.');
         setLoadingReferees(false);
         return;
@@ -308,7 +308,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       
       // Quick sample check for referee data availability
       const sampleMatch = matches[0];
-      console.log(`🏐 DEBUG: Sample referee data - R1: ${sampleMatch?.Referee1Name}, R2: ${sampleMatch?.Referee2Name}`);
+      // // console.log(`🏐 DEBUG: Sample referee data - R1: ${sampleMatch?.Referee1Name}, R2: ${sampleMatch?.Referee2Name}`);
       
       // Extract unique referees from matches
       const refereeMap = new Map<string, RefereeFromDB>();
@@ -334,10 +334,10 @@ const RefereeSettingsScreenContent: React.FC = () => {
       });
       
       const referees = Array.from(refereeMap.values()).sort((a, b) => a.Name.localeCompare(b.Name));
-      console.log(`🏐 DEBUG: Extracted ${referees.length} unique referees from matches`);
+      // // console.log(`🏐 DEBUG: Extracted ${referees.length} unique referees from matches`);
       
       if (referees.length === 0) {
-        console.log(`🏐 DEBUG: No referees found in match data - matches may not have referee assignments yet`);
+        // // console.log(`🏐 DEBUG: No referees found in match data - matches may not have referee assignments yet`);
         Alert.alert('No Referees Found', 'The matches for this tournament do not have referee assignments yet. Referees are typically assigned closer to the tournament start date.');
         setLoadingReferees(false);
         return;
@@ -347,7 +347,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       setRefereeCacheKey(selectedTournament); // Cache the result
       setShowRefereeList(true);
     } catch (error) {
-      console.error('Failed to load referee list:', error);
+      // // console.error('Failed to load referee list:', error);
       Alert.alert('Error', 'Failed to load referee list. Please check your connection and try again.');
     } finally {
       setLoadingReferees(false);
@@ -356,7 +356,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
 
   const handleSelectReferee = async (referee: RefereeFromDB) => {
     try {
-      console.log(`🏐 DEBUG: Selected referee: ${referee.Name} (${referee.No})`);
+      // // console.log(`🏐 DEBUG: Selected referee: ${referee.Name} (${referee.No})`);
       
       setSelectedReferee(referee);
       setShowRefereeList(false);
@@ -366,21 +366,21 @@ const RefereeSettingsScreenContent: React.FC = () => {
       await loadRefereeMatches(referee);
       
     } catch (error) {
-      console.error('Failed to select referee:', error);
+      // // console.error('Failed to select referee:', error);
       Alert.alert('Error', 'Failed to load referee matches');
     }
   };
 
   const loadRefereeMatches = async (referee: RefereeFromDB) => {
     if (!selectedTournament) {
-      console.log('🏐 DEBUG: No tournament selected for referee matches');
+      // // console.log('🏐 DEBUG: No tournament selected for referee matches');
       return;
     }
 
     try {
       setLoadingRefereeMatches(true);
-      console.log(`🏐 DEBUG: Loading matches for referee ${referee.Name} in tournament ${selectedTournament}...`);
-      console.log('🏐 DEBUG: loadRefereeMatches - currentTournament:', currentTournament?.No, currentTournament?.Name);
+      // // console.log(`🏐 DEBUG: Loading matches for referee ${referee.Name} in tournament ${selectedTournament}...`);
+      // // console.log('🏐 DEBUG: loadRefereeMatches - currentTournament:', currentTournament?.No, currentTournament?.Name);
 
       // Check if this tournament has merged tournaments from the tournament detail screen
       const mergedTournaments = (tournament as any)._mergedTournaments || [];
@@ -405,16 +405,16 @@ const RefereeSettingsScreenContent: React.FC = () => {
             }));
             
             allMatches = [...allMatches, ...matchesWithMeta];
-            console.log(`🏐 REFEREE LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
+            // // console.log(`🏐 REFEREE LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
           } catch (error) {
-            console.warn(`Failed to load referee matches for ${mergedTournament.Name}:`, error);
+            // // console.warn(`Failed to load referee matches for ${mergedTournament.Name}:`, error);
           }
         }
       } else {
         // Fallback: Get matches from single tournament (including both male and female if applicable)
         allMatches = await VisApiService.getBeachMatchList(selectedTournament);
       }
-      console.log(`🏐 DEBUG: Found ${allMatches.length} matches for tournament ${selectedTournament}`);
+      // // console.log(`🏐 DEBUG: Found ${allMatches.length} matches for tournament ${selectedTournament}`);
       
       // Get current tournament data to determine gender
       const currentTournamentData = currentTournament || await TournamentStorageService.getSelectedTournament();
@@ -430,15 +430,15 @@ const RefereeSettingsScreenContent: React.FC = () => {
       
       // Try to load opposite gender tournament matches (robust implementation)
       try {
-        console.log(`🏐 DEBUG: Attempting to find and load opposite gender tournament...`);
+        // // console.log(`🏐 DEBUG: Attempting to find and load opposite gender tournament...`);
         const oppositeGenderTournamentNo = await findOppositeGenderTournament(selectedTournament);
         
         if (oppositeGenderTournamentNo && oppositeGenderTournamentNo !== selectedTournament) {
-          console.log(`🏐 DEBUG: Found opposite gender tournament: ${oppositeGenderTournamentNo}`);
+          // // console.log(`🏐 DEBUG: Found opposite gender tournament: ${oppositeGenderTournamentNo}`);
           try {
             const oppositeMatches = await VisApiService.getBeachMatchList(oppositeGenderTournamentNo);
-            console.log(`🏐 DEBUG: Successfully loaded ${oppositeMatches.length} matches from opposite gender tournament`);
-            console.log(`🏐 DEBUG: Before combining: ${allMatches.length} original matches`);
+            // // console.log(`🏐 DEBUG: Successfully loaded ${oppositeMatches.length} matches from opposite gender tournament`);
+            // // console.log(`🏐 DEBUG: Before combining: ${allMatches.length} original matches`);
             
             // Determine opposite gender
             const oppositeGender = currentGender === 'M' ? 'W' : 'M';
@@ -452,56 +452,56 @@ const RefereeSettingsScreenContent: React.FC = () => {
             }));
             
             allMatches = [...allMatches, ...oppositeMatchesWithMeta];
-            console.log(`🏐 DEBUG: After combining: ${allMatches.length} total matches`);
+            // // console.log(`🏐 DEBUG: After combining: ${allMatches.length} total matches`);
           } catch (oppositeMatchError) {
-            console.log(`🏐 DEBUG: Failed to load matches from opposite gender tournament, continuing with original:`, oppositeMatchError.message);
+            // // console.log(`🏐 DEBUG: Failed to load matches from opposite gender tournament, continuing with original:`, oppositeMatchError.message);
           }
         } else {
-          console.log(`🏐 DEBUG: No distinct opposite gender tournament found`);
+          // // console.log(`🏐 DEBUG: No distinct opposite gender tournament found`);
         }
       } catch (genderSearchError) {
-        console.log(`🏐 DEBUG: Error searching for opposite gender tournament, continuing with original matches:`, genderSearchError.message);
+        // // console.log(`🏐 DEBUG: Error searching for opposite gender tournament, continuing with original matches:`, genderSearchError.message);
       }
       
-      console.log(`🏐 DEBUG: Total matches for tournament ${selectedTournament}: ${allMatches.length}`);
+      // // console.log(`🏐 DEBUG: Total matches for tournament ${selectedTournament}: ${allMatches.length}`);
       
       // Show breakdown by source and gender
       const originalMatches = allMatches.filter(m => m.sourceType === 'original').length;
       const femaleMatches = allMatches.filter(m => m.sourceType === 'female').length;
       const maleMatches = allMatches.filter(m => m.tournamentGender === 'M').length;
       const womenMatches = allMatches.filter(m => m.tournamentGender === 'W').length;
-      console.log(`🏐 DEBUG: Match breakdown - Original: ${originalMatches}, Female: ${femaleMatches}`);
-      console.log(`🏐 DEBUG: Gender breakdown - Male (M): ${maleMatches}, Women (W): ${womenMatches}`);
+      // // console.log(`🏐 DEBUG: Match breakdown - Original: ${originalMatches}, Female: ${femaleMatches}`);
+      // // console.log(`🏐 DEBUG: Gender breakdown - Male (M): ${maleMatches}, Women (W): ${womenMatches}`);
       
       // Debug: Show sample match referee fields and gender info
       if (allMatches.length > 0) {
         const sampleMatch = allMatches[0];
-        console.log(`🏐 DEBUG: Sample match referee fields:`, {
-          Referee: sampleMatch.Referee,
-          Referee1: sampleMatch.Referee1,
-          Referee2: sampleMatch.Referee2,
-          Referee1Name: sampleMatch.Referee1Name,
-          Referee2Name: sampleMatch.Referee2Name,
-          Referee1No: sampleMatch.Referee1No,
-          Referee2No: sampleMatch.Referee2No,
-          allFields: Object.keys(sampleMatch).filter(key => key.toLowerCase().includes('ref'))
-        });
+        // console.log(`🏐 DEBUG: Sample match referee fields:`, {
+        //   Referee: sampleMatch.Referee,
+        //   Referee1: sampleMatch.Referee1,
+        //   Referee2: sampleMatch.Referee2,
+        //   Referee1Name: sampleMatch.Referee1Name,
+        //   Referee2Name: sampleMatch.Referee2Name,
+        //   Referee1No: sampleMatch.Referee1No,
+        //   Referee2No: sampleMatch.Referee2No,
+        //   allFields: Object.keys(sampleMatch).filter(key => key.toLowerCase().includes('ref'))
+        // });
         
         // Debug gender information
-        console.log(`🏐 DEBUG: Gender info for first few matches:`, allMatches.slice(0, 3).map(match => ({
-          matchNo: match.No,
-          teams: `${match.TeamAName} vs ${match.TeamBName}`,
-          tournamentGender: match.tournamentGender,
-          genderFields: Object.keys(match).filter(key => key.toLowerCase().includes('gender'))
-        })));
+        // console.log(`🏐 DEBUG: Gender info for first few matches:`, allMatches.slice(0, 3).map(match => ({
+        //   matchNo: match.No,
+        //   teams: `${match.TeamAName} vs ${match.TeamBName}`,
+        //   tournamentGender: match.tournamentGender,
+        //   genderFields: Object.keys(match).filter(key => key.toLowerCase().includes('gender'))
+        // })));
       }
 
       // Debug the referee we're looking for
-      console.log(`🏐 DEBUG: Looking for referee:`, {
-        name: referee.Name,
-        no: referee.No,
-        federationCode: referee.FederationCode
-      });
+      // console.log(`🏐 DEBUG: Looking for referee:`, {
+      //   name: referee.Name,
+      //   no: referee.No,
+      //   federationCode: referee.FederationCode
+      // });
 
       // Filter matches where this referee is assigned
       const refereeMatches = allMatches.filter((match, index) => {
@@ -529,55 +529,55 @@ const RefereeSettingsScreenContent: React.FC = () => {
         
         // Debug first few matches regardless of assignment
         if (index < 3) {
-          console.log(`🏐 DEBUG: Match ${index + 1} (${match.No || 'No ID'}) referee check:`, {
-            teams: `${match.TeamAName} vs ${match.TeamBName}`,
-            referee1: match.Referee1,
-            referee2: match.Referee2,
-            referee1Name: match.Referee1Name,
-            referee2Name: match.Referee2Name,
-            referee1No: match.Referee1No,
-            referee2No: match.Referee2No,
-            isAssigned: isAssigned,
-            matchedBy: {
-              referee1Match,
-              referee2Match,
-              generalRefereeMatch,
-              referee1NameMatch,
-              referee2NameMatch,
-              referee1NoMatch,
-              referee2NoMatch,
-              surnameMatch1,
-              surnameMatch2
-            }
-          });
+          // // console.log(`🏐 DEBUG: Match ${index + 1} (${match.No || 'No ID'}) referee check:`, {
+          //   teams: `${match.TeamAName} vs ${match.TeamBName}`,
+          //   referee1: match.Referee1,
+          //   referee2: match.Referee2,
+          //   referee1Name: match.Referee1Name,
+          //   referee2Name: match.Referee2Name,
+          //   referee1No: match.Referee1No,
+          //   referee2No: match.Referee2No,
+          //   isAssigned: isAssigned,
+          //   matchedBy: {
+          //     referee1Match,
+          //     referee2Match,
+          //     generalRefereeMatch,
+          //     referee1NameMatch,
+          //     referee2NameMatch,
+          //     referee1NoMatch,
+          //     referee2NoMatch,
+          //     surnameMatch1,
+          //     surnameMatch2
+          //   }
+          // });
         }
         
         if (isAssigned) {
-          console.log(`🏐 DEBUG: ✅ Match ${match.No} assigned to ${referee.Name}!`);
+          // // console.log(`🏐 DEBUG: ✅ Match ${match.No} assigned to ${referee.Name}!`);
         }
         
         return isAssigned;
       });
 
-      console.log(`🏐 DEBUG: Found ${refereeMatches.length} matches for referee ${referee.Name}`);
+      // // console.log(`🏐 DEBUG: Found ${refereeMatches.length} matches for referee ${referee.Name}`);
       
       // Show breakdown of referee matches by source
       const originalRefereeMatches = refereeMatches.filter(m => m.sourceType === 'original').length;
       const femaleRefereeMatches = refereeMatches.filter(m => m.sourceType === 'female').length;
-      console.log(`🏐 DEBUG: Referee match breakdown - Original: ${originalRefereeMatches}, Female: ${femaleRefereeMatches}`);
+      // // console.log(`🏐 DEBUG: Referee match breakdown - Original: ${originalRefereeMatches}, Female: ${femaleRefereeMatches}`);
       
       // DEBUG MODE: If no matches found, show debugging info and all matches temporarily
       if (refereeMatches.length === 0 && allMatches.length > 0) {
-        console.log(`🏐 DEBUG: ❌ No matches found for "${referee.Name}". Detailed analysis:`);
+        // // console.log(`🏐 DEBUG: ❌ No matches found for "${referee.Name}". Detailed analysis:`);
         
         // Show referee name variations for debugging
         const refereeNameParts = referee.Name.split(' ');
         const surname = refereeNameParts[refereeNameParts.length - 1];
-        console.log(`🏐 DEBUG: Referee name variations:`, {
-          fullName: referee.Name,
-          surname: surname,
-          parts: refereeNameParts
-        });
+        // // console.log(`🏐 DEBUG: Referee name variations:`, {
+        //   fullName: referee.Name,
+        //   surname: surname,
+        //   parts: refereeNameParts
+        // });
         
         // Check all referee fields in all matches
         const allRefereeNames = new Set();
@@ -589,17 +589,17 @@ const RefereeSettingsScreenContent: React.FC = () => {
           if (match.Referee) allRefereeNames.add(match.Referee);
         });
         
-        console.log(`🏐 DEBUG: All unique referee names in tournament:`, Array.from(allRefereeNames).sort());
+        // // console.log(`🏐 DEBUG: All unique referee names in tournament:`, Array.from(allRefereeNames).sort());
         
         // Show similar name matches
         const similarNames = Array.from(allRefereeNames).filter(name => 
           name.toLowerCase().includes(surname.toLowerCase()) ||
           referee.Name.toLowerCase().includes(name.toLowerCase())
         );
-        console.log(`🏐 DEBUG: Similar referee names found:`, similarNames);
+        // // console.log(`🏐 DEBUG: Similar referee names found:`, similarNames);
         
         // TEMPORARY: Show all matches for debugging
-        console.log(`🏐 DEBUG: Temporarily showing all ${allMatches.length} matches for debugging purposes...`);
+        // // console.log(`🏐 DEBUG: Temporarily showing all ${allMatches.length} matches for debugging purposes...`);
         setRefereeMatches(allMatches); // Show all matches for debugging
         
         // Set default to last day of tournament using multiple date field fallbacks
@@ -630,7 +630,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       }
 
     } catch (error) {
-      console.error(`Error loading referee matches for ${referee.Name}:`, error);
+      // // console.error(`Error loading referee matches for ${referee.Name}:`, error);
       Alert.alert('Error', 'Failed to load referee matches');
     } finally {
       setLoadingRefereeMatches(false);
@@ -639,53 +639,53 @@ const RefereeSettingsScreenContent: React.FC = () => {
 
   const findOppositeGenderTournament = async (tournamentNo: string): Promise<string | null> => {
     try {
-      console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
+      // // console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
       // Get all tournaments from API
       const tournaments = await VisApiService.fetchDirectFromAPI();
-      console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
-      console.log(`🏐 DEBUG: Tournament codes:`, tournaments.map(t => `${t.Code} (${t.No})`).join(', '));
+      // // console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
+      // // console.log(`🏐 DEBUG: Tournament codes:`, tournaments.map(t => `${t.Code} (${t.No})`).join(', '));
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);
       
       if (!currentTournament || !currentTournament.Code) {
-        console.log(`🏐 DEBUG: Current tournament not found or has no code`);
+        // // console.log(`🏐 DEBUG: Current tournament not found or has no code`);
         return null;
       }
       
       const currentCode = currentTournament.Code;
-      console.log(`🏐 DEBUG: Current tournament code: ${currentCode}`);
+      // // console.log(`🏐 DEBUG: Current tournament code: ${currentCode}`);
       
       // Try to find opposite gender tournament by transforming the code
       let oppositeCode: string | null = null;
       
       if (currentCode.startsWith('M')) {
         oppositeCode = 'W' + currentCode.substring(1);
-        console.log(`🏐 DEBUG: Looking for female version: ${oppositeCode}`);
+        // // console.log(`🏐 DEBUG: Looking for female version: ${oppositeCode}`);
       } else if (currentCode.startsWith('W')) {
         oppositeCode = 'M' + currentCode.substring(1);
-        console.log(`🏐 DEBUG: Looking for male version: ${oppositeCode}`);
+        // // console.log(`🏐 DEBUG: Looking for male version: ${oppositeCode}`);
       } else {
         // Try both M and W prefixes for tournaments without gender prefix
         const maleCode = 'M' + currentCode;
         const femaleCode = 'W' + currentCode;
         
-        console.log(`🏐 DEBUG: Trying both gender versions: ${maleCode} and ${femaleCode}`);
+        // // console.log(`🏐 DEBUG: Trying both gender versions: ${maleCode} and ${femaleCode}`);
         
         const maleTournament = tournaments.find(t => t.Code === maleCode);
         const femaleTournament = tournaments.find(t => t.Code === femaleCode);
         
         // Return the one that's different from current
         if (maleTournament && maleTournament.No !== tournamentNo) {
-          console.log(`🏐 DEBUG: Found male version: ${maleTournament.Code} (${maleTournament.No})`);
+          // // console.log(`🏐 DEBUG: Found male version: ${maleTournament.Code} (${maleTournament.No})`);
           return maleTournament.No;
         }
         if (femaleTournament && femaleTournament.No !== tournamentNo) {
-          console.log(`🏐 DEBUG: Found female version: ${femaleTournament.Code} (${femaleTournament.No})`);
+          // // console.log(`🏐 DEBUG: Found female version: ${femaleTournament.Code} (${femaleTournament.No})`);
           return femaleTournament.No;
         }
         
-        console.log(`🏐 DEBUG: No gender variants found for neutral tournament`);
+        // // console.log(`🏐 DEBUG: No gender variants found for neutral tournament`);
         return null;
       }
       
@@ -693,17 +693,17 @@ const RefereeSettingsScreenContent: React.FC = () => {
       if (oppositeCode) {
         const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
         if (oppositeTournament) {
-          console.log(`🏐 DEBUG: ✅ Found opposite gender tournament: ${oppositeTournament.Code} (${oppositeTournament.No})`);
+          // // console.log(`🏐 DEBUG: ✅ Found opposite gender tournament: ${oppositeTournament.Code} (${oppositeTournament.No})`);
           return oppositeTournament.No;
         } else {
-          console.log(`🏐 DEBUG: Opposite gender tournament ${oppositeCode} not found in stored tournaments`);
+          // // console.log(`🏐 DEBUG: Opposite gender tournament ${oppositeCode} not found in stored tournaments`);
         }
       }
       
       return null;
       
     } catch (error) {
-      console.error('Error finding opposite gender tournament:', error);
+      // // console.error('Error finding opposite gender tournament:', error);
       return null;
     }
   };
@@ -815,7 +815,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       // TODO: Save referee profile to storage/API
       Alert.alert('Success', 'Profile updated successfully');
     } catch (error) {
-      console.error('Failed to save profile:', error);
+      // // console.error('Failed to save profile:', error);
       Alert.alert('Error', 'Failed to save profile');
     }
   };
@@ -825,7 +825,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       await TournamentStorageService.updatePreference('notificationsEnabled', enabled);
       setPreferences(prev => ({ ...prev, notificationsEnabled: enabled }));
     } catch (error) {
-      console.error('Failed to update notification setting:', error);
+      // // console.error('Failed to update notification setting:', error);
       Alert.alert('Error', 'Failed to update notification setting');
     }
   };
@@ -902,14 +902,14 @@ const RefereeSettingsScreenContent: React.FC = () => {
 
   const handleRefereeMonitor = () => {
     // Load and show referee selection page
-    console.log('🏐 DEBUG: Referee Monitor clicked...');
+    // // console.log('🏐 DEBUG: Referee Monitor clicked...');
     
     // Check if we already have cached referees for this tournament
     if (refereeCacheKey === selectedTournament && refereeList.length > 0) {
-      console.log('🏐 DEBUG: Using cached referee list for fast display');
+      // // console.log('🏐 DEBUG: Using cached referee list for fast display');
       setShowRefereeList(true);
     } else {
-      console.log('🏐 DEBUG: Loading referee list...');
+      // // console.log('🏐 DEBUG: Loading referee list...');
       setShowRefereeList(true);
       loadRefereeList();
     }
@@ -919,8 +919,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
   const loadCourtMatches = async () => {
     if (!selectedTournament) return;
     
-    console.log('🏐 DEBUG: loadCourtMatches - selectedTournament:', selectedTournament);
-    console.log('🏐 DEBUG: loadCourtMatches - currentTournament:', currentTournament?.No, currentTournament?.Name);
+    // // console.log('🏐 DEBUG: loadCourtMatches - selectedTournament:', selectedTournament);
+    // // console.log('🏐 DEBUG: loadCourtMatches - currentTournament:', currentTournament?.No, currentTournament?.Name);
     
     setLoadingCourtMatches(true);
     try {
@@ -930,10 +930,10 @@ const RefereeSettingsScreenContent: React.FC = () => {
       const mergedTournaments = (tournament as any)._mergedTournaments || [];
       const currentTournamentData = currentTournament || await TournamentStorageService.getSelectedTournament();
       
-      console.log(`🏐 MONITOR COURT MATCHES: Loading matches for ${mergedTournaments.length > 0 ? 'merged' : 'single'} tournament`);
+      // // console.log(`🏐 MONITOR COURT MATCHES: Loading matches for ${mergedTournaments.length > 0 ? 'merged' : 'single'} tournament`);
       
       if (mergedTournaments.length > 1) {
-        console.log(`🏐 MONITOR COURT LOADING: ${mergedTournaments.length} tournaments from merged data`);
+        // // console.log(`🏐 MONITOR COURT LOADING: ${mergedTournaments.length} tournaments from merged data`);
         
         // Load matches from all merged tournaments
         for (const mergedTournament of mergedTournaments) {
@@ -953,14 +953,14 @@ const RefereeSettingsScreenContent: React.FC = () => {
             }));
             
             allTournamentMatches = [...allTournamentMatches, ...matchesWithMeta];
-            console.log(`🏐 MONITOR COURT LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
+            // // console.log(`🏐 MONITOR COURT LOADED: ${matches.length} matches (${gender}) from ${mergedTournament.Name}`);
           } catch (error) {
-            console.warn(`Failed to load court matches for ${mergedTournament.Name}:`, error);
+            // // console.warn(`Failed to load court matches for ${mergedTournament.Name}:`, error);
           }
         }
       } else {
         // Fallback: Load matches from current tournament using old method
-        console.log(`🏐 MONITOR COURT FALLBACK: Using single tournament method`);
+        // // console.log(`🏐 MONITOR COURT FALLBACK: Using single tournament method`);
         
         const currentMatches = await VisApiService.getBeachMatchList(selectedTournament);
         const currentGender = currentTournamentData?.Code ? VisApiService.extractGenderFromCode(currentTournamentData.Code) : 'Unknown';
@@ -1005,7 +1005,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
               }
             }
           } catch (relatedError) {
-            console.warn('Failed to find related tournaments:', relatedError);
+            // // console.warn('Failed to find related tournaments:', relatedError);
           }
         }
       }
@@ -1068,12 +1068,12 @@ const RefereeSettingsScreenContent: React.FC = () => {
       const uniqueDates = [...new Set(sortedMatches.map(match => match.LocalDate || 'Unknown Date'))].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
       if (uniqueDates.length > 0 && !selectedDate) {
         const defaultDate = uniqueDates[uniqueDates.length - 1]; // Last day (most recent)
-        console.log('🗓️ Court Monitor - Setting default to most recent date:', defaultDate);
+        // // console.log('🗓️ Court Monitor - Setting default to most recent date:', defaultDate);
         setSelectedDate(defaultDate);
       }
       
     } catch (error) {
-      console.error('Failed to load court matches:', error);
+      // // console.error('Failed to load court matches:', error);
     } finally {
       setLoadingCourtMatches(false);
     }
@@ -1123,7 +1123,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
     if (showCourtSelection) {
       // For court monitor
       const courtDates = getCourtUniqueDates();
-      console.log('🗓️ Court Monitor - Available dates:', courtDates);
+      // // console.log('🗓️ Court Monitor - Available dates:', courtDates);
       return courtDates;
     } else {
       // For referee monitor
@@ -1131,7 +1131,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
         match.Date || match.LocalDate || match.MatchDate || match.StartDate
       ).filter(Boolean);
       const sortedDates = [...new Set(allDates)].sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // Ascending order for proper navigation
-      console.log('🗓️ Referee Monitor - Available dates (oldest to newest):', sortedDates);
+      // // console.log('🗓️ Referee Monitor - Available dates (oldest to newest):', sortedDates);
       return sortedDates;
     }
   };
@@ -1150,7 +1150,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       // No date selected, select the last day (most recent in the tournament)
       if (dates.length > 0) {
         const defaultDate = dates[dates.length - 1];
-        console.log('🗓️ Setting default to most recent date:', defaultDate, `(index ${dates.length - 1} of ${dates.length})`);
+        // // console.log('🗓️ Setting default to most recent date:', defaultDate, `(index ${dates.length - 1} of ${dates.length})`);
         setSelectedDate(defaultDate);
       }
       return;
@@ -1178,12 +1178,12 @@ const RefereeSettingsScreenContent: React.FC = () => {
     const currentDate = selectedDate || (dates.length > 0 ? dates[0] : '');
     
     // Debug logging
-    console.log('🗓️ Date Navigator Debug:', {
-      dates: dates,
-      currentIndex,
-      currentDate: selectedDate,
-      datesLength: dates.length
-    });
+    // // console.log('🗓️ Date Navigator Debug:', {
+    //   dates: dates,
+    //   currentIndex,
+    //   currentDate: selectedDate,
+    //   datesLength: dates.length
+    // });
     
     if (dates.length <= 1) return null; // Don't show navigator for single date
     
@@ -1472,7 +1472,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
         return `${timeOnly} ${tzAbbr} (${userTimeStr})`;
       }
     } catch (error) {
-      console.warn('Error formatting time:', error);
+      // // console.warn('Error formatting time:', error);
       return localTime.substring(0, 5);
     }
   };
@@ -1499,7 +1499,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       const totalMinutes = Math.round(totalSeconds / 60);
       return totalMinutes > 0 ? `${totalMinutes} min` : 'Match';
     } catch (error) {
-      console.warn('Error calculating match duration:', error);
+      // // console.warn('Error calculating match duration:', error);
       return 'Match';
     }
   };
@@ -1552,7 +1552,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
                   formatDate={formatMatchDate}
                   getMatchCount={(date) => {
                     const matchesForDate = courtMatches.filter(match => (match.LocalDate || 'Unknown Date') === date);
-                    console.log(`🗓️ Court Monitor - Match count for ${date}:`, matchesForDate.length);
+                    // // console.log(`🗓️ Court Monitor - Match count for ${date}:`, matchesForDate.length);
                     return matchesForDate.length;
                   }}
                 />
@@ -1992,31 +1992,31 @@ const RefereeSettingsScreenContent: React.FC = () => {
   const renderRefereeMatchesSection = () => {
     if (!selectedReferee) return null;
 
-    console.log(`🏐 DEBUG: renderRefereeMatchesSection - refereeMatches.length: ${refereeMatches.length}`);
-    console.log(`🏐 DEBUG: refereeMatches sample:`, refereeMatches.slice(0, 2));
+    // // console.log(`🏐 DEBUG: renderRefereeMatchesSection - refereeMatches.length: ${refereeMatches.length}`);
+    // // console.log(`🏐 DEBUG: refereeMatches sample:`, refereeMatches.slice(0, 2));
 
     // Debug the date fields in matches
-    console.log(`🏐 DEBUG: Date fields in first few matches:`, refereeMatches.slice(0, 3).map(match => ({
-      matchNo: match.No,
-      Date: match.Date,
-      LocalDate: match.LocalDate,
-      MatchDate: match.MatchDate,
-      StartDate: match.StartDate,
-      allDateFields: Object.keys(match).filter(key => key.toLowerCase().includes('date'))
-    })));
+    // // console.log(`🏐 DEBUG: Date fields in first few matches:`, refereeMatches.slice(0, 3).map(match => ({
+    //   matchNo: match.No,
+    //   Date: match.Date,
+    //   LocalDate: match.LocalDate,
+    //   MatchDate: match.MatchDate,
+    //   StartDate: match.StartDate,
+    //   allDateFields: Object.keys(match).filter(key => key.toLowerCase().includes('date'))
+    // })));
 
     // Try multiple date field variations
     const allDates = refereeMatches.map(match => 
       match.Date || match.LocalDate || match.MatchDate || match.StartDate
     ).filter(Boolean);
     
-    console.log(`🏐 DEBUG: All found dates:`, allDates);
+    // // console.log(`🏐 DEBUG: All found dates:`, allDates);
 
     // Get unique dates from referee matches for the date tabs (most recent first)
     const uniqueDates = [...new Set(allDates)].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
     
-    console.log(`🏐 DEBUG: uniqueDates after processing:`, uniqueDates);
-    console.log(`🏐 DEBUG: selectedDate:`, selectedDate);
+    // // console.log(`🏐 DEBUG: uniqueDates after processing:`, uniqueDates);
+    // // console.log(`🏐 DEBUG: selectedDate:`, selectedDate);
     
     // Filter matches by selected date (check multiple date fields)
     // If no date is selected, auto-select the last day of tournament
@@ -2054,7 +2054,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       return getTimeNumber(timeA) - getTimeNumber(timeB); // Ascending order
     });
       
-    console.log(`🏐 DEBUG: sortedMatches.length:`, sortedMatches.length);
+    // // console.log(`🏐 DEBUG: sortedMatches.length:`, sortedMatches.length);
 
     return (
       <ScrollView style={styles.courtSelectionFullScreen} contentContainerStyle={styles.courtSelectionContent}>
@@ -2093,7 +2093,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
                   const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
                   return matchDate === date;
                 }).length;
-                console.log(`🗓️ Referee Monitor - Match count for ${date}:`, matchCount);
+                // // console.log(`🗓️ Referee Monitor - Match count for ${date}:`, matchCount);
                 return matchCount;
               }}
             />

@@ -116,8 +116,10 @@ The project uses Expo Router with a comprehensive screen-based navigation system
 
 **VIS API Integration**:
 - RESTful API integration with the Volleyball Information System
-- Tournament data fetching with gender variant merging
-- Match data with real-time updates
+- Tournament data fetching with gender variant merging via `GetEventList`
+- Match data retrieval using `GetBeachMatchList` with EventNo from tournaments
+- **IMPORTANT**: Use `tournament.visNo` directly as TournamentNo in `GetBeachMatchList` calls
+- **API Call Flow**: `GetEventList` → Extract EventNo → Use EventNo in `GetBeachMatchList`
 - Referee assignment synchronization
 
 **Caching Strategy**:

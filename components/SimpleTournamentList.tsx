@@ -21,7 +21,7 @@ const SimpleTournamentList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('SimpleTournamentList: Starting to load tournaments...');
+      // console.log('SimpleTournamentList: Starting to load tournaments...');
       
       // Add timeout to catch hanging calls
       const timeoutPromise = new Promise((_, reject) => {
@@ -39,7 +39,7 @@ const SimpleTournamentList: React.FC = () => {
         maxResults: 50
       });
       
-      console.log('SimpleTournamentList: Waiting for API response...');
+      // console.log('SimpleTournamentList: Waiting for API response...');
       const response = await Promise.race([tournamentPromise, timeoutPromise]);
       
       if (!response.success) {
@@ -63,11 +63,11 @@ const SimpleTournamentList: React.FC = () => {
         }
       ] : [];
       
-      console.log('SimpleTournamentList: Loaded tournaments:', tournaments.length);
+      // console.log('SimpleTournamentList: Loaded tournaments:', tournaments.length);
       setTournaments(tournaments);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      console.error('SimpleTournamentList: Error loading tournaments:', errorMessage);
+      // console.error('SimpleTournamentList: Error loading tournaments:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ const SimpleTournamentList: React.FC = () => {
   }, [loadTournaments]);
 
   const handleTournamentPress = (tournament: TournamentCore) => {
-    console.log('Tournament clicked:', tournament.name, tournament.visNo);
+    // console.log('Tournament clicked:', tournament.name, tournament.visNo);
     setSelectedTournament(tournament);
   };
 

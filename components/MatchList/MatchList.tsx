@@ -40,7 +40,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         return localStorage.getItem('matchlist-selectedDate') || '';
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      // console.warn('localStorage not available:', error);
     }
     return '';
   });
@@ -51,7 +51,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         return (localStorage.getItem('matchlist-genderFilter') as 'All' | 'M' | 'W') || 'All';
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      // console.warn('localStorage not available:', error);
     }
     return 'All';
   });
@@ -62,7 +62,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         return localStorage.getItem('matchlist-courtFilter') || 'All';
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      // console.warn('localStorage not available:', error);
     }
     return 'All';
   });
@@ -73,7 +73,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         return localStorage.getItem('matchlist-refereeFilter') || 'All';
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      // console.warn('localStorage not available:', error);
     }
     return 'All';
   });
@@ -84,7 +84,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
       }
     } catch (error) {
-      console.warn('localStorage not available:', error);
+      // console.warn('localStorage not available:', error);
     }
     return 'desc';
   });
@@ -100,7 +100,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         localStorage.setItem('matchlist-selectedDate', date);
       }
     } catch (error) {
-      console.warn('Failed to save selectedDate to localStorage:', error);
+      // console.warn('Failed to save selectedDate to localStorage:', error);
     }
   };
 
@@ -111,7 +111,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         localStorage.setItem('matchlist-genderFilter', gender);
       }
     } catch (error) {
-      console.warn('Failed to save genderFilter to localStorage:', error);
+      // console.warn('Failed to save genderFilter to localStorage:', error);
     }
   };
 
@@ -122,7 +122,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         localStorage.setItem('matchlist-courtFilter', court);
       }
     } catch (error) {
-      console.warn('Failed to save courtFilter to localStorage:', error);
+      // console.warn('Failed to save courtFilter to localStorage:', error);
     }
   };
 
@@ -133,7 +133,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         localStorage.setItem('matchlist-refereeFilter', referee);
       }
     } catch (error) {
-      console.warn('Failed to save refereeFilter to localStorage:', error);
+      // console.warn('Failed to save refereeFilter to localStorage:', error);
     }
   };
 
@@ -144,7 +144,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         localStorage.setItem('matchlist-sortOrder', order);
       }
     } catch (error) {
-      console.warn('Failed to save sortOrder to localStorage:', error);
+      // console.warn('Failed to save sortOrder to localStorage:', error);
     }
   };
 
@@ -232,7 +232,7 @@ export const MatchList: React.FC<MatchListProps> = ({
         defaultDate = dates[dates.length - 1];
       }
       
-      console.log('🗓️ MatchList - Setting default date (from today onwards):', defaultDate);
+      // console.log('🗓️ MatchList - Setting default date (from today onwards):', defaultDate);
       updateSelectedDate(defaultDate);
     }
   }, [matches]);
@@ -243,7 +243,7 @@ export const MatchList: React.FC<MatchListProps> = ({
     
     // Apply date filter - show matches from selected date onwards
     if (selectedDate) {
-      console.log('🗓️ MatchList - Filtering from date:', selectedDate);
+      // console.log('🗓️ MatchList - Filtering from date:', selectedDate);
       const beforeFilter = filteredMatches.length;
       
       filteredMatches = filteredMatches.filter(match => {
@@ -251,13 +251,13 @@ export const MatchList: React.FC<MatchListProps> = ({
         const isIncluded = matchDate && matchDate >= selectedDate;
         
         if (!isIncluded && matchDate) {
-          console.log(`🗓️ Excluded match: ${matchDate} < ${selectedDate}`);
+          // console.log(`🗓️ Excluded match: ${matchDate} < ${selectedDate}`);
         }
         
         return isIncluded;
       });
       
-      console.log(`🗓️ MatchList - Date filter: ${beforeFilter} -> ${filteredMatches.length} matches`);
+      // console.log(`🗓️ MatchList - Date filter: ${beforeFilter} -> ${filteredMatches.length} matches`);
     }
     // If no date selected, show all matches
     
@@ -316,7 +316,7 @@ export const MatchList: React.FC<MatchListProps> = ({
 
   // Handle date change
   const handleDateChange = (newDate: string) => {
-    console.log('🗓️ MatchList - Date changed to:', newDate);
+    // console.log('🗓️ MatchList - Date changed to:', newDate);
     updateSelectedDate(newDate);
   };
 
@@ -729,7 +729,7 @@ export const MatchList: React.FC<MatchListProps> = ({
                         localStorage.removeItem('matchlist-sortOrder');
                       }
                     } catch (error) {
-                      console.warn('Failed to clear localStorage:', error);
+                      // console.warn('Failed to clear localStorage:', error);
                     }
                   }}
                 >

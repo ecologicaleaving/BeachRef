@@ -59,7 +59,7 @@ const RefereeMonitorScreenContent: React.FC = () => {
     if (tournament?.No) {
       // Clear cache if tournament changed
       if (refereeCacheKey && refereeCacheKey !== tournament.No) {
-        console.log(`🏐 REFEREE MONITOR: Tournament changed from ${refereeCacheKey} to ${tournament.No}, clearing cache`);
+        // console.log(`🏐 REFEREE MONITOR: Tournament changed from ${refereeCacheKey} to ${tournament.No}, clearing cache`);
         setRefereeList([]);
         setRefereeCacheKey(null);
         setSelectedReferee(null);
@@ -75,20 +75,20 @@ const RefereeMonitorScreenContent: React.FC = () => {
     
     // Check cache first for faster loading
     if (refereeCacheKey === tournament.No && refereeList.length > 0) {
-      console.log(`🏐 REFEREE MONITOR: Using cached referee list for tournament ${tournament.No} (${refereeList.length} referees)`);
+      // console.log(`🏐 REFEREE MONITOR: Using cached referee list for tournament ${tournament.No} (${refereeList.length} referees)`);
       return;
     }
     
     setLoadingReferees(true);
     try {
-      console.log(`🏐 REFEREE MONITOR: Loading referees for tournament ${tournament.No}...`);
+      // console.log(`🏐 REFEREE MONITOR: Loading referees for tournament ${tournament.No}...`);
       
       // Get matches directly to extract referees
       const matches = await VisApiService.fetchMatchesDirectFromAPI(tournament.No);
-      console.log(`🏐 REFEREE MONITOR: Found ${matches.length} matches for tournament ${tournament.No}`);
+      // console.log(`🏐 REFEREE MONITOR: Found ${matches.length} matches for tournament ${tournament.No}`);
       
       if (matches.length === 0) {
-        console.log(`🏐 REFEREE MONITOR: No matches found - tournament may not have started yet`);
+        // console.log(`🏐 REFEREE MONITOR: No matches found - tournament may not have started yet`);
         Alert.alert('No Referees Found', 'This tournament has no matches scheduled yet, so referee assignments are not available.');
         setLoadingReferees(false);
         return;
@@ -122,10 +122,10 @@ const RefereeMonitorScreenContent: React.FC = () => {
       
       setRefereeList(referees);
       setRefereeCacheKey(tournament.No); // Cache this result
-      console.log(`🏐 REFEREE MONITOR: Extracted and cached ${referees.length} unique referees:`, referees.map(r => r.Name));
+      // console.log(`🏐 REFEREE MONITOR: Extracted and cached ${referees.length} unique referees:`, referees.map(r => r.Name));
       
     } catch (error) {
-      console.error('Failed to load referees:', error);
+      // console.error('Failed to load referees:', error);
       Alert.alert('Error', 'Failed to load referee list');
     } finally {
       setLoadingReferees(false);
@@ -160,7 +160,7 @@ const RefereeMonitorScreenContent: React.FC = () => {
             
             allMatches = [...allMatches, ...matchesWithMeta];
           } catch (error) {
-            console.warn(`Failed to load referee matches for ${mergedTournament.Name}:`, error);
+            // console.warn(`Failed to load referee matches for ${mergedTournament.Name}:`, error);
           }
         }
       } else {
@@ -194,10 +194,10 @@ const RefereeMonitorScreenContent: React.FC = () => {
 
       setRefereeMatches(sortedMatches);
       
-      console.log(`🏐 REFEREE MONITOR: Loaded ${sortedMatches.length} matches for ${referee.Name}`);
+      // console.log(`🏐 REFEREE MONITOR: Loaded ${sortedMatches.length} matches for ${referee.Name}`);
 
     } catch (error) {
-      console.error(`Error loading referee matches for ${referee.Name}:`, error);
+      // console.error(`Error loading referee matches for ${referee.Name}:`, error);
       Alert.alert('Error', 'Failed to load referee matches');
     } finally {
       setLoadingRefereeMatches(false);

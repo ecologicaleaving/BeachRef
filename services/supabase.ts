@@ -9,9 +9,9 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const isSupabaseEnabled = supabaseUrl && supabaseAnonKey;
 
 if (!isSupabaseEnabled) {
-  console.warn('Supabase disabled - missing environment variables. Running in API-only mode.');
+  // console.warn('Supabase disabled - missing environment variables. Running in API-only mode.');
 } else {
-  console.log('Supabase enabled with valid project configuration.');
+  // console.log('Supabase enabled with valid project configuration.');
 }
 
 // Type-safe Supabase client with React Native optimizations
@@ -38,7 +38,7 @@ export const supabase: SupabaseClient | null = isSupabaseEnabled
 // Connection test helper
 export const testSupabaseConnection = async (): Promise<boolean> => {
   if (!supabase) {
-    console.warn('Supabase client not available - running in API-only mode');
+    // console.warn('Supabase client not available - running in API-only mode');
     return false;
   }
   
@@ -52,13 +52,13 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     
     // Any other error indicates connection issues
     if (error) {
-      console.error('Supabase connection test failed:', error);
+      // console.error('Supabase connection test failed:', error);
       return false;
     }
     
     return true;
   } catch (err) {
-    console.error('Supabase connection test error:', err);
+    // console.error('Supabase connection test error:', err);
     return false;
   }
 };

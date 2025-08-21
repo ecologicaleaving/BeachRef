@@ -281,7 +281,7 @@ export const usePerformanceMonitoring = (
         setImplementation(selection.implementation);
         setAbTestGroup(selection.abTestGroup);
       } catch (error) {
-        console.warn('Failed to initialize A/B testing for performance monitoring:', error);
+        // console.warn('Failed to initialize A/B testing for performance monitoring:', error);
         setImplementation('new'); // Default to new implementation
       }
     }
@@ -372,7 +372,7 @@ export const usePerformanceMonitoring = (
     try {
       // In a real implementation, this would send metrics to analytics service
       if (process.env.NODE_ENV === 'development') {
-        console.debug(`Flushing ${metricsBuffer.current.length} performance metrics for ${source}`, {
+        // console.debug(`Flushing ${metricsBuffer.current.length} performance metrics for ${source}`, {
           implementation,
           abTestGroup,
           metrics: metricsBuffer.current.slice(-5) // Show last 5 metrics
@@ -385,7 +385,7 @@ export const usePerformanceMonitoring = (
       // Clear buffer after successful flush
       metricsBuffer.current = [];
     } catch (error) {
-      console.error('Failed to flush performance metrics:', error);
+      // console.error('Failed to flush performance metrics:', error);
     }
   }, [source, implementation, abTestGroup]);
 

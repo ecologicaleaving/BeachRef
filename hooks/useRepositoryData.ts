@@ -110,7 +110,7 @@ export const useRepositoryData = <T>(
       
       // Log performance metrics
       if (process.env.NODE_ENV === 'development') {
-        console.debug(`Repository data fetch completed in ${endTime - startTime}ms`, {
+        // console.debug(`Repository data fetch completed in ${endTime - startTime}ms`, {
           cacheHit: hasCache ? (result as any).source === 'cache' : false,
           dataSize: result ? JSON.stringify(result).length : 0
         });
@@ -123,7 +123,7 @@ export const useRepositoryData = <T>(
       
       // Retry logic
       if (retryAttempt < retryCount) {
-        console.warn(`Repository fetch failed (attempt ${retryAttempt + 1}/${retryCount + 1}), retrying in ${retryDelay}ms:`, error.message);
+        // console.warn(`Repository fetch failed (attempt ${retryAttempt + 1}/${retryCount + 1}), retrying in ${retryDelay}ms:`, error.message);
         
         retryTimeoutRef.current = setTimeout(() => {
           fetchData(retryAttempt + 1);
@@ -133,7 +133,7 @@ export const useRepositoryData = <T>(
       }
       
       setError(error);
-      console.error('Repository fetch failed after all retries:', error);
+      // console.error('Repository fetch failed after all retries:', error);
     } finally {
       if (mountedRef.current) {
         setLoading(false);

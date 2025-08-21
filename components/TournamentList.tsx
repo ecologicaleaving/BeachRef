@@ -158,7 +158,7 @@ const TournamentList: React.FC = () => {
       const isConnected = await testSupabaseConnection();
       setSupabaseConnected(isConnected);
     } catch (err) {
-      console.error('Failed to test Supabase connection:', err);
+      // console.error('Failed to test Supabase connection:', err);
       setSupabaseConnected(false);
     }
   }, []);
@@ -174,7 +174,7 @@ const TournamentList: React.FC = () => {
       // Use offline-first strategy when network is unavailable
       let result: CacheResult<Tournament[]>;
       if (isOffline) {
-        console.log('Network offline, using offline-first strategy');
+        // console.log('Network offline, using offline-first strategy');
         result = await CacheService.getTournamentsOffline({ 
           currentlyActive: true, 
           tournamentType: selectedType,
@@ -201,7 +201,7 @@ const TournamentList: React.FC = () => {
         setShowOfflineBanner(false);
       }
       
-      console.log(`Loaded ${result.data.length} tournaments from ${result.source}`);
+      // console.log(`Loaded ${result.data.length} tournaments from ${result.source}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);

@@ -123,10 +123,10 @@ export const useCourtManagement = (): UseCourtManagement => {
     
     setLoadingCourts(true);
     try {
-      console.log(`🏐 DEBUG: Loading courts for tournament ${tournamentNo}...`);
+      // console.log(`🏐 DEBUG: Loading courts for tournament ${tournamentNo}...`);
       
       const matches = await visApiClient.fetchMatchesForTournament(tournamentNo);
-      console.log(`🏐 DEBUG: Found ${matches.length} matches for court analysis`);
+      // console.log(`🏐 DEBUG: Found ${matches.length} matches for court analysis`);
       
       // Extract unique courts from matches
       const courts = [...new Set(
@@ -136,10 +136,10 @@ export const useCourtManagement = (): UseCourtManagement => {
           .filter(court => court.trim() !== '')
       )].sort();
       
-      console.log(`🏐 DEBUG: Available courts:`, courts);
+      // console.log(`🏐 DEBUG: Available courts:`, courts);
       
       if (courts.length === 0) {
-        console.log(`🏐 DEBUG: No courts found in match data`);
+        // console.log(`🏐 DEBUG: No courts found in match data`);
         Alert.alert('No Courts Found', 'No court information is available for this tournament yet.');
         return;
       }
@@ -157,12 +157,12 @@ export const useCourtManagement = (): UseCourtManagement => {
           setSelectedCourt('All Courts');
         }
       } catch (error) {
-        console.error('Failed to load court preference:', error);
+        // console.error('Failed to load court preference:', error);
         setSelectedCourt('All Courts');
       }
       
     } catch (error) {
-      console.error('Failed to load courts:', error);
+      // console.error('Failed to load courts:', error);
       Alert.alert('Error', 'Failed to load court information. Please check your connection.');
     } finally {
       setLoadingCourts(false);
@@ -210,7 +210,7 @@ export const useCourtManagement = (): UseCourtManagement => {
           if (oppositeCode) {
             const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
             if (oppositeTournament) {
-              console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeTournament.No}`);
+              // console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeTournament.No}`);
               const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeTournament.No);
               const oppositeGender = extractGenderFromCode(oppositeTournament.Code);
               
@@ -227,7 +227,7 @@ export const useCourtManagement = (): UseCourtManagement => {
           }
         }
       } catch (error) {
-        console.error('Failed to load opposite gender tournament:', error);
+        // console.error('Failed to load opposite gender tournament:', error);
       }
       
       // Filter by selected court if not "All Courts"
@@ -255,7 +255,7 @@ export const useCourtManagement = (): UseCourtManagement => {
       setCourtMatches(sortedMatches);
       
     } catch (error) {
-      console.error('Failed to load court matches:', error);
+      // console.error('Failed to load court matches:', error);
       Alert.alert('Error', 'Failed to load matches for selected court.');
     } finally {
       setLoadingCourtMatches(false);

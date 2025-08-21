@@ -602,8 +602,9 @@ const TournamentDetailScreenContent: React.FC = () => {
     <View style={styles.container}>
       <NavigationHeader 
         title={tournament.name || 'Tournament Details'} 
-        showBackButton={true}
+        showBackButton={false}
         showRefreshButton={true}
+        showStatusBar={false}
         onRefresh={() => {
           loadMatches();
         }}
@@ -622,16 +623,16 @@ const TournamentDetailScreenContent: React.FC = () => {
         {/* Tournament Summary Card - Compact version */}
         <View style={styles.compactSummaryCard}>
           <View style={styles.compactCardHeader}>
+            <View style={styles.infoRowContainer}>
+              <Text style={styles.infoIcon}>📅</Text>
+              <Text style={styles.infoValue}>{getDateRange()}</Text>
+            </View>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
               <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
             </View>
           </View>
           
           <View style={styles.compactInfo}>
-            <View style={styles.infoRowContainer}>
-              <Text style={styles.infoIcon}>📅</Text>
-              <Text style={styles.infoValue}>{getDateRange()}</Text>
-            </View>
             {getLocation() ? (
               <View style={styles.infoRowContainer}>
                 <Text style={styles.infoIcon}>📍</Text>
@@ -705,7 +706,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                   showGenderFilter={false}
                   showStatsInFilter={false}
                   showCourtFilter={true}
-                  showRefereeFilter={true}
+                  showRefereeFilter={false}
                 />
               </>
             )}
@@ -797,7 +798,7 @@ const styles = StyleSheet.create({
   },
   compactCardHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },

@@ -31,9 +31,9 @@ export class TournamentStorageService {
     try {
       const tournamentData = JSON.stringify(tournament);
       await AsyncStorage.setItem(STORAGE_KEYS.SELECTED_TOURNAMENT, tournamentData);
-      console.log('Tournament saved to storage:', tournament.No);
+      // console.log('Tournament saved to storage:', tournament.No);
     } catch (error) {
-      console.error('Failed to save selected tournament:', error);
+      // console.error('Failed to save selected tournament:', error);
       throw new Error('Failed to save tournament selection');
     }
   }
@@ -49,10 +49,10 @@ export class TournamentStorageService {
       }
       
       const tournament = JSON.parse(tournamentData) as Tournament;
-      console.log('Tournament loaded from storage:', tournament.No);
+      // console.log('Tournament loaded from storage:', tournament.No);
       return tournament;
     } catch (error) {
-      console.error('Failed to load selected tournament:', error);
+      // console.error('Failed to load selected tournament:', error);
       return null;
     }
   }
@@ -63,9 +63,9 @@ export class TournamentStorageService {
   static async clearSelectedTournament(): Promise<void> {
     try {
       await AsyncStorage.removeItem(STORAGE_KEYS.SELECTED_TOURNAMENT);
-      console.log('Tournament selection cleared from storage');
+      // console.log('Tournament selection cleared from storage');
     } catch (error) {
-      console.error('Failed to clear selected tournament:', error);
+      // console.error('Failed to clear selected tournament:', error);
       throw new Error('Failed to clear tournament selection');
     }
   }
@@ -78,7 +78,7 @@ export class TournamentStorageService {
       const tournament = await this.getSelectedTournament();
       return tournament !== null;
     } catch (error) {
-      console.error('Failed to check tournament selection:', error);
+      // console.error('Failed to check tournament selection:', error);
       return false;
     }
   }
@@ -90,9 +90,9 @@ export class TournamentStorageService {
     try {
       const preferencesData = JSON.stringify(preferences);
       await AsyncStorage.setItem(STORAGE_KEYS.USER_PREFERENCES, preferencesData);
-      console.log('User preferences saved');
+      // console.log('User preferences saved');
     } catch (error) {
-      console.error('Failed to save user preferences:', error);
+      // console.error('Failed to save user preferences:', error);
       throw new Error('Failed to save user preferences');
     }
   }
@@ -113,7 +113,7 @@ export class TournamentStorageService {
       
       return JSON.parse(preferencesData) as UserPreferences;
     } catch (error) {
-      console.error('Failed to load user preferences:', error);
+      // console.error('Failed to load user preferences:', error);
       // Return default preferences on error
       return {
         notificationsEnabled: true,
@@ -134,7 +134,7 @@ export class TournamentStorageService {
       preferences[key] = value;
       await this.saveUserPreferences(preferences);
     } catch (error) {
-      console.error(`Failed to update preference ${key}:`, error);
+      // console.error(`Failed to update preference ${key}:`, error);
       throw new Error(`Failed to update ${key} preference`);
     }
   }
@@ -146,9 +146,9 @@ export class TournamentStorageService {
     try {
       const key = `${STORAGE_KEYS.COURT_PREFERENCES}_${tournamentNo}`;
       await AsyncStorage.setItem(key, court);
-      console.log(`Court preference saved for tournament ${tournamentNo}: ${court}`);
+      // console.log(`Court preference saved for tournament ${tournamentNo}: ${court}`);
     } catch (error) {
-      console.error('Failed to save court preference:', error);
+      // console.error('Failed to save court preference:', error);
       throw new Error('Failed to save court preference');
     }
   }
@@ -161,7 +161,7 @@ export class TournamentStorageService {
       const key = `${STORAGE_KEYS.COURT_PREFERENCES}_${tournamentNo}`;
       return await AsyncStorage.getItem(key);
     } catch (error) {
-      console.error('Failed to load court preference:', error);
+      // console.error('Failed to load court preference:', error);
       return null;
     }
   }
@@ -178,7 +178,7 @@ export class TournamentStorageService {
       // and haven't completed onboarding
       return !hasSelectedTournament && !preferences.onboardingCompleted;
     } catch (error) {
-      console.error('Failed to check if new user:', error);
+      // console.error('Failed to check if new user:', error);
       // Assume new user on error for safety
       return true;
     }
@@ -191,7 +191,7 @@ export class TournamentStorageService {
     try {
       await this.updatePreference('onboardingCompleted', true);
     } catch (error) {
-      console.error('Failed to complete onboarding:', error);
+      // console.error('Failed to complete onboarding:', error);
       throw new Error('Failed to complete onboarding');
     }
   }
@@ -205,7 +205,7 @@ export class TournamentStorageService {
       const hasSelectedTournament = await this.hasSelectedTournament();
       return hasSelectedTournament ? 'dashboard' : 'selection';
     } catch (error) {
-      console.error('Failed to determine navigation state:', error);
+      // console.error('Failed to determine navigation state:', error);
       // Default to selection screen for safety
       return 'selection';
     }
@@ -228,7 +228,7 @@ export class TournamentStorageService {
       const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_${tournamentNo}`;
       await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedData));
     } catch (error) {
-      console.error('Failed to cache tournament details:', error);
+      // console.error('Failed to cache tournament details:', error);
     }
   }
 
@@ -257,7 +257,7 @@ export class TournamentStorageService {
       
       return cachedData.tournament;
     } catch (error) {
-      console.error('Failed to get cached tournament details:', error);
+      // console.error('Failed to get cached tournament details:', error);
       return null;
     }
   }
@@ -296,7 +296,7 @@ export class TournamentStorageService {
         await AsyncStorage.multiRemove(keysToRemove);
       }
     } catch (error) {
-      console.error('Failed to clear expired caches:', error);
+      // console.error('Failed to clear expired caches:', error);
     }
   }
 
@@ -322,9 +322,9 @@ export class TournamentStorageService {
         await AsyncStorage.multiRemove(keysToRemove);
       }
       
-      console.log('All referee data cleared from storage');
+      // console.log('All referee data cleared from storage');
     } catch (error) {
-      console.error('Failed to clear all data:', error);
+      // console.error('Failed to clear all data:', error);
       throw new Error('Failed to clear all data');
     }
   }

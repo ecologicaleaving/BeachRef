@@ -73,7 +73,7 @@ export class TournamentStatusSubscriptionService {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    console.log('Initializing TournamentStatusSubscriptionService');
+    // console.log('Initializing TournamentStatusSubscriptionService');
     
     // Initialize base real-time service
     RealtimeSubscriptionService.initialize();
@@ -100,13 +100,13 @@ export class TournamentStatusSubscriptionService {
 
     if (!this.circuitBreaker.canExecute()) {
       const recommendation = this.circuitBreaker.getRecommendation();
-      console.warn(`Cannot subscribe to tournament status: ${recommendation.reason}`);
+      // console.warn(`Cannot subscribe to tournament status: ${recommendation.reason}`);
       return false;
     }
 
     // Limit concurrent subscriptions for performance
     if (config.tournamentNumbers.length > this.MAX_CONCURRENT_TOURNAMENTS) {
-      console.warn(`Too many tournaments requested (${config.tournamentNumbers.length}), limiting to ${this.MAX_CONCURRENT_TOURNAMENTS}`);
+      // console.warn(`Too many tournaments requested (${config.tournamentNumbers.length}), limiting to ${this.MAX_CONCURRENT_TOURNAMENTS}`);
       config.tournamentNumbers = config.tournamentNumbers.slice(0, this.MAX_CONCURRENT_TOURNAMENTS);
     }
 
@@ -124,7 +124,7 @@ export class TournamentStatusSubscriptionService {
       
       if (success) {
         this.circuitBreaker.onSuccess();
-        console.log(`Successfully subscribed to tournament status for ${config.tournamentNumbers.length} tournaments`);
+        // console.log(`Successfully subscribed to tournament status for ${config.tournamentNumbers.length} tournaments`);
       } else {
         this.circuitBreaker.onFailure('Failed to establish tournament status subscriptions');
       }
@@ -132,7 +132,7 @@ export class TournamentStatusSubscriptionService {
       return success;
       
     } catch (error) {
-      console.error('Failed to subscribe to tournament status:', error);
+      // console.error('Failed to subscribe to tournament status:', error);
       this.circuitBreaker.onFailure(error instanceof Error ? error.message : 'Unknown error');
       return false;
     }
@@ -160,12 +160,12 @@ export class TournamentStatusSubscriptionService {
           }
         )
         .subscribe((status) => {
-          console.log(`Tournament status subscription status: ${status}`);
+          // console.log(`Tournament status subscription status: ${status}`);
           
           if (status === 'SUBSCRIBED') {
-            console.log('Tournament status subscription established');
+            // console.log('Tournament status subscription established');
           } else if (status === 'CLOSED') {
-            console.log('Tournament status subscription closed');
+            // console.log('Tournament status subscription closed');
             this.circuitBreaker.onFailure('Tournament subscription closed');
           }
         });
@@ -174,7 +174,7 @@ export class TournamentStatusSubscriptionService {
       return true;
       
     } catch (error) {
-      console.error('Failed to establish tournament subscriptions:', error);
+      // console.error('Failed to establish tournament subscriptions:', error);
       return false;
     }
   }
@@ -201,12 +201,12 @@ export class TournamentStatusSubscriptionService {
           }
         )
         .subscribe((status) => {
-          console.log(`Match schedule subscription status: ${status}`);
+          // console.log(`Match schedule subscription status: ${status}`);
           
           if (status === 'SUBSCRIBED') {
-            console.log('Match schedule subscription established');
+            // console.log('Match schedule subscription established');
           } else if (status === 'CLOSED') {
-            console.log('Match schedule subscription closed');
+            // console.log('Match schedule subscription closed');
             this.circuitBreaker.onFailure('Match subscription closed');
           }
         });
@@ -215,7 +215,7 @@ export class TournamentStatusSubscriptionService {
       return true;
       
     } catch (error) {
-      console.error('Failed to establish match subscriptions:', error);
+      // console.error('Failed to establish match subscriptions:', error);
       return false;
     }
   }
@@ -228,7 +228,7 @@ export class TournamentStatusSubscriptionService {
       const oldTournament = payload.old;
       const newTournament = payload.new;
       
-      console.log(`Tournament status change detected for ${newTournament.no}:`, {
+      // console.log(`Tournament status change detected for ${newTournament.no}:`, {
         oldStatus: oldTournament.status,
         newStatus: newTournament.status
       });
@@ -244,7 +244,7 @@ export class TournamentStatusSubscriptionService {
       this.queueEvent(event);
       
     } catch (error) {
-      console.error('Error handling tournament status change:', error);
+      // console.error('Error handling tournament status change:', error);
     }
   }
 
@@ -256,7 +256,7 @@ export class TournamentStatusSubscriptionService {
       const oldMatch = payload.old;
       const newMatch = payload.new;
       
-      console.log(`Match schedule change detected for tournament ${newMatch.tournament_no}:`, {
+      // console.log(`Match schedule change detected for tournament ${newMatch.tournament_no}:`, {
         match: newMatch.no_in_tournament,
         changes: this.detectMatchChanges(oldMatch, newMatch)
       });
@@ -272,7 +272,7 @@ export class TournamentStatusSubscriptionService {
       }
       
     } catch (error) {
-      console.error('Error handling match schedule change:', error);
+      // console.error('Error handling match schedule change:', error);
     }
   }
 
@@ -448,7 +448,7 @@ export class TournamentStatusSubscriptionService {
       return;
     }
 
-    console.log(`Processing ${this.eventQueue.length} tournament status events`);
+    // console.log(`Processing ${this.eventQueue.length} tournament status events`);
     
     // Sort events by priority and timestamp
     const sortedEvents = this.eventQueue.sort((a, b) => {
@@ -464,7 +464,7 @@ export class TournamentStatusSubscriptionService {
       try {
         listener([...sortedEvents]);
       } catch (error) {
-        console.error('Error in tournament status listener:', error);
+        // console.error('Error in tournament status listener:', error);
       }
     });
 
@@ -501,7 +501,7 @@ export class TournamentStatusSubscriptionService {
    * Cleanup all subscriptions
    */
   static async cleanup(): Promise<void> {
-    console.log('Cleaning up tournament status subscriptions');
+    // console.log('Cleaning up tournament status subscriptions');
     
     // Clear batch timeout
     if (this.batchTimeout) {
@@ -513,9 +513,9 @@ export class TournamentStatusSubscriptionService {
     for (const [key, subscription] of this.activeTournamentSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
-        console.log(`Removed tournament subscription: ${key}`);
+        // console.log(`Removed tournament subscription: ${key}`);
       } catch (error) {
-        console.error(`Error removing tournament subscription ${key}:`, error);
+        // console.error(`Error removing tournament subscription ${key}:`, error);
       }
     }
     this.activeTournamentSubscriptions.clear();
@@ -524,9 +524,9 @@ export class TournamentStatusSubscriptionService {
     for (const [key, subscription] of this.activeMatchSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
-        console.log(`Removed match subscription: ${key}`);
+        // console.log(`Removed match subscription: ${key}`);
       } catch (error) {
-        console.error(`Error removing match subscription ${key}:`, error);
+        // console.error(`Error removing match subscription ${key}:`, error);
       }
     }
     this.activeMatchSubscriptions.clear();
@@ -541,6 +541,6 @@ export class TournamentStatusSubscriptionService {
     }
 
     this.isInitialized = false;
-    console.log('Tournament status subscriptions cleanup complete');
+    // console.log('Tournament status subscriptions cleanup complete');
   }
 }

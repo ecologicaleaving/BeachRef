@@ -145,7 +145,7 @@ export const useTouchFeedback = (
       config.onHapticFeedback(type);
       
     } catch (error) {
-      console.warn('useTouchFeedback: Haptic feedback failed', error);
+      // console.warn('useTouchFeedback: Haptic feedback failed', error);
     }
   }, [config.hapticEnabled, config.hapticType, config.enablePerformanceTracking, config.onHapticFeedback, hapticPatterns]);
   
@@ -229,7 +229,7 @@ export const useTouchFeedback = (
       config.onVisualFeedback(animatedValue);
       
     } catch (error) {
-      console.warn('useTouchFeedback: Visual feedback failed', error);
+      // console.warn('useTouchFeedback: Visual feedback failed', error);
     }
   }, [config.visualEnabled, config.visualType, config.visualDuration, config.useNativeDriver, config.enablePerformanceTracking, config.onVisualFeedback, opacityValue, scaleValue]);
   
@@ -242,7 +242,7 @@ export const useTouchFeedback = (
     try {
       // Audio feedback implementation would go here
       // For now, this is a placeholder
-      console.log(`useTouchFeedback: Audio feedback - ${type} at volume ${config.audioVolume}`);
+      // console.log(`useTouchFeedback: Audio feedback - ${type} at volume ${config.audioVolume}`);
       
       // Performance tracking
       if (config.enablePerformanceTracking) {
@@ -254,7 +254,7 @@ export const useTouchFeedback = (
       config.onAudioFeedback(type);
       
     } catch (error) {
-      console.warn('useTouchFeedback: Audio feedback failed', error);
+      // console.warn('useTouchFeedback: Audio feedback failed', error);
     }
   }, [config.audioEnabled, config.audioType, config.audioVolume, config.enablePerformanceTracking, config.onAudioFeedback]);
   
@@ -315,7 +315,7 @@ export const useTouchFeedback = (
   const updateFeedbackConfig = useCallback((newConfig: Partial<TouchFeedbackConfig>) => {
     // This would update the configuration
     // For now, it's a placeholder since we're using immutable options
-    console.log('useTouchFeedback: Configuration update requested', newConfig);
+    // console.log('useTouchFeedback: Configuration update requested', newConfig);
   }, []);
   
   // Performance metrics getter

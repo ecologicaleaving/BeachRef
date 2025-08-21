@@ -45,7 +45,7 @@ export const useRealtimeSubscription = (tournamentNo: string | null, enabled: bo
       }
 
       try {
-        console.log(`Setting up real-time subscription for tournament: ${tournamentNo}`);
+        // console.log(`Setting up real-time subscription for tournament: ${tournamentNo}`);
         const success = await RealtimeSubscriptionService.subscribeTournament(tournamentNo, true);
         
         if (isMounted) {
@@ -55,7 +55,7 @@ export const useRealtimeSubscription = (tournamentNo: string | null, enabled: bo
           }
         }
       } catch (error) {
-        console.error('Error setting up real-time subscription:', error);
+        // console.error('Error setting up real-time subscription:', error);
         if (isMounted) {
           setIsSubscribed(false);
           setSubscriptionError(error instanceof Error ? error.message : 'Subscription failed');
@@ -65,7 +65,7 @@ export const useRealtimeSubscription = (tournamentNo: string | null, enabled: bo
 
     const unsubscribe = async () => {
       if (tournamentNo) {
-        console.log(`Cleaning up real-time subscription for tournament: ${tournamentNo}`);
+        // console.log(`Cleaning up real-time subscription for tournament: ${tournamentNo}`);
         await RealtimeSubscriptionService.unsubscribeTournament(tournamentNo);
         if (isMounted) {
           setIsSubscribed(false);
@@ -162,7 +162,7 @@ export const useMultipleRealtimeSubscriptions = (
             newErrors[tournamentNo] = 'Failed to establish subscription';
           }
         } catch (error) {
-          console.error(`Error subscribing to tournament ${tournamentNo}:`, error);
+          // console.error(`Error subscribing to tournament ${tournamentNo}:`, error);
           newSubscriptions[tournamentNo] = false;
           newErrors[tournamentNo] = error instanceof Error ? error.message : 'Subscription failed';
         }

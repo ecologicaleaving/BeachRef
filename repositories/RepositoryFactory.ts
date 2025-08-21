@@ -242,7 +242,7 @@ export class RepositoryFactory {
     featureFlagManager.setFlag('REPOSITORY_TOURNAMENT_V2', false);
     featureFlagManager.setFlag('REPOSITORY_MATCH_V2', false);
     
-    console.warn('Repository factory: Forced fallback to legacy implementation activated');
+    // console.warn('Repository factory: Forced fallback to legacy implementation activated');
   }
 
   /**
@@ -300,7 +300,7 @@ export class RepositoryFactory {
     try {
       featureFlagValue = featureFlagManager.isEnabled(featureFlagKey);
     } catch (error) {
-      console.warn(`Feature flag service error, falling back to legacy: ${error.message}`);
+      // console.warn(`Feature flag service error, falling back to legacy: ${error.message}`);
       return {
         implementation: 'legacy',
         featureFlagValue: false,

@@ -89,7 +89,7 @@ export function useAppState(): UseAppStateReturn {
     setStateHistory(initialHistory);
     setLastStateChange(Date.now());
 
-    console.log('useAppState initialized with state:', initialState);
+    // console.log('useAppState initialized with state:', initialState);
 
     // Set up state change listener
     const unsubscribe = appStateManager.addStateChangeListener((event: AppStateEvent) => {
@@ -105,7 +105,7 @@ export function useAppState(): UseAppStateReturn {
       const updatedHistory = appStateManager.getStateHistory();
       setStateHistory(updatedHistory);
 
-      console.log('App state changed in hook:', {
+      // console.log('App state changed in hook:', {
         from: event.previousState,
         to: event.currentState,
         activeConnections: event.activeConnections,
@@ -166,7 +166,7 @@ export function useAppState(): UseAppStateReturn {
       criticalConnections: prev.criticalConnections + 1
     }));
 
-    console.log('Added critical connection:', connectionId);
+    // console.log('Added critical connection:', connectionId);
   }, []);
 
   const removeCriticalConnection = useCallback((connectionId: string) => {
@@ -178,14 +178,14 @@ export function useAppState(): UseAppStateReturn {
       criticalConnections: Math.max(0, prev.criticalConnections - 1)
     }));
 
-    console.log('Removed critical connection:', connectionId);
+    // console.log('Removed critical connection:', connectionId);
   }, []);
 
   const updateSuspensionConfig = useCallback((config: Partial<ConnectionSuspensionConfig>) => {
     appStateManager.updateSuspensionConfig(config);
     setSuspensionConfig(prev => ({ ...prev, ...config }));
     
-    console.log('Updated suspension config:', config);
+    // console.log('Updated suspension config:', config);
   }, []);
 
   const forceSuspendConnections = useCallback(async () => {
@@ -196,9 +196,9 @@ export function useAppState(): UseAppStateReturn {
       const updatedStats = appStateManager.getLifecycleStats();
       setLifecycleStats(updatedStats);
 
-      console.log('Forced connection suspension completed');
+      // console.log('Forced connection suspension completed');
     } catch (error) {
-      console.error('Failed to force suspend connections:', error);
+      // console.error('Failed to force suspend connections:', error);
       throw error;
     }
   }, []);
@@ -211,9 +211,9 @@ export function useAppState(): UseAppStateReturn {
       const updatedStats = appStateManager.getLifecycleStats();
       setLifecycleStats(updatedStats);
 
-      console.log('Forced connection resume completed');
+      // console.log('Forced connection resume completed');
     } catch (error) {
-      console.error('Failed to force resume connections:', error);
+      // console.error('Failed to force resume connections:', error);
       throw error;
     }
   }, []);

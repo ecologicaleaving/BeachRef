@@ -51,7 +51,7 @@ export class MetricsCollector {
 
       return data.id
     } catch (error) {
-      console.error('Failed to record sync start:', error)
+      // console.error('Failed to record sync start:', error)
       return 'sync_start_failed'
     }
   }
@@ -77,7 +77,7 @@ export class MetricsCollector {
         .single()
 
       if (fetchError || !executionData) {
-        console.error('Failed to fetch execution start time:', fetchError)
+        // console.error('Failed to fetch execution start time:', fetchError)
         return false
       }
 
@@ -98,7 +98,7 @@ export class MetricsCollector {
         .eq('id', params.execution_id)
 
       if (updateError) {
-        console.error('Failed to update execution history:', updateError)
+        // console.error('Failed to update execution history:', updateError)
         return false
       }
 
@@ -116,7 +116,7 @@ export class MetricsCollector {
 
       return true
     } catch (error) {
-      console.error('Failed to record sync completion:', error)
+      // console.error('Failed to record sync completion:', error)
       return false
     }
   }
@@ -152,7 +152,7 @@ export class MetricsCollector {
 
       return !error
     } catch (error) {
-      console.error('Failed to record tournament sync result:', error)
+      // console.error('Failed to record tournament sync result:', error)
       return false
     }
   }
@@ -208,7 +208,7 @@ export class MetricsCollector {
 
       return metrics
     } catch (error) {
-      console.error('Failed to get sync monitoring metrics:', error)
+      // console.error('Failed to get sync monitoring metrics:', error)
       return this.getEmptyMonitoringMetrics()
     }
   }
@@ -244,7 +244,7 @@ export class MetricsCollector {
       this.setCachedMetrics(cacheKey, metrics, 10 * 60 * 1000)
       return metrics
     } catch (error) {
-      console.error('Failed to get performance metrics:', error)
+      // console.error('Failed to get performance metrics:', error)
       return {
         cacheHitRatio: 0,
         averageResponseTime: 0,
@@ -326,7 +326,7 @@ export class MetricsCollector {
         consecutive_failures: consecutiveFailures
       }
     } catch (error) {
-      console.error(`Failed to get sync statistics for ${entityType}:`, error)
+      // console.error(`Failed to get sync statistics for ${entityType}:`, error)
       return this.getEmptySyncStatistics(entityType)
     }
   }
@@ -344,7 +344,7 @@ export class MetricsCollector {
       if (error) throw error
       return data || []
     } catch (error) {
-      console.error('Failed to get sync health summary:', error)
+      // console.error('Failed to get sync health summary:', error)
       return []
     }
   }
@@ -613,7 +613,7 @@ export class MetricsCollector {
         .update(updateData)
         .eq('entity_type', entityType)
     } catch (error) {
-      console.error('Failed to update sync status metrics:', error)
+      // console.error('Failed to update sync status metrics:', error)
     }
   }
 
@@ -634,7 +634,7 @@ export class MetricsCollector {
         .update({ next_sync: nextSync.toISOString() })
         .eq('entity_type', entityType)
     } catch (error) {
-      console.error('Failed to update next sync time:', error)
+      // console.error('Failed to update next sync time:', error)
     }
   }
 

@@ -18,7 +18,7 @@ export function HighContrastToggle() {
   const themeContext = useContext(ThemeContext);
   
   if (!themeContext) {
-    console.warn('HighContrastToggle: ThemeContext not found. Make sure component is wrapped in ThemeProvider.');
+    // console.warn('HighContrastToggle: ThemeContext not found. Make sure component is wrapped in ThemeProvider.');
     return null;
   }
   

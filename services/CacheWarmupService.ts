@@ -43,12 +43,12 @@ export class CacheWarmupService {
    */
   static async performInitialWarmup(): Promise<void> {
     if (this.warmupInProgress) {
-      console.log('Cache warmup already in progress, skipping...');
+      // console.log('Cache warmup already in progress, skipping...');
       return;
     }
 
     this.warmupInProgress = true;
-    console.log('Starting cache warmup for tournament data...');
+    // console.log('Starting cache warmup for tournament data...');
 
     try {
       const startTime = performance.now();
@@ -72,9 +72,9 @@ export class CacheWarmupService {
           await CacheService.getTournaments(filter);
           
           this.stats.recordHit('memory', requestId);
-          console.log(`Warmed up cache for filter: ${JSON.stringify(filter)}`);
+          // console.log(`Warmed up cache for filter: ${JSON.stringify(filter)}`);
         } catch (error) {
-          console.warn('Cache warmup failed for filter:', filter, error);
+          // console.warn('Cache warmup failed for filter:', filter, error);
         }
       });
 
@@ -83,11 +83,11 @@ export class CacheWarmupService {
       const endTime = performance.now();
       const warmupDuration = endTime - startTime;
 
-      console.log(`Cache warmup completed in ${warmupDuration.toFixed(2)}ms`);
+      // console.log(`Cache warmup completed in ${warmupDuration.toFixed(2)}ms`);
       this.logWarmupStats();
       
     } catch (error) {
-      console.error('Cache warmup process failed:', error);
+      // console.error('Cache warmup process failed:', error);
     } finally {
       this.warmupInProgress = false;
     }
@@ -99,12 +99,12 @@ export class CacheWarmupService {
    */
   static async preloadTournamentData(tournaments: TournamentCore[]): Promise<void> {
     if (!this.initialized) {
-      console.warn('CacheWarmupService not initialized, cannot preload tournament data');
+      // console.warn('CacheWarmupService not initialized, cannot preload tournament data');
       return;
     }
 
     try {
-      console.log(`Preloading ${tournaments.length} tournaments into memory cache...`);
+      // console.log(`Preloading ${tournaments.length} tournaments into memory cache...`);
       const startTime = performance.now();
 
       // Group tournaments by type for better cache segmentation
@@ -122,14 +122,14 @@ export class CacheWarmupService {
         // Manually warm the cache by setting the data directly
         await this.warmCacheWithData(tournamentList, filterOptions);
         
-        console.log(`Preloaded ${tournamentList.length} ${type} tournaments`);
+        // console.log(`Preloaded ${tournamentList.length} ${type} tournaments`);
       }
 
       const endTime = performance.now();
-      console.log(`Tournament preloading completed in ${(endTime - startTime).toFixed(2)}ms`);
+      // console.log(`Tournament preloading completed in ${(endTime - startTime).toFixed(2)}ms`);
 
     } catch (error) {
-      console.error('Tournament data preloading failed:', error);
+      // console.error('Tournament data preloading failed:', error);
     }
   }
 
@@ -142,7 +142,7 @@ export class CacheWarmupService {
     this.warmupInProgress = true;
 
     try {
-      console.log('Performing smart cache warmup based on usage patterns...');
+      // console.log('Performing smart cache warmup based on usage patterns...');
       
       // Get cache statistics to understand current state
       const cacheStats = this.stats.getStats();
@@ -157,14 +157,14 @@ export class CacheWarmupService {
           await CacheService.getTournaments(filter);
           const duration = performance.now() - startTime;
           
-          console.log(`Smart warmup: ${JSON.stringify(filter)} loaded in ${duration.toFixed(2)}ms`);
+          // console.log(`Smart warmup: ${JSON.stringify(filter)} loaded in ${duration.toFixed(2)}ms`);
         } catch (error) {
-          console.warn('Smart warmup failed for filter:', filter, error);
+          // console.warn('Smart warmup failed for filter:', filter, error);
         }
       }
 
     } catch (error) {
-      console.error('Smart cache warmup failed:', error);
+      // console.error('Smart cache warmup failed:', error);
     } finally {
       this.warmupInProgress = false;
     }
@@ -226,7 +226,7 @@ export class CacheWarmupService {
       };
 
     } catch (error) {
-      console.error('Memory performance optimization failed:', error);
+      // console.error('Memory performance optimization failed:', error);
       return {
         optimizationsApplied: ['Error during optimization'],
         performanceMetrics: {
@@ -243,11 +243,11 @@ export class CacheWarmupService {
    */
   static schedulePeriodicWarmup(intervalMinutes: number = 30): void {
     setInterval(async () => {
-      console.log('Running scheduled cache warmup...');
+      // console.log('Running scheduled cache warmup...');
       await this.performSmartWarmup();
     }, intervalMinutes * 60 * 1000);
 
-    console.log(`Scheduled periodic cache warmup every ${intervalMinutes} minutes`);
+    // console.log(`Scheduled periodic cache warmup every ${intervalMinutes} minutes`);
   }
 
   /**
@@ -310,10 +310,10 @@ export class CacheWarmupService {
     try {
       const cacheResult = await CacheService.getTournaments(filterOptions);
       if (cacheResult) {
-        console.log(`Cache warmed for filter: ${JSON.stringify(filterOptions)}`);
+        // console.log(`Cache warmed for filter: ${JSON.stringify(filterOptions)}`);
       }
     } catch (error) {
-      console.warn('Failed to warm cache with data:', error);
+      // console.warn('Failed to warm cache with data:', error);
     }
   }
 
@@ -330,12 +330,12 @@ export class CacheWarmupService {
 
   private static logWarmupStats(): void {
     const stats = this.stats.getStats();
-    console.log('Cache Warmup Statistics:', {
-      totalRequests: stats.totalRequests,
-      memoryHits: stats.memoryHits,
-      hitRatio: stats.hitRatio,
-      cacheEfficiency: stats.hitRatio >= 0.7 ? 'OPTIMAL' : 'NEEDS_IMPROVEMENT'
-    });
+    // console.log('Cache Warmup Statistics:', {
+    //   totalRequests: stats.totalRequests,
+    //   memoryHits: stats.memoryHits,
+    //   hitRatio: stats.hitRatio,
+    //   cacheEfficiency: stats.hitRatio >= 0.7 ? 'OPTIMAL' : 'NEEDS_IMPROVEMENT'
+    // });
   }
 
   private static calculateAverageResponseTime(): number {

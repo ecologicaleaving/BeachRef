@@ -442,11 +442,7 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
 };
 
 const TournamentSelectionScreen: React.FC = () => {
-  console.log('🚀 TournamentSelectionScreen component is executing!');
-  
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
-  
-  console.log('🔥 Setting up component state...');
   
   // Add test tournament data to verify the component works
   const testTournaments: TournamentCore[] = [
@@ -522,21 +518,15 @@ const TournamentSelectionScreen: React.FC = () => {
   }
 
   const loadTournaments = useCallback(async (forceRefresh = false, isInitial = false) => {
-    console.log(`🏐 TournamentSelectionScreen: loadTournaments called with forceRefresh=${forceRefresh}, isInitial=${isInitial}`);
-    
     try {
       if (isInitial) {
-        console.log('🏐 Setting initial loading to true');
         setInitialLoading(true);
       } else {
-        console.log('🏐 Setting tournament loading to true');
         setTournamentLoading(true);
       }
       setError(null);
       
       // DIRECT API CALL - Bypass broken cache system
-      console.log('🔥 MAKING DIRECT API CALL - BYPASSING CACHE');
-      
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
       
@@ -551,53 +541,89 @@ const TournamentSelectionScreen: React.FC = () => {
       
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
       
-      console.log('🧪 Making direct API call with request:', {
-        tournamentType: 'BPT',
-        maxResults: 50
-      });
-      
       const response = await visApi.getEventList({
         tournamentType: 'BPT',
         maxResults: 50
       });
       
       if (response.success && response.xmlData) {
-        console.log('🔥 VIS API SUCCESS - XML length:', response.xmlData.length);
-        console.log('🔥 VIS XML sample:', response.xmlData.substring(0, 800));
-        
         // Parse manually
         const visTournaments = parseXMLDirectly(response.xmlData);
-        console.log(`🔥 VIS PARSED ${visTournaments.length} tournaments`);
         
-        // LOG EVERY TOURNAMENT FROM VIS
-        visTournaments.forEach((t, i) => {
-          console.log(`🔥 VIS Tournament ${i}:`, {
-            name: t.name,
-            visNo: t.visNo, 
-            dates: t.dates,
-            city: t.city,
-            country: t.country
-          });
-        });
-        
-        console.log('🔥 SETTING VIS TOURNAMENTS IN STATE...');
+        // Show tournaments immediately with EventNo fallback
         setTournaments(visTournaments);
-        console.log('🔥 STATE UPDATED WITH VIS DATA');
         
         setAvailableCategories(['ALL', 'BPT']);
+        
+        // Enhance tournaments with real tournament numbers in background
+        enhanceTournamentsInBackground(visTournaments, visApi);
       } else {
-        console.error('🔥 VIS API FAILED:', response.error);
         setError(response.error || 'API call failed');
       }
       
     } catch (err) {
-      console.error('🧪 LOAD TOURNAMENTS ERROR:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setInitialLoading(false);
       setTournamentLoading(false);
     }
   }, []); // Remove dependencies that cause re-runs
+
+  // Enhance tournaments with real tournament numbers in background (non-blocking)
+  const enhanceTournamentsInBackground = (tournaments: TournamentCore[], visApi: any): void => {
+    // Process tournaments in background without blocking UI
+    setTimeout(async () => {
+      try {
+        let enhancedCount = 0;
+        
+        // Process tournaments in small batches
+        for (let i = 0; i < tournaments.length; i++) {
+          const tournament = tournaments[i];
+          
+          try {
+            const tournamentResponse = await visApi.getBeachTournament({
+              tournamentNo: tournament.visNo,
+              includeLocation: false,
+              includeVenue: false
+            });
+            
+            if (tournamentResponse.success && tournamentResponse.xmlData) {
+              // Extract the real tournament number from response
+              const tournamentNoMatch = tournamentResponse.xmlData.match(/<BeachTournament[^>]*No="([^"]*)"[^>]*>/);
+              if (tournamentNoMatch) {
+                const realTournamentNo = tournamentNoMatch[1];
+                
+                // Update the tournament object in place
+                (tournament as any).tournamentNo = realTournamentNo;
+                enhancedCount++;
+                
+                // Update state incrementally so UI stays responsive
+                if (enhancedCount % 3 === 0) { // Update every 3 enhancements
+                  setTournaments([...tournaments]); // Trigger re-render
+                }
+              } else {
+                (tournament as any).tournamentNo = tournament.visNo;
+              }
+            } else {
+              (tournament as any).tournamentNo = tournament.visNo; // Fallback
+            }
+            
+            // Small delay to avoid overwhelming the API and keep UI responsive
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+          } catch (error) {
+            (tournament as any).tournamentNo = tournament.visNo; // Fallback
+          }
+        }
+        
+        // Final state update when all done
+        setTournaments([...tournaments]);
+        
+      } catch (error) {
+        // Silent error handling for background process
+      }
+    }, 100); // Small delay to let UI render first
+  };
 
   // Simple XML parser for tournaments
   const parseXMLDirectly = (xmlData: string): TournamentCore[] => {
@@ -607,8 +633,6 @@ const TournamentSelectionScreen: React.FC = () => {
       // Fix regex: VIS XML uses self-closing Event tags like <Event ... />
       const eventRegex = /<Event[^>]*\/>/gs;
       const eventMatches = xmlData.match(eventRegex) || [];
-      
-      console.log(`Found ${eventMatches.length} events in XML`);
       
       eventMatches.forEach((eventMatch, index) => {
         const getValue = (tagName: string): string => {
@@ -647,25 +671,18 @@ const TournamentSelectionScreen: React.FC = () => {
           };
           
           tournaments.push(tournament);
-          
-          if (index < 3) {
-            console.log(`Tournament ${index}:`, tournament);
-          }
         }
       });
       
     } catch (error) {
-      console.error('XML parsing error:', error);
+      // Silent error handling for XML parsing
     }
     
     return tournaments;
   };
 
-  console.log('🏐 TournamentSelectionScreen rendering - tournaments:', tournaments.length, 'initialLoading:', initialLoading);
-
   // TEST API CALL - Direct VIS API test
   const testApiCall = async () => {
-    console.log('🧪 STARTING TEST API CALL');
     
     const { VisApiClient } = await import('../services/api/VisApiClient');
     const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
@@ -681,13 +698,6 @@ const TournamentSelectionScreen: React.FC = () => {
     
     const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
     
-    console.log('🧪 Making test call with request:', {
-      tournamentType: 'BPT',
-      maxResults: 10,
-      startDate: '2025-01-01',
-      endDate: '2025-12-31'
-    });
-    
     try {
       const response = await visApi.getEventList({
         tournamentType: 'BPT',
@@ -696,41 +706,27 @@ const TournamentSelectionScreen: React.FC = () => {
         endDate: '2025-12-31'
       });
       
-      console.log('🧪 TEST API RESPONSE SUCCESS:', response.success);
-      console.log('🧪 TEST API RESPONSE DATA LENGTH:', response.xmlData?.length || 0);
-      console.log('🧪 TEST API RESPONSE SAMPLE:', response.xmlData?.substring(0, 1000));
-      
-      if (!response.success) {
-        console.error('🧪 TEST API ERROR:', response.error);
-        console.error('🧪 TEST API ERROR CODE:', response.errorCode);
-      }
-      
+      // Silent handling of test API response
     } catch (error) {
-      console.error('🧪 TEST API EXCEPTION:', error);
+      // Silent handling of test API error
     }
   };
 
   // Auto-run test on first render
   React.useEffect(() => {
     if (!initialLoading && tournaments.length === 0) {
-      console.log('🧪 Running test API call...');
       testApiCall();
     }
   }, [initialLoading, tournaments.length]);
 
   useEffect(() => {
-    console.log('🔥 TournamentSelectionScreen: useEffect EXECUTING!');
-    console.log('🔥 TournamentSelectionScreen: About to call REAL API');
-    
     // Load tournaments directly from API - inline to avoid dependency issues
     const runDirectApiCall = async () => {
       try {
-        console.log('🔥 Starting DIRECT API CALL...');
         setInitialLoading(true);
         setError(null);
         
         // DIRECT API CALL - Bypass broken cache system
-        console.log('🔥 MAKING DIRECT API CALL - BYPASSING CACHE');
         
         const { VisApiClient } = await import('../services/api/VisApiClient');
         const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
@@ -746,55 +742,26 @@ const TournamentSelectionScreen: React.FC = () => {
         
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
         
-        console.log('🧪 Making direct API call with request:', {
-          maxResults: 50
-        });
-        
         const response = await visApi.getEventList({
           maxResults: 50
         });
         
         if (response.success && response.xmlData) {
-          console.log('🔥 VIS API SUCCESS - XML length:', response.xmlData.length);
-          console.log('🔥 VIS XML sample:', response.xmlData.substring(0, 800));
-          
-          console.log('🔥 About to call parseXMLDirectly...');
           try {
             // Parse manually
             const visTournaments = parseXMLDirectly(response.xmlData);
-            console.log(`🔥 VIS PARSED ${visTournaments.length} tournaments`);
-            
-            if (visTournaments.length === 0) {
-              console.log('🔥 WARNING: parseXMLDirectly returned 0 tournaments');
-            }
           
-            // LOG EVERY TOURNAMENT FROM VIS
-            visTournaments.forEach((t, i) => {
-              console.log(`🔥 VIS Tournament ${i}:`, {
-                name: t.name,
-                visNo: t.visNo, 
-                dates: t.dates,
-                city: t.city,
-                country: t.country
-              });
-            });
-            
-            console.log('🔥 SETTING VIS TOURNAMENTS IN STATE...');
             setTournaments(visTournaments);
-            console.log('🔥 STATE UPDATED WITH VIS DATA');
             
             setAvailableCategories(['ALL', 'BPT']);
           } catch (parseError) {
-            console.error('🔥 PARSING ERROR:', parseError);
-            console.error('🔥 XML Data sample:', response.xmlData.substring(0, 1000));
+            // Silent error handling for parsing
           }
         } else {
-          console.error('🔥 VIS API FAILED:', response.error);
           setError(response.error || 'API call failed');
         }
         
       } catch (error) {
-        console.error('🔥 DIRECT API CALL ERROR:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
         setInitialLoading(false);
@@ -848,15 +815,12 @@ const TournamentSelectionScreen: React.FC = () => {
     setRefreshing(true);
     try {
       // Force a complete cache refresh
-      console.log('🏐 FORCING CACHE REFRESH - clearing all caches');
       const { CacheService } = await import('../services/CacheService');
       
       // Clear memory and local storage caches
       if (typeof CacheService.clearCache === 'function') {
         await CacheService.clearCache();
       }
-      
-      console.log('🏐 Cache cleared, forcing fresh API call...');
       
       await loadTournaments(true);
     } finally {
@@ -865,38 +829,19 @@ const TournamentSelectionScreen: React.FC = () => {
   }, [loadTournaments]);
 
   const handleTournamentPress = (tournament: TournamentCore) => {
-    console.log(`🎯 TOURNAMENT CLICK: User clicked on tournament "${tournament.name}"`);
-    console.log(`🎯 TOURNAMENT DATA:`, {
-      id: tournament.id,
-      visNo: tournament.visNo,
-      name: tournament.name,
-      code: tournament.code,
-      dates: tournament.dates,
-      city: tournament.city,
-      country: tournament.country,
-      gender: tournament.gender,
-      tournamentType: tournament.tournamentType,
-      status: tournament.status
-    });
-    
     const merged = (tournament as any)._mergedTournaments;
-    console.log(`🎯 MERGED TOURNAMENTS:`, merged);
     
-    // Ensure _mergedTournaments is preserved in JSON serialization
+    // Ensure _mergedTournaments and tournamentNo are preserved in JSON serialization
     const tournamentWithMerged = {
       ...tournament,
-      _mergedTournaments: merged
+      _mergedTournaments: merged,
+      tournamentNo: (tournament as any).tournamentNo // Pass the real tournament number
     };
-    
-    console.log(`🎯 FINAL DATA TO PASS:`, tournamentWithMerged);
-    console.log(`🎯 JSON STRING LENGTH:`, JSON.stringify(tournamentWithMerged).length);
     
     router.push({
       pathname: '/tournament-detail',
       params: { tournamentData: JSON.stringify(tournamentWithMerged) }
     });
-    
-    console.log(`🎯 NAVIGATION CALLED: /tournament-detail with tournamentData param`);
   };
 
   // Match tournament to category with flexible patterns
@@ -939,24 +884,19 @@ const TournamentSelectionScreen: React.FC = () => {
 
   // Filter tournaments based on selected time period and category
   const filteredTournaments = tournaments.filter(tournament => {
-    console.log('🔍 Filtering tournament:', tournament.name, 'startDate:', tournament.dates?.startDate);
-    
     // Basic validation filters
     if (!tournament.name || !tournament.dates?.startDate) {
-      console.log('🔍 Tournament filtered out: missing name or startDate');
       return false;
     }
     
     // Skip very old tournaments (before 2020)
     const startDate = new Date(tournament.dates.startDate);
     if (startDate.getFullYear() < 2020) {
-      console.log('🔍 Tournament filtered out: too old (before 2020)');
       return false;
     }
     
     // Skip tournaments too far in the future (after 2026)
     if (startDate.getFullYear() > 2026) {
-      console.log('🔍 Tournament filtered out: too far in future (after 2026)');
       return false;
     }
     
@@ -971,64 +911,38 @@ const TournamentSelectionScreen: React.FC = () => {
         weekEnd.setDate(weekStart.getDate() + 6);
         weekEnd.setHours(23, 59, 59, 999); // End of day
         periodOverlap = startDate <= weekEnd && tournamentEnd >= weekStart;
-        console.log('🔍 Week filter:', {
-          weekStart: weekStart.toISOString().split('T')[0],
-          weekEnd: weekEnd.toISOString().split('T')[0], 
-          tournamentStart: startDate.toISOString().split('T')[0],
-          tournamentEnd: tournamentEnd.toISOString().split('T')[0],
-          overlap: periodOverlap
-        });
         break;
         
       case 'Month':
         const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
         const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
         periodOverlap = startDate <= monthEnd && tournamentEnd >= monthStart;
-        console.log('🔍 Month filter:', {
-          monthStart: monthStart.toISOString().split('T')[0],
-          monthEnd: monthEnd.toISOString().split('T')[0],
-          tournamentStart: startDate.toISOString().split('T')[0], 
-          tournamentEnd: tournamentEnd.toISOString().split('T')[0],
-          overlap: periodOverlap
-        });
         break;
         
       case 'Year':
         const yearStart = new Date(currentYear.getFullYear(), 0, 1);
         const yearEnd = new Date(currentYear.getFullYear(), 11, 31, 23, 59, 59, 999);
         periodOverlap = startDate <= yearEnd && tournamentEnd >= yearStart;
-        console.log('🔍 Year filter:', {
-          yearStart: yearStart.toISOString().split('T')[0],
-          yearEnd: yearEnd.toISOString().split('T')[0],
-          tournamentStart: startDate.toISOString().split('T')[0],
-          tournamentEnd: tournamentEnd.toISOString().split('T')[0], 
-          overlap: periodOverlap
-        });
         break;
     }
     
     if (!periodOverlap) {
-      console.log('🔍 Tournament filtered out: not in selected time period');
       return false;
     }
     
     // Apply category/type filtering
     if (selectedType === 'ALL') {
-      console.log('🔍 Tournament PASSED all filters - will be shown');
       return true;
     }
     
     const matchesCategory = matchesTournamentCategory(tournament, selectedType);
     if (!matchesCategory) {
-      console.log('🔍 Tournament filtered out: does not match category', selectedType);
       return false;
     }
     
-    console.log('🔍 Tournament PASSED all filters - will be shown');
     return true;
   });
 
-  console.log('🏐 TournamentSelectionScreen rendering - filteredTournaments:', filteredTournaments.length);
 
   // Navigate based on time period
   const navigatePeriod = (direction: 'prev' | 'next') => {
@@ -1156,16 +1070,10 @@ const TournamentSelectionScreen: React.FC = () => {
       return a.localeCompare(b);
     });
     
-    console.log('Extracted categories:', categories);
     return categories;
   };
 
   const renderTournament = ({ item }: { item: TournamentCore }) => {
-    // Debug log for Baden tournaments only (to avoid console spam)
-    if (item.name?.toLowerCase().includes('baden')) {
-      console.log(`🏐 DEBUG TOURNAMENT LIST: Complete Baden tournament object:`, JSON.stringify(item, null, 2));
-    }
-    
     return (
       <TournamentCard 
         tournament={item} 
@@ -1348,7 +1256,6 @@ const TournamentSelectionScreen: React.FC = () => {
   };
 
   if (initialLoading) {
-    console.log('🏐 TournamentSelectionScreen: Rendering loading state');
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />

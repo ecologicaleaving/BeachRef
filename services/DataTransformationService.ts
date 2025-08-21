@@ -245,38 +245,34 @@ export class DataTransformationService {
    */
   matchCoreToLegacy(core: BeachMatchCore): BeachMatch {
     try {
+      // Extract date and time from scheduledDateTime ISO string
+      const scheduledDate = new Date(core.scheduledDateTime);
+      const localDate = scheduledDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      const localTime = scheduledDate.toTimeString().split(' ')[0]; // HH:MM:SS
+      
       const legacy: BeachMatch = {
         No: core.visNo,
-        MatchNo: core.matchCode,
-        Round: core.round,
-        Phase: core.phaseCode,
-        Status: this.matchStatusToLegacy(core.status),
+        NoInTournament: core.matchCode,
+        LocalDate: localDate,
+        LocalTime: localTime,
+        TeamAName: core.team1.teamName,
+        TeamBName: core.team2.teamName,
         Court: core.court.courtNumber,
-        CourtName: core.court.courtName,
-        Surface: core.court.surface,
-        CourtLocation: core.court.location,
-        DateTime: core.scheduledDateTime,
-        StartTime: core.actualStartTime,
-        EndTime: core.actualEndTime,
-        Team1: core.team1.teamName,
-        Team1Player1: core.team1.player1Name,
-        Team1Player2: core.team1.player2Name,
-        Team1Country: core.team1.countryCode,
-        Team2: core.team2.teamName,
-        Team2Player1: core.team2.player1Name,
-        Team2Player2: core.team2.player2Name,
-        Team2Country: core.team2.countryCode,
-        Team1Sets: core.result?.team1Sets?.toString(),
-        Team2Sets: core.result?.team2Sets?.toString(),
-        Result: core.result ? this.formatMatchResult(core.result) : undefined,
-        Notes: core.notes,
-        Weather: core.weather,
-        // Additional legacy fields with defaults
-        TournamentNo: this.extractTournamentNoFromMatchId(core.id),
-        Created: core.lastUpdated,
-        Modified: core.lastUpdated,
-        CreatedBy: 'DataTransformationService',
-        ModifiedBy: 'DataTransformationService'
+        MatchPointsA: core.result?.team1Sets?.toString(),
+        MatchPointsB: core.result?.team2Sets?.toString(),
+        Status: this.matchStatusToLegacy(core.status),
+        Round: core.round,
+        Referee1Name: core.referees?.[0]?.name,
+        Referee2Name: core.referees?.[1]?.name,
+        NoReferee1: core.referees?.[0]?.id,
+        NoReferee2: core.referees?.[1]?.id,
+        Referee1FederationCode: core.referees?.[0]?.countryCode,
+        Referee2FederationCode: core.referees?.[1]?.countryCode,
+        // Additional fields for multi-tournament filtering
+        tournamentGender: this.extractGenderFromTournamentId(core.tournamentId),
+        tournamentNo: core.tournamentId,
+        tournamentCode: this.extractCodeFromTournamentId(core.tournamentId),
+        tournamentCountry: undefined // Would need tournament data to fill this
       } as BeachMatch;
 
       return legacy;
@@ -288,6 +284,22 @@ export class DataTransformationService {
         error as Error
       );
     }
+  }
+
+  /**
+   * Extract gender from tournament ID (format: tournamentCode-gender-type-YYYYMMDD)
+   */
+  private extractGenderFromTournamentId(tournamentId: string): string {
+    const parts = tournamentId.split('-');
+    return parts.length > 1 ? parts[1] : 'U'; // Default to 'U' for unknown
+  }
+
+  /**
+   * Extract tournament code from tournament ID
+   */
+  private extractCodeFromTournamentId(tournamentId: string): string {
+    const parts = tournamentId.split('-');
+    return parts[0] || tournamentId;
   }
 
   /**

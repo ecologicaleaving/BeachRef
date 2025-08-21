@@ -95,7 +95,7 @@ export class VisResponseParser {
             tournaments.push(tournament);
           }
         } catch (error) {
-          console.warn('Failed to parse tournament:', error);
+          // console.warn('Failed to parse tournament:', error);
           // Continue parsing other tournaments
         }
       }
@@ -184,8 +184,9 @@ export class VisResponseParser {
     try {
       const matches: BeachMatchCore[] = [];
       
-      // Extract match nodes from XML
-      const matchMatches = xmlResponse.match(/<Match[^>]*>.*?<\/Match>/gs);
+      // Extract BeachMatch nodes from XML (VIS API returns <BeachMatch> not <Match>)
+      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) || 
+                          xmlResponse.match(/<BeachMatch[^>]*\/>/gs); // Handle self-closing tags
       
       if (!matchMatches) {
         return matches;
@@ -198,7 +199,7 @@ export class VisResponseParser {
             matches.push(match);
           }
         } catch (error) {
-          console.warn('Failed to parse match:', error);
+          // console.warn('Failed to parse match:', error);
           // Continue parsing other matches
         }
       }
@@ -268,29 +269,44 @@ export class VisResponseParser {
    * Parse single match from XML
    */
   private static parseSingleMatch(matchXml: string, tournamentId: string): BeachMatchCore | null {
-    const visNo = this.extractXmlValue(matchXml, 'No');
-    const matchCode = this.extractXmlValue(matchXml, 'MatchNo') || visNo;
-    const round = this.extractXmlValue(matchXml, 'Round') || 'Unknown';
+    // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
+    const visNo = this.extractXmlAttribute(matchXml, 'No');
+    const matchCode = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
+    const round = this.extractXmlAttribute(matchXml, 'Round') || '';
     
     if (!visNo || !matchCode) {
       return null;
     }
 
-    const statusStr = this.extractXmlValue(matchXml, 'Status') || '';
+    const statusStr = this.extractXmlAttribute(matchXml, 'Status') || '';
     const status = mapVisMatchStatus(statusStr);
     
-    const courtNumber = this.extractXmlValue(matchXml, 'Court') || '1';
-    const scheduledDateTime = this.extractXmlValue(matchXml, 'DateTime') || new Date().toISOString();
+    const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
+    const localDate = this.extractXmlAttribute(matchXml, 'LocalDate') || '';
+    const localTime = this.extractXmlAttribute(matchXml, 'LocalTime') || '';
+    
+    // Build scheduledDateTime safely - handle cases where localTime might already include seconds
+    let scheduledDateTime: string;
+    if (localDate && localTime) {
+      // If localTime already has seconds (HH:MM:SS), don't add :00
+      // If it's just HH:MM, add :00
+      const timeWithSeconds = localTime.includes(':') && localTime.split(':').length === 3 
+        ? localTime 
+        : `${localTime}:00`;
+      scheduledDateTime = `${localDate}T${timeWithSeconds}`;
+    } else {
+      scheduledDateTime = new Date().toISOString();
+    }
     
     const court: CourtInfo = {
       courtNumber,
-      courtName: this.extractXmlValue(matchXml, 'CourtName'),
-      surface: this.extractXmlValue(matchXml, 'Surface'),
-      location: this.extractXmlValue(matchXml, 'CourtLocation')
+      courtName: this.extractXmlAttribute(matchXml, 'CourtName'),
+      surface: this.extractXmlAttribute(matchXml, 'Surface'),
+      location: this.extractXmlAttribute(matchXml, 'CourtLocation')
     };
 
-    const team1 = this.parseMatchTeam(matchXml, 1);
-    const team2 = this.parseMatchTeam(matchXml, 2);
+    const team1 = this.parseMatchTeam(matchXml, 'A'); // VIS API uses TeamAName, TeamBName
+    const team2 = this.parseMatchTeam(matchXml, 'B');
     
     if (!team1 || !team2) {
       return null;
@@ -300,7 +316,7 @@ export class VisResponseParser {
     
     const refereeAssignments = this.parseMatchReferees(matchXml);
     const result = this.parseMatchResult(matchXml);
-    const importance = determineMatchImportance(round, this.extractXmlValue(matchXml, 'Phase'));
+    const importance = determineMatchImportance(round, this.extractXmlAttribute(matchXml, 'Phase'));
 
     return {
       id,
@@ -310,18 +326,18 @@ export class VisResponseParser {
       tournamentId,
       matchCode,
       round,
-      phaseCode: this.extractXmlValue(matchXml, 'Phase'),
+      phaseCode: this.extractXmlAttribute(matchXml, 'Phase'),
       status,
       court,
       scheduledDateTime,
-      actualStartTime: this.extractXmlValue(matchXml, 'StartTime'),
-      actualEndTime: this.extractXmlValue(matchXml, 'EndTime'),
+      actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),
+      actualEndTime: this.extractXmlAttribute(matchXml, 'EndTime'),
       team1,
       team2,
       result,
       refereeAssignments,
-      notes: this.extractXmlValue(matchXml, 'Notes'),
-      weather: this.extractXmlValue(matchXml, 'Weather'),
+      notes: this.extractXmlAttribute(matchXml, 'Notes'),
+      weather: this.extractXmlAttribute(matchXml, 'Weather'),
       importance
     };
   }
@@ -356,23 +372,22 @@ export class VisResponseParser {
   /**
    * Parse match team from XML
    */
-  private static parseMatchTeam(matchXml: string, teamNumber: 1 | 2): MatchTeam | null {
-    const teamPrefix = `Team${teamNumber}`;
-    const teamName = this.extractXmlValue(matchXml, `${teamPrefix}Name`) || 
-                     this.extractXmlValue(matchXml, `${teamPrefix}`);
+  private static parseMatchTeam(matchXml: string, teamLetter: 'A' | 'B'): MatchTeam | null {
+    const teamName = this.extractXmlAttribute(matchXml, `Team${teamLetter}Name`);
     
     if (!teamName) return null;
 
-    const player1Name = this.extractXmlValue(matchXml, `${teamPrefix}Player1`) || 'Player 1';
-    const player2Name = this.extractXmlValue(matchXml, `${teamPrefix}Player2`) || 'Player 2';
+    const teamNumber = teamLetter === 'A' ? 1 : 2;
+    const player1Name = this.extractXmlAttribute(matchXml, `Team${teamLetter}Player1`) || 'Player 1';
+    const player2Name = this.extractXmlAttribute(matchXml, `Team${teamLetter}Player2`) || 'Player 2';
     
     return {
       teamNumber,
       teamName,
       player1Name,
       player2Name,
-      countryCode: this.extractXmlValue(matchXml, `${teamPrefix}Country`),
-      ranking: parseInt(this.extractXmlValue(matchXml, `${teamPrefix}Ranking`) || '0') || undefined
+      countryCode: this.extractXmlAttribute(matchXml, `Team${teamLetter}Country`),
+      ranking: parseInt(this.extractXmlAttribute(matchXml, `Team${teamLetter}Ranking`) || '0') || undefined
     };
   }
 
@@ -382,23 +397,28 @@ export class VisResponseParser {
   private static parseMatchReferees(matchXml: string): readonly RefereeAssignment[] {
     const referees: RefereeAssignment[] = [];
     
-    // Parse referee assignments - simplified parsing
-    const refereeMatches = matchXml.match(/<Referee[^>]*>.*?<\/Referee>/gs);
+    // VIS API returns referee names in attributes: Referee1Name, Referee2Name
+    const referee1Name = this.extractXmlAttribute(matchXml, 'Referee1Name');
+    const referee2Name = this.extractXmlAttribute(matchXml, 'Referee2Name');
     
-    if (refereeMatches) {
-      for (const refereeXml of refereeMatches) {
-        const refereeId = this.extractXmlValue(refereeXml, 'Id') || 'unknown';
-        const refereeName = this.extractXmlValue(refereeXml, 'Name') || 'Unknown Referee';
-        const functionValue = this.extractXmlValue(refereeXml, 'Function') || 'Referee';
-        
-        referees.push({
-          refereeId,
-          refereeName,
-          function: functionValue,
-          federationCode: this.extractXmlValue(refereeXml, 'Federation'),
-          status: 'ASSIGNED'
-        });
-      }
+    if (referee1Name) {
+      referees.push({
+        refereeId: 'ref1',
+        refereeName: referee1Name,
+        function: 'First Referee',
+        federationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
+        status: 'ASSIGNED'
+      });
+    }
+    
+    if (referee2Name) {
+      referees.push({
+        refereeId: 'ref2',
+        refereeName: referee2Name,
+        function: 'Second Referee',
+        federationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode'),
+        status: 'ASSIGNED'
+      });
     }
     
     return referees;
@@ -408,19 +428,23 @@ export class VisResponseParser {
    * Parse match result from XML
    */
   private static parseMatchResult(matchXml: string): MatchResult | undefined {
-    const result = this.extractXmlValue(matchXml, 'Result');
-    if (!result) return undefined;
-
-    // Parse set scores (simplified - would need more robust parsing)
-    const setScores: number[] = [];
-    const team1Sets = parseInt(this.extractXmlValue(matchXml, 'Team1Sets') || '0');
-    const team2Sets = parseInt(this.extractXmlValue(matchXml, 'Team2Sets') || '0');
+    // VIS API uses MatchPointsA, MatchPointsB for set scores
+    const matchPointsA = this.extractXmlAttribute(matchXml, 'MatchPointsA');
+    const matchPointsB = this.extractXmlAttribute(matchXml, 'MatchPointsB');
     
-    const startTime = this.extractXmlValue(matchXml, 'StartTime');
-    const endTime = this.extractXmlValue(matchXml, 'EndTime');
+    if (!matchPointsA || !matchPointsB) return undefined;
+
+    // Parse set scores from MatchPoints (e.g., "21-19,21-15" format)
+    const setScores: number[] = [];
+    const team1Sets = parseInt(matchPointsA) || 0;
+    const team2Sets = parseInt(matchPointsB) || 0;
+    
+    const startTime = this.extractXmlAttribute(matchXml, 'StartTime');
+    const endTime = this.extractXmlAttribute(matchXml, 'EndTime');
     const duration = calculateMatchDuration(startTime, endTime);
     
     const winner = team1Sets > team2Sets ? 1 : (team2Sets > team1Sets ? 2 : undefined);
+    const status = this.extractXmlAttribute(matchXml, 'Status') || '';
     
     return {
       team1Sets,
@@ -428,7 +452,7 @@ export class VisResponseParser {
       setScores,
       duration,
       winner,
-      forfeit: result.toLowerCase().includes('forfeit')
+      forfeit: status.toLowerCase().includes('forfeit') || status.toLowerCase().includes('wo')
     };
   }
 
@@ -467,6 +491,15 @@ export class VisResponseParser {
    */
   private static extractXmlValue(xml: string, tagName: string): string | undefined {
     const regex = new RegExp(`<${tagName}[^>]*>([^<]*)<\/${tagName}>`, 'i');
+    const match = xml.match(regex);
+    return match ? match[1].trim() : undefined;
+  }
+
+  /**
+   * Extract XML attribute value from tag attributes (for VIS API BeachMatch format)
+   */
+  private static extractXmlAttribute(xml: string, attributeName: string): string | undefined {
+    const regex = new RegExp(`${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
     const match = xml.match(regex);
     return match ? match[1].trim() : undefined;
   }

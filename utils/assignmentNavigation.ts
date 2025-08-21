@@ -33,7 +33,7 @@ export class AssignmentNavigationHelper {
   // Navigate to assignment details with context
   navigateToAssignmentDetails(assignment: Assignment, context?: NavigationContext) {
     if (!this.router) {
-      console.warn('AssignmentNavigationHelper: Router not initialized');
+      // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;
     }
 
@@ -53,12 +53,12 @@ export class AssignmentNavigationHelper {
   // Navigate to result entry for completed assignments
   navigateToResultEntry(assignment: Assignment, context?: NavigationContext) {
     if (!this.router) {
-      console.warn('AssignmentNavigationHelper: Router not initialized');
+      // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;
     }
 
     if (assignment.status !== 'completed' && assignment.status !== 'current') {
-      console.warn('AssignmentNavigationHelper: Cannot enter results for non-completed assignments');
+      // console.warn('AssignmentNavigationHelper: Cannot enter results for non-completed assignments');
       return;
     }
 
@@ -79,7 +79,7 @@ export class AssignmentNavigationHelper {
   // Navigate to assignment preparation/management
   navigateToAssignmentManagement(assignment: Assignment, context?: NavigationContext) {
     if (!this.router) {
-      console.warn('AssignmentNavigationHelper: Router not initialized');
+      // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;
     }
 
@@ -87,7 +87,7 @@ export class AssignmentNavigationHelper {
 
     // For now, we'll use a modal approach rather than navigation
     // This would typically open the AssignmentStatusManager modal
-    console.log('Opening assignment management modal for:', assignment.id);
+    // console.log('Opening assignment management modal for:', assignment.id);
   }
 
   // Navigate to My Assignments with specific filters
@@ -98,7 +98,7 @@ export class AssignmentNavigationHelper {
     highlightAssignment?: string;
   }) {
     if (!this.router) {
-      console.warn('AssignmentNavigationHelper: Router not initialized');
+      // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;
     }
 
@@ -117,7 +117,7 @@ export class AssignmentNavigationHelper {
   // Navigate back to previous screen in context
   navigateBack() {
     if (!this.router) {
-      console.warn('AssignmentNavigationHelper: Router not initialized');
+      // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;
     }
 
@@ -158,7 +158,7 @@ export class AssignmentNavigationHelper {
         break;
       
       default:
-        console.warn('AssignmentNavigationHelper: Unknown action:', action);
+        // console.warn('AssignmentNavigationHelper: Unknown action:', action);
     }
   }
 
@@ -181,7 +181,7 @@ export class AssignmentNavigationHelper {
         return JSON.parse(params.assignmentData) as Assignment;
       }
     } catch (error) {
-      console.error('AssignmentNavigationHelper: Failed to parse assignment data:', error);
+      // console.error('AssignmentNavigationHelper: Failed to parse assignment data:', error);
     }
     return null;
   }
@@ -203,7 +203,7 @@ export class AssignmentNavigationHelper {
       
       return context;
     } catch (error) {
-      console.error('AssignmentNavigationHelper: Failed to parse context:', error);
+      // console.error('AssignmentNavigationHelper: Failed to parse context:', error);
       return { sourceScreen: 'unknown' };
     }
   }

@@ -106,7 +106,11 @@
       "Bash(powershell:*)",
       "Bash(nslookup:*)",
       "Bash(npx kill-port:*)",
-      "Bash(npm start:*)"
+      "Bash(npm start:*)",
+      "Bash(for file in *.tsx)",
+      "Bash(do echo \"Processing $file\")",
+      "Bash(done)",
+      "Bash(for file in *.ts *.tsx)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -50,7 +50,7 @@ export default function MatchDetailScreen() {
         setError('Match not found');
       }
     } catch (error) {
-      console.error('Failed to load match detail:', error);
+      // console.error('Failed to load match detail:', error);
       setError('Failed to load match details. Please try again.');
     } finally {
       setLoading(false);

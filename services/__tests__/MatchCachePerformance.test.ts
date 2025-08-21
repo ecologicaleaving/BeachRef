@@ -64,7 +64,7 @@ describe('Match Cache Performance Validation', () => {
         times.push(end - start);
         successCount++;
       } catch (error) {
-        console.warn(`Performance test iteration ${i + 1} failed:`, error);
+        // console.warn(`Performance test iteration ${i + 1} failed:`, error);
       }
     }
 
@@ -230,8 +230,8 @@ describe('Match Cache Performance Validation', () => {
       const improvementRatio = directApiPerf.avgResponseTime / cachedPerf.avgResponseTime;
       const improvementPercentage = ((directApiPerf.avgResponseTime - cachedPerf.avgResponseTime) / directApiPerf.avgResponseTime) * 100;
 
-      console.log(`Performance improvement: ${improvementPercentage.toFixed(1)}% (${improvementRatio.toFixed(1)}x faster)`);
-      console.log(`Direct API: ${directApiPerf.avgResponseTime.toFixed(2)}ms, Cached: ${cachedPerf.avgResponseTime.toFixed(2)}ms`);
+      // console.log(`Performance improvement: ${improvementPercentage.toFixed(1)}% (${improvementRatio.toFixed(1)}x faster)`);
+      // console.log(`Direct API: ${directApiPerf.avgResponseTime.toFixed(2)}ms, Cached: ${cachedPerf.avgResponseTime.toFixed(2)}ms`);
 
       // Should be at least 50% improvement
       expect(improvementPercentage).toBeGreaterThanOrEqual(50);

@@ -66,7 +66,7 @@ export const StatusProvider = React.memo<StatusProviderProps>(({
     if (!debugMode) return;
     
     const unsubscribe = statusService.subscribeToGlobalEvents((event) => {
-      console.log('StatusProvider: Global event', event);
+      // console.log('StatusProvider: Global event', event);
     });
     
     return unsubscribe;
@@ -79,10 +79,10 @@ export const StatusProvider = React.memo<StatusProviderProps>(({
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'background') {
         // App going to background - maintain connection
-        if (debugMode) console.log('StatusProvider: App backgrounded, maintaining connection');
+        // if (debugMode) console.log('StatusProvider: App backgrounded, maintaining connection');
       } else if (nextAppState === 'active') {
         // App coming to foreground - ensure connection
-        if (debugMode) console.log('StatusProvider: App foregrounded, checking connection');
+        // if (debugMode) console.log('StatusProvider: App foregrounded, checking connection');
       }
     };
     

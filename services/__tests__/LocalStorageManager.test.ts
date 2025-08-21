@@ -23,9 +23,9 @@ describe('LocalStorageManager', () => {
     test('should store and retrieve data', async () => {
       const testData = { name: 'Test Tournament', id: '1' };
       
-      console.log('AsyncStorage type:', typeof AsyncStorage);
-      console.log('AsyncStorage methods:', Object.keys(AsyncStorage));
-      console.log('setItem type:', typeof mockedAsyncStorage.setItem);
+      // console.log('AsyncStorage type:', typeof AsyncStorage);
+      // console.log('AsyncStorage methods:', Object.keys(AsyncStorage));
+      // console.log('setItem type:', typeof mockedAsyncStorage.setItem);
       
       // Verify mock is working
       expect(mockedAsyncStorage.setItem).toBeDefined();

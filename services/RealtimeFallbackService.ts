@@ -63,14 +63,14 @@ export class RealtimeFallbackService {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    console.log('Initializing Enhanced RealtimeFallbackService');
+    // console.log('Initializing Enhanced RealtimeFallbackService');
     
     // Initialize network state manager
     this.networkStateManager = NetworkStateManager.getInstance();
     
     // Set up circuit breaker monitoring with enhanced recommendations
     this.circuitBreaker.addStateChangeListener((state) => {
-      console.log(`Fallback service circuit breaker state changed: ${state}`);
+      // console.log(`Fallback service circuit breaker state changed: ${state}`);
       this.handleCircuitBreakerStateChange(state);
     });
 
@@ -108,7 +108,7 @@ export class RealtimeFallbackService {
    * Handle network state changes
    */
   private static handleNetworkStateChange(networkState: NetworkState, connectionQuality: ConnectionQuality): void {
-    console.log('Network state changed:', {
+    // console.log('Network state changed:', {
       type: networkState.type,
       quality: connectionQuality.score,
       level: connectionQuality.level,
@@ -175,7 +175,7 @@ export class RealtimeFallbackService {
   private static switchToMode(newMode: FallbackMode, reason: string): void {
     if (newMode === this.currentMode) return;
 
-    console.log(`Switching fallback mode: ${this.currentMode} → ${newMode} (${reason})`);
+    // console.log(`Switching fallback mode: ${this.currentMode} → ${newMode} (${reason})`);
 
     // Record mode change in history
     this.modeHistory.push({
@@ -202,7 +202,7 @@ export class RealtimeFallbackService {
   private static adjustAllPollingIntervals(oldMode: FallbackMode, newMode: FallbackMode): void {
     if (this.pollingIntervals.size === 0) return;
 
-    console.log(`Adjusting ${this.pollingIntervals.size} polling intervals for mode change: ${oldMode} → ${newMode}`);
+    // console.log(`Adjusting ${this.pollingIntervals.size} polling intervals for mode change: ${oldMode} → ${newMode}`);
 
     // Get new interval for the new mode
     for (const [tournamentNo] of this.pollingIntervals.entries()) {
@@ -227,7 +227,7 @@ export class RealtimeFallbackService {
 
       this.pollingIntervals.set(tournamentNo, intervalId);
       
-      console.log(`Adjusted polling for ${tournamentNo}: interval → ${newInterval}ms`);
+      // console.log(`Adjusted polling for ${tournamentNo}: interval → ${newInterval}ms`);
     }
   }
 
@@ -298,7 +298,7 @@ export class RealtimeFallbackService {
 
     if (!this.circuitBreaker.canExecute()) {
       const recommendation = this.circuitBreaker.getRecommendation();
-      console.warn(`Cannot start polling fallback: ${recommendation.reason}`);
+      // console.warn(`Cannot start polling fallback: ${recommendation.reason}`);
       return false;
     }
 
@@ -309,7 +309,7 @@ export class RealtimeFallbackService {
       ? this.AGGRESSIVE_POLLING_INTERVAL 
       : this.DEFAULT_POLLING_INTERVAL;
 
-    console.log(`Starting polling fallback for tournament ${tournamentNo} (interval: ${pollingInterval}ms)`);
+    // console.log(`Starting polling fallback for tournament ${tournamentNo} (interval: ${pollingInterval}ms)`);
 
     try {
       // Perform initial poll
@@ -320,7 +320,7 @@ export class RealtimeFallbackService {
         try {
           await this.performPollingUpdate(tournamentNo, onUpdate);
         } catch (error) {
-          console.error(`Error in polling interval for ${tournamentNo}:`, error);
+          // console.error(`Error in polling interval for ${tournamentNo}:`, error);
           this.handlePollingError(tournamentNo, error);
         }
       }, pollingInterval);
@@ -330,7 +330,7 @@ export class RealtimeFallbackService {
       return true;
 
     } catch (error) {
-      console.error(`Failed to start polling fallback for ${tournamentNo}:`, error);
+      // console.error(`Failed to start polling fallback for ${tournamentNo}:`, error);
       this.circuitBreaker.onFailure(error instanceof Error ? error.message : 'Unknown error');
       return false;
     }
@@ -346,7 +346,7 @@ export class RealtimeFallbackService {
       this.pollingIntervals.delete(tournamentNo);
       this.errorCounts.delete(tournamentNo);
       this.lastPollingAttempts.delete(tournamentNo);
-      console.log(`Stopped polling fallback for tournament ${tournamentNo}`);
+      // console.log(`Stopped polling fallback for tournament ${tournamentNo}`);
     }
   }
 
@@ -361,7 +361,7 @@ export class RealtimeFallbackService {
     this.lastPollingAttempts.set(tournamentNo, now);
 
     try {
-      console.log(`Polling for matches in tournament ${tournamentNo}`);
+      // console.log(`Polling for matches in tournament ${tournamentNo}`);
       
       // Force refresh from API (bypass cache for real-time accuracy)
       await CacheService.invalidateMatchCache(tournamentNo);
@@ -373,10 +373,10 @@ export class RealtimeFallbackService {
       // Call the update callback
       onUpdate(matches);
       
-      console.log(`Successfully polled ${matches.length} matches for tournament ${tournamentNo}`);
+      // console.log(`Successfully polled ${matches.length} matches for tournament ${tournamentNo}`);
 
     } catch (error) {
-      console.error(`Polling failed for tournament ${tournamentNo}:`, error);
+      // console.error(`Polling failed for tournament ${tournamentNo}:`, error);
       this.handlePollingError(tournamentNo, error);
       throw error;
     }
@@ -390,16 +390,16 @@ export class RealtimeFallbackService {
     const newErrorCount = currentErrorCount + 1;
     this.errorCounts.set(tournamentNo, newErrorCount);
 
-    console.warn(`Polling error #${newErrorCount} for tournament ${tournamentNo}:`, error);
+    // console.warn(`Polling error #${newErrorCount} for tournament ${tournamentNo}:`, error);
 
     // Implement exponential backoff for errors
     if (newErrorCount >= 3) {
-      console.warn(`Too many polling errors for ${tournamentNo}, slowing down polling`);
+      // console.warn(`Too many polling errors for ${tournamentNo}, slowing down polling`);
       this.adjustPollingInterval(tournamentNo, this.SLOW_POLLING_INTERVAL);
     }
 
     if (newErrorCount >= 5) {
-      console.error(`Excessive polling errors for ${tournamentNo}, stopping fallback`);
+      // console.error(`Excessive polling errors for ${tournamentNo}, stopping fallback`);
       this.stopPollingFallback(tournamentNo);
       this.circuitBreaker.onFailure('Excessive polling failures');
     }
@@ -425,7 +425,7 @@ export class RealtimeFallbackService {
     }, newInterval);
 
     this.pollingIntervals.set(tournamentNo, intervalId);
-    console.log(`Adjusted polling interval for ${tournamentNo} to ${newInterval}ms`);
+    // console.log(`Adjusted polling interval for ${tournamentNo} to ${newInterval}ms`);
   }
 
   /**
@@ -469,7 +469,7 @@ export class RealtimeFallbackService {
     onUpdate: (matches: BeachMatch[]) => void
   ): Promise<boolean> {
     if (!this.circuitBreaker.canExecute()) {
-      console.warn(`Cannot perform forced poll for ${tournamentNo}: circuit breaker is open`);
+      // console.warn(`Cannot perform forced poll for ${tournamentNo}: circuit breaker is open`);
       return false;
     }
 
@@ -477,7 +477,7 @@ export class RealtimeFallbackService {
       await this.performPollingUpdate(tournamentNo, onUpdate);
       return true;
     } catch (error) {
-      console.error(`Forced poll failed for ${tournamentNo}:`, error);
+      // console.error(`Forced poll failed for ${tournamentNo}:`, error);
       return false;
     }
   }
@@ -524,11 +524,11 @@ export class RealtimeFallbackService {
    * Graceful shutdown of all polling
    */
   static stopAllPolling(): void {
-    console.log(`Stopping all polling (${this.pollingIntervals.size} active tournaments)`);
+    // console.log(`Stopping all polling (${this.pollingIntervals.size} active tournaments)`);
     
     for (const [tournamentNo, intervalId] of this.pollingIntervals.entries()) {
       clearInterval(intervalId);
-      console.log(`Stopped polling for tournament ${tournamentNo}`);
+      // console.log(`Stopped polling for tournament ${tournamentNo}`);
     }
 
     this.pollingIntervals.clear();
@@ -543,7 +543,7 @@ export class RealtimeFallbackService {
     this.stopAllPolling();
     this.circuitBreaker.cleanup();
     this.isInitialized = false;
-    console.log('RealtimeFallbackService cleaned up');
+    // console.log('RealtimeFallbackService cleaned up');
   }
 
   /**

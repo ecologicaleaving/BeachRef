@@ -166,7 +166,7 @@ export const TouchFeedbackProvider: React.FC<TouchFeedbackProviderProps> = ({
       }
     } catch (error) {
       // Silently fail if haptic feedback is not available
-      console.warn('TouchFeedbackProvider: Haptic feedback failed', error);
+      // console.warn('TouchFeedbackProvider: Haptic feedback failed', error);
     }
   }, [feedbackConfig.haptic, systemPreferences.isHapticEnabled]);
   
@@ -246,7 +246,7 @@ export const TouchFeedbackProvider: React.FC<TouchFeedbackProviderProps> = ({
     
     // Audio feedback would require additional implementation with expo-av or similar
     // For now, this is a placeholder
-    console.log(`TouchFeedbackProvider: Audio feedback triggered - ${soundType || feedbackConfig.audio.soundType}`);
+    // console.log(`TouchFeedbackProvider: Audio feedback triggered - ${soundType || feedbackConfig.audio.soundType}`);
   }, [feedbackConfig.audio]);
   
   const contextValue: TouchFeedbackContextType = {

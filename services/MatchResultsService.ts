@@ -13,52 +13,52 @@ export class MatchResultsService {
    * Get match results for a specific tournament
    */
   static async getMatchResults(tournamentNo: string, forceRefresh = false): Promise<MatchResultsStatus> {
-    console.log(`MatchResultsService: Getting match results for tournament ${tournamentNo}, forceRefresh: ${forceRefresh}`);
+    // console.log(`MatchResultsService: Getting match results for tournament ${tournamentNo}, forceRefresh: ${forceRefresh}`);
     
     try {
       // Try cache first if not forcing refresh
       if (!forceRefresh) {
-        console.log(`MatchResultsService: Checking cache for tournament ${tournamentNo}`);
+        // console.log(`MatchResultsService: Checking cache for tournament ${tournamentNo}`);
         const cachedData = await this.getCachedMatchResults(tournamentNo);
         if (cachedData) {
-          console.log(`MatchResultsService: Using cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
+          // console.log(`MatchResultsService: Using cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
           return cachedData;
         }
-        console.log(`MatchResultsService: No valid cache found`);
+        // console.log(`MatchResultsService: No valid cache found`);
       } else {
-        console.log(`MatchResultsService: Force refresh requested, bypassing cache`);
+        // console.log(`MatchResultsService: Force refresh requested, bypassing cache`);
       }
 
       // Fetch match data from API/Cache
-      console.log(`MatchResultsService: Fetching fresh match data for tournament ${tournamentNo}`);
+      // console.log(`MatchResultsService: Fetching fresh match data for tournament ${tournamentNo}`);
       const matches = await this.fetchMatchData(tournamentNo);
-      console.log(`MatchResultsService: Fetched ${matches.length} matches from API/cache`);
+      // console.log(`MatchResultsService: Fetched ${matches.length} matches from API/cache`);
       
       // Transform and categorize matches
       const matchResults = matches.map(match => this.transformToMatchResult(match));
       const categorizedResults = this.categorizeMatches(matchResults);
-      console.log(`MatchResultsService: Categorized into ${categorizedResults.live.length} live, ${categorizedResults.completed.length} completed, ${categorizedResults.scheduled.length} scheduled matches`);
+      // console.log(`MatchResultsService: Categorized into ${categorizedResults.live.length} live, ${categorizedResults.completed.length} completed, ${categorizedResults.scheduled.length} scheduled matches`);
       
       // Cache the results
       await this.cacheMatchResults(tournamentNo, categorizedResults);
       
       return categorizedResults;
     } catch (error) {
-      console.error('MatchResultsService: Failed to get match results:', error);
-      console.error('MatchResultsService: Error type:', error instanceof Error ? error.constructor.name : typeof error);
-      console.error('MatchResultsService: Error message:', error instanceof Error ? error.message : String(error));
+      // console.error('MatchResultsService: Failed to get match results:', error);
+      // console.error('MatchResultsService: Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      // console.error('MatchResultsService: Error message:', error instanceof Error ? error.message : String(error));
       
       // Try to return cached data as fallback, even if expired
-      console.log('MatchResultsService: Attempting to use cached data as fallback');
+      // console.log('MatchResultsService: Attempting to use cached data as fallback');
       const cachedData = await this.getCachedMatchResults(tournamentNo);
       if (cachedData) {
-        console.log(`MatchResultsService: Using fallback cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
+        // console.log(`MatchResultsService: Using fallback cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
         return cachedData;
       }
       
       // If no cached data available, provide sample results for testing
       if (error instanceof Error && (error.message.includes('Premature close') || error.message.includes('timeout'))) {
-        console.log('MatchResultsService: Network error detected, providing sample results for testing');
+        // console.log('MatchResultsService: Network error detected, providing sample results for testing');
         return this.getSampleMatchResults(tournamentNo);
       }
       
@@ -87,7 +87,7 @@ export class MatchResultsService {
    */
   private static transformToMatchResult(match: BeachMatch): MatchResult {
     const normalizedStatus = this.normalizeMatchStatus(match.Status);
-    console.log(`MatchResultsService: Match ${match.No}: ${match.TeamAName} vs ${match.TeamBName}, Status: ${match.Status} → ${normalizedStatus}`);
+    // console.log(`MatchResultsService: Match ${match.No}: ${match.TeamAName} vs ${match.TeamBName}, Status: ${match.Status} → ${normalizedStatus}`);
     
     return {
       no: match.No || '',
@@ -147,7 +147,7 @@ export class MatchResultsService {
       const parsed = new Date(dateValue as string);
       return isNaN(parsed.getTime()) ? new Date() : parsed;
     } catch (error) {
-      console.warn('Failed to parse date field:', dateValue, error);
+      // console.warn('Failed to parse date field:', dateValue, error);
       return new Date();
     }
   }
@@ -161,7 +161,7 @@ export class MatchResultsService {
     // Handle numeric status codes from FIVB API
     const statusCode = parseInt(status, 10);
     if (!isNaN(statusCode)) {
-      console.log(`MatchResultsService: Normalizing numeric status code: ${statusCode}`);
+      // console.log(`MatchResultsService: Normalizing numeric status code: ${statusCode}`);
       
       // FIVB Status codes mapping (based on API documentation and testing)
       switch (statusCode) {
@@ -181,7 +181,7 @@ export class MatchResultsService {
         case 25: // Walkover
           return 'Cancelled';
         default:
-          console.warn(`MatchResultsService: Unknown status code ${statusCode}, defaulting to Scheduled`);
+          // console.warn(`MatchResultsService: Unknown status code ${statusCode}, defaulting to Scheduled`);
           return 'Scheduled';
       }
     }
@@ -239,38 +239,38 @@ export class MatchResultsService {
    * Fetch match data using existing cache/API infrastructure
    */
   private static async fetchMatchData(tournamentNo: string): Promise<BeachMatch[]> {
-    console.log(`MatchResultsService: fetchMatchData called for tournament ${tournamentNo}`);
+    // console.log(`MatchResultsService: fetchMatchData called for tournament ${tournamentNo}`);
     
     try {
       // Use CacheService if available, otherwise fall back to direct API
-      console.log('MatchResultsService: Trying to get matches from Supabase cache...');
+      // console.log('MatchResultsService: Trying to get matches from Supabase cache...');
       const cachedMatches = await CacheService.getMatchesFromSupabase?.(tournamentNo);
       if (cachedMatches && cachedMatches.length > 0) {
-        console.log(`MatchResultsService: Found ${cachedMatches.length} matches in Supabase cache`);
+        // console.log(`MatchResultsService: Found ${cachedMatches.length} matches in Supabase cache`);
         return cachedMatches;
       }
-      console.log('MatchResultsService: No matches found in Supabase cache');
+      // console.log('MatchResultsService: No matches found in Supabase cache');
     } catch (error) {
-      console.warn('MatchResultsService: Cache service unavailable, using direct API:', error);
+      // console.warn('MatchResultsService: Cache service unavailable, using direct API:', error);
     }
 
     try {
       // Fallback to direct API call with timeout
-      console.log('MatchResultsService: Calling direct API for match data...');
+      // console.log('MatchResultsService: Calling direct API for match data...');
       const matches = await Promise.race([
         VisApiService.getBeachMatchList(tournamentNo),
         new Promise<never>((_, reject) => 
           setTimeout(() => reject(new Error('API timeout after 30 seconds')), 30000)
         )
       ]);
-      console.log(`MatchResultsService: Direct API returned ${matches.length} matches`);
+      // console.log(`MatchResultsService: Direct API returned ${matches.length} matches`);
       return matches;
     } catch (error) {
-      console.error('MatchResultsService: Direct API call failed:', error);
+      // console.error('MatchResultsService: Direct API call failed:', error);
       
       // If it's a network error, provide empty array instead of failing
       if (error instanceof Error && (error.message.includes('Premature close') || error.message.includes('timeout'))) {
-        console.log('MatchResultsService: Network error detected in fetchMatchData, returning empty array');
+        // console.log('MatchResultsService: Network error detected in fetchMatchData, returning empty array');
         return [];
       }
       
@@ -294,7 +294,7 @@ export class MatchResultsService {
         JSON.stringify(cacheData)
       );
     } catch (error) {
-      console.warn('Failed to cache match results:', error);
+      // console.warn('Failed to cache match results:', error);
     }
   }
 
@@ -322,7 +322,7 @@ export class MatchResultsService {
 
       return cacheData.data;
     } catch (error) {
-      console.warn('Failed to get cached match results:', error);
+      // console.warn('Failed to get cached match results:', error);
       return null;
     }
   }
@@ -341,7 +341,7 @@ export class MatchResultsService {
         await AsyncStorage.multiRemove(matchResultKeys);
       }
     } catch (error) {
-      console.error('Failed to clear match results cache:', error);
+      // console.error('Failed to clear match results cache:', error);
     }
   }
 
@@ -445,7 +445,7 @@ export class MatchResultsService {
    * Get sample match results for testing when API is unavailable
    */
   static getSampleMatchResults(tournamentNo: string): MatchResultsStatus {
-    console.log(`MatchResultsService: Providing sample match results for tournament ${tournamentNo}`);
+    // console.log(`MatchResultsService: Providing sample match results for tournament ${tournamentNo}`);
     
     const sampleLiveMatch: MatchResult = {
       no: 'M001',

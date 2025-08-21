@@ -68,7 +68,7 @@ export const useTournamentStatus = (
    * Handle tournament status events from subscription
    */
   const handleStatusEvents = useCallback((events: TournamentStatusEvent[]) => {
-    console.log(`Received ${events.length} tournament status events`);
+    // console.log(`Received ${events.length} tournament status events`);
     
     setStatusEvents(prevEvents => {
       // Keep last 50 events
@@ -117,7 +117,7 @@ export const useTournamentStatus = (
             });
           }
         } catch (error) {
-          console.error(`Error updating progress for tournament ${event.tournamentNo}:`, error);
+          // console.error(`Error updating progress for tournament ${event.tournamentNo}:`, error);
         }
       }
     });
@@ -146,7 +146,7 @@ export const useTournamentStatus = (
         batchDelay,
       };
 
-      console.log(`Subscribing to tournament status for ${tournamentNumbers.length} tournaments`);
+      // console.log(`Subscribing to tournament status for ${tournamentNumbers.length} tournaments`);
       
       const success = await TournamentStatusSubscriptionService.subscribeTournamentStatus(
         subscriptionConfig,
@@ -156,14 +156,14 @@ export const useTournamentStatus = (
       if (success) {
         setSubscriptionActive(true);
         subscriptionConfigRef.current = subscriptionConfig;
-        console.log('Tournament status subscription established successfully');
+        // console.log('Tournament status subscription established successfully');
       } else {
         setSubscriptionActive(false);
         setError('Failed to establish tournament status subscription');
       }
       
     } catch (error) {
-      console.error('Error initializing tournament status subscription:', error);
+      // console.error('Error initializing tournament status subscription:', error);
       setSubscriptionActive(false);
       setError(error instanceof Error ? error.message : 'Unknown subscription error');
     }
@@ -173,7 +173,7 @@ export const useTournamentStatus = (
    * Cleanup subscriptions
    */
   const cleanupSubscription = useCallback(async () => {
-    console.log('Cleaning up tournament status subscription');
+    // console.log('Cleaning up tournament status subscription');
     
     try {
       // Remove listeners
@@ -187,7 +187,7 @@ export const useTournamentStatus = (
       setSubscriptionActive(false);
       
     } catch (error) {
-      console.error('Error cleaning up tournament status subscription:', error);
+      // console.error('Error cleaning up tournament status subscription:', error);
     }
   }, []);
 
@@ -203,12 +203,12 @@ export const useTournamentStatus = (
    */
   const refreshTournamentStatus = useCallback(async (tournamentNo: string) => {
     try {
-      console.log(`Manually refreshing tournament status for ${tournamentNo}`);
+      // console.log(`Manually refreshing tournament status for ${tournamentNo}`);
       // In a real implementation, this would trigger a fresh data fetch
       // For now, we'll just update the sync status
       await TournamentStatusMonitor.updateSyncStatus(tournamentNo, 'manual_refresh');
     } catch (error) {
-      console.error(`Error refreshing tournament status for ${tournamentNo}:`, error);
+      // console.error(`Error refreshing tournament status for ${tournamentNo}:`, error);
     }
   }, []);
 

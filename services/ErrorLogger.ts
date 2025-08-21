@@ -78,8 +78,8 @@ export class ErrorLogger {
       return data.id
     } catch (dbError) {
       // Fallback logging to console if database fails
-      console.error('Failed to log error to database:', dbError)
-      console.error('Original error:', errorLog)
+      // console.error('Failed to log error to database:', dbError)
+      // console.error('Original error:', errorLog)
       
       // Try to log the database error itself
       try {
@@ -89,7 +89,7 @@ export class ErrorLogger {
         })
       } catch {
         // Ultimate fallback - just console log
-        console.error('Complete error logging failure')
+        // console.error('Complete error logging failure')
       }
 
       return 'error_log_failed'
@@ -217,7 +217,7 @@ export class ErrorLogger {
     }
 
     // Use a different table or console for database errors to avoid recursion
-    console.error('Database error logged:', errorLog)
+    // console.error('Database error logged:', errorLog)
     
     try {
       const { data } = await this.supabase
@@ -426,7 +426,7 @@ export class ErrorLogger {
         })
         .eq('entity_type', entityType)
     } catch (error) {
-      console.error('Failed to update entity error count:', error)
+      // console.error('Failed to update entity error count:', error)
     }
   }
 
@@ -483,7 +483,7 @@ export class ErrorLogger {
       const { data, error } = await query
 
       if (error || !data) {
-        console.error('Error fetching statistics:', error)
+        // console.error('Error fetching statistics:', error)
         return this.getEmptyStatistics()
       }
 
@@ -510,7 +510,7 @@ export class ErrorLogger {
         avg_resolution_time_hours: avgResolutionTime
       }
     } catch (error) {
-      console.error('Failed to get error statistics:', error)
+      // console.error('Failed to get error statistics:', error)
       return this.getEmptyStatistics()
     }
   }

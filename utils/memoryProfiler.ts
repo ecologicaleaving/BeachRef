@@ -45,7 +45,7 @@ export class MemoryProfiler {
         };
       } catch (error) {
         // Memory API not available or failed - continue without web metrics
-        console.warn('Memory API not available:', error);
+        // console.warn('Memory API not available:', error);
       }
     }
 

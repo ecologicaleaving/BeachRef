@@ -43,10 +43,10 @@ export class SyncManager {
   private setupNetworkListener(): void {
     this.networkMonitor.addListener((isConnected: boolean) => {
       if (isConnected) {
-        console.log('Network connection restored - resuming sync operations');
+        // console.log('Network connection restored - resuming sync operations');
         this.processSyncQueue();
       } else {
-        console.log('Network connection lost - sync operations paused');
+        // console.log('Network connection lost - sync operations paused');
         this.pauseSync();
       }
     });
@@ -72,7 +72,7 @@ export class SyncManager {
     };
 
     this.syncQueue.push(task);
-    console.log(`Added sync task: ${task.type} (${task.id})`);
+    // console.log(`Added sync task: ${task.type} (${task.id})`);
 
     // Try to process immediately if network is available
     if (this.networkMonitor.isConnected) {
@@ -89,7 +89,7 @@ export class SyncManager {
     }
 
     if (this.syncQueue.length === 0) {
-      console.log('Sync queue is empty');
+      // console.log('Sync queue is empty');
       return;
     }
 
@@ -97,25 +97,25 @@ export class SyncManager {
     const tasksToProcess = [...this.syncQueue];
     this.syncQueue = [];
 
-    console.log(`Processing ${tasksToProcess.length} sync tasks`);
+    // console.log(`Processing ${tasksToProcess.length} sync tasks`);
 
     for (const task of tasksToProcess) {
       try {
         await this.processTask(task);
-        console.log(`Successfully synced: ${task.type} (${task.id})`);
+        // console.log(`Successfully synced: ${task.type} (${task.id})`);
         
         // Notify callbacks about successful sync
         this.notifyCallbacks(task.type);
       } catch (error) {
-        console.error(`Failed to sync task ${task.id}:`, error);
+        // console.error(`Failed to sync task ${task.id}:`, error);
         
         // Retry logic
         task.retryCount++;
         if (task.retryCount < task.maxRetries) {
-          console.log(`Retrying task ${task.id} (attempt ${task.retryCount + 1}/${task.maxRetries})`);
+          // console.log(`Retrying task ${task.id} (attempt ${task.retryCount + 1}/${task.maxRetries})`);
           this.syncQueue.push(task);
         } else {
-          console.error(`Task ${task.id} failed after ${task.maxRetries} retries`);
+          // console.error(`Task ${task.id} failed after ${task.maxRetries} retries`);
         }
       }
     }
@@ -200,7 +200,7 @@ export class SyncManager {
       try {
         callback(taskType);
       } catch (error) {
-        console.error('Error in sync callback:', error);
+        // console.error('Error in sync callback:', error);
       }
     });
   }
@@ -231,10 +231,10 @@ export class SyncManager {
       // Note: This is a simplified implementation
       // In practice, you'd want to track which tournaments have cached matches
       
-      console.log('Force sync completed:', results);
+      // console.log('Force sync completed:', results);
       return results;
     } catch (error) {
-      console.error('Force sync failed:', error);
+      // console.error('Force sync failed:', error);
       throw error;
     }
   }
@@ -261,7 +261,7 @@ export class SyncManager {
    */
   clearSyncQueue(): void {
     this.syncQueue = [];
-    console.log('Sync queue cleared');
+    // console.log('Sync queue cleared');
   }
 
   /**

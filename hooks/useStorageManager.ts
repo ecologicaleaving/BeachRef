@@ -38,7 +38,7 @@ export function useStorageManager(): StorageManagerResult {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get storage usage';
       setError(errorMessage);
-      console.error('Storage usage fetch failed:', err);
+      // console.error('Storage usage fetch failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +50,7 @@ export function useStorageManager(): StorageManagerResult {
       await refreshUsage();
       return true;
     } catch (err) {
-      console.error('Failed to clear offline storage:', err);
+      // console.error('Failed to clear offline storage:', err);
       return false;
     }
   }, [refreshUsage]);
@@ -62,7 +62,7 @@ export function useStorageManager(): StorageManagerResult {
       await refreshUsage();
       return true;
     } catch (err) {
-      console.error('Failed to clear all storage:', err);
+      // console.error('Failed to clear all storage:', err);
       return false;
     }
   }, [refreshUsage]);
@@ -73,7 +73,7 @@ export function useStorageManager(): StorageManagerResult {
       await refreshUsage();
       return removedCount;
     } catch (err) {
-      console.error('Failed to optimize storage:', err);
+      // console.error('Failed to optimize storage:', err);
       return 0;
     }
   }, [refreshUsage]);

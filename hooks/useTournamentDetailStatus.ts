@@ -81,7 +81,7 @@ export const useTournamentDetailStatus = (
    * Handle tournament status events from subscription
    */
   const handleStatusEvents = useCallback((events: TournamentStatusEvent[]) => {
-    console.log(`Received ${events.length} tournament detail status events for tournament ${tournament.No}`);
+    // console.log(`Received ${events.length} tournament detail status events for tournament ${tournament.No}`);
     
     setStatusEvents(prevEvents => {
       // Keep last 20 events for detail view
@@ -196,7 +196,7 @@ export const useTournamentDetailStatus = (
       previousMatchesRef.current = matches;
       
     } catch (error) {
-      console.error('Error tracking match changes:', error);
+      // console.error('Error tracking match changes:', error);
     }
   }, [matches, tournament.No, enableScheduleChangeTracking, enableCourtChangeTracking, enableProgressTracking]);
 
@@ -223,7 +223,7 @@ export const useTournamentDetailStatus = (
         batchDelay: 1000, // Faster updates for detail view
       };
 
-      console.log(`Subscribing to tournament detail status for tournament ${tournament.No}`);
+      // console.log(`Subscribing to tournament detail status for tournament ${tournament.No}`);
       
       const success = await TournamentStatusSubscriptionService.subscribeTournamentStatus(
         subscriptionConfig,
@@ -232,14 +232,14 @@ export const useTournamentDetailStatus = (
 
       if (success) {
         setSubscriptionActive(true);
-        console.log('Tournament detail status subscription established successfully');
+        // console.log('Tournament detail status subscription established successfully');
       } else {
         setSubscriptionActive(false);
         setError('Failed to establish tournament detail status subscription');
       }
       
     } catch (error) {
-      console.error('Error initializing tournament detail status subscription:', error);
+      // console.error('Error initializing tournament detail status subscription:', error);
       setSubscriptionActive(false);
       setError(error instanceof Error ? error.message : 'Unknown subscription error');
     }
@@ -249,14 +249,14 @@ export const useTournamentDetailStatus = (
    * Cleanup subscription
    */
   const cleanupSubscription = useCallback(async () => {
-    console.log('Cleaning up tournament detail status subscription');
+    // console.log('Cleaning up tournament detail status subscription');
     
     try {
       await TournamentStatusSubscriptionService.cleanup();
       setSubscriptionActive(false);
       
     } catch (error) {
-      console.error('Error cleaning up tournament detail status subscription:', error);
+      // console.error('Error cleaning up tournament detail status subscription:', error);
     }
   }, []);
 
@@ -274,7 +274,7 @@ export const useTournamentDetailStatus = (
    */
   const refreshTournamentStatus = useCallback(async () => {
     try {
-      console.log(`Manually refreshing tournament detail status for ${tournament.No}`);
+      // console.log(`Manually refreshing tournament detail status for ${tournament.No}`);
       
       // Update sync status
       await TournamentStatusMonitor.updateSyncStatus(tournament.No, 'manual_refresh_detail');
@@ -283,7 +283,7 @@ export const useTournamentDetailStatus = (
       await trackMatchChanges();
       
     } catch (error) {
-      console.error(`Error refreshing tournament detail status:`, error);
+      // console.error(`Error refreshing tournament detail status:`, error);
       setError(error instanceof Error ? error.message : 'Failed to refresh status');
     }
   }, [tournament.No, trackMatchChanges]);

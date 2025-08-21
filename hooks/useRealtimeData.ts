@@ -39,7 +39,7 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
       setLoading(true);
       setError(null);
 
-      console.log(`Fetching matches for tournament: ${tournamentNumber} (force: ${force})`);
+      // console.log(`Fetching matches for tournament: ${tournamentNumber} (force: ${force})`);
       
       // Use CacheService for efficient data fetching
       let matchList: BeachMatch[];
@@ -54,11 +54,11 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
 
       setMatches(matchList);
       setLastUpdated(new Date());
-      console.log(`Successfully loaded ${matchList.length} matches for tournament ${tournamentNumber}`);
+      // console.log(`Successfully loaded ${matchList.length} matches for tournament ${tournamentNumber}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load matches';
       setError(errorMessage);
-      console.error('Error fetching matches:', err);
+      // console.error('Error fetching matches:', err);
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
     }
 
     refreshTimeoutRef.current = setTimeout(() => {
-      console.log(`Debounced refresh triggered for tournament: ${tournamentNumber}`);
+      // console.log(`Debounced refresh triggered for tournament: ${tournamentNumber}`);
       fetchMatches(tournamentNumber, true);
     }, delay);
   }, [fetchMatches]);
@@ -94,11 +94,11 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
   useEffect(() => {
     if (!tournamentNo || !isConnected) return;
 
-    console.log(`Setting up real-time data refresh for tournament: ${tournamentNo}`);
+    // console.log(`Setting up real-time data refresh for tournament: ${tournamentNo}`);
 
     // Listen for cache invalidation events (triggered by real-time updates)
     const handleCacheInvalidation = () => {
-      console.log(`Cache invalidated for tournament ${tournamentNo} - refreshing data`);
+      // console.log(`Cache invalidated for tournament ${tournamentNo} - refreshing data`);
       debouncedRefresh(tournamentNo);
     };
 
@@ -168,13 +168,13 @@ export const useRealtimeTournament = (tournament: Tournament | null, enabled: bo
 
       // For now, we'll use the existing tournament data
       // In the future, this could be enhanced to fetch fresh tournament details
-      console.log(`Tournament data refresh for: ${tournamentNumber}`);
+      // console.log(`Tournament data refresh for: ${tournamentNumber}`);
       
       setTournamentData(tournament);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load tournament';
       setError(errorMessage);
-      console.error('Error fetching tournament:', err);
+      // console.error('Error fetching tournament:', err);
     } finally {
       setLoading(false);
     }

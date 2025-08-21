@@ -13,6 +13,9 @@ The syntax for this request is:
 
 ### Required Parameters
 - **TournamentNo**: Tournament identifier (integer, required)
+  - **IMPORTANT**: Use the EventNo from `GetEventList` directly as the TournamentNo
+  - Do NOT search for "progressive" tournament IDs (8000+) - the EventNo works directly
+  - Example: EventNo="1602" from GetEventList → TournamentNo="1602" in GetBeachMatchList
 
 ### Optional Filter Parameters
 All parameters are added as attributes to the `<Filter>` element:

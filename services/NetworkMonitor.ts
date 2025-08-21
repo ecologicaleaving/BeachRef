@@ -40,14 +40,14 @@ export class NetworkMonitor {
 
         // Only notify if state changed
         if (wasConnected !== this._isConnected) {
-          console.log(`Network status changed: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
+          // console.log(`Network status changed: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
           this.notifyListeners();
         }
       });
 
-      console.log(`NetworkMonitor initialized. Initial state: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
+      // console.log(`NetworkMonitor initialized. Initial state: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
     } catch (error) {
-      console.error('Failed to initialize NetworkMonitor:', error);
+      // console.error('Failed to initialize NetworkMonitor:', error);
       // Default to connected on error
       this._isConnected = true;
     }
@@ -76,7 +76,7 @@ export class NetworkMonitor {
         isInternetReachable: state.isInternetReachable
       };
     } catch (error) {
-      console.error('Failed to get network state:', error);
+      // console.error('Failed to get network state:', error);
       return {
         isConnected: this._isConnected,
         type: null,
@@ -118,7 +118,7 @@ export class NetworkMonitor {
       try {
         callback(this._isConnected);
       } catch (error) {
-        console.error('Error in network status listener:', error);
+        // console.error('Error in network status listener:', error);
       }
     });
   }
@@ -163,7 +163,7 @@ export class NetworkMonitor {
 
       return state.isConnected && state.isInternetReachable !== false;
     } catch (error) {
-      console.warn('Network reachability check failed:', error);
+      // console.warn('Network reachability check failed:', error);
       return this._isConnected;
     }
   }

@@ -50,7 +50,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         router.back();
       } else {
         // No previous screen - could navigate to home or show a message
-        console.log('No previous screen to navigate back to');
       }
     }
   };
@@ -63,7 +62,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
     if (onRefresh) {
       onRefresh();
     } else {
-      console.log('🔄 Default refresh triggered');
       // Default refresh action - force reload current route
       if (router.canGoBack()) {
         const currentRoute = router.segments;

@@ -105,9 +105,9 @@ export async function preloadBrandAssets(): Promise<void> {
     });
     
     await Promise.all(prefetchPromises);
-    console.log('✅ Brand assets preloaded successfully');
+    // console.log('✅ Brand assets preloaded successfully');
   } catch (error) {
-    console.warn('⚠️ Failed to preload some brand assets:', error);
+    // console.warn('⚠️ Failed to preload some brand assets:', error);
   }
 }
 
@@ -144,6 +144,6 @@ export function validateBrandAssets(): boolean {
   
   // In production, implement actual asset existence validation
   // For now, assume all assets exist since they're bundled
-  console.log('✅ All required brand assets are available');
+  // console.log('✅ All required brand assets are available');
   return true;
 }

@@ -243,7 +243,7 @@ export const useRepositoryPerformanceComparison = (repositoryType: 'tournament' 
       const performanceComparison = factory.getPerformanceComparison(repositoryType);
       setComparison(performanceComparison);
     } catch (err) {
-      console.warn('Failed to get performance comparison:', err);
+      // console.warn('Failed to get performance comparison:', err);
     } finally {
       setLoading(false);
     }

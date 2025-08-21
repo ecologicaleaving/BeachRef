@@ -12,7 +12,6 @@ export default function RootLayout() {
       try {
         // Initialize brand assets
         await preloadBrandAssets();
-        console.log('Brand assets preloaded successfully');
         
         // Initialize cache warmup service
         await CacheWarmupService.initialize();
@@ -20,9 +19,7 @@ export default function RootLayout() {
         // Schedule periodic warmup every 30 minutes
         CacheWarmupService.schedulePeriodicWarmup(30);
         
-        console.log('Cache warmup service initialized successfully');
       } catch (error) {
-        console.warn('Failed to initialize app services:', error);
       }
     };
 

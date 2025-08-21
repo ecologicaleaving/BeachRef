@@ -26,7 +26,7 @@ export class RefereeAssignmentsService {
       const storedProfile = await AsyncStorage.getItem(this.REFEREE_PROFILE_KEY);
       return storedProfile ? JSON.parse(storedProfile) : null;
     } catch (error) {
-      console.error('Failed to get current referee profile:', error);
+      // console.error('Failed to get current referee profile:', error);
       return null;
     }
   }
@@ -38,7 +38,7 @@ export class RefereeAssignmentsService {
     try {
       await AsyncStorage.setItem(this.REFEREE_PROFILE_KEY, JSON.stringify(referee));
     } catch (error) {
-      console.error('Failed to save referee profile:', error);
+      // console.error('Failed to save referee profile:', error);
       throw new Error('Failed to save referee profile');
     }
   }
@@ -174,7 +174,7 @@ export class RefereeAssignmentsService {
       
       return categorizedAssignments;
     } catch (error) {
-      console.error('Failed to get referee assignments:', error);
+      // console.error('Failed to get referee assignments:', error);
       
       // Try to return cached data as fallback
       const cachedData = await this.getCachedAssignments(tournamentNo);
@@ -197,7 +197,7 @@ export class RefereeAssignmentsService {
         return cachedMatches;
       }
     } catch (error) {
-      console.warn('Cache service unavailable, using direct API:', error);
+      // console.warn('Cache service unavailable, using direct API:', error);
     }
 
     // Fallback to direct API call
@@ -220,7 +220,7 @@ export class RefereeAssignmentsService {
         JSON.stringify(cacheData)
       );
     } catch (error) {
-      console.warn('Failed to cache assignments:', error);
+      // console.warn('Failed to cache assignments:', error);
     }
   }
 
@@ -243,7 +243,7 @@ export class RefereeAssignmentsService {
 
       return cacheData.assignments;
     } catch (error) {
-      console.warn('Failed to get cached assignments:', error);
+      // console.warn('Failed to get cached assignments:', error);
       return null;
     }
   }
@@ -262,7 +262,7 @@ export class RefereeAssignmentsService {
         await AsyncStorage.multiRemove(assignmentKeys);
       }
     } catch (error) {
-      console.error('Failed to clear assignments cache:', error);
+      // console.error('Failed to clear assignments cache:', error);
     }
   }
 

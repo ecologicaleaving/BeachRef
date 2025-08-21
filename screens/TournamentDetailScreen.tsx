@@ -11,8 +11,12 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatch } from '../types/match';
+import { BeachMatchCore } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { VisApiClient } from '../services/api/VisApiClient';
+import { GetBeachMatchListRequest } from '../types/api-v2';
+import { VisResponseParser } from '../services/parsing/VisResponseParser';
+import { DataTransformationService } from '../services/DataTransformationService';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
@@ -393,11 +397,37 @@ const TournamentDetailScreenContent: React.FC = () => {
     
     setMatchesLoading(true);
     try {
-      const tournamentMatches = await VisApiClient.getBeachMatchList(tournamentId);
-      setMatches(tournamentMatches);
-      console.log(`🎯 MATCHES LOADED: Got ${tournamentMatches.length} matches for tournament ${tournamentId}`);
+      const matchRequest: GetBeachMatchListRequest = {
+        tournamentNo: tournamentId,
+        includeResults: true,
+        includeReferees: true
+      };
+      console.log(`🎯 MATCH REQUEST: ${JSON.stringify(matchRequest)}`);
+      
+      const response = await VisApiClient.getBeachMatchList(matchRequest);
+      console.log(`🎯 API RESPONSE:`, response);
+      
+      // Parse the response - it should contain match data
+      if (response.success && response.data) {
+        console.log(`🎯 RAW RESPONSE DATA:`, response.data);
+        
+        // Parse XML response to extract matches
+        const matchesCore = VisResponseParser.parseBeachMatches(response.data, tournamentId);
+        console.log(`🎯 PARSED MATCHES (BeachMatchCore):`, matchesCore);
+        
+        // Transform BeachMatchCore to legacy BeachMatch format for MatchList component
+        const transformationService = new DataTransformationService();
+        const legacyMatches = matchesCore.map(coreMatch => transformationService.matchCoreToLegacy(coreMatch));
+        console.log(`🎯 TRANSFORMED MATCHES (BeachMatch):`, legacyMatches);
+        
+        setMatches(legacyMatches);
+        console.log(`🎯 MATCHES LOADED: ${legacyMatches.length} matches for tournament ${tournamentId}`);
+      } else {
+        console.error(`🎯 MATCH API ERROR:`, response.error);
+        setMatches([]);
+      }
     } catch (error) {
-      console.error('Failed to load matches:', error);
+      console.error('🎯 Failed to load matches:', error);
       setMatches([]);
     } finally {
       setMatchesLoading(false);

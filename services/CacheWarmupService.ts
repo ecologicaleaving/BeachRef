@@ -1,5 +1,5 @@
 import { CacheService } from './CacheService';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { CacheStatsService } from './CacheStatsService';
 
 /**
@@ -97,7 +97,7 @@ export class CacheWarmupService {
    * Pre-load specific tournament data into memory cache
    * Ensures sub-100ms access times for critical tournaments
    */
-  static async preloadTournamentData(tournaments: Tournament[]): Promise<void> {
+  static async preloadTournamentData(tournaments: TournamentCore[]): Promise<void> {
     if (!this.initialized) {
       console.warn('CacheWarmupService not initialized, cannot preload tournament data');
       return;
@@ -113,7 +113,7 @@ export class CacheWarmupService {
         if (!acc[type]) acc[type] = [];
         acc[type].push(tournament);
         return acc;
-      }, {} as Record<string, Tournament[]>);
+      }, {} as Record<string, TournamentCore[]>);
 
       // Preload each tournament type separately
       for (const [type, tournamentList] of Object.entries(tournamentsByType)) {
@@ -272,9 +272,9 @@ export class CacheWarmupService {
     return `warmup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private static classifyTournament(tournament: Tournament): string {
-    const code = tournament.Code || '';
-    const name = tournament.Name || '';
+  private static classifyTournament(tournament: TournamentCore): string {
+    const code = tournament.code || '';
+    const name = tournament.name || '';
     
     // FIVB tournaments
     if (name.toLowerCase().includes('fivb') || 
@@ -304,7 +304,7 @@ export class CacheWarmupService {
     return 'LOCAL';
   }
 
-  private static async warmCacheWithData(tournaments: Tournament[], filterOptions: any): Promise<void> {
+  private static async warmCacheWithData(tournaments: TournamentCore[], filterOptions: any): Promise<void> {
     // This would ideally directly set the memory cache, but we'll use the standard cache method
     // The CacheService will handle updating all cache tiers appropriately
     try {

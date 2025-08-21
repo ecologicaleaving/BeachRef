@@ -15,8 +15,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Clock } from 'lucide-react';
 import { TournamentCore } from '../types/tournament-v2';
-import { VisApiService } from '../services/visApi';
 import NavigationHeader from '../components/navigation/NavigationHeader';
+import VisTournamentList from '../components/VisTournamentList';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 interface TournamentCardProps {
@@ -72,8 +72,8 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
 
   const getLocation = () => {
     // Try different combinations of available location data
-    const city = tournament.City;
-    const country = tournament.CountryName || tournament.Country;
+    const city = tournament.city;
+    const country = tournament.country;
     
     if (city && country) {
       return `${city}, ${country}`;
@@ -81,7 +81,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     
     // Only return location if we have explicit location data, city, or country
     // Don't show fallback text or try to infer from title
-    return tournament.Location || city || country || null;
+    return tournament.location || city || country || null;
   };
 
   // Compact date formatting functions (moved from TournamentDateExtractor)
@@ -135,9 +135,9 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
   };
 
   const getDateRange = () => {
-    // Use direct API StartDate and EndDate - no complex extraction needed!
-    const startDate = tournament.StartDate;
-    const endDate = tournament.EndDate;
+    // Use TournamentCore dates object
+    const startDate = tournament.dates?.startDate;
+    const endDate = tournament.dates?.endDate;
     
     if (!startDate && !endDate) {
       return 'Dates TBD';
@@ -154,11 +154,11 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
   };
 
   const getStatusIndicator = () => {
-    if (!tournament.StartDate || !tournament.EndDate) return null;
+    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return null;
     
     const now = new Date();
-    const start = new Date(tournament.StartDate);
-    const end = new Date(tournament.EndDate);
+    const start = new Date(tournament.dates.startDate);
+    const end = new Date(tournament.dates.endDate);
     
     let status = '';
     let backgroundColor = '#6B7280';
@@ -187,7 +187,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
 
   // Get tournament category/type badge
   const getCategoryBadge = () => {
-    const category = tournament.Category || tournament.Type || tournament.Series;
+    const category = tournament.tournamentType;
     if (!category) return null;
     
     // Color coding for different tournament types
@@ -270,7 +270,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       </View>
       
       <Text style={styles.tournamentName}>
-        {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
+        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
       {getLocation() && (
@@ -307,20 +307,20 @@ interface LiveTournamentCardProps {
 const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onPress }) => {
   const getLocation = () => {
     // Try different combinations of available location data
-    const city = tournament.City;
-    const country = tournament.CountryName || tournament.Country;
+    const city = tournament.city;
+    const country = tournament.country;
     
     if (city && country) {
       return `${city}, ${country}`;
     }
     
     // Only return location if we have explicit location data, city, or country
-    return tournament.Location || city || country || null;
+    return tournament.location || city || country || null;
   };
 
   // Get category badge for live tournaments
   const getCategoryBadge = () => {
-    const category = tournament.Category || tournament.Type || tournament.Series;
+    const category = tournament.tournamentType;
     if (!category) return null;
     
     return (
@@ -364,7 +364,7 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
       </View>
       
       <Text style={styles.liveTournamentName} numberOfLines={2}>
-        {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
+        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
       {getLocation() && (
@@ -385,23 +385,23 @@ interface WeekTournamentCardProps {
 
 const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onPress }) => {
   const getLocation = () => {
-    const city = tournament.City;
-    const country = tournament.CountryName || tournament.Country;
+    const city = tournament.city;
+    const country = tournament.country;
     
     if (city && country) {
       return `${city}, ${country}`;
     }
     
     // Only return location if we have explicit location data, city, or country
-    return tournament.Location || city || country || null;
+    return tournament.location || city || country || null;
   };
 
   const getStatus = () => {
-    if (!tournament.StartDate || !tournament.EndDate) return null;
+    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return null;
     
     const now = new Date();
-    const start = new Date(tournament.StartDate);
-    const end = new Date(tournament.EndDate);
+    const start = new Date(tournament.dates.startDate);
+    const end = new Date(tournament.dates.endDate);
     
     if (start <= now && now <= end) {
       return { text: '🔴 LIVE', color: '#2E8B57' };
@@ -429,7 +429,7 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
       </View>
       
       <Text style={styles.liveTournamentName} numberOfLines={2}>
-        {tournament.Title || tournament.Name || `Tournament ${tournament.No}`}
+        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
       {getLocation() && (
@@ -442,7 +442,37 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
 };
 
 const TournamentSelectionScreen: React.FC = () => {
+  console.log('🚀 TournamentSelectionScreen component is executing!');
+  
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
+  
+  console.log('🔥 Setting up component state...');
+  
+  // Add test tournament data to verify the component works
+  const testTournaments: TournamentCore[] = [
+    {
+      visNo: 'DEV001',
+      No: 'DEV001', 
+      name: 'Development Tournament - Beach Volleyball',
+      code: 'DEVBVB',
+      startDate: '2025-08-21T00:00:00',
+      endDate: '2025-08-23T23:59:59',
+      city: 'Development City',
+      country: 'DEV',
+      gender: 'W' as any,
+    },
+    {
+      visNo: 'DEV002',
+      No: 'DEV002',
+      name: 'Test Tournament - Beach Volleyball Men', 
+      code: 'TESTBVB',
+      startDate: '2025-08-25T00:00:00',
+      endDate: '2025-08-27T23:59:59',
+      city: 'Test City',
+      country: 'TEST',
+      gender: 'M' as any,
+    }
+  ];
   const [initialLoading, setInitialLoading] = useState(true);
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -492,69 +522,295 @@ const TournamentSelectionScreen: React.FC = () => {
   }
 
   const loadTournaments = useCallback(async (forceRefresh = false, isInitial = false) => {
+    console.log(`🏐 TournamentSelectionScreen: loadTournaments called with forceRefresh=${forceRefresh}, isInitial=${isInitial}`);
+    
     try {
       if (isInitial) {
+        console.log('🏐 Setting initial loading to true');
         setInitialLoading(true);
       } else {
+        console.log('🏐 Setting tournament loading to true');
         setTournamentLoading(true);
       }
       setError(null);
       
-      console.log(`🏐 Loading tournaments, force refresh: ${forceRefresh}`);
+      // DIRECT API CALL - Bypass broken cache system
+      console.log('🔥 MAKING DIRECT API CALL - BYPASSING CACHE');
       
-      // Use cache system for optimal performance
-      const currentYearNumber = currentYear.getFullYear();
-      console.log(`🏐 TournamentSelectionScreen: Loading tournaments for year: ${currentYearNumber}`);
-      console.log(`🏐 TournamentSelectionScreen: Current year object:`, currentYear);
-      console.log(`🏐 TournamentSelectionScreen: Time period:`, timePeriod);
+      const { VisApiClient } = await import('../services/api/VisApiClient');
+      const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
       
-      // Import CacheService dynamically to avoid circular dependencies
-      const { CacheService } = await import('../services/CacheService');
-      const cacheResult = await CacheService.getTournaments({ 
-        recentOnly: false,  // Get all tournaments, not just recent
-        tournamentType: undefined,  // Get all types, filter client-side
-        year: currentYearNumber  // Use selected year from time period selector
+      const config = {
+        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        timeoutMs: 10000,
+        maxRetries: 1,
+        retryDelayMs: 1000,
+        exponentialBackoff: false,
+        enableLogging: true
+      };
+      
+      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+      
+      console.log('🧪 Making direct API call with request:', {
+        tournamentType: 'BPT',
+        maxResults: 50
       });
       
-      const tournamentList = cacheResult.data;
-      console.log(`🏐 Loaded ${tournamentList.length} total tournaments from ${cacheResult.source}`);
-      console.log('🏐 Tournament sample:', tournamentList.slice(0, 2));
+      const response = await visApi.getEventList({
+        tournamentType: 'BPT',
+        maxResults: 50
+      });
       
-      // Debug merge status
-      const mergedTournaments = tournamentList.filter(t => (t as any)._mergedTournaments && (t as any)._mergedTournaments.length > 1);
-      const singleTournaments = tournamentList.filter(t => !(t as any)._mergedTournaments || (t as any)._mergedTournaments.length <= 1);
-      console.log(`🏐 MERGE STATUS: ${mergedTournaments.length} merged, ${singleTournaments.length} single`);
-      
-      if (mergedTournaments.length > 0) {
-        console.log('🏐 MERGED EXAMPLES:', mergedTournaments.slice(0, 3).map(t => ({
-          name: t.Name,
-          mergedCount: (t as any)._mergedTournaments.length,
-          merged: (t as any)._mergedTournaments.map((m: any) => m.Name)
-        })));
+      if (response.success && response.xmlData) {
+        console.log('🔥 VIS API SUCCESS - XML length:', response.xmlData.length);
+        console.log('🔥 VIS XML sample:', response.xmlData.substring(0, 800));
+        
+        // Parse manually
+        const visTournaments = parseXMLDirectly(response.xmlData);
+        console.log(`🔥 VIS PARSED ${visTournaments.length} tournaments`);
+        
+        // LOG EVERY TOURNAMENT FROM VIS
+        visTournaments.forEach((t, i) => {
+          console.log(`🔥 VIS Tournament ${i}:`, {
+            name: t.name,
+            visNo: t.visNo, 
+            dates: t.dates,
+            city: t.city,
+            country: t.country
+          });
+        });
+        
+        console.log('🔥 SETTING VIS TOURNAMENTS IN STATE...');
+        setTournaments(visTournaments);
+        console.log('🔥 STATE UPDATED WITH VIS DATA');
+        
+        setAvailableCategories(['ALL', 'BPT']);
+      } else {
+        console.error('🔥 VIS API FAILED:', response.error);
+        setError(response.error || 'API call failed');
       }
       
-      // Extract and set available categories from tournament data
-      const categories = extractTournamentCategories(tournamentList);
-      setAvailableCategories(categories);
-      setTournaments(tournamentList);
     } catch (err) {
+      console.error('🧪 LOAD TOURNAMENTS ERROR:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
-      Alert.alert('Error', 'Failed to load tournaments. Please check your connection.');
     } finally {
       setInitialLoading(false);
       setTournamentLoading(false);
     }
-  }, [currentYear, timePeriod]);
+  }, []); // Remove dependencies that cause re-runs
+
+  // Simple XML parser for tournaments
+  const parseXMLDirectly = (xmlData: string): TournamentCore[] => {
+    const tournaments: TournamentCore[] = [];
+    
+    try {
+      // Fix regex: VIS XML uses self-closing Event tags like <Event ... />
+      const eventRegex = /<Event[^>]*\/>/gs;
+      const eventMatches = xmlData.match(eventRegex) || [];
+      
+      console.log(`Found ${eventMatches.length} events in XML`);
+      
+      eventMatches.forEach((eventMatch, index) => {
+        const getValue = (tagName: string): string => {
+          // Fix: Extract from attributes in self-closing tags
+          const regex = new RegExp(`${tagName}="([^"]*)"`, 'i');
+          const result = eventMatch.match(regex);
+          return result ? result[1] : '';
+        };
+        
+        const visNo = getValue('No');
+        const code = getValue('Code');
+        const name = getValue('Name');
+        const startDate = getValue('StartDate');
+        const endDate = getValue('EndDate');
+        const city = getValue('City');
+        const country = getValue('Country');
+        const gender = getValue('Gender');
+        
+        if (visNo && name) {
+          const tournament: TournamentCore = {
+            id: `tournament_${visNo}_${index}`,
+            visNo,
+            version: 1,
+            lastUpdated: new Date().toISOString(),
+            code: code || visNo,
+            name,
+            gender: gender === 'W' ? 'W' as any : gender === 'M' ? 'M' as any : 'MIXED' as any,
+            tournamentType: 'BPT' as any,
+            status: 'ACTIVE' as any,
+            dates: {
+              startDate: startDate || new Date().toISOString(),
+              endDate: endDate || startDate || new Date().toISOString()
+            },
+            city: city || undefined,
+            country: country || undefined
+          };
+          
+          tournaments.push(tournament);
+          
+          if (index < 3) {
+            console.log(`Tournament ${index}:`, tournament);
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('XML parsing error:', error);
+    }
+    
+    return tournaments;
+  };
+
+  console.log('🏐 TournamentSelectionScreen rendering - tournaments:', tournaments.length, 'initialLoading:', initialLoading);
+
+  // TEST API CALL - Direct VIS API test
+  const testApiCall = async () => {
+    console.log('🧪 STARTING TEST API CALL');
+    
+    const { VisApiClient } = await import('../services/api/VisApiClient');
+    const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
+    
+    const config = {
+      baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+      timeoutMs: 10000,
+      maxRetries: 1,
+      retryDelayMs: 1000,
+      exponentialBackoff: false,
+      enableLogging: true
+    };
+    
+    const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+    
+    console.log('🧪 Making test call with request:', {
+      tournamentType: 'BPT',
+      maxResults: 10,
+      startDate: '2025-01-01',
+      endDate: '2025-12-31'
+    });
+    
+    try {
+      const response = await visApi.getEventList({
+        tournamentType: 'BPT',
+        maxResults: 10,
+        startDate: '2025-01-01', 
+        endDate: '2025-12-31'
+      });
+      
+      console.log('🧪 TEST API RESPONSE SUCCESS:', response.success);
+      console.log('🧪 TEST API RESPONSE DATA LENGTH:', response.xmlData?.length || 0);
+      console.log('🧪 TEST API RESPONSE SAMPLE:', response.xmlData?.substring(0, 1000));
+      
+      if (!response.success) {
+        console.error('🧪 TEST API ERROR:', response.error);
+        console.error('🧪 TEST API ERROR CODE:', response.errorCode);
+      }
+      
+    } catch (error) {
+      console.error('🧪 TEST API EXCEPTION:', error);
+    }
+  };
+
+  // Auto-run test on first render
+  React.useEffect(() => {
+    if (!initialLoading && tournaments.length === 0) {
+      console.log('🧪 Running test API call...');
+      testApiCall();
+    }
+  }, [initialLoading, tournaments.length]);
 
   useEffect(() => {
-    loadTournaments(false, true); // Initial load
-  }, []);
+    console.log('🔥 TournamentSelectionScreen: useEffect EXECUTING!');
+    console.log('🔥 TournamentSelectionScreen: About to call REAL API');
+    
+    // Load tournaments directly from API - inline to avoid dependency issues
+    const runDirectApiCall = async () => {
+      try {
+        console.log('🔥 Starting DIRECT API CALL...');
+        setInitialLoading(true);
+        setError(null);
+        
+        // DIRECT API CALL - Bypass broken cache system
+        console.log('🔥 MAKING DIRECT API CALL - BYPASSING CACHE');
+        
+        const { VisApiClient } = await import('../services/api/VisApiClient');
+        const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
+        
+        const config = {
+          baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+          timeoutMs: 10000,
+          maxRetries: 1,
+          retryDelayMs: 1000,
+          exponentialBackoff: false,
+          enableLogging: true
+        };
+        
+        const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+        
+        console.log('🧪 Making direct API call with request:', {
+          maxResults: 50
+        });
+        
+        const response = await visApi.getEventList({
+          maxResults: 50
+        });
+        
+        if (response.success && response.xmlData) {
+          console.log('🔥 VIS API SUCCESS - XML length:', response.xmlData.length);
+          console.log('🔥 VIS XML sample:', response.xmlData.substring(0, 800));
+          
+          console.log('🔥 About to call parseXMLDirectly...');
+          try {
+            // Parse manually
+            const visTournaments = parseXMLDirectly(response.xmlData);
+            console.log(`🔥 VIS PARSED ${visTournaments.length} tournaments`);
+            
+            if (visTournaments.length === 0) {
+              console.log('🔥 WARNING: parseXMLDirectly returned 0 tournaments');
+            }
+          
+            // LOG EVERY TOURNAMENT FROM VIS
+            visTournaments.forEach((t, i) => {
+              console.log(`🔥 VIS Tournament ${i}:`, {
+                name: t.name,
+                visNo: t.visNo, 
+                dates: t.dates,
+                city: t.city,
+                country: t.country
+              });
+            });
+            
+            console.log('🔥 SETTING VIS TOURNAMENTS IN STATE...');
+            setTournaments(visTournaments);
+            console.log('🔥 STATE UPDATED WITH VIS DATA');
+            
+            setAvailableCategories(['ALL', 'BPT']);
+          } catch (parseError) {
+            console.error('🔥 PARSING ERROR:', parseError);
+            console.error('🔥 XML Data sample:', response.xmlData.substring(0, 1000));
+          }
+        } else {
+          console.error('🔥 VIS API FAILED:', response.error);
+          setError(response.error || 'API call failed');
+        }
+        
+      } catch (error) {
+        console.error('🔥 DIRECT API CALL ERROR:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setInitialLoading(false);
+        setTournamentLoading(false);
+      }
+    };
+    
+    runDirectApiCall();
+  }, []); // Empty dependency array - run once on mount
 
   // Handle currentYear changes with tournament loading (not full page reload)
-  useEffect(() => {
-    if (initialLoading) return; // Skip during initial load
-    loadTournaments(false, false); // Reload tournaments for new year, but don't show full page loading
-  }, [currentYear]);
+  // DISABLED: This was interfering with tournament loading
+  // useEffect(() => {
+  //   if (initialLoading) return; // Skip during initial load
+  //   loadTournaments(false, false); // Reload tournaments for new year, but don't show full page loading
+  // }, [currentYear]);
 
   // Separate effect for category changes - only update filtered results, don't reload API
   useEffect(() => {
@@ -608,9 +864,23 @@ const TournamentSelectionScreen: React.FC = () => {
     }
   }, [loadTournaments]);
 
-  const handleTournamentPress = (tournament: Tournament) => {
-    console.log(`DEBUG CLICK: User clicked on tournament "${tournament.Name}" with No: ${tournament.No}, StartDate: ${tournament.StartDate}, EndDate: ${tournament.EndDate}`);
+  const handleTournamentPress = (tournament: TournamentCore) => {
+    console.log(`🎯 TOURNAMENT CLICK: User clicked on tournament "${tournament.name}"`);
+    console.log(`🎯 TOURNAMENT DATA:`, {
+      id: tournament.id,
+      visNo: tournament.visNo,
+      name: tournament.name,
+      code: tournament.code,
+      dates: tournament.dates,
+      city: tournament.city,
+      country: tournament.country,
+      gender: tournament.gender,
+      tournamentType: tournament.tournamentType,
+      status: tournament.status
+    });
+    
     const merged = (tournament as any)._mergedTournaments;
+    console.log(`🎯 MERGED TOURNAMENTS:`, merged);
     
     // Ensure _mergedTournaments is preserved in JSON serialization
     const tournamentWithMerged = {
@@ -618,18 +888,23 @@ const TournamentSelectionScreen: React.FC = () => {
       _mergedTournaments: merged
     };
     
+    console.log(`🎯 FINAL DATA TO PASS:`, tournamentWithMerged);
+    console.log(`🎯 JSON STRING LENGTH:`, JSON.stringify(tournamentWithMerged).length);
+    
     router.push({
       pathname: '/tournament-detail',
       params: { tournamentData: JSON.stringify(tournamentWithMerged) }
     });
+    
+    console.log(`🎯 NAVIGATION CALLED: /tournament-detail with tournamentData param`);
   };
 
   // Match tournament to category with flexible patterns
-  const matchesTournamentCategory = (tournament: Tournament, category: string): boolean => {
+  const matchesTournamentCategory = (tournament: TournamentCore, category: string): boolean => {
     if (category === 'ALL') return true;
     
-    const name = (tournament.Name || tournament.Title || '').toUpperCase();
-    const type = (tournament.Type || tournament.Category || tournament.Series || '').toUpperCase();
+    const name = (tournament.name || tournament.title || '').toUpperCase();
+    const type = (tournament.tournamentType || '').toUpperCase();
     const allText = `${name} ${type}`.trim();
     
     // Direct field matching
@@ -664,16 +939,29 @@ const TournamentSelectionScreen: React.FC = () => {
 
   // Filter tournaments based on selected time period and category
   const filteredTournaments = tournaments.filter(tournament => {
-    if (!tournament.StartDate) return false;
+    console.log('🔍 Filtering tournament:', tournament.name, 'startDate:', tournament.dates?.startDate);
     
-    // Exclude cancelled tournaments
-    if (tournament.Status && tournament.Status.toLowerCase().includes('cancelled')) {
+    // Basic validation filters
+    if (!tournament.name || !tournament.dates?.startDate) {
+      console.log('🔍 Tournament filtered out: missing name or startDate');
       return false;
     }
     
-    const tournamentStart = new Date(tournament.StartDate);
-    const tournamentEnd = tournament.EndDate ? new Date(tournament.EndDate) : tournamentStart;
+    // Skip very old tournaments (before 2020)
+    const startDate = new Date(tournament.dates.startDate);
+    if (startDate.getFullYear() < 2020) {
+      console.log('🔍 Tournament filtered out: too old (before 2020)');
+      return false;
+    }
     
+    // Skip tournaments too far in the future (after 2026)
+    if (startDate.getFullYear() > 2026) {
+      console.log('🔍 Tournament filtered out: too far in future (after 2026)');
+      return false;
+    }
+    
+    // Apply time period filtering based on UI controls
+    const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : startDate;
     let periodOverlap = false;
     
     switch (timePeriod) {
@@ -681,30 +969,66 @@ const TournamentSelectionScreen: React.FC = () => {
         const weekStart = new Date(currentWeekStart);
         const weekEnd = new Date(currentWeekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
-        periodOverlap = tournamentStart <= weekEnd && tournamentEnd >= weekStart;
+        weekEnd.setHours(23, 59, 59, 999); // End of day
+        periodOverlap = startDate <= weekEnd && tournamentEnd >= weekStart;
+        console.log('🔍 Week filter:', {
+          weekStart: weekStart.toISOString().split('T')[0],
+          weekEnd: weekEnd.toISOString().split('T')[0], 
+          tournamentStart: startDate.toISOString().split('T')[0],
+          tournamentEnd: tournamentEnd.toISOString().split('T')[0],
+          overlap: periodOverlap
+        });
         break;
         
       case 'Month':
         const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-        periodOverlap = tournamentStart <= monthEnd && tournamentEnd >= monthStart;
+        const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+        periodOverlap = startDate <= monthEnd && tournamentEnd >= monthStart;
+        console.log('🔍 Month filter:', {
+          monthStart: monthStart.toISOString().split('T')[0],
+          monthEnd: monthEnd.toISOString().split('T')[0],
+          tournamentStart: startDate.toISOString().split('T')[0], 
+          tournamentEnd: tournamentEnd.toISOString().split('T')[0],
+          overlap: periodOverlap
+        });
         break;
         
       case 'Year':
         const yearStart = new Date(currentYear.getFullYear(), 0, 1);
-        const yearEnd = new Date(currentYear.getFullYear(), 11, 31);
-        periodOverlap = tournamentStart <= yearEnd && tournamentEnd >= yearStart;
+        const yearEnd = new Date(currentYear.getFullYear(), 11, 31, 23, 59, 59, 999);
+        periodOverlap = startDate <= yearEnd && tournamentEnd >= yearStart;
+        console.log('🔍 Year filter:', {
+          yearStart: yearStart.toISOString().split('T')[0],
+          yearEnd: yearEnd.toISOString().split('T')[0],
+          tournamentStart: startDate.toISOString().split('T')[0],
+          tournamentEnd: tournamentEnd.toISOString().split('T')[0], 
+          overlap: periodOverlap
+        });
         break;
     }
     
-    // Type filtering
-    if (selectedType === 'ALL') {
-      return periodOverlap;
+    if (!periodOverlap) {
+      console.log('🔍 Tournament filtered out: not in selected time period');
+      return false;
     }
     
-    // Dynamic tournament type filtering
-    return periodOverlap && matchesTournamentCategory(tournament, selectedType);
+    // Apply category/type filtering
+    if (selectedType === 'ALL') {
+      console.log('🔍 Tournament PASSED all filters - will be shown');
+      return true;
+    }
+    
+    const matchesCategory = matchesTournamentCategory(tournament, selectedType);
+    if (!matchesCategory) {
+      console.log('🔍 Tournament filtered out: does not match category', selectedType);
+      return false;
+    }
+    
+    console.log('🔍 Tournament PASSED all filters - will be shown');
+    return true;
   });
+
+  console.log('🏐 TournamentSelectionScreen rendering - filteredTournaments:', filteredTournaments.length);
 
   // Navigate based on time period
   const navigatePeriod = (direction: 'prev' | 'next') => {
@@ -766,18 +1090,14 @@ const TournamentSelectionScreen: React.FC = () => {
   };
 
   // Extract tournament categories from tournament data
-  const extractTournamentCategories = (tournaments: Tournament[]): string[] => {
+  const extractTournamentCategories = (tournaments: TournamentCore[]): string[] => {
     const categorySet = new Set<string>();
     categorySet.add('ALL'); // Always include ALL option
     
     tournaments.forEach(tournament => {
-      // Extract from various possible category fields
+      // Extract from tournament type field
       const sources = [
-        tournament.Type,
-        tournament.Category,
-        tournament.Series,
-        tournament.League,
-        tournament.Division
+        tournament.tournamentType
       ].filter(Boolean);
       
       sources.forEach(source => {
@@ -790,7 +1110,7 @@ const TournamentSelectionScreen: React.FC = () => {
       });
       
       // Extract from tournament name patterns
-      const name = (tournament.Name || tournament.Title || '').toUpperCase();
+      const name = (tournament.name || tournament.title || '').toUpperCase();
       
       // BPT subcategories (check specific ones first, then general BPT)
       if (name.includes('BPT FUTURES') || name.includes('FUTURES')) {
@@ -840,9 +1160,9 @@ const TournamentSelectionScreen: React.FC = () => {
     return categories;
   };
 
-  const renderTournament = ({ item }: { item: Tournament }) => {
+  const renderTournament = ({ item }: { item: TournamentCore }) => {
     // Debug log for Baden tournaments only (to avoid console spam)
-    if (item.Name?.toLowerCase().includes('baden')) {
+    if (item.name?.toLowerCase().includes('baden')) {
       console.log(`🏐 DEBUG TOURNAMENT LIST: Complete Baden tournament object:`, JSON.stringify(item, null, 2));
     }
     
@@ -858,11 +1178,11 @@ const TournamentSelectionScreen: React.FC = () => {
   const getCategoriesWithCounts = () => {
     return availableCategories.map(category => {
       const count = tournaments.filter(tournament => {
-        if (!tournament.StartDate) return false;
-        if (tournament.Status && tournament.Status.toLowerCase().includes('cancelled')) return false;
+        if (!tournament.dates?.startDate) return false;
+        if (tournament.status && tournament.status.toLowerCase().includes('cancelled')) return false;
         
-        const tournamentStart = new Date(tournament.StartDate);
-        const tournamentEnd = tournament.EndDate ? new Date(tournament.EndDate) : tournamentStart;
+        const tournamentStart = new Date(tournament.dates.startDate);
+        const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : tournamentStart;
         
         let periodOverlap = false;
         
@@ -1028,6 +1348,7 @@ const TournamentSelectionScreen: React.FC = () => {
   };
 
   if (initialLoading) {
+    console.log('🏐 TournamentSelectionScreen: Rendering loading state');
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />
@@ -1067,21 +1388,12 @@ const TournamentSelectionScreen: React.FC = () => {
           {renderCategoryDropdown()}
         
           <View style={styles.listWrapper}>
-            <FlatList
-              data={filteredTournaments}
-              renderItem={renderTournament}
-              keyExtractor={(item) => item.No}
-              style={styles.list}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={['#FF6B35']}
-                  tintColor="#FF6B35"
-                />
-              }
+            <VisTournamentList
+              tournaments={filteredTournaments}
+              onTournamentPress={handleTournamentPress}
+              loading={tournamentLoading}
+              error={error}
+              onRetry={() => loadTournaments(true)}
             />
             {tournamentLoading && (
               <View style={styles.tournamentLoadingOverlay}>

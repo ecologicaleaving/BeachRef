@@ -1,13 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BeachMatch } from '../types/match';
 import { RefereeAssignment, RefereeAssignmentStatus, RefereeProfile } from '../types/RefereeAssignments';
-import { VisApiService } from './visApi';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 import { CacheService } from './CacheService';
 
 export class RefereeAssignmentsService {
   private static readonly REFEREE_PROFILE_KEY = '@referee_profile';
   private static readonly ASSIGNMENTS_CACHE_KEY = '@referee_assignments_cache';
   private static readonly CACHE_EXPIRY_MINUTES = 5;
+  
+  private static visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
 
   /**
    * Get the current referee profile from storage
@@ -192,7 +201,7 @@ export class RefereeAssignmentsService {
     }
 
     // Fallback to direct API call
-    return await VisApiService.getBeachMatchList(tournamentNo);
+    return await this.visApiClient.fetchMatchesForTournament(tournamentNo);
   }
 
   /**

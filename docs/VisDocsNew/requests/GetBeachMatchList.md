@@ -1,4 +1,76 @@
-Beach Volleyball Match
+# Request to get a list of beach volleyball matches
+
+## Request
+
+The syntax for this request is:
+
+**Web service request**
+```xml
+<Request Type="GetBeachMatchList" Fields="<list of the fields to return>">
+  <Filter TournamentNo="<tournament_number>" /> <!-- Required: tournament identifier -->
+</Request>
+```
+
+### Required Parameters
+- **TournamentNo**: Tournament identifier (integer, required)
+
+### Optional Filter Parameters
+All parameters are added as attributes to the `<Filter>` element:
+
+- **CourtNo**: Specific court number (integer)
+- **Status**: Match status filter
+  - Valid values: "Scheduled", "Running", "Finished", "Cancelled"
+- **StartDate**: Start date filter (YYYY-MM-DD format)
+- **EndDate**: End date filter (YYYY-MM-DD format)
+- **IncludeResults**: Include match scores (boolean, default: true)
+- **IncludeReferees**: Include referee assignments (boolean, default: true)
+
+### Fields
+The list of fields is mandatory. It can contain all the fields listed in the Beach Volleyball Match data below.
+
+### Example Request
+Get all matches for tournament 123 with basic information:
+
+```xml
+<Request Type="GetBeachMatchList" Fields="No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName">
+  <Filter TournamentNo="123" IncludeResults="true" IncludeReferees="true" />
+</Request>
+```
+
+### Response
+When the request is successful, the VIS API returns a SOAP envelope containing the filtered matches:
+
+**SOAP Response Format:**
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetBeachMatchListResponse xmlns="http://www.fivb.org/vis/2009/XmlRequest">
+      <GetBeachMatchListResult>
+        <BeachMatches>
+          <BeachMatch No="1001" NoInTournament="1" LocalDate="2025-08-21" LocalTime="09:00" Status="Scheduled" Court="Court 1" TeamAName="Team A" TeamBName="Team B" ... />
+          <BeachMatch No="1002" NoInTournament="2" LocalDate="2025-08-21" LocalTime="10:30" Status="Running" Court="Court 2" TeamAName="Team C" TeamBName="Team D" ... />
+        </BeachMatches>
+      </GetBeachMatchListResult>
+    </GetBeachMatchListResponse>
+  </soap:Body>
+</soap:Envelope>
+```
+
+**Data Extraction:**
+To extract the match data from the SOAP response:
+1. Parse the SOAP envelope
+2. Navigate to: `soap:Body → GetBeachMatchListResponse → GetBeachMatchListResult → BeachMatches`
+3. Each match is in a `<BeachMatch>` element with attributes containing the field data
+
+### Security
+This is a public request: any client can retrieve match information.
+Some fields may require authentication depending on the tournament and match visibility settings.
+
+---
+
+# Beach Volleyball Match Data Structure
+
 Represents a beach volleyball match.
 
 The name of the XML element for a beach volleyball match is <BeachMatch>.

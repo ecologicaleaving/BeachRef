@@ -5,33 +5,43 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing required environment variables. Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
-  );
+// Allow Supabase configuration for development (valid project provided)
+const isSupabaseEnabled = supabaseUrl && supabaseAnonKey;
+
+if (!isSupabaseEnabled) {
+  console.warn('Supabase disabled - missing environment variables. Running in API-only mode.');
+} else {
+  console.log('Supabase enabled with valid project configuration.');
 }
 
 // Type-safe Supabase client with React Native optimizations
 // Add client-side check to prevent SSR issues
 const isClient = typeof window !== 'undefined';
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: isClient ? AsyncStorage : undefined, // Only use AsyncStorage on client
-    autoRefreshToken: isClient,
-    persistSession: isClient,
-    detectSessionInUrl: false, // Disable for React Native
-    flowType: 'pkce', // Use PKCE flow for better security
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10, // Limit events for mobile performance
-    },
-  },
-});
+export const supabase: SupabaseClient | null = isSupabaseEnabled 
+  ? createClient(supabaseUrl!, supabaseAnonKey!, {
+      auth: {
+        storage: isClient ? AsyncStorage : undefined, // Only use AsyncStorage on client
+        autoRefreshToken: isClient,
+        persistSession: isClient,
+        detectSessionInUrl: false, // Disable for React Native
+        flowType: 'pkce', // Use PKCE flow for better security
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10, // Limit events for mobile performance
+        },
+      },
+    })
+  : null;
 
 // Connection test helper
 export const testSupabaseConnection = async (): Promise<boolean> => {
+  if (!supabase) {
+    console.warn('Supabase client not available - running in API-only mode');
+    return false;
+  }
+  
   try {
     const { error } = await supabase.from('_healthcheck').select('*').limit(1);
     

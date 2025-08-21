@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
-import { VisApiService } from '../services/visApi';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from '../services/api/VisApiClient';
 import { BeachMatch } from '../types/match';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 
@@ -22,6 +22,12 @@ interface UseCourtManagementActions {
 
 export interface UseCourtManagement extends UseCourtManagementState, UseCourtManagementActions {}
 
+const extractGenderFromCode = (code: string): string => {
+  if (code.toUpperCase().startsWith('W')) return 'Women';
+  if (code.toUpperCase().startsWith('M')) return 'Men';
+  return 'Mixed';
+};
+
 export const useCourtManagement = (): UseCourtManagement => {
   const [availableCourts, setAvailableCourts] = useState<string[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<string>('All Courts');
@@ -29,6 +35,15 @@ export const useCourtManagement = (): UseCourtManagement => {
   const [loadingCourts, setLoadingCourts] = useState(false);
   const [loadingCourtMatches, setLoadingCourtMatches] = useState(false);
   const [showCourtSelection, setShowCourtSelection] = useState(false);
+  
+  const visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
 
   const inferCountryFromName = useCallback((name?: string): string | undefined => {
     if (!name) return undefined;
@@ -110,7 +125,7 @@ export const useCourtManagement = (): UseCourtManagement => {
     try {
       console.log(`🏐 DEBUG: Loading courts for tournament ${tournamentNo}...`);
       
-      const matches = await VisApiService.getBeachMatchList(tournamentNo);
+      const matches = await visApiClient.fetchMatchesForTournament(tournamentNo);
       console.log(`🏐 DEBUG: Found ${matches.length} matches for court analysis`);
       
       // Extract unique courts from matches
@@ -162,9 +177,9 @@ export const useCourtManagement = (): UseCourtManagement => {
       let allTournamentMatches: BeachMatch[] = [];
       
       // Load matches from current tournament
-      const currentMatches = await VisApiService.getBeachMatchList(tournamentNo);
+      const currentMatches = await visApiClient.fetchMatchesForTournament(tournamentNo);
       const currentTournamentData = await TournamentStorageService.getSelectedTournament();
-      const currentGender = currentTournamentData?.Code ? VisApiService.extractGenderFromCode(currentTournamentData.Code) : 'Unknown';
+      const currentGender = currentTournamentData?.Code ? extractGenderFromCode(currentTournamentData.Code) : 'Unknown';
       
       // Add metadata to current tournament matches
       const inferredCountry = inferCountryFromName(currentTournamentData?.Name);
@@ -181,7 +196,7 @@ export const useCourtManagement = (): UseCourtManagement => {
       
       // Try to load opposite gender tournament
       try {
-        const tournaments = await VisApiService.fetchDirectFromAPI();
+        const tournaments = await visApiClient.fetchBeachTournamentsThisYear();
         const currentTournament = tournaments.find(t => t.No === tournamentNo);
         
         if (currentTournament?.Code) {
@@ -196,8 +211,8 @@ export const useCourtManagement = (): UseCourtManagement => {
             const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
             if (oppositeTournament) {
               console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeTournament.No}`);
-              const oppositeMatches = await VisApiService.getBeachMatchList(oppositeTournament.No);
-              const oppositeGender = VisApiService.extractGenderFromCode(oppositeTournament.Code);
+              const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeTournament.No);
+              const oppositeGender = extractGenderFromCode(oppositeTournament.Code);
               
               const oppositeMatchesWithMeta = oppositeMatches.map(match => ({
                 ...match,

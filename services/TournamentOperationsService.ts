@@ -1,7 +1,16 @@
-import { VisApiService } from './visApi';
-import { Tournament } from '../types/tournament';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
+import { TournamentCore } from '../types/tournament-v2';
 
 export class TournamentOperationsService {
+  private static visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
+
   /**
    * Find the opposite gender tournament for a given tournament
    */
@@ -10,7 +19,7 @@ export class TournamentOperationsService {
       console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
       // Get all tournaments from API
-      const tournaments = await VisApiService.fetchDirectFromAPI();
+      const tournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
       console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);

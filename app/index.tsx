@@ -34,7 +34,13 @@ export default function Index() {
         friction: 7,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // Auto-navigate to tournament selection after animation (for testing)
+      setTimeout(() => {
+        console.log('🚀 Auto-navigating to tournament selection for testing...');
+        router.push('/tournament-selection');
+      }, 1000);
+    });
   }, []);
 
   const handleStartPress = () => {

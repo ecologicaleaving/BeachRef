@@ -1,5 +1,5 @@
 import { BeachMatch } from '../types/match';
-import { VisApiService } from './visApi';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 import { CacheService } from './CacheService';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
 import NetworkStateManager, { ConnectionStrategy, NetworkState, ConnectionQuality } from './NetworkStateManager';
@@ -30,6 +30,14 @@ export class RealtimeFallbackService {
   private static circuitBreaker = ConnectionCircuitBreaker.getInstance('realtime-fallback');
   private static networkStateManager: NetworkStateManager;
   private static networkChangeListener: (() => void) | null = null;
+  private static visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
   
   // Enhanced polling configuration with network awareness
   private static readonly WIFI_FAST_INTERVAL = 10000;     // 10 seconds for Wi-Fi
@@ -357,7 +365,7 @@ export class RealtimeFallbackService {
       
       // Force refresh from API (bypass cache for real-time accuracy)
       await CacheService.invalidateMatchCache(tournamentNo);
-      const matches = await VisApiService.getBeachMatchList(tournamentNo);
+      const matches = await this.visApiClient.fetchMatchesForTournament(tournamentNo);
 
       // Reset error count on success
       this.errorCounts.delete(tournamentNo);

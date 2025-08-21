@@ -12,7 +12,22 @@ Compression
 Introduction
 The entry point for all web service XML requests is https://www.fivb.org/Vis2009/XmlRequest.asmx.
 
-The request must contain a Request parameter, in the query string, the form data or the HTTP payload. This parameter is an XML element describing a request or a list of requests. Even if the parameter can be in the query string, it is not recommended to do this in production code and to use the form data with a POST request or the HTTP payload method. This is recommended because an URL is limited to about 4K bytes and a long request will be refused by the server, before it reaches the web service. On the other hand, it could be useful to check a request with a browser, and in this case a request in the URL is very convenient.
+**RECOMMENDED PRODUCTION APPROACH**: The request must contain a `Request` parameter sent via POST with `application/x-www-form-urlencoded` content type. The XML request is URL-encoded as the value of the `Request` parameter in the form data body.
+
+**Production Example:**
+```
+POST https://www.fivb.org/Vis2009/XmlRequest.asmx
+Content-Type: application/x-www-form-urlencoded
+
+Request=%3CRequest%20Type%3D%22GetEventList%22%20Fields%3D%22Code%20Name%22%3E%3C%2FRequest%3E
+```
+
+**TESTING/DEVELOPMENT ONLY**: The parameter can also be placed in the query string for simple browser testing, but this approach is limited to ~4KB and should not be used in production code. URLs with long requests will be refused by the server before reaching the web service.
+
+**Browser Testing Example:**
+```
+GET https://www.fivb.org/Vis2009/XmlRequest.asmx?Request=<Request Type='GetServiceInformation' />
+```
 
 All the requests can return an XML response, but only some of them can return a JSON response (the list is growing). To identify the requests that can return JSON output, you can look at the list of requests.
 

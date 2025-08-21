@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { BeachMatch } from '../types/match';
-import { Tournament } from '../types/tournament';
-import { VisApiService } from '../services/visApi';
+import { TournamentCore } from '../types/tournament-v2';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from '../services/api/VisApiClient';
 import { CacheService } from '../services/CacheService';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 
@@ -15,6 +15,15 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  const visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
 
   // Use real-time subscription hook
   const {
@@ -37,10 +46,10 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
       if (force) {
         // Force refresh from API
         await CacheService.invalidateMatchCache(tournamentNumber);
-        matchList = await VisApiService.getBeachMatchList(tournamentNumber);
+        matchList = await visApiClient.fetchMatchesForTournament(tournamentNumber);
       } else {
         // Use cached data if available
-        matchList = await VisApiService.getBeachMatchList(tournamentNumber);
+        matchList = await visApiClient.fetchMatchesForTournament(tournamentNumber);
       }
 
       setMatches(matchList);

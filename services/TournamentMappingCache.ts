@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { VisApiClient } from './api/VisApiClient';
+import { DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 
 interface TournamentMapping {
   code: string; // Our tournament code like "HAM2025"
@@ -17,13 +19,22 @@ interface TournamentMappingCache {
 
 const CACHE_KEY = 'tournament_mapping_cache';
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-const VIS_BASE_URL = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
 
 export class TournamentMappingCacheService {
   private static instance: TournamentMappingCacheService;
   private cache: TournamentMappingCache | null = null;
+  private visApiClient: VisApiClient;
 
-  private constructor() {}
+  private constructor() {
+    this.visApiClient = new VisApiClient({
+      baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+      timeoutMs: 10000,
+      maxRetries: 3,
+      retryDelayMs: 1000,
+      exponentialBackoff: true,
+      enableLogging: true
+    }, DEFAULT_RETRY_CONFIG);
+  }
 
   static getInstance(): TournamentMappingCacheService {
     if (!TournamentMappingCacheService.instance) {
@@ -79,23 +90,10 @@ export class TournamentMappingCacheService {
       console.log(`🏐 CACHE: Starting tournament mapping refresh...`);
       
       const year = new Date().getFullYear();
-      const listUrl = `${VIS_BASE_URL}?Query=ShowBeachEvents&Jahr=${year}`;
       
-      console.log(`🏐 CACHE: Fetching tournament list: ${listUrl}`);
+      console.log(`🏐 CACHE: Fetching tournament list for year ${year}`);
       
-      const response = await fetch(listUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/xml, text/xml',
-          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Tournament list request failed: ${response.status}`);
-      }
-
-      const xmlText = await response.text();
+      const xmlText = await this.visApiClient.fetchBeachTournamentsListXml(year);
       console.log(`🏐 CACHE: Received tournament list (${xmlText.length} chars)`);
       
       // Parse tournaments and create mappings

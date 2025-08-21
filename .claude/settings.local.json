@@ -103,7 +103,10 @@
       "Bash(del:*)",
       "WebFetch(domain:www.fivb.org)",
       "Bash(sed:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(nslookup:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(npm start:*)"
     ],
     "deny": [],
     "additionalDirectories": [

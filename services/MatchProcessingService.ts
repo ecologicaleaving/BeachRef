@@ -1,5 +1,5 @@
 import { BeachMatch } from '../types/match';
-import { VisApiService } from './visApi';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 
 export interface ProcessedMatch extends BeachMatch {
   tournamentGender?: string;
@@ -9,6 +9,12 @@ export interface ProcessedMatch extends BeachMatch {
   sourceType?: 'original' | 'opposite_gender';
   sourceTournament?: string;
 }
+
+const extractGenderFromCode = (code: string): string => {
+  if (code.toUpperCase().startsWith('W')) return 'Women';
+  if (code.toUpperCase().startsWith('M')) return 'Men';
+  return 'Mixed';
+};
 
 export class MatchProcessingService {
   /**
@@ -84,7 +90,7 @@ export class MatchProcessingService {
     tournamentCountry?: string,
     sourceType: 'original' | 'opposite_gender' = 'original'
   ): ProcessedMatch[] {
-    const gender = tournamentCode ? VisApiService.extractGenderFromCode(tournamentCode) : 'Unknown';
+    const gender = tournamentCode ? extractGenderFromCode(tournamentCode) : 'Unknown';
     
     return matches.map(match => ({
       ...match,

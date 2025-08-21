@@ -9,10 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatch } from '../types/match';
 import { TournamentStorageService } from '../services/TournamentStorageService';
-import { VisApiService } from '../services/visApi';
+import { VisApiClient } from '../services/api/VisApiClient';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
@@ -22,7 +22,7 @@ import { designTokens } from '../theme/tokens';
 
 const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [detailedTournament, setDetailedTournament] = useState<Tournament | null>(null);
+  const [detailedTournament, setDetailedTournament] = useState<TournamentCore | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [matches, setMatches] = useState<BeachMatch[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -30,44 +30,35 @@ const TournamentDetailScreenContent: React.FC = () => {
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
 
-  const tournament: Tournament = React.useMemo(() => {
+  const tournament: TournamentCore = React.useMemo(() => {
     try {
-      const parsed = JSON.parse(tournamentData || '{}') as Tournament;
-      console.log(`DEBUG INITIAL DATA: Complete tournament object received:`, {
-        No: parsed.No,
-        NoTournament: parsed.NoTournament,
-        Code: parsed.Code,
-        Name: parsed.Name,
-        Title: parsed.Title,
-        StartDate: parsed.StartDate,
-        EndDate: parsed.EndDate,
-        StartDateQualification: parsed.StartDateQualification,
-        EndDateMainDraw: parsed.EndDateMainDraw,
-        City: parsed.City,
-        Country: parsed.Country,
-        CountryName: parsed.CountryName,
-        Location: parsed.Location,
-        Venue: parsed.Venue,
-        Surface: parsed.Surface,
-        Gender: parsed.Gender,
-        Teams: parsed.Teams,
-        MaxTeams: parsed.MaxTeams,
-        PrizeMoney: parsed.PrizeMoney,
-        Currency: parsed.Currency,
-        Category: parsed.Category,
-        Type: parsed.Type,
-        Series: parsed.Series,
-        Status: parsed.Status
+      const parsed = JSON.parse(tournamentData || '{}') as TournamentCore;
+      console.log(`🎯 TOURNAMENT DETAIL: Received tournament data:`, {
+        id: parsed.id,
+        visNo: parsed.visNo,
+        code: parsed.code,
+        name: parsed.name,
+        gender: parsed.gender,
+        tournamentType: parsed.tournamentType,
+        dates: parsed.dates,
+        status: parsed.status,
+        city: parsed.city,
+        country: parsed.country,
+        location: parsed.location
       });
       const merged = (parsed as any)._mergedTournaments;
       if (merged && merged.length > 1) {
-        console.log(`DEBUG MERGED: This is a merged tournament with codes:`, merged.map((t: any) => ({ No: t.No, Name: t.Name, StartDate: t.StartDate, EndDate: t.EndDate })));
+        console.log(`🎯 MERGED: This is a merged tournament with:`, merged.map((t: any) => ({ 
+          visNo: t.visNo || t.No, 
+          name: t.name || t.Name, 
+          dates: t.dates 
+        })));
       }
       
       return parsed;
     } catch (error) {
       console.error('🏐 TOURNAMENT DETAILS: Failed to parse tournament data:', error);
-      return {} as Tournament;
+      return {} as TournamentCore;
     }
   }, [tournamentData]);
 
@@ -147,8 +138,8 @@ const TournamentDetailScreenContent: React.FC = () => {
   const getLocation = () => {
     // Use detailed tournament data if available, fallback to basic tournament data
     const tournamentData = detailedTournament || tournament;
-    const city = tournamentData.City;
-    const country = tournamentData.CountryName || tournamentData.Country;
+    const city = tournamentData.city;
+    const country = tournamentData.country;
     
     if (city && country) {
       return `${city}, ${country}`;
@@ -156,7 +147,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     
     // Only return location if we have explicit location data, city, or country
     // Don't show "Location not specified" or try to infer from title
-    return tournamentData.Location || city || country || null;
+    return tournamentData.location || city || country || null;
   };
 
   // Function codes mapping (verified from VIS API data)
@@ -277,10 +268,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   const getDateRange = () => {
-    // Use complete tournament dates: StartDateQualification to EndDateMainDraw
+    // Use complete tournament dates from TournamentCore structure
     const tournamentData = detailedTournament || tournament;
-    const startDate = tournamentData?.StartDateQualification || tournamentData?.StartDate;
-    const endDate = tournamentData?.EndDateMainDraw || tournamentData?.EndDate;
+    const startDate = tournamentData?.dates?.startDateQualification || tournamentData?.dates?.startDate;
+    const endDate = tournamentData?.dates?.endDateMainDraw || tournamentData?.dates?.endDate;
     
     if (!startDate && !endDate) {
       return 'Dates TBD';
@@ -304,9 +295,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   const getTournamentStatus = () => {
-    // Use direct API StartDate and EndDate for status calculation
-    const startDate = detailedTournament?.StartDate || tournament.StartDate;
-    const endDate = detailedTournament?.EndDate || tournament.EndDate;
+    // Use direct API dates for status calculation
+    const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
+    const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
     
     if (!startDate) {
       return 'Scheduled';
@@ -365,14 +356,14 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Load detailed tournament information and parse ALL available data
   const loadTournamentDetails = async () => {
-    if (!tournament.No) return;
+    if (!tournament.visNo) return;
     
     setDetailsLoading(true);
     try {
       // Get enhanced tournament details from GetEventList API
-      console.log(`DEBUG: Loading details for tournament No: ${tournament.No}`);
-      const details = await VisApiService.getBeachTournamentDetails(tournament.No);
-      console.log(`DEBUG: API returned details for tournament:`, details?.Name, details?.No);
+      console.log(`🎯 Loading details for tournament visNo: ${tournament.visNo}`);
+      const details = await VisApiClient.getBeachTournamentDetails(tournament.visNo);
+      console.log(`🎯 API returned details for tournament:`, details?.name, details?.visNo);
       
       if (details) {
         
@@ -394,17 +385,17 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Load matches for the tournament
   const loadMatches = async () => {
-    // Use NoTournament if available, fallback to No
-    const tournamentId = tournament.NoTournament || tournament.No;
+    // Use visNo for TournamentCore
+    const tournamentId = tournament.visNo;
     if (!tournamentId) return;
     
-    console.log(`🏐 LOADING MATCHES: Using tournament ID "${tournamentId}" (NoTournament: ${tournament.NoTournament}, No: ${tournament.No})`);
+    console.log(`🎯 LOADING MATCHES: Using tournament ID "${tournamentId}" (visNo: ${tournament.visNo})`);
     
     setMatchesLoading(true);
     try {
-      const tournamentMatches = await VisApiService.getBeachMatchList(tournamentId);
+      const tournamentMatches = await VisApiClient.getBeachMatchList(tournamentId);
       setMatches(tournamentMatches);
-      console.log(`🏐 MATCHES LOADED: Got ${tournamentMatches.length} matches for tournament ${tournamentId}`);
+      console.log(`🎯 MATCHES LOADED: Got ${tournamentMatches.length} matches for tournament ${tournamentId}`);
     } catch (error) {
       console.error('Failed to load matches:', error);
       setMatches([]);
@@ -416,7 +407,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   
 
   useEffect(() => {
-    if (tournament.No) {
+    if (tournament.visNo) {
       // TEMPORARILY DISABLED - loadTournamentDetails() restituisce dati sbagliati (Locarno instead of Baden)
       // loadTournamentDetails();
       loadMatches();
@@ -426,7 +417,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     TournamentStorageService.clearExpiredTournamentCaches().catch(() => {
       // Silent fail for cache cleanup
     });
-  }, [tournament.No, tournamentData]); // Added tournamentData as dependency
+  }, [tournament.visNo, tournamentData]); // Added tournamentData as dependency
 
   // Debug effect for MatchList render
   useEffect(() => {
@@ -441,7 +432,8 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
 
-  if (!tournament.No) {
+  if (!tournament.visNo) {
+    console.log('🚨 TOURNAMENT DETAIL ERROR: No visNo found in tournament data:', tournament);
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Tournament data not found</Text>
@@ -455,7 +447,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   return (
     <View style={styles.container}>
       <NavigationHeader 
-        title={tournament.Name || 'Tournament Details'} 
+        title={tournament.name || 'Tournament Details'} 
         showBackButton={true}
         showRefreshButton={true}
         onRefresh={() => {
@@ -524,7 +516,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                 onPress={async () => {
                   try {
                     const { CacheService } = await import('../services/CacheService');
-                    await CacheService.invalidateMatchCache(tournament.No);
+                    await CacheService.invalidateMatchCache(tournament.visNo);
                   } catch (error) {
                     console.error("Failed to clear match cache:", error);
                   }
@@ -604,6 +596,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     fontWeight: 'bold',
+  },
+  backButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  backButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

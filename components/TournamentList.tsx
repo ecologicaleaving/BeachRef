@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { H1Text, H2Text, BodyText, CaptionText } from './Typography';
 import { TournamentCore } from '../types/tournament-v2';
-import { TournamentType } from '../services/visApi';
+import { TournamentType } from '../types/tournament-v2';
 import { testSupabaseConnection } from '../services/supabase';
 import { CacheService } from '../services/CacheService';
 import { CacheResult } from '../types/cache';

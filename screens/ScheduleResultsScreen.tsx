@@ -7,9 +7,9 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { VisApiService } from '../services/visApi';
+import { VisApiClient } from '../services/api/VisApiClient';
 import { BeachMatch } from '../types/match';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';

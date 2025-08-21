@@ -11,9 +11,9 @@ import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssig
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatch } from '../types/match';
-import { VisApiService } from '../services/visApi';
+import { VisApiClient } from '../services/api/VisApiClient';
 import RefereeDropdown from '../components/RefereeDropdown/RefereeDropdown';
 import MatchList from '../components/MatchList/MatchList';
 

@@ -21,6 +21,9 @@ import {
   RequestMonitor
 } from '../../types/api-v2';
 
+// Platform detection
+const isWebEnvironment = typeof window !== 'undefined';
+
 /**
  * Unified VIS API Client implementation
  * Simplifies from 3 complex endpoints to single optimized primary endpoint strategy
@@ -56,6 +59,8 @@ export class VisApiClient implements IVisApiClient {
   async getEventList(request: GetEventListRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
     
+    console.log('🔥 VisApiClient.getEventList called with request:', JSON.stringify(request, null, 2));
+    
     try {
       // Build optimized request with field selection
       const optimizedRequest = {
@@ -64,6 +69,7 @@ export class VisApiClient implements IVisApiClient {
       };
 
       const xmlRequest = this.buildGetEventListXml(optimizedRequest);
+      console.log('🔥 VisApiClient.getEventList XML request:', xmlRequest.substring(0, 300));
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_LIST, xmlRequest);
       
       this.updateMonitor(VisApiEndpoint.GET_EVENT_LIST, true, Date.now() - startTime);
@@ -208,21 +214,30 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
-   * Make actual HTTP request
+   * Make actual HTTP request with form data format (VIS API requirement)
    */
-  private async makeHttpRequest(xmlData: string): Promise<string> {
+  private async makeHttpRequest(xmlRequest: string): Promise<string> {
+    console.log('🔥 Making REAL VIS API call to:', this.config.baseUrl);
+    console.log('🔥 XML Request (Form Data):', xmlRequest.substring(0, 500));
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
     try {
+      // VIS API expects form data with Request parameter, not SOAP
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...this.config.headers
+      };
+
+      // Encode XML request as form data parameter
+      const formData = `Request=${encodeURIComponent(xmlRequest)}`;
+      console.log('🔥 Form Data Body:', formData.substring(0, 300));
+
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': '',
-          ...this.config.headers
-        },
-        body: xmlData,
+        headers,
+        body: formData,
         signal: controller.signal
       });
 
@@ -230,7 +245,9 @@ export class VisApiClient implements IVisApiClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.text();
+      const responseText = await response.text();
+      console.log('🔥 VIS API Response:', responseText.substring(0, 500));
+      return responseText;
       
     } finally {
       clearTimeout(timeout);
@@ -238,120 +255,144 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
-   * Build GetEventList XML request
+   * Create mock response for web development environment
+   */
+  private createMockResponse(): string {
+    console.log('🔥 VisApiClient: Creating mock response for web environment');
+    
+    // Mock tournament data for development in web environment
+    return `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetEventListResponse xmlns="http://www.fivb.org/vis/2009/XmlRequest">
+      <GetEventListResult>
+        <Events>
+          <Event>
+            <No>DEV001</No>
+            <Name>Development Tournament - Beach Volleyball</Name>
+            <Code>DEVBVB</Code>
+            <StartDate>2025-08-21T00:00:00</StartDate>
+            <EndDate>2025-08-23T23:59:59</EndDate>
+            <Status>Running</Status>
+            <Country>DEV</Country>
+            <City>Development City</City>
+            <BeachTournament>
+              <No>DEV001</No>
+              <Gender>W</Gender>
+              <NoOfCourts>4</NoOfCourts>
+            </BeachTournament>
+          </Event>
+          <Event>
+            <No>DEV002</No>
+            <Name>Test Tournament - Beach Volleyball Men</Name>
+            <Code>TESTBVB</Code>
+            <StartDate>2025-08-25T00:00:00</StartDate>
+            <EndDate>2025-08-27T23:59:59</EndDate>
+            <Status>Scheduled</Status>
+            <Country>TEST</Country>
+            <City>Test City</City>
+            <BeachTournament>
+              <No>DEV002</No>
+              <Gender>M</Gender>
+              <NoOfCourts>6</NoOfCourts>
+            </BeachTournament>
+          </Event>
+        </Events>
+      </GetEventListResult>
+    </GetEventListResponse>
+  </soap:Body>
+</soap:Envelope>`;
+  }
+
+  /**
+   * Build GetEventList XML request (VIS API format - no SOAP envelope)
    */
   private buildGetEventListXml(request: GetEventListRequest): string {
     const filters = [];
     
-    if (request.tournamentType) {
-      filters.push(`<Type>${request.tournamentType}</Type>`);
-    }
+    // Build filter element with attributes
+    const filterAttribs = [];
+    
     if (request.gender) {
-      filters.push(`<Gender>${request.gender}</Gender>`);
+      filterAttribs.push(`Gender="${request.gender}"`);
     }
     if (request.startDate) {
-      filters.push(`<StartDate>${request.startDate}</StartDate>`);
+      filterAttribs.push(`StartDate="${request.startDate}"`);
     }
     if (request.endDate) {
-      filters.push(`<EndDate>${request.endDate}</EndDate>`);
+      filterAttribs.push(`EndDate="${request.endDate}"`);
     }
     if (request.countryCode) {
-      filters.push(`<CountryCode>${request.countryCode}</CountryCode>`);
+      filterAttribs.push(`CountryCode="${request.countryCode}"`);
     }
     if (request.status) {
-      filters.push(`<Status>${request.status}</Status>`);
+      filterAttribs.push(`Status="${request.status}"`);
     }
-    if (request.maxResults) {
-      filters.push(`<MaxResults>${request.maxResults}</MaxResults>`);
-    }
-
-    const fieldSelection = request.fields?.map(field => `<Field>${field}</Field>`).join('') || '';
-
-    return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <GetEventList xmlns="http://www.fivb.org/VIS/VIS_WebServices/">
-      <Request>
-        ${filters.join('')}
-        <FieldSelection>
-          ${fieldSelection}
-        </FieldSelection>
-      </Request>
-    </GetEventList>
-  </soap:Body>
-</soap:Envelope>`;
+    
+    // Always filter for beach volleyball tournaments
+    filterAttribs.push('HasBeachTournament="True"');
+    
+    // Build fields list (space-separated)
+    const fields = request.fields?.join(' ') || 'Code Name StartDate EndDate No Country City';
+    
+    // Create simple XML request (no SOAP envelope)
+    const filterElement = filterAttribs.length > 0 
+      ? `<Filter ${filterAttribs.join(' ')} />` 
+      : '';
+    
+    return `<Request Type="GetEventList" Fields="${fields}">${filterElement}</Request>`;
   }
 
   /**
-   * Build GetBeachTournament XML request
+   * Build GetBeachTournament XML request (VIS API format)
    */
   private buildGetBeachTournamentXml(request: GetBeachTournamentRequest): string {
-    return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <GetBeachTournament xmlns="http://www.fivb.org/VIS/VIS_WebServices/">
-      <Request>
-        <No>${request.tournamentNo}</No>
-        <IncludeLocation>${request.includeLocation || true}</IncludeLocation>
-        <IncludeVenue>${request.includeVenue || true}</IncludeVenue>
-        <IncludeContacts>${request.includeContacts || false}</IncludeContacts>
-      </Request>
-    </GetBeachTournament>
-  </soap:Body>
-</soap:Envelope>`;
+    const fields = 'No Name Code Location Venue';
+    const includeLocation = request.includeLocation !== false;
+    const includeVenue = request.includeVenue !== false;
+    
+    return `<Request Type="GetBeachTournament" Fields="${fields}"><Filter No="${request.tournamentNo}" IncludeLocation="${includeLocation}" IncludeVenue="${includeVenue}" /></Request>`;
   }
 
   /**
-   * Build GetEvent XML request
+   * Build GetEvent XML request (VIS API format)
    */
   private buildGetEventXml(request: GetEventRequest): string {
-    return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <GetEvent xmlns="http://www.fivb.org/VIS/VIS_WebServices/">
-      <Request>
-        <No>${request.eventNo}</No>
-        <IncludeOfficials>${request.includeOfficials || true}</IncludeOfficials>
-        <IncludeReferees>${request.includeReferees || true}</IncludeReferees>
-        <IncludeTechnicalOfficials>${request.includeTechnicalOfficials || false}</IncludeTechnicalOfficials>
-      </Request>
-    </GetEvent>
-  </soap:Body>
-</soap:Envelope>`;
+    const fields = 'No Name Code Officials Referees';
+    const includeOfficials = request.includeOfficials !== false;
+    const includeReferees = request.includeReferees !== false;
+    
+    return `<Request Type="GetEvent" Fields="${fields}"><Filter No="${request.eventNo}" IncludeOfficials="${includeOfficials}" IncludeReferees="${includeReferees}" /></Request>`;
   }
 
   /**
-   * Build GetBeachMatchList XML request
+   * Build GetBeachMatchList XML request (VIS API format)
    */
   private buildGetBeachMatchListXml(request: GetBeachMatchListRequest): string {
-    const filters = [];
+    const filterAttribs = [`TournamentNo="${request.tournamentNo}"`];
     
     if (request.courtNo) {
-      filters.push(`<CourtNo>${request.courtNo}</CourtNo>`);
+      filterAttribs.push(`CourtNo="${request.courtNo}"`);
     }
     if (request.status) {
-      filters.push(`<Status>${request.status}</Status>`);
+      filterAttribs.push(`Status="${request.status}"`);
     }
     if (request.startDate) {
-      filters.push(`<StartDate>${request.startDate}</StartDate>`);
+      filterAttribs.push(`StartDate="${request.startDate}"`);
     }
     if (request.endDate) {
-      filters.push(`<EndDate>${request.endDate}</EndDate>`);
+      filterAttribs.push(`EndDate="${request.endDate}"`);
     }
-
-    return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <GetBeachMatchList xmlns="http://www.fivb.org/VIS/VIS_WebServices/">
-      <Request>
-        <TournamentNo>${request.tournamentNo}</TournamentNo>
-        ${filters.join('')}
-        <IncludeResults>${request.includeResults || true}</IncludeResults>
-        <IncludeReferees>${request.includeReferees || true}</IncludeReferees>
-      </Request>
-    </GetBeachMatchList>
-  </soap:Body>
-</soap:Envelope>`;
+    
+    const includeResults = request.includeResults !== false;
+    const includeReferees = request.includeReferees !== false;
+    
+    filterAttribs.push(`IncludeResults="${includeResults}"`);
+    filterAttribs.push(`IncludeReferees="${includeReferees}"`);
+    
+    const fields = 'No Name StartTime Status Court Team1 Team2 Score Referees';
+    
+    return `<Request Type="GetBeachMatchList" Fields="${fields}"><Filter ${filterAttribs.join(' ')} /></Request>`;
   }
 
   /**

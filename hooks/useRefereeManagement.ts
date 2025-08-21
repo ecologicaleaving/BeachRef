@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
-import { VisApiService } from '../services/visApi';
+import { VisApiClient, DEFAULT_RETRY_CONFIG } from '../services/api/VisApiClient';
 import { BeachMatch } from '../types/match';
 
 interface RefereeFromDB {
@@ -41,12 +41,21 @@ export const useRefereeManagement = (): UseRefereeManagement => {
   const [loadingRefereeMatches, setLoadingRefereeMatches] = useState(false);
   const [showRefereeMatches, setShowRefereeMatches] = useState(false);
   const [refereeCacheKey, setRefereeCacheKey] = useState<string | null>(null);
+  
+  const visApiClient = new VisApiClient({
+    baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+    timeoutMs: 10000,
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    exponentialBackoff: true,
+    enableLogging: true
+  }, DEFAULT_RETRY_CONFIG);
 
   const findOppositeGenderTournament = useCallback(async (tournamentNo: string): Promise<string | null> => {
     try {
       console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
-      const tournaments = await VisApiService.fetchDirectFromAPI();
+      const tournaments = await visApiClient.fetchBeachTournamentsThisYear();
       console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);
@@ -100,7 +109,7 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       console.log(`🏐 DEBUG: Loading referees for tournament ${tournamentNo} (optimized)...`);
       
       // Skip tournament details call for faster loading - get matches directly
-      const matches = await VisApiService.fetchMatchesDirectFromAPI(tournamentNo);
+      const matches = await visApiClient.fetchMatchesForTournament(tournamentNo);
       console.log(`🏐 DEBUG: Found ${matches.length} matches for tournament ${tournamentNo}`);
       
       if (matches.length === 0) {
@@ -162,7 +171,7 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       console.log(`🏐 DEBUG: Loading matches for referee ${referee.Name} in tournament ${tournamentNo}...`);
       
       // Get all matches for the tournament (including both male and female if applicable)
-      let allMatches = await VisApiService.getBeachMatchList(tournamentNo);
+      let allMatches = await visApiClient.fetchMatchesForTournament(tournamentNo);
       console.log(`🏐 DEBUG: Found ${allMatches.length} matches for tournament ${tournamentNo}`);
       
       // Try to load opposite gender tournament matches
@@ -170,7 +179,7 @@ export const useRefereeManagement = (): UseRefereeManagement => {
         const oppositeGenderTournamentNo = await findOppositeGenderTournament(tournamentNo);
         if (oppositeGenderTournamentNo) {
           console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeGenderTournamentNo}...`);
-          const oppositeMatches = await VisApiService.getBeachMatchList(oppositeGenderTournamentNo);
+          const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeGenderTournamentNo);
           console.log(`🏐 DEBUG: Found ${oppositeMatches.length} matches from opposite gender tournament`);
           
           // Add source metadata to distinguish tournaments

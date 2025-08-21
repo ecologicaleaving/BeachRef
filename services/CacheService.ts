@@ -1,4 +1,4 @@
-import { TournamentCore } from '../types/tournament-v2';
+import { TournamentCore, GenderType, TournamentType, TournamentStatus } from '../types/tournament-v2';
 import { BeachMatch } from '../types/match';
 import { CachedData, CacheConfiguration, CacheResult, FilterOptions, CacheTier } from '../types/cache';
 import { MemoryCacheManager } from './MemoryCacheManager';
@@ -58,9 +58,8 @@ export class CacheService {
     this.ensureInitialized();
     const requestId = this.generateRequestId();
     
-    // Create cache key that includes year for different API calls - ADD TIMESTAMP TO FORCE FRESH CALL
-    const timestamp = Date.now();
-    const baseCacheKey = filters?.year ? `tournaments_${filters.year}_${timestamp}` : `tournaments_recent_${timestamp}`;
+    // Create stable cache key for proper caching
+    const baseCacheKey = filters?.year ? `tournaments_${filters.year}` : `tournaments_recent`;
     
     console.log(`🏐 CacheService: Using cache key: ${baseCacheKey}`);
 
@@ -614,9 +613,15 @@ export class CacheService {
     const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
     
     const startTime = Date.now();
+    console.log('🏐 CacheService: Making API call to VIS with:', {
+      tournamentType: filters?.tournamentType || 'BPT',
+      year: filters?.year,
+      maxResults: 50
+    });
+    
     const response = await visApi.getEventList({
       tournamentType: filters?.tournamentType || 'BPT',
-      maxResults: 50
+      maxResults: 100  // Increase to get more tournaments
     });
     
     const duration = Date.now() - startTime;
@@ -626,9 +631,8 @@ export class CacheService {
       return [];
     }
     
-    // TODO: Parse XML response to TournamentCore objects
-    // For now, returning empty array to prevent breaking the build
-    const result: TournamentCore[] = [];
+    // Parse XML response to TournamentCore objects
+    const result = this.parseXmlToTournaments(response.xmlData);
     
     console.log(`CacheService: Direct API call completed in ${duration}ms, got ${result.length} tournaments`);
     if (filters?.year) {
@@ -1227,7 +1231,13 @@ export class CacheService {
     // Group tournaments by their base characteristics
     tournaments.forEach((tournament, index) => {
       const name = (tournament.name || '').toLowerCase().trim();
-      const location = (tournament.location || tournament.city || tournament.country || '').toLowerCase().trim();
+      const location = (
+        (typeof tournament.location === 'object' && tournament.location?.city) || 
+        (typeof tournament.location === 'object' && tournament.location?.country) ||
+        (tournament as any).city || 
+        (tournament as any).country || 
+        ''
+      ).toLowerCase().trim();
       const startDate = tournament.dates.startDate || '';
       
       // More robust key generation - remove common gender indicators and normalize
@@ -1435,5 +1445,97 @@ export class CacheService {
     await this.localStorage.clear();
     
     console.log('🏐 CacheService: All caches cleared');
+  }
+
+  /**
+   * Parse XML tournament data to TournamentCore objects
+   */
+  private static parseXmlToTournaments(xmlData: string): TournamentCore[] {
+    try {
+      console.log('🏐 CacheService: Parsing XML tournaments...');
+      console.log('🏐 XML sample:', xmlData.substring(0, 500));
+      
+      const tournaments: TournamentCore[] = [];
+      
+      // Parse Event elements (FIVB VIS XML structure)
+      const eventRegex = /<Event>(.*?)<\/Event>/gs;
+      const eventMatches = xmlData.match(eventRegex) || [];
+      
+      console.log(`🏐 Found ${eventMatches.length} event entries in XML`);
+      
+      eventMatches.forEach((eventMatch, index) => {
+        try {
+          // Extract values from XML elements
+          const getValue = (tagName: string): string => {
+            const regex = new RegExp(`<${tagName}>([^<]*)<\/${tagName}>`, 'i');
+            const result = eventMatch.match(regex);
+            return result ? result[1] : '';
+          };
+          
+          const visNo = getValue('No');
+          const code = getValue('Code');
+          const name = getValue('Name');
+          const startDate = getValue('StartDate');
+          const endDate = getValue('EndDate');
+          const status = getValue('Status') || 'Draft';
+          const country = getValue('Country');
+          const city = getValue('City');
+          
+          // Extract BeachTournament info if available
+          const beachTournamentMatch = eventMatch.match(/<BeachTournament>(.*?)<\/BeachTournament>/s);
+          let gender = 'Mixed';
+          let courts = 0;
+          
+          if (beachTournamentMatch) {
+            const beachTournamentXml = beachTournamentMatch[1];
+            const getBeachValue = (tagName: string): string => {
+              const regex = new RegExp(`<${tagName}>([^<]*)<\/${tagName}>`, 'i');
+              const result = beachTournamentXml.match(regex);
+              return result ? result[1] : '';
+            };
+            
+            gender = getBeachValue('Gender') || 'Mixed';
+            courts = parseInt(getBeachValue('NoOfCourts')) || 0;
+          }
+          
+          if (visNo && name) {
+            const tournament: TournamentCore = {
+              id: `tournament_${visNo}_${code || visNo}`,
+              visNo,
+              code: code || visNo,
+              name,
+              title: name,
+              gender: gender === 'W' ? GenderType.W : gender === 'M' ? GenderType.M : GenderType.MIXED,
+              tournamentType: code?.includes('BPT') ? TournamentType.BPT : code?.includes('FIVB') ? TournamentType.FIVB : TournamentType.LOCAL,
+              status: status === 'Draft' ? TournamentStatus.UPCOMING : status === 'Active' ? TournamentStatus.ACTIVE : TournamentStatus.UPCOMING,
+              dates: {
+                startDate: startDate || '',
+                endDate: endDate || startDate || ''
+              },
+              city: city || undefined,
+              country: country || undefined,
+              courts: courts ? parseInt(courts) : undefined,
+              version: 1,
+              lastUpdated: new Date().toISOString()
+            };
+            
+            tournaments.push(tournament);
+            
+            if (index < 3) {
+              console.log(`🏐 Parsed tournament ${index + 1}:`, tournament);
+            }
+          }
+        } catch (parseError) {
+          console.warn(`🏐 Failed to parse tournament ${index}:`, parseError);
+        }
+      });
+      
+      console.log(`🏐 Successfully parsed ${tournaments.length} tournaments`);
+      return tournaments;
+      
+    } catch (error) {
+      console.error('🏐 XML parsing failed:', error);
+      return [];
+    }
   }
 }

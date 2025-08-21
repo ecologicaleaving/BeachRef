@@ -38,6 +38,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 }) => {
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
+  
+  // State for showing/hiding referees for each match card individually
+  const [showRefereesForMatch, setShowRefereesForMatch] = useState<{[matchId: string]: boolean}>({});
 
   // Initialize filters from localStorage or defaults
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -231,6 +234,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   }, [matches, selectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
 
+  // Function to toggle referee visibility for a specific match
+  const toggleRefereesForMatch = (matchId: string) => {
+    setShowRefereesForMatch(prev => ({
+      ...prev,
+      [matchId]: !prev[matchId]
+    }));
+  };
+
   // Group matches by date
   const groupedMatches = React.useMemo(() => {
     const groups: { [date: string]: typeof filteredMatches } = {};
@@ -373,8 +384,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             )}
           </View>
         </View>
-
         {match.refereeAssignments && match.refereeAssignments.length > 0 && (
+          <TouchableOpacity 
+            style={styles.refereeToggleButtonInCard}
+            onPress={() => toggleRefereesForMatch(match.id)}
+          >
+            <Text style={styles.refereeToggleTextInCard}>
+              {showRefereesForMatch[match.id] ? 'Hide Referees' : 'Show Referees'}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {showRefereesForMatch[match.id] && match.refereeAssignments && match.refereeAssignments.length > 0 && (
           <View style={styles.refereesContainer}>
             <Text style={styles.refereesLabel}>Referees:</Text>
             {match.refereeAssignments.map((referee, index) => (
@@ -384,7 +404,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             ))}
           </View>
         )}
-
         {match.round && match.round.trim() !== '' && (
           <View style={styles.roundContainer}>
             <Text style={styles.roundText}>{match.round}</Text>
@@ -413,7 +432,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         />
       )}
 
-      {/* Filter Toggle Button */}
       <TouchableOpacity 
         style={styles.filterToggleButton}
         onPress={() => setShowFilters(!showFilters)}
@@ -423,7 +441,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         </Text>
       </TouchableOpacity>
 
-      {/* Filters */}
       {showFilters && (
         <View style={styles.filtersContainer}>
         {showCourtFilter && uniqueCourts.length > 1 && (
@@ -472,7 +489,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   onPress={() => setRefereeFilter(referee)}
                 >
                   <Text style={[styles.filterButtonText, refereeFilter === referee && styles.filterButtonTextActive]} numberOfLines={1}>
-                    {referee.split(' ').pop()} {/* Show last name only */}
+                    {referee.split(' ').pop()}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -480,7 +497,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         )}
 
-        {/* Gender Filter */}
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Gender:</Text>
           <View style={styles.filterButtons}>
@@ -498,7 +514,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         </View>
 
-        {/* Sort Order */}
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Sort:</Text>
           <View style={styles.filterButtons}>
@@ -542,7 +557,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         </View>
       )}
 
-      {/* Match List */}
       <ScrollView style={styles.matchesList} showsVerticalScrollIndicator={false}>
         {filteredMatches.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -555,15 +569,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             </Text>
             {groupedMatches.map(([date, matches]) => (
               <View key={date}>
-                {/* Date Header */}
                 <View style={styles.dateHeader}>
                   <Text style={styles.dateHeaderText}>{formatDateHeader(date)}</Text>
                   <Text style={styles.dateHeaderCount}>
                     {matches.length} {matches.length === 1 ? 'match' : 'matches'}
                   </Text>
                 </View>
-                
-                {/* Matches for this date */}
                 {matches.map(renderMatch)}
               </View>
             ))}
@@ -594,6 +605,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+  },
+  refereeToggleButton: {
+    backgroundColor: '#1E40AF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#1E40AF',
+  },
+  refereeToggleText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  refereeToggleButtonInCard: {
+    backgroundColor: '#EEF2FF',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    marginHorizontal: 12,
+    marginTop: 4,
+    borderRadius: 4,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  refereeToggleTextInCard: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#3730A3',
   },
   loadingContainer: {
     flex: 1,

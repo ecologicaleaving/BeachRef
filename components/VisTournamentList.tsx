@@ -17,7 +17,7 @@ interface VisTournamentItemProps {
  * Tournament item component optimized for VIS API data structure
  * Handles the actual fields returned by FIVB VIS API
  */
-const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPress }) => {
+export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPress }) => {
   // console.log('🏐 VisTournamentItem rendering tournament:', tournament.name || tournament.No);
   
   const formatDate = (dateStr?: string) => {
@@ -172,7 +172,6 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
     >
       <View style={styles.tournamentHeader}>
         <View style={styles.tournamentHeaderLeft}>
-          <Text style={styles.tournamentNumber}>#{tournament.visNo || tournament.No}</Text>
           {getGenderBadge()}
         </View>
         <View style={styles.tournamentHeaderRight}>
@@ -196,15 +195,6 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
         <Text style={styles.tournamentDate}>{getDateRange()}</Text>
       </View>
 
-      {/* Tournament type/category if available */}
-      {tournament.tournamentType && (
-        <View style={styles.categoryRow}>
-          <Text style={styles.categoryIcon}>🏆</Text>
-          <Text style={styles.categoryText}>
-            {tournament.tournamentType}
-          </Text>
-        </View>
-      )}
     </TouchableOpacity>
   );
 };
@@ -341,15 +331,6 @@ const styles = StyleSheet.create({
   },
   tournamentHeaderRight: {
     alignItems: 'center',
-  },
-  tournamentNumber: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    backgroundColor: '#F0F9FF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
   },
   statusBadge: {
     backgroundColor: '#10B981',

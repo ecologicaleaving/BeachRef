@@ -18,6 +18,7 @@ import { TournamentCore } from '../types/tournament-v2';
 import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import VisTournamentList from '../components/VisTournamentList';
+import { VisTournamentItem } from '../components/VisTournamentList';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 interface TournamentCardProps {
@@ -369,169 +370,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
   );
 };
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CAROUSEL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
-const CAROUSEL_CARD_MARGIN = 12;
-
-interface LiveTournamentCardProps {
-  tournament: Tournament;
-  onPress: () => void;
-}
-
-const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onPress }) => {
-  const getLocation = () => {
-    // Try different combinations of available location data
-    const city = tournament.city;
-    const country = tournament.country;
-    const location = (tournament as any).location;
-    const venue = (tournament as any).venue;
-    
-    if (city && country) {
-      return `${city}, ${country}`;
-    }
-    
-    if (location && country) {
-      return `${location}, ${country}`;
-    }
-    
-    if (venue && city) {
-      return `${venue}, ${city}`;
-    }
-    
-    return location || city || country || venue || null;
-  };
-
-  // Get category badge for live tournaments
-  const getCategoryBadge = () => {
-    const category = tournament.tournamentType;
-    if (!category) return null;
-    
-    return (
-      <View style={styles.liveCategoryBadge}>
-        <Text style={styles.liveCategoryBadgeText}>{category.toUpperCase()}</Text>
-      </View>
-    );
-  };
-
-  // Get participants info
-  const getParticipantsInfo = () => {
-    const gender = tournament.Gender;
-    const teams = tournament.Teams || tournament.MaxTeams;
-    
-    if (gender || teams) {
-      const parts = [];
-      if (gender) parts.push(gender === 'M' ? 'Men' : gender === 'W' ? 'Women' : 'Mixed');
-      if (teams) parts.push(`${teams} teams`);
-      
-      return (
-        <Text style={styles.liveParticipantsInfo} numberOfLines={1}>
-          👥 {parts.join(' • ')}
-        </Text>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <TouchableOpacity 
-      style={styles.liveCard} 
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View style={styles.liveCardHeader}>
-        <View style={styles.liveBadge}>
-          <View style={styles.liveIndicatorPulse} />
-          <Text style={styles.liveBadgeText}>🔴 LIVE</Text>
-        </View>
-        {getCategoryBadge()}
-      </View>
-      
-      <Text style={styles.liveTournamentName} numberOfLines={2}>
-        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
-      </Text>
-      
-      {getLocation() && (
-        <Text style={styles.liveTournamentLocation} numberOfLines={1}>
-          📍 {getLocation()}
-        </Text>
-      )}
-      
-      {getParticipantsInfo()}
-    </TouchableOpacity>
-  );
-};
-
-interface WeekTournamentCardProps {
-  tournament: Tournament;
-  onPress: () => void;
-}
-
-const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onPress }) => {
-  const getLocation = () => {
-    const city = tournament.city;
-    const country = tournament.country;
-    const location = (tournament as any).location;
-    const venue = (tournament as any).venue;
-    
-    if (city && country) {
-      return `${city}, ${country}`;
-    }
-    
-    if (location && country) {
-      return `${location}, ${country}`;
-    }
-    
-    if (venue && city) {
-      return `${venue}, ${city}`;
-    }
-    
-    return location || city || country || venue || null;
-  };
-
-  const getStatus = () => {
-    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return null;
-    
-    const now = new Date();
-    const start = new Date(tournament.dates.startDate);
-    const end = new Date(tournament.dates.endDate);
-    
-    if (start <= now && now <= end) {
-      return { text: '🔴 LIVE', color: colors.success };
-    } else if (start > now) {
-      return { text: '📅 UPCOMING', color: '#4A90A4' };
-    } else {
-      return { text: '✅ COMPLETED', color: '#6B7280' };
-    }
-  };
-
-  const status = getStatus();
-
-  return (
-    <TouchableOpacity 
-      style={styles.liveCard} 
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View style={styles.liveCardHeader}>
-        {status && (
-          <View style={[styles.liveBadge, { backgroundColor: status.color }]}>
-            <Text style={styles.liveBadgeText}>{status.text}</Text>
-          </View>
-        )}
-      </View>
-      
-      <Text style={styles.liveTournamentName} numberOfLines={2}>
-        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
-      </Text>
-      
-      {getLocation() && (
-        <Text style={styles.liveTournamentLocation} numberOfLines={1}>
-          📍 {getLocation()}
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
-};
 
 const TournamentSelectionScreen: React.FC = () => {
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
@@ -1152,7 +990,7 @@ const TournamentSelectionScreen: React.FC = () => {
         case 'BPT FUTURES':
           return tournamentType === 'BPT FUTURES' || (tournamentType === 'BPT' && (tournament.name || '').toUpperCase().includes('FUTURES'));
         case 'BPT':
-          return tournamentType === 'BPT';
+          return tournamentType === 'BPT' || tournamentType === 'BPT ELITE' || tournamentType === 'BPT CHALLENGER' || tournamentType === 'BPT FUTURES';
         case 'CEV':
           return tournamentType === 'CEV';
         case 'NORCECA':
@@ -1178,8 +1016,7 @@ const TournamentSelectionScreen: React.FC = () => {
       case 'BPT FUTURES':
         return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR')) && allText.includes('FUTURES');
       case 'BPT':
-        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL')) &&
-               !allText.includes('ELITE') && !allText.includes('CHALLENGER') && !allText.includes('CHALLENGE') && !allText.includes('FUTURES');
+        return allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL');
       case 'CEV':
         return allText.includes('CEV') || allText.includes('EUROPEAN') || allText.includes('CONFEDERATION');
       case 'NORCECA':
@@ -1515,8 +1352,8 @@ const TournamentSelectionScreen: React.FC = () => {
           <Text style={styles.liveSectionTitle}>🔴 LIVE NOW</Text>
         </View>
         {liveTournaments.length === 1 ? (
-          <LiveTournamentCard 
-            tournament={liveTournaments[0] as any}
+          <VisTournamentItem 
+            tournament={liveTournaments[0]}
             onPress={() => handleTournamentPress(liveTournaments[0])}
           />
         ) : (
@@ -1528,8 +1365,8 @@ const TournamentSelectionScreen: React.FC = () => {
           >
             {liveTournaments.map((tournament, index) => (
               <View key={tournament.id} style={styles.liveCarouselItem}>
-                <LiveTournamentCard 
-                  tournament={tournament as any}
+                <VisTournamentItem 
+                  tournament={tournament}
                   onPress={() => handleTournamentPress(tournament)}
                 />
               </View>
@@ -2108,105 +1945,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   liveCarouselItem: {
-    width: SCREEN_WIDTH * 0.8,
+    width: 280, // Fixed width for consistency
     marginRight: 16,
-  },
-  carouselContainer: {
-    paddingLeft: 24,
-    paddingRight: 12,
-  },
-  carouselCardWrapper: {
-    marginRight: CAROUSEL_CARD_MARGIN,
-    width: CAROUSEL_CARD_WIDTH,
-  },
-  liveCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: colors.success,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 2,
-    borderColor: colors.success,
-    minHeight: 110,
-  },
-  liveCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.success,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  liveIndicatorPulse: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF4444',
-    marginRight: 6,
-    // Animation would be handled by Animated API in a real implementation
-  },
-  liveBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  liveTournamentName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    marginBottom: 6,
-    lineHeight: 20,
-  },
-  liveTournamentLocation: {
-    fontSize: 13,
-    color: '#4A90A4',
-    marginBottom: 4,
-  },
-  // Enhanced live card styles
-  liveCategoryBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  liveCategoryBadgeText: {
-    color: colors.success,
-    fontSize: 9,
-    fontWeight: 'bold',
-    letterSpacing: 0.3,
-  },
-  liveParticipantsInfo: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginTop: 4,
-  },
-  // Empty Badge Styles
-  emptyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  emptyBadgeText: {
-    color: '#6B7280',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginLeft: 6,
   },
 });
 

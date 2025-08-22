@@ -386,7 +386,7 @@ export class VisResponseParser {
       teamName,
       player1Name,
       player2Name,
-      countryCode: this.extractXmlAttribute(matchXml, `Team${teamLetter}Country`),
+      countryCode: this.extractXmlAttribute(matchXml, `Team${teamLetter}FederationCode`),
       ranking: parseInt(this.extractXmlAttribute(matchXml, `Team${teamLetter}Ranking`) || '0') || undefined
     };
   }

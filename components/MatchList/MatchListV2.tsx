@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
 import DateNavigator from '../DateNavigator/DateNavigator';
+import { FlagImage } from '../FlagImage';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -36,6 +37,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   showRefereeFilter = true,
   customFilters,
 }) => {
+  // Debug logging for first match
+  React.useEffect(() => {
+    if (matches && matches.length > 0) {
+      console.log('🏐 MatchListV2 - First match data:', JSON.stringify(matches[0], null, 2));
+      console.log('🏐 Team1 countryCode:', matches[0]?.team1?.countryCode);
+      console.log('🏐 Team2 countryCode:', matches[0]?.team2?.countryCode);
+      console.log('🏐 Referee assignments:', matches[0]?.refereeAssignments);
+    }
+  }, [matches]);
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   
@@ -419,12 +429,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
         <View style={styles.teamsContainer}>
           <View style={styles.teamRow}>
-            <Text style={[
-              styles.teamName,
-              matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
-            ]} numberOfLines={1}>
-              {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
-            </Text>
+            <View style={styles.teamWithFlag}>
+              <FlagImage
+                federationCode={match.team1?.countryCode}
+                teamName={match.team1?.teamName}
+                size="small"
+                style={styles.teamFlag}
+              />
+              <Text style={[
+                styles.teamName,
+                matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
+              ]} numberOfLines={1}>
+                {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
+              </Text>
+            </View>
             {matchWithFakeResult.result && (
               <View style={styles.scoreContainer}>
                 <Text style={[
@@ -438,12 +456,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           <Text style={styles.vsText}>vs</Text>
           
           <View style={styles.teamRow}>
-            <Text style={[
-              styles.teamName,
-              matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
-            ]} numberOfLines={1}>
-              {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
-            </Text>
+            <View style={styles.teamWithFlag}>
+              <FlagImage
+                federationCode={match.team2?.countryCode}
+                teamName={match.team2?.teamName}
+                size="small"
+                style={styles.teamFlag}
+              />
+              <Text style={[
+                styles.teamName,
+                matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
+              ]} numberOfLines={1}>
+                {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
+              </Text>
+            </View>
             {matchWithFakeResult.result && (
               <View style={styles.scoreContainer}>
                 <Text style={[
@@ -471,6 +497,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             {match.refereeAssignments.map((referee, index) => (
               <View key={index} style={styles.refereeRow}>
                 <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
+                <FlagImage
+                  federationCode={referee.federationCode}
+                  teamName={referee.refereeName}
+                  size="small"
+                  style={styles.refereeFlag}
+                />
                 <Text style={styles.refereeName}>{referee.refereeName}</Text>
               </View>
             ))}
@@ -822,6 +854,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
+  teamWithFlag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  teamFlag: {
+    marginRight: 6,
+  },
   teamName: {
     flex: 1,
     fontSize: 15,
@@ -874,6 +914,9 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     minWidth: 24,
     marginRight: 8,
+  },
+  refereeFlag: {
+    marginRight: 6,
   },
   refereeName: {
     fontSize: 12,

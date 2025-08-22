@@ -424,12 +424,6 @@ export const MatchList: React.FC<MatchListProps> = ({
         <View style={styles.matchHeader}>
           <View style={styles.teamsColumn}>
             <View style={styles.teamRow}>
-              <FlagImage
-                federationCode={match.TeamAFederationCode}
-                teamName={match.TeamAName}
-                size="small"
-                style={styles.teamFlag}
-              />
               <Text 
                 style={[
                   styles.teamName, 
@@ -439,14 +433,14 @@ export const MatchList: React.FC<MatchListProps> = ({
               >
                 {match.TeamAName || 'Team A'}
               </Text>
-            </View>
-            <View style={styles.teamRow}>
               <FlagImage
-                federationCode={match.TeamBFederationCode}
-                teamName={match.TeamBName}
-                size="small"
+                federationCode={match.TeamAFederationCode}
+                teamName={match.TeamAName}
+                size="medium"
                 style={styles.teamFlag}
               />
+            </View>
+            <View style={styles.teamRow}>
               <Text 
                 style={[
                   styles.teamName, 
@@ -456,6 +450,12 @@ export const MatchList: React.FC<MatchListProps> = ({
               >
                 {match.TeamBName || 'Team B'}
               </Text>
+              <FlagImage
+                federationCode={match.TeamBFederationCode}
+                teamName={match.TeamBName}
+                size="medium"
+                style={styles.teamFlag}
+              />
             </View>
           </View>
           
@@ -497,12 +497,6 @@ export const MatchList: React.FC<MatchListProps> = ({
                 {match.Referee1Name && (
                   <View style={styles.refereeContainer}>
                     <View style={styles.refereeRow}>
-                      <FlagImage
-                        federationCode={match.Referee1FederationCode}
-                        teamName={match.Referee1Name}
-                        size="small"
-                        style={styles.refereeFlag}
-                      />
                       <Text style={[
                         styles.refereeText,
                         selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
@@ -510,18 +504,18 @@ export const MatchList: React.FC<MatchListProps> = ({
                         R1: {match.Referee1Name}
                         {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
                       </Text>
+                      <FlagImage
+                        federationCode={match.Referee1FederationCode}
+                        teamName={match.Referee1Name}
+                        size="medium"
+                        style={styles.refereeFlag}
+                      />
                     </View>
                   </View>
                 )}
                 {match.Referee2Name && (
                   <View style={styles.refereeContainer}>
                     <View style={styles.refereeRow}>
-                      <FlagImage
-                        federationCode={match.Referee2FederationCode}
-                        teamName={match.Referee2Name}
-                        size="small"
-                        style={styles.refereeFlag}
-                      />
                       <Text style={[
                         styles.refereeText,
                         selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
@@ -529,6 +523,12 @@ export const MatchList: React.FC<MatchListProps> = ({
                         R2: {match.Referee2Name}
                         {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
                       </Text>
+                      <FlagImage
+                        federationCode={match.Referee2FederationCode}
+                        teamName={match.Referee2Name}
+                        size="medium"
+                        style={styles.refereeFlag}
+                      />
                     </View>
                   </View>
                 )}
@@ -1139,7 +1139,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   teamFlag: {
-    marginRight: 8,
+    marginLeft: 8,
   },
   teamName: {
     fontSize: 15,
@@ -1203,7 +1203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   refereeFlag: {
-    marginRight: 6,
+    marginLeft: 8,
   },
   refereeText: {
     fontSize: 12,

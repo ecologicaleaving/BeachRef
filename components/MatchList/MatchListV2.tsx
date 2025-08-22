@@ -430,18 +430,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         <View style={styles.teamsContainer}>
           <View style={styles.teamRow}>
             <View style={styles.teamWithFlag}>
-              <FlagImage
-                federationCode={match.team1?.countryCode}
-                teamName={match.team1?.teamName}
-                size="small"
-                style={styles.teamFlag}
-              />
               <Text style={[
                 styles.teamName,
                 matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
               ]} numberOfLines={1}>
                 {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
               </Text>
+              <FlagImage
+                federationCode={match.team1?.countryCode}
+                teamName={match.team1?.teamName}
+                size="medium"
+                style={styles.teamFlag}
+              />
             </View>
             {matchWithFakeResult.result && (
               <View style={styles.scoreContainer}>
@@ -457,18 +457,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           
           <View style={styles.teamRow}>
             <View style={styles.teamWithFlag}>
-              <FlagImage
-                federationCode={match.team2?.countryCode}
-                teamName={match.team2?.teamName}
-                size="small"
-                style={styles.teamFlag}
-              />
               <Text style={[
                 styles.teamName,
                 matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
               ]} numberOfLines={1}>
                 {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
               </Text>
+              <FlagImage
+                federationCode={match.team2?.countryCode}
+                teamName={match.team2?.teamName}
+                size="medium"
+                style={styles.teamFlag}
+              />
             </View>
             {matchWithFakeResult.result && (
               <View style={styles.scoreContainer}>
@@ -497,13 +497,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             {match.refereeAssignments.map((referee, index) => (
               <View key={index} style={styles.refereeRow}>
                 <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
+                <Text style={styles.refereeName}>{referee.refereeName}</Text>
                 <FlagImage
                   federationCode={referee.federationCode}
                   teamName={referee.refereeName}
-                  size="small"
+                  size="medium"
                   style={styles.refereeFlag}
                 />
-                <Text style={styles.refereeName}>{referee.refereeName}</Text>
               </View>
             ))}
           </View>
@@ -860,7 +860,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   teamFlag: {
-    marginRight: 6,
+    marginLeft: 8,
   },
   teamName: {
     flex: 1,
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   refereeFlag: {
-    marginRight: 6,
+    marginLeft: 8,
   },
   refereeName: {
     fontSize: 12,

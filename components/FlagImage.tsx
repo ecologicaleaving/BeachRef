@@ -22,9 +22,9 @@ export interface FlagImageProps {
  * Size presets for flag display
  */
 const FLAG_SIZES = {
-  small: { width: 16, height: 11 },
-  medium: { width: 24, height: 16 },
-  large: { width: 32, height: 22 },
+  small: { width: 20, height: 14 },
+  medium: { width: 28, height: 19 },
+  large: { width: 36, height: 24 },
 } as const;
 
 /**

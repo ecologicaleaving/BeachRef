@@ -106,12 +106,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       {/* SECONDARY LEVEL: Team Names - Clear hierarchy with vs separator */}
       <View style={styles.teamsSection}>
         <View style={styles.teamContainer}>
-          <FlagImage
-            federationCode={match.teamAFederationCode}
-            teamName={match.teamA}
-            size="medium"
-            style={styles.flagImage}
-          />
           <Heading 
             emphasis={emphasis}
             hierarchy="secondary"
@@ -120,6 +114,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           >
             {match.teamA}
           </Heading>
+          <FlagImage
+            federationCode={match.teamAFederationCode}
+            teamName={match.teamA}
+            size="medium"
+            style={styles.flagImage}
+          />
         </View>
         
         <EnhancedBodyText 
@@ -131,12 +131,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </EnhancedBodyText>
         
         <View style={styles.teamContainer}>
-          <FlagImage
-            federationCode={match.teamBFederationCode}
-            teamName={match.teamB}
-            size="medium"
-            style={styles.flagImage}
-          />
           <Heading 
             emphasis={emphasis}
             hierarchy="secondary"
@@ -145,6 +139,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           >
             {match.teamB}
           </Heading>
+          <FlagImage
+            federationCode={match.teamBFederationCode}
+            teamName={match.teamB}
+            size="medium"
+            style={styles.flagImage}
+          />
         </View>
       </View>
 
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flagImage: {
-    marginRight: spacing.xs,
+    marginLeft: spacing.sm,
   },
   vsText: {
     flex: 0.5,

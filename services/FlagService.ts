@@ -14,25 +14,54 @@ export interface FlagConfig {
 }
 
 /**
- * Federation code to country code mapping for special cases
- * For federations without direct country equivalents (ENG, NIR, SCO, WAL)
+ * Federation code to country code mapping for FIVB flag service
+ * Maps 3-letter federation codes to 2-letter ISO codes or 3-letter special codes
  */
 const FEDERATION_TO_COUNTRY_MAP: Record<string, string> = {
   // Standard ISO conversions (3-letter to 2-letter)
-  'AUS': 'AU',
-  'BRA': 'BR',
-  'CAN': 'CA',
-  'CHN': 'CN',
-  'FRA': 'FR',
-  'GER': 'DE',
-  'ITA': 'IT',
-  'JPN': 'JP',
-  'NED': 'NL',
-  'NOR': 'NO',
-  'POL': 'PL',
-  'RUS': 'RU',
-  'SWE': 'SE',
-  'USA': 'US',
+  'ARG': 'AR',  // Argentina
+  'AUS': 'AU',  // Australia
+  'AUT': 'AT',  // Austria
+  'BEL': 'BE',  // Belgium
+  'BRA': 'BR',  // Brazil
+  'CAN': 'CA',  // Canada
+  'CHI': 'CL',  // Chile
+  'CHN': 'CN',  // China
+  'COL': 'CO',  // Colombia
+  'CRO': 'HR',  // Croatia
+  'CZE': 'CZ',  // Czech Republic
+  'DEN': 'DK',  // Denmark
+  'ESP': 'ES',  // Spain
+  'EST': 'EE',  // Estonia
+  'FIN': 'FI',  // Finland
+  'FRA': 'FR',  // France
+  'GER': 'DE',  // Germany
+  'GRE': 'GR',  // Greece
+  'HUN': 'HU',  // Hungary
+  'INA': 'ID',  // Indonesia
+  'IRL': 'IE',  // Ireland
+  'ISR': 'IL',  // Israel
+  'ITA': 'IT',  // Italy
+  'JPN': 'JP',  // Japan
+  'KOR': 'KR',  // South Korea
+  'LAT': 'LV',  // Latvia
+  'LTU': 'LT',  // Lithuania
+  'MEX': 'MX',  // Mexico
+  'NED': 'NL',  // Netherlands
+  'NOR': 'NO',  // Norway
+  'NZL': 'NZ',  // New Zealand
+  'POL': 'PL',  // Poland
+  'POR': 'PT',  // Portugal
+  'ROU': 'RO',  // Romania
+  'RUS': 'RU',  // Russia
+  'SLO': 'SI',  // Slovenia
+  'SUI': 'CH',  // Switzerland
+  'SVK': 'SK',  // Slovakia
+  'SWE': 'SE',  // Sweden
+  'TUR': 'TR',  // Turkey
+  'UKR': 'UA',  // Ukraine
+  'USA': 'US',  // United States
+  'VEN': 'VE',  // Venezuela
   
   // Special federation cases (use 3-letter code)
   'ENG': 'ENG', // England

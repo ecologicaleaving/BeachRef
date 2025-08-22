@@ -41,6 +41,8 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     const location = tournament.location;
     const venue = (tournament as any).venue;
     
+    console.log(`🏐 Tournament "${tournament.name}": city=${city}, country=${country}, location=${location}, venue=${venue}`);
+    
     // Try different combinations
     if (city && country) {
       return `${city}, ${country}`;
@@ -59,12 +61,15 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     }
     
     // Try to infer from tournament name if location data is missing
-    if (!city && !country && !location && !venue) {
-      const inferredLocation = inferLocationFromName(tournament.name || tournament.title);
-      if (inferredLocation) return inferredLocation;
+    const inferredLocation = inferLocationFromName(tournament.name || tournament.title);
+    if (inferredLocation) {
+      console.log(`🌍 Using inferred location: ${inferredLocation}`);
+      return inferredLocation;
     }
     
-    return city || country || location || venue || 'Location TBA';
+    const fallback = city || country || location || venue || 'Location TBA';
+    console.log(`🌍 Using fallback location: ${fallback}`);
+    return fallback;
   };
 
   // Helper function to extract location from tournament name
@@ -106,14 +111,36 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
       { pattern: 'hermosa beach', location: 'Hermosa Beach, USA' },
       { pattern: 'huntington beach', location: 'Huntington Beach, USA' },
       { pattern: 'long beach', location: 'Long Beach, USA' },
+      { pattern: 'bujumbura', location: 'Bujumbura, Burundi' },
+      { pattern: 'warsaw', location: 'Warsaw, Poland' },
+      { pattern: 'hamburg', location: 'Hamburg, Germany' },
+      { pattern: 'ostrava', location: 'Ostrava, Czech Republic' },
+      { pattern: 'brasilia', location: 'Brasília, Brazil' },
+      { pattern: 'doha', location: 'Doha, Qatar' },
+      { pattern: 'dubai', location: 'Dubai, UAE' },
+      { pattern: 'melbourne', location: 'Melbourne, Australia' },
+      { pattern: 'adelaide', location: 'Adelaide, Australia' },
+      { pattern: 'perth', location: 'Perth, Australia' },
+      { pattern: 'brisbane', location: 'Brisbane, Australia' },
+      { pattern: 'athens', location: 'Athens, Greece' },
+      { pattern: 'lisbon', location: 'Lisbon, Portugal' },
+      { pattern: 'barcelona', location: 'Barcelona, Spain' },
+      { pattern: 'valencia', location: 'Valencia, Spain' },
+      { pattern: 'seville', location: 'Seville, Spain' },
+      { pattern: 'milan', location: 'Milan, Italy' },
+      { pattern: 'naples', location: 'Naples, Italy' },
+      { pattern: 'florence', location: 'Florence, Italy' },
+      { pattern: 'venice', location: 'Venice, Italy' },
     ];
     
     for (const { pattern, location } of cityPatterns) {
       if (nameLower.includes(pattern)) {
+        console.log(`🌍 Found location pattern "${pattern}" in name "${name}" -> ${location}`);
         return location;
       }
     }
     
+    console.log(`🌍 No location pattern found for: "${name}"`);
     return null;
   };
 

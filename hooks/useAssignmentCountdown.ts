@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { colors } from '../theme/tokens';
 
 export interface CountdownTime {
   hours: number;
@@ -30,7 +31,7 @@ export const useAssignmentCountdown = (targetDate: Date | null) => {
   
   const [urgency, setUrgency] = useState<CountdownUrgency>({
     level: 'low',
-    color: '#1E5A3A', // success green
+    color: colors.success, // success green
     message: 'On schedule',
   });
 
@@ -93,7 +94,7 @@ export const useAssignmentCountdown = (targetDate: Date | null) => {
     
     return {
       level: 'low',
-      color: '#1E5A3A', // success green
+      color: colors.success, // success green
       message: 'On schedule',
     };
   };
@@ -145,7 +146,7 @@ export const useAssignmentCountdown = (targetDate: Date | null) => {
       });
       setUrgency({
         level: 'low',
-        color: '#1E5A3A',
+        color: colors.success,
         message: 'No upcoming assignment',
       });
       return;

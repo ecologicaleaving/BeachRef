@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { BeachMatch } from '../../types/match';
 import DateNavigator from '../DateNavigator/DateNavigator';
+import { colors } from '../../theme/tokens';
 
 interface MatchListProps {
   matches: BeachMatch[];
@@ -866,8 +867,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   activeRefereeFilterButton: {
-    backgroundColor: '#2E8B57',
-    borderColor: '#2E8B57',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   refereeFilterText: {
     fontSize: 13,
@@ -1109,7 +1110,7 @@ const styles = StyleSheet.create({
   },
   winnerTeamName: {
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: colors.success,
   },
   scoreColumn: {
     flex: 1,
@@ -1130,7 +1131,7 @@ const styles = StyleSheet.create({
   },
   winnerScoreText: {
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: colors.success,
   },
   // Collapsible referee styles
   collapsibleRefereeSection: {

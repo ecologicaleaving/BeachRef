@@ -4,6 +4,7 @@
  */
 
 import {
+import { colors } from '../theme/tokens';
   getStatusColor,
   getAssignmentStatusColor,
   getMatchStatusColor,
@@ -191,7 +192,7 @@ describe('Status Colors Utility Functions', () => {
       expect(statusColors.upcoming).toBe('#2B5F75');
       
       // Completed: Success green (using existing WCAG AAA success color)
-      expect(statusColors.completed).toBe('#1E5A3A');
+      expect(statusColors.completed).toBe(colors.success);
       
       // Cancelled/Changed: Clear indicators (using existing WCAG AAA primary color)
       expect(statusColors.cancelled).toBe('#1B365D');

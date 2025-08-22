@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Clock, Calendar } from 'lucide-react';
 import { TournamentCore } from '../types/tournament-v2';
+import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import VisTournamentList from '../components/VisTournamentList';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
@@ -237,7 +238,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     
     if (start <= now && now <= end) {
       status = 'LIVE';
-      backgroundColor = '#2E8B57';
+      backgroundColor = colors.success;
     } else if (end < now) {
       status = 'COMPLETED';
       backgroundColor = '#1B365D';
@@ -495,7 +496,7 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
     const end = new Date(tournament.dates.endDate);
     
     if (start <= now && now <= end) {
-      return { text: '🔴 LIVE', color: '#2E8B57' };
+      return { text: '🔴 LIVE', color: colors.success };
     } else if (start > now) {
       return { text: '📅 UPCOMING', color: '#4A90A4' };
     } else {
@@ -1796,7 +1797,7 @@ const styles = StyleSheet.create({
   },
   // Legacy live indicator for backward compatibility
   liveIndicator: {
-    backgroundColor: '#2E8B57',
+    backgroundColor: colors.success,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -1849,7 +1850,7 @@ const styles = StyleSheet.create({
   },
   tournamentPrize: {
     fontSize: 13,
-    color: '#2E8B57',
+    color: colors.success,
     fontWeight: '600',
     marginTop: 4,
   },
@@ -2074,7 +2075,7 @@ const styles = StyleSheet.create({
   liveSectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: colors.success,
   },
   liveCarousel: {
     marginHorizontal: -12, // Offset the padding to allow edge-to-edge scrolling
@@ -2098,7 +2099,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
-    shadowColor: '#2E8B57',
+    shadowColor: colors.success,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -2107,7 +2108,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 2,
-    borderColor: '#2E8B57',
+    borderColor: colors.success,
     minHeight: 110,
   },
   liveCardHeader: {
@@ -2119,7 +2120,7 @@ const styles = StyleSheet.create({
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2E8B57',
+    backgroundColor: colors.success,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
@@ -2157,7 +2158,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   liveCategoryBadgeText: {
-    color: '#2E8B57',
+    color: colors.success,
     fontSize: 9,
     fontWeight: 'bold',
     letterSpacing: 0.3,

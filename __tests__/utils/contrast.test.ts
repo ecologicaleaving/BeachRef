@@ -4,6 +4,7 @@
  */
 
 import {
+import { colors } from '../theme/tokens';
   calculateContrastRatio,
   validateWCAG,
   calculateContrast,
@@ -115,7 +116,7 @@ describe('Contrast Utilities', () => {
       primary: '#1B365D',
       secondary: '#2B5F75',
       accent: '#9B2D07',
-      success: '#1E5A3A',
+      success: colors.success,
       warning: '#7A4405',
       error: '#8B1538',
       textPrimary: '#2C3E50',

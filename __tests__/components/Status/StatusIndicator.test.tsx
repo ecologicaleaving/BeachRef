@@ -7,6 +7,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { StatusIndicator } from '../../../components/Status/StatusIndicator';
 import { StatusType } from '../../../types/status';
+import { colors } from '../theme/tokens';
 
 // Mock dependencies
 jest.mock('../../../components/Icons/IconLibrary', () => ({
@@ -45,14 +46,14 @@ jest.mock('../../../utils/statusIndicators', () => ({
     const colorMap: Record<StatusType, string> = {
       current: '#2C3E50',
       upcoming: '#2B5F75',
-      completed: '#1E5A3A',
+      completed: colors.success,
       cancelled: '#1B365D',
       changed: '#B8530A',
       'pre-match': '#2B5F75',
       'in-progress': '#2C3E50',
       delayed: '#B8530A',
       suspended: '#8B1538',
-      online: '#1E5A3A',
+      online: colors.success,
       offline: '#445566',
       'sync-pending': '#B8530A',
       error: '#8B1538',

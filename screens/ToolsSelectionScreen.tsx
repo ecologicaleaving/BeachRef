@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { colors } from '../theme/tokens';
 import { Tournament } from '../types/tournament';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
@@ -39,7 +40,7 @@ const ToolsSelectionScreenContent: React.FC = () => {
       description: 'Monitor referee assignments and schedules',
       icon: '👨‍⚖️',
       route: '/referee-monitor',
-      color: '#2E8B57',
+      color: colors.success,
     }
   ];
 

@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { colors } from '../theme/tokens';
 import { TournamentStorageService, UserPreferences } from '../services/TournamentStorageService';
 import { VisApiClient } from '../services/api/VisApiClient';
 import { BeachMatch } from '../types/match';
@@ -3054,7 +3055,7 @@ const styles = StyleSheet.create({
   },
   winnerTeamName: {
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: colors.success,
   },
   scoreColumn: {
     flex: 1,
@@ -3076,7 +3077,7 @@ const styles = StyleSheet.create({
   },
   winnerScoreText: {
     fontWeight: 'bold',
-    color: '#2E8B57',
+    color: colors.success,
   },
   genderStrip: {
     position: 'absolute',

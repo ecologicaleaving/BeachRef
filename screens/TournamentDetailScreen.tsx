@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
@@ -321,7 +322,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     const status = getTournamentStatus();
     switch (status) {
       case 'Live':
-        return '#2E8B57';
+        return colors.success;
       case 'Upcoming':
         return '#FF6B35';
       case 'Completed':

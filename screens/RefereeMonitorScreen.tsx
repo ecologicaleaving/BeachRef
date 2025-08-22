@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
+import { colors } from '../theme/tokens';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
@@ -403,8 +404,8 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   activeRefereeFilterButton: {
-    backgroundColor: '#2E8B57',
-    borderColor: '#2E8B57',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   refereeFilterText: {
     fontSize: 14,

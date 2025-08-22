@@ -1,0 +1,147 @@
+{
+  "timestamp": "2025-08-22T05:32:36.318Z",
+  "totalReplacements": 31,
+  "filesModified": 14,
+  "details": [
+    {
+      "file": "screens\\TournamentSelectionScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "file": "screens\\TournamentDetailScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "screens\\ToolsSelectionScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "screens\\RefereeSettingsScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "file": "screens\\RefereeMonitorScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "file": "screens\\CourtMonitorScreen.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "file": "components\\MatchList\\MatchList.tsx",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "file": "hooks\\useAssignmentCountdown.ts",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\utils\\statusColors.test.ts",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\utils\\contrast.test.ts",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\utils\\brand.test.ts",
+      "replacements": [
+        {
+          "from": "#2E8B57",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\theme\\tokens.test.ts",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\hooks\\useAssignmentCountdown.test.ts",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "__tests__\\components\\Status\\StatusIndicator.test.tsx",
+      "replacements": [
+        {
+          "from": "#1E5A3A",
+          "to": "colors.success",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

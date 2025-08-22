@@ -11,6 +11,7 @@ import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Icon, IconProps } from './Icon';
 import { TournamentStatus } from '../../utils/statusColors';
 import { IconSize, IconVariant } from '../../utils/icons';
+import { colors } from '../../theme/tokens';
 
 export interface StatusIconProps extends Omit<IconProps, 'category' | 'name' | 'theme' | 'colorKey'> {
   status: TournamentStatus;
@@ -78,11 +79,11 @@ function getBackgroundStyle(status: TournamentStatus): ViewStyle {
   
   // This would use the actual status colors from the design system
   const backgroundColors: Record<TournamentStatus, string> = {
-    current: `#2C3E50${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
-    upcoming: `#2B5F75${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
-    completed: `#1E5A3A${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
-    cancelled: `#1B365D${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
-    emergency: `#8B1538${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
+    current: `${colors.textPrimary}${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
+    upcoming: `${colors.secondary}${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
+    completed: `${colors.success}${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
+    cancelled: `${colors.primary}${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
+    emergency: `${colors.error}${Math.round(backgroundOpacity * 255).toString(16).padStart(2, '0')}`,
   };
 
   return {

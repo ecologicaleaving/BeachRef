@@ -5,6 +5,7 @@
 
 import { getBrandColor, getAdaptiveColor, colorPalette } from '../../utils/colors';
 import { brandColors, colors } from '../../theme/tokens';
+import { colors } from '../theme/tokens';
 
 describe('Brand Color Utilities', () => {
   describe('getBrandColor', () => {
@@ -12,7 +13,7 @@ describe('Brand Color Utilities', () => {
       expect(getBrandColor('fivbPrimary')).toBe('#1B365D');
       expect(getBrandColor('fivbSecondary')).toBe('#4A90A4');
       expect(getBrandColor('fivbAccent')).toBe('#FF6B35');
-      expect(getBrandColor('fivbSuccess')).toBe('#2E8B57');
+      expect(getBrandColor('fivbSuccess')).toBe('#0F4C75');
       expect(getBrandColor('fivbWarning')).toBe('#FF8C00');
       expect(getBrandColor('fivbError')).toBe('#C41E3A');
     });

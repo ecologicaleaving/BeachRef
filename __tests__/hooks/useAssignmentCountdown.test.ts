@@ -5,6 +5,7 @@
 
 import { renderHook, act } from '@testing-library/react-native';
 import { useAssignmentCountdown } from '../../hooks/useAssignmentCountdown';
+import { colors } from '../theme/tokens';
 
 // Mock timers
 jest.useFakeTimers();
@@ -184,7 +185,7 @@ describe('useAssignmentCountdown', () => {
     // Test low color
     const lowDate = new Date(Date.now() + 120 * 60 * 1000);
     const { result: lowResult } = renderHook(() => useAssignmentCountdown(lowDate));
-    expect(lowResult.current.urgency.color).toBe('#1E5A3A'); // success green
+    expect(lowResult.current.urgency.color).toBe(colors.success); // success green
   });
 
   it('should handle edge cases in time formatting', () => {

@@ -4,6 +4,7 @@
  */
 
 import { designTokens, validateAllContrasts, colors, typography, spacing } from '../../theme/tokens';
+import { colors } from '../theme/tokens';
 
 describe('Design Tokens', () => {
   describe('Color Tokens', () => {
@@ -31,7 +32,7 @@ describe('Design Tokens', () => {
       expect(colors.primary).toBe('#1B365D');
       expect(colors.secondary).toBe('#2B5F75');
       expect(colors.accent).toBe('#B8391A'); // Updated FIVB accent
-      expect(colors.success).toBe('#1E5A3A');
+      expect(colors.success).toBe('#0F4C75');
       expect(colors.warning).toBe('#B8530A'); // Updated FIVB warning
       expect(colors.error).toBe('#8B1538');
       expect(colors.textPrimary).toBe('#2C3E50');

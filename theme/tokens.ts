@@ -12,7 +12,7 @@ export const colors = {
   primary: '#1B365D',      // Navigation, headers, court numbers (FIVB Primary) - 12.12:1 ✅
   secondary: '#2B5F75',    // Supporting elements, borders (FIVB Secondary darkened) - 8.40:1 ✅
   accent: '#B8391A',       // Call-to-action buttons, active states (FIVB Accent darkened) - 4.75:1 ✅
-  success: '#1E5A3A',      // Active/live match indicators (FIVB Success darkened) - 8.14:1 ✅
+  success: '#0F4C75',      // Active/live match indicators (Deep Blue-Teal) - 9.09:1 ✅
   warning: '#B8530A',      // Upcoming assignments, alerts (FIVB Warning darkened) - 7.90:1 ✅
   error: '#8B1538',        // Cancelled matches, critical alerts (FIVB Error darkened) - 9.28:1 ✅
   textPrimary: '#2C3E50',  // Primary text, headings (FIVB Text Primary) - 10.98:1 ✅
@@ -26,7 +26,7 @@ export const brandColors = {
   fivbPrimary: '#1B365D',    // FIVB Primary Blue
   fivbSecondary: '#4A90A4',  // FIVB Secondary Blue  
   fivbAccent: '#FF6B35',     // FIVB Accent Orange
-  fivbSuccess: '#2E8B57',    // FIVB Success Green
+  fivbSuccess: '#0F4C75',    // FIVB Success Blue-Teal (aligned with WCAG version)
   fivbWarning: '#FF8C00',    // FIVB Warning Orange
   fivbError: '#C41E3A',      // FIVB Error Red
   // Brand color variants for different contexts
@@ -44,8 +44,8 @@ export const statusColors: StatusColors = {
   // Upcoming: Professional blue - using existing secondary color
   upcoming: colors.secondary,   // 8.40:1 contrast on white background ✅ (existing WCAG AAA color)
   
-  // Completed: Success green - using existing success color
-  completed: colors.success,    // 8.14:1 contrast on white background ✅ (existing WCAG AAA color)
+  // Completed: Success blue-teal - using existing success color
+  completed: colors.success,    // 9.09:1 contrast on white background ✅ (existing WCAG AAA color)
   
   // Cancelled/Changed: Clear warning indicators - using primary for high contrast
   cancelled: colors.primary,    // 12.12:1 contrast on white background ✅ (existing WCAG AAA color)

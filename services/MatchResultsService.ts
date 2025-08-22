@@ -430,15 +430,17 @@ export class MatchResultsService {
   /**
    * Get match result summary (who won)
    */
-  static getMatchResultSummary(match: MatchResult): { winner: string; loser: string; setsWon: string } | null {
+  static getMatchResultSummary(match: MatchResult): { winner: string; loser: string; setsWon: string; winnerCountryCode?: string; loserCountryCode?: string } | null {
     if (match.status !== 'Finished') return null;
     
     const teamAWon = match.matchPointsA > match.matchPointsB;
     const winner = teamAWon ? match.teamAName : match.teamBName;
     const loser = teamAWon ? match.teamBName : match.teamAName;
+    const winnerCountryCode = teamAWon ? match.teamACountryCode : match.teamBCountryCode;
+    const loserCountryCode = teamAWon ? match.teamBCountryCode : match.teamACountryCode;
     const setsWon = `${Math.max(match.matchPointsA, match.matchPointsB)}-${Math.min(match.matchPointsA, match.matchPointsB)}`;
     
-    return { winner, loser, setsWon };
+    return { winner, loser, setsWon, winnerCountryCode, loserCountryCode };
   }
 
   /**

@@ -41,9 +41,15 @@ export const LiveMatchCard: React.FC<LiveMatchCardProps> = ({
 
       {/* Team Names */}
       <View style={styles.teamsContainer}>
-        <Text style={styles.teamName}>{match.teamAName}</Text>
+        <Text style={styles.teamName}>
+          {match.teamAName}
+          {match.teamACountryCode && ` (${match.teamACountryCode})`}
+        </Text>
         <Text style={styles.vsText}>vs</Text>
-        <Text style={styles.teamName}>{match.teamBName}</Text>
+        <Text style={styles.teamName}>
+          {match.teamBName}
+          {match.teamBCountryCode && ` (${match.teamBCountryCode})`}
+        </Text>
       </View>
 
       {/* Score Display */}

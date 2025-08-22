@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { BeachMatch } from '../../types/match';
 
 interface RefereeFromDB {
@@ -21,6 +21,94 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   selectedReferee, 
   showGenderStrip = true 
 }) => {
+  // Helper function to convert federation/country codes to flag URL codes
+  const getFlagCode = (code?: string): string | null => {
+    if (!code) return null;
+    
+    const upperCode = code.toUpperCase();
+    
+    // Special cases for UK nations (use 3-letter codes)
+    const specialCases = ['ENG', 'NIR', 'SCO', 'WAL'];
+    if (specialCases.includes(upperCode)) {
+      return upperCode;
+    }
+    
+    // Common federation to ISO country code mappings
+    const federationToCountry: { [key: string]: string } = {
+      'AUS': 'AU',  // Australia
+      'USA': 'US',  // United States
+      'GER': 'DE',  // Germany
+      'ITA': 'IT',  // Italy
+      'FRA': 'FR',  // France
+      'ESP': 'ES',  // Spain
+      'BRA': 'BR',  // Brazil
+      'ARG': 'AR',  // Argentina
+      'CAN': 'CA',  // Canada
+      'MEX': 'MX',  // Mexico
+      'JPN': 'JP',  // Japan
+      'CHN': 'CN',  // China
+      'POL': 'PL',  // Poland
+      'NED': 'NL',  // Netherlands
+      'BEL': 'BE',  // Belgium
+      'SUI': 'CH',  // Switzerland
+      'AUT': 'AT',  // Austria
+      'CZE': 'CZ',  // Czech Republic
+      'SVK': 'SK',  // Slovakia
+      'HUN': 'HU',  // Hungary
+      'ROU': 'RO',  // Romania
+      'BUL': 'BG',  // Bulgaria
+      'CRO': 'HR',  // Croatia
+      'SRB': 'RS',  // Serbia
+      'SLO': 'SI',  // Slovenia
+      'GRE': 'GR',  // Greece
+      'TUR': 'TR',  // Turkey
+      'RUS': 'RU',  // Russia
+      'UKR': 'UA',  // Ukraine
+      'BLR': 'BY',  // Belarus
+      'LTU': 'LT',  // Lithuania
+      'LAT': 'LV',  // Latvia
+      'EST': 'EE',  // Estonia
+      'FIN': 'FI',  // Finland
+      'SWE': 'SE',  // Sweden
+      'NOR': 'NO',  // Norway
+      'DEN': 'DK',  // Denmark
+      'ISL': 'IS',  // Iceland
+    };
+    
+    // If it's a 3-letter federation code, convert to 2-letter country code
+    if (upperCode.length === 3 && federationToCountry[upperCode]) {
+      return federationToCountry[upperCode];
+    }
+    
+    // If it's already a 2-letter code, use as is
+    if (upperCode.length === 2) {
+      return upperCode;
+    }
+    
+    // Default fallback
+    return upperCode;
+  };
+
+  // Helper function to render country flag and code
+  const renderCountryFlag = (countryCode?: string) => {
+    if (!countryCode) return null;
+    
+    const flagCode = getFlagCode(countryCode);
+    if (!flagCode) return null;
+    
+    const flagUrl = `https://www.fivb.org/Vis2009/Images/Flags/Small/${flagCode}.png`;
+    
+    return (
+      <View style={styles.countryContainer}>
+        <Image 
+          source={{ uri: flagUrl }}
+          style={styles.countryFlag}
+          resizeMode="contain"
+        />
+        <Text style={styles.countryCode}>({countryCode})</Text>
+      </View>
+    );
+  };
   const scoreA = parseInt(match.MatchPointsA || '0');
   const scoreB = parseInt(match.MatchPointsB || '0');
   const teamAWon = scoreA > scoreB;
@@ -80,9 +168,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       {/* Teams */}
       <View style={styles.teamsContainer}>
         <View style={[styles.teamRow, teamAWon && styles.winnerTeam]}>
-          <Text style={[styles.teamName, teamAWon && styles.winnerText]}>
-            {match.TeamAName || 'Team A'}
-          </Text>
+          <View style={styles.teamNameContainer}>
+            <Text style={[styles.teamName, teamAWon && styles.winnerText]}>
+              {match.TeamAName || 'Team A'}
+            </Text>
+            {renderCountryFlag(match.TeamACountryCode)}
+          </View>
           <Text style={[styles.teamScore, teamAWon && styles.winnerText]}>
             {match.MatchPointsA || '0'}
           </Text>
@@ -91,9 +182,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <Text style={styles.vsText}>vs</Text>
         
         <View style={[styles.teamRow, teamBWon && styles.winnerTeam]}>
-          <Text style={[styles.teamName, teamBWon && styles.winnerText]}>
-            {match.TeamBName || 'Team B'}
-          </Text>
+          <View style={styles.teamNameContainer}>
+            <Text style={[styles.teamName, teamBWon && styles.winnerText]}>
+              {match.TeamBName || 'Team B'}
+            </Text>
+            {renderCountryFlag(match.TeamBCountryCode)}
+          </View>
           <Text style={[styles.teamScore, teamBWon && styles.winnerText]}>
             {match.MatchPointsB || '0'}
           </Text>
@@ -111,16 +205,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       {(match.Referee1Name || match.Referee2Name) && (
         <View style={styles.refereesSection}>
           {match.Referee1Name && (
-            <Text style={selectedReferee?.Name === match.Referee1Name ? styles.selectedRefereeHighlight : styles.refereeText}>
-              1° {match.Referee1Name}
-              {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
-            </Text>
+            <View style={styles.refereeRow}>
+              <Text style={selectedReferee?.Name === match.Referee1Name ? styles.selectedRefereeHighlight : styles.refereeText}>
+                1° {match.Referee1Name}
+              </Text>
+              {renderCountryFlag(match.Referee1FederationCode)}
+            </View>
           )}
           {match.Referee2Name && (
-            <Text style={selectedReferee?.Name === match.Referee2Name ? styles.selectedRefereeHighlight : styles.refereeText}>
-              2° {match.Referee2Name}
-              {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
-            </Text>
+            <View style={styles.refereeRow}>
+              <Text style={selectedReferee?.Name === match.Referee2Name ? styles.selectedRefereeHighlight : styles.refereeText}>
+                2° {match.Referee2Name}
+              </Text>
+              {renderCountryFlag(match.Referee2FederationCode)}
+            </View>
           )}
         </View>
       )}
@@ -226,11 +324,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#0EA5E9',
   },
+  teamNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 8,
+  },
   teamName: {
     fontSize: 15,
     fontWeight: '500',
     color: '#1B365D',
-    flex: 1,
+  },
+  countryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  countryFlag: {
+    width: 16,
+    height: 11,
+  },
+  countryCode: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   teamScore: {
     fontSize: 18,
@@ -264,6 +381,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
     paddingTop: 12,
     gap: 4,
+  },
+  refereeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   refereeText: {
     fontSize: 14,

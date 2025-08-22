@@ -5,6 +5,8 @@ export interface BeachMatch {
   LocalTime?: string;
   TeamAName?: string;
   TeamBName?: string;
+  TeamACountryCode?: string;
+  TeamBCountryCode?: string;
   Court?: string;
   MatchPointsA?: string;
   MatchPointsB?: string;

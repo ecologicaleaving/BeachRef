@@ -43,9 +43,15 @@ export const CompletedMatchCard: React.FC<CompletedMatchCardProps> = ({
       {/* Match Result */}
       {result && (
         <View style={styles.resultContainer}>
-          <Text style={styles.winnerText}>{result.winner}</Text>
+          <Text style={styles.winnerText}>
+            {result.winner}
+            {result.winnerCountryCode && ` (${result.winnerCountryCode})`}
+          </Text>
           <Text style={styles.resultLabel}>defeats</Text>
-          <Text style={styles.loserText}>{result.loser}</Text>
+          <Text style={styles.loserText}>
+            {result.loser}
+            {result.loserCountryCode && ` (${result.loserCountryCode})`}
+          </Text>
           <Text style={styles.setsWon}>({result.setsWon})</Text>
         </View>
       )}

@@ -3,6 +3,8 @@ export interface MatchResult {
   tournamentNo: string;          // Foreign key to tournaments
   teamAName: string;             // Team names from FIVB API
   teamBName: string;
+  teamACountryCode?: string;     // Team country codes
+  teamBCountryCode?: string;
   status: 'Scheduled' | 'Running' | 'Finished' | 'Cancelled';
   
   // Set-by-set scoring

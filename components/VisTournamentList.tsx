@@ -183,13 +183,6 @@ const VisTournamentList: React.FC<VisTournamentListProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Beach Volleyball Tournaments</Text>
-        <Text style={styles.subtitle}>
-          {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''} from VIS API
-        </Text>
-      </View>
-      
       <FlatList
         data={tournaments}
         renderItem={renderTournament}
@@ -216,25 +209,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5F7FA',
     paddingHorizontal: 32,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#4A90A4',
-    textAlign: 'center',
   },
   list: {
     flex: 1,

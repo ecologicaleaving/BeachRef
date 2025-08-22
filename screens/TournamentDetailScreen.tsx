@@ -714,14 +714,24 @@ const TournamentDetailScreenContent: React.FC = () => {
             )}
           </View>
         </View>
-        
-        
-
 
       </ScrollView>
 
-      <View style={{backgroundColor: '#FFF', padding: 10, borderTopWidth: 1, borderTopColor: '#ccc'}}>
-        <Text style={{textAlign: 'center'}}>Bottom Nav Placeholder</Text>
+      <View style={styles.refToolsBottomContainer}>
+        <TouchableOpacity
+          style={styles.refToolsButton}
+          onPress={() => {
+            router.push({
+              pathname: '/ref-mode',
+              params: { 
+                eventNo: tournament.visNo,
+                tournamentName: tournament.name 
+              }
+            });
+          }}
+        >
+          <Text style={styles.refToolsButtonText}>Ref Tools</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -983,6 +993,44 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 22,
     textAlign: 'left',
+  },
+
+  // Ref Tools Bottom Container Styles
+  refToolsBottomContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  refToolsButton: {
+    backgroundColor: '#FF6B35',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FF6B35',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  refToolsButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 
 });

@@ -1,53 +1,454 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { designTokens } from '../theme/tokens';
 
+interface Official {
+  FederationCode: string;
+  FirstName: string;
+  Gender: string;
+  LastName: string;
+  NoPortraitPhoto: string;
+  NoOfficial: string;
+  Role: string;
+  Signatures: string;
+  Status: string;
+  Type: string;
+}
+
+interface Referee {
+  Conclusion: string;
+  FederationCode: string;
+  FirstName: string;
+  Gender: string;
+  LastName: string;
+  NoPortraitPhoto: string;
+  NoReferee: string;
+  Signatures: string;
+  Status: string;
+  StrongPoints: string;
+  TheoryTest: string;
+  Type: string;
+  WeakPoints: string;
+}
+
 const RefModeScreen: React.FC = () => {
   const router = useRouter();
+  const { eventNo, tournamentName } = useLocalSearchParams<{ 
+    eventNo: string; 
+    tournamentName: string; 
+  }>();
+
+  const [activeMenu, setActiveMenu] = useState<'nominations'>('nominations');
+  const [loading, setLoading] = useState(false);
+  const [officials, setOfficials] = useState<Official[]>([]);
+  const [referees, setReferees] = useState<Referee[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoBack = () => {
     router.back();
   };
+
+  const loadOfficialData = async () => {
+    if (!eventNo) {
+      setError('No event number provided');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const { VisApiClient } = await import('../services/api/VisApiClient');
+      const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
+      
+      const config = {
+        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        timeoutMs: 30000,
+        maxRetries: 3,
+        retryDelayMs: 1000,
+        enableLogging: true,
+        headers: {}
+      };
+      
+      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+
+      console.log('🔍 Loading official data for event:', eventNo);
+
+      // Make specific GetEventRefereeList request using GET method like the manual
+      console.log('🏐 Making GetEventRefereeList GET request...');
+      
+      // Request specific fields as provided
+      const refereeRequest = `<Requests><Request Type='GetEventRefereeList' Fields='Conclusion FederationCode FirstName Gender LastName NoPortraitPhoto NoReferee Signatures Status StrongPoints TheoryTest Type WeakPoints'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
+      const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
+      
+      console.log('📤 GetEventRefereeList Request XML:', refereeRequest);
+      console.log('📤 GetEventRefereeList URL:', refereeUrl);
+
+      try {
+        const refereeResponse = await fetch(refereeUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/xml, text/xml, */*',
+            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+          }
+        });
+        
+        if (refereeResponse.ok) {
+          const refereeData = await refereeResponse.text();
+          console.log('📋 GetEventRefereeList Raw Response:', refereeData);
+          
+          // Parse referee numbers from the response
+          const refereeNumbers = parseRefereeNumbers(refereeData);
+          console.log('🏐 Found referee numbers:', refereeNumbers);
+          
+          // Get detailed info for each referee
+          if (refereeNumbers.length > 0) {
+            console.log('🔍 Getting detailed referee information...');
+            const detailedReferees = await getDetailedReferees(refereeNumbers.slice(0, 3)); // Limit to first 3 for testing
+            console.log('🏐 Detailed referees:', detailedReferees);
+            setReferees(detailedReferees);
+          }
+        } else {
+          console.error('❌ GetEventRefereeList HTTP error:', refereeResponse.status, refereeResponse.statusText);
+        }
+      } catch (error) {
+        console.error('❌ GetEventRefereeList failed:', error);
+      }
+
+      // Also try GetEventOfficialList with GET
+      console.log('👨‍⚖️ Making GetEventOfficialList GET request...');
+      
+      const officialRequest = `<Requests><Request Type='GetEventOfficialList' Fields='FederationCode FirstName Gender LastName NoPortraitPhoto NoOfficial Role Signatures Status Type'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
+      const officialUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(officialRequest)}`;
+      
+      console.log('📤 GetEventOfficialList Request XML:', officialRequest);
+      console.log('📤 GetEventOfficialList URL:', officialUrl);
+
+      try {
+        const officialResponse = await fetch(officialUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/xml, text/xml, */*',
+            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+          }
+        });
+        
+        if (officialResponse.ok) {
+          const officialData = await officialResponse.text();
+          console.log('📋 GetEventOfficialList Raw Response:', officialData);
+          
+          const officialsData = parseOfficials(officialData);
+          console.log('👨‍⚖️ Parsed Officials from GetEventOfficialList:', officialsData);
+          setOfficials(officialsData);
+        } else {
+          console.error('❌ GetEventOfficialList HTTP error:', officialResponse.status, officialResponse.statusText);
+        }
+      } catch (error) {
+        console.error('❌ GetEventOfficialList failed:', error);
+      }
+
+      // Fallback: Try GetEvent with officials and referees enabled
+      console.log('📋 Fallback: Making GetEvent request...');
+      const eventResponse = await visApi.getEvent({
+        eventNo: eventNo,
+        includeOfficials: true,
+        includeReferees: true
+      });
+
+      if (eventResponse.success && eventResponse.xmlData) {
+        console.log('📋 Event Response XML:', eventResponse.xmlData);
+        
+        // Parse officials from the response
+        const officialsData = parseOfficials(eventResponse.xmlData);
+        const refereesData = parseReferees(eventResponse.xmlData);
+        
+        console.log('👨‍⚖️ Parsed Officials:', officialsData);
+        console.log('🏐 Parsed Referees:', refereesData);
+        
+        setOfficials(officialsData);
+        setReferees(refereesData);
+      } else {
+        setError('Failed to load official data');
+        console.error('❌ Failed to get event data:', eventResponse.error);
+      }
+    } catch (error) {
+      console.error('❌ Error loading official data:', error);
+      setError('Error loading official data: ' + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to parse referee numbers from GetEventRefereeList response
+  const parseRefereeNumbers = (xmlData: string): string[] => {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
+      const refereeElements = xmlDoc.getElementsByTagName('EventReferee');
+      
+      const numbers = [];
+      for (let i = 0; i < refereeElements.length; i++) {
+        const no = refereeElements[i].getAttribute('No');
+        if (no) {
+          numbers.push(no);
+        }
+      }
+      return numbers;
+    } catch (error) {
+      console.error('Error parsing referee numbers:', error);
+      return [];
+    }
+  };
+
+  // Function to get detailed referee information
+  const getDetailedReferees = async (refereeNumbers: string[]): Promise<Referee[]> => {
+    const detailedReferees: Referee[] = [];
+    
+    for (const refereeNo of refereeNumbers) {
+      try {
+        console.log(`🔍 Getting details for referee ${refereeNo}...`);
+        
+        const refereeRequest = `<Requests><Request Type='GetReferee' No='${refereeNo}' VISId='VIS'/></Requests>`;
+        const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
+        
+        console.log(`📤 GetReferee Request for ${refereeNo}:`, refereeRequest);
+        
+        const response = await fetch(refereeUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/xml, text/xml, */*',
+            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+          }
+        });
+        
+        if (response.ok) {
+          const refereeData = await response.text();
+          console.log(`📋 GetReferee Response for ${refereeNo}:`, refereeData);
+          
+          // Parse individual referee data
+          const parsedReferee = parseIndividualReferee(refereeData, refereeNo);
+          if (parsedReferee) {
+            detailedReferees.push(parsedReferee);
+          }
+        } else {
+          console.error(`❌ GetReferee failed for ${refereeNo}:`, response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error(`❌ Error getting referee ${refereeNo}:`, error);
+      }
+    }
+    
+    return detailedReferees;
+  };
+
+  // Function to parse individual referee data
+  const parseIndividualReferee = (xmlData: string, refereeNo: string): Referee | null => {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
+      const refereeElements = xmlDoc.getElementsByTagName('Referee');
+      
+      if (refereeElements.length > 0) {
+        const referee = refereeElements[0];
+        
+        return {
+          Conclusion: referee.getAttribute('Conclusion') || '',
+          FederationCode: referee.getAttribute('FederationCode') || '',
+          FirstName: referee.getAttribute('FirstName') || '',
+          Gender: referee.getAttribute('Gender') || '',
+          LastName: referee.getAttribute('LastName') || '',
+          NoPortraitPhoto: referee.getAttribute('NoPortraitPhoto') || '',
+          NoReferee: referee.getAttribute('NoReferee') || refereeNo,
+          Signatures: referee.getAttribute('Signatures') || '',
+          Status: referee.getAttribute('Status') || '',
+          StrongPoints: referee.getAttribute('StrongPoints') || '',
+          TheoryTest: referee.getAttribute('TheoryTest') || '',
+          Type: referee.getAttribute('Type') || '',
+          WeakPoints: referee.getAttribute('WeakPoints') || '',
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error parsing individual referee:', error);
+      return null;
+    }
+  };
+
+  const parseOfficials = (xmlData: string): Official[] => {
+    try {
+      // Look for EventOfficialList in the XML response
+      const officialListMatch = xmlData.match(/<EventOfficialList[^>]*>(.*?)<\/EventOfficialList>/s);
+      if (!officialListMatch) {
+        console.log('No EventOfficialList found in XML');
+        return [];
+      }
+
+      const officialListXml = officialListMatch[1];
+      const officialMatches = officialListXml.match(/<EventOfficial[^>]*\/>/g) || [];
+      
+      return officialMatches.map(match => {
+        const parseAttribute = (attr: string) => {
+          const regex = new RegExp(`${attr}="([^"]*)"`, 'i');
+          const result = match.match(regex);
+          return result ? result[1] : '';
+        };
+
+        return {
+          FederationCode: parseAttribute('FederationCode'),
+          FirstName: parseAttribute('FirstName'),
+          Gender: parseAttribute('Gender'),
+          LastName: parseAttribute('LastName'),
+          NoPortraitPhoto: parseAttribute('NoPortraitPhoto'),
+          NoOfficial: parseAttribute('NoOfficial'),
+          Role: parseAttribute('Role'),
+          Signatures: parseAttribute('Signatures'),
+          Status: parseAttribute('Status'),
+          Type: parseAttribute('Type'),
+        };
+      });
+    } catch (error) {
+      console.error('Error parsing officials:', error);
+      return [];
+    }
+  };
+
+  const parseReferees = (xmlData: string): Referee[] => {
+    try {
+      // Look for EventRefereeList in the XML response
+      const refereeListMatch = xmlData.match(/<EventRefereeList[^>]*>(.*?)<\/EventRefereeList>/s);
+      if (!refereeListMatch) {
+        console.log('No EventRefereeList found in XML');
+        return [];
+      }
+
+      const refereeListXml = refereeListMatch[1];
+      const refereeMatches = refereeListXml.match(/<EventReferee[^>]*\/>/g) || [];
+      
+      return refereeMatches.map(match => {
+        const parseAttribute = (attr: string) => {
+          const regex = new RegExp(`${attr}="([^"]*)"`, 'i');
+          const result = match.match(regex);
+          return result ? result[1] : '';
+        };
+
+        return {
+          Conclusion: parseAttribute('Conclusion'),
+          FederationCode: parseAttribute('FederationCode'),
+          FirstName: parseAttribute('FirstName'),
+          Gender: parseAttribute('Gender'),
+          LastName: parseAttribute('LastName'),
+          NoPortraitPhoto: parseAttribute('NoPortraitPhoto'),
+          NoReferee: parseAttribute('NoReferee'),
+          Signatures: parseAttribute('Signatures'),
+          Status: parseAttribute('Status'),
+          StrongPoints: parseAttribute('StrongPoints'),
+          TheoryTest: parseAttribute('TheoryTest'),
+          Type: parseAttribute('Type'),
+          WeakPoints: parseAttribute('WeakPoints'),
+        };
+      });
+    } catch (error) {
+      console.error('Error parsing referees:', error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    if (eventNo) {
+      loadOfficialData();
+    }
+  }, [eventNo]);
 
   return (
     <AssignmentStatusProvider>
       <View style={styles.container}>
         {/* Navigation Header */}
         <NavigationHeader
-          title="Referee Mode"
-          subtitle="Match Assignment & Management"
+          title="Ref Tools"
+          subtitle={tournamentName || 'Tournament Officials'}
           showBackButton={true}
           onBackPress={handleGoBack}
           showStatusBar={false}
         />
 
-        {/* Under Construction Content */}
-        <View style={styles.content}>
-          <View style={styles.constructionContainer}>
-            <Text style={styles.constructionIcon}>🚧</Text>
-            <Text style={styles.constructionTitle}>Under Construction</Text>
-            <Text style={styles.constructionMessage}>
-              Referee mode is coming soon!{'\n'}
-              This will include match assignments, referee tools, and tournament management features.
+        {/* Menu Navigation */}
+        <View style={styles.menuContainer}>
+          <TouchableOpacity
+            style={[styles.menuItem, activeMenu === 'nominations' && styles.activeMenuItem]}
+            onPress={() => setActiveMenu('nominations')}
+          >
+            <Text style={[styles.menuText, activeMenu === 'nominations' && styles.activeMenuText]}>
+              Nominations
             </Text>
-            
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={handleGoBack}
-            >
-              <Text style={styles.backButtonText}>Go Back</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
+
+        {/* Content */}
+        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FF6B35" />
+              <Text style={styles.loadingText}>Loading official data...</Text>
+            </View>
+          )}
+
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={loadOfficialData}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!loading && !error && (
+            <View style={styles.dataContainer}>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Officials ({officials.length})</Text>
+                {officials.map((official, index) => (
+                  <View key={index} style={styles.officialCard}>
+                    <Text style={styles.officialName}>
+                      {official.FirstName} {official.LastName}
+                    </Text>
+                    <Text style={styles.officialDetails}>
+                      {official.FederationCode} • {official.Role} • {official.Type}
+                    </Text>
+                    <Text style={styles.officialStatus}>Status: {official.Status}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Referees ({referees.length})</Text>
+                {referees.map((referee, index) => (
+                  <View key={index} style={styles.officialCard}>
+                    <Text style={styles.officialName}>
+                      {referee.FirstName} {referee.LastName}
+                    </Text>
+                    <Text style={styles.officialDetails}>
+                      {referee.FederationCode} • {referee.Type}
+                    </Text>
+                    <Text style={styles.officialStatus}>Status: {referee.Status}</Text>
+                    {referee.StrongPoints && (
+                      <Text style={styles.officialExtra}>Strengths: {referee.StrongPoints}</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </ScrollView>
 
         {/* Bottom Tab Navigation */}
         <BottomTabNavigation 
@@ -56,7 +457,6 @@ const RefModeScreen: React.FC = () => {
             if (tab === 'details') {
               router.back();
             }
-            // Stay on current tab for 'monitor'
           }}
         />
       </View>
@@ -69,57 +469,121 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  constructionContainer: {
+  menuContainer: {
     backgroundColor: '#FFFFFF',
-    padding: 40,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-    maxWidth: 320,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
-  constructionIcon: {
-    fontSize: 64,
-    marginBottom: 24,
+  menuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  constructionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    marginBottom: 16,
+  activeMenuItem: {
+    backgroundColor: '#FF6B35',
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
     textAlign: 'center',
   },
-  constructionMessage: {
+  activeMenuText: {
+    color: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    marginTop: 16,
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
   },
-  backButton: {
-    backgroundColor: '#1B365D',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+  errorContainer: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
     borderRadius: 8,
-    shadowColor: '#1B365D',
+    padding: 16,
+    margin: 16,
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  retryButton: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dataContainer: {
+    gap: 16,
+  },
+  section: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  backButtonText: {
-    color: '#FFFFFF',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    marginBottom: 12,
+  },
+  officialCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6B35',
+  },
+  officialName: {
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    marginBottom: 4,
+  },
+  officialDetails: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  officialStatus: {
+    fontSize: 12,
+    color: '#059669',
     fontWeight: '600',
+  },
+  officialExtra: {
+    fontSize: 12,
+    color: '#7C3AED',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 

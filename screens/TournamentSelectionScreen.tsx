@@ -543,8 +543,8 @@ const TournamentSelectionScreen: React.FC = () => {
       version: 1,
       lastUpdated: new Date().toISOString(),
       code: 'BPTROME',
-      name: 'BPT Elite16 Rome LIVE',
-      title: 'BPT Elite16 Rome LIVE',
+      name: 'BPT Elite16 Rome',
+      title: 'BPT Elite16 Rome',
       gender: 'M' as any,
       tournamentType: 'BPT' as any,
       status: 'ACTIVE' as any,
@@ -561,8 +561,8 @@ const TournamentSelectionScreen: React.FC = () => {
       version: 1,
       lastUpdated: new Date().toISOString(),
       code: 'CEVVIENNA',
-      name: 'CEV European Championship Vienna LIVE',
-      title: 'CEV European Championship Vienna LIVE',
+      name: 'CEV European Championship Vienna',
+      title: 'CEV European Championship Vienna',
       gender: 'W' as any,
       tournamentType: 'CEV' as any,
       status: 'ACTIVE' as any,
@@ -579,8 +579,8 @@ const TournamentSelectionScreen: React.FC = () => {
       version: 1,
       lastUpdated: new Date().toISOString(),
       code: 'DEVBVB',
-      name: 'BPT Challenger Development Tournament',
-      title: 'BPT Challenger Development Tournament',
+      name: 'BPT Challenger Warsaw Open',
+      title: 'BPT Challenger Warsaw Open',
       gender: 'W' as any,
       tournamentType: 'BPT' as any,
       status: 'UPCOMING' as any,
@@ -588,8 +588,8 @@ const TournamentSelectionScreen: React.FC = () => {
         startDate: '2025-08-21T00:00:00',
         endDate: '2025-08-23T23:59:59'
       },
-      city: 'Development City',
-      country: 'DEV',
+      city: 'Warsaw',
+      country: 'Poland',
     },
     {
       id: 'dev_002',
@@ -597,8 +597,8 @@ const TournamentSelectionScreen: React.FC = () => {
       version: 1,
       lastUpdated: new Date().toISOString(),
       code: 'TESTBVB',
-      name: 'BPT Futures Test Tournament',
-      title: 'BPT Futures Test Tournament',
+      name: 'BPT Futures Hamburg Championship',
+      title: 'BPT Futures Hamburg Championship',
       gender: 'M' as any,
       tournamentType: 'BPT' as any,
       status: 'UPCOMING' as any,
@@ -606,8 +606,8 @@ const TournamentSelectionScreen: React.FC = () => {
         startDate: '2025-08-25T00:00:00',
         endDate: '2025-08-27T23:59:59'
       },
-      city: 'Test City',
-      country: 'TEST',
+      city: 'Hamburg',
+      country: 'Germany',
     }
   ];
   const [initialLoading, setInitialLoading] = useState(true);
@@ -691,14 +691,14 @@ const TournamentSelectionScreen: React.FC = () => {
         // Parse manually
         const visTournaments = parseXMLDirectly(response.xmlData);
         
-        // Combine with test tournaments for demo purposes
-        const allTournaments = [...testTournaments, ...visTournaments];
+        // TEMPORARY: Use only test tournaments for debug
+        const finalTournaments = testTournaments;
         
         // Show tournaments immediately with EventNo fallback
-        setTournaments(allTournaments);
+        setTournaments(finalTournaments);
         
         // Generate dynamic categories based on actual tournament data
-        const dynamicCategories = generateDynamicCategories(allTournaments);
+        const dynamicCategories = generateDynamicCategories(finalTournaments);
         setAvailableCategories(dynamicCategories);
         
         // Set default selection to first non-ALL category if BPT doesn't exist
@@ -707,7 +707,7 @@ const TournamentSelectionScreen: React.FC = () => {
         }
         
         // Enhance tournaments with real tournament numbers in background
-        enhanceTournamentsInBackground(allTournaments, visApi);
+        enhanceTournamentsInBackground(finalTournaments, visApi);
       } else {
         // Fallback to test tournaments if API fails
         setTournaments(testTournaments);
@@ -939,13 +939,13 @@ const TournamentSelectionScreen: React.FC = () => {
             // Parse manually
             const visTournaments = parseXMLDirectly(response.xmlData);
             
-            // Combine with test tournaments for demo purposes
-            const allTournaments = [...testTournaments, ...visTournaments];
+            // TEMPORARY: Use only test tournaments for debug
+            const finalTournaments = testTournaments;
           
-            setTournaments(allTournaments);
+            setTournaments(finalTournaments);
             
-            // Generate dynamic categories for fallback loading too
-            const dynamicCategories = generateDynamicCategories(allTournaments);
+            // Generate dynamic categories
+            const dynamicCategories = generateDynamicCategories(finalTournaments);
             setAvailableCategories(dynamicCategories);
             
             // Set default selection to first non-ALL category if BPT doesn't exist
@@ -1907,7 +1907,7 @@ const styles = StyleSheet.create({
   periodSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
     marginBottom: 12,
   },
   periodButton: {
@@ -2010,7 +2010,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   weekNavigatorContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
     marginBottom: 20,
   },
   weekNavigator: {
@@ -2068,7 +2068,7 @@ const styles = StyleSheet.create({
   },
   liveSectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: 16,
   },

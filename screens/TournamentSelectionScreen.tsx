@@ -1542,8 +1542,8 @@ const styles = StyleSheet.create({
   },
   stickyFilters: {
     backgroundColor: '#FFFFFF',
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 16,
+    paddingBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -1794,7 +1794,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   periodButton: {
     paddingHorizontal: 20,
@@ -1821,7 +1821,7 @@ const styles = StyleSheet.create({
   // Dropdown Styles
   dropdownContainer: {
     paddingHorizontal: 24,
-    marginBottom: 24,
+    marginBottom: 16,
     position: 'relative',
     zIndex: 1000,
   },
@@ -1897,7 +1897,7 @@ const styles = StyleSheet.create({
   },
   weekNavigatorContainer: {
     paddingHorizontal: 24,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   weekNavigator: {
     flexDirection: 'row',

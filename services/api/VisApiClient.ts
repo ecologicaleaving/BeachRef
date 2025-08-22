@@ -383,8 +383,8 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Use MINIMAL fields from docs example: "No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName"
-    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName RoundName Referee1Name Referee2Name';
+    // Include all federation code fields for flag display, plus match results
+    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -392,8 +392,9 @@ export class VisApiClient implements IVisApiClient {
 </Request>`;
     
     // Debug: Log the actual XML request to verify tournament filtering
-    // console.log('GetBeachMatchList XML request:', xmlRequest);
-    // console.log('Filtering by NoTournament:', request.tournamentNo);
+    console.log('🏐 GetBeachMatchList XML request:', xmlRequest);
+    console.log('🏐 Filtering by NoTournament:', request.tournamentNo);
+    console.log('🏐 Requested fields:', fields);
     
     return xmlRequest;
   }

@@ -349,7 +349,6 @@ const styles = StyleSheet.create({
   tournamentItem: {
     backgroundColor: '#FFFFFF',
     padding: 16,
-    marginBottom: 12,
     borderRadius: 12,
     shadowColor: '#1B365D',
     shadowOffset: {

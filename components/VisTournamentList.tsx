@@ -301,17 +301,15 @@ const VisTournamentList: React.FC<VisTournamentListProps> = ({
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={tournaments}
-        renderItem={renderTournament}
-        keyExtractor={(item) => (item.visNo || item.No || item.code || '').toString()}
-        style={styles.list}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={true}
-        initialNumToRender={20}
-        maxToRenderPerBatch={20}
-        windowSize={10}
-      />
+      <View style={styles.listContainer}>
+        {tournaments.map((tournament, index) => (
+          <VisTournamentItem 
+            key={tournament.visNo || tournament.No || tournament.code || index.toString()}
+            tournament={tournament} 
+            onPress={() => onTournamentPress(tournament)}
+          />
+        ))}
+      </View>
     </View>
   );
 };

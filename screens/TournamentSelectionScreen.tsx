@@ -1483,16 +1483,23 @@ const TournamentSelectionScreen: React.FC = () => {
           showRefreshButton={false}
         />
         
-        <View style={styles.contentWrapper}>
+        <ScrollView 
+          style={styles.scrollContainer}
+          stickyHeaderIndices={[1]} // Make the second element (filters) sticky
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Carousel Section - will disappear when scrolling */}
           {renderLiveTournaments()}
           
-          {renderTimePeriodSelector()}
-          
-          {renderDateNavigator()}
-          
-          {renderCategoryDropdown()}
+          {/* Sticky Filter Section */}
+          <View style={styles.stickyFilters}>
+            {renderTimePeriodSelector()}
+            {renderDateNavigator()}
+            {renderCategoryDropdown()}
+          </View>
         
-          <View style={styles.listWrapper}>
+          {/* Tournament List Section */}
+          <View style={styles.tournamentsSection}>
             <VisTournamentList
               tournaments={filteredTournaments}
               onTournamentPress={handleTournamentPress}
@@ -1505,21 +1512,21 @@ const TournamentSelectionScreen: React.FC = () => {
                 <ActivityIndicator size="small" color="#FF6B35" />
               </View>
             )}
+          
+            {filteredTournaments.length === 0 && !initialLoading && !tournamentLoading && (
+              <View style={styles.emptyState}>
+                <Clock size={48} color="#9CA3AF" strokeWidth={2} />
+                <Text style={styles.emptyText}>No tournaments found</Text>
+                <Text style={styles.emptySubtext}>
+                  {tournaments.length === 0 
+                    ? 'No tournaments available for any week'
+                    : 'No tournaments for this week and category'
+                  }
+                </Text>
+              </View>
+            )}
           </View>
-      
-          {filteredTournaments.length === 0 && !initialLoading && !tournamentLoading && (
-            <View style={styles.emptyState}>
-              <Clock size={48} color="#9CA3AF" strokeWidth={2} />
-              <Text style={styles.emptyText}>No tournaments found</Text>
-              <Text style={styles.emptySubtext}>
-                {tournaments.length === 0 
-                  ? 'No tournaments available for any week'
-                  : 'No tournaments for this week and category'
-                }
-              </Text>
-            </View>
-          )}
-        </View>
+        </ScrollView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -1529,6 +1536,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  stickyFilters: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 8,
+    paddingBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
+  },
+  tournamentsSection: {
+    flex: 1,
+    position: 'relative',
   },
   contentWrapper: {
     flex: 1,
@@ -1869,7 +1897,7 @@ const styles = StyleSheet.create({
   },
   weekNavigatorContainer: {
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   weekNavigator: {
     flexDirection: 'row',

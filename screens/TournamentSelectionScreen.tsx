@@ -697,6 +697,17 @@ const TournamentSelectionScreen: React.FC = () => {
         const gender = getValue('Gender');
         const type = getValue('Type'); // Extract tournament type from VIS API
         
+        // Check for any country/federation code fields from VIS API
+        console.log(`🌍 VIS API fields for "${name}":`, {
+          city, country, location, venue, continent,
+          countryCode: getValue('CountryCode'),
+          federationCode: getValue('FederationCode'),
+          nation: getValue('Nation'),
+          federation: getValue('Federation'),
+          iso: getValue('ISO'),
+          code: getValue('Code')
+        });
+        
         if (visNo && name) {
           const tournament: TournamentCore = {
             id: `tournament_${visNo}_${index}`,

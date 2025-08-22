@@ -41,8 +41,6 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     const location = tournament.location;
     const venue = (tournament as any).venue;
     
-    console.log(`🏐 Tournament "${tournament.name}": city=${city}, country=${country}, location=${location}, venue=${venue}`);
-    
     // Try different combinations
     if (city && country) {
       return `${city}, ${country}`;
@@ -63,13 +61,10 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     // Try to infer from tournament name if location data is missing
     const inferredLocation = inferLocationFromName(tournament.name || tournament.title);
     if (inferredLocation) {
-      console.log(`🌍 Using inferred location: ${inferredLocation}`);
       return inferredLocation;
     }
     
-    const fallback = city || country || location || venue || 'Location TBA';
-    console.log(`🌍 Using fallback location: ${fallback}`);
-    return fallback;
+    return city || country || location || venue || 'Location TBA';
   };
 
   // Helper function to extract location from tournament name
@@ -135,12 +130,10 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     
     for (const { pattern, location } of cityPatterns) {
       if (nameLower.includes(pattern)) {
-        console.log(`🌍 Found location pattern "${pattern}" in name "${name}" -> ${location}`);
         return location;
       }
     }
     
-    console.log(`🌍 No location pattern found for: "${name}"`);
     return null;
   };
 

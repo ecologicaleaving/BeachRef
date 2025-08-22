@@ -919,9 +919,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   refereeName: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#374151',
     flex: 1,
+    fontWeight: '500',
   },
   refereesLabel: {
     fontSize: 12,

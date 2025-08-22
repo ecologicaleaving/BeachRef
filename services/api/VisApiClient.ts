@@ -185,6 +185,11 @@ export class VisApiClient implements IVisApiClient {
           // console.log(`VIS API ${endpoint} success (attempt ${attempt})`);
         }
         
+        // Log raw XML response for debugging
+        if (endpoint === VisApiEndpoint.GET_EVENT_LIST) {
+          console.log('🏐 GetEventList Raw XML Response:', response);
+        }
+
         return {
           success: true,
           xmlData: response,
@@ -323,15 +328,21 @@ export class VisApiClient implements IVisApiClient {
     // Always filter for beach volleyball tournaments
     filterAttribs.push('HasBeachTournament="True"');
     
-    // Build fields list (space-separated)
-    const fields = request.fields?.join(' ') || 'Code Name StartDate EndDate No Country City';
+    // Build fields list (space-separated) - include CountryCode and venue fields
+    const fields = request.fields?.join(' ') || 'Code Name StartDate EndDate No Country City CountryCode Venue Location Address';
     
     // Create simple XML request (no SOAP envelope)
     const filterElement = filterAttribs.length > 0 
       ? `<Filter ${filterAttribs.join(' ')} />` 
       : '';
     
-    return `<Request Type="GetEventList" Fields="${fields}">${filterElement}</Request>`;
+    const xmlRequest = `<Request Type="GetEventList" Fields="${fields}">${filterElement}</Request>`;
+    
+    // Debug: Log the actual XML request
+    console.log('🏐 GetEventList XML request:', xmlRequest);
+    console.log('🏐 Requested fields:', fields);
+    
+    return xmlRequest;
   }
 
   /**

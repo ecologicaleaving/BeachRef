@@ -114,6 +114,12 @@ export interface TournamentCore extends VisEntity {
   /** Venue/location name */
   readonly location?: string;
   
+  /** Venue name */
+  readonly venue?: string;
+  
+  /** Venue address */
+  readonly address?: string;
+  
   /** Number of courts */
   readonly courts?: number;
   

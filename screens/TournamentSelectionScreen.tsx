@@ -19,6 +19,7 @@ import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import VisTournamentList from '../components/VisTournamentList';
 import { VisTournamentItem } from '../components/VisTournamentList';
+import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 interface TournamentCardProps {
@@ -354,7 +355,15 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       </Text>
       
       {getLocation() && (
-        <Text style={styles.tournamentLocation}>📍 {getLocation()}</Text>
+        <View style={styles.locationContainer}>
+          <Text style={styles.tournamentLocation}>📍 {getLocation()}</Text>
+          <FlagImage
+            federationCode={tournament.countryCode}
+            teamName={tournament.country}
+            size="medium"
+            style={styles.countryFlag}
+          />
+        </View>
       )}
       
       {getDateRange() && (
@@ -1709,10 +1718,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     lineHeight: 24,
   },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   tournamentLocation: {
     fontSize: 14,
     color: '#4A90A4',
-    marginBottom: 2,
+    flex: 1,
+  },
+  countryFlag: {
+    marginLeft: 8,
   },
   tournamentDate: {
     fontSize: 14,

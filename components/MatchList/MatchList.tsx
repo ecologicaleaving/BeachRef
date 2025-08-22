@@ -1206,9 +1206,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   refereeText: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#4B5563',
-    fontWeight: '500',
+    fontWeight: '600',
     flex: 1,
   },
   highlightedReferee: {

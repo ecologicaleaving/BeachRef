@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pre
 import { BeachMatch } from '../../types/match';
 import DateNavigator from '../DateNavigator/DateNavigator';
 import { colors } from '../../theme/tokens';
+import { FlagImage } from '../FlagImage';
 
 interface MatchListProps {
   matches: BeachMatch[];
@@ -422,24 +423,40 @@ export const MatchList: React.FC<MatchListProps> = ({
         
         <View style={styles.matchHeader}>
           <View style={styles.teamsColumn}>
-            <Text 
-              style={[
-                styles.teamName, 
-                teamAWon && styles.winnerTeamName
-              ]} 
-              numberOfLines={2}
-            >
-              {match.TeamAName || 'Team A'}
-            </Text>
-            <Text 
-              style={[
-                styles.teamName, 
-                teamBWon && styles.winnerTeamName
-              ]} 
-              numberOfLines={2}
-            >
-              {match.TeamBName || 'Team B'}
-            </Text>
+            <View style={styles.teamRow}>
+              <FlagImage
+                countryCode={match.TeamACountryCode}
+                teamName={match.TeamAName}
+                size="small"
+                style={styles.teamFlag}
+              />
+              <Text 
+                style={[
+                  styles.teamName, 
+                  teamAWon && styles.winnerTeamName
+                ]} 
+                numberOfLines={2}
+              >
+                {match.TeamAName || 'Team A'}
+              </Text>
+            </View>
+            <View style={styles.teamRow}>
+              <FlagImage
+                countryCode={match.TeamBCountryCode}
+                teamName={match.TeamBName}
+                size="small"
+                style={styles.teamFlag}
+              />
+              <Text 
+                style={[
+                  styles.teamName, 
+                  teamBWon && styles.winnerTeamName
+                ]} 
+                numberOfLines={2}
+              >
+                {match.TeamBName || 'Team B'}
+              </Text>
+            </View>
           </View>
           
           <View style={styles.scoreColumn}>
@@ -1100,13 +1117,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     minHeight: 50,
   },
+  teamRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  teamFlag: {
+    marginRight: 8,
+  },
   teamName: {
     fontSize: 15,
     fontWeight: '600',
     color: '#1B365D',
-    marginBottom: 6,
     lineHeight: 18,
     paddingVertical: 2,
+    flex: 1,
   },
   winnerTeamName: {
     fontWeight: 'bold',

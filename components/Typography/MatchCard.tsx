@@ -8,11 +8,14 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { Title, Heading, Subheading, EnhancedBodyText, EnhancedCaption } from './Text';
 import { colors, spacing } from '../../theme/tokens';
 import { getStatusColor } from '../../utils/colors';
+import { FlagImage } from '../FlagImage';
 
 export interface MatchInfo {
   matchId: string;
   teamA: string;
   teamB: string;
+  teamACountryCode?: string;
+  teamBCountryCode?: string;
   time: string;
   date: string;
   court: string;
@@ -102,14 +105,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
       {/* SECONDARY LEVEL: Team Names - Clear hierarchy with vs separator */}
       <View style={styles.teamsSection}>
-        <Heading 
-          emphasis={emphasis}
-          hierarchy="secondary"
-          color="textPrimary"
-          style={styles.teamName}
-        >
-          {match.teamA}
-        </Heading>
+        <View style={styles.teamContainer}>
+          <FlagImage
+            countryCode={match.teamACountryCode}
+            teamName={match.teamA}
+            size="medium"
+            style={styles.flagImage}
+          />
+          <Heading 
+            emphasis={emphasis}
+            hierarchy="secondary"
+            color="textPrimary"
+            style={styles.teamName}
+          >
+            {match.teamA}
+          </Heading>
+        </View>
         
         <EnhancedBodyText 
           emphasis="low"
@@ -119,14 +130,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           vs
         </EnhancedBodyText>
         
-        <Heading 
-          emphasis={emphasis}
-          hierarchy="secondary"
-          color="textPrimary"
-          style={styles.teamName}
-        >
-          {match.teamB}
-        </Heading>
+        <View style={styles.teamContainer}>
+          <FlagImage
+            countryCode={match.teamBCountryCode}
+            teamName={match.teamB}
+            size="medium"
+            style={styles.flagImage}
+          />
+          <Heading 
+            emphasis={emphasis}
+            hierarchy="secondary"
+            color="textPrimary"
+            style={styles.teamName}
+          >
+            {match.teamB}
+          </Heading>
+        </View>
       </View>
 
       {/* TERTIARY LEVEL: Time and Status Information */}
@@ -236,9 +255,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingHorizontal: spacing.sm,
   },
-  teamName: {
+  teamContainer: {
     flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  teamName: {
     textAlign: 'center',
+    flex: 1,
+  },
+  flagImage: {
+    marginRight: spacing.xs,
   },
   vsText: {
     flex: 0.5,

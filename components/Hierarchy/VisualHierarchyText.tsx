@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Text, StyleSheet, TextStyle } from 'react-native';
-import { designTokens } from '@/theme/tokens';
+import { designTokens } from '../../theme/tokens';
 import { InformationPriority, InformationClassifier } from './InformationArchitecture';
 
 interface VisualHierarchyTextProps {

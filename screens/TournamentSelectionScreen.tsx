@@ -1493,9 +1493,9 @@ const TournamentSelectionScreen: React.FC = () => {
           
           {/* Sticky Filter Section */}
           <View style={styles.stickyFilters}>
+            {renderCategoryDropdown()}
             {renderTimePeriodSelector()}
             {renderDateNavigator()}
-            {renderCategoryDropdown()}
           </View>
         
           {/* Tournament List Section */}

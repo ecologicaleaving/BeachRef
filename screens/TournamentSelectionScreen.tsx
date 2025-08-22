@@ -691,8 +691,8 @@ const TournamentSelectionScreen: React.FC = () => {
         // Parse manually
         const visTournaments = parseXMLDirectly(response.xmlData);
         
-        // TEMPORARY: Use only test tournaments for debug
-        const finalTournaments = testTournaments;
+        // Use VIS tournaments if available, otherwise test tournaments as fallback
+        const finalTournaments = visTournaments.length > 0 ? visTournaments : testTournaments;
         
         // Show tournaments immediately with EventNo fallback
         setTournaments(finalTournaments);
@@ -939,8 +939,8 @@ const TournamentSelectionScreen: React.FC = () => {
             // Parse manually
             const visTournaments = parseXMLDirectly(response.xmlData);
             
-            // TEMPORARY: Use only test tournaments for debug
-            const finalTournaments = testTournaments;
+            // Use VIS tournaments if available, otherwise test tournaments as fallback
+            const finalTournaments = visTournaments.length > 0 ? visTournaments : testTournaments;
           
             setTournaments(finalTournaments);
             

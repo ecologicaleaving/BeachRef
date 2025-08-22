@@ -37,15 +37,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   showRefereeFilter = true,
   customFilters,
 }) => {
-  // Debug logging for first match
-  React.useEffect(() => {
-    if (matches && matches.length > 0) {
-      console.log('🏐 MatchListV2 - First match data:', JSON.stringify(matches[0], null, 2));
-      console.log('🏐 Team1 countryCode:', matches[0]?.team1?.countryCode);
-      console.log('🏐 Team2 countryCode:', matches[0]?.team2?.countryCode);
-      console.log('🏐 Referee assignments:', matches[0]?.refereeAssignments);
-    }
-  }, [matches]);
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   

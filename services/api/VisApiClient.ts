@@ -402,10 +402,6 @@ export class VisApiClient implements IVisApiClient {
   <Filter ${filterAttribs.join(' ')} />
 </Request>`;
     
-    // Debug: Log the actual XML request to verify tournament filtering
-    console.log('🏐 GetBeachMatchList XML request:', xmlRequest);
-    console.log('🏐 Filtering by NoTournament:', request.tournamentNo);
-    console.log('🏐 Requested fields:', fields);
     
     return xmlRequest;
   }

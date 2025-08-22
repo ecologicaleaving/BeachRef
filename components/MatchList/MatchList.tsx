@@ -425,7 +425,7 @@ export const MatchList: React.FC<MatchListProps> = ({
           <View style={styles.teamsColumn}>
             <View style={styles.teamRow}>
               <FlagImage
-                countryCode={match.TeamACountryCode}
+                federationCode={match.TeamAFederationCode}
                 teamName={match.TeamAName}
                 size="small"
                 style={styles.teamFlag}
@@ -442,7 +442,7 @@ export const MatchList: React.FC<MatchListProps> = ({
             </View>
             <View style={styles.teamRow}>
               <FlagImage
-                countryCode={match.TeamBCountryCode}
+                federationCode={match.TeamBFederationCode}
                 teamName={match.TeamBName}
                 size="small"
                 style={styles.teamFlag}
@@ -496,24 +496,40 @@ export const MatchList: React.FC<MatchListProps> = ({
               <View style={styles.refereesSection}>
                 {match.Referee1Name && (
                   <View style={styles.refereeContainer}>
-                    <Text style={[
-                      styles.refereeText,
-                      selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
-                    ]}>
-                      R1: {match.Referee1Name}
-                      {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
-                    </Text>
+                    <View style={styles.refereeRow}>
+                      <FlagImage
+                        federationCode={match.Referee1FederationCode}
+                        teamName={match.Referee1Name}
+                        size="small"
+                        style={styles.refereeFlag}
+                      />
+                      <Text style={[
+                        styles.refereeText,
+                        selectedReferee?.Name === match.Referee1Name && styles.highlightedReferee
+                      ]}>
+                        R1: {match.Referee1Name}
+                        {match.Referee1FederationCode && ` (${match.Referee1FederationCode})`}
+                      </Text>
+                    </View>
                   </View>
                 )}
                 {match.Referee2Name && (
                   <View style={styles.refereeContainer}>
-                    <Text style={[
-                      styles.refereeText,
-                      selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
-                    ]}>
-                      R2: {match.Referee2Name}
-                      {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
-                    </Text>
+                    <View style={styles.refereeRow}>
+                      <FlagImage
+                        federationCode={match.Referee2FederationCode}
+                        teamName={match.Referee2Name}
+                        size="small"
+                        style={styles.refereeFlag}
+                      />
+                      <Text style={[
+                        styles.refereeText,
+                        selectedReferee?.Name === match.Referee2Name && styles.highlightedReferee
+                      ]}>
+                        R2: {match.Referee2Name}
+                        {match.Referee2FederationCode && ` (${match.Referee2FederationCode})`}
+                      </Text>
+                    </View>
                   </View>
                 )}
               </View>
@@ -1182,10 +1198,18 @@ const styles = StyleSheet.create({
   refereeContainer: {
     marginBottom: 2,
   },
+  refereeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  refereeFlag: {
+    marginRight: 6,
+  },
   refereeText: {
     fontSize: 12,
     color: '#4B5563',
     fontWeight: '500',
+    flex: 1,
   },
   highlightedReferee: {
     backgroundColor: '#FEF3C7',

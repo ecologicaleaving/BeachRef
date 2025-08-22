@@ -7,6 +7,8 @@ export interface BeachMatch {
   TeamBName?: string;
   TeamACountryCode?: string;
   TeamBCountryCode?: string;
+  TeamAFederationCode?: string;
+  TeamBFederationCode?: string;
   Court?: string;
   MatchPointsA?: string;
   MatchPointsB?: string;

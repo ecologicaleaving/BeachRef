@@ -9,6 +9,7 @@ import { getFlagConfig, validateFlagExists, FlagConfig } from '../services/FlagS
 
 export interface FlagImageProps {
   countryCode?: string;
+  federationCode?: string;
   teamName?: string;
   size?: 'small' | 'medium' | 'large';
   style?: ImageStyle;
@@ -31,6 +32,7 @@ const FLAG_SIZES = {
  */
 export const FlagImage: React.FC<FlagImageProps> = ({
   countryCode,
+  federationCode,
   teamName,
   size = 'small',
   style,
@@ -42,12 +44,15 @@ export const FlagImage: React.FC<FlagImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Use federationCode if provided, otherwise fallback to countryCode
+  const code = federationCode || countryCode;
+
   useEffect(() => {
     loadFlag();
-  }, [countryCode, fallbackCode]);
+  }, [code, fallbackCode]);
 
   const loadFlag = async () => {
-    if (!countryCode) {
+    if (!code) {
       setIsLoading(false);
       return;
     }
@@ -56,9 +61,9 @@ export const FlagImage: React.FC<FlagImageProps> = ({
     setHasError(false);
 
     try {
-      // Try primary country code
-      if (await validateFlagExists(countryCode)) {
-        const config = getFlagConfig(countryCode, teamName);
+      // Try primary code (federation or country)
+      if (await validateFlagExists(code)) {
+        const config = getFlagConfig(code, teamName);
         setFlagConfig(config);
         setIsLoading(false);
         return;
@@ -76,7 +81,7 @@ export const FlagImage: React.FC<FlagImageProps> = ({
       setFlagConfig(null);
       setHasError(true);
     } catch (error) {
-      console.warn('FlagImage: Error loading flag for', countryCode, error);
+      console.warn('FlagImage: Error loading flag for', code, error);
       setFlagConfig(null);
       setHasError(true);
     } finally {
@@ -85,7 +90,7 @@ export const FlagImage: React.FC<FlagImageProps> = ({
   };
 
   const handleImageError = () => {
-    console.warn('FlagImage: Failed to load flag image for', countryCode);
+    console.warn('FlagImage: Failed to load flag image for', code);
     setHasError(true);
     setFlagConfig(null);
   };

@@ -14,8 +14,8 @@ export interface MatchInfo {
   matchId: string;
   teamA: string;
   teamB: string;
-  teamACountryCode?: string;
-  teamBCountryCode?: string;
+  teamAFederationCode?: string;
+  teamBFederationCode?: string;
   time: string;
   date: string;
   court: string;
@@ -107,7 +107,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <View style={styles.teamsSection}>
         <View style={styles.teamContainer}>
           <FlagImage
-            countryCode={match.teamACountryCode}
+            federationCode={match.teamAFederationCode}
             teamName={match.teamA}
             size="medium"
             style={styles.flagImage}
@@ -132,7 +132,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         
         <View style={styles.teamContainer}>
           <FlagImage
-            countryCode={match.teamBCountryCode}
+            federationCode={match.teamBFederationCode}
             teamName={match.teamB}
             size="medium"
             style={styles.flagImage}

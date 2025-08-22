@@ -1764,19 +1764,19 @@ const styles = StyleSheet.create({
   // Period Selector Styles
   periodSelectorContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    paddingHorizontal: 0,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
     marginBottom: 12,
   },
   periodButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
-    marginHorizontal: 4,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#1B365D',
     backgroundColor: 'transparent',
-    minWidth: 70,
+    flex: 1,
+    marginHorizontal: 4,
     alignItems: 'center',
   },
   activePeriodButton: {
@@ -1868,7 +1868,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   weekNavigatorContainer: {
-    paddingHorizontal: 0,
+    paddingHorizontal: 24,
     marginBottom: 20,
   },
   weekNavigator: {
@@ -1876,6 +1876,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   calendarIconButton: {
     width: 40,

@@ -159,6 +159,41 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     );
   };
 
+  // Get status badge - show LIVE NOW for ongoing tournaments
+  const getStatusBadge = () => {
+    const startDate = tournament.dates?.startDate;
+    const endDate = tournament.dates?.endDate;
+    
+    if (!startDate || !endDate) {
+      return (
+        <View style={styles.statusBadge}>
+          <Text style={styles.statusText}>ACTIVE</Text>
+        </View>
+      );
+    }
+    
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Check if tournament is currently live
+    if (start <= now && now <= end) {
+      return (
+        <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
+          <View style={styles.liveIndicatorPulse} />
+          <Text style={[styles.statusText, styles.liveStatusText]}>LIVE NOW</Text>
+        </View>
+      );
+    }
+    
+    // For non-live tournaments, show ACTIVE
+    return (
+      <View style={styles.statusBadge}>
+        <Text style={styles.statusText}>ACTIVE</Text>
+      </View>
+    );
+  };
+
   const getTournamentName = () => {
     // VIS API provides Name field
     return tournament.name || `Tournament ${tournament.visNo || tournament.No}`;
@@ -175,9 +210,7 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
           {getGenderBadge()}
         </View>
         <View style={styles.tournamentHeaderRight}>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>ACTIVE</Text>
-          </View>
+          {getStatusBadge()}
         </View>
       </View>
       
@@ -343,6 +376,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+  },
+  liveBadgeStyle: {
+    backgroundColor: '#FFFFFF', // White background
+    borderWidth: 1,
+    borderColor: '#0F4C75', // Blue border
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  liveIndicatorPulse: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF4444',
+    marginRight: 6,
+  },
+  liveStatusText: {
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: '#0F4C75', // Blue text
   },
   tournamentName: {
     fontSize: 18,

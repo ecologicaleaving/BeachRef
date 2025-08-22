@@ -1342,15 +1342,12 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  // Render LIVE tournaments section
+  // Render LIVE tournaments section (without header)
   const renderLiveTournaments = () => {
     if (liveTournaments.length === 0) return null;
 
     return (
       <View style={styles.liveTournamentsSection}>
-        <View style={styles.liveSectionHeader}>
-          <Text style={styles.liveSectionTitle}>🔴 LIVE NOW</Text>
-        </View>
         {liveTournaments.length === 1 ? (
           <VisTournamentItem 
             tournament={liveTournaments[0]}
@@ -1926,17 +1923,6 @@ const styles = StyleSheet.create({
   liveTournamentsSection: {
     paddingHorizontal: 24,
     marginBottom: 16,
-  },
-  liveSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  liveSectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.success,
   },
   liveCarousel: {
     marginHorizontal: -12, // Offset the padding to allow edge-to-edge scrolling

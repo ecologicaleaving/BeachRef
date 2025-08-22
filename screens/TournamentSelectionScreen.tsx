@@ -1964,6 +1964,7 @@ const styles = StyleSheet.create({
   // LIVE tournaments section styles
   liveTournamentsSection: {
     paddingHorizontal: 24,
+    marginTop: 16,
     marginBottom: 16,
   },
   liveCarousel: {

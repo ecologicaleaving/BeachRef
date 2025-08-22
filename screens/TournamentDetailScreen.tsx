@@ -658,25 +658,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-            {activeTab === 'schedule' && (
-              <TouchableOpacity
-                style={styles.refreshMatchesButton}
-                onPress={async () => {
-                  try {
-                    const { CacheService } = await import('../services/CacheService');
-                    await CacheService.invalidateMatchCache(tournament.visNo);
-                  } catch (error) {
-                  }
-                  setMatches(null);
-                  loadMatches();
-                }}
-                disabled={matchesLoading}
-              >
-                <Text style={styles.refreshMatchesButtonText}>
-                  {matchesLoading ? '🔄' : '🔄'}
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
 
           <View style={styles.tabContent}>
@@ -902,20 +883,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 2,
     flex: 1,
-  },
-  refreshMatchesButton: {
-    backgroundColor: '#FF6B35',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 12,
-  },
-  refreshMatchesButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   tabHeader: {
     flex: 1,

@@ -159,7 +159,7 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     );
   };
 
-  // Get status badge - show LIVE NOW for ongoing tournaments
+  // Get status badge - show LIVE NOW for ongoing tournaments, COMPLETED for past tournaments
   const getStatusBadge = () => {
     const startDate = tournament.dates?.startDate;
     const endDate = tournament.dates?.endDate;
@@ -176,6 +176,19 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     const start = new Date(startDate);
     const end = new Date(endDate);
     
+    // Add one day to end date to check if tournament is truly completed
+    const endPlusOne = new Date(end);
+    endPlusOne.setDate(end.getDate() + 1);
+    
+    // Check if tournament is completed (end date + 1 day has passed)
+    if (now >= endPlusOne) {
+      return (
+        <View style={[styles.statusBadge, styles.completedBadgeStyle]}>
+          <Text style={[styles.statusText, styles.completedStatusText]}>COMPLETED</Text>
+        </View>
+      );
+    }
+    
     // Check if tournament is currently live
     if (start <= now && now <= end) {
       return (
@@ -186,7 +199,7 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
       );
     }
     
-    // For non-live tournaments, show ACTIVE
+    // For future tournaments, show ACTIVE
     return (
       <View style={styles.statusBadge}>
         <Text style={styles.statusText}>ACTIVE</Text>
@@ -394,6 +407,16 @@ const styles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 0.3,
     color: '#0F4C75', // Blue text
+  },
+  completedBadgeStyle: {
+    backgroundColor: '#F3F4F6', // Light gray background
+    borderWidth: 1,
+    borderColor: '#6B7280', // Gray border
+  },
+  completedStatusText: {
+    fontSize: 10,
+    letterSpacing: 0.5,
+    color: '#6B7280', // Gray text
   },
   tournamentName: {
     fontSize: 18,

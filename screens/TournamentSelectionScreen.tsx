@@ -74,14 +74,86 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     // Try different combinations of available location data
     const city = tournament.city;
     const country = tournament.country;
+    const location = (tournament as any).location;
+    const venue = (tournament as any).venue;
+    const continent = (tournament as any).continent;
     
+    // Prefer city, country combination
     if (city && country) {
       return `${city}, ${country}`;
     }
     
-    // Only return location if we have explicit location data, city, or country
-    // Don't show fallback text or try to infer from title
-    return tournament.location || city || country || null;
+    // Try other combinations
+    if (location && country) {
+      return `${location}, ${country}`;
+    }
+    
+    if (venue && city) {
+      return `${venue}, ${city}`;
+    }
+    
+    if (venue && country) {
+      return `${venue}, ${country}`;
+    }
+    
+    // Single field options
+    if (location) return location;
+    if (city) return city;
+    if (country) return country;
+    if (venue) return venue;
+    if (continent) return continent;
+    
+    // Fallback: try to extract from tournament name
+    return inferLocationFromName(tournament.name || tournament.title) || null;
+  };
+  
+  // Helper function to extract location from tournament name
+  const inferLocationFromName = (name?: string): string | null => {
+    if (!name) return null;
+    
+    const nameLower = name.toLowerCase();
+    
+    // Common city patterns
+    const cityPatterns = [
+      { pattern: 'doha', location: 'Doha, Qatar' },
+      { pattern: 'dubai', location: 'Dubai, UAE' },
+      { pattern: 'rome', location: 'Rome, Italy' },
+      { pattern: 'paris', location: 'Paris, France' },
+      { pattern: 'madrid', location: 'Madrid, Spain' },
+      { pattern: 'vienna', location: 'Vienna, Austria' },
+      { pattern: 'hamburg', location: 'Hamburg, Germany' },
+      { pattern: 'berlin', location: 'Berlin, Germany' },
+      { pattern: 'munich', location: 'Munich, Germany' },
+      { pattern: 'ostrava', location: 'Ostrava, Czech Republic' },
+      { pattern: 'espinho', location: 'Espinho, Portugal' },
+      { pattern: 'gstaad', location: 'Gstaad, Switzerland' },
+      { pattern: 'brasilia', location: 'Brasília, Brazil' },
+      { pattern: 'brasília', location: 'Brasília, Brazil' },
+      { pattern: 'rio', location: 'Rio de Janeiro, Brazil' },
+      { pattern: 'sao paulo', location: 'São Paulo, Brazil' },
+      { pattern: 'cancun', location: 'Cancún, Mexico' },
+      { pattern: 'acapulco', location: 'Acapulco, Mexico' },
+      { pattern: 'singapore', location: 'Singapore' },
+      { pattern: 'tokyo', location: 'Tokyo, Japan' },
+      { pattern: 'osaka', location: 'Osaka, Japan' },
+      { pattern: 'sydney', location: 'Sydney, Australia' },
+      { pattern: 'gold coast', location: 'Gold Coast, Australia' },
+      { pattern: 'vancouver', location: 'Vancouver, Canada' },
+      { pattern: 'toronto', location: 'Toronto, Canada' },
+      { pattern: 'montreal', location: 'Montreal, Canada' },
+      { pattern: 'manhattan beach', location: 'Manhattan Beach, USA' },
+      { pattern: 'hermosa beach', location: 'Hermosa Beach, USA' },
+      { pattern: 'huntington beach', location: 'Huntington Beach, USA' },
+      { pattern: 'long beach', location: 'Long Beach, USA' },
+    ];
+    
+    for (const { pattern, location } of cityPatterns) {
+      if (nameLower.includes(pattern)) {
+        return location;
+      }
+    }
+    
+    return null;
   };
 
   // Compact date formatting functions (moved from TournamentDateExtractor)
@@ -185,24 +257,30 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     return null;
   };
 
-  // Get tournament category/type badge
-  const getCategoryBadge = () => {
-    const category = tournament.tournamentType;
-    if (!category) return null;
+  // Get gender badge (like in match cards)
+  const getGenderBadge = () => {
+    const gender = tournament.gender;
+    if (!gender) return null;
     
-    // Color coding for different tournament types
-    const getBadgeColor = (cat: string) => {
-      const catLower = cat.toLowerCase();
-      if (catLower.includes('fivb') || catLower.includes('world')) return '#FF6B35';
-      if (catLower.includes('cev') || catLower.includes('europe')) return '#4A90A4';
-      if (catLower.includes('bpt') || catLower.includes('elite')) return '#2E8B57';
-      if (catLower.includes('national')) return '#6B7280';
-      return '#9CA3AF';
-    };
+    let genderText = '';
+    let genderStyle = styles.mixedSymbol;
+    
+    if (gender === 'M') {
+      genderText = '♂';
+      genderStyle = styles.menSymbol;
+    } else if (gender === 'W') {
+      genderText = '♀';
+      genderStyle = styles.womenSymbol;
+    } else {
+      genderText = '⚭'; // Mixed symbol
+      genderStyle = styles.mixedSymbol;
+    }
     
     return (
-      <View style={[styles.categoryBadge, { backgroundColor: getBadgeColor(category) }]}>
-        <Text style={styles.categoryBadgeText}>{category.toUpperCase()}</Text>
+      <View style={styles.genderBadge}>
+        <Text style={[styles.genderSymbol, genderStyle]}>
+          {genderText}
+        </Text>
       </View>
     );
   };
@@ -266,7 +344,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     <TouchableOpacity style={styles.tournamentCard} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.cardHeader}>
         {getStatusIndicator()}
-        {getCategoryBadge()}
+        {getGenderBadge()}
       </View>
       
       <Text style={styles.tournamentName}>
@@ -280,11 +358,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
       )}
-
-      {/* Enhanced information from BeachTournament/Events data */}
-      {getPrizeInfo()}
-      {getParticipantsInfo()}
-      {getVenueInfo()}
       
       <View style={styles.cardFooter}>
         <TouchableOpacity style={styles.openButton} onPress={onPress}>
@@ -309,13 +382,22 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
     // Try different combinations of available location data
     const city = tournament.city;
     const country = tournament.country;
+    const location = (tournament as any).location;
+    const venue = (tournament as any).venue;
     
     if (city && country) {
       return `${city}, ${country}`;
     }
     
-    // Only return location if we have explicit location data, city, or country
-    return tournament.location || city || country || null;
+    if (location && country) {
+      return `${location}, ${country}`;
+    }
+    
+    if (venue && city) {
+      return `${venue}, ${city}`;
+    }
+    
+    return location || city || country || venue || null;
   };
 
   // Get category badge for live tournaments
@@ -387,13 +469,22 @@ const WeekTournamentCard: React.FC<WeekTournamentCardProps> = ({ tournament, onP
   const getLocation = () => {
     const city = tournament.city;
     const country = tournament.country;
+    const location = (tournament as any).location;
+    const venue = (tournament as any).venue;
     
     if (city && country) {
       return `${city}, ${country}`;
     }
     
-    // Only return location if we have explicit location data, city, or country
-    return tournament.location || city || country || null;
+    if (location && country) {
+      return `${location}, ${country}`;
+    }
+    
+    if (venue && city) {
+      return `${venue}, ${city}`;
+    }
+    
+    return location || city || country || venue || null;
   };
 
   const getStatus = () => {
@@ -553,7 +644,14 @@ const TournamentSelectionScreen: React.FC = () => {
         // Show tournaments immediately with EventNo fallback
         setTournaments(visTournaments);
         
-        setAvailableCategories(['ALL', 'BPT']);
+        // Generate dynamic categories based on actual tournament data
+        const dynamicCategories = generateDynamicCategories(visTournaments);
+        setAvailableCategories(dynamicCategories);
+        
+        // Set default selection to first non-ALL category if BPT doesn't exist
+        if (!dynamicCategories.includes('BPT') && dynamicCategories.length > 1) {
+          setSelectedType(dynamicCategories[1]); // First category after ALL
+        }
         
         // Enhance tournaments with real tournament numbers in background
         enhanceTournamentsInBackground(visTournaments, visApi);
@@ -617,12 +715,36 @@ const TournamentSelectionScreen: React.FC = () => {
         }
         
         // Final state update when all done
-        setTournaments([...tournaments]);
+        const updatedTournaments = [...tournaments];
+        setTournaments(updatedTournaments);
+        
+        // Update categories after enhancement (in case new types were discovered)
+        const updatedCategories = generateDynamicCategories(updatedTournaments);
+        setAvailableCategories(updatedCategories);
         
       } catch (error) {
         // Silent error handling for background process
       }
     }, 100); // Small delay to let UI render first
+  };
+
+  // Map VIS tournament type to our categories
+  const mapTournamentType = (visType?: string): string => {
+    if (!visType) return 'LOCAL';
+    
+    const type = visType.toUpperCase();
+    if (type.includes('FIVB')) return 'FIVB';
+    if (type.includes('BPT') || type.includes('BEACH PRO TOUR')) {
+      // Further classify BPT tournaments
+      if (type.includes('ELITE') || type.includes('ELITE16')) return 'BPT ELITE';
+      if (type.includes('CHALLENGER') || type.includes('CHALLENGE')) return 'BPT CHALLENGER';
+      if (type.includes('FUTURES')) return 'BPT FUTURES';
+      return 'BPT';
+    }
+    if (type.includes('CEV')) return 'CEV';
+    if (type.includes('NORCECA')) return 'NORCECA';
+    
+    return 'LOCAL';
   };
 
   // Simple XML parser for tournaments
@@ -649,7 +771,11 @@ const TournamentSelectionScreen: React.FC = () => {
         const endDate = getValue('EndDate');
         const city = getValue('City');
         const country = getValue('Country');
+        const location = getValue('Location');
+        const venue = getValue('Venue');
+        const continent = getValue('Continent');
         const gender = getValue('Gender');
+        const type = getValue('Type'); // Extract tournament type from VIS API
         
         if (visNo && name) {
           const tournament: TournamentCore = {
@@ -659,16 +785,21 @@ const TournamentSelectionScreen: React.FC = () => {
             lastUpdated: new Date().toISOString(),
             code: code || visNo,
             name,
+            title: name, // Use name as title for consistency
             gender: gender === 'W' ? 'W' as any : gender === 'M' ? 'M' as any : 'MIXED' as any,
-            tournamentType: 'BPT' as any,
+            tournamentType: mapTournamentType(type) as any,
             status: 'ACTIVE' as any,
             dates: {
               startDate: startDate || new Date().toISOString(),
               endDate: endDate || startDate || new Date().toISOString()
             },
             city: city || undefined,
-            country: country || undefined
-          };
+            country: country || undefined,
+            location: location || undefined,
+            // Add extra fields for enhanced location display
+            ...(venue && { venue }),
+            ...(continent && { continent })
+          } as any;
           
           tournaments.push(tournament);
         }
@@ -753,7 +884,14 @@ const TournamentSelectionScreen: React.FC = () => {
           
             setTournaments(visTournaments);
             
-            setAvailableCategories(['ALL', 'BPT']);
+            // Generate dynamic categories for fallback loading too
+            const dynamicCategories = generateDynamicCategories(visTournaments);
+            setAvailableCategories(dynamicCategories);
+            
+            // Set default selection to first non-ALL category if BPT doesn't exist
+            if (!dynamicCategories.includes('BPT') && dynamicCategories.length > 1) {
+              setSelectedType(dynamicCategories[1]); // First category after ALL
+            }
           } catch (parseError) {
             // Silent error handling for parsing
           }
@@ -844,38 +982,118 @@ const TournamentSelectionScreen: React.FC = () => {
     });
   };
 
+  // Generate dynamic categories based on actual tournament data
+  const generateDynamicCategories = (tournaments: TournamentCore[]): string[] => {
+    const categories = new Set<string>(['ALL']); // Always include ALL
+    
+    tournaments.forEach(tournament => {
+      // Use VIS API tournamentType if available
+      if (tournament.tournamentType) {
+        categories.add(tournament.tournamentType.toUpperCase());
+      } else {
+        // Fallback: Infer type from name
+        const name = (tournament.name || tournament.title || '').toUpperCase();
+        
+        if (name.includes('FIVB') || name.includes('WORLD CHAMPIONSHIP') || name.includes('WORLD TOUR')) {
+          categories.add('FIVB');
+        } else if (name.includes('BPT') || name.includes('BEACH PRO TOUR')) {
+          // Check for specific BPT subcategories first
+          if (name.includes('ELITE') || name.includes('ELITE16')) {
+            categories.add('BPT ELITE');
+          } else if (name.includes('CHALLENGER') || name.includes('CHALLENGE')) {
+            categories.add('BPT CHALLENGER');
+          } else if (name.includes('FUTURES')) {
+            categories.add('BPT FUTURES');
+          } else {
+            categories.add('BPT');
+          }
+        } else if (name.includes('CEV') || name.includes('EUROPEAN') || name.includes('CONFEDERATION')) {
+          categories.add('CEV');
+        } else if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN') || name.includes('CARIBBEAN')) {
+          categories.add('NORCECA');
+        } else {
+          categories.add('LOCAL');
+        }
+      }
+    });
+    
+    // Sort categories by importance - prioritize the requested categories
+    const categoryOrder = ['ALL', 'FIVB', 'BPT ELITE', 'BPT CHALLENGER', 'BPT FUTURES', 'BPT', 'CEV', 'NORCECA', 'LOCAL'];
+    const sortedCategories = Array.from(categories).sort((a, b) => {
+      const aIndex = categoryOrder.indexOf(a);
+      const bIndex = categoryOrder.indexOf(b);
+      
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      } else if (aIndex !== -1) {
+        return -1;
+      } else if (bIndex !== -1) {
+        return 1;
+      } else {
+        return a.localeCompare(b);
+      }
+    });
+    
+    return sortedCategories;
+  };
+
   // Match tournament to category with flexible patterns
   const matchesTournamentCategory = (tournament: TournamentCore, category: string): boolean => {
     if (category === 'ALL') return true;
     
+    // Primary matching: Use VIS API tournamentType field (most reliable)
+    if (tournament.tournamentType) {
+      const tournamentType = tournament.tournamentType.toUpperCase();
+      
+      // Direct type matching
+      if (tournamentType === category) return true;
+      
+      // Handle category variations
+      switch (category) {
+        case 'FIVB':
+          return tournamentType === 'FIVB';
+        case 'BPT ELITE':
+          return tournamentType === 'BPT ELITE' || (tournamentType === 'BPT' && (tournament.name || '').toUpperCase().includes('ELITE'));
+        case 'BPT CHALLENGER':
+          return tournamentType === 'BPT CHALLENGER' || (tournamentType === 'BPT' && ((tournament.name || '').toUpperCase().includes('CHALLENGER') || (tournament.name || '').toUpperCase().includes('CHALLENGE')));
+        case 'BPT FUTURES':
+          return tournamentType === 'BPT FUTURES' || (tournamentType === 'BPT' && (tournament.name || '').toUpperCase().includes('FUTURES'));
+        case 'BPT':
+          return tournamentType === 'BPT';
+        case 'CEV':
+          return tournamentType === 'CEV';
+        case 'NORCECA':
+          return tournamentType === 'NORCECA';
+        case 'LOCAL':
+          return tournamentType === 'LOCAL';
+        default:
+          if (tournamentType === category) return true;
+      }
+    }
+    
+    // Fallback: Pattern-based matching in tournament name/title (for data without tournamentType)
     const name = (tournament.name || tournament.title || '').toUpperCase();
-    const type = (tournament.tournamentType || '').toUpperCase();
-    const allText = `${name} ${type}`.trim();
+    const allText = name.trim();
     
-    // Direct field matching
-    if (type.includes(category)) return true;
-    
-    // Pattern-based matching for common categories
     switch (category) {
-      case 'BPT':
-        return allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL') ||
-               allText.includes('ELITE') || allText.includes('CHALLENGE') || allText.includes('FUTURES');
-      case 'BPT FUTURES':
-        return allText.includes('BPT FUTURES') || allText.includes('FUTURES');
+      case 'FIVB':
+        return allText.includes('FIVB') || allText.includes('WORLD CHAMPIONSHIP') || allText.includes('WORLD TOUR');
       case 'BPT ELITE':
-        return allText.includes('BPT ELITE') || allText.includes('ELITE');
-      case 'BPT CHALLENGE':
-        return allText.includes('BPT CHALLENGE') || allText.includes('CHALLENGE');
+        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR')) && (allText.includes('ELITE') || allText.includes('ELITE16'));
+      case 'BPT CHALLENGER':
+        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR')) && (allText.includes('CHALLENGER') || allText.includes('CHALLENGE'));
+      case 'BPT FUTURES':
+        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR')) && allText.includes('FUTURES');
+      case 'BPT':
+        return (allText.includes('BPT') || allText.includes('BEACH PRO TOUR') || allText.includes('BEACH PROFESSIONAL')) &&
+               !allText.includes('ELITE') && !allText.includes('CHALLENGER') && !allText.includes('CHALLENGE') && !allText.includes('FUTURES');
       case 'CEV':
         return allText.includes('CEV') || allText.includes('EUROPEAN') || allText.includes('CONFEDERATION');
-      case 'FIVB':
-        return allText.includes('FIVB') || allText.includes('WORLD') || allText.includes('INTERNATIONAL');
-      case 'NATIONAL':
-        return allText.includes('NATIONAL') || allText.includes('DOMESTIC') || allText.includes('CHAMPIONSHIP');
-      case 'YOUTH':
-        return allText.includes('YOUTH') || allText.includes('U21') || allText.includes('U19') || allText.includes('JUNIOR');
-      case 'QUALIFICATION':
-        return allText.includes('QUALIFICATION') || allText.includes('QUALIFIER') || allText.includes('QUALIFYING');
+      case 'NORCECA':
+        return allText.includes('NORCECA') || allText.includes('NORTH AMERICAN') || allText.includes('CENTRAL AMERICAN') || allText.includes('CARIBBEAN');
+      case 'LOCAL':
+        return allText.includes('NATIONAL') || allText.includes('DOMESTIC') || allText.includes('CHAMPIONSHIP') ||
+               allText.includes('REGIONAL') || allText.includes('LOCAL');
       default:
         // For any other category, check if it appears in the tournament text
         return allText.includes(category);
@@ -1027,18 +1245,21 @@ const TournamentSelectionScreen: React.FC = () => {
       const name = (tournament.name || tournament.title || '').toUpperCase();
       
       // BPT subcategories (check specific ones first, then general BPT)
-      if (name.includes('BPT FUTURES') || name.includes('FUTURES')) {
+      if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && name.includes('FUTURES')) {
         categorySet.add('BPT FUTURES');
-      } else if (name.includes('BPT ELITE') || name.includes('ELITE')) {
+      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('ELITE') || name.includes('ELITE16'))) {
         categorySet.add('BPT ELITE');
-      } else if (name.includes('BPT CHALLENGE') || name.includes('CHALLENGE')) {
-        categorySet.add('BPT CHALLENGE');
+      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('CHALLENGER') || name.includes('CHALLENGE'))) {
+        categorySet.add('BPT CHALLENGER');
       } else if (name.includes('BPT') || name.includes('BEACH PRO TOUR')) {
         categorySet.add('BPT');
       }
       
       if (name.includes('CEV') || name.includes('EUROPEAN')) {
         categorySet.add('CEV');
+      }
+      if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN') || name.includes('CARIBBEAN')) {
+        categorySet.add('NORCECA');
       }
       if (name.includes('FIVB') || name.includes('WORLD')) {
         categorySet.add('FIVB');
@@ -1052,14 +1273,20 @@ const TournamentSelectionScreen: React.FC = () => {
       if (name.includes('QUALIFICATION') || name.includes('QUALIFIER')) {
         categorySet.add('QUALIFICATION');
       }
+      // Default to LOCAL if no specific category was added
+      if (categorySet.size === 1) { // Only 'ALL' was added
+        categorySet.add('LOCAL');
+      }
     });
     
     const categories = Array.from(categorySet).sort((a, b) => {
-      // Prioritize common categories with BPT subcategories
+      // Prioritize the requested categories: BPT CHALLENGER, BPT FUTURES, BPT ELITE, CEV, NORCECA, LOCAL
       const priority = [
         'ALL', 
-        'BPT', 'BPT ELITE', 'BPT CHALLENGE', 'BPT FUTURES',
-        'CEV', 'FIVB', 'NATIONAL', 'YOUTH', 'QUALIFICATION'
+        'FIVB',
+        'BPT ELITE', 'BPT CHALLENGER', 'BPT FUTURES', 'BPT',
+        'CEV', 'NORCECA', 'LOCAL',
+        'NATIONAL', 'YOUTH', 'QUALIFICATION'
       ];
       const aIndex = priority.indexOf(a);
       const bIndex = priority.indexOf(b);
@@ -1492,18 +1719,29 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
   },
-  // Enhanced tournament card styles
-  categoryBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
+  // Gender badge styles (like in match cards)
+  genderBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  categoryBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
+  genderSymbol: {
+    fontSize: 14,
     fontWeight: 'bold',
-    letterSpacing: 0.3,
+  },
+  menSymbol: {
+    color: '#3B82F6', // Blue for men
+  },
+  womenSymbol: {
+    color: '#EC4899', // Pink for women
+  },
+  mixedSymbol: {
+    color: '#8B5CF6', // Purple for mixed
   },
   tournamentPrize: {
     fontSize: 13,

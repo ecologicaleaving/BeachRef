@@ -1542,8 +1542,6 @@ const styles = StyleSheet.create({
   },
   stickyFilters: {
     backgroundColor: '#FFFFFF',
-    paddingTop: 16,
-    paddingBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

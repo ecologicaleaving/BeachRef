@@ -1903,8 +1903,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
-    marginBottom: 16,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 8,

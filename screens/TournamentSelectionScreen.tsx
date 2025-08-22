@@ -441,7 +441,7 @@ const LiveTournamentCard: React.FC<LiveTournamentCardProps> = ({ tournament, onP
       <View style={styles.liveCardHeader}>
         <View style={styles.liveBadge}>
           <View style={styles.liveIndicatorPulse} />
-          <Text style={styles.liveBadgeText}>🔴 IN CORSO</Text>
+          <Text style={styles.liveBadgeText}>🔴 LIVE</Text>
         </View>
         {getCategoryBadge()}
       </View>
@@ -547,7 +547,7 @@ const TournamentSelectionScreen: React.FC = () => {
       name: 'BPT Elite16 Rome',
       title: 'BPT Elite16 Rome',
       gender: 'M' as any,
-      tournamentType: 'BPT' as any,
+      tournamentType: 'BPT ELITE' as any,
       status: 'ACTIVE' as any,
       dates: {
         startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Started yesterday
@@ -583,7 +583,7 @@ const TournamentSelectionScreen: React.FC = () => {
       name: 'BPT Challenger Warsaw Open',
       title: 'BPT Challenger Warsaw Open',
       gender: 'W' as any,
-      tournamentType: 'BPT' as any,
+      tournamentType: 'BPT CHALLENGER' as any,
       status: 'UPCOMING' as any,
       dates: {
         startDate: '2025-08-21T00:00:00',
@@ -601,7 +601,7 @@ const TournamentSelectionScreen: React.FC = () => {
       name: 'BPT Futures Hamburg Championship',
       title: 'BPT Futures Hamburg Championship',
       gender: 'M' as any,
-      tournamentType: 'BPT' as any,
+      tournamentType: 'BPT FUTURES' as any,
       status: 'UPCOMING' as any,
       dates: {
         startDate: '2025-08-25T00:00:00',
@@ -787,13 +787,37 @@ const TournamentSelectionScreen: React.FC = () => {
   };
 
   // Map VIS tournament type to our categories
-  const mapTournamentType = (visType?: string): string => {
-    if (!visType) return 'LOCAL';
+  const mapTournamentType = (visType?: string, tournamentName?: string): string => {
+    // Check tournament name for category indicators if visType is not helpful
+    const name = (tournamentName || '').toUpperCase();
+    const type = (visType || '').toUpperCase();
     
-    const type = visType.toUpperCase();
+    // Check name first for BPT categories
+    if (name.includes('BPT') || name.includes('BEACH PRO TOUR') || name.includes('ELITE16')) {
+      if (name.includes('ELITE') || name.includes('ELITE16')) return 'BPT ELITE';
+      if (name.includes('CHALLENGER') || name.includes('CHALLENGE')) return 'BPT CHALLENGER';
+      if (name.includes('FUTURES')) return 'BPT FUTURES';
+      return 'BPT';
+    }
+    
+    // Check name for FIVB
+    if (name.includes('FIVB') || name.includes('WORLD CHAMPIONSHIP') || name.includes('WORLD TOUR')) {
+      return 'FIVB';
+    }
+    
+    // Check name for CEV
+    if (name.includes('CEV') || name.includes('EUROPEAN') || name.includes('CONTINENTAL')) {
+      return 'CEV';
+    }
+    
+    // Check name for NORCECA
+    if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN')) {
+      return 'NORCECA';
+    }
+    
+    // Check visType as fallback
     if (type.includes('FIVB')) return 'FIVB';
     if (type.includes('BPT') || type.includes('BEACH PRO TOUR')) {
-      // Further classify BPT tournaments
       if (type.includes('ELITE') || type.includes('ELITE16')) return 'BPT ELITE';
       if (type.includes('CHALLENGER') || type.includes('CHALLENGE')) return 'BPT CHALLENGER';
       if (type.includes('FUTURES')) return 'BPT FUTURES';
@@ -845,7 +869,7 @@ const TournamentSelectionScreen: React.FC = () => {
             name,
             title: name, // Use name as title for consistency
             gender: gender === 'W' ? 'W' as any : gender === 'M' ? 'M' as any : 'MIXED' as any,
-            tournamentType: mapTournamentType(type) as any,
+            tournamentType: mapTournamentType(type, name) as any,
             status: 'ACTIVE' as any,
             dates: {
               startDate: startDate || new Date().toISOString(),

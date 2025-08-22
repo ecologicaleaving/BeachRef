@@ -38,11 +38,83 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
     // VIS API provides City and Country fields directly
     const city = tournament.city;
     const country = tournament.country;
+    const location = tournament.location;
+    const venue = (tournament as any).venue;
     
+    // Try different combinations
     if (city && country) {
       return `${city}, ${country}`;
     }
-    return city || country || tournament.location || 'Location TBA';
+    
+    if (location && country) {
+      return `${location}, ${country}`;
+    }
+    
+    if (venue && city) {
+      return `${venue}, ${city}`;
+    }
+    
+    if (venue && country) {
+      return `${venue}, ${country}`;
+    }
+    
+    // Try to infer from tournament name if location data is missing
+    if (!city && !country && !location && !venue) {
+      const inferredLocation = inferLocationFromName(tournament.name || tournament.title);
+      if (inferredLocation) return inferredLocation;
+    }
+    
+    return city || country || location || venue || 'Location TBA';
+  };
+
+  // Helper function to extract location from tournament name
+  const inferLocationFromName = (name?: string): string | null => {
+    if (!name) return null;
+    
+    const nameLower = name.toLowerCase();
+    
+    // Common city patterns
+    const cityPatterns = [
+      { pattern: 'doha', location: 'Doha, Qatar' },
+      { pattern: 'dubai', location: 'Dubai, UAE' },
+      { pattern: 'rome', location: 'Rome, Italy' },
+      { pattern: 'paris', location: 'Paris, France' },
+      { pattern: 'madrid', location: 'Madrid, Spain' },
+      { pattern: 'vienna', location: 'Vienna, Austria' },
+      { pattern: 'hamburg', location: 'Hamburg, Germany' },
+      { pattern: 'berlin', location: 'Berlin, Germany' },
+      { pattern: 'munich', location: 'Munich, Germany' },
+      { pattern: 'warsaw', location: 'Warsaw, Poland' },
+      { pattern: 'ostrava', location: 'Ostrava, Czech Republic' },
+      { pattern: 'espinho', location: 'Espinho, Portugal' },
+      { pattern: 'gstaad', location: 'Gstaad, Switzerland' },
+      { pattern: 'brasilia', location: 'Brasília, Brazil' },
+      { pattern: 'brasília', location: 'Brasília, Brazil' },
+      { pattern: 'rio', location: 'Rio de Janeiro, Brazil' },
+      { pattern: 'sao paulo', location: 'São Paulo, Brazil' },
+      { pattern: 'cancun', location: 'Cancún, Mexico' },
+      { pattern: 'acapulco', location: 'Acapulco, Mexico' },
+      { pattern: 'singapore', location: 'Singapore' },
+      { pattern: 'tokyo', location: 'Tokyo, Japan' },
+      { pattern: 'osaka', location: 'Osaka, Japan' },
+      { pattern: 'sydney', location: 'Sydney, Australia' },
+      { pattern: 'gold coast', location: 'Gold Coast, Australia' },
+      { pattern: 'vancouver', location: 'Vancouver, Canada' },
+      { pattern: 'toronto', location: 'Toronto, Canada' },
+      { pattern: 'montreal', location: 'Montreal, Canada' },
+      { pattern: 'manhattan beach', location: 'Manhattan Beach, USA' },
+      { pattern: 'hermosa beach', location: 'Hermosa Beach, USA' },
+      { pattern: 'huntington beach', location: 'Huntington Beach, USA' },
+      { pattern: 'long beach', location: 'Long Beach, USA' },
+    ];
+    
+    for (const { pattern, location } of cityPatterns) {
+      if (nameLower.includes(pattern)) {
+        return location;
+      }
+    }
+    
+    return null;
   };
 
   const getDateRange = () => {
@@ -59,9 +131,32 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
     return formatDate(startDate) || formatDate(endDate) || 'Dates TBA';
   };
 
-  const getTournamentCode = () => {
-    // VIS API provides Code field
-    return tournament.code || `T${tournament.visNo || tournament.No}`;
+  // Get gender badge like in MatchCard
+  const getGenderBadge = () => {
+    const gender = tournament.gender;
+    if (!gender) return null;
+    
+    let genderText = '';
+    let genderStyle = styles.mixedSymbol;
+    
+    if (gender === 'M') {
+      genderText = 'M';
+      genderStyle = styles.menSymbol;
+    } else if (gender === 'W') {
+      genderText = 'W';
+      genderStyle = styles.womenSymbol;
+    } else {
+      genderText = 'M+W'; // Mixed gender
+      genderStyle = styles.mixedSymbol;
+    }
+    
+    return (
+      <View style={styles.genderBadge}>
+        <Text style={[styles.genderSymbol, genderStyle]}>
+          {genderText}
+        </Text>
+      </View>
+    );
   };
 
   const getTournamentName = () => {
@@ -78,7 +173,7 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
       <View style={styles.tournamentHeader}>
         <View style={styles.tournamentHeaderLeft}>
           <Text style={styles.tournamentNumber}>#{tournament.visNo || tournament.No}</Text>
-          <Text style={styles.tournamentCode}>{getTournamentCode()}</Text>
+          {getGenderBadge()}
         </View>
         <View style={styles.tournamentHeaderRight}>
           <View style={styles.statusBadge}>
@@ -101,12 +196,12 @@ const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPre
         <Text style={styles.tournamentDate}>{getDateRange()}</Text>
       </View>
 
-      {/* Show gender if available */}
-      {tournament.gender && (
-        <View style={styles.genderRow}>
-          <Text style={styles.genderIcon}>👥</Text>
-          <Text style={styles.genderText}>
-            {tournament.gender === 'M' ? 'Men' : tournament.gender === 'W' ? 'Women' : tournament.gender}
+      {/* Tournament type/category if available */}
+      {tournament.tournamentType && (
+        <View style={styles.categoryRow}>
+          <Text style={styles.categoryIcon}>🏆</Text>
+          <Text style={styles.categoryText}>
+            {tournament.tournamentType}
           </Text>
         </View>
       )}
@@ -256,15 +351,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 4,
   },
-  tournamentCode: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontFamily: 'monospace',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
   statusBadge: {
     backgroundColor: '#10B981',
     paddingHorizontal: 8,
@@ -322,6 +408,44 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   genderText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  // Gender badge styles (like in MatchCard)
+  genderBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  genderSymbol: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  menSymbol: {
+    color: '#2563EB', // Blue for men
+  },
+  womenSymbol: {
+    color: '#DC2626', // Red for women
+  },
+  mixedSymbol: {
+    color: '#8B5CF6', // Purple for mixed
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  categoryIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  categoryText: {
     fontSize: 13,
     color: '#6B7280',
     fontWeight: '500',

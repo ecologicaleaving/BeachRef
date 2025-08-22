@@ -110,7 +110,9 @@
       "Bash(for file in *.tsx)",
       "Bash(do echo \"Processing $file\")",
       "Bash(done)",
-      "Bash(for file in *.ts *.tsx)"
+      "Bash(for file in *.ts *.tsx)",
+      "Bash(git pull:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "additionalDirectories": [

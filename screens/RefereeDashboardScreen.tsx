@@ -198,7 +198,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
         <NavigationHeader
           title="Referee Dashboard"
           showBackButton={false}
-          showRefreshButton={true}
+          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
             }}
@@ -217,7 +217,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
         <NavigationHeader
           title="Referee Dashboard"
           showBackButton={false}
-          showRefreshButton={true}
+          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
             }}
@@ -237,7 +237,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
         showBackButton={false}
         showStatusBar={true}
         onStatusPress={handleStatusPress}
-        showRefreshButton={true}
+        showRefreshButton={false}
         onRefresh={() => {
           refreshAssignments();
         }}

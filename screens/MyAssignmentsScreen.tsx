@@ -139,7 +139,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
         <NavigationHeader
           title="My Assignments"
           showBackButton={true}
-          showRefreshButton={true}
+          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
           }}
@@ -160,7 +160,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
         <NavigationHeader
           title="My Assignments"
           showBackButton={true}
-          showRefreshButton={true}
+          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
           }}
@@ -187,7 +187,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
         title="My Assignments"
         showBackButton={true}
         showStatusBar={true}
-        showRefreshButton={true}
+        showRefreshButton={false}
         onRefresh={() => {
           refreshAssignments();
           // console.log('🏐 Refreshing assignments...');

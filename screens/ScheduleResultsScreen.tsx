@@ -175,7 +175,7 @@ const ScheduleResultsScreenContent: React.FC = () => {
         title="Schedule/Results"
         showBackButton={false}
         showStatusBar={false}
-        showRefreshButton={true}
+        showRefreshButton={false}
         onRefresh={() => {
           loadAllMatches();
         }}

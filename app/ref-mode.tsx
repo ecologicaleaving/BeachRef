@@ -59,6 +59,74 @@ const RefModeScreen: React.FC = () => {
     router.back();
   };
 
+  // Extract referees from match assignments as fallback
+  const extractRefereesFromMatches = async (eventNo: string) => {
+    try {
+      console.log('🔍 Extracting referees from match assignments for event:', eventNo);
+      
+      // Get match data for the event
+      const { VisApiClient } = await import('../services/api/VisApiClient');
+      const visApi = new VisApiClient();
+      
+      const matchResponse = await visApi.getBeachMatchList({
+        eventNo: eventNo,
+        maxResults: 100
+      });
+      
+      if (matchResponse.success && matchResponse.xmlData) {
+        console.log('📋 Got match data, extracting referee assignments...');
+        
+        // Parse match XML to extract referee names
+        const refereeNamesSet = new Set<string>();
+        const xmlData = matchResponse.xmlData;
+        
+        // Extract referee names from match XML
+        const refereePatterns = [
+          /Referee1="([^"]+)"/g,
+          /Referee2="([^"]+)"/g,
+          /Referee="([^"]+)"/g
+        ];
+        
+        refereePatterns.forEach(pattern => {
+          let match;
+          while ((match = pattern.exec(xmlData)) !== null) {
+            const refereeName = match[1].trim();
+            if (refereeName && refereeName !== '' && refereeName !== 'TBD') {
+              refereeNamesSet.add(refereeName);
+            }
+          }
+        });
+        
+        // Convert to referee objects
+        const extractedReferees: Referee[] = Array.from(refereeNamesSet).map((name, index) => {
+          const [firstName, ...lastNameParts] = name.split(' ');
+          return {
+            NoReferee: `EXTRACTED_${index + 1}`,
+            FirstName: firstName || '',
+            LastName: lastNameParts.join(' ') || '',
+            FederationCode: '',
+            Gender: '',
+            NoPortraitPhoto: '',
+            Signatures: '',
+            Status: 'ACTIVE',
+            Conclusion: '',
+            StrongPoints: '',
+            TheoryTest: '',
+            Type: 'EXTRACTED',
+            WeakPoints: ''
+          };
+        });
+        
+        console.log('🏐 Extracted referees from matches:', extractedReferees);
+        if (extractedReferees.length > 0) {
+          setReferees(extractedReferees);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to extract referees from matches:', error);
+    }
+  };
+
   const loadOfficialData = async () => {
     if (!eventNo) {
       setError('No event number provided');
@@ -121,9 +189,15 @@ const RefModeScreen: React.FC = () => {
           }
         } else {
           console.error('❌ GetEventRefereeList HTTP error:', refereeResponse.status, refereeResponse.statusText);
+          // Try fallback: extract referees from match assignments
+          console.log('🔄 Fallback: Extracting referees from match assignments...');
+          await extractRefereesFromMatches(eventNo);
         }
       } catch (error) {
         console.error('❌ GetEventRefereeList failed:', error);
+        // Try fallback: extract referees from match assignments
+        console.log('🔄 Fallback: Extracting referees from match assignments...');
+        await extractRefereesFromMatches(eventNo);
       }
 
       // Also try GetEventOfficialList with GET

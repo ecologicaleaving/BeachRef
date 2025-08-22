@@ -1621,8 +1621,7 @@ const TournamentSelectionScreen: React.FC = () => {
         <NavigationHeader 
           title="" 
           showStatusBar={false} 
-          showRefreshButton={true}
-          onRefresh={onRefresh}
+          showRefreshButton={false}
         />
         
         <View style={styles.contentWrapper}>

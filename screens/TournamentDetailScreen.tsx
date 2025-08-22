@@ -603,11 +603,8 @@ const TournamentDetailScreenContent: React.FC = () => {
       <NavigationHeader 
         title={tournament.name || 'Tournament Details'} 
         showBackButton={false}
-        showRefreshButton={true}
+        showRefreshButton={false}
         showStatusBar={false}
-        onRefresh={() => {
-          loadMatches();
-        }}
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>

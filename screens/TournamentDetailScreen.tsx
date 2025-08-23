@@ -22,6 +22,7 @@ import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
 import { designTokens } from '../theme/tokens';
+import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 const TournamentDetailScreenContent: React.FC = () => {
@@ -608,7 +609,11 @@ const TournamentDetailScreenContent: React.FC = () => {
         showStatusBar={false}
       />
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        stickyHeaderIndices={[1]} // Make the tabs section sticky (index 1)
+      >
 
         {detailsLoading && (
           <View style={styles.loadingContainer}>
@@ -617,24 +622,62 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         )}
 
-        <View style={styles.compactSummaryCard}>
-          <View style={styles.compactCardHeader}>
-            <View style={styles.infoRowContainer}>
-              <Text style={styles.infoIcon}>📅</Text>
-              <Text style={styles.infoValue}>{getDateRange()}</Text>
+        <View style={styles.tournamentCard}>
+          <View style={styles.tournamentCardHeader}>
+            <View style={styles.tournamentHeaderLeft}>
+              {tournament.gender && (
+                <View style={styles.genderBadgesContainer}>
+                  {tournament.gender === 'M' ? (
+                    <View style={styles.genderBadge}>
+                      <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
+                    </View>
+                  ) : tournament.gender === 'W' ? (
+                    <View style={styles.genderBadge}>
+                      <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <View style={styles.genderBadge}>
+                        <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
+                      </View>
+                      <Text style={styles.plusSymbol}>+</Text>
+                      <View style={styles.genderBadge}>
+                        <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+              )}
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-              <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
+            <View style={styles.tournamentHeaderRight}>
+              {getTournamentStatus() === 'Live' ? (
+                <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
+                  <View style={styles.liveIndicatorPulse} />
+                  <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
+                </View>
+              ) : (
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
+                  <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
+                </View>
+              )}
             </View>
           </View>
           
-          <View style={styles.compactInfo}>
-            {getLocation() ? (
-              <View style={styles.infoRowContainer}>
-                <Text style={styles.infoIcon}>📍</Text>
-                <Text style={styles.infoValue}>{getLocation()}</Text>
-              </View>
-            ) : null}
+          <View style={styles.titleRow}>
+            <FlagImage
+              federationCode={tournament.countryCode || tournament.country}
+              teamName={tournament.country}
+              size="medium"
+              style={styles.tournamentFlag}
+            />
+            <Text style={styles.tournamentName}>
+              {tournament.title || tournament.name}
+            </Text>
+          </View>
+          
+          <View style={styles.dateRow}>
+            <Text style={styles.dateIcon}>📅</Text>
+            <Text style={styles.tournamentDate}>{getDateRange()}</Text>
           </View>
         </View>
 
@@ -870,6 +913,14 @@ const styles = StyleSheet.create({
   tabsSection: {
     marginHorizontal: 16,
     marginVertical: 8,
+    backgroundColor: '#FFFFFF',
+    zIndex: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    paddingBottom: 8,
   },
   tabHeadersContainer: {
     flexDirection: 'row',
@@ -996,6 +1047,114 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+
+  // Tournament Card Styles (matching VisTournamentList)
+  tournamentCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tournamentCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tournamentHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  genderBadgesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tournamentHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  genderBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  genderSymbol: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  menSymbol: {
+    color: '#374151',
+  },
+  womenSymbol: {
+    color: '#374151',
+  },
+  mixedSymbol: {
+    color: '#8B5CF6', // Purple for mixed
+  },
+  plusSymbol: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#6B7280',
+    marginHorizontal: 2,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tournamentFlag: {
+    marginRight: 8,
+  },
+  tournamentName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    flex: 1,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  tournamentDate: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  liveBadgeStyle: {
+    backgroundColor: '#FFFFFF', // White background
+    borderWidth: 1,
+    borderColor: '#0F4C75', // Blue border
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  liveIndicatorPulse: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF4444',
+    marginRight: 6,
+  },
+  liveStatusText: {
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: '#0F4C75', // Blue text
   },
 
 });

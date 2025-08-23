@@ -378,7 +378,61 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Render individual match card - STEP BY STEP DEBUGGING
   const renderMatch = (match: BeachMatchCore) => {
+    // LOG ALL MATCH DATA TO CONSOLE FOR DEBUGGING
+    console.log('🏐 MATCH DATA DEBUG:', {
+      id: match.id,
+      status: match.status,
+      round: match.round,
+      phase: match.phase,
+      NoRound: (match as any).NoRound, // The field we should use for round display
+      tournamentNo: (match as any).tournamentNo,
+      scheduledDateTime: match.scheduledDateTime,
+      team1: match.team1?.teamName,
+      team2: match.team2?.teamName,
+      result: match.result,
+      court: match.court?.courtNumber,
+      allData: match
+    });
+
+    // Make GetBeachRound API call to get round data
+    const roundNo = (match as any).NoRound;
+    const tournamentNo = (match as any).tournamentNo || match.tournamentNo;
+    
+    if (roundNo && tournamentNo) {
+      // Import and use the VisApiClient
+      import('../../services/api/VisApiClient').then(({ VisApiClient }) => {
+        const client = new VisApiClient({
+          baseUrl: 'https://www.fivb.org/vis2009/XmlRequest.asmx',
+          timeoutMs: 10000,
+          enableLogging: true
+        });
+        
+        client.getBeachRound({
+          tournamentNo: tournamentNo,
+          roundNo: roundNo,
+          includeTeams: true,
+          includeMatches: true
+        }).then(response => {
+          console.log('🏆 GetBeachRound Response for round:', roundNo, response);
+          if (response.success && response.xmlData) {
+            console.log('🏆 Round XML Data:', response.xmlData);
+          }
+        }).catch(error => {
+          console.log('❌ GetBeachRound Error:', error);
+        });
+      });
+    }
+    
     const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
+    
+    console.log('🎯 STATUS DISPLAY RESULT:', {
+      matchId: match.id,
+      originalStatus: match.status,
+      displayText: statusDisplay.text,
+      displayColor: statusDisplay.color,
+      round: match.round,
+      phase: match.phase
+    });
     
     // TEMPORARY: Add fake results for completed matches to test display
     const matchWithFakeResult = {
@@ -398,7 +452,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
           </View>
           <View style={styles.courtContainer}>
-            <Text style={styles.courtText}>Court {match.court?.courtNumber || 'TBD'}</Text>
+            <Text style={styles.courtText}>{match.court?.courtNumber || 'TBD'}</Text>
           </View>
           <View style={styles.headerBadgesContainer}>
             {match.tournamentGender && (
@@ -412,8 +466,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 ]}>{match.tournamentGender}</Text>
               </View>
             )}
-            <View style={[styles.statusBadge, { backgroundColor: statusDisplay.color }]}>
-              <Text style={styles.statusText}>{statusDisplay.text}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: '#6B7280' }]}>
+              <Text style={styles.statusText}>{(match as any).NoRound || 'Round TBD'}</Text>
             </View>
           </View>
         </View>
@@ -424,8 +478,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
               <Text style={[
                 styles.teamName,
                 matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
-              ]} numberOfLines={1}>
+              ]}>
                 {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
+                {match.team1?.countryCode && `\n(${match.team1.countryCode})`}
               </Text>
               <FlagImage
                 federationCode={match.team1?.countryCode}
@@ -451,8 +506,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
               <Text style={[
                 styles.teamName,
                 matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
-              ]} numberOfLines={1}>
+              ]}>
                 {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
+                {match.team2?.countryCode && `\n(${match.team2.countryCode})`}
               </Text>
               <FlagImage
                 federationCode={match.team2?.countryCode}

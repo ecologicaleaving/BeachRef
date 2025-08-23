@@ -7,6 +7,7 @@ import {
   Text,
 } from 'react-native';
 import { TournamentCore } from '../types/tournament-v2';
+import { FlagImage } from './FlagImage';
 
 interface VisTournamentItemProps {
   tournament: TournamentCore;
@@ -20,15 +21,19 @@ interface VisTournamentItemProps {
 export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPress }) => {
   // console.log('🏐 VisTournamentItem rendering tournament:', tournament.name || tournament.No);
   
-  const formatDate = (dateStr?: string) => {
+  const formatDate = (dateStr?: string, includeYear = true) => {
     if (!dateStr) return '';
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear();
+      
+      if (includeYear) {
+        return `${day} ${month} ${year}`;
+      } else {
+        return `${day} ${month}`;
+      }
     } catch {
       return dateStr;
     }
@@ -143,10 +148,26 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     const endDate = tournament.dates?.endDate;
     
     if (startDate && endDate) {
-      const start = formatDate(startDate);
-      const end = formatDate(endDate);
-      if (start === end) return start;
-      return `${start} - ${end}`;
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+      
+      // If same date, show just one date
+      if (startDate === endDate) {
+        return formatDate(startDate);
+      }
+      
+      // If same year, format as "03 Aug - 06 Aug 2025"
+      if (startDateObj.getFullYear() === endDateObj.getFullYear()) {
+        const startFormatted = formatDate(startDate, false); // No year
+        const endFormatted = formatDate(endDate, true);      // With year
+        return `${startFormatted} - ${endFormatted}`;
+      } 
+      // Different years, show both years
+      else {
+        const startFormatted = formatDate(startDate, true);
+        const endFormatted = formatDate(endDate, true);
+        return `${startFormatted} - ${endFormatted}`;
+      }
     }
     return formatDate(startDate) || formatDate(endDate) || 'Dates TBA';
   };
@@ -179,7 +200,7 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     );
   };
 
-  // Get status badge - show LIVE NOW for ongoing tournaments, COMPLETED for past tournaments
+  // Get status badge based on exact date logic: SCHEDULED, LIVE NOW, COMPLETED
   const getStatusBadge = () => {
     const startDate = tournament.dates?.startDate;
     const endDate = tournament.dates?.endDate;
@@ -187,7 +208,7 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     if (!startDate || !endDate) {
       return (
         <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>ACTIVE</Text>
+          <Text style={styles.statusText}>SCHEDULED</Text>
         </View>
       );
     }
@@ -196,33 +217,29 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
     const start = new Date(startDate);
     const end = new Date(endDate);
     
-    // Add one day to end date to check if tournament is truly completed
-    const endPlusOne = new Date(end);
-    endPlusOne.setDate(end.getDate() + 1);
-    
-    // Check if tournament is completed (end date + 1 day has passed)
-    if (now >= endPlusOne) {
+    // If start date is after today = SCHEDULED
+    if (start > now) {
       return (
-        <View style={[styles.statusBadge, styles.completedBadgeStyle]}>
-          <Text style={[styles.statusText, styles.completedStatusText]}>COMPLETED</Text>
+        <View style={styles.statusBadge}>
+          <Text style={styles.statusText}>SCHEDULED</Text>
         </View>
       );
     }
     
-    // Check if tournament is currently live
-    if (start <= now && now <= end) {
+    // If start less than today and end after today = LIVE  
+    if (start <= now && end >= now) {
       return (
         <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
           <View style={styles.liveIndicatorPulse} />
-          <Text style={[styles.statusText, styles.liveStatusText]}>LIVE NOW</Text>
+          <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
         </View>
       );
     }
     
-    // For future tournaments, show ACTIVE
+    // If end is less than today = COMPLETED
     return (
-      <View style={styles.statusBadge}>
-        <Text style={styles.statusText}>ACTIVE</Text>
+      <View style={[styles.statusBadge, styles.completedBadgeStyle]}>
+        <Text style={[styles.statusText, styles.completedStatusText]}>COMPLETED</Text>
       </View>
     );
   };
@@ -247,14 +264,18 @@ export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament
         </View>
       </View>
       
-      <Text style={styles.tournamentName}>
-        {getTournamentName()}
-      </Text>
-      
-      <View style={styles.locationRow}>
-        <Text style={styles.locationIcon}>📍</Text>
-        <Text style={styles.tournamentLocation}>{getLocation()}</Text>
+      <View style={styles.titleRow}>
+        <FlagImage
+          federationCode={tournament.countryCode || tournament.country}
+          teamName={tournament.country}
+          size="medium"
+          style={styles.tournamentFlag}
+        />
+        <Text style={styles.tournamentName}>
+          {getTournamentName()}
+        </Text>
       </View>
+      
       
       <View style={styles.dateRow}>
         <Text style={styles.dateIcon}>📅</Text>
@@ -409,11 +430,10 @@ const styles = StyleSheet.create({
   },
   liveBadgeStyle: {
     backgroundColor: '#FFFFFF', // White background
-    borderWidth: 1,
-    borderColor: '#0F4C75', // Blue border
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   liveIndicatorPulse: {
     width: 6,
@@ -423,8 +443,9 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   liveStatusText: {
-    fontSize: 9,
-    letterSpacing: 0.3,
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
     color: '#0F4C75', // Blue text
   },
   completedBadgeStyle: {
@@ -437,12 +458,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: '#6B7280', // Gray text
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   tournamentName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1B365D',
-    marginBottom: 8,
     lineHeight: 24,
+    flex: 1,
+    marginLeft: 8,
+  },
+  tournamentFlag: {
+    marginRight: 8,
   },
   locationRow: {
     flexDirection: 'row',

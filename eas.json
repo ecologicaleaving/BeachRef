@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_ENABLE_DEBUG_LOGGING": "false",
+        "EXPO_PUBLIC_ENABLE_PERFORMANCE_MONITORING": "true",
+        "EXPO_PUBLIC_ENABLE_CRASH_REPORTING": "true"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_ENABLE_DEBUG_LOGGING": "false",
+        "EXPO_PUBLIC_ENABLE_PERFORMANCE_MONITORING": "true",
+        "EXPO_PUBLIC_ENABLE_CRASH_REPORTING": "true"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "1234567890",
+        "appleTeamId": "ABCDEF1234"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./path/to/api-key.json",
+        "track": "internal"
+      }
+    }
+  }
+}

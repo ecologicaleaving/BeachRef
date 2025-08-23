@@ -15,7 +15,9 @@ export enum VisApiEndpoint {
   /** Endpoint for officials/referee data */
   GET_EVENT = 'GetEvent',
   /** Endpoint for match data */
-  GET_BEACH_MATCH_LIST = 'GetBeachMatchList'
+  GET_BEACH_MATCH_LIST = 'GetBeachMatchList',
+  /** Endpoint for round data */
+  GET_BEACH_ROUND = 'GetBeachRound'
 }
 
 /**
@@ -102,6 +104,21 @@ export interface GetBeachMatchListRequest extends VisApiRequestBase {
   readonly includeResults?: boolean;
   /** Include referee assignments */
   readonly includeReferees?: boolean;
+}
+
+/**
+ * GetBeachRound request parameters
+ * For round data
+ */
+export interface GetBeachRoundRequest extends VisApiRequestBase {
+  /** Tournament number from VIS */
+  readonly tournamentNo: string;
+  /** Round number from VIS */
+  readonly roundNo: string;
+  /** Include teams information */
+  readonly includeTeams?: boolean;
+  /** Include matches in round */
+  readonly includeMatches?: boolean;
 }
 
 /**
@@ -200,6 +217,13 @@ export interface IVisApiClient {
    * @returns Promise with XML response
    */
   getBeachMatchList(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
+  
+  /**
+   * Get beach round data
+   * @param request - GetBeachRound request parameters
+   * @returns Promise with XML response
+   */
+  getBeachRound(request: GetBeachRoundRequest): Promise<VisApiResponse>;
   
   /**
    * Test API connectivity

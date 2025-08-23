@@ -21,6 +21,7 @@ import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssig
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
+import DateNavigator from '../components/DateNavigator/DateNavigator';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
@@ -32,6 +33,13 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [matches, setMatches] = useState<BeachMatchCore[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
+  const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
+  
+  // Filter states for the sticky section
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [courtFilter, setCourtFilter] = useState<string>('All');
+  
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
 
@@ -53,6 +61,72 @@ const TournamentDetailScreenContent: React.FC = () => {
     isOnline,
     syncStatus
   } = useAssignmentStatus();
+
+  // Extract unique dates from matches for DateNavigator
+  const uniqueDates = React.useMemo(() => {
+    if (!matches) return [];
+    
+    const validDates = matches
+      .map(match => {
+        const date = new Date(match.scheduledDateTime);
+        if (isNaN(date.getTime())) {
+          return null;
+        }
+        return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      })
+      .filter(date => date !== null) as string[];
+    
+    return Array.from(new Set(validDates)).sort();
+  }, [matches]);
+
+  // Extract unique courts
+  const uniqueCourts = React.useMemo(() => {
+    if (!matches) return [];
+    return Array.from(new Set(matches.map(match => match.court.courtNumber))).sort();
+  }, [matches]);
+
+  // Function to get match count per date for DateNavigator
+  const getMatchCountForDate = (date: string): number => {
+    if (!matches) return 0;
+    return matches.filter(match => {
+      const matchDate = new Date(match.scheduledDateTime);
+      if (isNaN(matchDate.getTime())) return false;
+      return matchDate.toISOString().split('T')[0] === date;
+    }).length;
+  };
+
+  // Smart date selection: set today if tournament is live, last day if finished, first day if upcoming
+  useEffect(() => {
+    if (!matches || uniqueDates.length === 0 || selectedDate !== '') return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const firstDate = uniqueDates[0];
+    const lastDate = uniqueDates[uniqueDates.length - 1];
+    
+    // Get tournament status within the effect to avoid hoisting issues
+    const tournamentStatus = getTournamentStatus();
+
+    // If tournament is live and today has matches, select today
+    if (tournamentStatus === 'Live' && uniqueDates.includes(today)) {
+      setSelectedDate(today);
+    }
+    // If tournament is finished, select last day
+    else if (tournamentStatus === 'Completed') {
+      setSelectedDate(lastDate);
+    }
+    // If tournament is upcoming, select first day
+    else if (tournamentStatus === 'Upcoming') {
+      setSelectedDate(firstDate);
+    }
+    // Fallback: if today is within tournament dates, select today
+    else if (uniqueDates.includes(today)) {
+      setSelectedDate(today);
+    }
+    // Final fallback: select last date
+    else {
+      setSelectedDate(lastDate);
+    }
+  }, [matches, uniqueDates, selectedDate]); // Removed getTournamentStatus from dependencies
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -609,134 +683,198 @@ const TournamentDetailScreenContent: React.FC = () => {
         showStatusBar={false}
       />
 
+      {/* Tournament Info - Scrollable */}
       <ScrollView 
         style={styles.scrollView} 
         contentContainerStyle={styles.scrollContent}
-        stickyHeaderIndices={[1]} // Make the tabs section sticky (index 1)
+        stickyHeaderIndices={[1]} // Make the tabs section sticky (after tournament card)
       >
-
-        {detailsLoading && (
+        {/* Loading state - when active, shows instead of content */}
+        {detailsLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF6B35" />
             <Text style={styles.loadingText}>Loading tournament details...</Text>
           </View>
-        )}
-
-        <View style={styles.tournamentCard}>
-          <View style={styles.tournamentCardHeader}>
-            <View style={styles.tournamentHeaderLeft}>
-              {tournament.gender && (
-                <View style={styles.genderBadgesContainer}>
-                  {tournament.gender === 'M' ? (
-                    <View style={styles.genderBadge}>
-                      <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
+        ) : (
+          <>
+            {/* Index 0: Tournament Card - will scroll up and disappear */}
+            <View style={styles.tournamentCard}>
+              <View style={styles.tournamentCardHeader}>
+                <View style={styles.tournamentHeaderLeft}>
+                  {tournament.gender && (
+                    <View style={styles.genderBadgesContainer}>
+                      {tournament.gender === 'M' ? (
+                        <View style={styles.genderBadge}>
+                          <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
+                        </View>
+                      ) : tournament.gender === 'W' ? (
+                        <View style={styles.genderBadge}>
+                          <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <View style={styles.genderBadge}>
+                            <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
+                          </View>
+                          <Text style={styles.plusSymbol}>+</Text>
+                          <View style={styles.genderBadge}>
+                            <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
+                          </View>
+                        </>
+                      )}
                     </View>
-                  ) : tournament.gender === 'W' ? (
-                    <View style={styles.genderBadge}>
-                      <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
-                    </View>
-                  ) : (
-                    <>
-                      <View style={styles.genderBadge}>
-                        <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
-                      </View>
-                      <Text style={styles.plusSymbol}>+</Text>
-                      <View style={styles.genderBadge}>
-                        <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
-                      </View>
-                    </>
                   )}
                 </View>
-              )}
-            </View>
-            <View style={styles.tournamentHeaderRight}>
-              {getTournamentStatus() === 'Live' ? (
-                <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
-                  <View style={styles.liveIndicatorPulse} />
-                  <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
+                <View style={styles.tournamentHeaderRight}>
+                  {getTournamentStatus() === 'Live' ? (
+                    <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
+                      <View style={styles.liveIndicatorPulse} />
+                      <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
+                      <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
+                    </View>
+                  )}
                 </View>
-              ) : (
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-                  <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
-                </View>
-              )}
-            </View>
-          </View>
-          
-          <View style={styles.titleRow}>
-            <FlagImage
-              federationCode={tournament.countryCode || tournament.country}
-              teamName={tournament.country}
-              size="medium"
-              style={styles.tournamentFlag}
-            />
-            <Text style={styles.tournamentName}>
-              {tournament.title || tournament.name}
-            </Text>
-          </View>
-          
-          <View style={styles.dateRow}>
-            <Text style={styles.dateIcon}>📅</Text>
-            <Text style={styles.tournamentDate}>{getDateRange()}</Text>
-          </View>
-        </View>
-
-        <View style={styles.tabsSection}>
-          <View style={styles.tabHeadersContainer}>
-            <View style={styles.tabHeaders}>
-              <TouchableOpacity
-                style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
-                onPress={() => setActiveTab('schedule')}
-              >
-                <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
-                  Schedule & Results
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
-                onPress={() => setActiveTab('ranking')}
-              >
-                <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
-                  Ranking
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.tabContent}>
-            {activeTab === 'schedule' && (
-              <>
-                <MatchListV2
-                  matches={matches || []}
-                  loading={matchesLoading || matches === null}
-                  title=""
-                  emptyMessage={(() => {
-                    const status = getTournamentStatus();
-                    if (status === 'Completed') {
-                      return "Match data not available for this completed tournament";
-                    } else if (status === 'Upcoming') {
-                      return "Matches will be available when the tournament starts";
-                    }
-                    return "No matches available for this tournament";
-                  })()}
-                  showDateNavigator={true}
-                  showGenderFilter={false}
-                  showStatsInFilter={false}
-                  showCourtFilter={true}
-                  showRefereeFilter={false}
+              </View>
+              
+              <View style={styles.titleRow}>
+                <FlagImage
+                  federationCode={tournament.countryCode || tournament.country}
+                  teamName={tournament.country}
+                  size="medium"
+                  style={styles.tournamentFlag}
                 />
-              </>
-            )}
-            {activeTab === 'ranking' && (
-              <View style={styles.rankingPlaceholder}>
-                <Text style={styles.rankingPlaceholderText}>
-                  Tournament ranking will be available here
+                <Text style={styles.tournamentName}>
+                  {tournament.title || tournament.name}
                 </Text>
               </View>
-            )}
-          </View>
-        </View>
+              
+              <View style={styles.dateRow}>
+                <Text style={styles.dateIcon}>📅</Text>
+                <Text style={styles.tournamentDate}>{getDateRange()}</Text>
+              </View>
+            </View>
 
+            {/* Index 1: Sticky Tabs and Filters - will stick to top when tournament card scrolls up */}
+            <View style={styles.stickyTabsWrapper}>
+              <View style={styles.tabsSection}>
+                <View style={styles.tabHeadersContainer}>
+                  <View style={styles.tabHeaders}>
+                    <TouchableOpacity
+                      style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
+                      onPress={() => setActiveTab('schedule')}
+                    >
+                      <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
+                        Schedule & Results
+                      </Text>
+                    </TouchableOpacity>
+                    {hasRankingData && (
+                      <TouchableOpacity
+                        style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
+                        onPress={() => setActiveTab('ranking')}
+                      >
+                        <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
+                          Ranking
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+                
+                {/* DateNavigator and filters - always visible for schedule tab */}
+                {activeTab === 'schedule' && uniqueDates.length > 0 && (
+                  <DateNavigator
+                    availableDates={uniqueDates}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
+                    getMatchCount={getMatchCountForDate}
+                  />
+                )}
+                
+                {activeTab === 'schedule' && (
+                  <>
+                    <TouchableOpacity 
+                      style={styles.filterToggleButton}
+                      onPress={() => setShowFilters(!showFilters)}
+                    >
+                      <Text style={styles.filterToggleText}>
+                        {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+                    {showFilters && (
+                      <View style={styles.filtersContainer}>
+                        {uniqueCourts.length > 1 && (
+                          <View style={styles.filterGroup}>
+                            <Text style={styles.filterLabel}>Court:</Text>
+                            <View style={styles.filterButtons}>
+                              <TouchableOpacity
+                                style={[styles.filterButton, courtFilter === 'All' && styles.filterButtonActive]}
+                                onPress={() => setCourtFilter('All')}
+                              >
+                                <Text style={[styles.filterButtonText, courtFilter === 'All' && styles.filterButtonTextActive]}>
+                                  All
+                                </Text>
+                              </TouchableOpacity>
+                              {uniqueCourts.map(court => (
+                                <TouchableOpacity
+                                  key={court}
+                                  style={[styles.filterButton, courtFilter === court && styles.filterButtonActive]}
+                                  onPress={() => setCourtFilter(court)}
+                                >
+                                  <Text style={[styles.filterButtonText, courtFilter === court && styles.filterButtonTextActive]}>
+                                    {court === 'CC' ? 'CC' : `C${court}`}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </>
+                )}
+              </View>
+            </View>
+
+            {/* Index 2: Tab Content - scrollable content below sticky tabs */}
+            <View style={styles.tabContent}>
+              {activeTab === 'schedule' && (
+                <>
+                  <MatchListV2
+                    matches={matches || []}
+                    loading={matchesLoading || matches === null}
+                    title=""
+                    emptyMessage={(() => {
+                      const status = getTournamentStatus();
+                      if (status === 'Completed') {
+                        return "Match data not available for this completed tournament";
+                      } else if (status === 'Upcoming') {
+                        return "Matches will be available when the tournament starts";
+                      }
+                      return "No matches available for this tournament";
+                    })()}
+                    showDateNavigator={false}
+                    showGenderFilter={false}
+                    showStatsInFilter={false}
+                    showCourtFilter={false}
+                    showRefereeFilter={false}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
+                  />
+                </>
+              )}
+              {activeTab === 'ranking' && (
+                <View style={styles.rankingPlaceholder}>
+                  <Text style={styles.rankingPlaceholderText}>
+                    Tournament ranking will be available here
+                  </Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <View style={styles.refToolsBottomContainer}>
@@ -910,6 +1048,10 @@ const styles = StyleSheet.create({
   },
 
   // Tabs Section Styles
+  stickyTabsWrapper: {
+    backgroundColor: '#F5F5F5', // Match container background
+    paddingTop: 8,
+  },
   tabsSection: {
     marginHorizontal: 16,
     marginVertical: 8,
@@ -1138,11 +1280,10 @@ const styles = StyleSheet.create({
   },
   liveBadgeStyle: {
     backgroundColor: '#FFFFFF', // White background
-    borderWidth: 1,
-    borderColor: '#0F4C75', // Blue border
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   liveIndicatorPulse: {
     width: 6,
@@ -1152,9 +1293,63 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   liveStatusText: {
-    fontSize: 9,
-    letterSpacing: 0.3,
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
     color: '#0F4C75', // Blue text
+  },
+
+  // Filter styles for sticky section
+  filterToggleButton: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  filterToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  filtersContainer: {
+    marginTop: 8,
+    paddingHorizontal: 8,
+  },
+  filterGroup: {
+    marginBottom: 12,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  filterButton: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  filterButtonActive: {
+    backgroundColor: '#1B365D',
+    borderColor: '#1B365D',
+  },
+  filterButtonText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  filterButtonTextActive: {
+    color: '#FFFFFF',
   },
 
 });

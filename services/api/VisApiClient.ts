@@ -14,6 +14,7 @@ import {
   GetBeachTournamentRequest,
   GetEventRequest,
   GetBeachMatchListRequest,
+  GetBeachRoundRequest,
   VisApiEndpoint,
   RetryConfig,
   DEFAULT_RETRY_CONFIG,
@@ -45,7 +46,8 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_EVENT_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 0,
         [VisApiEndpoint.GET_EVENT]: 0,
-        [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0
+        [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0,
+        [VisApiEndpoint.GET_BEACH_ROUND]: 0
       },
       errorsByType: {},
       lastRequestTimestamp: new Date().toISOString()
@@ -139,6 +141,26 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
+   * Get beach round data
+   * For round information and teams
+   */
+  async getBeachRound(request: GetBeachRoundRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      const xmlRequest = this.buildGetBeachRoundXml(request);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_ROUND, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_ROUND, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_ROUND, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
    * Test API connectivity
    */
   async testConnection(): Promise<boolean> {
@@ -181,14 +203,7 @@ export class VisApiClient implements IVisApiClient {
       try {
         const response = await this.makeHttpRequest(xmlRequest);
         
-        if (this.config.enableLogging) {
-          // console.log(`VIS API ${endpoint} success (attempt ${attempt})`);
-        }
-        
-        // Log raw XML response for debugging
-        if (endpoint === VisApiEndpoint.GET_EVENT_LIST) {
-          console.log('🏐 GetEventList Raw XML Response:', response);
-        }
+        // Request successful
 
         return {
           success: true,
@@ -201,8 +216,9 @@ export class VisApiClient implements IVisApiClient {
       } catch (error) {
         lastError = error as Error;
         
-        if (this.config.enableLogging) {
-          // console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, error);
+        // Log errors in non-production environments only
+        if (process.env.NODE_ENV === 'development' && this.config.enableLogging) {
+          console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, error.message);
         }
         
         // Don't retry on last attempt
@@ -328,8 +344,8 @@ export class VisApiClient implements IVisApiClient {
     // Always filter for beach volleyball tournaments
     filterAttribs.push('HasBeachTournament="True"');
     
-    // Build fields list (space-separated) - include CountryCode and venue fields
-    const fields = request.fields?.join(' ') || 'Code Name StartDate EndDate No Country City CountryCode Venue Location Address';
+    // Build fields list (space-separated) - request ALL fields to debug available data
+    const fields = request.fields?.join(' ') || '';
     
     // Create simple XML request (no SOAP envelope)
     const filterElement = filterAttribs.length > 0 
@@ -338,9 +354,7 @@ export class VisApiClient implements IVisApiClient {
     
     const xmlRequest = `<Request Type="GetEventList" Fields="${fields}">${filterElement}</Request>`;
     
-    // Debug: Log the actual XML request
-    console.log('🏐 GetEventList XML request:', xmlRequest);
-    console.log('🏐 Requested fields:', fields);
+    // XML request built successfully
     
     return xmlRequest;
   }
@@ -402,6 +416,32 @@ export class VisApiClient implements IVisApiClient {
   <Filter ${filterAttribs.join(' ')} />
 </Request>`;
     
+    
+    return xmlRequest;
+  }
+
+  /**
+   * Build XML request for GetBeachRound endpoint
+   */
+  private buildGetBeachRoundXml(request: GetBeachRoundRequest): string {
+    const filterAttribs = [
+      `NoTournament="${request.tournamentNo}"`,
+      `NoRound="${request.roundNo}"`
+    ];
+    
+    // Add optional includes
+    const includeTeams = request.includeTeams !== false;
+    const includeMatches = request.includeMatches !== false;
+    
+    filterAttribs.push(`IncludeTeams="${includeTeams}"`);
+    filterAttribs.push(`IncludeMatches="${includeMatches}"`);
+    
+    // Request all available fields for debugging
+    const fields = '';
+    
+    const xmlRequest = `<Request Type="GetBeachRound" Fields="${fields}">
+  <Filter ${filterAttribs.join(' ')} />
+</Request>`;
     
     return xmlRequest;
   }

@@ -1,28 +1,60 @@
 {
   "expo": {
-    "name": "StartApp",
-    "slug": "StartApp",
+    "name": "BeachRef - Beach Volleyball Referee App",
+    "slug": "beachref",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "startapp",
+    "scheme": "beachref",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
+    "description": "Professional beach volleyball referee management and tournament tracking app",
+    "privacy": "public",
+    "platforms": ["web", "ios", "android"],
+    "githubUrl": "https://github.com/your-org/beachref",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.beachref.app",
+      "buildNumber": "1",
+      "requireFullScreen": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses camera for referee tools and match documentation",
+        "NSLocationWhenInUseUsageDescription": "Location is used to show nearby tournaments and venues"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1B365D"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.StartApp"
+      "package": "com.beachref.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "RECORD_AUDIO",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS"
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./public/favicon.ico",
+      "name": "BeachRef",
+      "shortName": "BeachRef",
+      "lang": "en",
+      "scope": "/",
+      "themeColor": "#1B365D",
+      "backgroundColor": "#FFFFFF",
+      "startUrl": "/",
+      "display": "standalone"
     },
     "plugins": [
       "expo-router",
@@ -32,12 +64,27 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1B365D"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-update-url"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

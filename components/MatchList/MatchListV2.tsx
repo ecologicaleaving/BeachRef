@@ -22,6 +22,8 @@ interface MatchListV2Props {
   showCourtFilter?: boolean;
   showRefereeFilter?: boolean;
   customFilters?: React.ReactNode;
+  selectedDate?: string; // External selected date to override internal state
+  onDateChange?: (date: string) => void; // Callback for date changes
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -36,6 +38,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   showCourtFilter = true,
   showRefereeFilter = true,
   customFilters,
+  selectedDate: externalSelectedDate,
+  onDateChange: externalOnDateChange,
 }) => {
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
@@ -44,7 +48,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [showRefereesForMatch, setShowRefereesForMatch] = useState<{[matchId: string]: boolean}>({});
 
   // Initialize filters from localStorage or defaults
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [internalSelectedDate, setInternalSelectedDate] = useState<string>('');
+  
+  // Use external selectedDate if provided, otherwise use internal state
+  const selectedDate = externalSelectedDate !== undefined ? externalSelectedDate : internalSelectedDate;
+  const setSelectedDate = externalOnDateChange || setInternalSelectedDate;
   
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
     try {
@@ -117,7 +125,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        localStorage.setItem('matchlist-selectedDate', selectedDate);
+        // Only persist internal selectedDate, not external one
+        if (externalSelectedDate === undefined) {
+          localStorage.setItem('matchlist-selectedDate', internalSelectedDate);
+        }
         localStorage.setItem('matchlist-genderFilter', genderFilter);
         localStorage.setItem('matchlist-courtFilter', courtFilter);
         localStorage.setItem('matchlist-refereeFilter', refereeFilter);
@@ -128,7 +139,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     } catch (error) {
       // Failed to save filters to localStorage
     }
-  }, [selectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters]);
+  }, [internalSelectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalSelectedDate]);
 
   // Extract unique dates from matches for DateNavigator
   const uniqueDates = React.useMemo(() => {
@@ -146,15 +157,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   }, [matches]);
 
   // Smart date selection: set today if tournament is ongoing, last day if finished
+  // Only do this if not using external selectedDate
   useEffect(() => {
-    if (uniqueDates.length === 0) return;
+    if (uniqueDates.length === 0 || externalSelectedDate !== undefined) return;
 
     // Check if we already have a date from localStorage
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
         const savedDate = localStorage.getItem('matchlist-selectedDate');
         if (savedDate && uniqueDates.includes(savedDate)) {
-          setSelectedDate(savedDate);
+          setInternalSelectedDate(savedDate);
           return;
         }
       }
@@ -168,21 +180,21 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // If today is within tournament dates, select today
     if (uniqueDates.includes(today)) {
-      setSelectedDate(today);
+      setInternalSelectedDate(today);
     }
     // If tournament is finished (today > last tournament date), select last day
     else if (today > lastDate) {
-      setSelectedDate(lastDate);
+      setInternalSelectedDate(lastDate);
     }
     // If tournament hasn't started yet (today < first tournament date), select first day
     else if (today < firstDate) {
-      setSelectedDate(firstDate);
+      setInternalSelectedDate(firstDate);
     }
     // Fallback to first date
     else {
-      setSelectedDate(firstDate);
+      setInternalSelectedDate(firstDate);
     }
-  }, [uniqueDates]);
+  }, [uniqueDates, externalSelectedDate]);
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
@@ -376,74 +388,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   };
 
-  // Render individual match card - STEP BY STEP DEBUGGING
+  // Render individual match card
   const renderMatch = (match: BeachMatchCore) => {
-    // LOG ALL MATCH DATA TO CONSOLE FOR DEBUGGING
-    console.log('🏐 MATCH DATA DEBUG:', {
-      id: match.id,
-      status: match.status,
-      round: match.round,
-      phase: match.phase,
-      NoRound: (match as any).NoRound, // The field we should use for round display
-      tournamentNo: (match as any).tournamentNo,
-      scheduledDateTime: match.scheduledDateTime,
-      team1: match.team1?.teamName,
-      team2: match.team2?.teamName,
-      result: match.result,
-      court: match.court?.courtNumber,
-      allData: match
-    });
-
-    // Make GetBeachRound API call to get round data
-    const roundNo = (match as any).NoRound;
-    const tournamentNo = (match as any).tournamentNo || match.tournamentNo;
-    
-    if (roundNo && tournamentNo) {
-      // Import and use the VisApiClient
-      import('../../services/api/VisApiClient').then(({ VisApiClient }) => {
-        const client = new VisApiClient({
-          baseUrl: 'https://www.fivb.org/vis2009/XmlRequest.asmx',
-          timeoutMs: 10000,
-          enableLogging: true
-        });
-        
-        client.getBeachRound({
-          tournamentNo: tournamentNo,
-          roundNo: roundNo,
-          includeTeams: true,
-          includeMatches: true
-        }).then(response => {
-          console.log('🏆 GetBeachRound Response for round:', roundNo, response);
-          if (response.success && response.xmlData) {
-            console.log('🏆 Round XML Data:', response.xmlData);
-          }
-        }).catch(error => {
-          console.log('❌ GetBeachRound Error:', error);
-        });
-      });
-    }
-    
     const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
     
-    console.log('🎯 STATUS DISPLAY RESULT:', {
-      matchId: match.id,
-      originalStatus: match.status,
-      displayText: statusDisplay.text,
-      displayColor: statusDisplay.color,
-      round: match.round,
-      phase: match.phase
-    });
-    
-    // TEMPORARY: Add fake results for completed matches to test display
-    const matchWithFakeResult = {
-      ...match,
-      result: match.result || (statusDisplay.text === 'Final' ? {
-        team1Sets: 2,
-        team2Sets: 1,
-        setScores: [21, 19, 21, 15, 15, 21],
-        winner: 1 as 1 | 2
-      } : undefined)
-    };
+    const matchWithResult = match;
     
     return (
       <View key={match.id} style={styles.matchCard}>
@@ -452,7 +401,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
           </View>
           <View style={styles.courtContainer}>
-            <Text style={styles.courtText}>{match.court?.courtNumber || 'TBD'}</Text>
+            <Text style={styles.courtText}>
+              {match.court?.courtNumber ? (
+                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+              ) : 'TBD'}
+            </Text>
           </View>
           <View style={styles.headerBadgesContainer}>
             {match.tournamentGender && (
@@ -477,7 +430,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <View style={styles.teamWithFlag}>
               <Text style={[
                 styles.teamName,
-                matchWithFakeResult.result?.winner === 1 && styles.winnerTeam
+                matchWithResult.result?.winner === 1 && styles.winnerTeam
               ]}>
                 {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
                 {match.team1?.countryCode && `\n(${match.team1.countryCode})`}
@@ -489,12 +442,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 style={styles.teamFlag}
               />
             </View>
-            {matchWithFakeResult.result && (
+            {matchWithResult.result && (
               <View style={styles.scoreContainer}>
                 <Text style={[
                   styles.teamScore,
-                  matchWithFakeResult.result.winner === 1 && styles.winnerScore
-                ]}>{matchWithFakeResult.result.team1Sets}</Text>
+                  matchWithResult.result.winner === 1 && styles.winnerScore
+                ]}>{matchWithResult.result.team1Sets}</Text>
               </View>
             )}
           </View>
@@ -505,7 +458,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <View style={styles.teamWithFlag}>
               <Text style={[
                 styles.teamName,
-                matchWithFakeResult.result?.winner === 2 && styles.winnerTeam
+                matchWithResult.result?.winner === 2 && styles.winnerTeam
               ]}>
                 {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
                 {match.team2?.countryCode && `\n(${match.team2.countryCode})`}
@@ -517,12 +470,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 style={styles.teamFlag}
               />
             </View>
-            {matchWithFakeResult.result && (
+            {matchWithResult.result && (
               <View style={styles.scoreContainer}>
                 <Text style={[
                   styles.teamScore,
-                  matchWithFakeResult.result.winner === 2 && styles.winnerScore
-                ]}>{matchWithFakeResult.result.team2Sets}</Text>
+                  matchWithResult.result.winner === 2 && styles.winnerScore
+                ]}>{matchWithResult.result.team2Sets}</Text>
               </View>
             )}
           </View>
@@ -578,14 +531,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         />
       )}
 
-      <TouchableOpacity 
-        style={styles.filterToggleButton}
-        onPress={() => setShowFilters(!showFilters)}
-      >
-        <Text style={styles.filterToggleText}>
-          {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
-        </Text>
-      </TouchableOpacity>
+      {/* Only show filter toggle if any filters are enabled */}
+      {(showGenderFilter || showCourtFilter || showRefereeFilter || showStatsInFilter) && (
+        <TouchableOpacity 
+          style={styles.filterToggleButton}
+          onPress={() => setShowFilters(!showFilters)}
+        >
+          <Text style={styles.filterToggleText}>
+            {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {showFilters && (
         <View style={styles.filtersContainer}>
@@ -608,7 +564,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   onPress={() => setCourtFilter(court)}
                 >
                   <Text style={[styles.filterButtonText, courtFilter === court && styles.filterButtonTextActive]}>
-                    {court}
+                    {court === 'CC' ? 'CC' : `C${court}`}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -703,6 +659,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         </View>
       )}
 
+      {/* Sticky results header */}
+      {filteredMatches.length > 0 && (
+        <View style={styles.stickyHeader}>
+          <Text style={styles.matchCount}>
+            {filteredMatches.length} {filteredMatches.length === 1 ? 'match' : 'matches'}
+          </Text>
+        </View>
+      )}
+
       <ScrollView style={styles.matchesList} showsVerticalScrollIndicator={false}>
         {filteredMatches.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -710,16 +675,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         ) : (
           <>
-            <Text style={styles.matchCount}>
-              {filteredMatches.length} {filteredMatches.length === 1 ? 'match' : 'matches'}
-            </Text>
             {groupedMatches.map(([date, matches]) => (
               <View key={date}>
                 <View style={styles.dateHeader}>
                   <Text style={styles.dateHeaderText}>{formatDateHeader(date)}</Text>
-                  <Text style={styles.dateHeaderCount}>
-                    {matches.length} {matches.length === 1 ? 'match' : 'matches'}
-                  </Text>
                 </View>
                 {matches.map(renderMatch)}
               </View>
@@ -836,12 +795,24 @@ const styles = StyleSheet.create({
   matchesList: {
     flex: 1,
   },
+  stickyHeader: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   matchCount: {
     fontSize: 14,
     color: '#6B7280',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
   },
   matchCard: {
     backgroundColor: '#FFFFFF',

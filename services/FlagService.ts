@@ -63,6 +63,41 @@ const FEDERATION_TO_COUNTRY_MAP: Record<string, string> = {
   'USA': 'US',  // United States
   'VEN': 'VE',  // Venezuela
   
+  // Additional common federation codes
+  'BUL': 'BG',  // Bulgaria
+  'GEO': 'GE',  // Georgia
+  'MLD': 'MD',  // Moldova
+  'AZE': 'AZ',  // Azerbaijan
+  'ALB': 'AL',  // Albania
+  'ARM': 'AM',  // Armenia
+  'BLR': 'BY',  // Belarus
+  'BIH': 'BA',  // Bosnia and Herzegovina
+  'LVA': 'LV',  // Latvia (alternative code)
+  'MDA': 'MD',  // Moldova (alternative code)
+  'MKD': 'MK',  // North Macedonia
+  'MNE': 'ME',  // Montenegro
+  'SRB': 'RS',  // Serbia
+  'SVN': 'SI',  // Slovenia (alternative code)
+  'KAZ': 'KZ',  // Kazakhstan
+  'KGZ': 'KG',  // Kyrgyzstan
+  'TJK': 'TJ',  // Tajikistan
+  'TKM': 'TM',  // Turkmenistan
+  'UZB': 'UZ',  // Uzbekistan
+  'AFG': 'AF',  // Afghanistan
+  'BGD': 'BD',  // Bangladesh
+  'BTN': 'BT',  // Bhutan
+  'BRN': 'BN',  // Brunei
+  'KHM': 'KH',  // Cambodia
+  'LAO': 'LA',  // Laos
+  'MDV': 'MV',  // Maldives
+  'MMR': 'MM',  // Myanmar
+  'NPL': 'NP',  // Nepal
+  'PAK': 'PK',  // Pakistan
+  'LKA': 'LK',  // Sri Lanka
+  'TLS': 'TL',  // Timor-Leste
+  'VNM': 'VN',  // Vietnam
+  'YEM': 'YE',  // Yemen
+  
   // Special federation cases (use 3-letter code)
   'ENG': 'ENG', // England
   'NIR': 'NIR', // Northern Ireland
@@ -125,16 +160,102 @@ export function getFlagConfig(countryCode: string, teamName?: string): FlagConfi
 }
 
 /**
+ * Cache for validated flags to avoid repeated network requests
+ */
+const flagValidationCache = new Map<string, boolean>();
+
+/**
+ * Known problematic federation codes that don't have flags
+ * Comprehensive list to prevent network requests
+ */
+const KNOWN_MISSING_FLAGS = new Set([
+  'FAR',  // Faroe Islands (special territory, may not have standard flag)
+  // Most other codes now have proper ISO mappings above
+]); // Comprehensive list to prevent network requests
+
+/**
+ * Known working flag codes that exist on FIVB servers
+ * Static whitelist to avoid network requests entirely
+ */
+const KNOWN_WORKING_FLAGS = new Set([
+  'US', 'BR', 'IT', 'FR', 'DE', 'ES', 'PT', 'NL', 'BE', 'CH', 'AT', 'PL', 'CZ', 'SK',
+  'HU', 'SI', 'RO', 'BG', 'GR', 'TR', 'FI', 'SE', 'NO', 'DK', 'IS', 'IE', 'GB',
+  'RU', 'CN', 'JP', 'KR', 'AU', 'NZ', 'CA', 'MX', 'AR', 'CL', 'PE', 'CO', 'VE',
+  'EC', 'BO', 'UY', 'PY', 'EG', 'MA', 'DZ', 'TN', 'KE', 'GH', 'NG', 'ZA',
+  'IN', 'TH', 'MY', 'SG', 'PH', 'ID', 'VN', 'BD', 'LK', 'IR', 'IQ', 'SA', 'AE',
+  'IL', 'JO', 'LB', 'SY', 'QA', 'KW', 'BH', 'OM', 'YE', 'UZ', 'KZ', 'KG', 'TJ',
+  // Additional ISO codes from new federation mappings
+  'GE', 'MD', 'AZ', 'AL', 'AM', 'BY', 'BA', 'LV', 'MK', 'ME', 'RS', 'TM',
+  'AF', 'BT', 'BN', 'KH', 'LA', 'MV', 'MM', 'NP', 'PK', 'TL', 'UA', 'HR', 'EE', 'LT',
+  // Standard ISO 2-letter codes that work
+]);
+
+/**
  * Check if a flag URL is valid (exists on FIVB servers)
+ * Uses static whitelist to avoid network requests entirely for performance
  * @param countryCode - Country or federation code
  * @returns Promise<boolean> - True if flag exists
  */
 export async function validateFlagExists(countryCode: string): Promise<boolean> {
+  if (!countryCode) return false;
+  
+  const cacheKey = countryCode.toUpperCase();
+  
+  // Check cache first (for any previously validated codes)
+  if (flagValidationCache.has(cacheKey)) {
+    return flagValidationCache.get(cacheKey)!;
+  }
+  
+  // Check known missing flags first (fastest path)
+  if (KNOWN_MISSING_FLAGS.has(cacheKey)) {
+    flagValidationCache.set(cacheKey, false);
+    return false;
+  }
+  
+  // Check known working flags (static whitelist)
+  if (KNOWN_WORKING_FLAGS.has(cacheKey)) {
+    flagValidationCache.set(cacheKey, true);
+    return true;
+  }
+  
+  // For any unknown codes, try to convert federation codes to ISO
+  const convertedCode = FEDERATION_TO_COUNTRY_MAP[cacheKey];
+  if (convertedCode && KNOWN_WORKING_FLAGS.has(convertedCode)) {
+    flagValidationCache.set(cacheKey, true);
+    return true;
+  }
+  
+  // **PRODUCTION SAFETY**: Don't make network requests for unknown codes
+  // This prevents the 404 spam we're seeing
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
+    // Assume unknown codes don't exist to avoid network requests
+    flagValidationCache.set(cacheKey, false);
+    KNOWN_MISSING_FLAGS.add(cacheKey);
+    return false;
+  }
+  
+  // Only in test environments, make actual network requests
   try {
     const url = getFlagUrl(countryCode);
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
+    const response = await fetch(url, { 
+      method: 'HEAD',
+      cache: 'force-cache',
+      signal: AbortSignal.timeout(1000) // Short timeout
+    });
+    
+    const exists = response.ok;
+    flagValidationCache.set(cacheKey, exists);
+    
+    if (!exists) {
+      KNOWN_MISSING_FLAGS.add(cacheKey);
+    } else {
+      KNOWN_WORKING_FLAGS.add(cacheKey);
+    }
+    
+    return exists;
   } catch {
+    flagValidationCache.set(cacheKey, false);
+    KNOWN_MISSING_FLAGS.add(cacheKey);
     return false;
   }
 }

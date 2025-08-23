@@ -234,7 +234,6 @@ export const MatchList: React.FC<MatchListProps> = ({
         defaultDate = dates[dates.length - 1];
       }
       
-      // console.log('🗓️ MatchList - Setting default date (from today onwards):', defaultDate);
       updateSelectedDate(defaultDate);
     }
   }, [matches]);
@@ -245,7 +244,6 @@ export const MatchList: React.FC<MatchListProps> = ({
     
     // Apply date filter - show matches from selected date onwards
     if (selectedDate) {
-      // console.log('🗓️ MatchList - Filtering from date:', selectedDate);
       const beforeFilter = filteredMatches.length;
       
       filteredMatches = filteredMatches.filter(match => {
@@ -253,13 +251,11 @@ export const MatchList: React.FC<MatchListProps> = ({
         const isIncluded = matchDate && matchDate >= selectedDate;
         
         if (!isIncluded && matchDate) {
-          // console.log(`🗓️ Excluded match: ${matchDate} < ${selectedDate}`);
         }
         
         return isIncluded;
       });
       
-      // console.log(`🗓️ MatchList - Date filter: ${beforeFilter} -> ${filteredMatches.length} matches`);
     }
     // If no date selected, show all matches
     
@@ -318,7 +314,6 @@ export const MatchList: React.FC<MatchListProps> = ({
 
   // Handle date change
   const handleDateChange = (newDate: string) => {
-    // console.log('🗓️ MatchList - Date changed to:', newDate);
     updateSelectedDate(newDate);
   };
 

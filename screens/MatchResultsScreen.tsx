@@ -501,6 +501,14 @@ const MatchResultsScreenContent: React.FC = () => {
           </View>
         }
       />
+      
+      {/* Sticky Filter Controls */}
+      {hasAnyMatches && (
+        <View style={styles.stickyFiltersContainer}>
+          {renderFilterControls()}
+        </View>
+      )}
+      
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -534,9 +542,6 @@ const MatchResultsScreenContent: React.FC = () => {
             )}
           </View>
         )}
-        
-        {/* Filter Controls (temporarily disabled for debugging) */}
-        {false && hasAnyMatches && renderFilterControls()}
         
         {(() => {
           // console.log('MatchResults: Making render decision:', { error, hasAnyMatches });
@@ -773,17 +778,23 @@ const styles = StyleSheet.create({
   },
   
   // Filter Controls Styles
-  filterContainer: {
+  stickyFiltersContainer: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginVertical: 12,
-    padding: 16,
-    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  filterContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   filterGroup: {
     marginBottom: 16,

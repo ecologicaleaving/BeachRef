@@ -315,7 +315,7 @@ export const TouchTargetVisualization: React.FC<TouchTargetVisualizationProps> =
   }
   
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }]}>
       {/* Touch target overlays */}
       {visibleTargets.map(renderTouchTargetOverlay)}
       

@@ -78,7 +78,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       ]}
       onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel={`Match ${match.matchId}: ${match.teamA} vs ${match.teamB}, ${match.date} at ${match.time}, Court ${match.court}`}
+      accessibilityLabel={`Match ${match.matchId}: ${match.teamA} vs ${match.teamB}, ${match.date} at ${match.time}, C${match.court}`}
       testID={testID}
     >
       {/* PRIMARY LEVEL: Match ID - Largest, most prominent */}
@@ -172,7 +172,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             color="textPrimary"
             style={styles.courtText}
           >
-            Court {match.court}
+            C{match.court}
           </Subheading>
           <EnhancedCaption 
             emphasis="medium"

@@ -36,7 +36,7 @@ interface TournamentDetailProps {
   onBack: () => void;
 }
 
-type TabType = 'playing' | 'schedule' | 'results' | 'info';
+type TabType = 'playing' | 'schedule' | 'results' | 'ranking' | 'info';
 
 interface DropdownItem {
   id: string;
@@ -112,6 +112,10 @@ const DropdownModal: React.FC<DropdownModalProps> = ({
 const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack }) => {
   const [activeTab, setActiveTab] = useState<TabType>('playing');
   const [allMatches, setAllMatches] = useState<BeachMatch[]>([]); // Matches from all related tournaments
+  
+  // Ranking data state
+  const [rankingData, setRankingData] = useState<any[]>([]);
+  const [hasRankingData, setHasRankingData] = useState<boolean>(false); // Will be true when ranking API is implemented
   
   // Gender switching states
   const [relatedTournaments, setRelatedTournaments] = useState<TournamentCore[]>([tournament]);
@@ -468,8 +472,8 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       let keepMatch = true;
       let filterReason = '';
       
-      // Tab filter - only apply for match tabs, not info tab
-      if (activeTab !== 'info') {
+      // Tab filter - only apply for match tabs, not info or ranking tabs
+      if (activeTab !== 'info' && activeTab !== 'ranking') {
         const matchStatus = getMatchStatus(match);
         if (activeTab === 'playing' && matchStatus !== 'playing') {
           keepMatch = false;
@@ -565,7 +569,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   // Calculate the total matches for the current tab
   const totalMatchesForTab = useMemo(() => {
     return matchesToFilter.filter(match => {
-      if (activeTab === 'info') return true;
+      if (activeTab === 'info' || activeTab === 'ranking') return true;
       const matchStatus = getMatchStatus(match);
       if (activeTab === 'playing') return matchStatus === 'playing';
       if (activeTab === 'schedule') return matchStatus === 'scheduled';
@@ -772,7 +776,60 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   );
 };
 
-  const renderFilterControls = () => (
+
+  const renderTabBar = () => (
+    <View style={styles.tabBar}>
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'playing' && styles.activeTab]}
+        onPress={() => setActiveTab('playing')}
+      >
+        <Text style={[styles.tabText, activeTab === 'playing' && styles.activeTabText]}>
+          Playing
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'schedule' && styles.activeTab]}
+        onPress={() => setActiveTab('schedule')}
+      >
+        <Text style={[styles.tabText, activeTab === 'schedule' && styles.activeTabText]}>
+          Schedule
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'results' && styles.activeTab]}
+        onPress={() => setActiveTab('results')}
+      >
+        <Text style={[styles.tabText, activeTab === 'results' && styles.activeTabText]}>
+          Results
+        </Text>
+      </TouchableOpacity>
+      
+      {/* Only show ranking tab if ranking data is available */}
+      {hasRankingData && (
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'ranking' && styles.activeTab]}
+          onPress={() => setActiveTab('ranking')}
+        >
+          <Text style={[styles.tabText, activeTab === 'ranking' && styles.activeTabText]}>
+            Ranking
+          </Text>
+        </TouchableOpacity>
+      )}
+      
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'info' && styles.activeTab]}
+        onPress={() => setActiveTab('info')}
+      >
+        <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>
+          Info
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderFiltersSection = () => (
     <View style={styles.filterContainer}>
       <View style={styles.filterHeader}>
         <Text style={styles.filterTitle}>Filter Matches</Text>
@@ -827,46 +884,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     </View>
   );
 
-  const renderTabBar = () => (
-    <View style={styles.tabBar}>
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'playing' && styles.activeTab]}
-        onPress={() => setActiveTab('playing')}
-      >
-        <Text style={[styles.tabText, activeTab === 'playing' && styles.activeTabText]}>
-          Playing
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'schedule' && styles.activeTab]}
-        onPress={() => setActiveTab('schedule')}
-      >
-        <Text style={[styles.tabText, activeTab === 'schedule' && styles.activeTabText]}>
-          Schedule
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'results' && styles.activeTab]}
-        onPress={() => setActiveTab('results')}
-      >
-        <Text style={[styles.tabText, activeTab === 'results' && styles.activeTabText]}>
-          Results
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'info' && styles.activeTab]}
-        onPress={() => setActiveTab('info')}
-      >
-        <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>
-          Info
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   const renderMatchesTab = () => {
     if (matchesLoading) {
       return (
@@ -913,7 +930,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           lastUpdated={lastUpdated}
           showLastUpdated={true}
         />
-        {renderFilterControls()}
         {filteredMatches.length === 0 ? (
           <View style={styles.centerContent}>
             <Text style={styles.emptyText}>No matches match your filters</Text>
@@ -931,6 +947,35 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       </View>
     );
   };
+
+  const renderRankingTab = () => (
+    <View style={styles.rankingTabContainer}>
+      {rankingData.length === 0 ? (
+        <View style={styles.placeholderSection}>
+          <Text style={styles.placeholderTitle}>No Rankings Available</Text>
+          <Text style={styles.placeholderText}>
+            Rankings are not available for this tournament yet.
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.rankingList}>
+          {rankingData.map((entry, index) => (
+            <View key={index} style={styles.rankingItem}>
+              <View style={styles.rankingPosition}>
+                <Text style={styles.rankingPositionText}>{entry.position || index + 1}</Text>
+              </View>
+              <View style={styles.rankingTeamInfo}>
+                <Text style={styles.rankingTeamName}>{entry.teamName || 'Unknown Team'}</Text>
+                <Text style={styles.rankingPoints}>
+                  {entry.points ? `${entry.points} pts` : 'N/A'}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
 
   const renderInfoTab = () => (
     <View style={styles.infoTabContainer}>
@@ -1147,12 +1192,20 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         </View>
 
 
-        <View style={styles.stickyTabBar}>
+        <View style={styles.stickyHeaderSection}>
           {renderTabBar()}
+          {/* Show filters for match-related tabs only */}
+          {(activeTab !== 'info' && activeTab !== 'ranking') && (
+            <View style={styles.filtersContainer}>
+              {renderFiltersSection()}
+            </View>
+          )}
         </View>
 
         <View style={styles.tabContentScrollable}>
-          {activeTab === 'info' ? renderInfoTab() : renderMatchesTab()}
+          {activeTab === 'info' ? renderInfoTab() : 
+           activeTab === 'ranking' ? renderRankingTab() : 
+           renderMatchesTab()}
         </View>
       </ScrollView>
 
@@ -1433,10 +1486,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  stickyTabBar: {
-    backgroundColor: '#f5f5f5',
-    zIndex: 100,
-    elevation: 100,
+  stickyHeaderSection: {
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingTop: 0,
+    paddingBottom: 0,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  filtersContainer: {
+    backgroundColor: '#ffffff',
+    paddingTop: 0,
   },
   scrollableContainer: {
     flex: 1,
@@ -1944,6 +2012,55 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  
+  // Ranking styles
+  rankingTabContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  rankingList: {
+    flex: 1,
+  },
+  rankingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  rankingPosition: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#0066cc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  rankingPositionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rankingTeamInfo: {
+    flex: 1,
+  },
+  rankingTeamName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  rankingPoints: {
+    fontSize: 14,
+    color: '#666',
   },
 });
 

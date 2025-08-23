@@ -156,7 +156,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             )}
           </View>
           <Text style={styles.courtInfo}>
-            {match.Court ? `Court ${match.Court}` : 'Court TBD'}
+            {match.Court ? `C${match.Court}` : 'Court TBD'}
           </Text>
         </View>
         <View style={styles.timeInfo}>

@@ -229,7 +229,11 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
   };
 
   const getStatusIndicator = () => {
-    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return null;
+    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return (
+      <View style={[styles.statusIndicator, { backgroundColor: '#6B7280' }]}>
+        <Text style={styles.statusText}>SCHEDULED</Text>
+      </View>
+    );
     
     const now = new Date();
     const start = new Date(tournament.dates.startDate);
@@ -238,26 +242,27 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
     let status = '';
     let backgroundColor = '#6B7280';
     
-    if (start <= now && now <= end) {
-      status = 'LIVE';
+    // If start date is after today = SCHEDULED
+    if (start > now) {
+      status = 'SCHEDULED';
+      backgroundColor = '#6B7280';
+    }
+    // If start less than today and end after today = LIVE NOW  
+    else if (start <= now && end >= now) {
+      status = 'LIVE NOW';
       backgroundColor = colors.success;
-    } else if (end < now) {
+    }
+    // If end is less than today = COMPLETED
+    else {
       status = 'COMPLETED';
       backgroundColor = '#1B365D';
-    } else if (start > now) {
-      status = 'UPCOMING';
-      backgroundColor = '#FF6B35';
     }
     
-    if (status) {
-      return (
-        <View style={[styles.statusIndicator, { backgroundColor }]}>
-          <Text style={styles.statusText}>{status}</Text>
-        </View>
-      );
-    }
-    
-    return null;
+    return (
+      <View style={[styles.statusIndicator, { backgroundColor }]}>
+        <Text style={styles.statusText}>{status}</Text>
+      </View>
+    );
   };
 
   // Get gender badge (like in match cards)
@@ -354,17 +359,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
         {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
-      {getLocation() && (
-        <View style={styles.locationContainer}>
-          <Text style={styles.tournamentLocation}>📍 {getLocation()}</Text>
-          <FlagImage
-            federationCode={tournament.countryCode}
-            teamName={tournament.country}
-            size="medium"
-            style={styles.countryFlag}
-          />
-        </View>
-      )}
       
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
@@ -465,6 +459,8 @@ const TournamentSelectionScreen: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('BPT');
   const [availableCategories, setAvailableCategories] = useState<string[]>(['ALL']);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED'>('All');
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
   const [timePeriod, setTimePeriod] = useState<'Week' | 'Month' | 'Year'>('Month');
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -705,17 +701,9 @@ const TournamentSelectionScreen: React.FC = () => {
         const continent = getValue('Continent');
         const gender = getValue('Gender');
         const type = getValue('Type'); // Extract tournament type from VIS API
+        const countryCode = getValue('CountryCode');
         
-        // Check for any country/federation code fields from VIS API
-        console.log(`🌍 VIS API fields for "${name}":`, {
-          city, country, location, venue, continent,
-          countryCode: getValue('CountryCode'),
-          federationCode: getValue('FederationCode'),
-          nation: getValue('Nation'),
-          federation: getValue('Federation'),
-          iso: getValue('ISO'),
-          code: getValue('Code')
-        });
+        // Parse location data from VIS API
         
         if (visNo && name) {
           const tournament: TournamentCore = {
@@ -735,6 +723,7 @@ const TournamentSelectionScreen: React.FC = () => {
             },
             city: city || undefined,
             country: country || undefined,
+            countryCode: countryCode || undefined,
             location: location || undefined,
             // Add extra fields for enhanced location display
             ...(venue && { venue }),
@@ -1050,15 +1039,27 @@ const TournamentSelectionScreen: React.FC = () => {
     }
   };
 
-  // Get LIVE tournaments (currently active)
-  const liveTournaments = tournaments.filter(tournament => {
-    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return false;
+  // Get tournament status based on dates
+  const getTournamentStatus = (tournament: TournamentCore): 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED' => {
+    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return 'SCHEDULED';
     
     const now = new Date();
     const start = new Date(tournament.dates.startDate);
     const end = new Date(tournament.dates.endDate);
     
-    return start <= now && now <= end;
+    // Calculate tournament status based on dates
+    
+    // If start date is after today = SCHEDULED
+    if (start > now) return 'SCHEDULED';
+    // If start less than today and end after today = LIVE NOW  
+    if (start <= now && end >= now) return 'LIVE NOW';
+    // If end is less than today = COMPLETED
+    return 'COMPLETED';
+  };
+
+  // Get LIVE tournaments (currently active)
+  const liveTournaments = tournaments.filter(tournament => {
+    return getTournamentStatus(tournament) === 'LIVE NOW';
   });
 
   // Filter tournaments based on selected time period and category
@@ -1079,44 +1080,52 @@ const TournamentSelectionScreen: React.FC = () => {
       return false;
     }
     
-    // Apply time period filtering based on UI controls
-    const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : startDate;
-    let periodOverlap = false;
-    
-    switch (timePeriod) {
-      case 'Week':
-        const weekStart = new Date(currentWeekStart);
-        const weekEnd = new Date(currentWeekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999); // End of day
-        periodOverlap = startDate <= weekEnd && tournamentEnd >= weekStart;
-        break;
-        
-      case 'Month':
-        const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
-        periodOverlap = startDate <= monthEnd && tournamentEnd >= monthStart;
-        break;
-        
-      case 'Year':
-        const yearStart = new Date(currentYear.getFullYear(), 0, 1);
-        const yearEnd = new Date(currentYear.getFullYear(), 11, 31, 23, 59, 59, 999);
-        periodOverlap = startDate <= yearEnd && tournamentEnd >= yearStart;
-        break;
-    }
-    
-    if (!periodOverlap) {
-      return false;
+    // Apply time period filtering based on UI controls (skip if filtering by LIVE status)
+    if (statusFilter !== 'LIVE NOW') {
+      const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : startDate;
+      let periodOverlap = false;
+      
+      switch (timePeriod) {
+        case 'Week':
+          const weekStart = new Date(currentWeekStart);
+          const weekEnd = new Date(currentWeekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          weekEnd.setHours(23, 59, 59, 999); // End of day
+          periodOverlap = startDate <= weekEnd && tournamentEnd >= weekStart;
+          break;
+          
+        case 'Month':
+          const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+          const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+          periodOverlap = startDate <= monthEnd && tournamentEnd >= monthStart;
+          break;
+          
+        case 'Year':
+          const yearStart = new Date(currentYear.getFullYear(), 0, 1);
+          const yearEnd = new Date(currentYear.getFullYear(), 11, 31, 23, 59, 59, 999);
+          periodOverlap = startDate <= yearEnd && tournamentEnd >= yearStart;
+          break;
+      }
+      
+      if (!periodOverlap) {
+        return false;
+      }
     }
     
     // Apply category/type filtering
-    if (selectedType === 'ALL') {
-      return true;
+    if (selectedType !== 'ALL') {
+      const matchesCategory = matchesTournamentCategory(tournament, selectedType);
+      if (!matchesCategory) {
+        return false;
+      }
     }
     
-    const matchesCategory = matchesTournamentCategory(tournament, selectedType);
-    if (!matchesCategory) {
-      return false;
+    // Apply status filtering
+    if (statusFilter !== 'All') {
+      const tournamentStatus = getTournamentStatus(tournament);
+      if (tournamentStatus !== statusFilter) {
+        return false;
+      }
     }
     
     return true;
@@ -1315,13 +1324,13 @@ const TournamentSelectionScreen: React.FC = () => {
     const selectedCategory = categoriesWithCounts.find(item => item.category === selectedType);
     
     return (
-      <View style={styles.dropdownContainer}>
+      <View style={styles.filterRowContainer}>
         <TouchableOpacity 
           style={styles.dropdownButton}
           onPress={() => setShowDropdown(!showDropdown)}
         >
           <Text style={styles.dropdownButtonText}>
-            {selectedCategory ? `${selectedCategory.category} (${selectedCategory.count})` : 'Select Category'}
+            {selectedCategory ? selectedCategory.category : 'Select Category'}
           </Text>
           <Text style={styles.dropdownArrow}>
             {showDropdown ? '▲' : '▼'}
@@ -1398,24 +1407,66 @@ const TournamentSelectionScreen: React.FC = () => {
     const periods: ('Week' | 'Month' | 'Year')[] = ['Week', 'Month', 'Year'];
     
     return (
-      <View style={styles.periodSelectorContainer}>
-        {periods.map((period) => (
-          <TouchableOpacity
-            key={period}
-            style={[
-              styles.periodButton,
-              timePeriod === period && styles.activePeriodButton
-            ]}
-            onPress={() => setTimePeriod(period)}
-          >
-            <Text style={[
-              styles.periodButtonText,
-              timePeriod === period && styles.activePeriodButtonText
-            ]}>
-              {period}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.filterRowContainer}>
+        <Text style={styles.filterRowLabel}>Period:</Text>
+        <View style={styles.periodSelectorButtons}>
+          {periods.map((period) => (
+            <TouchableOpacity
+              key={period}
+              style={[
+                styles.periodButton,
+                timePeriod === period && styles.activePeriodButton
+              ]}
+              onPress={() => setTimePeriod(period)}
+            >
+              <Text style={[
+                styles.periodButtonText,
+                timePeriod === period && styles.activePeriodButtonText
+              ]}>
+                {period}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderStatusFilter = () => {
+    const statuses: ('All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED')[] = ['All', 'SCHEDULED', 'LIVE NOW', 'COMPLETED'];
+    
+    const getStatusLabel = (status: string) => {
+      switch (status) {
+        case 'All': return 'All';
+        case 'SCHEDULED': return 'SCHEDULED';
+        case 'LIVE NOW': return 'LIVE';
+        case 'COMPLETED': return 'COMPLETED';
+        default: return status;
+      }
+    };
+    
+    return (
+      <View style={styles.filterRowContainer}>
+        <Text style={styles.filterRowLabel}>Status:</Text>
+        <View style={styles.statusFilterButtons}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.statusFilterButton,
+                statusFilter === status && styles.activeStatusFilterButton
+              ]}
+              onPress={() => setStatusFilter(status)}
+            >
+              <Text style={[
+                styles.statusFilterText,
+                statusFilter === status && styles.activeStatusFilterText
+              ]}>
+                {getStatusLabel(status)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     );
   };
@@ -1498,7 +1549,7 @@ const TournamentSelectionScreen: React.FC = () => {
     <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
       <View style={styles.container}>
         <NavigationHeader 
-          title="" 
+          title="Tournaments" 
           showStatusBar={false} 
           showRefreshButton={false}
         />
@@ -1513,9 +1564,30 @@ const TournamentSelectionScreen: React.FC = () => {
           
           {/* Sticky Filter Section */}
           <View style={styles.stickyFilters}>
-            {renderCategoryDropdown()}
-            {renderTimePeriodSelector()}
             {renderDateNavigator()}
+            
+            {/* Always Visible Category Filter */}
+            {renderCategoryDropdown()}
+            
+            {/* Filter Toggle Link */}
+            <View style={styles.filterToggleSection}>
+              <TouchableOpacity 
+                onPress={() => setShowFilters(!showFilters)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.filterToggleLink}>
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Collapsible Filters Panel */}
+            {showFilters && (
+              <View style={styles.expandableFiltersPanel}>
+                {renderTimePeriodSelector()}
+                {renderStatusFilter()}
+              </View>
+            )}
           </View>
         
           {/* Tournament List Section */}
@@ -1815,35 +1887,6 @@ const styles = StyleSheet.create({
     color: '#4A90A4',
     textAlign: 'center',
   },
-  // Period Selector Styles
-  periodSelectorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  periodButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#1B365D',
-    backgroundColor: 'transparent',
-    flex: 1,
-    marginHorizontal: 4,
-    alignItems: 'center',
-  },
-  activePeriodButton: {
-    backgroundColor: '#1B365D',
-  },
-  periodButtonText: {
-    color: '#1B365D',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  activePeriodButtonText: {
-    color: '#FFFFFF',
-  },
   // Dropdown Styles
   dropdownContainer: {
     paddingHorizontal: 24,
@@ -2000,6 +2043,91 @@ const styles = StyleSheet.create({
   liveCarouselItem: {
     width: 280, // Fixed width for consistency
     marginRight: 16,
+  },
+  // Filter Toggle Link Styles
+  filterToggleSection: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  filterToggleLink: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#4A90A4',
+    textDecorationLine: 'underline',
+  },
+  expandableFiltersPanel: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E9ECEF',
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  // Filter Row Styles
+  filterRowContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  filterRowLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1B365D',
+    marginBottom: 8,
+  },
+  // Period Selector Buttons
+  periodSelectorButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  periodButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#1B365D',
+    backgroundColor: 'transparent',
+    flex: 1,
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  activePeriodButton: {
+    backgroundColor: '#1B365D',
+  },
+  periodButtonText: {
+    color: '#1B365D',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  activePeriodButtonText: {
+    color: '#FFFFFF',
+  },
+  // Status Filter Buttons
+  statusFilterButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  statusFilterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#4A90A4',
+    backgroundColor: 'transparent',
+    flex: 1,
+    alignItems: 'center',
+  },
+  activeStatusFilterButton: {
+    backgroundColor: '#4A90A4',
+  },
+  statusFilterText: {
+    color: '#4A90A4',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  activeStatusFilterText: {
+    color: '#FFFFFF',
   },
 });
 

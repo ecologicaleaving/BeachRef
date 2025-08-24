@@ -29,16 +29,16 @@ if (process.env.NODE_ENV === 'production') {
   // Asset optimization
   config.transformer.assetRegistryPath = 'react-native/Libraries/Image/AssetRegistry';
   
-  // Cache settings for better build performance
-  config.cacheStores = [
-    {
-      name: 'filesystem',
-      options: {
-        directory: '.metro-cache',
-        maxFileSize: 50 * 1024 * 1024, // 50 MB
-      },
-    },
-  ];
+  // Cache settings disabled due to Node.js 22 compatibility issues
+  // config.cacheStores = [
+  //   {
+  //     name: 'filesystem',
+  //     options: {
+  //       directory: '.metro-cache',
+  //       maxFileSize: 50 * 1024 * 1024, // 50 MB
+  //     },
+  //   },
+  // ];
 }
 
 // Exclude test files and stories from production bundle

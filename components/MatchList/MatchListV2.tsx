@@ -44,8 +44,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   
-  // State for showing/hiding referees for each match card individually
-  const [showRefereesForMatch, setShowRefereesForMatch] = useState<{[matchId: string]: boolean}>({});
 
   // Initialize filters from localStorage or defaults
   const [internalSelectedDate, setInternalSelectedDate] = useState<string>('');
@@ -277,13 +275,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   }, [matches, selectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
 
-  // Function to toggle referee visibility for a specific match
-  const toggleRefereesForMatch = (matchId: string) => {
-    setShowRefereesForMatch(prev => ({
-      ...prev,
-      [matchId]: !prev[matchId]
-    }));
-  };
 
   // Group matches by date
   const groupedMatches = React.useMemo(() => {
@@ -397,17 +388,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return (
       <View key={match.id} style={styles.matchCard}>
         <View style={styles.matchHeader}>
-          <View style={styles.timeContainer}>
-            <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
-          </View>
-          <View style={styles.courtContainer}>
-            <Text style={styles.courtText}>
-              {match.court?.courtNumber ? (
-                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-              ) : 'TBD'}
-            </Text>
-          </View>
-          <View style={styles.headerBadgesContainer}>
+          <View style={styles.leftBadgeContainer}>
             {match.tournamentGender && (
               <View style={[
                 styles.genderBadge,
@@ -419,91 +400,148 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 ]}>{match.tournamentGender}</Text>
               </View>
             )}
+          </View>
+          
+          <View style={styles.timeCourtContainer}>
+            <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
+            <Text style={styles.courtText}>
+              {match.court?.courtNumber ? (
+                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+              ) : 'TBD'}
+            </Text>
+          </View>
+          
+          <View style={styles.rightBadgeContainer}>
             <View style={[styles.statusBadge, { backgroundColor: '#6B7280' }]}>
               <Text style={styles.statusText}>{(match as any).NoRound || 'Round TBD'}</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.teamsContainer}>
-          <View style={styles.teamRow}>
-            <View style={styles.teamWithFlag}>
-              <Text style={[
-                styles.teamName,
-                matchWithResult.result?.winner === 1 && styles.winnerTeam
-              ]}>
-                {match.team1?.teamName || `${match.team1?.player1Name || ''} / ${match.team1?.player2Name || ''}`}
-                {match.team1?.countryCode && `\n(${match.team1.countryCode})`}
-              </Text>
-              <FlagImage
-                federationCode={match.team1?.countryCode}
-                teamName={match.team1?.teamName}
-                size="medium"
-                style={styles.teamFlag}
-              />
-            </View>
-            {matchWithResult.result && (
-              <View style={styles.scoreContainer}>
+        <View style={styles.flagsAndResultRow}>
+          <FlagImage
+            federationCode={match.team1?.countryCode}
+            teamName={match.team1?.teamName}
+            size="medium"
+            style={styles.leftFlag}
+          />
+          
+          <View style={styles.centerResultContainer}>
+            {matchWithResult.result ? (
+              <View style={styles.resultContainer}>
                 <Text style={[
-                  styles.teamScore,
+                  styles.resultScore,
                   matchWithResult.result.winner === 1 && styles.winnerScore
                 ]}>{matchWithResult.result.team1Sets}</Text>
-              </View>
-            )}
-          </View>
-          
-          <Text style={styles.vsText}>vs</Text>
-          
-          <View style={styles.teamRow}>
-            <View style={styles.teamWithFlag}>
-              <Text style={[
-                styles.teamName,
-                matchWithResult.result?.winner === 2 && styles.winnerTeam
-              ]}>
-                {match.team2?.teamName || `${match.team2?.player1Name || ''} / ${match.team2?.player2Name || ''}`}
-                {match.team2?.countryCode && `\n(${match.team2.countryCode})`}
-              </Text>
-              <FlagImage
-                federationCode={match.team2?.countryCode}
-                teamName={match.team2?.teamName}
-                size="medium"
-                style={styles.teamFlag}
-              />
-            </View>
-            {matchWithResult.result && (
-              <View style={styles.scoreContainer}>
+                <Text style={styles.scoreSeparator}>-</Text>
                 <Text style={[
-                  styles.teamScore,
+                  styles.resultScore,
                   matchWithResult.result.winner === 2 && styles.winnerScore
                 ]}>{matchWithResult.result.team2Sets}</Text>
               </View>
+            ) : (
+              <Text style={styles.vsText}>vs</Text>
             )}
+          </View>
+          
+          <FlagImage
+            federationCode={match.team2?.countryCode}
+            teamName={match.team2?.teamName}
+            size="medium"
+            style={styles.rightFlag}
+          />
+        </View>
+
+        <View style={styles.teamsContainer}>
+          <View style={styles.teamsRow}>
+            <View style={styles.teamSection}>
+              {match.team1?.teamName ? (
+                <Text style={[
+                  styles.teamName,
+                  styles.leftTeamName,
+                  matchWithResult.result?.winner === 1 && styles.winnerTeam
+                ]} numberOfLines={2}>
+                  {match.team1.teamName}
+                </Text>
+              ) : (
+                <View style={styles.playersContainer}>
+                  {match.team1?.player1Name && (
+                    <Text style={[
+                      styles.playerName,
+                      styles.leftTeamName,
+                      matchWithResult.result?.winner === 1 && styles.winnerTeam
+                    ]}>
+                      {(match.team1.player1Name || '').split(' ').pop() || ''}
+                    </Text>
+                  )}
+                  {match.team1?.player2Name && (
+                    <Text style={[
+                      styles.playerName,
+                      styles.leftTeamName,
+                      matchWithResult.result?.winner === 1 && styles.winnerTeam
+                    ]}>
+                      {(match.team1.player2Name || '').split(' ').pop() || ''}
+                    </Text>
+                  )}
+                </View>
+              )}
+              <Text style={[styles.countryCode, styles.leftCountryCode]}>
+                {match.team1?.countryCode || ''}
+              </Text>
+            </View>
+            
+            <View style={styles.teamSection}>
+              {match.team2?.teamName ? (
+                <Text style={[
+                  styles.teamName,
+                  styles.rightTeamName,
+                  matchWithResult.result?.winner === 2 && styles.winnerTeam
+                ]} numberOfLines={2}>
+                  {match.team2.teamName}
+                </Text>
+              ) : (
+                <View style={styles.playersContainer}>
+                  {match.team2?.player1Name && (
+                    <Text style={[
+                      styles.playerName,
+                      styles.rightTeamName,
+                      matchWithResult.result?.winner === 2 && styles.winnerTeam
+                    ]}>
+                      {(match.team2.player1Name || '').split(' ').pop() || ''}
+                    </Text>
+                  )}
+                  {match.team2?.player2Name && (
+                    <Text style={[
+                      styles.playerName,
+                      styles.rightTeamName,
+                      matchWithResult.result?.winner === 2 && styles.winnerTeam
+                    ]}>
+                      {(match.team2.player2Name || '').split(' ').pop() || ''}
+                    </Text>
+                  )}
+                </View>
+              )}
+              <Text style={[styles.countryCode, styles.rightCountryCode]}>
+                {match.team2?.countryCode || ''}
+              </Text>
+            </View>
           </View>
         </View>
 
         {match.refereeAssignments && match.refereeAssignments.length > 0 && (
-          <TouchableOpacity 
-            style={styles.refereeLinkInCard}
-            onPress={() => toggleRefereesForMatch(match.id)}
-          >
-            <Text style={styles.refereeLinkTextInCard}>
-              {showRefereesForMatch[match.id] ? 'Hide Referees' : 'Show Referees'}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {showRefereesForMatch[match.id] && match.refereeAssignments && match.refereeAssignments.length > 0 && (
           <View style={styles.refereesContainer}>
             {match.refereeAssignments.map((referee, index) => (
               <View key={index} style={styles.refereeRow}>
-                <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
-                <Text style={styles.refereeName}>{referee.refereeName}</Text>
-                <FlagImage
-                  federationCode={referee.federationCode}
-                  teamName={referee.refereeName}
-                  size="medium"
-                  style={styles.refereeFlag}
-                />
+                <View style={styles.refereeContentRow}>
+                  <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
+                  <Text style={styles.refereeName}>{referee.refereeName}</Text>
+                  <FlagImage
+                    federationCode={referee.federationCode}
+                    teamName={referee.refereeName}
+                    size="medium"
+                    style={styles.refereeFlag}
+                  />
+                </View>
               </View>
             ))}
           </View>
@@ -727,18 +765,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  refereeLinkInCard: {
-    width: '100%',
-    paddingVertical: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  refereeLinkTextInCard: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#007AFF',
-    textDecorationLine: 'underline',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -817,9 +843,9 @@ const styles = StyleSheet.create({
   matchCard: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 8,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000',
@@ -835,23 +861,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  timeContainer: {
+  leftBadgeContainer: {
+    width: 100,
     alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  timeCourtContainer: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  rightBadgeContainer: {
+    width: 100,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   matchTime: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
   },
-  courtContainer: {
-    alignItems: 'center',
-  },
   courtText: {
     fontSize: 14,
     fontWeight: '500',
     color: '#374151',
+  },
+  topScoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  topScore: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  scoreSeparator: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6B7280',
+    marginHorizontal: 8,
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -864,28 +917,80 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   teamsContainer: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  teamRow: {
+  teamsRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
   },
-  teamWithFlag: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  teamSection: {
     flex: 1,
   },
-  teamFlag: {
-    marginLeft: 8,
+  flagsAndResultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+    paddingHorizontal: 16,
+  },
+  centerResultContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  leftFlag: {
+    marginRight: 12,
+  },
+  rightFlag: {
+    marginLeft: 12,
+  },
+  resultContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  resultScore: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
   },
   teamName: {
-    flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     color: '#111827',
-    marginRight: 8,
+    lineHeight: 18,
+  },
+  leftTeamName: {
+    textAlign: 'left',
+  },
+  rightTeamName: {
+    textAlign: 'right',
+  },
+  countryCode: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  leftCountryCode: {
+    textAlign: 'left',
+  },
+  rightCountryCode: {
+    textAlign: 'right',
+  },
+  playersContainer: {
+    flexDirection: 'column',
+  },
+  playerName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
+    lineHeight: 16,
+    marginBottom: 2,
   },
   scoreContainer: {
     backgroundColor: '#F3F4F6',
@@ -913,24 +1018,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
     textAlign: 'center',
-    marginVertical: 4,
+    fontWeight: '500',
   },
   refereesContainer: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 4,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
   refereeRow: {
+    marginBottom: 4,
+    justifyContent: 'center',
+  },
+  refereeContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    justifyContent: 'center',
   },
   refereePosition: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    minWidth: 24,
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#374151',
     marginRight: 8,
   },
   refereeFlag: {
@@ -939,8 +1047,8 @@ const styles = StyleSheet.create({
   refereeName: {
     fontSize: 15,
     color: '#374151',
-    flex: 1,
     fontWeight: '500',
+    marginHorizontal: 8,
   },
   refereesLabel: {
     fontSize: 12,
@@ -972,11 +1080,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
-  },
-  headerBadgesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   genderBadge: {
     paddingHorizontal: 8,

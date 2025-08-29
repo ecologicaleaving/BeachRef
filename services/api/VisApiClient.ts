@@ -15,6 +15,7 @@ import {
   GetEventRequest,
   GetBeachMatchListRequest,
   GetBeachRoundRequest,
+  GetBeachLiveRequest,
   VisApiEndpoint,
   RetryConfig,
   DEFAULT_RETRY_CONFIG,
@@ -47,7 +48,8 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 0,
         [VisApiEndpoint.GET_EVENT]: 0,
         [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0,
-        [VisApiEndpoint.GET_BEACH_ROUND]: 0
+        [VisApiEndpoint.GET_BEACH_ROUND]: 0,
+        [VisApiEndpoint.GET_BEACH_LIVE]: 0
       },
       errorsByType: {},
       lastRequestTimestamp: new Date().toISOString()
@@ -161,6 +163,26 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
+   * Get beach live score data
+   * For real-time match updates with version-based polling
+   */
+  async getBeachLive(request: GetBeachLiveRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      const xmlRequest = this.buildGetBeachLiveXml(request);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_LIVE, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_LIVE, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_LIVE, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
    * Test API connectivity
    */
   async testConnection(): Promise<boolean> {
@@ -218,7 +240,12 @@ export class VisApiClient implements IVisApiClient {
         
         // Log errors in non-production environments only
         if (process.env.NODE_ENV === 'development' && this.config.enableLogging) {
-          console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, error.message);
+          console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            cause: error.cause || 'N/A'
+          });
         }
         
         // Don't retry on last attempt
@@ -249,6 +276,16 @@ export class VisApiClient implements IVisApiClient {
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
 
+      if (this.config.enableLogging) {
+        console.log(`🔍 [VisApiClient] Making HTTP request:`, {
+          url: this.config.baseUrl,
+          method: 'POST',
+          headers,
+          bodyLength: formData.length,
+          xmlRequest: xmlRequest.substring(0, 200) + '...'
+        });
+      }
+
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
         headers,
@@ -256,11 +293,26 @@ export class VisApiClient implements IVisApiClient {
         signal: controller.signal
       });
 
+      if (this.config.enableLogging) {
+        console.log(`🔍 [VisApiClient] HTTP response:`, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseText = await response.text();
+      
+      // Check for VIS API specific errors
+      if (this.containsVisError(responseText)) {
+        const errorMessage = this.parseVisError(responseText);
+        throw new Error(`VIS API Error: ${errorMessage}`);
+      }
+      
       return responseText;
       
     } finally {
@@ -344,8 +396,8 @@ export class VisApiClient implements IVisApiClient {
     // Always filter for beach volleyball tournaments
     filterAttribs.push('HasBeachTournament="True"');
     
-    // Build fields list (space-separated) - request ALL fields to debug available data
-    const fields = request.fields?.join(' ') || '';
+    // Build fields list (space-separated) - ensure we always have essential fields
+    const fields = request.fields?.join(' ') || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_EVENT_LIST].join(' ');
     
     // Create simple XML request (no SOAP envelope)
     const filterElement = filterAttribs.length > 0 
@@ -409,7 +461,7 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
     // Include all federation code fields for flag display, plus match results
-    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode';
+    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -442,6 +494,30 @@ export class VisApiClient implements IVisApiClient {
     const xmlRequest = `<Request Type="GetBeachRound" Fields="${fields}">
   <Filter ${filterAttribs.join(' ')} />
 </Request>`;
+    
+    return xmlRequest;
+  }
+
+  /**
+   * Build XML request for GetBeachLiveRequest endpoint
+   */
+  private buildGetBeachLiveXml(request: GetBeachLiveRequest): string {
+    const attributes = [`No="${request.matchNo}"`];
+    
+    // Add version for bandwidth optimization (version-based polling)  
+    if (request.version !== undefined) {
+      attributes.push(`Version="${request.version}"`);
+    }
+    
+    // Add options if provided
+    if (request.options && request.options.length > 0) {
+      attributes.push(`Options="${request.options.join(',')}"`);
+    }
+    
+    // Use default field selection for live score data
+    const fields = DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_LIVE].join(' ');
+    
+    const xmlRequest = `<Request Type="GetBeachLive" Fields="${fields}" ${attributes.join(' ')} />`;
     
     return xmlRequest;
   }
@@ -516,5 +592,47 @@ export class VisApiClient implements IVisApiClient {
    */
   private updateErrorCount(errorType: string): void {
     this.monitor.errorsByType[errorType] = (this.monitor.errorsByType[errorType] || 0) + 1;
+  }
+
+  /**
+   * Check if response contains VIS API specific errors
+   */
+  private containsVisError(responseText: string): boolean {
+    return responseText.includes('<BadRequestSyntax') ||
+           responseText.includes('<AccessDenied') ||
+           responseText.includes('<InternalError') ||
+           responseText.includes('<ServiceUnavailable') ||
+           responseText.includes('<RateLimitExceeded') ||
+           responseText.includes('<Error');
+  }
+
+  /**
+   * Parse VIS API specific error messages
+   */
+  private parseVisError(responseText: string): string {
+    // Parse different VIS API error types
+    if (responseText.includes('<BadRequestSyntax')) {
+      return 'Invalid XML request syntax - check request format';
+    }
+    if (responseText.includes('<AccessDenied')) {
+      return 'Access denied - check API credentials or permissions';
+    }
+    if (responseText.includes('<InternalError')) {
+      return 'VIS API internal server error';
+    }
+    if (responseText.includes('<ServiceUnavailable')) {
+      return 'VIS API service temporarily unavailable';
+    }
+    if (responseText.includes('<RateLimitExceeded')) {
+      return 'VIS API rate limit exceeded - reduce request frequency';
+    }
+    
+    // Generic error parsing
+    const errorMatch = responseText.match(/<Error[^>]*>([^<]*)<\/Error>/);
+    if (errorMatch) {
+      return errorMatch[1] || 'Unknown VIS API error';
+    }
+    
+    return 'Unknown VIS API error format';
   }
 }

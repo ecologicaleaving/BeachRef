@@ -5,6 +5,8 @@ import DateNavigator from '../DateNavigator/DateNavigator';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
+import { SetScoreService } from '../../services/SetScoreService';
+import { VisApiClient } from '../../services/api/VisApiClient';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -54,6 +56,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
+  
+  // State for set scores enhancement
+  const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
+  const [setScoreService] = useState(() => new SetScoreService());
   
 
   // Initialize filters from localStorage or defaults
@@ -183,6 +189,31 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [internalSelectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalSelectedDate, externalCourtFilter, externalGenderFilter]);
 
+  // Enhanced matches with set scores
+  useEffect(() => {
+    const enhanceMatches = async () => {
+      try {
+        const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
+        const enhancedCount = enhanced.filter(match => 
+          match.result?.setScores && match.result.setScores.length > 0
+        ).length;
+        
+        setEnhancedMatches(enhanced);
+        
+      } catch (error) {
+        console.error('Failed to enhance matches with set scores:', error);
+        setEnhancedMatches(matches);
+      }
+    };
+
+    if (matches.length > 0) {
+      enhanceMatches();
+    } else {
+      setEnhancedMatches([]);
+    }
+  }, [matches, setScoreService]);
+
+
   // Extract unique dates from matches for DateNavigator
   const uniqueDates = React.useMemo(() => {
     const validDates = matches
@@ -273,7 +304,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Filter matches based on current filters
   const filteredMatches = React.useMemo(() => {
-    return matches.filter(match => {
+    // ALWAYS use enhanced matches if available, even if empty
+    const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : matches;
+    const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
+    
+    return matchesToFilter.filter(match => {
       // Date filter
       if (selectedDate) {
         const date = new Date(match.scheduledDateTime);
@@ -346,7 +381,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         return dateA.getTime() - dateB.getTime(); // Ascending (oldest first)
       }
     });
-  }, [matches, selectedDate, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
+
+    // Final result logging will happen in UI render
+  }, [matches, enhancedMatches, selectedDate, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
 
 
   // Group matches by date
@@ -510,16 +547,60 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           
           <View style={styles.centerResultContainer}>
             {matchWithResult.result ? (
-              <View style={styles.resultContainer}>
-                <Text style={[
-                  styles.resultScore,
-                  matchWithResult.result.winner === 1 && styles.winnerScore
-                ]}>{matchWithResult.result.team1Sets}</Text>
-                <Text style={styles.scoreSeparator}>-</Text>
-                <Text style={[
-                  styles.resultScore,
-                  matchWithResult.result.winner === 2 && styles.winnerScore
-                ]}>{matchWithResult.result.team2Sets}</Text>
+              <View style={styles.resultContainerWithSets}>
+                <View style={styles.resultContainer}>
+                  <Text style={[
+                    styles.resultScore,
+                    matchWithResult.result.winner === 1 && styles.winnerScore
+                  ]}>{matchWithResult.result.team1Sets}</Text>
+                  <Text style={styles.scoreSeparator}>-</Text>
+                  <Text style={[
+                    styles.resultScore,
+                    matchWithResult.result.winner === 2 && styles.winnerScore
+                  ]}>{matchWithResult.result.team2Sets}</Text>
+                </View>
+                {(() => {
+                  // Show set scores for ANY number of complete sets (even 1 set = 2 scores)
+                  const hasSetScores = matchWithResult.result.setScores && matchWithResult.result.setScores.length >= 2;
+                  
+                  
+                  
+                  
+                  return hasSetScores;
+                })() && (
+                  <View style={styles.setScoresContainer}>
+                    {(() => {
+                      const setScores = matchWithResult.result.setScores;
+                      const sets = [];
+                      
+                      // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
+                      for (let i = 0; i < setScores.length; i += 2) {
+                        if (i + 1 < setScores.length) {
+                          const team1Score = setScores[i];
+                          const team2Score = setScores[i + 1];
+                          const setNumber = Math.floor(i / 2) + 1;
+                          const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                          
+                          sets.push(
+                            <View key={setNumber} style={styles.individualSet}>
+                              <Text style={[
+                                styles.setScore,
+                                isWinningSet === 1 && styles.winningSetScore
+                              ]}>{team1Score}</Text>
+                              <Text style={styles.setScoreSeparator}>-</Text>
+                              <Text style={[
+                                styles.setScore,
+                                isWinningSet === 2 && styles.winningSetScore
+                              ]}>{team2Score}</Text>
+                            </View>
+                          );
+                        }
+                      }
+                      
+                      return sets;
+                    })()}
+                  </View>
+                )}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -1059,6 +1140,9 @@ const styles = StyleSheet.create({
   rightFlag: {
     marginLeft: 12,
   },
+  resultContainerWithSets: {
+    alignItems: 'center',
+  },
   resultContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1066,6 +1150,37 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+  setScoresContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  individualSet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  setScore: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  setScoreSeparator: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#9CA3AF',
+    marginHorizontal: 3,
+  },
+  winningSetScore: {
+    color: '#059669',
+    fontWeight: '700',
   },
   resultScore: {
     fontSize: 18,

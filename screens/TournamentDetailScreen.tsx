@@ -18,10 +18,12 @@ import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
 // DataTransformationService no longer needed - using BeachMatchCore directly
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
+import { useLiveScores } from '../hooks/useLiveScores';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
 import DateNavigator from '../components/DateNavigator/DateNavigator';
+import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
@@ -35,10 +37,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
   
-  // Filter states for the sticky section
+  // Filter states for external control of MatchListV2
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [showFilters, setShowFilters] = useState(false);
   const [courtFilter, setCourtFilter] = useState<string>('All');
+  const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
   
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -62,6 +64,32 @@ const TournamentDetailScreenContent: React.FC = () => {
     syncStatus
   } = useAssignmentStatus();
 
+  // Get match numbers for live score polling
+  const matchNumbers = React.useMemo(() => {
+    if (!matches) return [];
+    return matches
+      .filter(match => {
+        // Only poll for matches that are likely to have live scores
+        const status = match.status;
+        return status === 'InProgress' || status === 'Scheduled';
+      })
+      .map(match => match.matchNumber);
+  }, [matches]);
+
+  // Live scores hook with automatic lifecycle management
+  const {
+    liveScores,
+    isLoading: liveScoresLoading,
+    isOnline: liveScoresOnline,
+    isPolling,
+    getLiveScore,
+    refreshLiveScores,
+    statistics: liveScoreStats
+  } = useLiveScores({
+    matchNumbers,
+    autoStart: true // Auto-start polling when screen is focused
+  });
+
   // Extract unique dates from matches for DateNavigator
   const uniqueDates = React.useMemo(() => {
     if (!matches) return [];
@@ -79,11 +107,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     return Array.from(new Set(validDates)).sort();
   }, [matches]);
 
-  // Extract unique courts
-  const uniqueCourts = React.useMemo(() => {
-    if (!matches) return [];
-    return Array.from(new Set(matches.map(match => match.court.courtNumber))).sort();
-  }, [matches]);
 
   // Function to get match count per date for DateNavigator
   const getMatchCountForDate = (date: string): number => {
@@ -793,48 +816,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                   />
                 )}
                 
-                {activeTab === 'schedule' && (
-                  <>
-                    <TouchableOpacity 
-                      style={styles.filterToggleButton}
-                      onPress={() => setShowFilters(!showFilters)}
-                    >
-                      <Text style={styles.filterToggleText}>
-                        {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
-                      </Text>
-                    </TouchableOpacity>
-                    {showFilters && (
-                      <View style={styles.filtersContainer}>
-                        {uniqueCourts.length > 1 && (
-                          <View style={styles.filterGroup}>
-                            <Text style={styles.filterLabel}>Court:</Text>
-                            <View style={styles.filterButtons}>
-                              <TouchableOpacity
-                                style={[styles.filterButton, courtFilter === 'All' && styles.filterButtonActive]}
-                                onPress={() => setCourtFilter('All')}
-                              >
-                                <Text style={[styles.filterButtonText, courtFilter === 'All' && styles.filterButtonTextActive]}>
-                                  All
-                                </Text>
-                              </TouchableOpacity>
-                              {uniqueCourts.map(court => (
-                                <TouchableOpacity
-                                  key={court}
-                                  style={[styles.filterButton, courtFilter === court && styles.filterButtonActive]}
-                                  onPress={() => setCourtFilter(court)}
-                                >
-                                  <Text style={[styles.filterButtonText, courtFilter === court && styles.filterButtonTextActive]}>
-                                    {court === 'CC' ? 'CC' : `C${court}`}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </View>
-                          </View>
-                        )}
-                      </View>
-                    )}
-                  </>
-                )}
               </View>
             </View>
 
@@ -842,6 +823,67 @@ const TournamentDetailScreenContent: React.FC = () => {
             <View style={styles.tabContent}>
               {activeTab === 'schedule' && (
                 <>
+                  {/* Live Score Cards for InProgress/Scheduled matches */}
+                  {matches && matches.length > 0 && (
+                    <View style={styles.liveScoresContainer}>
+                      {matches
+                        .filter(match => {
+                          // Show LiveScoreCard for matches that could have live data
+                          const status = match.status;
+                          const matchDate = new Date(match.scheduledDateTime);
+                          const selectedMatchDate = matchDate.toISOString().split('T')[0];
+                          
+                          // Only show for selected date and active/scheduled matches
+                          return (
+                            selectedMatchDate === selectedDate &&
+                            (status === 'InProgress' || status === 'Scheduled')
+                          );
+                        })
+                        .map(match => {
+                          const liveScore = getLiveScore(match.matchNumber);
+                          const liveScoreState = liveScores[match.matchNumber];
+                          
+                          return (
+                            <LiveScoreCard
+                              key={match.matchNumber}
+                              matchNo={match.matchNumber}
+                              beachLive={liveScore || undefined}
+                              loading={liveScoreState?.isLoading || false}
+                              error={liveScoreState?.error || undefined}
+                              fallbackMatch={{
+                                no: match.matchNumber,
+                                status: match.status as any,
+                                teamA: {
+                                  name: match.teamA.name,
+                                  federationCode: match.teamA.countryCode,
+                                  players: []
+                                },
+                                teamB: {
+                                  name: match.teamB.name,
+                                  federationCode: match.teamB.countryCode,
+                                  players: []
+                                },
+                                court: {
+                                  no: parseInt(match.court.courtNumber) || 1,
+                                  name: match.court.courtName || `Court ${match.court.courtNumber}`,
+                                  surface: 'Sand'
+                                },
+                                scheduledDateTime: match.scheduledDateTime,
+                                sets: match.sets?.map(set => ({
+                                  no: set.setNumber,
+                                  pointsTeamA: set.scoreTeamA,
+                                  pointsTeamB: set.scoreTeamB,
+                                  status: set.status
+                                })) || []
+                              } as any}
+                              onRefresh={refreshLiveScores}
+                              style={styles.liveScoreCard}
+                            />
+                          );
+                        })}
+                    </View>
+                  )}
+                  
                   <MatchListV2
                     matches={matches || []}
                     loading={matchesLoading || matches === null}
@@ -856,12 +898,16 @@ const TournamentDetailScreenContent: React.FC = () => {
                       return "No matches available for this tournament";
                     })()}
                     showDateNavigator={false}
-                    showGenderFilter={false}
-                    showStatsInFilter={false}
-                    showCourtFilter={false}
-                    showRefereeFilter={false}
+                    showGenderFilter={true}
+                    showStatsInFilter={true}
+                    showCourtFilter={true}
+                    showRefereeFilter={true}
                     selectedDate={selectedDate}
                     onDateChange={setSelectedDate}
+                    externalCourtFilter={courtFilter}
+                    onCourtFilterChange={setCourtFilter}
+                    externalGenderFilter={genderFilter}
+                    onGenderFilterChange={setGenderFilter}
                   />
                 </>
               )}
@@ -1299,57 +1345,14 @@ const styles = StyleSheet.create({
     color: '#0F4C75', // Blue text
   },
 
-  // Filter styles for sticky section
-  filterToggleButton: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
+
+  // Live Scores Container Styles
+  liveScoresContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
-  filterToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  filtersContainer: {
-    marginTop: 8,
-    paddingHorizontal: 8,
-  },
-  filterGroup: {
+  liveScoreCard: {
     marginBottom: 12,
-  },
-  filterLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  filterButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  filterButton: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  filterButtonActive: {
-    backgroundColor: '#1B365D',
-    borderColor: '#1B365D',
-  },
-  filterButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  filterButtonTextActive: {
-    color: '#FFFFFF',
   },
 
 });

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pre
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
 import DateNavigator from '../DateNavigator/DateNavigator';
 import { FlagImage } from '../FlagImage';
+import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
+import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -24,6 +26,10 @@ interface MatchListV2Props {
   customFilters?: React.ReactNode;
   selectedDate?: string; // External selected date to override internal state
   onDateChange?: (date: string) => void; // Callback for date changes
+  externalCourtFilter?: string; // External court filter to override internal state
+  onCourtFilterChange?: (court: string) => void; // Callback for court filter changes
+  externalGenderFilter?: 'All' | 'M' | 'W'; // External gender filter to override internal state
+  onGenderFilterChange?: (gender: 'All' | 'M' | 'W') => void; // Callback for gender filter changes
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -40,9 +46,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   customFilters,
   selectedDate: externalSelectedDate,
   onDateChange: externalOnDateChange,
+  externalCourtFilter,
+  onCourtFilterChange,
+  externalGenderFilter,
+  onGenderFilterChange,
 }) => {
-  // State for collapsible referees
+  // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
+  const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
   
 
   // Initialize filters from localStorage or defaults
@@ -74,6 +85,26 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return 'All';
   });
 
+  // Use external court filter if provided, otherwise internal state
+  const effectiveCourtFilter = externalCourtFilter ?? courtFilter;
+  const setEffectiveCourtFilter = (court: string) => {
+    if (onCourtFilterChange) {
+      onCourtFilterChange(court);
+    } else {
+      setCourtFilter(court);
+    }
+  };
+
+  // Use external gender filter if provided, otherwise internal state
+  const effectiveGenderFilter = externalGenderFilter ?? genderFilter;
+  const setEffectiveGenderFilter = (gender: 'All' | 'M' | 'W') => {
+    if (onGenderFilterChange) {
+      onGenderFilterChange(gender);
+    } else {
+      setGenderFilter(gender);
+    }
+  };
+
   const [refereeFilter, setRefereeFilter] = useState<string>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -99,24 +130,31 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
+        // Force reset to new default - remove this after users have migrated
+        const storedValue = localStorage.getItem('matchlist-sortOrder');
+        if (storedValue === 'desc') {
+          localStorage.setItem('matchlist-sortOrder', 'asc');
+          return 'asc';
+        }
+        return (storedValue as 'asc' | 'desc') || 'asc';
       }
     } catch (error) {
       // localStorage not available, use defaults
     }
-    return 'desc';
+    return 'asc';
   });
 
   const [showFilters, setShowFilters] = useState<boolean>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        const saved = localStorage.getItem('matchlist-showFilters');
-        return saved === 'true'; // Only show if explicitly saved as true
+        // Force reset to closed by default - clear any existing saved state
+        localStorage.setItem('matchlist-showFilters', 'false');
+        return false;
       }
     } catch (error) {
       // localStorage not available, use defaults
     }
-    return false; // Default to hidden
+    return false; // Default to closed
   });
 
   // Persist filters to localStorage
@@ -127,8 +165,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         if (externalSelectedDate === undefined) {
           localStorage.setItem('matchlist-selectedDate', internalSelectedDate);
         }
-        localStorage.setItem('matchlist-genderFilter', genderFilter);
-        localStorage.setItem('matchlist-courtFilter', courtFilter);
+        // Only persist internal gender filter, not external one
+        if (externalGenderFilter === undefined) {
+          localStorage.setItem('matchlist-genderFilter', genderFilter);
+        }
+        // Only persist internal court filter, not external one
+        if (externalCourtFilter === undefined) {
+          localStorage.setItem('matchlist-courtFilter', courtFilter);
+        }
         localStorage.setItem('matchlist-refereeFilter', refereeFilter);
         localStorage.setItem('matchlist-statusFilter', statusFilter);
         localStorage.setItem('matchlist-sortOrder', sortOrder);
@@ -137,7 +181,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     } catch (error) {
       // Failed to save filters to localStorage
     }
-  }, [internalSelectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalSelectedDate]);
+  }, [internalSelectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalSelectedDate, externalCourtFilter, externalGenderFilter]);
 
   // Extract unique dates from matches for DateNavigator
   const uniqueDates = React.useMemo(() => {
@@ -196,7 +240,24 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
-    return Array.from(new Set(matches.map(match => match.court.courtNumber))).sort();
+    const courtNumbers = matches
+      .map(match => match.court?.courtNumber)
+      .filter((courtNumber): courtNumber is string => !!courtNumber)
+      .map(courtNumber => String(courtNumber)); // Ensure all are strings
+    
+    const unique = Array.from(new Set(courtNumbers)).sort();
+    
+    // Debug logging for court extraction
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🏟️ [Court Extraction Debug]:`, {
+        totalMatches: matches.length,
+        matchesWithCourts: courtNumbers.length,
+        uniqueCourts: unique,
+        sampleCourtObjects: matches.slice(0, 3).map(m => ({ id: m.id, court: m.court }))
+      });
+    }
+    
+    return unique;
   }, [matches]);
 
   // Extract unique referees
@@ -224,15 +285,27 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
 
       // Gender filter
-      if (genderFilter !== 'All') {
-        if (!match.tournamentGender || match.tournamentGender !== genderFilter) {
+      if (effectiveGenderFilter !== 'All') {
+        if (!match.tournamentGender || match.tournamentGender !== effectiveGenderFilter) {
           return false;
         }
       }
 
       // Court filter
-      if (courtFilter !== 'All' && match.court.courtNumber !== courtFilter) {
-        return false;
+      if (effectiveCourtFilter !== 'All') {
+        const matchCourtNumber = match.court?.courtNumber;
+        // Debug logging for court filter issues
+        if (process.env.NODE_ENV === 'development' && match.id && match.id.endsWith('01')) {
+          console.log(`🏟️ [Court Filter Debug] Match ${match.id}:`, {
+            effectiveCourtFilter,
+            matchCourtNumber,
+            fullCourtObject: match.court,
+            willFilter: !matchCourtNumber || matchCourtNumber !== effectiveCourtFilter
+          });
+        }
+        if (!matchCourtNumber || String(matchCourtNumber) !== String(effectiveCourtFilter)) {
+          return false;
+        }
       }
 
       // Referee filter
@@ -273,7 +346,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         return dateA.getTime() - dateB.getTime(); // Ascending (oldest first)
       }
     });
-  }, [matches, selectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
+  }, [matches, selectedDate, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
 
 
   // Group matches by date
@@ -383,6 +456,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const renderMatch = (match: BeachMatchCore) => {
     const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
     
+    // Extract proper round display data using transformer service
+    const roundData = MatchDataTransformer.getRoundDisplayData(match as any);
+    
     const matchWithResult = match;
     
     return (
@@ -413,7 +489,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           
           <View style={styles.rightBadgeContainer}>
             <View style={[styles.statusBadge, { backgroundColor: '#6B7280' }]}>
-              <Text style={styles.statusText}>{(match as any).NoRound || 'Round TBD'}</Text>
+              <RoundPhaseDisplay
+                round={roundData.round}
+                phase={roundData.phase}
+                emphasis="medium"
+                color="textPrimary"
+                style={styles.statusText}
+              />
             </View>
           </View>
         </View>
@@ -588,20 +670,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             <Text style={styles.filterLabel}>Court:</Text>
             <View style={styles.filterButtons}>
               <TouchableOpacity
-                style={[styles.filterButton, courtFilter === 'All' && styles.filterButtonActive]}
-                onPress={() => setCourtFilter('All')}
+                style={[styles.filterButton, effectiveCourtFilter === 'All' && styles.filterButtonActive]}
+                onPress={() => setEffectiveCourtFilter('All')}
               >
-                <Text style={[styles.filterButtonText, courtFilter === 'All' && styles.filterButtonTextActive]}>
+                <Text style={[styles.filterButtonText, effectiveCourtFilter === 'All' && styles.filterButtonTextActive]}>
                   All
                 </Text>
               </TouchableOpacity>
               {uniqueCourts.map(court => (
                 <TouchableOpacity
                   key={court}
-                  style={[styles.filterButton, courtFilter === court && styles.filterButtonActive]}
-                  onPress={() => setCourtFilter(court)}
+                  style={[styles.filterButton, effectiveCourtFilter === court && styles.filterButtonActive]}
+                  onPress={() => setEffectiveCourtFilter(court)}
                 >
-                  <Text style={[styles.filterButtonText, courtFilter === court && styles.filterButtonTextActive]}>
+                  <Text style={[styles.filterButtonText, effectiveCourtFilter === court && styles.filterButtonTextActive]}>
                     {court === 'CC' ? 'CC' : `C${court}`}
                   </Text>
                 </TouchableOpacity>
@@ -613,46 +695,78 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         {showRefereeFilter && uniqueReferees.length > 0 && (
           <View style={styles.filterGroup}>
             <Text style={styles.filterLabel}>Referee:</Text>
-            <View style={styles.filterButtons}>
+            <View style={styles.dropdownContainer}>
               <TouchableOpacity
-                style={[styles.filterButton, refereeFilter === 'All' && styles.filterButtonActive]}
-                onPress={() => setRefereeFilter('All')}
+                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
+                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
               >
-                <Text style={[styles.filterButtonText, refereeFilter === 'All' && styles.filterButtonTextActive]}>
-                  All
+                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
+                  {refereeFilter === 'All' ? 'ALL' : refereeFilter.split(' ').pop()}
+                </Text>
+                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
+                  {showRefereeDropdown ? '▲' : '▼'}
                 </Text>
               </TouchableOpacity>
-              {uniqueReferees.slice(0, 5).map(referee => (
+              
+              {showRefereeDropdown && (
+                <>
+                  <Pressable
+                    style={styles.dropdownOverlay}
+                    onPress={() => setShowRefereeDropdown(false)}
+                  />
+                  <View style={styles.dropdownList}>
+                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                      <TouchableOpacity
+                        style={[styles.dropdownItem, refereeFilter === 'All' && styles.dropdownItemActive]}
+                        onPress={() => {
+                          setRefereeFilter('All');
+                          setShowRefereeDropdown(false);
+                        }}
+                      >
+                        <Text style={[styles.dropdownItemText, refereeFilter === 'All' && styles.dropdownItemTextActive]}>
+                          ALL
+                        </Text>
+                      </TouchableOpacity>
+                      {uniqueReferees.map(referee => (
+                        <TouchableOpacity
+                          key={referee}
+                          style={[styles.dropdownItem, refereeFilter === referee && styles.dropdownItemActive]}
+                          onPress={() => {
+                            setRefereeFilter(referee);
+                            setShowRefereeDropdown(false);
+                          }}
+                        >
+                          <Text style={[styles.dropdownItemText, refereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
+                            {referee}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        )}
+
+        {showGenderFilter && (
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterLabel}>Gender:</Text>
+            <View style={styles.filterButtons}>
+              {(['All', 'M', 'W'] as const).map(gender => (
                 <TouchableOpacity
-                  key={referee}
-                  style={[styles.filterButton, refereeFilter === referee && styles.filterButtonActive]}
-                  onPress={() => setRefereeFilter(referee)}
+                  key={gender}
+                  style={[styles.filterButton, effectiveGenderFilter === gender && styles.filterButtonActive]}
+                  onPress={() => setEffectiveGenderFilter(gender)}
                 >
-                  <Text style={[styles.filterButtonText, refereeFilter === referee && styles.filterButtonTextActive]} numberOfLines={1}>
-                    {referee.split(' ').pop()}
+                  <Text style={[styles.filterButtonText, effectiveGenderFilter === gender && styles.filterButtonTextActive]}>
+                    {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         )}
-
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Gender:</Text>
-          <View style={styles.filterButtons}>
-            {(['All', 'M', 'W'] as const).map(gender => (
-              <TouchableOpacity
-                key={gender}
-                style={[styles.filterButton, genderFilter === gender && styles.filterButtonActive]}
-                onPress={() => setGenderFilter(gender)}
-              >
-                <Text style={[styles.filterButtonText, genderFilter === gender && styles.filterButtonTextActive]}>
-                  {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
 
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Sort:</Text>
@@ -1130,5 +1244,94 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
+  },
+  
+  // Dropdown styles
+  dropdownContainer: {
+    position: 'relative',
+    zIndex: 1000,
+  },
+  dropdownButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  dropdownButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+  dropdownButtonText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    flex: 1,
+  },
+  dropdownButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  dropdownArrow: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginLeft: 8,
+  },
+  dropdownArrowActive: {
+    color: '#FFFFFF',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    zIndex: 999,
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    marginTop: 2,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1001,
+  },
+  dropdownScrollView: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  dropdownItemActive: {
+    backgroundColor: '#EFF6FF',
+  },
+  dropdownItemText: {
+    fontSize: 12,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  dropdownItemTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
   },
 });

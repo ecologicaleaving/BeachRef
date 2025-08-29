@@ -239,14 +239,6 @@ export class VisApiClient implements IVisApiClient {
         lastError = error as Error;
         
         // Log errors in non-production environments only
-        if (process.env.NODE_ENV === 'development' && this.config.enableLogging) {
-          console.warn(`VIS API ${endpoint} attempt ${attempt} failed:`, {
-            message: error.message,
-            stack: error.stack,
-            name: error.name,
-            cause: error.cause || 'N/A'
-          });
-        }
         
         // Don't retry on last attempt
         if (attempt < this.retryConfig.maxAttempts) {
@@ -276,15 +268,6 @@ export class VisApiClient implements IVisApiClient {
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
 
-      if (this.config.enableLogging) {
-        console.log(`🔍 [VisApiClient] Making HTTP request:`, {
-          url: this.config.baseUrl,
-          method: 'POST',
-          headers,
-          bodyLength: formData.length,
-          xmlRequest: xmlRequest.substring(0, 200) + '...'
-        });
-      }
 
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -293,13 +276,6 @@ export class VisApiClient implements IVisApiClient {
         signal: controller.signal
       });
 
-      if (this.config.enableLogging) {
-        console.log(`🔍 [VisApiClient] HTTP response:`, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

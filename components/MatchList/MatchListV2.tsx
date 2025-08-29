@@ -278,15 +278,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     const unique = Array.from(new Set(courtNumbers)).sort();
     
-    // Debug logging for court extraction
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🏟️ [Court Extraction Debug]:`, {
-        totalMatches: matches.length,
-        matchesWithCourts: courtNumbers.length,
-        uniqueCourts: unique,
-        sampleCourtObjects: matches.slice(0, 3).map(m => ({ id: m.id, court: m.court }))
-      });
-    }
     
     return unique;
   }, [matches]);
@@ -329,15 +320,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Court filter
       if (effectiveCourtFilter !== 'All') {
         const matchCourtNumber = match.court?.courtNumber;
-        // Debug logging for court filter issues
-        if (process.env.NODE_ENV === 'development' && match.id && match.id.endsWith('01')) {
-          console.log(`🏟️ [Court Filter Debug] Match ${match.id}:`, {
-            effectiveCourtFilter,
-            matchCourtNumber,
-            fullCourtObject: match.court,
-            willFilter: !matchCourtNumber || matchCourtNumber !== effectiveCourtFilter
-          });
-        }
         if (!matchCourtNumber || String(matchCourtNumber) !== String(effectiveCourtFilter)) {
           return false;
         }
@@ -745,7 +727,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       )}
 
       {showFilters && (
-        <View style={styles.filtersContainer}>
+        <View style={[
+          styles.filtersContainer,
+          showRefereeDropdown && styles.filtersContainerExpanded
+        ]}>
         {showCourtFilter && uniqueCourts.length > 1 && (
           <View style={styles.filterGroup}>
             <Text style={styles.filterLabel}>Court:</Text>
@@ -769,63 +754,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
-          </View>
-        )}
-
-        {showRefereeFilter && uniqueReferees.length > 0 && (
-          <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Referee:</Text>
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity
-                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
-                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
-              >
-                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
-                  {refereeFilter === 'All' ? 'ALL' : refereeFilter.split(' ').pop()}
-                </Text>
-                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
-                  {showRefereeDropdown ? '▲' : '▼'}
-                </Text>
-              </TouchableOpacity>
-              
-              {showRefereeDropdown && (
-                <>
-                  <Pressable
-                    style={styles.dropdownOverlay}
-                    onPress={() => setShowRefereeDropdown(false)}
-                  />
-                  <View style={styles.dropdownList}>
-                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                      <TouchableOpacity
-                        style={[styles.dropdownItem, refereeFilter === 'All' && styles.dropdownItemActive]}
-                        onPress={() => {
-                          setRefereeFilter('All');
-                          setShowRefereeDropdown(false);
-                        }}
-                      >
-                        <Text style={[styles.dropdownItemText, refereeFilter === 'All' && styles.dropdownItemTextActive]}>
-                          ALL
-                        </Text>
-                      </TouchableOpacity>
-                      {uniqueReferees.map(referee => (
-                        <TouchableOpacity
-                          key={referee}
-                          style={[styles.dropdownItem, refereeFilter === referee && styles.dropdownItemActive]}
-                          onPress={() => {
-                            setRefereeFilter(referee);
-                            setShowRefereeDropdown(false);
-                          }}
-                        >
-                          <Text style={[styles.dropdownItemText, refereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
-                            {referee}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </>
-              )}
             </View>
           </View>
         )}
@@ -888,6 +816,64 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         </View>
 
+        {/* Referee Filter - positioned LAST to render above other filters */}
+        {showRefereeFilter && uniqueReferees.length > 0 && (
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterLabel}>Referee:</Text>
+            <View style={styles.dropdownContainer}>
+              <TouchableOpacity
+                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
+                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+              >
+                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
+                  {refereeFilter === 'All' ? 'ALL' : refereeFilter.split(' ').pop()}
+                </Text>
+                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
+                  {showRefereeDropdown ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+              
+              {showRefereeDropdown && (
+                <>
+                  <Pressable
+                    style={styles.dropdownOverlay}
+                    onPress={() => setShowRefereeDropdown(false)}
+                  />
+                  <View style={styles.dropdownList}>
+                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                      <TouchableOpacity
+                        style={[styles.dropdownItem, refereeFilter === 'All' && styles.dropdownItemActive]}
+                        onPress={() => {
+                          setRefereeFilter('All');
+                          setShowRefereeDropdown(false);
+                        }}
+                      >
+                        <Text style={[styles.dropdownItemText, refereeFilter === 'All' && styles.dropdownItemTextActive]}>
+                          ALL
+                        </Text>
+                      </TouchableOpacity>
+                      {uniqueReferees.map(referee => (
+                        <TouchableOpacity
+                          key={referee}
+                          style={[styles.dropdownItem, refereeFilter === referee && styles.dropdownItemActive]}
+                          onPress={() => {
+                            setRefereeFilter(referee);
+                            setShowRefereeDropdown(false);
+                          }}
+                        >
+                          <Text style={[styles.dropdownItemText, refereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
+                            {referee}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        )}
+
         {customFilters}
         </View>
       )}
@@ -927,6 +913,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    overflow: 'visible',
   },
   filterToggleButton: {
     backgroundColor: '#F3F4F6',
@@ -976,9 +963,16 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+    overflow: 'visible',
+  },
+  filtersContainerExpanded: {
+    paddingBottom: 220, // Extra space for dropdown when open
+    zIndex: 99999,
   },
   filterGroup: {
     marginBottom: 12,
+    position: 'relative',
+    zIndex: 50000,
   },
   filterLabel: {
     fontSize: 14,
@@ -1364,7 +1358,7 @@ const styles = StyleSheet.create({
   // Dropdown styles
   dropdownContainer: {
     position: 'relative',
-    zIndex: 1000,
+    zIndex: 99999,
   },
   dropdownButton: {
     backgroundColor: '#FFFFFF',
@@ -1405,7 +1399,7 @@ const styles = StyleSheet.create({
     left: -1000,
     right: -1000,
     bottom: -1000,
-    zIndex: 999,
+    zIndex: 99998,
   },
   dropdownList: {
     position: 'absolute',
@@ -1425,8 +1419,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
-    zIndex: 1001,
+    elevation: 100,
+    zIndex: 100000,
+    minWidth: 150, // Ensure minimum width
   },
   dropdownScrollView: {
     maxHeight: 200,

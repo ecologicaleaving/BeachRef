@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
@@ -36,8 +37,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
+  const [refreshing, setRefreshing] = useState(false);
   
-  // Filter states for external control of MatchListV2
+  // Filter states for external control of MatchListV2 - preserved during refresh
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [courtFilter, setCourtFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
@@ -657,6 +659,28 @@ const TournamentDetailScreenContent: React.FC = () => {
     // Note: Don't set setMatchesLoading(false) in finally - async parsing handles it
   };
 
+  // Pull-to-refresh function that preserves user filters
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    
+    try {
+      // Refresh tournament details and matches while preserving filters
+      await Promise.all([
+        loadTournamentDetails(),
+        loadMatches()
+      ]);
+      
+      // Refresh live scores if available
+      if (refreshLiveScores) {
+        refreshLiveScores();
+      }
+    } catch (error) {
+      console.error('Error refreshing tournament data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshLiveScores]);
+
   
 
   useEffect(() => {
@@ -711,6 +735,16 @@ const TournamentDetailScreenContent: React.FC = () => {
         style={styles.scrollView} 
         contentContainerStyle={styles.scrollContent}
         stickyHeaderIndices={[1]} // Make the tabs section sticky (after tournament card)
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#FF6B35']} // Android
+            tintColor="#FF6B35" // iOS
+            title="Pull to refresh tournament data"
+            titleColor="#666"
+          />
+        }
       >
         {/* Loading state - when active, shows instead of content */}
         {detailsLoading ? (

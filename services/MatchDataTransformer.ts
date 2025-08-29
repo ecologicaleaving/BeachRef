@@ -40,43 +40,43 @@ export class MatchDataTransformer {
     if (process.env.NODE_ENV === 'development') {
       console.log(`🔍 [MatchDataTransformer] Processing match:`, {
         matchNo: match.No,
-        Round: visMatch.Round,
-        RoundPhase: visMatch.RoundPhase,
-        RoundName: visMatch.RoundName,
-        RoundCode: visMatch.RoundCode,
+        round: visMatch.round,
+        roundPhase: visMatch.roundPhase,
+        roundName: visMatch.roundName,
+        legacyRound: match.Round,
         component: 'MatchDataTransformer'
       });
     }
     
-    // Priority 1: Use RoundName if available (pre-formatted by API)
-    if (visMatch.RoundName && typeof visMatch.RoundName === 'string' && visMatch.RoundName.trim() !== '') {
+    // Priority 1: Use roundName if available (pre-formatted by API)
+    if (visMatch.roundName && typeof visMatch.roundName === 'string' && visMatch.roundName.trim() !== '') {
       return {
-        round: visMatch.RoundName.trim(),
-        phase: visMatch.RoundPhase
+        round: visMatch.roundName.trim(),
+        phase: visMatch.roundPhase
       };
     }
     
-    // Priority 2: Use Round + RoundPhase combination
-    if (visMatch.Round && visMatch.RoundPhase) {
+    // Priority 2: Use round + roundPhase combination
+    if (visMatch.round && visMatch.roundPhase) {
       return {
-        round: String(visMatch.Round).trim(),
-        phase: String(visMatch.RoundPhase).trim()
+        round: String(visMatch.round).trim(),
+        phase: String(visMatch.roundPhase).trim()
       };
     }
     
     // Priority 3: Individual field fallbacks
-    if (visMatch.Round) {
+    if (visMatch.round) {
       return {
-        round: String(visMatch.Round).trim(),
-        phase: visMatch.RoundPhase
+        round: String(visMatch.round).trim(),
+        phase: visMatch.roundPhase
       };
     }
     
-    if (visMatch.RoundPhase) {
-      // Special handling for RoundPhase-only scenarios
-      const roundPhase = String(visMatch.RoundPhase).trim();
+    if (visMatch.roundPhase) {
+      // Special handling for roundPhase-only scenarios
+      const roundPhase = String(visMatch.roundPhase).trim();
       
-      // If RoundPhase is a number, it needs Round context for proper display
+      // If roundPhase is a number, it needs round context for proper display
       if (/^[1-4]$/.test(roundPhase)) {
         return {
           round: 'TBD', // Will trigger fallback formatting
@@ -84,7 +84,7 @@ export class MatchDataTransformer {
         };
       }
       
-      // If RoundPhase is a string enum, use it directly
+      // If roundPhase is a string enum, use it directly
       return {
         round: roundPhase,
         phase: roundPhase
@@ -105,9 +105,9 @@ export class MatchDataTransformer {
   static hasValidRoundData(match: BeachMatch): boolean {
     const visMatch = match as any;
     return !!(
-      visMatch.RoundName ||
-      visMatch.Round ||
-      visMatch.RoundPhase ||
+      visMatch.roundName ||
+      visMatch.round ||
+      visMatch.roundPhase ||
       match.Round
     );
   }
@@ -120,14 +120,14 @@ export class MatchDataTransformer {
     const visMatch = match as any;
     return {
       matchNo: match.No,
-      hasRoundName: !!visMatch.RoundName,
-      hasRound: !!visMatch.Round,
-      hasRoundPhase: !!visMatch.RoundPhase,
+      hasRoundName: !!visMatch.roundName,
+      hasRound: !!visMatch.round,
+      hasRoundPhase: !!visMatch.roundPhase,
       hasLegacyRound: !!match.Round,
       values: {
-        RoundName: visMatch.RoundName,
-        Round: visMatch.Round,
-        RoundPhase: visMatch.RoundPhase,
+        roundName: visMatch.roundName,
+        round: visMatch.round,
+        roundPhase: visMatch.roundPhase,
         legacyRound: match.Round
       }
     };

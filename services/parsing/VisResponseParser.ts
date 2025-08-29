@@ -280,6 +280,15 @@ export class VisResponseParser {
     const visNo = this.extractXmlAttribute(matchXml, 'No');
     const matchCode = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
     const round = this.extractXmlAttribute(matchXml, 'Round') || '';
+    const roundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase') || '';
+    const roundName = this.extractXmlAttribute(matchXml, 'RoundName') || '';
+    
+    // Debug logging to see actual API data
+    console.log(`🔍 [VisResponseParser] Match ${matchCode}:`);
+    console.log(`  Round="${round}"`);
+    console.log(`  RoundPhase="${roundPhase}"`); 
+    console.log(`  RoundName="${roundName}"`);
+    console.log(`  Full XML: ${matchXml.substring(0, 300)}...`);
     
     if (!visNo || !matchCode) {
       return null;
@@ -325,6 +334,9 @@ export class VisResponseParser {
     const result = this.parseMatchResult(matchXml);
     const importance = determineMatchImportance(round, this.extractXmlAttribute(matchXml, 'Phase'));
 
+    // Final debug log before returning
+    console.log(`🔍 [VisResponseParser] FINAL RETURN - Match ${matchCode}: round="${round}", RoundPhase="${roundPhase}"`);
+
     return {
       id,
       visNo,
@@ -333,6 +345,8 @@ export class VisResponseParser {
       tournamentId,
       matchCode,
       round,
+      roundPhase: roundPhase,
+      roundName: roundName,
       phaseCode: this.extractXmlAttribute(matchXml, 'Phase'),
       status,
       court,
@@ -346,7 +360,7 @@ export class VisResponseParser {
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
       weather: this.extractXmlAttribute(matchXml, 'Weather'),
       importance
-    };
+    } as any;
   }
 
   /**

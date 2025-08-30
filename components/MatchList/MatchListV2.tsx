@@ -384,8 +384,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       if (aIsRunning && !bIsRunning) return -1;
       if (!aIsRunning && bIsRunning) return 1;
       
-      // Priority 2: For live tournament context, prioritize matches around current time
-      if (!aIsRunning && !bIsRunning) {
+      // Priority 2: In timeline mode, keep simple chronological order
+      // Skip complex proximity logic when showing all days
+      if (!aIsRunning && !bIsRunning && !enableTimelineView && !showAllDays) {
         // Calculate distance from current time for both matches
         const aDistance = Math.abs(dateA.getTime() - now.getTime());
         const bDistance = Math.abs(dateB.getTime() - now.getTime());
@@ -435,6 +436,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Track next upcoming match (first future match)
       if (matchTime.getTime() >= now.getTime() && nextUpcomingIndex === -1) {
         nextUpcomingIndex = i;
+        console.log(`Found first upcoming match at index ${i}: ${match.scheduledDateTime}`);
       }
 
       // Track most recent past match

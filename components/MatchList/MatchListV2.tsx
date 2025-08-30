@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
 import DateNavigator from '../DateNavigator/DateNavigator';
 import { FlagImage } from '../FlagImage';
@@ -32,6 +32,7 @@ interface MatchListV2Props {
   onCourtFilterChange?: (court: string) => void; // Callback for court filter changes
   externalGenderFilter?: 'All' | 'M' | 'W'; // External gender filter to override internal state
   onGenderFilterChange?: (gender: 'All' | 'M' | 'W') => void; // Callback for gender filter changes
+  onMatchesReady?: (matches: ExtendedBeachMatch[], targetIndex: number) => void; // Callback when matches are ready with target scroll index
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -52,6 +53,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   onCourtFilterChange,
   externalGenderFilter,
   onGenderFilterChange,
+  onMatchesReady,
 }) => {
   // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
@@ -60,6 +62,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
   const [setScoreService] = useState(() => new SetScoreService());
+  
   
 
   // Initialize filters from localStorage or defaults
@@ -133,22 +136,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return 'All';
   });
 
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Force sort order to ascending on component mount
+  useEffect(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        // Force reset to new default - remove this after users have migrated
-        const storedValue = localStorage.getItem('matchlist-sortOrder');
-        if (storedValue === 'desc') {
-          localStorage.setItem('matchlist-sortOrder', 'asc');
-          return 'asc';
-        }
-        return (storedValue as 'asc' | 'desc') || 'asc';
+        localStorage.removeItem('matchlist-sortOrder');
+        localStorage.setItem('matchlist-sortOrder', 'asc');
       }
     } catch (error) {
-      // localStorage not available, use defaults
+      // localStorage not available
     }
-    return 'asc';
-  });
+    setSortOrder('asc');
+  }, []); // Run only once on mount
 
   const [showFilters, setShowFilters] = useState<boolean>(() => {
     try {
@@ -213,6 +214,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [matches, setScoreService]);
 
+  // Reset filters when tournament changes (matches change)
+  React.useEffect(() => {
+    // Reset only content filters when matches array changes (indicates tournament change)
+    // Keep sort order preference
+    if (matches.length > 0) {
+      setEffectiveCourtFilter('All');
+      setEffectiveGenderFilter('All');
+      setRefereeFilter('All');
+      setStatusFilter('All');
+      setShowRefereeDropdown(false);
+    }
+  }, [matches]); // Only depend on matches array reference change
 
   // Extract unique dates from matches for DateNavigator
   const uniqueDates = React.useMemo(() => {
@@ -353,19 +366,81 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       return true;
     }).sort((a, b) => {
-      // Sort by date and time
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
+      const now = new Date();
       
+      // Phase 2: Priority logic - start from current time context
+      const aIsRunning = a.status === MatchStatus.RUNNING;
+      const bIsRunning = b.status === MatchStatus.RUNNING;
+      const aIsFuture = dateA.getTime() >= now.getTime();
+      const bIsFuture = dateB.getTime() >= now.getTime();
+      
+      // Priority 1: Currently running matches always first
+      if (aIsRunning && !bIsRunning) return -1;
+      if (!aIsRunning && bIsRunning) return 1;
+      
+      // Priority 2: For live tournament context, prioritize matches around current time
+      if (!aIsRunning && !bIsRunning) {
+        // Calculate distance from current time for both matches
+        const aDistance = Math.abs(dateA.getTime() - now.getTime());
+        const bDistance = Math.abs(dateB.getTime() - now.getTime());
+        
+        // If one is very close to current time (within 30 minutes), prioritize it
+        const closeTimeWindow = 30 * 60 * 1000; // 30 minutes
+        const aIsClose = aDistance <= closeTimeWindow;
+        const bIsClose = bDistance <= closeTimeWindow;
+        
+        if (aIsClose && !bIsClose) return -1;
+        if (!aIsClose && bIsClose) return 1;
+        
+        // If both are close or both are far, continue to normal sorting
+      }
+      
+      // Phase 1: Standard chronological sorting for the rest
       if (sortOrder === 'desc') {
         return dateB.getTime() - dateA.getTime(); // Descending (newest first)
       } else {
-        return dateA.getTime() - dateB.getTime(); // Ascending (oldest first)
+        return dateA.getTime() - dateB.getTime(); // Ascending (earliest first)
       }
     });
 
     // Final result logging will happen in UI render
   }, [matches, enhancedMatches, selectedDate, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
+
+  // Calculate target match for auto-scroll and notify parent
+  useEffect(() => {
+    if (filteredMatches.length === 0 || !onMatchesReady) return;
+
+    const now = new Date();
+    let targetMatchIndex = -1;
+
+    // Find the most relevant match to scroll to
+    for (let i = 0; i < filteredMatches.length; i++) {
+      const match = filteredMatches[i];
+      const matchTime = new Date(match.scheduledDateTime);
+
+      // Priority 1: Currently running match
+      if (match.status === MatchStatus.RUNNING) {
+        targetMatchIndex = i;
+        break;
+      }
+
+      // Priority 2: Next upcoming match (first future match)
+      if (matchTime.getTime() >= now.getTime() && targetMatchIndex === -1) {
+        targetMatchIndex = i;
+        break;
+      }
+
+      // Priority 3: Most recent past match (keep updating until we find future match)
+      if (matchTime.getTime() < now.getTime()) {
+        targetMatchIndex = i;
+      }
+    }
+
+    // Notify parent component with matches and target index
+    onMatchesReady(filteredMatches, targetMatchIndex);
+  }, [filteredMatches, onMatchesReady]);
 
 
   // Group matches by date
@@ -438,6 +513,37 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   };
 
+  // Reset all filters to default values
+  const resetFilters = () => {
+    setEffectiveCourtFilter('All');
+    setEffectiveGenderFilter('All');
+    setRefereeFilter('All');
+    setStatusFilter('All');
+    setSortOrder('asc');
+    setShowRefereeDropdown(false);
+  };
+
+  // Check if match is currently live (beach volleyball rules)
+  const isMatchLive = (match: BeachMatchCore): boolean => {
+    // Rule 1: Current time must be past scheduled time
+    if (!match.scheduledDateTime) return false;
+    const matchDate = new Date(match.scheduledDateTime);
+    const now = new Date();
+    const isAfterScheduledTime = matchDate < now;
+    
+    // Rule 2: First set must have started (score different from 0-0)
+    const hasSetScores = match.result?.setScores && match.result.setScores.length >= 2;
+    const firstSetStarted = hasSetScores && (match.result.setScores[0] !== 0 || match.result.setScores[1] !== 0);
+    
+    // Rule 3: Match must not be finished (no team has won 2 sets yet)
+    const team1Sets = match.result?.team1Sets || 0;
+    const team2Sets = match.result?.team2Sets || 0;
+    const matchNotFinished = team1Sets < 2 && team2Sets < 2;
+    
+    // Match is live if ALL three conditions are met
+    return isAfterScheduledTime && firstSetStarted && matchNotFinished;
+  };
+
   // Get status display text and color
   const getStatusDisplay = (status: MatchStatus, matchDateTime?: string): { text: string; color: string } => {
     // Check if match date/time has passed and force "Completed" status
@@ -498,7 +604,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
           
           <View style={styles.timeCourtContainer}>
-            <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
+            <View style={styles.timeContainer}>
+              {isMatchLive(match) && (
+                <View style={styles.liveDot} />
+              )}
+              <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
+            </View>
             <Text style={styles.courtText}>
               {match.court?.courtNumber ? (
                 match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
@@ -563,16 +674,29 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                           const setNumber = Math.floor(i / 2) + 1;
                           const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
                           
+                          // Check if this set is completed
+                          // A set is completed if:
+                          // 1. Match is finished, OR
+                          // 2. One team has winning score with 2+ point lead (21+ for sets 1&2, 15+ for set 3), OR  
+                          // 3. This is not the last set in the array (meaning next set has started)
+                          const isMatchFinished = match.status === MatchStatus.FINISHED;
+                          const isThirdSet = setNumber === 3;
+                          const minWinScore = isThirdSet ? 15 : 21;
+                          const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
+                                                  (team2Score >= minWinScore && team2Score - team1Score >= 2);
+                          const isNotLastSet = setNumber < Math.floor(setScores.length / 2);
+                          const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
+                          
                           sets.push(
                             <View key={setNumber} style={styles.individualSet}>
                               <Text style={[
                                 styles.setScore,
-                                isWinningSet === 1 && styles.winningSetScore
+                                isWinningSet === 1 && isSetComplete && styles.winningSetScore
                               ]}>{team1Score}</Text>
                               <Text style={styles.setScoreSeparator}>-</Text>
                               <Text style={[
                                 styles.setScore,
-                                isWinningSet === 2 && styles.winningSetScore
+                                isWinningSet === 2 && isSetComplete && styles.winningSetScore
                               ]}>{team2Score}</Text>
                             </View>
                           );
@@ -716,14 +840,23 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       {/* Only show filter toggle if any filters are enabled */}
       {(showGenderFilter || showCourtFilter || showRefereeFilter || showStatsInFilter) && (
-        <TouchableOpacity 
-          style={styles.filterToggleButton}
-          onPress={() => setShowFilters(!showFilters)}
-        >
-          <Text style={styles.filterToggleText}>
-            {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.filterControlsContainer}>
+          <TouchableOpacity 
+            style={styles.filterToggleButton}
+            onPress={() => setShowFilters(!showFilters)}
+          >
+            <Text style={styles.filterToggleText}>
+              {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.resetFiltersButton}
+            onPress={resetFilters}
+          >
+            <Text style={styles.resetFiltersText}>Reset Filters</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {showFilters && (
@@ -887,7 +1020,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         </View>
       )}
 
-      <ScrollView style={styles.matchesList} showsVerticalScrollIndicator={false}>
+      <View style={styles.matchesList}>
         {filteredMatches.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>{emptyMessage}</Text>
@@ -904,7 +1037,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             ))}
           </>
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -915,21 +1048,40 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     overflow: 'visible',
   },
+  filterControlsContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    gap: 8,
+  },
   filterToggleButton: {
     backgroundColor: '#F3F4F6',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    flex: 1,
   },
   filterToggleText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+  },
+  resetFiltersButton: {
+    backgroundColor: '#FEF2F2',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  resetFiltersText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC2626',
   },
   refereeToggleButton: {
     backgroundColor: '#1E40AF',
@@ -1060,6 +1212,17 @@ const styles = StyleSheet.create({
   timeCourtContainer: {
     alignItems: 'center',
     flex: 1,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  liveDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF0000',
   },
   rightBadgeContainer: {
     width: 100,
@@ -1319,7 +1482,8 @@ const styles = StyleSheet.create({
     // Same styling as base genderBadge
   },
   womenBadge: {
-    // Same styling as base genderBadge
+    backgroundColor: '#000000',
+    borderColor: '#000000',
   },
   genderBadgeText: {
     fontSize: 12,
@@ -1330,7 +1494,7 @@ const styles = StyleSheet.create({
     // Same as base genderBadgeText
   },
   womenBadgeText: {
-    // Same as base genderBadgeText
+    color: '#FFFFFF',
   },
   dateHeader: {
     backgroundColor: '#F9FAFB',

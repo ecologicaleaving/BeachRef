@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,38 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [courtFilter, setCourtFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [refereeFilter, setRefereeFilter] = useState<string>('All');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
+  
+  // Ref for auto-scrolling to relevant matches
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Handle auto-scroll when matches are ready
+  const handleMatchesReady = (matches: BeachMatchCore[], targetIndex: number) => {
+    if (targetIndex >= 0 && scrollViewRef.current) {
+      setTimeout(() => {
+        // Calculate scroll position more aggressively
+        // Tournament header (~300px) + Filters (~150px) + target match position
+        const headerHeight = 300;
+        const filtersHeight = 150; 
+        const matchHeight = 140;
+        
+        // Scroll to show target match in upper portion of viewport
+        const scrollY = headerHeight + filtersHeight + Math.max(0, targetIndex - 3) * matchHeight;
+        
+        scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
+        
+        // Also try scrollToEnd if target is near the end
+        if (targetIndex > matches.length * 0.8) {
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 500);
+        }
+      }, 1200);
+    }
+  };
   
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -732,9 +764,10 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       {/* Tournament Info - Scrollable */}
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollView} 
-        contentContainerStyle={styles.scrollContent}
-        stickyHeaderIndices={[1]} // Make the tabs section sticky (after tournament card)
+        stickyHeaderIndices={[1]} // Make the filters section sticky (always index 1)
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -746,15 +779,15 @@ const TournamentDetailScreenContent: React.FC = () => {
           />
         }
       >
-        {/* Loading state - when active, shows instead of content */}
+        {/* Index 0: Tournament Card - will scroll up and disappear */}
         {detailsLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FF6B35" />
-            <Text style={styles.loadingText}>Loading tournament details...</Text>
+          <View style={styles.tournamentCard}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FF6B35" />
+              <Text style={styles.loadingText}>Loading tournament details...</Text>
+            </View>
           </View>
         ) : (
-          <>
-            {/* Index 0: Tournament Card - will scroll up and disappear */}
             <View style={styles.tournamentCard}>
               <View style={styles.tournamentCardHeader}>
                 <View style={styles.tournamentHeaderLeft}>
@@ -812,167 +845,255 @@ const TournamentDetailScreenContent: React.FC = () => {
                 <Text style={styles.dateIcon}>📅</Text>
                 <Text style={styles.tournamentDate}>{getDateRange()}</Text>
               </View>
+
+              {/* Tab Headers - integrated in tournament card for cleaner layout */}
+              <View style={styles.inCardTabHeaders}>
+                <TouchableOpacity
+                  style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
+                  onPress={() => setActiveTab('schedule')}
+                >
+                  <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
+                    Schedule & Results
+                  </Text>
+                </TouchableOpacity>
+                {hasRankingData && (
+                  <TouchableOpacity
+                    style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
+                    onPress={() => setActiveTab('ranking')}
+                  >
+                    <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
+                      Ranking
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
-            {/* Index 1: Sticky Tabs and Filters - will stick to top when tournament card scrolls up */}
-            <View style={styles.stickyTabsWrapper}>
-              <View style={styles.tabsSection}>
-                <View style={styles.tabHeadersContainer}>
-                  <View style={styles.tabHeaders}>
-                    <TouchableOpacity
-                      style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
-                      onPress={() => setActiveTab('schedule')}
-                    >
-                      <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
-                        Schedule & Results
-                      </Text>
-                    </TouchableOpacity>
-                    {hasRankingData && (
-                      <TouchableOpacity
-                        style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
-                        onPress={() => setActiveTab('ranking')}
-                      >
-                        <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
-                          Ranking
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-                
-                {/* DateNavigator and filters - always visible for schedule tab */}
-                {activeTab === 'schedule' && uniqueDates.length > 0 && (
+        )}
+
+        {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls */}
+        <View style={styles.stickyFiltersWrapper}>
+          {!detailsLoading && activeTab === 'schedule' ? (
+            <View>
+              {/* Date Navigator Section */}
+              {uniqueDates.length > 0 && (
+                <View style={styles.dateNavigatorSection}>
                   <DateNavigator
                     availableDates={uniqueDates}
                     selectedDate={selectedDate}
                     onDateChange={setSelectedDate}
                     getMatchCount={getMatchCountForDate}
                   />
-                )}
-                
-              </View>
-            </View>
-
-            {/* Index 2: Tab Content - scrollable content below sticky tabs */}
-            <View style={styles.tabContent}>
-              {activeTab === 'schedule' && (
-                <>
-                  {/* Live Score Cards for InProgress/Scheduled matches */}
-                  {matches && matches.length > 0 && (
-                    <View style={styles.liveScoresContainer}>
-                      {matches
-                        .filter(match => {
-                          // Show LiveScoreCard for matches that could have live data
-                          const status = match.status;
-                          const matchDate = new Date(match.scheduledDateTime);
-                          const selectedMatchDate = matchDate.toISOString().split('T')[0];
-                          
-                          // Only show for selected date and active/scheduled matches
-                          return (
-                            selectedMatchDate === selectedDate &&
-                            (status === 'InProgress' || status === 'Scheduled')
-                          );
-                        })
-                        .map(match => {
-                          const liveScore = getLiveScore(match.matchNumber);
-                          const liveScoreState = liveScores[match.matchNumber];
-                          
-                          return (
-                            <LiveScoreCard
-                              key={match.matchNumber}
-                              matchNo={match.matchNumber}
-                              beachLive={liveScore || undefined}
-                              loading={liveScoreState?.isLoading || false}
-                              error={liveScoreState?.error || undefined}
-                              fallbackMatch={{
-                                no: match.matchNumber,
-                                status: match.status as any,
-                                teamA: {
-                                  name: match.teamA.name,
-                                  federationCode: match.teamA.countryCode,
-                                  players: []
-                                },
-                                teamB: {
-                                  name: match.teamB.name,
-                                  federationCode: match.teamB.countryCode,
-                                  players: []
-                                },
-                                court: {
-                                  no: parseInt(match.court.courtNumber) || 1,
-                                  name: match.court.courtName || `Court ${match.court.courtNumber}`,
-                                  surface: 'Sand'
-                                },
-                                scheduledDateTime: match.scheduledDateTime,
-                                sets: match.sets?.map(set => ({
-                                  no: set.setNumber,
-                                  pointsTeamA: set.scoreTeamA,
-                                  pointsTeamB: set.scoreTeamB,
-                                  status: set.status
-                                })) || []
-                              } as any}
-                              onRefresh={refreshLiveScores}
-                              style={styles.liveScoreCard}
-                            />
-                          );
-                        })}
-                    </View>
-                  )}
-                  
-                  <MatchListV2
-                    matches={matches || []}
-                    loading={matchesLoading || matches === null}
-                    title=""
-                    emptyMessage={(() => {
-                      const status = getTournamentStatus();
-                      if (status === 'Completed') {
-                        return "Match data not available for this completed tournament";
-                      } else if (status === 'Upcoming') {
-                        return "Matches will be available when the tournament starts";
-                      }
-                      return "No matches available for this tournament";
-                    })()}
-                    showDateNavigator={false}
-                    showGenderFilter={true}
-                    showStatsInFilter={true}
-                    showCourtFilter={true}
-                    showRefereeFilter={true}
-                    selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
-                    externalCourtFilter={courtFilter}
-                    onCourtFilterChange={setCourtFilter}
-                    externalGenderFilter={genderFilter}
-                    onGenderFilterChange={setGenderFilter}
-                  />
-                </>
-              )}
-              {activeTab === 'ranking' && (
-                <View style={styles.rankingPlaceholder}>
-                  <Text style={styles.rankingPlaceholderText}>
-                    Tournament ranking will be available here
-                  </Text>
                 </View>
               )}
+              
+              {/* Filter Controls Section */}
+              <View style={styles.filterControlsSection}>
+                <View style={styles.filterToggleContainer}>
+                  <TouchableOpacity 
+                    style={styles.filterToggleButton}
+                    onPress={() => setShowFilters(!showFilters)}
+                  >
+                    <Text style={styles.filterToggleText}>
+                      {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.resetFiltersButton}
+                    onPress={() => {
+                      setCourtFilter('All');
+                      setGenderFilter('All');
+                      setStatusFilter('All');
+                      setRefereeFilter('All');
+                      setShowRefereeDropdown(false);
+                    }}
+                  >
+                    <Text style={styles.resetFiltersText}>Reset Filters</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Expanded Filter Options */}
+                {showFilters && matches && matches.length > 0 && (
+                  <View style={styles.expandedFilters}>
+                    {/* Gender Filter */}
+                    <View style={styles.filterGroup}>
+                      <Text style={styles.filterLabel}>Gender:</Text>
+                      <View style={styles.filterButtons}>
+                        {['All', 'M', 'W'].map((gender) => (
+                          <TouchableOpacity
+                            key={gender}
+                            style={[
+                              styles.filterButton,
+                              genderFilter === gender && styles.filterButtonActive
+                            ]}
+                            onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+                          >
+                            <Text style={[
+                              styles.filterButtonText,
+                              genderFilter === gender && styles.filterButtonTextActive
+                            ]}>
+                              {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                    
+                    {/* Court Filter */}
+                    <View style={styles.filterGroup}>
+                      <Text style={styles.filterLabel}>Court:</Text>
+                      <View style={styles.filterButtons}>
+                        <TouchableOpacity
+                          style={[
+                            styles.filterButton,
+                            courtFilter === 'All' && styles.filterButtonActive
+                          ]}
+                          onPress={() => setCourtFilter('All')}
+                        >
+                          <Text style={[
+                            styles.filterButtonText,
+                            courtFilter === 'All' && styles.filterButtonTextActive
+                          ]}>
+                            All Courts
+                          </Text>
+                        </TouchableOpacity>
+                        {Array.from(new Set(matches?.map(m => m.court.courtName) || [])).sort().map((court) => (
+                          <TouchableOpacity
+                            key={court}
+                            style={[
+                              styles.filterButton,
+                              courtFilter === court && styles.filterButtonActive
+                            ]}
+                            onPress={() => setCourtFilter(court)}
+                          >
+                            <Text style={[
+                              styles.filterButtonText,
+                              courtFilter === court && styles.filterButtonTextActive
+                            ]}>
+                              {court}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
             </View>
-          </>
+          ) : (
+            <View style={styles.filtersPlaceholder}>
+              <Text style={styles.filtersPlaceholderText}>
+                {detailsLoading ? 'Loading filters...' : 'Select Schedule tab to see filters'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Content Section - Only show when not loading */}
+        {!detailsLoading && (
+          <View>
+            {activeTab === 'schedule' && (
+              <View style={[styles.tabContent, styles.tabContentSpacing]}>
+                {/* Live Score Cards for InProgress/Scheduled matches */}
+                {matches && matches.length > 0 && (
+                  <View style={styles.liveScoresContainer}>
+                    {matches
+                      .filter(match => {
+                        // Show LiveScoreCard for matches that could have live data
+                        const status = match.status;
+                        const matchDate = new Date(match.scheduledDateTime);
+                        const selectedMatchDate = matchDate.toISOString().split('T')[0];
+                        
+                        // Only show for selected date and active/scheduled matches
+                        return (
+                          selectedMatchDate === selectedDate &&
+                          (status === 'InProgress' || status === 'Scheduled')
+                        );
+                      })
+                      .map(match => {
+                        const liveScore = getLiveScore(match.matchNumber);
+                        const liveScoreState = liveScores[match.matchNumber];
+                        
+                        return (
+                          <LiveScoreCard
+                            key={match.matchNumber}
+                            matchNo={match.matchNumber}
+                            beachLive={liveScore || undefined}
+                            loading={liveScoreState?.isLoading || false}
+                            error={liveScoreState?.error || undefined}
+                            fallbackMatch={{
+                              no: match.matchNumber,
+                              status: match.status as any,
+                              teamA: {
+                                name: match.teamA.name,
+                                federationCode: match.teamA.countryCode,
+                                players: []
+                              },
+                              teamB: {
+                                name: match.teamB.name,
+                                federationCode: match.teamB.countryCode,
+                                players: []
+                              },
+                              court: {
+                                no: parseInt(match.court.courtNumber) || 1,
+                                name: match.court.courtName || `Court ${match.court.courtNumber}`,
+                                surface: 'Sand'
+                              },
+                              scheduledDateTime: match.scheduledDateTime,
+                              sets: match.sets?.map(set => ({
+                                no: set.setNumber,
+                                pointsTeamA: set.scoreTeamA,
+                                pointsTeamB: set.scoreTeamB,
+                                status: set.status
+                              })) || []
+                            } as any}
+                            onRefresh={refreshLiveScores}
+                            style={styles.liveScoreCard}
+                          />
+                        );
+                      })}
+                  </View>
+                )}
+                
+                <MatchListV2
+                  matches={matches || []}
+                  loading={matchesLoading || matches === null}
+                  title=""
+                  emptyMessage={(() => {
+                    const status = getTournamentStatus();
+                    if (status === 'Completed') {
+                      return "Match data not available for this completed tournament";
+                    } else if (status === 'Upcoming') {
+                      return "Matches will be available when the tournament starts";
+                    }
+                    return "No matches available for this tournament";
+                  })()}
+                  showDateNavigator={false}
+                  showGenderFilter={false}
+                  showStatsInFilter={false}
+                  showCourtFilter={false}
+                  showRefereeFilter={false}
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                  externalCourtFilter={courtFilter}
+                  onCourtFilterChange={setCourtFilter}
+                  externalGenderFilter={genderFilter}
+                  onGenderFilterChange={setGenderFilter}
+                  onMatchesReady={handleMatchesReady}
+                />
+              </View>
+            )}
+            {activeTab === 'ranking' && (
+              <View style={[styles.rankingPlaceholder, styles.tabContentSpacing]}>
+                <Text style={styles.rankingPlaceholderText}>
+                  Tournament ranking will be available here
+                </Text>
+              </View>
+            )}
+          </View>
         )}
       </ScrollView>
-
-      <View style={styles.refToolsBottomContainer}>
-        <TouchableOpacity
-          style={styles.refToolsButton}
-          onPress={() => {
-            router.push({
-              pathname: '/ref-mode',
-              params: { 
-                eventNo: tournament.visNo,
-                tournamentName: tournament.name 
-              }
-            });
-          }}
-        >
-          <Text style={styles.refToolsButtonText}>Ref Tools</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -1013,8 +1134,8 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 100, // Space for fixed button
+  tabContentSpacing: {
+    paddingBottom: 20, // Bottom padding for content
   },
   loadingContainer: {
     alignItems: 'center',
@@ -1127,28 +1248,153 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Tabs Section Styles
-  stickyTabsWrapper: {
+  // Tab Headers Styles (non-sticky)
+  tabHeadersWrapper: {
     backgroundColor: '#F5F5F5', // Match container background
     paddingTop: 8,
   },
-  tabsSection: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+  
+  // Sticky Filters Wrapper - Always present container
+  stickyFiltersWrapper: {
     backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
     zIndex: 10,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  
+  // Date Navigator Section
+  dateNavigatorSection: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  
+  // Filter Controls Section
+  filterControlsSection: {
+    paddingHorizontal: 16,
     paddingBottom: 8,
   },
-  tabHeadersContainer: {
+  
+  // Filter Toggle Container
+  filterToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  
+  filterToggleButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#F3F4F6',
+  },
+  
+  filterToggleText: {
+    fontSize: 14,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  
+  resetFiltersButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#FEE2E2',
+  },
+  
+  resetFiltersText: {
+    fontSize: 14,
+    color: '#DC2626',
+    fontWeight: '500',
+  },
+  
+  // Expanded Filters
+  expandedFilters: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  
+  filterGroup: {
     marginBottom: 12,
+  },
+  
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  
+  filterButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  
+  filterButtonActive: {
+    backgroundColor: '#1F2937',
+    borderColor: '#1F2937',
+  },
+  
+  filterButtonText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  
+  filterButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  
+  // In-card tab headers
+  inCardTabHeaders: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 2,
+    marginTop: 16,
+  },
+  
+  // Placeholder when filters not available
+  filtersPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 28,
+  },
+  
+  filtersPlaceholderText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+  },
+  tabHeadersContainer: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabHeaders: {
     flexDirection: 'row',
@@ -1233,43 +1479,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
 
-  // Ref Tools Bottom Container Styles
-  refToolsBottomContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  refToolsButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#FF6B35',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  refToolsButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
 
   // Tournament Card Styles (matching VisTournamentList)
   tournamentCard: {
@@ -1366,11 +1575,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   liveIndicatorPulse: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#FF4444',
-    marginRight: 6,
+    marginRight: 8,
   },
   liveStatusText: {
     fontSize: 18,

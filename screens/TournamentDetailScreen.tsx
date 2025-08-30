@@ -1081,6 +1081,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                   externalGenderFilter={genderFilter}
                   onGenderFilterChange={setGenderFilter}
                   onMatchesReady={handleMatchesReady}
+                  enableTimelineView={true}
+                  showAllDays={true}
                 />
               </View>
             )}

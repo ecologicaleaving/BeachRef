@@ -33,6 +33,8 @@ interface MatchListV2Props {
   externalGenderFilter?: 'All' | 'M' | 'W'; // External gender filter to override internal state
   onGenderFilterChange?: (gender: 'All' | 'M' | 'W') => void; // Callback for gender filter changes
   onMatchesReady?: (matches: ExtendedBeachMatch[], targetIndex: number) => void; // Callback when matches are ready with target scroll index
+  showAllDays?: boolean; // Enhanced: Show all tournament days in timeline view
+  enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -54,6 +56,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   externalGenderFilter,
   onGenderFilterChange,
   onMatchesReady,
+  showAllDays = false,
+  enableTimelineView = false,
 }) => {
   // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
@@ -313,8 +317,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
     
     return matchesToFilter.filter(match => {
-      // Date filter
-      if (selectedDate) {
+      // Date filter - Skip when in timeline view or showAllDays is true
+      if (selectedDate && !enableTimelineView && !showAllDays) {
         const date = new Date(match.scheduledDateTime);
         if (isNaN(date.getTime())) {
           return false; // skip matches with invalid dates
@@ -1029,8 +1033,21 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           <>
             {groupedMatches.map(([date, matches]) => (
               <View key={date}>
-                <View style={styles.dateHeader}>
-                  <Text style={styles.dateHeaderText}>{formatDateHeader(date)}</Text>
+                <View style={[
+                  styles.dateHeader, 
+                  (enableTimelineView || showAllDays) && styles.timelineDateHeader
+                ]}>
+                  <Text style={[
+                    styles.dateHeaderText,
+                    (enableTimelineView || showAllDays) && styles.timelineDateHeaderText
+                  ]}>
+                    {formatDateHeader(date)}
+                  </Text>
+                  {(enableTimelineView || showAllDays) && (
+                    <Text style={styles.matchCountText}>
+                      {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+                    </Text>
+                  )}
                 </View>
                 {matches.map(renderMatch)}
               </View>
@@ -1517,6 +1534,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
+  },
+  
+  // Enhanced timeline date header styles
+  timelineDateHeader: {
+    backgroundColor: '#EFF6FF',
+    borderLeftWidth: 4,
+    borderLeftColor: '#3B82F6',
+    marginTop: 24,
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  timelineDateHeaderText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E40AF',
+  },
+  matchCountText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   
   // Dropdown styles

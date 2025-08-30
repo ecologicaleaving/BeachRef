@@ -418,6 +418,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     const now = new Date();
     let targetMatchIndex = -1;
+    let nextUpcomingIndex = -1;
+    let mostRecentPastIndex = -1;
 
     // Find the most relevant match to scroll to
     for (let i = 0; i < filteredMatches.length; i++) {
@@ -430,15 +432,25 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         break;
       }
 
-      // Priority 2: Next upcoming match (first future match)
-      if (matchTime.getTime() >= now.getTime() && targetMatchIndex === -1) {
-        targetMatchIndex = i;
-        break;
+      // Track next upcoming match (first future match)
+      if (matchTime.getTime() >= now.getTime() && nextUpcomingIndex === -1) {
+        nextUpcomingIndex = i;
       }
 
-      // Priority 3: Most recent past match (keep updating until we find future match)
+      // Track most recent past match
       if (matchTime.getTime() < now.getTime()) {
-        targetMatchIndex = i;
+        mostRecentPastIndex = i;
+      }
+    }
+
+    // Priority logic: Running > Next Upcoming > Most Recent Past
+    if (targetMatchIndex === -1) {
+      if (nextUpcomingIndex !== -1) {
+        // Prefer next upcoming match
+        targetMatchIndex = nextUpcomingIndex;
+      } else if (mostRecentPastIndex !== -1) {
+        // Fallback to most recent past match only if no future matches
+        targetMatchIndex = mostRecentPastIndex;
       }
     }
 

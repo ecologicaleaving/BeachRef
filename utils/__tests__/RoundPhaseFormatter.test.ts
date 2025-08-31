@@ -17,10 +17,10 @@ describe('RoundPhaseFormatter', () => {
         expect(result.accessibilityLabel).toBe('Finals phase matches');
       });
 
-      it('converts RoundPhase "2" to "Bronze Medal"', () => {
+      it('converts RoundPhase "2" to "Bronze"', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('2');
         
-        expect(result.displayName).toBe('Bronze Medal');
+        expect(result.displayName).toBe('Bronze');
         expect(result.originalValue).toBe('2');
         expect(result.emphasis).toBe('critical');
         expect(result.isFinals).toBe(true);

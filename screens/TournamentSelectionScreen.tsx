@@ -359,9 +359,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
         {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
-      <Text style={styles.tournamentLocation}>
-        📍 {getLocation() || 'Location not available'}
-      </Text>
       
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
@@ -380,81 +377,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
 const TournamentSelectionScreen: React.FC = () => {
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
   
-  // Add test tournament data to verify the component works - including LIVE tournaments
-  const testTournaments: TournamentCore[] = [
-    {
-      id: 'live_001',
-      visNo: 'LIVE001',
-      version: 1,
-      lastUpdated: new Date().toISOString(),
-      code: 'BPTROME',
-      name: 'BPT Elite16 Rome',
-      title: 'BPT Elite16 Rome',
-      gender: 'M' as any,
-      tournamentType: 'BPT ELITE' as any,
-      status: 'ACTIVE' as any,
-      dates: {
-        startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Started yesterday
-        endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Ends tomorrow
-      },
-      city: 'Rome',
-      country: 'Italy',
-    },
-    {
-      id: 'live_002',
-      visNo: 'LIVE002',
-      version: 1,
-      lastUpdated: new Date().toISOString(),
-      code: 'CEVVIENNA',
-      name: 'CEV European Championship Vienna',
-      title: 'CEV European Championship Vienna',
-      gender: 'W' as any,
-      tournamentType: 'CEV' as any,
-      status: 'ACTIVE' as any,
-      dates: {
-        startDate: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // Started 12h ago
-        endDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // Ends in 2 days
-      },
-      city: 'Vienna',
-      country: 'Austria',
-    },
-    {
-      id: 'dev_001',
-      visNo: 'DEV001',
-      version: 1,
-      lastUpdated: new Date().toISOString(),
-      code: 'DEVBVB',
-      name: 'BPT Challenger Warsaw Open',
-      title: 'BPT Challenger Warsaw Open',
-      gender: 'W' as any,
-      tournamentType: 'BPT CHALLENGER' as any,
-      status: 'UPCOMING' as any,
-      dates: {
-        startDate: '2025-08-21T00:00:00',
-        endDate: '2025-08-23T23:59:59'
-      },
-      city: 'Warsaw',
-      country: 'Poland',
-    },
-    {
-      id: 'dev_002',
-      visNo: 'DEV002',
-      version: 1,
-      lastUpdated: new Date().toISOString(),
-      code: 'TESTBVB',
-      name: 'BPT Futures Hamburg Championship',
-      title: 'BPT Futures Hamburg Championship',
-      gender: 'M' as any,
-      tournamentType: 'BPT FUTURES' as any,
-      status: 'UPCOMING' as any,
-      dates: {
-        startDate: '2025-08-25T00:00:00',
-        endDate: '2025-08-27T23:59:59'
-      },
-      city: 'Hamburg',
-      country: 'Germany',
-    }
-  ];
   const [initialLoading, setInitialLoading] = useState(true);
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -538,8 +460,8 @@ const TournamentSelectionScreen: React.FC = () => {
         // Parse manually
         const visTournaments = parseXMLDirectly(response.xmlData);
         
-        // Use VIS tournaments if available, otherwise test tournaments as fallback
-        const finalTournaments = visTournaments.length > 0 ? visTournaments : testTournaments;
+        // Use VIS tournaments
+        const finalTournaments = visTournaments;
         
         // Show tournaments immediately with EventNo fallback
         setTournaments(finalTournaments);
@@ -556,11 +478,10 @@ const TournamentSelectionScreen: React.FC = () => {
         // Enhance tournaments with real tournament numbers in background
         enhanceTournamentsInBackground(finalTournaments, visApi);
       } else {
-        // Fallback to test tournaments if API fails
-        setTournaments(testTournaments);
-        const testCategories = generateDynamicCategories(testTournaments);
-        setAvailableCategories(testCategories);
-        setSelectedType(testCategories[1] || 'ALL');
+        // No tournaments available from API
+        setTournaments([]);
+        setAvailableCategories(['ALL']);
+        setSelectedType('ALL');
       }
       
     } catch (err) {
@@ -744,43 +665,7 @@ const TournamentSelectionScreen: React.FC = () => {
     return tournaments;
   };
 
-  // TEST API CALL - Direct VIS API test
-  const testApiCall = async () => {
-    
-    const { VisApiClient } = await import('../services/api/VisApiClient');
-    const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-    
-    const config = {
-      baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
-      timeoutMs: 10000,
-      maxRetries: 1,
-      retryDelayMs: 1000,
-      exponentialBackoff: false,
-      enableLogging: true
-    };
-    
-    const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-    
-    try {
-      const response = await visApi.getEventList({
-        tournamentType: 'BPT',
-        maxResults: 10,
-        startDate: '2025-01-01', 
-        endDate: '2025-12-31'
-      });
-      
-      // Silent handling of test API response
-    } catch (error) {
-      // Silent handling of test API error
-    }
-  };
 
-  // Auto-run test on first render
-  React.useEffect(() => {
-    if (!initialLoading && tournaments.length === 0) {
-      testApiCall();
-    }
-  }, [initialLoading, tournaments.length]);
 
   useEffect(() => {
     // Load tournaments directly from API - inline to avoid dependency issues
@@ -814,8 +699,8 @@ const TournamentSelectionScreen: React.FC = () => {
             // Parse manually
             const visTournaments = parseXMLDirectly(response.xmlData);
             
-            // Use VIS tournaments if available, otherwise test tournaments as fallback
-            const finalTournaments = visTournaments.length > 0 ? visTournaments : testTournaments;
+            // Use VIS tournaments
+            const finalTournaments = visTournaments;
           
             setTournaments(finalTournaments);
             
@@ -828,18 +713,16 @@ const TournamentSelectionScreen: React.FC = () => {
               setSelectedType(dynamicCategories[1]); // First category after ALL
             }
           } catch (parseError) {
-            // Fallback to test tournaments if parsing fails
-            setTournaments(testTournaments);
-            const testCategories = generateDynamicCategories(testTournaments);
-            setAvailableCategories(testCategories);
-            setSelectedType(testCategories[1] || 'ALL');
+            // No tournaments available due to parsing error
+            setTournaments([]);
+            setAvailableCategories(['ALL']);
+            setSelectedType('ALL');
           }
         } else {
-          // Fallback to test tournaments if API fails
-          setTournaments(testTournaments);
-          const testCategories = generateDynamicCategories(testTournaments);
-          setAvailableCategories(testCategories);
-          setSelectedType(testCategories[1] || 'ALL');
+          // No tournaments available from API
+          setTournaments([]);
+          setAvailableCategories(['ALL']);
+          setSelectedType('ALL');
         }
         
       } catch (error) {
@@ -1133,7 +1016,7 @@ const TournamentSelectionScreen: React.FC = () => {
     
     return true;
   }).sort((a, b) => {
-    // Sort tournaments by start date (earliest first)
+    // Sort by start date ascending
     const dateA = new Date(a.dates?.startDate || '');
     const dateB = new Date(b.dates?.startDate || '');
     return dateA.getTime() - dateB.getTime();
@@ -1336,6 +1219,10 @@ const TournamentSelectionScreen: React.FC = () => {
         <TouchableOpacity 
           style={styles.dropdownButton}
           onPress={() => setShowDropdown(!showDropdown)}
+          accessibilityRole="button"
+          accessibilityLabel={`Tournament category selector. Current selection: ${selectedCategory ? selectedCategory.category : 'Select Category'}`}
+          accessibilityState={{ expanded: showDropdown }}
+          accessibilityHint={showDropdown ? "Close category dropdown" : "Open category dropdown"}
         >
           <Text style={styles.dropdownButtonText}>
             {selectedCategory ? selectedCategory.category : 'Select Category'}
@@ -1346,7 +1233,11 @@ const TournamentSelectionScreen: React.FC = () => {
         </TouchableOpacity>
         
         {showDropdown && (
-          <View style={styles.dropdownList}>
+          <View 
+            style={styles.dropdownList}
+            accessible={true}
+            accessibilityLabel="Category selection dropdown"
+          >
             <ScrollView 
               style={styles.dropdownScroll}
               showsVerticalScrollIndicator={false}
@@ -1363,6 +1254,9 @@ const TournamentSelectionScreen: React.FC = () => {
                     setSelectedType(item.category);
                     setShowDropdown(false);
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${item.category} category with ${item.count} tournaments`}
+                  accessibilityState={{ selected: selectedType === item.category }}
                 >
                   <Text style={[
                     styles.dropdownItemText,
@@ -1608,7 +1502,11 @@ const TournamentSelectionScreen: React.FC = () => {
               onRetry={() => loadTournaments(true)}
             />
             {tournamentLoading && (
-              <View style={styles.tournamentLoadingOverlay}>
+              <View 
+                style={styles.tournamentLoadingOverlay}
+                accessibilityLabel="Loading tournaments"
+                accessibilityLiveRegion="polite"
+              >
                 <ActivityIndicator size="small" color="#FF6B35" />
               </View>
             )}
@@ -1816,12 +1714,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
   },
-  tournamentLocation: {
-    fontSize: 14,
-    color: '#4A90A4',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
   // Gender badge styles (like in match cards)
   genderBadge: {
     width: 28,
@@ -1906,7 +1798,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 16,
     position: 'relative',
-    zIndex: 9999,
+    zIndex: 1000,
   },
   dropdownButton: {
     flexDirection: 'row',
@@ -1954,9 +1846,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    elevation: 999,
+    elevation: 8,
     maxHeight: 200,
-    zIndex: 9999,
+    zIndex: 1001,
   },
   dropdownScroll: {
     maxHeight: 180, // Slightly less than dropdownList to account for padding

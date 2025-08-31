@@ -190,7 +190,7 @@ export class RoundPhaseFormatter {
         
       case '2':
         return {
-          displayName: 'Bronze Medal',
+          displayName: 'Bronze',
           originalValue: round,
           emphasis: 'critical',
           isFinals: true,
@@ -199,11 +199,11 @@ export class RoundPhaseFormatter {
         
       case '1':
         return {
-          displayName: 'Final',
+          displayName: 'Gold',
           originalValue: round,
           emphasis: 'critical',
           isFinals: true,
-          accessibilityLabel: 'Final match'
+          accessibilityLabel: 'Gold Medal match'
         };
         
       default:
@@ -350,7 +350,7 @@ export class RoundPhaseFormatter {
         
       case '3':
         return {
-          displayName: 'Bronze Medal',
+          displayName: 'Bronze',
           originalValue: roundPhase,
           emphasis: 'critical',
           isFinals: true,

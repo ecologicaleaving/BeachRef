@@ -39,8 +39,18 @@ export class MatchDataTransformer {
     
     // Priority 1: Use roundName if available (pre-formatted by API)
     if (visMatch.roundName && typeof visMatch.roundName === 'string' && visMatch.roundName.trim() !== '') {
+      const roundName = visMatch.roundName.trim();
+      
+      // Apply round phase text transformations
+      let transformedRound = roundName;
+      if (roundName.toLowerCase() === 'final 3rd place') {
+        transformedRound = 'Bronze';
+      } else if (roundName.toLowerCase() === 'final 1st place') {
+        transformedRound = 'Gold';
+      }
+      
       return {
-        round: visMatch.roundName.trim(),
+        round: transformedRound,
         phase: visMatch.roundPhase
       };
     }

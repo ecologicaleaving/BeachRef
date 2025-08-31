@@ -57,16 +57,12 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Handle match layout measurement
   const handleMatchLayout = (matchId: string, y: number) => {
     matchPositions.current[matchId] = y;
-    console.log(`📏 Layout measured: match ${matchId} at y=${y}px`);
   };
   
   // Handle auto-scroll when matches are ready - DISABLED per user request
   const handleMatchesReady = (matches: BeachMatchCore[], targetIndex: number) => {
-    console.log(`🔧 handleMatchesReady called - Auto-scroll disabled`);
-    
     // Just clear loading
     setTimeout(() => {
-      console.log(`🔧 Clearing matchesLoading`);
       setMatchesLoading(false);
     }, 1000);
     
@@ -348,26 +344,28 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   const getTournamentStatus = () => {
-    // Use direct API dates for status calculation
+    // Use the same logic as TournamentSelectionScreen for consistency
     const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
     const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
     
     if (!startDate) {
-      return 'Scheduled';
+      return 'SCHEDULED';
     }
     
     const today = new Date().toISOString().split('T')[0];
+    const startDateOnly = startDate.split('T')[0];
     
-    if (today < startDate) {
-      return 'Upcoming';
+    if (today < startDateOnly) {
+      return 'SCHEDULED';
     }
     
     if (endDate) {
-      if (today > endDate) {
-        return 'Completed';
+      const endDateOnly = endDate.split('T')[0];
+      if (today > endDateOnly) {
+        return 'COMPLETED';
       }
-      if (today >= startDate && today <= endDate) {
-        return 'Live';
+      if (today >= startDateOnly && today <= endDateOnly) {
+        return 'LIVE NOW';
       }
     } else {
       // Only start date available - consider live for reasonable duration
@@ -377,25 +375,25 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       const now = new Date();
       if (now >= start && now <= weekAfter) {
-        return 'Live';
+        return 'LIVE NOW';
       }
       if (now > weekAfter) {
-        return 'Completed';
+        return 'COMPLETED';
       }
     }
     
-    return 'Scheduled';
+    return 'SCHEDULED';
   };
 
 
   const getStatusColor = () => {
     const status = getTournamentStatus();
     switch (status) {
-      case 'Live':
+      case 'LIVE NOW':
         return colors.success;
-      case 'Upcoming':
+      case 'SCHEDULED':
         return '#FF6B35';
-      case 'Completed':
+      case 'COMPLETED':
         return '#6B7280';
       default:
         return '#4A90A4';
@@ -754,7 +752,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                   )}
                 </View>
                 <View style={styles.tournamentHeaderRight}>
-                  {getTournamentStatus() === 'Live' ? (
+                  {getTournamentStatus() === 'LIVE NOW' ? (
                     <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
                       <View style={styles.liveIndicatorPulse} />
                       <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
@@ -885,7 +883,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                             All Courts
                           </Text>
                         </TouchableOpacity>
-                        {Array.from(new Set(matches?.map(m => m.court.courtName) || [])).sort().map((court) => (
+                        {Array.from(new Set(matches?.map(m => m.court?.courtNumber) || [])).filter(Boolean).sort().map((court) => (
                           <TouchableOpacity
                             key={court}
                             style={[
@@ -898,10 +896,83 @@ const TournamentDetailScreenContent: React.FC = () => {
                               styles.filterButtonText,
                               courtFilter === court && styles.filterButtonTextActive
                             ]}>
-                              {court}
+                              {court === 'CC' ? 'CC' : `Court ${court}`}
                             </Text>
                           </TouchableOpacity>
                         ))}
+                      </View>
+                    </View>
+
+                    {/* Referee Filter */}
+                    <View style={styles.filterGroup}>
+                      <Text style={styles.filterLabel}>Referee:</Text>
+                      <View style={styles.dropdownContainer}>
+                        <TouchableOpacity
+                          style={[
+                            styles.dropdownButton,
+                            showRefereeDropdown && styles.dropdownButtonActive
+                          ]}
+                          onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+                        >
+                          <Text style={[
+                            styles.dropdownButtonText,
+                            showRefereeDropdown && styles.dropdownButtonTextActive
+                          ]} numberOfLines={1}>
+                            {refereeFilter === 'All' ? 'All Referees' : refereeFilter}
+                          </Text>
+                          <Text style={[
+                            styles.dropdownArrow,
+                            showRefereeDropdown && styles.dropdownArrowActive
+                          ]}>
+                            {showRefereeDropdown ? '▲' : '▼'}
+                          </Text>
+                        </TouchableOpacity>
+                        
+                        {showRefereeDropdown && (
+                          <View style={styles.dropdownList}>
+                            <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                              <TouchableOpacity
+                                style={[
+                                  styles.dropdownItem,
+                                  refereeFilter === 'All' && styles.dropdownItemActive
+                                ]}
+                                onPress={() => {
+                                  setRefereeFilter('All');
+                                  setShowRefereeDropdown(false);
+                                }}
+                              >
+                                <Text style={[
+                                  styles.dropdownItemText,
+                                  refereeFilter === 'All' && styles.dropdownItemTextActive
+                                ]}>
+                                  All Referees
+                                </Text>
+                              </TouchableOpacity>
+                              {Array.from(new Set(matches?.flatMap(m => 
+                                m.refereeAssignments?.map(ref => ref.refereeName) || []
+                              ) || [])).sort().map((referee) => (
+                                <TouchableOpacity
+                                  key={referee}
+                                  style={[
+                                    styles.dropdownItem,
+                                    refereeFilter === referee && styles.dropdownItemActive
+                                  ]}
+                                  onPress={() => {
+                                    setRefereeFilter(referee);
+                                    setShowRefereeDropdown(false);
+                                  }}
+                                >
+                                  <Text style={[
+                                    styles.dropdownItemText,
+                                    refereeFilter === referee && styles.dropdownItemTextActive
+                                  ]} numberOfLines={2}>
+                                    {referee}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -983,9 +1054,9 @@ const TournamentDetailScreenContent: React.FC = () => {
                   title=""
                   emptyMessage={(() => {
                     const status = getTournamentStatus();
-                    if (status === 'Completed') {
+                    if (status === 'COMPLETED') {
                       return "Match data not available for this completed tournament";
-                    } else if (status === 'Upcoming') {
+                    } else if (status === 'SCHEDULED') {
                       return "Matches will be available when the tournament starts";
                     }
                     return "No matches available for this tournament";
@@ -998,10 +1069,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                   onCourtFilterChange={setCourtFilter}
                   externalGenderFilter={genderFilter}
                   onGenderFilterChange={setGenderFilter}
+                  externalRefereeFilter={refereeFilter}
+                  onRefereeFilterChange={setRefereeFilter}
                   onMatchesReady={handleMatchesReady}
                   onMatchLayout={handleMatchLayout}
                   enableTimelineView={true}
                   showAllDays={true}
+                  liveScores={liveScores}
+                  getLiveScore={getLiveScore}
                 />
               </View>
             )}
@@ -1517,6 +1592,88 @@ const styles = StyleSheet.create({
   },
   liveScoreCard: {
     marginBottom: 12,
+  },
+
+  // Dropdown styles for referee filter
+  dropdownContainer: {
+    position: 'relative',
+    zIndex: 1000,
+  },
+  dropdownButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minWidth: 180,
+    maxWidth: 250,
+  },
+  dropdownButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+  dropdownButtonText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    flex: 1,
+  },
+  dropdownButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  dropdownArrow: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginLeft: 8,
+  },
+  dropdownArrowActive: {
+    color: '#FFFFFF',
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    marginTop: 2,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1001,
+  },
+  dropdownScrollView: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  dropdownItemActive: {
+    backgroundColor: '#EFF6FF',
+  },
+  dropdownItemText: {
+    fontSize: 12,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  dropdownItemTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
   },
 
 

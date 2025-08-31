@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { RefereeAssignment } from '../types/RefereeAssignments';
+import { RoundPhaseDisplay } from '../components/Typography/RoundPhaseDisplay';
 
 export const AssignmentDetailScreen: React.FC = () => {
   const { assignmentData } = useLocalSearchParams<{ assignmentData: string }>();
@@ -116,9 +117,12 @@ export const AssignmentDetailScreen: React.FC = () => {
             <Text style={styles.matchNumber}>
               Match #{assignment.matchInTournament || assignment.matchNo || 'TBD'}
             </Text>
-            <Text style={styles.roundText}>
-              {assignment.round || 'Round TBD'}
-            </Text>
+            <RoundPhaseDisplay
+              round={assignment.roundPhase || assignment.round || 'TBD'}
+              emphasis="medium"
+              color="textPrimary"
+              style={styles.roundText}
+            />
           </View>
         </View>
 

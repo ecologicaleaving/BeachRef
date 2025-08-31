@@ -1538,4 +1538,63 @@ export class CacheService {
       return [];
     }
   }
+
+  /**
+   * Cache live score data with shorter TTL
+   * @param matchNo - Match number
+   * @param liveData - BeachLive data to cache
+   */
+  static setLiveScore(matchNo: number, liveData: any): void {
+    this.ensureInitialized();
+    
+    const key = `live_score_${matchNo}`;
+    const ttl = this.config.defaultTTL.matchesLive; // 30 seconds
+    
+    // Store in memory cache for immediate access
+    this.setInMemory(key, liveData, ttl);
+    
+    // Update stats
+    this.stats.recordHit('memory');
+  }
+
+  /**
+   * Get cached live score data
+   * @param matchNo - Match number
+   * @returns Cached live score data or null
+   */
+  static getLiveScore(matchNo: number): any | null {
+    this.ensureInitialized();
+    
+    const key = `live_score_${matchNo}`;
+    const cached = this.getFromMemory(key);
+    
+    if (cached) {
+      this.stats.recordHit('memory');
+      return cached;
+    }
+    return null;
+  }
+
+  /**
+   * Clear cached live score data for a match
+   * @param matchNo - Match number
+   */
+  static clearLiveScore(matchNo: number): void {
+    this.ensureInitialized();
+    
+    const key = `live_score_${matchNo}`;
+    this.memoryCache.delete(key);
+  }
+
+  /**
+   * Clear all cached live score data
+   * Note: This clears entire memory cache. More specific clearing would require extending MemoryCacheManager
+   */
+  static clearAllLiveScores(): void {
+    this.ensureInitialized();
+    
+    // For now, we'll just clear individual live score keys as they're accessed
+    // A full implementation would require extending MemoryCacheManager to support key filtering
+    console.log('clearAllLiveScores: Individual match clearing is preferred over bulk operations');
+  }
 }

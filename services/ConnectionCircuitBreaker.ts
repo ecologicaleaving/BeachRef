@@ -87,9 +87,9 @@ export class ConnectionCircuitBreaker {
     );
 
     // console.log(`Circuit breaker initialized for service: ${serviceId}`, {
-      networkType: this.stats.networkType,
-      connectionQuality: this.stats.connectionQuality,
-    });
+    //   networkType: this.stats.networkType,
+    //   connectionQuality: this.stats.connectionQuality,
+    // });
   }
 
   /**
@@ -172,9 +172,9 @@ export class ConnectionCircuitBreaker {
     }
 
     // console.log(`Circuit breaker success for ${this.serviceId}:`, {
-      consecutiveSuccesses: this.stats.consecutiveSuccesses,
-      state: this.stats.state,
-    });
+    //   consecutiveSuccesses: this.stats.consecutiveSuccesses,
+    //   state: this.stats.state,
+    // });
   }
 
   /**
@@ -224,14 +224,14 @@ export class ConnectionCircuitBreaker {
     const adaptiveThreshold = this.getNetworkAwareFailureThreshold();
 
     // console.warn(`Circuit breaker failure for ${this.serviceId}:`, {
-      error,
-      consecutiveFailures: this.stats.consecutiveFailures,
-      baseThreshold: this.config.failureThreshold,
-      adaptiveThreshold,
-      networkType: this.stats.networkType,
-      connectionQuality: this.stats.connectionQuality,
-      state: this.stats.state,
-    });
+    //   error,
+    //   consecutiveFailures: this.stats.consecutiveFailures,
+    //   baseThreshold: this.config.failureThreshold,
+    //   adaptiveThreshold,
+    //   networkType: this.stats.networkType,
+    //   connectionQuality: this.stats.connectionQuality,
+    //   state: this.stats.state,
+    // });
 
     switch (this.stats.state) {
       case CircuitState.CLOSED:
@@ -343,11 +343,11 @@ export class ConnectionCircuitBreaker {
     }, adaptiveTimeout);
 
     // console.log(`Recovery attempt scheduled for ${this.serviceId}`, {
-      baseTimeout: this.stats.recoveryTimeout,
-      adaptiveTimeout,
-      networkType: this.stats.networkType,
-      connectionQuality: this.stats.connectionQuality,
-    });
+    //   baseTimeout: this.stats.recoveryTimeout,
+    //   adaptiveTimeout,
+    //   networkType: this.stats.networkType,
+    //   connectionQuality: this.stats.connectionQuality,
+    // });
   }
 
   /**

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
-import DateNavigator from '../DateNavigator/DateNavigator';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
@@ -26,13 +25,12 @@ interface MatchListV2Props {
   showCourtFilter?: boolean;
   showRefereeFilter?: boolean;
   customFilters?: React.ReactNode;
-  selectedDate?: string; // External selected date to override internal state
-  onDateChange?: (date: string) => void; // Callback for date changes
   externalCourtFilter?: string; // External court filter to override internal state
   onCourtFilterChange?: (court: string) => void; // Callback for court filter changes
   externalGenderFilter?: 'All' | 'M' | 'W'; // External gender filter to override internal state
   onGenderFilterChange?: (gender: 'All' | 'M' | 'W') => void; // Callback for gender filter changes
   onMatchesReady?: (matches: ExtendedBeachMatch[], targetIndex: number) => void; // Callback when matches are ready with target scroll index
+  onMatchLayout?: (matchId: string, y: number) => void; // Callback for match layout measurement
   showAllDays?: boolean; // Enhanced: Show all tournament days in timeline view
   enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
 }
@@ -49,13 +47,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   showCourtFilter = true,
   showRefereeFilter = true,
   customFilters,
-  selectedDate: externalSelectedDate,
-  onDateChange: externalOnDateChange,
   externalCourtFilter,
   onCourtFilterChange,
   externalGenderFilter,
   onGenderFilterChange,
   onMatchesReady,
+  onMatchLayout,
   showAllDays = false,
   enableTimelineView = false,
 }) => {
@@ -63,18 +60,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
   
+  // State for collapsible date panels
+  const [expandedDates, setExpandedDates] = useState<{[key: string]: boolean}>({});
+  
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
   const [setScoreService] = useState(() => new SetScoreService());
   
   
 
-  // Initialize filters from localStorage or defaults
-  const [internalSelectedDate, setInternalSelectedDate] = useState<string>('');
-  
-  // Use external selectedDate if provided, otherwise use internal state
-  const selectedDate = externalSelectedDate !== undefined ? externalSelectedDate : internalSelectedDate;
-  const setSelectedDate = externalOnDateChange || setInternalSelectedDate;
+  // Date selector completely removed
   
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
     try {
@@ -172,10 +167,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        // Only persist internal selectedDate, not external one
-        if (externalSelectedDate === undefined) {
-          localStorage.setItem('matchlist-selectedDate', internalSelectedDate);
-        }
+        // Date selector completely removed
         // Only persist internal gender filter, not external one
         if (externalGenderFilter === undefined) {
           localStorage.setItem('matchlist-genderFilter', genderFilter);
@@ -192,7 +184,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     } catch (error) {
       // Failed to save filters to localStorage
     }
-  }, [internalSelectedDate, genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalSelectedDate, externalCourtFilter, externalGenderFilter]);
+  }, [genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalCourtFilter, externalGenderFilter]);
 
   // Enhanced matches with set scores
   useEffect(() => {
@@ -231,60 +223,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [matches]); // Only depend on matches array reference change
 
-  // Extract unique dates from matches for DateNavigator
-  const uniqueDates = React.useMemo(() => {
-    const validDates = matches
-      .map(match => {
-        const date = new Date(match.scheduledDateTime);
-        if (isNaN(date.getTime())) {
-          return null; // mark invalid dates for filtering
-        }
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      })
-      .filter(date => date !== null) as string[]; // remove null values
-    
-    return Array.from(new Set(validDates)).sort();
-  }, [matches]);
+  // uniqueDates calculation REMOVED - DateNavigator disabled
 
-  // Smart date selection: set today if tournament is ongoing, last day if finished
-  // Only do this if not using external selectedDate
-  useEffect(() => {
-    if (uniqueDates.length === 0 || externalSelectedDate !== undefined) return;
-
-    // Check if we already have a date from localStorage
-    try {
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        const savedDate = localStorage.getItem('matchlist-selectedDate');
-        if (savedDate && uniqueDates.includes(savedDate)) {
-          setInternalSelectedDate(savedDate);
-          return;
-        }
-      }
-    } catch (error) {
-      // localStorage not available, continue with smart selection
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const firstDate = uniqueDates[0];
-    const lastDate = uniqueDates[uniqueDates.length - 1];
-
-    // If today is within tournament dates, select today
-    if (uniqueDates.includes(today)) {
-      setInternalSelectedDate(today);
-    }
-    // If tournament is finished (today > last tournament date), select last day
-    else if (today > lastDate) {
-      setInternalSelectedDate(lastDate);
-    }
-    // If tournament hasn't started yet (today < first tournament date), select first day
-    else if (today < firstDate) {
-      setInternalSelectedDate(firstDate);
-    }
-    // Fallback to first date
-    else {
-      setInternalSelectedDate(firstDate);
-    }
-  }, [uniqueDates, externalSelectedDate]);
+  // Smart date selection DISABLED - using timeline mode, no date filtering needed
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
@@ -316,16 +257,22 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : matches;
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
     
+    console.log(`🔍 FILTERING DEBUG: Starting with ${matchesToFilter.length} matches`);
+    console.log(`🔍 Timeline mode: enableTimelineView=${enableTimelineView}, showAllDays=${showAllDays}`);
+    // console.log(`🔍 FILTERING DEBUG: selectedDate="${selectedDate || 'none'}", enableTimelineView=${enableTimelineView}, showAllDays=${showAllDays}`);
+    console.log(`🔍 Active filters: gender="${effectiveGenderFilter}", court="${effectiveCourtFilter}"`);
+    
+    // Show date range of input matches
+    if (matchesToFilter.length > 0) {
+      const dates = matchesToFilter.map(m => m.scheduledDateTime.split('T')[0]).sort();
+      const uniqueDates = [...new Set(dates)];
+      console.log(`🔍 Input date range: ${uniqueDates[0]} to ${uniqueDates[uniqueDates.length - 1]}`);
+      console.log(`🔍 All unique dates: ${uniqueDates.join(', ')}`);
+    }
+    
     return matchesToFilter.filter(match => {
-      // Date filter - Skip when in timeline view or showAllDays is true
-      if (selectedDate && !enableTimelineView && !showAllDays) {
-        const date = new Date(match.scheduledDateTime);
-        if (isNaN(date.getTime())) {
-          return false; // skip matches with invalid dates
-        }
-        const matchDate = date.toISOString().split('T')[0];
-        if (matchDate !== selectedDate) return false;
-      }
+      // DATE FILTERING COMPLETELY DISABLED - using timeline mode
+      // All date filtering logic removed to isolate selectedDate error
 
       // Gender filter
       if (effectiveGenderFilter !== 'All') {
@@ -411,7 +358,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
 
     // Final result logging will happen in UI render
-  }, [matches, enhancedMatches, selectedDate, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder]);
+  }, [matches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, refereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
+
 
   // Calculate target match for auto-scroll and notify parent
   useEffect(() => {
@@ -422,38 +370,75 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     let nextUpcomingIndex = -1;
     let mostRecentPastIndex = -1;
 
+    console.log(`🔍 Auto-scroll: Finding target match (current time: ${now.toLocaleTimeString()})`);
+
     // Find the most relevant match to scroll to
     for (let i = 0; i < filteredMatches.length; i++) {
       const match = filteredMatches[i];
       const matchTime = new Date(match.scheduledDateTime);
+      const isFuture = matchTime.getTime() >= now.getTime();
 
-      // Priority 1: Currently running match
-      if (match.status === MatchStatus.RUNNING) {
+      // Simplified logging
+
+      // Priority 1: Currently running match (check both status and time-based logic)
+      const isStatusRunning = match.status === MatchStatus.RUNNING;
+      const isLikelyLive = matchTime.getTime() <= now.getTime() && 
+                          (now.getTime() - matchTime.getTime()) <= 2 * 60 * 60 * 1000; // Within 2 hours of start time
+      
+      if (isStatusRunning || isLikelyLive) {
         targetMatchIndex = i;
+        console.log(`✅ Found LIVE match at index ${i}: ${match.scheduledDateTime}`);
         break;
       }
 
       // Track next upcoming match (first future match)
-      if (matchTime.getTime() >= now.getTime() && nextUpcomingIndex === -1) {
+      if (isFuture && nextUpcomingIndex === -1) {
         nextUpcomingIndex = i;
-        console.log(`Found first upcoming match at index ${i}: ${match.scheduledDateTime}`);
+        // Found first upcoming match
       }
 
       // Track most recent past match
-      if (matchTime.getTime() < now.getTime()) {
+      if (!isFuture) {
         mostRecentPastIndex = i;
+        // Track most recent past match
       }
     }
 
     // Priority logic: Running > Next Upcoming > Most Recent Past
     if (targetMatchIndex === -1) {
       if (nextUpcomingIndex !== -1) {
-        // Prefer next upcoming match
-        targetMatchIndex = nextUpcomingIndex;
+        // Double-check: ensure we have the EARLIEST future match
+        let earliestFutureIndex = -1;
+        let earliestFutureTime = Infinity;
+        
+        for (let i = 0; i < filteredMatches.length; i++) {
+          const match = filteredMatches[i];
+          const matchTime = new Date(match.scheduledDateTime);
+          
+          if (matchTime.getTime() >= now.getTime()) {
+            if (matchTime.getTime() < earliestFutureTime) {
+              earliestFutureTime = matchTime.getTime();
+              earliestFutureIndex = i;
+            }
+          }
+        }
+        
+        if (earliestFutureIndex !== -1) {
+          targetMatchIndex = earliestFutureIndex;
+          console.log(`🎯 Selected earliest future match at index ${targetMatchIndex}`);
+        } else {
+          targetMatchIndex = nextUpcomingIndex;
+          console.log(`🎯 Using upcoming match at index ${targetMatchIndex}`);
+        }
       } else if (mostRecentPastIndex !== -1) {
         // Fallback to most recent past match only if no future matches
         targetMatchIndex = mostRecentPastIndex;
+        console.log(`🎯 Selected most recent past match at index ${targetMatchIndex}`);
       }
+    }
+
+    if (targetMatchIndex >= 0) {
+      console.log(`🏁 Target: ${filteredMatches[targetMatchIndex]?.scheduledDateTime} at index ${targetMatchIndex}`);
     }
 
     // Notify parent component with matches and target index
@@ -465,19 +450,33 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const groupedMatches = React.useMemo(() => {
     const groups: { [date: string]: typeof filteredMatches } = {};
     
-    filteredMatches.forEach(match => {
+    console.log(`🔍 GROUPING DEBUG: Processing ${filteredMatches.length} filtered matches`);
+    
+    filteredMatches.forEach((match, index) => {
       const date = new Date(match.scheduledDateTime);
-      if (isNaN(date.getTime())) return;
+      if (isNaN(date.getTime())) {
+        console.log(`❌ Invalid date: ${match.scheduledDateTime}`);
+        return;
+      }
       
       const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
       groups[dateKey].push(match);
+      
+      // Debug first few matches
+      if (index < 5) {
+        console.log(`  [${index}] ${match.scheduledDateTime} -> ${dateKey}`);
+      }
     });
     
+    const allDates = Object.keys(groups).sort();
+    console.log(`📅 All dates found: ${allDates.join(', ')}`);
+    console.log(`📊 Matches per date:`, Object.entries(groups).map(([date, matches]) => `${date}: ${matches.length}`));
+    
     // Sort dates and return as array of [date, matches] pairs
-    return Object.entries(groups).sort((a, b) => {
+    const result = Object.entries(groups).sort((a, b) => {
       const dateA = new Date(a[0]);
       const dateB = new Date(b[0]);
       
@@ -487,7 +486,28 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         return dateA.getTime() - dateB.getTime(); // Oldest first
       }
     });
+    
+    console.log(`🎯 Final date order (${sortOrder}): ${result.map(([date]) => date).join(', ')}`);
+    return result;
   }, [filteredMatches, sortOrder]);
+
+  // Initialize expanded dates - only most recent date is expanded by default
+  useEffect(() => {
+    if (groupedMatches.length > 0) {
+      const allDates = groupedMatches.map(([date]) => date);
+      const mostRecentDate = allDates[allDates.length - 1]; // Last date in chronological order
+      
+      console.log(`📅 Setting up collapsible panels. Most recent date: ${mostRecentDate}`);
+      console.log(`📅 All dates: ${allDates.join(', ')}`);
+      
+      const initialExpanded: {[key: string]: boolean} = {};
+      allDates.forEach(date => {
+        initialExpanded[date] = date === mostRecentDate; // Only most recent is expanded
+      });
+      
+      setExpandedDates(initialExpanded);
+    }
+  }, [groupedMatches]);
 
   // Format time from ISO string
   const formatTime = (isoDateTime: string): string => {
@@ -502,7 +522,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Format date for section headers
+  // Format date for section headers - consistent date format (no "Today"/"Tomorrow" labels)
   const formatDateHeader = (dateString: string): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
@@ -510,25 +530,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
     
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
     
-    const dateOnly = date.toDateString();
-    const todayOnly = today.toDateString();
-    const tomorrowOnly = tomorrow.toDateString();
-    
-    if (dateOnly === todayOnly) {
-      return 'Today';
-    } else if (dateOnly === tomorrowOnly) {
-      return 'Tomorrow';
-    } else {
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-      });
-    }
+    // Always show actual date with weekday, month and day
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric',
+      year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    });
   };
 
   // Reset all filters to default values
@@ -539,6 +548,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     setStatusFilter('All');
     setSortOrder('asc');
     setShowRefereeDropdown(false);
+  };
+
+  // Toggle date panel expansion
+  const toggleDateExpansion = (date: string) => {
+    setExpandedDates(prev => ({
+      ...prev,
+      [date]: !prev[date]
+    }));
   };
 
   // Check if match is currently live (beach volleyball rules)
@@ -605,7 +622,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const matchWithResult = match;
     
     return (
-      <View key={match.id} style={styles.matchCard}>
+      <View 
+        key={match.id} 
+        style={styles.matchCard} 
+        nativeID={`match-${match.id}`}
+        onLayout={(event) => {
+          if (onMatchLayout) {
+            onMatchLayout(match.id, event.nativeEvent.layout.y);
+          }
+        }}
+      >
         <View style={styles.matchHeader}>
           <View style={styles.leftBadgeContainer}>
             {match.tournamentGender && (
@@ -848,13 +874,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   return (
     <View style={styles.container}>
-      {showDateNavigator && uniqueDates.length > 0 && (
-        <DateNavigator
-          availableDates={uniqueDates}
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-        />
-      )}
 
       {/* Only show filter toggle if any filters are enabled */}
       {(showGenderFilter || showCourtFilter || showRefereeFilter || showStatsInFilter) && (
@@ -1045,27 +1064,54 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         ) : (
           <>
-            {groupedMatches.map(([date, matches]) => (
-              <View key={date}>
-                <View style={[
-                  styles.dateHeader, 
-                  (enableTimelineView || showAllDays) && styles.timelineDateHeader
-                ]}>
-                  <Text style={[
-                    styles.dateHeaderText,
-                    (enableTimelineView || showAllDays) && styles.timelineDateHeaderText
-                  ]}>
-                    {formatDateHeader(date)}
-                  </Text>
-                  {(enableTimelineView || showAllDays) && (
-                    <Text style={styles.matchCountText}>
-                      {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+            {groupedMatches.map(([date, matches]) => {
+              const isExpanded = expandedDates[date] || false;
+              
+              return (
+                <View key={date}>
+                  {/* Clickable Date Header Tab */}
+                  <TouchableOpacity 
+                    style={[
+                      styles.dateHeader, 
+                      (enableTimelineView || showAllDays) && styles.timelineDateHeader,
+                      isExpanded && styles.expandedDateHeader
+                    ]}
+                    nativeID={`date-header-${date}`}
+                    onPress={() => toggleDateExpansion(date)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.dateHeaderContent}>
+                      <Text style={[
+                        styles.dateHeaderText,
+                        (enableTimelineView || showAllDays) && styles.timelineDateHeaderText
+                      ]}>
+                        {formatDateHeader(date)}
+                      </Text>
+                      {(enableTimelineView || showAllDays) && (
+                        <Text style={styles.matchCountText}>
+                          {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+                        </Text>
+                      )}
+                    </View>
+                    
+                    {/* Collapse/Expand Indicator */}
+                    <Text style={[
+                      styles.expandIndicator,
+                      (enableTimelineView || showAllDays) && styles.timelineExpandIndicator
+                    ]}>
+                      {isExpanded ? '▼' : '▶'}
                     </Text>
+                  </TouchableOpacity>
+                  
+                  {/* Collapsible Matches Container */}
+                  {isExpanded && (
+                    <View style={styles.matchesContainer}>
+                      {matches.map(renderMatch)}
+                    </View>
                   )}
                 </View>
-                {matches.map(renderMatch)}
-              </View>
-            ))}
+              );
+            })}
           </>
         )}
       </View>
@@ -1532,12 +1578,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 0, // Remove margin since matches container will handle spacing
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   dateHeaderText: {
     fontSize: 16,
@@ -1577,6 +1630,34 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  
+  // New collapsible panel styles
+  dateHeaderContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  expandIndicator: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginLeft: 8,
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  timelineExpandIndicator: {
+    color: '#3B82F6',
+    fontSize: 16,
+  },
+  expandedDateHeader: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+    shadowOpacity: 0.1,
+  },
+  matchesContainer: {
+    marginBottom: 8,
   },
   
   // Dropdown styles

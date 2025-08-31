@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { BeachMatch } from '../../types/match';
-import DateNavigator from '../DateNavigator/DateNavigator';
+// DateNavigator completely removed
 import { colors } from '../../theme/tokens';
 import { FlagImage } from '../FlagImage';
 
@@ -35,17 +35,7 @@ export const MatchList: React.FC<MatchListProps> = ({
   // State for collapsible referees
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
 
-  // Initialize filters from localStorage or defaults
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    try {
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        return localStorage.getItem('matchlist-selectedDate') || '';
-      }
-    } catch (error) {
-      // console.warn('localStorage not available:', error);
-    }
-    return '';
-  });
+  // Date selector completely removed from legacy MatchList
   
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
     try {
@@ -83,12 +73,18 @@ export const MatchList: React.FC<MatchListProps> = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        return (localStorage.getItem('matchlist-sortOrder') as 'asc' | 'desc') || 'desc';
+        // Force reset to new default - remove this after users have migrated
+        const storedValue = localStorage.getItem('matchlist-sortOrder');
+        if (storedValue === 'desc') {
+          localStorage.setItem('matchlist-sortOrder', 'asc');
+          return 'asc';
+        }
+        return (storedValue as 'asc' | 'desc') || 'asc';
       }
     } catch (error) {
       // console.warn('localStorage not available:', error);
     }
-    return 'desc';
+    return 'asc';
   });
   
   const [showCustomFilters, setShowCustomFilters] = useState(false);
@@ -203,7 +199,7 @@ export const MatchList: React.FC<MatchListProps> = ({
     
     // Apply court filter
     if (courtFilter !== 'All') {
-      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court === courtFilter);
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court && match.Court === courtFilter);
     }
     
     // Apply gender filter
@@ -266,7 +262,7 @@ export const MatchList: React.FC<MatchListProps> = ({
     
     // Apply court filter
     if (courtFilter !== 'All') {
-      filteredMatches = filteredMatches.filter(match => match.Court === courtFilter);
+      filteredMatches = filteredMatches.filter(match => match.Court && match.Court === courtFilter);
     }
     
     // Apply referee filter
@@ -332,7 +328,7 @@ export const MatchList: React.FC<MatchListProps> = ({
     
     // Apply court filter
     if (courtFilter !== 'All') {
-      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court === courtFilter);
+      baseFilteredMatches = baseFilteredMatches.filter(match => match.Court && match.Court === courtFilter);
     }
     
     // Apply referee filter

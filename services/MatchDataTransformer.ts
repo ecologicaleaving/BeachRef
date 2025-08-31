@@ -36,17 +36,6 @@ export class MatchDataTransformer {
     // Cast to access VIS API fields not in our type definition yet
     const visMatch = match as any;
     
-    // Debug logging to understand API data structure
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [MatchDataTransformer] Processing match:`, {
-        matchNo: match.No,
-        round: visMatch.round,
-        roundPhase: visMatch.roundPhase,
-        roundName: visMatch.roundName,
-        legacyRound: match.Round,
-        component: 'MatchDataTransformer'
-      });
-    }
     
     // Priority 1: Use roundName if available (pre-formatted by API)
     if (visMatch.roundName && typeof visMatch.roundName === 'string' && visMatch.roundName.trim() !== '') {

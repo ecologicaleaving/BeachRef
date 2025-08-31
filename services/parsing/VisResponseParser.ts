@@ -283,12 +283,6 @@ export class VisResponseParser {
     const roundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase') || '';
     const roundName = this.extractXmlAttribute(matchXml, 'RoundName') || '';
     
-    // Debug logging to see actual API data
-    console.log(`🔍 [VisResponseParser] Match ${matchCode}:`);
-    console.log(`  Round="${round}"`);
-    console.log(`  RoundPhase="${roundPhase}"`); 
-    console.log(`  RoundName="${roundName}"`);
-    console.log(`  Full XML: ${matchXml.substring(0, 300)}...`);
     
     if (!visNo || !matchCode) {
       return null;
@@ -333,9 +327,6 @@ export class VisResponseParser {
     const refereeAssignments = this.parseMatchReferees(matchXml);
     const result = this.parseMatchResult(matchXml);
     const importance = determineMatchImportance(round, this.extractXmlAttribute(matchXml, 'Phase'));
-
-    // Final debug log before returning
-    console.log(`🔍 [VisResponseParser] FINAL RETURN - Match ${matchCode}: round="${round}", RoundPhase="${roundPhase}"`);
 
     return {
       id,
@@ -453,10 +444,13 @@ export class VisResponseParser {
     const matchPointsA = this.extractXmlAttribute(matchXml, 'MatchPointsA');
     const matchPointsB = this.extractXmlAttribute(matchXml, 'MatchPointsB');
     
+    
     if (!matchPointsA || !matchPointsB) return undefined;
 
-    // Parse set scores from MatchPoints (e.g., "21-19,21-15" format)
+    // Individual set scores are not available in GetBeachMatchList
+    // They must be fetched separately using GetBeachLive API
     const setScores: number[] = [];
+    
     const team1Sets = parseInt(matchPointsA) || 0;
     const team2Sets = parseInt(matchPointsB) || 0;
     

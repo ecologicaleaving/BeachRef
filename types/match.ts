@@ -24,6 +24,10 @@ export interface BeachMatch {
   Version?: string;
   Status?: string;
   Round?: string;
+  RoundPhase?: string;
+  RoundName?: string;
+  RoundCode?: string;
+  RoundBracket?: string;
   NoReferee1?: string;
   NoReferee2?: string;
   Referee1Name?: string;

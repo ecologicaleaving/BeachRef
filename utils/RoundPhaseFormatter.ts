@@ -65,22 +65,15 @@ export class RoundPhaseFormatter {
   ): RoundPhaseInfo {
     const originalValue = String(round);
     
-    // Debug logging to track decision path
-    console.log(`🔍 [RoundPhaseFormatter] Processing: round="${round}", phase="${phase}"`);
-    
     // Handle BeachRoundPhase enum values first (higher priority when explicitly provided)
     if (phase && Object.values(BeachRoundPhase).includes(phase as BeachRoundPhase)) {
-      console.log(`🔍 [RoundPhaseFormatter] Path: BeachRoundPhase enum`);
       return this.handleBeachRoundPhase(phase as BeachRoundPhase, round);
     }
     
     // Handle FIVB RoundPhase numeric codes (from VIS API RoundPhase field)
     if (phase && this.isFivbRoundPhaseCode(phase)) {
-      console.log(`🔍 [RoundPhaseFormatter] Path: FIVB RoundPhase code - phase="${phase}"`);
-      
       // If this is Main Draw (RoundPhase 4) and we have a descriptive round name, use it directly
       if (phase === '4' && round && round.trim() !== '' && !this.isFivbRoundPhaseCode(round)) {
-        console.log(`🔍 [RoundPhaseFormatter] Path: RoundPhase 4 with descriptive round name "${round}"`);
         return {
           displayName: round.trim(),
           originalValue: round,
@@ -92,7 +85,6 @@ export class RoundPhaseFormatter {
       
       // If this is Main Draw (RoundPhase 4), check the Round field for specific elimination round
       if (phase === '4' && this.isEliminationRound(round)) {
-        console.log(`🔍 [RoundPhaseFormatter] Path: RoundPhase 4 + Elimination round "${round}"`);
         return this.formatEliminationRound(round);
       }
       
@@ -102,24 +94,20 @@ export class RoundPhaseFormatter {
     
     // Handle elimination round numbers (FIVB standard)
     if (this.isEliminationRound(round)) {
-      console.log(`🔍 [RoundPhaseFormatter] Path: Direct elimination round "${round}"`);
       return this.formatEliminationRound(round);
     }
     
     // Handle pool play rounds
     if (this.isPoolRound(round)) {
-      console.log(`🔍 [RoundPhaseFormatter] Path: Pool round`);
       return this.formatPoolRound(round);
     }
     
     // Handle qualification rounds
     if (this.isQualificationRound(round, phase)) {
-      console.log(`🔍 [RoundPhaseFormatter] Path: Qualification round`);
       return this.formatQualificationRound(round);
     }
     
     // Fallback for unknown formats
-    console.log(`🔍 [RoundPhaseFormatter] Path: Fallback`);
     return this.createFallbackInfo(originalValue);
   }
   
@@ -283,10 +271,6 @@ export class RoundPhaseFormatter {
       };
     }
     
-    // Log warning for unknown format in development
-    if (__DEV__) {
-      console.warn(`Unknown round format: "${round}". Using fallback display.`);
-    }
     
     // For numeric rounds > 4 that aren't standard elimination rounds, add "Round " prefix
     const isHigherNumeric = /^\d+$/.test(trimmed) && parseInt(trimmed) > 4;

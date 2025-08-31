@@ -359,6 +359,9 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
         {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
+      <Text style={styles.tournamentLocation}>
+        📍 {getLocation() || 'Location not available'}
+      </Text>
       
       {getDateRange() && (
         <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
@@ -456,7 +459,7 @@ const TournamentSelectionScreen: React.FC = () => {
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('BPT');
+  const [selectedType, setSelectedType] = useState<string>('ALL');
   const [availableCategories, setAvailableCategories] = useState<string[]>(['ALL']);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -1129,6 +1132,11 @@ const TournamentSelectionScreen: React.FC = () => {
     }
     
     return true;
+  }).sort((a, b) => {
+    // Sort tournaments by start date (earliest first)
+    const dateA = new Date(a.dates?.startDate || '');
+    const dateB = new Date(b.dates?.startDate || '');
+    return dateA.getTime() - dateB.getTime();
   });
 
 
@@ -1808,6 +1816,12 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
   },
+  tournamentLocation: {
+    fontSize: 14,
+    color: '#4A90A4',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
   // Gender badge styles (like in match cards)
   genderBadge: {
     width: 28,
@@ -1892,7 +1906,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 16,
     position: 'relative',
-    zIndex: 1000,
+    zIndex: 9999,
   },
   dropdownButton: {
     flexDirection: 'row',
@@ -1940,9 +1954,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 999,
     maxHeight: 200,
-    zIndex: 1001,
+    zIndex: 9999,
   },
   dropdownScroll: {
     maxHeight: 180, // Slightly less than dropdownList to account for padding

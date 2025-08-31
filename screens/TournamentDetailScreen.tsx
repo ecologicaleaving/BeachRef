@@ -23,7 +23,6 @@ import { useLiveScores } from '../hooks/useLiveScores';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
-import DateNavigator from '../components/DateNavigator/DateNavigator';
 import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
@@ -40,7 +39,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   // Filter states for external control of MatchListV2 - preserved during refresh
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  // Date filtering disabled - showing all days in timeline
   const [courtFilter, setCourtFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -51,29 +50,27 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Ref for auto-scrolling to relevant matches
   const scrollViewRef = useRef<ScrollView>(null);
   
-  // Handle auto-scroll when matches are ready
+  // Track match positions for precise scrolling
+  const matchPositions = useRef<{ [matchId: string]: number }>({});
+  
+  
+  // Handle match layout measurement
+  const handleMatchLayout = (matchId: string, y: number) => {
+    matchPositions.current[matchId] = y;
+    console.log(`📏 Layout measured: match ${matchId} at y=${y}px`);
+  };
+  
+  // Handle auto-scroll when matches are ready - DISABLED per user request
   const handleMatchesReady = (matches: BeachMatchCore[], targetIndex: number) => {
-    if (targetIndex >= 0 && scrollViewRef.current) {
-      setTimeout(() => {
-        // Calculate scroll position more aggressively
-        // Tournament header (~300px) + Filters (~150px) + target match position
-        const headerHeight = 300;
-        const filtersHeight = 150; 
-        const matchHeight = 140;
-        
-        // Scroll to show target match in upper portion of viewport
-        const scrollY = headerHeight + filtersHeight + Math.max(0, targetIndex - 3) * matchHeight;
-        
-        scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
-        
-        // Also try scrollToEnd if target is near the end
-        if (targetIndex > matches.length * 0.8) {
-          setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }, 500);
-        }
-      }, 1200);
-    }
+    console.log(`🔧 handleMatchesReady called - Auto-scroll disabled`);
+    
+    // Just clear loading
+    setTimeout(() => {
+      console.log(`🔧 Clearing matchesLoading`);
+      setMatchesLoading(false);
+    }, 1000);
+    
+    // Auto-scroll logic disabled - will work on it later
   };
   
   const router = useRouter();
@@ -124,66 +121,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     autoStart: true // Auto-start polling when screen is focused
   });
 
-  // Extract unique dates from matches for DateNavigator
-  const uniqueDates = React.useMemo(() => {
-    if (!matches) return [];
-    
-    const validDates = matches
-      .map(match => {
-        const date = new Date(match.scheduledDateTime);
-        if (isNaN(date.getTime())) {
-          return null;
-        }
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      })
-      .filter(date => date !== null) as string[];
-    
-    return Array.from(new Set(validDates)).sort();
-  }, [matches]);
 
-
-  // Function to get match count per date for DateNavigator
-  const getMatchCountForDate = (date: string): number => {
-    if (!matches) return 0;
-    return matches.filter(match => {
-      const matchDate = new Date(match.scheduledDateTime);
-      if (isNaN(matchDate.getTime())) return false;
-      return matchDate.toISOString().split('T')[0] === date;
-    }).length;
-  };
-
-  // Smart date selection: set today if tournament is live, last day if finished, first day if upcoming
-  useEffect(() => {
-    if (!matches || uniqueDates.length === 0 || selectedDate !== '') return;
-
-    const today = new Date().toISOString().split('T')[0];
-    const firstDate = uniqueDates[0];
-    const lastDate = uniqueDates[uniqueDates.length - 1];
-    
-    // Get tournament status within the effect to avoid hoisting issues
-    const tournamentStatus = getTournamentStatus();
-
-    // If tournament is live and today has matches, select today
-    if (tournamentStatus === 'Live' && uniqueDates.includes(today)) {
-      setSelectedDate(today);
-    }
-    // If tournament is finished, select last day
-    else if (tournamentStatus === 'Completed') {
-      setSelectedDate(lastDate);
-    }
-    // If tournament is upcoming, select first day
-    else if (tournamentStatus === 'Upcoming') {
-      setSelectedDate(firstDate);
-    }
-    // Fallback: if today is within tournament dates, select today
-    else if (uniqueDates.includes(today)) {
-      setSelectedDate(today);
-    }
-    // Final fallback: select last date
-    else {
-      setSelectedDate(lastDate);
-    }
-  }, [matches, uniqueDates, selectedDate]); // Removed getTournamentStatus from dependencies
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -875,17 +813,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         <View style={styles.stickyFiltersWrapper}>
           {!detailsLoading && activeTab === 'schedule' ? (
             <View>
-              {/* Date Navigator Section */}
-              {uniqueDates.length > 0 && (
-                <View style={styles.dateNavigatorSection}>
-                  <DateNavigator
-                    availableDates={uniqueDates}
-                    selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
-                    getMatchCount={getMatchCountForDate}
-                  />
-                </View>
-              )}
               
               {/* Filter Controls Section */}
               <View style={styles.filterControlsSection}>
@@ -1002,14 +929,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                       .filter(match => {
                         // Show LiveScoreCard for matches that could have live data
                         const status = match.status;
-                        const matchDate = new Date(match.scheduledDateTime);
-                        const selectedMatchDate = matchDate.toISOString().split('T')[0];
-                        
-                        // Only show for selected date and active/scheduled matches
-                        return (
-                          selectedMatchDate === selectedDate &&
-                          (status === 'InProgress' || status === 'Scheduled')
-                        );
+                        // Show all live scores - date filtering removed
+                        return (status === 'InProgress' || status === 'Scheduled');
                       })
                       .map(match => {
                         const liveScore = getLiveScore(match.matchNumber);
@@ -1069,18 +990,16 @@ const TournamentDetailScreenContent: React.FC = () => {
                     }
                     return "No matches available for this tournament";
                   })()}
-                  showDateNavigator={false}
                   showGenderFilter={false}
                   showStatsInFilter={false}
                   showCourtFilter={false}
                   showRefereeFilter={false}
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
                   externalCourtFilter={courtFilter}
                   onCourtFilterChange={setCourtFilter}
                   externalGenderFilter={genderFilter}
                   onGenderFilterChange={setGenderFilter}
                   onMatchesReady={handleMatchesReady}
+                  onMatchLayout={handleMatchLayout}
                   enableTimelineView={true}
                   showAllDays={true}
                 />
@@ -1599,6 +1518,7 @@ const styles = StyleSheet.create({
   liveScoreCard: {
     marginBottom: 12,
   },
+
 
 });
 

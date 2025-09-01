@@ -170,10 +170,10 @@ export class NetworkStateManager {
     this.notifyListeners();
 
     // console.log('Network state updated:', {
-      type: networkState.type,
-      isConnected: networkState.isConnected,
-      isInternetReachable: networkState.isInternetReachable
-    });
+    //   type: networkState.type,
+    //   isConnected: networkState.isConnected,
+    //   isInternetReachable: networkState.isInternetReachable
+    // });
   }
 
   /**

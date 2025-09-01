@@ -6,11 +6,31 @@ import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { SetScoreService } from '../../services/SetScoreService';
 import { VisApiClient } from '../../services/api/VisApiClient';
+import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { useMemo } from 'react';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
   tournamentGender?: 'M' | 'W';
   tournamentNo?: string;
+};
+
+// Type-safe helper to extract duration fields from match data
+type MatchWithDurationFields = {
+  DurationSet1?: string;
+  DurationSet2?: string;
+  DurationSet3?: string;
+};
+
+const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
+  // Type assertion is necessary here as ExtendedBeachMatch inherits from legacy BeachMatch
+  // which contains duration fields that are not in the BeachMatchCore type
+  const matchWithDuration = match as ExtendedBeachMatch & MatchWithDurationFields;
+  return calculateTotalDuration(
+    matchWithDuration.DurationSet1,
+    matchWithDuration.DurationSet2,
+    matchWithDuration.DurationSet3
+  );
 };
 
 interface MatchListV2Props {
@@ -776,6 +796,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                     })()}
                   </View>
                 )}
+                {(() => {
+                  const totalDuration = getMatchDuration(match);
+                  return totalDuration ? (
+                    <Text style={styles.durationText}>({totalDuration})</Text>
+                  ) : null;
+                })()}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -800,6 +826,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   matchWithResult.result?.winner === 1 && styles.winnerTeam
                 ]} numberOfLines={2}>
                   {match.team1.teamName}
+                  {match.team1?.ranking && <Text style={styles.rankingText}> (#{match.team1.ranking})</Text>}
                 </Text>
               ) : (
                 <View style={styles.playersContainer}>
@@ -821,6 +848,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                       {(match.team1.player2Name || '').split(' ').pop() || ''}
                     </Text>
                   )}
+                  {match.team1?.ranking && (
+                    <Text style={[styles.rankingText, styles.leftTeamName]}>
+                      (#{match.team1.ranking})
+                    </Text>
+                  )}
                 </View>
               )}
               <Text style={[styles.countryCode, styles.leftCountryCode]}>
@@ -836,6 +868,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   matchWithResult.result?.winner === 2 && styles.winnerTeam
                 ]} numberOfLines={2}>
                   {match.team2.teamName}
+                  {match.team2?.ranking && <Text style={styles.rankingText}> (#{match.team2.ranking})</Text>}
                 </Text>
               ) : (
                 <View style={styles.playersContainer}>
@@ -855,6 +888,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                       matchWithResult.result?.winner === 2 && styles.winnerTeam
                     ]}>
                       {(match.team2.player2Name || '').split(' ').pop() || ''}
+                    </Text>
+                  )}
+                  {match.team2?.ranking && (
+                    <Text style={[styles.rankingText, styles.rightTeamName]}>
+                      (#{match.team2.ranking})
                     </Text>
                   )}
                 </View>
@@ -1089,11 +1127,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         ) : (
           <>
-            {groupedMatches.map(([date, matches]) => {
+            {groupedMatches.map(([date, matches], groupIndex) => {
               const isExpanded = expandedDates[date] || false;
               
               return (
-                <View key={date}>
+                <View key={`${date}-${groupIndex}`}>
                   {/* Clickable Date Header Tab */}
                   <TouchableOpacity 
                     style={[
@@ -1131,7 +1169,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   {/* Collapsible Matches Container */}
                   {isExpanded && (
                     <View style={styles.matchesContainer}>
-                      {matches.map(renderMatch)}
+                      {matches.map((match, index) => (
+                        <React.Fragment key={`${match.id}-${index}`}>
+                          {renderMatch(match)}
+                        </React.Fragment>
+                      ))}
                     </View>
                   )}
                 </View>
@@ -1457,6 +1499,18 @@ const styles = StyleSheet.create({
   },
   rightTeamName: {
     textAlign: 'right',
+  },
+  rankingText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#6B7280',
+  },
+  durationText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#9CA3AF',
+    marginTop: 2,
+    textAlign: 'center',
   },
   countryCode: {
     fontSize: 12,

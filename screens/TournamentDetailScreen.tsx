@@ -28,6 +28,180 @@ import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
+// Separate component for expanded filters to prevent hooks issues
+const ExpandedFiltersView: React.FC<{
+  matches: BeachMatchCore[];
+  genderFilter: 'All' | 'M' | 'W';
+  setGenderFilter: (filter: 'All' | 'M' | 'W') => void;
+  courtFilter: string;
+  setCourtFilter: (filter: string) => void;
+  refereeFilter: string;
+  setRefereeFilter: (filter: string) => void;
+  showRefereeDropdown: boolean;
+  setShowRefereeDropdown: (show: boolean) => void;
+}> = ({
+  matches,
+  genderFilter,
+  setGenderFilter,
+  courtFilter,
+  setCourtFilter,
+  refereeFilter,
+  setRefereeFilter,
+  showRefereeDropdown,
+  setShowRefereeDropdown
+}) => {
+  // Memoize court numbers to prevent recalculation on every render
+  const courtNumbers = React.useMemo(() => {
+    return Array.from(new Set(matches?.map(m => m.court?.courtNumber) || []))
+      .filter(Boolean)
+      .sort();
+  }, [matches]);
+
+  // Memoize referee names to prevent recalculation on every render
+  const refereeNames = React.useMemo(() => {
+    return Array.from(new Set(matches?.flatMap(m => 
+      m.refereeAssignments?.map(ref => ref.refereeName) || []
+    ) || [])).sort();
+  }, [matches]);
+
+  return (
+    <View style={styles.expandedFilters}>
+      {/* Gender Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Gender:</Text>
+        <View style={styles.filterButtons}>
+          {['All', 'M', 'W'].map((gender) => (
+            <TouchableOpacity
+              key={gender}
+              style={[
+                styles.filterButton,
+                genderFilter === gender && styles.filterButtonActive
+              ]}
+              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                genderFilter === gender && styles.filterButtonTextActive
+              ]}>
+                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+      
+      {/* Court Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Court:</Text>
+        <View style={styles.filterButtons}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              courtFilter === 'All' && styles.filterButtonActive
+            ]}
+            onPress={() => setCourtFilter('All')}
+          >
+            <Text style={[
+              styles.filterButtonText,
+              courtFilter === 'All' && styles.filterButtonTextActive
+            ]}>
+              All Courts
+            </Text>
+          </TouchableOpacity>
+          {courtNumbers.map((court) => (
+            <TouchableOpacity
+              key={court}
+              style={[
+                styles.filterButton,
+                courtFilter === court && styles.filterButtonActive
+              ]}
+              onPress={() => setCourtFilter(court)}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                courtFilter === court && styles.filterButtonTextActive
+              ]}>
+                {court === 'CC' ? 'CC' : `Court ${court}`}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Referee Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Referee:</Text>
+        <View style={styles.dropdownContainer}>
+          <TouchableOpacity
+            style={[
+              styles.dropdownButton,
+              showRefereeDropdown && styles.dropdownButtonActive
+            ]}
+            onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+          >
+            <Text style={[
+              styles.dropdownButtonText,
+              showRefereeDropdown && styles.dropdownButtonTextActive
+            ]} numberOfLines={1}>
+              {refereeFilter === 'All' ? 'All Referees' : refereeFilter}
+            </Text>
+            <Text style={[
+              styles.dropdownArrow,
+              showRefereeDropdown && styles.dropdownArrowActive
+            ]}>
+              {showRefereeDropdown ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+          
+          {showRefereeDropdown && (
+            <View style={styles.dropdownList}>
+              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    refereeFilter === 'All' && styles.dropdownItemActive
+                  ]}
+                  onPress={() => {
+                    setRefereeFilter('All');
+                    setShowRefereeDropdown(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.dropdownItemText,
+                    refereeFilter === 'All' && styles.dropdownItemTextActive
+                  ]}>
+                    All Referees
+                  </Text>
+                </TouchableOpacity>
+                {refereeNames.map((referee) => (
+                  <TouchableOpacity
+                    key={referee}
+                    style={[
+                      styles.dropdownItem,
+                      refereeFilter === referee && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setRefereeFilter(referee);
+                      setShowRefereeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      refereeFilter === referee && styles.dropdownItemTextActive
+                    ]} numberOfLines={2}>
+                      {referee}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+};
+
 const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [detailedTournament, setDetailedTournament] = useState<TournamentCore | null>(null);
@@ -840,142 +1014,17 @@ const TournamentDetailScreenContent: React.FC = () => {
                 
                 {/* Expanded Filter Options */}
                 {showFilters && matches && matches.length > 0 && (
-                  <View style={styles.expandedFilters}>
-                    {/* Gender Filter */}
-                    <View style={styles.filterGroup}>
-                      <Text style={styles.filterLabel}>Gender:</Text>
-                      <View style={styles.filterButtons}>
-                        {['All', 'M', 'W'].map((gender) => (
-                          <TouchableOpacity
-                            key={gender}
-                            style={[
-                              styles.filterButton,
-                              genderFilter === gender && styles.filterButtonActive
-                            ]}
-                            onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
-                          >
-                            <Text style={[
-                              styles.filterButtonText,
-                              genderFilter === gender && styles.filterButtonTextActive
-                            ]}>
-                              {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-                    
-                    {/* Court Filter */}
-                    <View style={styles.filterGroup}>
-                      <Text style={styles.filterLabel}>Court:</Text>
-                      <View style={styles.filterButtons}>
-                        <TouchableOpacity
-                          style={[
-                            styles.filterButton,
-                            courtFilter === 'All' && styles.filterButtonActive
-                          ]}
-                          onPress={() => setCourtFilter('All')}
-                        >
-                          <Text style={[
-                            styles.filterButtonText,
-                            courtFilter === 'All' && styles.filterButtonTextActive
-                          ]}>
-                            All Courts
-                          </Text>
-                        </TouchableOpacity>
-                        {Array.from(new Set(matches?.map(m => m.court?.courtNumber) || [])).filter(Boolean).sort().map((court) => (
-                          <TouchableOpacity
-                            key={court}
-                            style={[
-                              styles.filterButton,
-                              courtFilter === court && styles.filterButtonActive
-                            ]}
-                            onPress={() => setCourtFilter(court)}
-                          >
-                            <Text style={[
-                              styles.filterButtonText,
-                              courtFilter === court && styles.filterButtonTextActive
-                            ]}>
-                              {court === 'CC' ? 'CC' : `Court ${court}`}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-
-                    {/* Referee Filter */}
-                    <View style={styles.filterGroup}>
-                      <Text style={styles.filterLabel}>Referee:</Text>
-                      <View style={styles.dropdownContainer}>
-                        <TouchableOpacity
-                          style={[
-                            styles.dropdownButton,
-                            showRefereeDropdown && styles.dropdownButtonActive
-                          ]}
-                          onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
-                        >
-                          <Text style={[
-                            styles.dropdownButtonText,
-                            showRefereeDropdown && styles.dropdownButtonTextActive
-                          ]} numberOfLines={1}>
-                            {refereeFilter === 'All' ? 'All Referees' : refereeFilter}
-                          </Text>
-                          <Text style={[
-                            styles.dropdownArrow,
-                            showRefereeDropdown && styles.dropdownArrowActive
-                          ]}>
-                            {showRefereeDropdown ? '▲' : '▼'}
-                          </Text>
-                        </TouchableOpacity>
-                        
-                        {showRefereeDropdown && (
-                          <View style={styles.dropdownList}>
-                            <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                              <TouchableOpacity
-                                style={[
-                                  styles.dropdownItem,
-                                  refereeFilter === 'All' && styles.dropdownItemActive
-                                ]}
-                                onPress={() => {
-                                  setRefereeFilter('All');
-                                  setShowRefereeDropdown(false);
-                                }}
-                              >
-                                <Text style={[
-                                  styles.dropdownItemText,
-                                  refereeFilter === 'All' && styles.dropdownItemTextActive
-                                ]}>
-                                  All Referees
-                                </Text>
-                              </TouchableOpacity>
-                              {Array.from(new Set(matches?.flatMap(m => 
-                                m.refereeAssignments?.map(ref => ref.refereeName) || []
-                              ) || [])).sort().map((referee) => (
-                                <TouchableOpacity
-                                  key={referee}
-                                  style={[
-                                    styles.dropdownItem,
-                                    refereeFilter === referee && styles.dropdownItemActive
-                                  ]}
-                                  onPress={() => {
-                                    setRefereeFilter(referee);
-                                    setShowRefereeDropdown(false);
-                                  }}
-                                >
-                                  <Text style={[
-                                    styles.dropdownItemText,
-                                    refereeFilter === referee && styles.dropdownItemTextActive
-                                  ]} numberOfLines={2}>
-                                    {referee}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                  </View>
+                  <ExpandedFiltersView
+                    matches={matches}
+                    genderFilter={genderFilter}
+                    setGenderFilter={setGenderFilter}
+                    courtFilter={courtFilter}
+                    setCourtFilter={setCourtFilter}
+                    refereeFilter={refereeFilter}
+                    setRefereeFilter={setRefereeFilter}
+                    showRefereeDropdown={showRefereeDropdown}
+                    setShowRefereeDropdown={setShowRefereeDropdown}
+                  />
                 )}
               </View>
             </View>

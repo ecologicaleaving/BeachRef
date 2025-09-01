@@ -438,4 +438,6 @@ const getStyles = (): StyleSheet.NamedStyles<any> => {
   });
 };
 
+QuickActions.displayName = 'QuickActions';
+
 export default QuickActions;

@@ -1,12 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git merge:*)"
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
+    "ask": [],
     "additionalDirectories": [
       "C:\\c\\Users\\KreshOS\\Documents\\00-Progetti"
-    ],
-    "ask": []
+    ]
   }
 }

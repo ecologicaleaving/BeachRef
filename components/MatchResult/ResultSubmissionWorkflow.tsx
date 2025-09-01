@@ -733,4 +733,6 @@ const getStyles = (): StyleSheet.NamedStyles<any> => {
   });
 };
 
+ResultSubmissionWorkflow.displayName = 'ResultSubmissionWorkflow';
+
 export default ResultSubmissionWorkflow;

@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Radio, Award, Calendar } from 'lucide-react';
-import WhistleLogo from '../components/WhistleLogo';
+import { WhistleLogo } from '../components/WhistleLogo';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function Index() {
-  const [showSplash, setShowSplash] = useState(true);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
   const router = useRouter();
@@ -35,7 +34,7 @@ export default function Index() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim]);
 
   const handleStartPress = () => {
     // Animate out and navigate to tournament selection

@@ -269,12 +269,12 @@ export class NetworkStateManager {
       }
 
       // console.log('Connection quality assessed:', {
-        score: qualityScore,
-        level: this.connectionQuality.level,
-        strategy: this.connectionQuality.recommendation,
-        latency,
-        networkType: this.networkState.type
-      });
+      //   score: qualityScore,
+      //   level: this.connectionQuality.level,
+      //   strategy: this.connectionQuality.recommendation,
+      //   latency,
+      //   networkType: this.networkState.type
+      // });
 
     } catch (error) {
       // console.error('Failed to assess connection quality:', error);

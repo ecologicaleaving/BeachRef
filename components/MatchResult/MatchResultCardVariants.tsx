@@ -221,6 +221,8 @@ export const BeachVolleyballResultCard: React.FC<BeachVolleyballResultCardProps>
   );
 });
 
+BeachVolleyballResultCard.displayName = 'BeachVolleyballResultCard';
+
 // Indoor Tournament Result Card Component
 interface IndoorTournamentResultCardProps {
   matchResult: EnhancedMatchResult;
@@ -397,6 +399,8 @@ export const IndoorTournamentResultCard: React.FC<IndoorTournamentResultCardProp
   );
 });
 
+IndoorTournamentResultCard.displayName = 'IndoorTournamentResultCard';
+
 // Quick Result Entry Card Component
 interface QuickResultEntryCardProps {
   matchResult: EnhancedMatchResult;
@@ -522,6 +526,8 @@ export const QuickResultEntryCard: React.FC<QuickResultEntryCardProps> = React.m
     </View>
   );
 });
+
+QuickResultEntryCard.displayName = 'QuickResultEntryCard';
 
 // Styles for Beach Volleyball variant
 const getBeachStyles = () => StyleSheet.create({

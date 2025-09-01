@@ -424,4 +424,6 @@ const getStyles = (isCompleted: boolean, isEditable: boolean): StyleSheet.NamedS
   });
 };
 
+ScoreEntry.displayName = 'ScoreEntry';
+
 export default ScoreEntry;

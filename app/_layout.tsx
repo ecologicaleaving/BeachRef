@@ -19,7 +19,8 @@ export default function RootLayout() {
         // Schedule periodic warmup every 30 minutes
         CacheWarmupService.schedulePeriodicWarmup(30);
         
-      } catch (error) {
+      } catch {
+        // Silent error handling for app initialization
       }
     };
 

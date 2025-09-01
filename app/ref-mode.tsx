@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import NavigationHeader from '../components/navigation/NavigationHeader';
-import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
+import { NavigationHeader } from '../components/navigation/NavigationHeader';
+import { BottomTabNavigation } from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
-import { designTokens } from '../theme/tokens';
+// import { designTokens } from '../theme/tokens';
 
 interface Official {
   FederationCode: string;
@@ -442,7 +442,7 @@ const RefModeScreen: React.FC = () => {
     if (eventNo) {
       loadOfficialData();
     }
-  }, [eventNo]);
+  }, [eventNo, loadOfficialData]);
 
   return (
     <AssignmentStatusProvider>

@@ -196,12 +196,12 @@ export class RealtimePerformanceMonitor {
     const timeSinceLastCheck = now - this.metrics.lastPerformanceCheck;
     
     // console.log('Performance Monitor Report:', {
-      connectionSuccessRate: this.getConnectionSuccessRate(),
-      averageMessageSize: Math.round(this.metrics.averageMessageSize),
-      messagesPerMinute: Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000),
-      batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
-      memoryOptimized: this.optimizationState.isBackgroundOptimized,
-    });
+    //   connectionSuccessRate: this.getConnectionSuccessRate(),
+    //   averageMessageSize: Math.round(this.metrics.averageMessageSize),
+    //   messagesPerMinute: Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000),
+    //   batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
+    //   memoryOptimized: this.optimizationState.isBackgroundOptimized,
+    // });
     
     this.metrics.lastPerformanceCheck = now;
   }

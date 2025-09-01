@@ -508,4 +508,6 @@ const getStyles = (variant: string, isEditable: boolean): StyleSheet.NamedStyles
   });
 };
 
+MatchResultCard.displayName = 'MatchResultCard';
+
 export default MatchResultCard;

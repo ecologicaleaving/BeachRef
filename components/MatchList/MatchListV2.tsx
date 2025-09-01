@@ -23,6 +23,12 @@ type MatchWithDurationFields = {
 };
 
 const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
+  // First try to get duration from match result (calculated from start/end time)
+  if (match.result?.duration) {
+    return match.result.duration;
+  }
+  
+  // Fallback: try to get duration from individual set fields (if available)
   // Type assertion is necessary here as ExtendedBeachMatch inherits from legacy BeachMatch
   // which contains duration fields that are not in the BeachMatchCore type
   const matchWithDuration = match as ExtendedBeachMatch & MatchWithDurationFields;
@@ -640,6 +646,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Render individual match card
   const renderMatch = (match: BeachMatchCore) => {
     const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
+    
     
     // Extract proper round display data using transformer service
     const roundData = MatchDataTransformer.getRoundDisplayData(match as any);

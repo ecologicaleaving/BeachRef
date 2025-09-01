@@ -5,7 +5,9 @@
       "Bash(git checkout:*)",
       "Bash(git commit:*)",
       "Bash(git merge:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm run lint)",
+      "Bash(npm start)"
     ],
     "deny": [],
     "ask": [],

@@ -131,7 +131,8 @@
       "Read(/C:\\Users\\KreshOS\\Desktop\\fivb_docs\\fivb_docs/**)",
       "Bash(pkill:*)",
       "Bash(git checkout:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -456,7 +456,20 @@ export class VisResponseParser {
     
     const startTime = this.extractXmlAttribute(matchXml, 'StartTime');
     const endTime = this.extractXmlAttribute(matchXml, 'EndTime');
-    const duration = calculateMatchDuration(startTime, endTime);
+    
+    let duration: number | undefined;
+    if (startTime && endTime) {
+      try {
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+          const durationResult = calculateMatchDuration(startDate, endDate);
+          duration = durationResult.totalMinutes;
+        }
+      } catch (error) {
+        // Invalid date strings, duration remains undefined
+      }
+    }
     
     const winner = team1Sets > team2Sets ? 1 : (team2Sets > team1Sets ? 2 : undefined);
     const status = this.extractXmlAttribute(matchXml, 'Status') || '';

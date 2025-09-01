@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TournamentCore } from '../types/tournament-v2';
 import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
@@ -381,50 +381,25 @@ const TournamentSelectionScreen: React.FC = () => {
   const [tournamentLoading, setTournamentLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('ALL');
-  const [availableCategories, setAvailableCategories] = useState<string[]>(['ALL']);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED'>('All');
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
-  const [timePeriod, setTimePeriod] = useState<'Week' | 'Month' | 'Year'>('Month');
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [currentYear, setCurrentYear] = useState<Date>(new Date());
+  // Simplified state - season/month hierarchy
+  const [expandedSeasons, setExpandedSeasons] = useState<{[key: string]: boolean}>({});
+  const [expandedMonths, setExpandedMonths] = useState<{[key: string]: boolean}>({});
+  const [hierarchyInitialized, setHierarchyInitialized] = useState<boolean>(false);
   const router = useRouter();
 
-  // Helper function to get Sunday of current week
-  function getWeekStart(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const diff = d.getDate() - day; // Go back to Sunday (day 0)
-    return new Date(d.setDate(diff));
+  // Helper function to format month name
+  function formatMonthName(month: number): string {
+    return new Date(2025, month, 1).toLocaleDateString('en-US', { month: 'long' });
   }
 
-  // Helper function to format week range
-  function formatWeekRange(weekStart: Date): string {
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    
-    const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
-    const startDay = weekStart.getDate();
-    const endDay = weekEnd.getDate();
-    
-    if (startMonth === endMonth) {
-      return `${startMonth} ${startDay}-${endDay}`;
-    } else {
-      return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
-    }
+  // Helper function to get season key
+  function getSeasonKey(year: number): string {
+    return `season-${year}`;
   }
 
-  // Helper function to format month
-  function formatMonth(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  }
-
-  // Helper function to format year
-  function formatYear(date: Date): string {
-    return date.getFullYear().toString();
+  // Helper function to get month key
+  function getMonthKey(year: number, month: number): string {
+    return `${year}-${String(month + 1).padStart(2, '0')}`;
   }
 
   const loadTournaments = useCallback(async (forceRefresh = false, isInitial = false) => {
@@ -466,22 +441,13 @@ const TournamentSelectionScreen: React.FC = () => {
         // Show tournaments immediately with EventNo fallback
         setTournaments(finalTournaments);
         
-        // Generate dynamic categories based on actual tournament data
-        const dynamicCategories = generateDynamicCategories(finalTournaments);
-        setAvailableCategories(dynamicCategories);
-        
-        // Set default selection to first non-ALL category if BPT doesn't exist
-        if (!dynamicCategories.includes('BPT') && dynamicCategories.length > 1) {
-          setSelectedType(dynamicCategories[1]); // First category after ALL
-        }
+        // No need for dynamic categories - showing all tournaments
         
         // Enhance tournaments with real tournament numbers in background
         enhanceTournamentsInBackground(finalTournaments, visApi);
       } else {
         // No tournaments available from API
         setTournaments([]);
-        setAvailableCategories(['ALL']);
-        setSelectedType('ALL');
       }
       
     } catch (err) {
@@ -543,9 +509,7 @@ const TournamentSelectionScreen: React.FC = () => {
         const updatedTournaments = [...tournaments];
         setTournaments(updatedTournaments);
         
-        // Update categories after enhancement (in case new types were discovered)
-        const updatedCategories = generateDynamicCategories(updatedTournaments);
-        setAvailableCategories(updatedCategories);
+        // No need to update categories - showing all tournaments
         
       } catch (error) {
         // Silent error handling for background process
@@ -704,25 +668,14 @@ const TournamentSelectionScreen: React.FC = () => {
           
             setTournaments(finalTournaments);
             
-            // Generate dynamic categories
-            const dynamicCategories = generateDynamicCategories(finalTournaments);
-            setAvailableCategories(dynamicCategories);
-            
-            // Set default selection to first non-ALL category if BPT doesn't exist
-            if (!dynamicCategories.includes('BPT') && dynamicCategories.length > 1) {
-              setSelectedType(dynamicCategories[1]); // First category after ALL
-            }
+            // No need for dynamic categories - showing all tournaments
           } catch (parseError) {
             // No tournaments available due to parsing error
             setTournaments([]);
-            setAvailableCategories(['ALL']);
-            setSelectedType('ALL');
           }
         } else {
           // No tournaments available from API
           setTournaments([]);
-          setAvailableCategories(['ALL']);
-          setSelectedType('ALL');
         }
         
       } catch (error) {
@@ -743,37 +696,6 @@ const TournamentSelectionScreen: React.FC = () => {
   //   loadTournaments(false, false); // Reload tournaments for new year, but don't show full page loading
   // }, [currentYear]);
 
-  // Separate effect for category changes - only update filtered results, don't reload API
-  useEffect(() => {
-    // This will automatically trigger re-filtering when selectedType changes
-    // No need to reload tournaments from API
-  }, [selectedType]);
-
-  // Sync time periods when switching modes (preserve user selections)
-  useEffect(() => {
-    const now = new Date();
-    switch (timePeriod) {
-      case 'Week':
-        // Only reset to current week if we're switching from a different period
-        // and the current week is in a different period than what was selected
-        if (currentWeekStart.getFullYear() !== now.getFullYear() || 
-            Math.abs(currentWeekStart.getTime() - now.getTime()) > 365 * 24 * 60 * 60 * 1000) {
-          setCurrentWeekStart(getWeekStart(now));
-        }
-        break;
-      case 'Month':
-        // Only reset to current month if we're switching from a different period
-        // and the current month is in a different year than what was selected
-        if (currentMonth.getFullYear() !== now.getFullYear()) {
-          setCurrentMonth(now);
-        }
-        break;
-      case 'Year':
-        // Don't automatically reset year - preserve user selection
-        // Only set to current year on first load if year is not set
-        break;
-    }
-  }, [timePeriod, currentWeekStart, currentMonth]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -948,139 +870,123 @@ const TournamentSelectionScreen: React.FC = () => {
     return getTournamentStatus(tournament) === 'LIVE NOW';
   });
 
-  // Filter tournaments based on selected time period and category
-  const filteredTournaments = tournaments.filter(tournament => {
-    // Basic validation filters
-    if (!tournament.name || !tournament.dates?.startDate) {
-      return false;
-    }
+  // Group tournaments by season and month hierarchy
+  const groupedTournaments = React.useMemo(() => {
+    const seasonGroups: { [seasonKey: string]: { [monthKey: string]: TournamentCore[] } } = {};
     
-    // Skip very old tournaments (before 2020)
-    const startDate = new Date(tournament.dates.startDate);
-    if (startDate.getFullYear() < 2020) {
-      return false;
-    }
-    
-    // Skip tournaments too far in the future (after 2026)
-    if (startDate.getFullYear() > 2026) {
-      return false;
-    }
-    
-    // Apply time period filtering based on UI controls (skip if filtering by LIVE status)
-    if (statusFilter !== 'LIVE NOW') {
-      const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : startDate;
-      let periodOverlap = false;
-      
-      switch (timePeriod) {
-        case 'Week':
-          const weekStart = new Date(currentWeekStart);
-          const weekEnd = new Date(currentWeekStart);
-          weekEnd.setDate(weekStart.getDate() + 6);
-          weekEnd.setHours(23, 59, 59, 999); // End of day
-          periodOverlap = startDate <= weekEnd && tournamentEnd >= weekStart;
-          break;
-          
-        case 'Month':
-          const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-          const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
-          periodOverlap = startDate <= monthEnd && tournamentEnd >= monthStart;
-          break;
-          
-        case 'Year':
-          const yearStart = new Date(currentYear.getFullYear(), 0, 1);
-          const yearEnd = new Date(currentYear.getFullYear(), 11, 31, 23, 59, 59, 999);
-          periodOverlap = startDate <= yearEnd && tournamentEnd >= yearStart;
-          break;
-      }
-      
-      if (!periodOverlap) {
+    // Filter tournaments
+    const baseFilteredTournaments = tournaments.filter(tournament => {
+      if (!tournament.name || !tournament.dates?.startDate) {
         return false;
       }
-    }
-    
-    // Apply category/type filtering
-    if (selectedType !== 'ALL') {
-      const matchesCategory = matchesTournamentCategory(tournament, selectedType);
-      if (!matchesCategory) {
+      
+      const startDate = new Date(tournament.dates.startDate);
+      const year = startDate.getFullYear();
+      
+      // Only include tournaments from 2001 to 2026
+      if (year < 2001 || year > 2026) {
         return false;
       }
-    }
+      
+      return true;
+    });
     
-    // Apply status filtering
-    if (statusFilter !== 'All') {
+    // Group by season (year) and then by month
+    baseFilteredTournaments.forEach(tournament => {
+      if (tournament.dates?.startDate) {
+        const tournamentDate = new Date(tournament.dates.startDate);
+        const year = tournamentDate.getFullYear();
+        const month = tournamentDate.getMonth();
+        const seasonKey = getSeasonKey(year);
+        const monthKey = getMonthKey(year, month);
+        
+        if (!seasonGroups[seasonKey]) {
+          seasonGroups[seasonKey] = {};
+        }
+        
+        if (!seasonGroups[seasonKey][monthKey]) {
+          seasonGroups[seasonKey][monthKey] = [];
+        }
+        
+        seasonGroups[seasonKey][monthKey].push(tournament);
+      }
+    });
+    
+    // Sort tournaments within each month by end date descending (most recent first)
+    Object.keys(seasonGroups).forEach(seasonKey => {
+      Object.keys(seasonGroups[seasonKey]).forEach(monthKey => {
+        seasonGroups[seasonKey][monthKey].sort((a, b) => {
+          const endDateA = new Date(a.dates?.endDate || a.dates?.startDate || '');
+          const endDateB = new Date(b.dates?.endDate || b.dates?.startDate || '');
+          return endDateB.getTime() - endDateA.getTime(); // Descending order
+        });
+      });
+    });
+    
+    return seasonGroups;
+  }, [tournaments]);
+  
+  // Initialize expanded seasons and months - 2025 season open, current month open
+  useEffect(() => {
+    if (Object.keys(groupedTournaments).length > 0 && !hierarchyInitialized) {
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth();
+      const currentSeasonKey = getSeasonKey(2025); // Always expand 2025
+      const currentMonthKey = getMonthKey(currentYear, currentMonth);
+      
+      // Initialize seasons - only 2025 expanded
+      const initialSeasons: {[key: string]: boolean} = {};
+      for (let year = 2001; year <= 2026; year++) {
+        initialSeasons[getSeasonKey(year)] = year === 2025;
+      }
+      
+      // Initialize months - only current month expanded if in 2025
+      const initialMonths: {[key: string]: boolean} = {};
+      if (currentYear === 2025) {
+        initialMonths[currentMonthKey] = true;
+      }
+      
+      setExpandedSeasons(initialSeasons);
+      setExpandedMonths(initialMonths);
+      setHierarchyInitialized(true);
+    }
+  }, [Object.keys(groupedTournaments).length, hierarchyInitialized]);
+  
+  // Toggle season expansion
+  const toggleSeasonExpansion = (seasonKey: string) => {
+    setExpandedSeasons(prev => ({
+      ...prev,
+      [seasonKey]: !prev[seasonKey]
+    }));
+  };
+  
+  // Toggle month expansion within a season
+  const toggleMonthExpansion = (monthKey: string) => {
+    setExpandedMonths(prev => ({
+      ...prev,
+      [monthKey]: !prev[monthKey]
+    }));
+  };
+  
+  // Get season years sorted (recent first)
+  const getSeasonYears = (): number[] => {
+    const years: number[] = [];
+    for (let year = 2026; year >= 2001; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
+  // Get tournaments filtered by status for display in specific sections
+  const getStatusFilteredTournaments = (status: 'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED') => {
+    return groupedTournaments.flatMap(([monthKey, tournaments]) => tournaments).filter(tournament => {
+      if (status === 'All') return true;
       const tournamentStatus = getTournamentStatus(tournament);
-      if (tournamentStatus !== statusFilter) {
-        return false;
-      }
-    }
-    
-    return true;
-  }).sort((a, b) => {
-    // Sort by start date ascending
-    const dateA = new Date(a.dates?.startDate || '');
-    const dateB = new Date(b.dates?.startDate || '');
-    return dateA.getTime() - dateB.getTime();
-  });
-
-
-  // Navigate based on time period
-  const navigatePeriod = (direction: 'prev' | 'next') => {
-    const currentYearNum = new Date().getFullYear();
-    const minYear = currentYearNum - 5; // Allow 5 years back
-    const maxYear = currentYearNum + 2; // Allow 2 years forward
-    
-    switch (timePeriod) {
-      case 'Week':
-        const newWeekStart = new Date(currentWeekStart);
-        const daysToMove = direction === 'next' ? 7 : -7;
-        newWeekStart.setDate(currentWeekStart.getDate() + daysToMove);
-        
-        // Prevent navigation beyond reasonable limits
-        if (newWeekStart.getFullYear() >= minYear && newWeekStart.getFullYear() <= maxYear) {
-          setCurrentWeekStart(newWeekStart);
-        }
-        break;
-        
-      case 'Month':
-        const newMonth = new Date(currentMonth);
-        const monthsToMove = direction === 'next' ? 1 : -1;
-        newMonth.setMonth(currentMonth.getMonth() + monthsToMove);
-        
-        // Prevent navigation beyond reasonable limits
-        if (newMonth.getFullYear() >= minYear && newMonth.getFullYear() <= maxYear) {
-          setCurrentMonth(newMonth);
-        }
-        break;
-        
-      case 'Year':
-        const newYear = new Date(currentYear);
-        const yearsToMove = direction === 'next' ? 1 : -1;
-        const targetYear = currentYear.getFullYear() + yearsToMove;
-        
-        // Prevent navigation beyond reasonable limits
-        if (targetYear >= minYear && targetYear <= maxYear) {
-          newYear.setFullYear(targetYear);
-          setCurrentYear(newYear);
-        }
-        break;
-    }
+      return tournamentStatus === status;
+    });
   };
 
-  // Navigate to current period (today)
-  const goToCurrentPeriod = () => {
-    const now = new Date();
-    switch (timePeriod) {
-      case 'Week':
-        setCurrentWeekStart(getWeekStart(now));
-        break;
-      case 'Month':
-        setCurrentMonth(now);
-        break;
-      case 'Year':
-        setCurrentYear(now);
-        break;
-    }
-  };
+
 
   // Extract tournament categories from tournament data
   const extractTournamentCategories = (tournaments: TournamentCore[]): string[] => {
@@ -1177,33 +1083,7 @@ const TournamentSelectionScreen: React.FC = () => {
         if (!tournament.dates?.startDate) return false;
         if (tournament.status && tournament.status.toLowerCase().includes('cancelled')) return false;
         
-        const tournamentStart = new Date(tournament.dates.startDate);
-        const tournamentEnd = tournament.dates?.endDate ? new Date(tournament.dates.endDate) : tournamentStart;
-        
-        let periodOverlap = false;
-        
-        switch (timePeriod) {
-          case 'Week':
-            const weekStart = new Date(currentWeekStart);
-            const weekEnd = new Date(currentWeekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            periodOverlap = tournamentStart <= weekEnd && tournamentEnd >= weekStart;
-            break;
-            
-          case 'Month':
-            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-            periodOverlap = tournamentStart <= monthEnd && tournamentEnd >= monthStart;
-            break;
-            
-          case 'Year':
-            const yearStart = new Date(currentYear.getFullYear(), 0, 1);
-            const yearEnd = new Date(currentYear.getFullYear(), 11, 31);
-            periodOverlap = tournamentStart <= yearEnd && tournamentEnd >= yearStart;
-            break;
-        }
-        
-        return periodOverlap && matchesTournamentCategory(tournament, category);
+        return matchesTournamentCategory(tournament, category);
       }).length;
       
       return { category, count };
@@ -1305,34 +1185,6 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  const renderTimePeriodSelector = () => {
-    const periods: ('Week' | 'Month' | 'Year')[] = ['Week', 'Month', 'Year'];
-    
-    return (
-      <View style={styles.filterRowContainer}>
-        <Text style={styles.filterRowLabel}>Period:</Text>
-        <View style={styles.periodSelectorButtons}>
-          {periods.map((period) => (
-            <TouchableOpacity
-              key={period}
-              style={[
-                styles.periodButton,
-                timePeriod === period && styles.activePeriodButton
-              ]}
-              onPress={() => setTimePeriod(period)}
-            >
-              <Text style={[
-                styles.periodButtonText,
-                timePeriod === period && styles.activePeriodButtonText
-              ]}>
-                {period}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    );
-  };
 
   const renderStatusFilter = () => {
     const statuses: ('All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED')[] = ['All', 'SCHEDULED', 'LIVE NOW', 'COMPLETED'];
@@ -1373,57 +1225,11 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  const renderDateNavigator = () => {
-    let displayInfo = '';
-    let isCurrentPeriod = false;
-    
-    switch (timePeriod) {
-      case 'Week':
-        isCurrentPeriod = getWeekStart(new Date()).getTime() === currentWeekStart.getTime();
-        displayInfo = isCurrentPeriod ? 'This Week' : formatWeekRange(currentWeekStart);
-        break;
-      case 'Month':
-        const currentMonthTime = new Date().getMonth();
-        const currentYearTime = new Date().getFullYear();
-        isCurrentPeriod = currentMonth.getMonth() === currentMonthTime && currentMonth.getFullYear() === currentYearTime;
-        displayInfo = isCurrentPeriod ? 'This Month' : formatMonth(currentMonth);
-        break;
-      case 'Year':
-        isCurrentPeriod = currentYear.getFullYear() === new Date().getFullYear();
-        displayInfo = isCurrentPeriod ? 'This Year' : formatYear(currentYear);
-        break;
-    }
-    
-    return (
-      <View style={styles.weekNavigatorContainer}>
-        <View style={styles.weekNavigator}>
-          <TouchableOpacity 
-            style={styles.calendarIconButton}
-            onPress={goToCurrentPeriod}
-          >
-            <Calendar size={20} color="#4A90A4" strokeWidth={2} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.weekNavButton}
-            onPress={() => navigatePeriod('prev')}
-          >
-            <Text style={styles.weekNavButtonText}>◀</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.weekDisplayContainer}>
-            <Text style={styles.weekDisplayText}>{displayInfo}</Text>
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.weekNavButton}
-            onPress={() => navigatePeriod('next')}
-          >
-            <Text style={styles.weekNavButtonText}>▶</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+  // Format month header for collapsible sections
+  const formatMonthHeader = (monthKey: string): string => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-US', { month: 'long' });
   };
 
   if (initialLoading) {
@@ -1464,43 +1270,10 @@ const TournamentSelectionScreen: React.FC = () => {
           {/* Carousel Section - will disappear when scrolling */}
           {renderLiveTournaments()}
           
-          {/* Sticky Filter Section */}
-          <View style={styles.stickyFilters}>
-            {renderDateNavigator()}
-            
-            {/* Always Visible Category Filter */}
-            {renderCategoryDropdown()}
-            
-            {/* Filter Toggle Link */}
-            <View style={styles.filterToggleSection}>
-              <TouchableOpacity 
-                onPress={() => setShowFilters(!showFilters)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.filterToggleLink}>
-                  {showFilters ? 'Hide Filters' : 'Show Filters'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Collapsible Filters Panel */}
-            {showFilters && (
-              <View style={styles.expandableFiltersPanel}>
-                {renderTimePeriodSelector()}
-                {renderStatusFilter()}
-              </View>
-            )}
-          </View>
+          {/* No filters - just seasons and months hierarchy */}
         
           {/* Tournament List Section */}
           <View style={styles.tournamentsSection}>
-            <VisTournamentList
-              tournaments={filteredTournaments}
-              onTournamentPress={handleTournamentPress}
-              loading={tournamentLoading}
-              error={error}
-              onRetry={() => loadTournaments(true)}
-            />
             {tournamentLoading && (
               <View 
                 style={styles.tournamentLoadingOverlay}
@@ -1511,17 +1284,107 @@ const TournamentSelectionScreen: React.FC = () => {
               </View>
             )}
           
-            {filteredTournaments.length === 0 && !initialLoading && !tournamentLoading && (
+            {Object.keys(groupedTournaments).length === 0 && !initialLoading && !tournamentLoading ? (
               <View style={styles.emptyState}>
                 <Clock size={48} color="#9CA3AF" strokeWidth={2} />
                 <Text style={styles.emptyText}>No tournaments found</Text>
                 <Text style={styles.emptySubtext}>
-                  {tournaments.length === 0 
-                    ? 'No tournaments available for any week'
-                    : 'No tournaments for this week and category'
-                  }
+                  No tournaments available
                 </Text>
               </View>
+            ) : (
+              <ScrollView 
+                style={styles.seasonsList}
+                showsVerticalScrollIndicator={false}
+              >
+                {getSeasonYears().map(year => {
+                  const seasonKey = getSeasonKey(year);
+                  const seasonData = groupedTournaments[seasonKey];
+                  const isSeasonExpanded = expandedSeasons[seasonKey] || false;
+                  
+                  if (!seasonData) return null;
+                  
+                  const totalTournaments = Object.values(seasonData).reduce((sum, monthTournaments) => sum + monthTournaments.length, 0);
+                  
+                  return (
+                    <View key={seasonKey}>
+                      {/* Season Header */}
+                      <TouchableOpacity 
+                        style={[
+                          styles.seasonHeader,
+                          isSeasonExpanded && styles.expandedSeasonHeader
+                        ]}
+                        onPress={() => toggleSeasonExpansion(seasonKey)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.seasonHeaderContent}>
+                          <Text style={styles.seasonHeaderText}>
+                            Season {year}
+                          </Text>
+                          <Text style={styles.tournamentCountText}>
+                            {totalTournaments} {totalTournaments === 1 ? 'tournament' : 'tournaments'}
+                          </Text>
+                        </View>
+                        
+                        <Text style={styles.expandIndicator}>
+                          {isSeasonExpanded ? '▼' : '▶'}
+                        </Text>
+                      </TouchableOpacity>
+                      
+                      {/* Season Content - Months */}
+                      {isSeasonExpanded && (
+                        <View style={styles.seasonContent}>
+                          {Object.entries(seasonData)
+                            .sort(([a], [b]) => b.localeCompare(a)) // Recent months first
+                            .map(([monthKey, monthTournaments]) => {
+                              const isMonthExpanded = expandedMonths[monthKey] || false;
+                              
+                              return (
+                                <View key={monthKey}>
+                                  {/* Month Header */}
+                                  <TouchableOpacity 
+                                    style={[
+                                      styles.monthHeader,
+                                      isMonthExpanded && styles.expandedMonthHeader
+                                    ]}
+                                    onPress={() => toggleMonthExpansion(monthKey)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <View style={styles.monthHeaderContent}>
+                                      <Text style={styles.monthHeaderText}>
+                                        {formatMonthHeader(monthKey)}
+                                      </Text>
+                                      <Text style={styles.tournamentCountText}>
+                                        {monthTournaments.length} {monthTournaments.length === 1 ? 'tournament' : 'tournaments'}
+                                      </Text>
+                                    </View>
+                                    
+                                    <Text style={styles.expandIndicator}>
+                                      {isMonthExpanded ? '▼' : '▶'}
+                                    </Text>
+                                  </TouchableOpacity>
+                                  
+                                  {/* Month Content - Tournaments */}
+                                  {isMonthExpanded && (
+                                    <View style={styles.tournamentsContainer}>
+                                      <VisTournamentList
+                                        tournaments={monthTournaments}
+                                        onTournamentPress={handleTournamentPress}
+                                        loading={false}
+                                        error={null}
+                                        onRetry={() => loadTournaments(true)}
+                                      />
+                                    </View>
+                                  )}
+                                </View>
+                              );
+                            })}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
             )}
           </View>
         </ScrollView>
@@ -1870,11 +1733,11 @@ const styles = StyleSheet.create({
     color: '#1B365D',
     fontWeight: '600',
   },
-  weekNavigatorContainer: {
+  monthNavigatorContainer: {
     paddingHorizontal: 24,
     marginBottom: 16,
   },
-  weekNavigator: {
+  monthNavigator: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1903,7 +1766,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     marginRight: 16,
   },
-  weekNavButton: {
+  monthNavButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -1913,26 +1776,115 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  weekNavButtonText: {
-    fontSize: 16,
-    color: '#4A90A4',
-    fontWeight: 'bold',
-  },
-  weekDisplayContainer: {
+  monthDisplayContainer: {
     alignItems: 'center',
-    minWidth: 120,
+    minWidth: 160,
     marginHorizontal: 16,
   },
-  weekDisplayText: {
+  monthDisplayText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1B365D',
     marginBottom: 2,
+    textAlign: 'center',
   },
-  weekTournamentCount: {
-    fontSize: 14,
-    color: '#4A90A4',
+  seasonsList: {
+    flex: 1,
+  },
+  seasonHeader: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginTop: 20,
+    marginBottom: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: '#1976D2',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  expandedSeasonHeader: {
+    backgroundColor: '#BBDEFB',
+    borderColor: '#0D47A1',
+    shadowOpacity: 0.15,
+  },
+  seasonHeaderContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  seasonHeaderText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1976D2',
+  },
+  seasonContent: {
+    paddingLeft: 16,
+    marginBottom: 8,
+  },
+  monthHeader: {
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 8,
+    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 6,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  expandedMonthHeader: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+    shadowOpacity: 0.1,
+  },
+  monthHeaderContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  monthHeaderText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  tournamentCountText: {
+    fontSize: 13,
+    color: '#6B7280',
     fontWeight: '500',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  expandIndicator: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginLeft: 8,
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  tournamentsContainer: {
+    marginBottom: 8,
   },
   // LIVE tournaments section styles
   liveTournamentsSection: {

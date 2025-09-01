@@ -23,9 +23,30 @@ type MatchWithDurationFields = {
 };
 
 const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
+  // Debug logging to understand what data we have
+  console.log('Duration Debug:', {
+    matchId: match.id,
+    hasResult: !!match.result,
+    resultDuration: match.result?.duration,
+    actualStartTime: match.actualStartTime,
+    actualEndTime: match.actualEndTime,
+    durationSet1: (match as any).DurationSet1,
+    durationSet2: (match as any).DurationSet2,
+    durationSet3: (match as any).DurationSet3,
+    matchStatus: match.status
+  });
+  
   // First try to get duration from match result (calculated from start/end time)
-  if (match.result?.duration) {
-    return match.result.duration;
+  if (match.result?.duration && typeof match.result.duration === 'number') {
+    const totalMinutes = match.result.duration;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
   }
   
   // Fallback: try to get duration from individual set fields (if available)
@@ -179,19 +200,19 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return 'All';
   });
 
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default to descending (newest first)
 
-  // Force sort order to ascending on component mount
+  // Force sort order to descending on component mount (newest dates first)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
         localStorage.removeItem('matchlist-sortOrder');
-        localStorage.setItem('matchlist-sortOrder', 'asc');
+        localStorage.setItem('matchlist-sortOrder', 'desc');
       }
     } catch (error) {
       // localStorage not available
     }
-    setSortOrder('asc');
+    setSortOrder('desc');
   }, []); // Run only once on mount
 
   const [showFilters, setShowFilters] = useState<boolean>(() => {
@@ -524,7 +545,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     if (groupedMatches.length > 0) {
       const allDates = groupedMatches.map(([date]) => date);
-      const mostRecentDate = allDates[allDates.length - 1]; // Last date in chronological order
+      // With descending order, the first date is the most recent
+      const mostRecentDate = sortOrder === 'desc' ? allDates[0] : allDates[allDates.length - 1];
       
       
       const initialExpanded: {[key: string]: boolean} = {};
@@ -534,7 +556,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       
       setExpandedDates(initialExpanded);
     }
-  }, [groupedMatches]);
+  }, [groupedMatches, sortOrder]);
 
   // Format time from ISO string
   const formatTime = (isoDateTime: string): string => {
@@ -971,6 +993,64 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           styles.filtersContainer,
           showRefereeDropdown && styles.filtersContainerExpanded
         ]}>
+        {/* Referee Filter - positioned FIRST */}
+        {showRefereeFilter && uniqueReferees.length > 0 && (
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterLabel}>Referee:</Text>
+            <View style={styles.dropdownContainer}>
+              <TouchableOpacity
+                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
+                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+              >
+                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
+                  {effectiveRefereeFilter === 'All' ? 'ALL' : effectiveRefereeFilter.split(' ').pop()}
+                </Text>
+                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
+                  {showRefereeDropdown ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+              
+              {showRefereeDropdown && (
+                <>
+                  <Pressable
+                    style={styles.dropdownOverlay}
+                    onPress={() => setShowRefereeDropdown(false)}
+                  />
+                  <View style={styles.dropdownList}>
+                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                      <TouchableOpacity
+                        style={[styles.dropdownItem, effectiveRefereeFilter === 'All' && styles.dropdownItemActive]}
+                        onPress={() => {
+                          setEffectiveRefereeFilter('All');
+                          setShowRefereeDropdown(false);
+                        }}
+                      >
+                        <Text style={[styles.dropdownItemText, effectiveRefereeFilter === 'All' && styles.dropdownItemTextActive]}>
+                          ALL
+                        </Text>
+                      </TouchableOpacity>
+                      {uniqueReferees.map(referee => (
+                        <TouchableOpacity
+                          key={referee}
+                          style={[styles.dropdownItem, effectiveRefereeFilter === referee && styles.dropdownItemActive]}
+                          onPress={() => {
+                            setEffectiveRefereeFilter(referee);
+                            setShowRefereeDropdown(false);
+                          }}
+                        >
+                          <Text style={[styles.dropdownItemText, effectiveRefereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
+                            {referee}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        )}
+
         {showCourtFilter && uniqueCourts.length > 1 && (
           <View style={styles.filterGroup}>
             <Text style={styles.filterLabel}>Court:</Text>
@@ -1055,64 +1135,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             ))}
           </View>
         </View>
-
-        {/* Referee Filter - positioned LAST to render above other filters */}
-        {showRefereeFilter && uniqueReferees.length > 0 && (
-          <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Referee:</Text>
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity
-                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
-                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
-              >
-                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
-                  {refereeFilter === 'All' ? 'ALL' : refereeFilter.split(' ').pop()}
-                </Text>
-                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
-                  {showRefereeDropdown ? '▲' : '▼'}
-                </Text>
-              </TouchableOpacity>
-              
-              {showRefereeDropdown && (
-                <>
-                  <Pressable
-                    style={styles.dropdownOverlay}
-                    onPress={() => setShowRefereeDropdown(false)}
-                  />
-                  <View style={styles.dropdownList}>
-                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                      <TouchableOpacity
-                        style={[styles.dropdownItem, refereeFilter === 'All' && styles.dropdownItemActive]}
-                        onPress={() => {
-                          setRefereeFilter('All');
-                          setShowRefereeDropdown(false);
-                        }}
-                      >
-                        <Text style={[styles.dropdownItemText, refereeFilter === 'All' && styles.dropdownItemTextActive]}>
-                          ALL
-                        </Text>
-                      </TouchableOpacity>
-                      {uniqueReferees.map(referee => (
-                        <TouchableOpacity
-                          key={referee}
-                          style={[styles.dropdownItem, refereeFilter === referee && styles.dropdownItemActive]}
-                          onPress={() => {
-                            setRefereeFilter(referee);
-                            setShowRefereeDropdown(false);
-                          }}
-                        >
-                          <Text style={[styles.dropdownItemText, refereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
-                            {referee}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </>
-              )}
-            </View>
-          </View>
-        )}
 
         {customFilters}
         </View>

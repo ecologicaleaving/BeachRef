@@ -208,7 +208,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [matches, setMatches] = useState<BeachMatchCore[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'schedule' | 'ranking'>('schedule');
+  // Removed tab system - showing ranking by default
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
   const [refreshing, setRefreshing] = useState(false);
   
@@ -840,7 +840,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Debug effect for MatchList render
   useEffect(() => {
-  }, [matches, matchesLoading, activeTab]);
+  }, [matches, matchesLoading]); // Removed activeTab dependency
 
 
   // Handle status bar press - navigate to assignments if available
@@ -867,9 +867,11 @@ const TournamentDetailScreenContent: React.FC = () => {
     <View style={styles.container}>
       <NavigationHeader 
         title={tournament.name || 'Tournament Details'} 
-        showBackButton={false}
+        showBackButton={true}
         showRefreshButton={false}
         showStatusBar={false}
+        showLogo={false}
+        onBackPress={() => router.push('/tournament-selection')}
       />
 
       {/* Tournament Info - Scrollable */}
@@ -956,34 +958,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                 <Text style={styles.tournamentDate}>{getDateRange()}</Text>
               </View>
 
-              {/* Tab Headers - integrated in tournament card for cleaner layout */}
-              <View style={styles.inCardTabHeaders}>
-                <TouchableOpacity
-                  style={[styles.tabHeader, activeTab === 'schedule' && styles.activeTabHeader]}
-                  onPress={() => setActiveTab('schedule')}
-                >
-                  <Text style={[styles.tabHeaderText, activeTab === 'schedule' && styles.activeTabHeaderText]}>
-                    Schedule & Results
-                  </Text>
-                </TouchableOpacity>
-                {hasRankingData && (
-                  <TouchableOpacity
-                    style={[styles.tabHeader, activeTab === 'ranking' && styles.activeTabHeader]}
-                    onPress={() => setActiveTab('ranking')}
-                  >
-                    <Text style={[styles.tabHeaderText, activeTab === 'ranking' && styles.activeTabHeaderText]}>
-                      Ranking
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+              {/* Tab system removed - showing matches directly */}
             </View>
 
         )}
 
         {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls */}
         <View style={styles.stickyFiltersWrapper}>
-          {!detailsLoading && activeTab === 'schedule' ? (
+          {!detailsLoading ? (
             <View>
               
               {/* Filter Controls Section */}
@@ -1040,7 +1022,8 @@ const TournamentDetailScreenContent: React.FC = () => {
         {/* Content Section - Only show when not loading */}
         {!detailsLoading && (
           <View>
-            {activeTab === 'schedule' && (
+            {/* Show matches directly - no tab system */}
+            {(
               <View style={[styles.tabContent, styles.tabContentSpacing]}>
                 {/* Live Score Cards for InProgress/Scheduled matches */}
                 {matches && matches.length > 0 && (
@@ -1129,13 +1112,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                 />
               </View>
             )}
-            {activeTab === 'ranking' && (
-              <View style={[styles.rankingPlaceholder, styles.tabContentSpacing]}>
-                <Text style={styles.rankingPlaceholderText}>
-                  Tournament ranking will be available here
-                </Text>
-              </View>
-            )}
+            {/* Ranking system removed - only showing matches */}
           </View>
         )}
       </ScrollView>

@@ -9,7 +9,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Radio, Award, Calendar } from 'lucide-react';
+import { Radio, Award, Calendar, Play, ArrowRight, ChevronRight } from 'lucide-react';
 import { WhistleLogo } from '../components/WhistleLogo';
 
 const { width } = Dimensions.get('window');
@@ -113,8 +113,8 @@ export default function Index() {
             onPress={handleStartPress}
             activeOpacity={0.8}
           >
-            <Text style={styles.startButtonText}>Start</Text>
-            <Text style={styles.startButtonArrow}>→</Text>
+            <Text style={styles.startButtonText}>Get Started</Text>
+            <Play size={20} color="#FFFFFF" fill="#FFFFFF" style={styles.startButtonIcon} />
           </TouchableOpacity>
         </Animated.View>
 
@@ -259,12 +259,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 8,
+    marginRight: 10,
   },
-  startButtonArrow: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
+  startButtonIcon: {
+    marginLeft: 4,
   },
   bottomBadge: {
     position: 'absolute',

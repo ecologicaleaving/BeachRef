@@ -17,6 +17,7 @@ const { width } = Dimensions.get('window');
 export default function Index() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
+  const [showSplash, setShowSplash] = useState(true);
   const router = useRouter();
 
   useEffect(() => {

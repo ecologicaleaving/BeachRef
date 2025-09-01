@@ -129,6 +129,8 @@ export const RefereeDropdown: React.FC<RefereeDropdownProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
+    position: 'relative',
+    zIndex: 9999,
   },
   label: {
     fontSize: 16,
@@ -190,11 +192,16 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     maxHeight: 200,
-    elevation: 3,
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 10000,
   },
   scrollView: {
     maxHeight: 200,

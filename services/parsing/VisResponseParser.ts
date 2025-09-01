@@ -280,6 +280,9 @@ export class VisResponseParser {
     const visNo = this.extractXmlAttribute(matchXml, 'No');
     const matchCode = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
     const round = this.extractXmlAttribute(matchXml, 'Round') || '';
+    const roundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase') || '';
+    const roundName = this.extractXmlAttribute(matchXml, 'RoundName') || '';
+    
     
     if (!visNo || !matchCode) {
       return null;
@@ -333,6 +336,8 @@ export class VisResponseParser {
       tournamentId,
       matchCode,
       round,
+      roundPhase: roundPhase,
+      roundName: roundName,
       phaseCode: this.extractXmlAttribute(matchXml, 'Phase'),
       status,
       court,
@@ -346,7 +351,7 @@ export class VisResponseParser {
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
       weather: this.extractXmlAttribute(matchXml, 'Weather'),
       importance
-    };
+    } as any;
   }
 
   /**
@@ -439,10 +444,13 @@ export class VisResponseParser {
     const matchPointsA = this.extractXmlAttribute(matchXml, 'MatchPointsA');
     const matchPointsB = this.extractXmlAttribute(matchXml, 'MatchPointsB');
     
+    
     if (!matchPointsA || !matchPointsB) return undefined;
 
-    // Parse set scores from MatchPoints (e.g., "21-19,21-15" format)
+    // Individual set scores are not available in GetBeachMatchList
+    // They must be fetched separately using GetBeachLive API
     const setScores: number[] = [];
+    
     const team1Sets = parseInt(matchPointsA) || 0;
     const team2Sets = parseInt(matchPointsB) || 0;
     

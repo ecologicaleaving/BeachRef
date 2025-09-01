@@ -9,6 +9,7 @@ export interface RefereeAssignment {
   court: string;
   status: 'Scheduled' | 'Running' | 'Finished' | 'Cancelled';
   round: string;
+  roundPhase?: string;
   refereeRole: 'referee1' | 'referee2';
 }
 

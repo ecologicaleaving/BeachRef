@@ -26,3 +26,6 @@ export * from './TouchTarget';
 
 // Dashboard Components (Story 3.1)
 export * from './Dashboard';
+
+// Live Score Components (EPIC-001 Story 1.2)
+export * from './live-score';

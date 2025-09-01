@@ -23,8 +23,7 @@ import { StatusIndicator } from '../components/Status/StatusIndicator';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import { designTokens } from '../theme/tokens';
-import DateNavigator from '../components/DateNavigator/DateNavigator';
-import { useDateNavigation } from '../hooks/useDateNavigation';
+// DateNavigator and useDateNavigation completely removed
 
 interface RefereeFromDB {
   No: string;
@@ -79,7 +78,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
   const [showCourtSelection, setShowCourtSelection] = useState(false);
   const [courtMatches, setCourtMatches] = useState<BeachMatch[]>([]);
   const [loadingCourtMatches, setLoadingCourtMatches] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  // Date selection removed - showing all matches
   const [currentTournament, setCurrentTournament] = useState<any>(null);
   const [selectedReferee, setSelectedReferee] = useState<RefereeFromDB | null>(null);
   const [refereeMatches, setRefereeMatches] = useState<BeachMatch[]>([]);
@@ -1545,18 +1544,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
               </View>
             ) : courtMatches.length > 0 ? (
               <>
-                {/* New Date Navigator Component */}
-                <DateNavigator
-                  availableDates={getAvailableDates()}
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                  formatDate={formatMatchDate}
-                  getMatchCount={(date) => {
-                    const matchesForDate = courtMatches.filter(match => (match.LocalDate || 'Unknown Date') === date);
-                    // // console.log(`🗓️ Court Monitor - Match count for ${date}:`, matchesForDate.length);
-                    return matchesForDate.length;
-                  }}
-                />
+                {/* Date Navigator removed - showing all matches */}
                 
                 {/* Matches List */}
                 <View style={styles.courtMatchesList}>
@@ -2083,21 +2071,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
           </View>
         ) : (
           <>
-            {/* New Date Navigator Component */}
-            <DateNavigator
-              availableDates={getAvailableDates()}
-              selectedDate={selectedDate}
-              onDateChange={setSelectedDate}
-              formatDate={formatMatchDate}
-              getMatchCount={(date) => {
-                const matchCount = refereeMatches.filter(match => {
-                  const matchDate = match.Date || match.LocalDate || match.MatchDate || match.StartDate;
-                  return matchDate === date;
-                }).length;
-                // // console.log(`🗓️ Referee Monitor - Match count for ${date}:`, matchCount);
-                return matchCount;
-              }}
-            />
+            {/* Date Navigator removed - showing all matches */}
 
             {/* Matches list */}
             <View style={styles.matchesContainer}>

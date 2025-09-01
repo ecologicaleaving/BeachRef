@@ -17,7 +17,9 @@ export enum VisApiEndpoint {
   /** Endpoint for match data */
   GET_BEACH_MATCH_LIST = 'GetBeachMatchList',
   /** Endpoint for round data */
-  GET_BEACH_ROUND = 'GetBeachRound'
+  GET_BEACH_ROUND = 'GetBeachRound',
+  /** Endpoint for live score data */
+  GET_BEACH_LIVE = 'GetBeachLive'
 }
 
 /**
@@ -119,6 +121,19 @@ export interface GetBeachRoundRequest extends VisApiRequestBase {
   readonly includeTeams?: boolean;
   /** Include matches in round */
   readonly includeMatches?: boolean;
+}
+
+/**
+ * GetBeachLiveRequest parameters
+ * For live score data
+ */
+export interface GetBeachLiveRequest extends VisApiRequestBase {
+  /** Match number from VIS */
+  readonly matchNo: number;
+  /** Version number for bandwidth optimization */
+  readonly version?: number;
+  /** Options for data filtering */
+  readonly options?: readonly string[];
 }
 
 /**
@@ -226,6 +241,13 @@ export interface IVisApiClient {
   getBeachRound(request: GetBeachRoundRequest): Promise<VisApiResponse>;
   
   /**
+   * Get beach live score data
+   * @param request - GetBeachLiveRequest request parameters
+   * @returns Promise with XML response
+   */
+  getBeachLive(request: GetBeachLiveRequest): Promise<VisApiResponse>;
+  
+  /**
    * Test API connectivity
    * @returns Promise with connection status
    */
@@ -326,6 +348,13 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
     'MatchNo', 'Court', 'DateTime', 'Status', 'Team1', 'Team2',
     'Result', 'Round', 'Phase', 'Referees'
+  ],
+  [VisApiEndpoint.GET_BEACH_ROUND]: [
+    'RoundNo', 'Name', 'Teams', 'Matches', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_LIVE]: [
+    'Version', 'PollDelay', 'Match', 'Sets', 'TeamA', 'TeamB',
+    'ServingTeam', 'ServingPlayer', 'BallInPlay', 'Tournament'
   ]
 } as const;
 

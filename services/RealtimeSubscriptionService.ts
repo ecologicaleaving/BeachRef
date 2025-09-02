@@ -1,4 +1,4 @@
-import { BeachMatch } from '../types/match';
+import { VisCompliantMatch, isVisCompliantMatch, convertLegacyToVisCompliant } from '../types/match-vis-compliant';
 import { Tournament } from '../types/tournament';
 import { supabase } from './supabase';
 import { CacheService } from './CacheService';
@@ -196,7 +196,7 @@ export class RealtimeSubscriptionService {
   /**
    * Subscribe to live match updates using matches array (backward compatibility)
    */
-  static async subscribeLiveMatches(matches: BeachMatch[]): Promise<void> {
+  static async subscribeLiveMatches(matches: VisCompliantMatch[]): Promise<void> {
     this.initialize();
 
     const liveMatches = matches.filter(match => this.isLiveMatch(match));
@@ -527,7 +527,7 @@ export class RealtimeSubscriptionService {
   /**
    * Check if a match is live and requires real-time updates
    */
-  private static isLiveMatch(match: BeachMatch): boolean {
+  private static isLiveMatch(match: VisCompliantMatch): boolean {
     const status = match.Status?.toLowerCase();
     return status === 'live' || 
            status === 'inprogress' || 
@@ -547,7 +547,7 @@ export class RealtimeSubscriptionService {
   /**
    * Extract tournament number from match data
    */
-  private static extractTournamentNo(match: BeachMatch): string | null {
+  private static extractTournamentNo(match: VisCompliantMatch): string | null {
     // Check if match has tournament number in different possible fields
     return (match as any).tournamentNo || 
            (match as any).tournament_no || 
@@ -598,7 +598,7 @@ export class RealtimeSubscriptionService {
   /**
    * Handle updates from fallback polling
    */
-  private static async handleFallbackUpdate(tournamentNo: string, matches: BeachMatch[]): Promise<void> {
+  private static async handleFallbackUpdate(tournamentNo: string, matches: VisCompliantMatch[]): Promise<void> {
     try {
       // console.log(`Fallback update received for tournament ${tournamentNo}: ${matches.length} matches`);
       

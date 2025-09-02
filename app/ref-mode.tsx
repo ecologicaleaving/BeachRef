@@ -62,7 +62,6 @@ const RefModeScreen: React.FC = () => {
   // Extract referees from match assignments as fallback
   const extractRefereesFromMatches = async (eventNo: string) => {
     try {
-      console.log('🔍 Extracting referees from match assignments for event:', eventNo);
       
       // Get match data for the event
       const { VisApiClient } = await import('../services/api/VisApiClient');
@@ -74,7 +73,6 @@ const RefModeScreen: React.FC = () => {
       });
       
       if (matchResponse.success && matchResponse.xmlData) {
-        console.log('📋 Got match data, extracting referee assignments...');
         
         // Parse match XML to extract referee names
         const refereeNamesSet = new Set<string>();
@@ -117,7 +115,6 @@ const RefModeScreen: React.FC = () => {
           };
         });
         
-        console.log('🏐 Extracted referees from matches:', extractedReferees);
         if (extractedReferees.length > 0) {
           setReferees(extractedReferees);
         }
@@ -151,17 +148,13 @@ const RefModeScreen: React.FC = () => {
       
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
-      console.log('🔍 Loading official data for event:', eventNo);
 
       // Make specific GetEventRefereeList request using GET method like the manual
-      console.log('🏐 Making GetEventRefereeList GET request...');
       
       // Request specific fields as provided
       const refereeRequest = `<Requests><Request Type='GetEventRefereeList' Fields='Conclusion FederationCode FirstName Gender LastName NoPortraitPhoto NoReferee Signatures Status StrongPoints TheoryTest Type WeakPoints'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
       const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
       
-      console.log('📤 GetEventRefereeList Request XML:', refereeRequest);
-      console.log('📤 GetEventRefereeList URL:', refereeUrl);
 
       try {
         const refereeResponse = await fetch(refereeUrl, {
@@ -174,40 +167,31 @@ const RefModeScreen: React.FC = () => {
         
         if (refereeResponse.ok) {
           const refereeData = await refereeResponse.text();
-          console.log('📋 GetEventRefereeList Raw Response:', refereeData);
           
           // Parse referee numbers from the response
           const refereeNumbers = parseRefereeNumbers(refereeData);
-          console.log('🏐 Found referee numbers:', refereeNumbers);
           
           // Get detailed info for each referee
           if (refereeNumbers.length > 0) {
-            console.log('🔍 Getting detailed referee information...');
             const detailedReferees = await getDetailedReferees(refereeNumbers.slice(0, 3)); // Limit to first 3 for testing
-            console.log('🏐 Detailed referees:', detailedReferees);
             setReferees(detailedReferees);
           }
         } else {
           console.error('❌ GetEventRefereeList HTTP error:', refereeResponse.status, refereeResponse.statusText);
           // Try fallback: extract referees from match assignments
-          console.log('🔄 Fallback: Extracting referees from match assignments...');
           await extractRefereesFromMatches(eventNo);
         }
       } catch (error) {
         console.error('❌ GetEventRefereeList failed:', error);
         // Try fallback: extract referees from match assignments
-        console.log('🔄 Fallback: Extracting referees from match assignments...');
         await extractRefereesFromMatches(eventNo);
       }
 
       // Also try GetEventOfficialList with GET
-      console.log('👨‍⚖️ Making GetEventOfficialList GET request...');
       
       const officialRequest = `<Requests><Request Type='GetEventOfficialList' Fields='FederationCode FirstName Gender LastName NoPortraitPhoto NoOfficial Role Signatures Status Type'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
       const officialUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(officialRequest)}`;
       
-      console.log('📤 GetEventOfficialList Request XML:', officialRequest);
-      console.log('📤 GetEventOfficialList URL:', officialUrl);
 
       try {
         const officialResponse = await fetch(officialUrl, {
@@ -220,10 +204,8 @@ const RefModeScreen: React.FC = () => {
         
         if (officialResponse.ok) {
           const officialData = await officialResponse.text();
-          console.log('📋 GetEventOfficialList Raw Response:', officialData);
           
           const officialsData = parseOfficials(officialData);
-          console.log('👨‍⚖️ Parsed Officials from GetEventOfficialList:', officialsData);
           setOfficials(officialsData);
         } else {
           console.error('❌ GetEventOfficialList HTTP error:', officialResponse.status, officialResponse.statusText);
@@ -233,7 +215,6 @@ const RefModeScreen: React.FC = () => {
       }
 
       // Fallback: Try GetEvent with officials and referees enabled
-      console.log('📋 Fallback: Making GetEvent request...');
       const eventResponse = await visApi.getEvent({
         eventNo: eventNo,
         includeOfficials: true,
@@ -241,14 +222,11 @@ const RefModeScreen: React.FC = () => {
       });
 
       if (eventResponse.success && eventResponse.xmlData) {
-        console.log('📋 Event Response XML:', eventResponse.xmlData);
         
         // Parse officials from the response
         const officialsData = parseOfficials(eventResponse.xmlData);
         const refereesData = parseReferees(eventResponse.xmlData);
         
-        console.log('👨‍⚖️ Parsed Officials:', officialsData);
-        console.log('🏐 Parsed Referees:', refereesData);
         
         setOfficials(officialsData);
         setReferees(refereesData);
@@ -291,12 +269,10 @@ const RefModeScreen: React.FC = () => {
     
     for (const refereeNo of refereeNumbers) {
       try {
-        console.log(`🔍 Getting details for referee ${refereeNo}...`);
         
         const refereeRequest = `<Requests><Request Type='GetReferee' No='${refereeNo}' VISId='VIS'/></Requests>`;
         const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
         
-        console.log(`📤 GetReferee Request for ${refereeNo}:`, refereeRequest);
         
         const response = await fetch(refereeUrl, {
           method: 'GET',
@@ -308,7 +284,6 @@ const RefModeScreen: React.FC = () => {
         
         if (response.ok) {
           const refereeData = await response.text();
-          console.log(`📋 GetReferee Response for ${refereeNo}:`, refereeData);
           
           // Parse individual referee data
           const parsedReferee = parseIndividualReferee(refereeData, refereeNo);
@@ -364,7 +339,6 @@ const RefModeScreen: React.FC = () => {
       // Look for EventOfficialList in the XML response
       const officialListMatch = xmlData.match(/<EventOfficialList[^>]*>(.*?)<\/EventOfficialList>/s);
       if (!officialListMatch) {
-        console.log('No EventOfficialList found in XML');
         return [];
       }
 
@@ -402,7 +376,6 @@ const RefModeScreen: React.FC = () => {
       // Look for EventRefereeList in the XML response
       const refereeListMatch = xmlData.match(/<EventRefereeList[^>]*>(.*?)<\/EventRefereeList>/s);
       if (!refereeListMatch) {
-        console.log('No EventRefereeList found in XML');
         return [];
       }
 

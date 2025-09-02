@@ -1,7 +1,8 @@
 /**
  * @fileoverview VIS Response Parser v2
  * Robust XML parsing and data transformation for VIS API responses
- * Part of EPIC-007 Data Architecture Restructuration
+ * Migrated to VIS-compliant types for improved type safety and schema compliance
+ * Part of VIS Data Structure Alignment Epic - Story 1.2
  */
 
 import { 
@@ -27,6 +28,15 @@ import {
   calculateMatchDuration,
   determineMatchImportance
 } from '../../types/match-v2';
+
+// Import VIS-compliant types for numeric conversion
+import {
+  VisCompliantMatch,
+  BeachMatchFormat,
+  convertLegacyToVisCompliant,
+  isVisCompliantMatch,
+  isLegacyMatch
+} from '../../types/match-vis-compliant';
 
 /**
  * Tournament location data from GetBeachTournament
@@ -95,14 +105,12 @@ export class VisResponseParser {
             tournaments.push(tournament);
           }
         } catch (error) {
-          // console.warn('Failed to parse tournament:', error);
           // Continue parsing other tournaments
         }
       }
 
       // Debug: Log the parsed tournaments to see venue data
       if (tournaments.length > 0) {
-        console.log('🏐 Parsed tournaments with venue data:', JSON.stringify(tournaments.slice(0, 2), null, 2));
       }
 
       return tournaments;
@@ -204,7 +212,6 @@ export class VisResponseParser {
             matches.push(match);
           }
         } catch (error) {
-          // console.warn('Failed to parse match:', error);
           // Continue parsing other matches
         }
       }
@@ -215,6 +222,44 @@ export class VisResponseParser {
       throw new VisParsingError(
         'Failed to parse BeachMatchList response',
         'parseBeachMatches',
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Parse GetBeachMatchList response to VIS-compliant match data
+   * Returns VisCompliantMatch objects with proper numeric types and schema compliance
+   */
+  static parseBeachMatchesVisCompliant(xmlResponse: string, tournamentId: string): VisCompliantMatch[] {
+    try {
+      const matches: VisCompliantMatch[] = [];
+      
+      // Extract BeachMatch nodes from XML (VIS API returns <BeachMatch> not <Match>)
+      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) || 
+                          xmlResponse.match(/<BeachMatch[^>]*\/>/gs); // Handle self-closing tags
+      
+      if (!matchMatches) {
+        return matches;
+      }
+
+      for (const matchXml of matchMatches) {
+        try {
+          const match = this.parseSingleMatchVisCompliant(matchXml, tournamentId);
+          if (match) {
+            matches.push(match);
+          }
+        } catch (error) {
+          // Continue parsing other matches - log error but don't fail entire operation
+        }
+      }
+
+      return matches;
+      
+    } catch (error) {
+      throw new VisParsingError(
+        'Failed to parse BeachMatchList response to VIS-compliant format',
+        'parseBeachMatchesVisCompliant',
         error as Error
       );
     }
@@ -352,6 +397,216 @@ export class VisResponseParser {
       weather: this.extractXmlAttribute(matchXml, 'Weather'),
       importance
     } as any;
+  }
+
+  /**
+   * Parse single match from XML to VIS-compliant format
+   * Returns VisCompliantMatch with proper numeric types and VIS schema compliance
+   */
+  private static parseSingleMatchVisCompliant(matchXml: string, tournamentId: string): VisCompliantMatch | null {
+    try {
+      // Extract basic match information from XML attributes
+      const visNoStr = this.extractXmlAttribute(matchXml, 'No');
+      const noInTournamentStr = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'NoInTournament') || visNoStr;
+      
+      if (!visNoStr) {
+        return null;
+      }
+
+      // Convert required numeric fields with validation
+      const No = parseInt(visNoStr, 10);
+      const NoInTournament = parseInt(noInTournamentStr || '0', 10);
+      
+      if (isNaN(No) || No <= 0) {
+        throw new Error(`Invalid match number: ${visNoStr}`);
+      }
+      
+      if (isNaN(NoInTournament) || NoInTournament <= 0) {
+        throw new Error(`Invalid tournament match number: ${noInTournamentStr}`);
+      }
+
+      // Determine match format - TODO: implement dynamic detection based on match data
+      // For now, default to BEST_OF_3 as specified in foundation story
+      const Format = BeachMatchFormat.BEST_OF_3;
+
+      // Safe parsing function for optional numeric fields
+      const safeParseInt = (value: string | undefined): number | undefined => {
+        if (value === undefined || value === null || value === '') return undefined;
+        const parsed = parseInt(value, 10);
+        return isNaN(parsed) || parsed < 0 ? undefined : parsed;
+      };
+
+      // Extract team information with VIS-compliant field names
+      const TeamAName = this.extractXmlAttribute(matchXml, 'TeamAName');
+      const TeamBName = this.extractXmlAttribute(matchXml, 'TeamBName');
+      const TeamAPlayer1 = this.extractXmlAttribute(matchXml, 'TeamAPlayer1');
+      const TeamAPlayer2 = this.extractXmlAttribute(matchXml, 'TeamAPlayer2');
+      const TeamBPlayer1 = this.extractXmlAttribute(matchXml, 'TeamBPlayer1');
+      const TeamBPlayer2 = this.extractXmlAttribute(matchXml, 'TeamBPlayer2');
+      
+      // Use VIS-compliant field names (FederationCode, not CountryCode)
+      const TeamAFederationCode = this.extractXmlAttribute(matchXml, 'TeamAFederationCode') || 
+                                  this.extractXmlAttribute(matchXml, 'TeamACountryCode'); // Fallback for legacy data
+      const TeamBFederationCode = this.extractXmlAttribute(matchXml, 'TeamBFederationCode') || 
+                                  this.extractXmlAttribute(matchXml, 'TeamBCountryCode'); // Fallback for legacy data
+
+      // Parse numeric fields with proper validation
+      const MatchPointsA = safeParseInt(this.extractXmlAttribute(matchXml, 'MatchPointsA'));
+      const MatchPointsB = safeParseInt(this.extractXmlAttribute(matchXml, 'MatchPointsB'));
+      const NoReferee1 = safeParseInt(this.extractXmlAttribute(matchXml, 'NoReferee1'));
+      const NoReferee2 = safeParseInt(this.extractXmlAttribute(matchXml, 'NoReferee2'));
+      const NoRefereeChallenge = safeParseInt(this.extractXmlAttribute(matchXml, 'NoRefereeChallenge'));
+      const TeamARanking = safeParseInt(this.extractXmlAttribute(matchXml, 'TeamARanking'));
+      const TeamBRanking = safeParseInt(this.extractXmlAttribute(matchXml, 'TeamBRanking'));
+
+      // Parse set points with numeric validation
+      const PointsTeamASet1 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamASet1'));
+      const PointsTeamBSet1 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamBSet1'));
+      const PointsTeamASet2 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamASet2'));
+      const PointsTeamBSet2 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamBSet2'));
+      const PointsTeamASet3 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamASet3'));
+      const PointsTeamBSet3 = safeParseInt(this.extractXmlAttribute(matchXml, 'PointsTeamBSet3'));
+
+      // Parse VIS seconds-based duration fields (instead of "mm:ss" strings)
+      const DurationSet1Seconds = safeParseInt(this.extractXmlAttribute(matchXml, 'DurationSet1Seconds'));
+      const DurationSet2Seconds = safeParseInt(this.extractXmlAttribute(matchXml, 'DurationSet2Seconds'));
+      const DurationSet3Seconds = safeParseInt(this.extractXmlAttribute(matchXml, 'DurationSet3Seconds'));
+
+      // Parse environmental data fields with numeric types
+      const Temperature = safeParseInt(this.extractXmlAttribute(matchXml, 'Temperature'));
+      const Humidity = safeParseInt(this.extractXmlAttribute(matchXml, 'Humidity'));
+      const NbSpectators = safeParseInt(this.extractXmlAttribute(matchXml, 'NbSpectators'));
+
+      // Parse performance statistics
+      const FastestServeTeamAPlayer1 = safeParseInt(this.extractXmlAttribute(matchXml, 'FastestServeTeamAPlayer1'));
+      const FastestServeTeamAPlayer2 = safeParseInt(this.extractXmlAttribute(matchXml, 'FastestServeTeamAPlayer2'));
+      const FastestServeTeamBPlayer1 = safeParseInt(this.extractXmlAttribute(matchXml, 'FastestServeTeamBPlayer1'));
+      const FastestServeTeamBPlayer2 = safeParseInt(this.extractXmlAttribute(matchXml, 'FastestServeTeamBPlayer2'));
+
+      // Extract string fields
+      const LocalDate = this.extractXmlAttribute(matchXml, 'LocalDate');
+      const LocalTime = this.extractXmlAttribute(matchXml, 'LocalTime');
+      const UtcDate = this.extractXmlAttribute(matchXml, 'UtcDate');
+      const UtcTime = this.extractXmlAttribute(matchXml, 'UtcTime');
+      const BeginDateTimeUtc = this.extractXmlAttribute(matchXml, 'BeginDateTimeUtc');
+      const EndDateTimeUtc = this.extractXmlAttribute(matchXml, 'EndDateTimeUtc');
+      const Court = this.extractXmlAttribute(matchXml, 'Court');
+      const City = this.extractXmlAttribute(matchXml, 'City');
+      const Venue = this.extractXmlAttribute(matchXml, 'Venue');
+      const Version = this.extractXmlAttribute(matchXml, 'Version');
+      const Status = this.extractXmlAttribute(matchXml, 'Status');
+      const Round = this.extractXmlAttribute(matchXml, 'Round');
+      const RoundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase');
+      const RoundName = this.extractXmlAttribute(matchXml, 'RoundName');
+      const RoundCode = this.extractXmlAttribute(matchXml, 'RoundCode');
+      const RoundBracket = this.extractXmlAttribute(matchXml, 'RoundBracket');
+      const ResultTypeText = this.extractXmlAttribute(matchXml, 'ResultTypeText');
+
+      // Extract referee information
+      const Referee1Name = this.extractXmlAttribute(matchXml, 'Referee1Name');
+      const Referee2Name = this.extractXmlAttribute(matchXml, 'Referee2Name');
+      const Referee1FederationCode = this.extractXmlAttribute(matchXml, 'Referee1FederationCode');
+      const Referee2FederationCode = this.extractXmlAttribute(matchXml, 'Referee2FederationCode');
+
+      // Tournament context fields for compatibility
+      const tournamentGender = this.extractXmlAttribute(matchXml, 'TournamentGender');
+      const tournamentNo = this.extractXmlAttribute(matchXml, 'TournamentNo') || tournamentId;
+      const tournamentCode = this.extractXmlAttribute(matchXml, 'TournamentCode');
+      const tournamentCountry = this.extractXmlAttribute(matchXml, 'TournamentCountry');
+
+      // Build VIS-compliant match object
+      const visCompliantMatch: VisCompliantMatch = {
+        // Required fields
+        No,
+        NoInTournament,
+        Format,
+
+        // Core match data
+        LocalDate,
+        LocalTime,
+        UtcDate,
+        UtcTime,
+        BeginDateTimeUtc,
+        EndDateTimeUtc,
+
+        // Team information (VIS-compliant field names)
+        TeamAName,
+        TeamBName,
+        TeamAPlayer1,
+        TeamAPlayer2,
+        TeamBPlayer1,
+        TeamBPlayer2,
+        TeamAFederationCode,
+        TeamBFederationCode,
+        TeamARanking,
+        TeamBRanking,
+
+        // Match results with numeric types
+        MatchPointsA,
+        MatchPointsB,
+        PointsTeamASet1,
+        PointsTeamBSet1,
+        PointsTeamASet2,
+        PointsTeamBSet2,
+        PointsTeamASet3,
+        PointsTeamBSet3,
+
+        // Location information
+        Court,
+        City,
+        Venue,
+
+        // Officials with numeric types
+        NoReferee1,
+        NoReferee2,
+        NoRefereeChallenge,
+        Referee1Name,
+        Referee2Name,
+        Referee1FederationCode,
+        Referee2FederationCode,
+
+        // Environmental data
+        Temperature,
+        Humidity,
+        NbSpectators,
+
+        // Performance statistics
+        FastestServeTeamAPlayer1,
+        FastestServeTeamAPlayer2,
+        FastestServeTeamBPlayer1,
+        FastestServeTeamBPlayer2,
+
+        // Additional context fields
+        Version,
+        Status,
+        Round,
+        RoundPhase,
+        RoundName,
+        RoundCode,
+        RoundBracket,
+        ResultTypeText,
+
+        // VIS seconds-based duration fields
+        DurationSet1Seconds,
+        DurationSet2Seconds,
+        DurationSet3Seconds,
+
+        // Tournament context for compatibility
+        tournamentGender,
+        tournamentNo,
+        tournamentCode,
+        tournamentCountry,
+      };
+
+      return visCompliantMatch;
+
+    } catch (error) {
+      throw new VisParsingError(
+        `Failed to parse VIS-compliant match: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'parseSingleMatchVisCompliant',
+        error as Error
+      );
+    }
   }
 
   /**

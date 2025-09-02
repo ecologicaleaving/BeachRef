@@ -8,7 +8,15 @@
       "Bash(git push:*)",
       "Bash(npm run lint)",
       "Bash(npm start)",
-      "Read(C:\\Users\\KreshOS\\Documents\\00-Progetti\\VisTest\\docs\\reference/**)"
+      "Read(C:\\Users\\KreshOS\\Documents\\00-Progetti\\VisTest\\docs\\reference/**)",
+      "Bash(git clean:*)",
+      "Read(C:\\Users\\KreshOS\\Documents\\00-Progetti\\VisTest\\docs\\architecture/**)",
+      "Read(C:\\Users\\KreshOS\\Documents\\00-Progetti\\VisTest\\docs\\epics/**)",
+      "Bash(npm test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": [],

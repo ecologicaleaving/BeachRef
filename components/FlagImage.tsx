@@ -83,7 +83,6 @@ export const FlagImage: React.FC<FlagImageProps> = ({
     } catch (error) {
       // Use production logger instead of console.warn
       if (process.env.NODE_ENV === 'development') {
-        console.warn('FlagImage: Error loading flag for', code, error);
       }
       setFlagConfig(null);
       setHasError(true);
@@ -95,7 +94,6 @@ export const FlagImage: React.FC<FlagImageProps> = ({
   const handleImageError = () => {
     // Use production logger instead of console.warn
     if (process.env.NODE_ENV === 'development') {
-      console.warn('FlagImage: Failed to load flag image for', code);
     }
     setHasError(true);
     setFlagConfig(null);

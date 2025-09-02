@@ -11,6 +11,13 @@ import { getStatusColor } from '../../utils/colors';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from './RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
+import { VisCompliantMatch } from '../../types/match-vis-compliant';
+import { adaptVisMatchToComponent, isVisCompliantMatchData } from '../../utils/MatchInterfaceAdapter';
+
+/**
+ * MIGRATION NOTE: This component supports both direct MatchInfo props and VIS-compliant data.
+ * VIS data transformation maintains identical visual behavior while using numeric VIS types.
+ */
 
 export interface MatchInfo {
   matchId: string;

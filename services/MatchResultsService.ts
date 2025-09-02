@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BeachMatch } from '../types/match';
+import { VisCompliantMatch, isVisCompliantMatch, convertLegacyToVisCompliant } from '../types/match-vis-compliant';
 import { MatchResult, MatchResultsStatus, MatchResultsCache } from '../types/MatchResults';
 import { VisApiClient } from './api/VisApiClient';
 import { CacheService } from './CacheService';
+import { convertSecondsToTimeString } from '../utils/VisDurationParser';
 
 export class MatchResultsService {
   private static readonly MATCH_RESULTS_CACHE_KEY = '@match_results_cache';
@@ -13,31 +14,23 @@ export class MatchResultsService {
    * Get match results for a specific tournament
    */
   static async getMatchResults(tournamentNo: string, forceRefresh = false): Promise<MatchResultsStatus> {
-    // console.log(`MatchResultsService: Getting match results for tournament ${tournamentNo}, forceRefresh: ${forceRefresh}`);
     
     try {
       // Try cache first if not forcing refresh
       if (!forceRefresh) {
-        // console.log(`MatchResultsService: Checking cache for tournament ${tournamentNo}`);
         const cachedData = await this.getCachedMatchResults(tournamentNo);
         if (cachedData) {
-          // console.log(`MatchResultsService: Using cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
           return cachedData;
         }
-        // console.log(`MatchResultsService: No valid cache found`);
       } else {
-        // console.log(`MatchResultsService: Force refresh requested, bypassing cache`);
       }
 
       // Fetch match data from API/Cache
-      // console.log(`MatchResultsService: Fetching fresh match data for tournament ${tournamentNo}`);
       const matches = await this.fetchMatchData(tournamentNo);
-      // console.log(`MatchResultsService: Fetched ${matches.length} matches from API/cache`);
       
       // Transform and categorize matches
       const matchResults = matches.map(match => this.transformToMatchResult(match));
       const categorizedResults = this.categorizeMatches(matchResults);
-      // console.log(`MatchResultsService: Categorized into ${categorizedResults.live.length} live, ${categorizedResults.completed.length} completed, ${categorizedResults.scheduled.length} scheduled matches`);
       
       // Cache the results
       await this.cacheMatchResults(tournamentNo, categorizedResults);
@@ -49,16 +42,13 @@ export class MatchResultsService {
       // console.error('MatchResultsService: Error message:', error instanceof Error ? error.message : String(error));
       
       // Try to return cached data as fallback, even if expired
-      // console.log('MatchResultsService: Attempting to use cached data as fallback');
       const cachedData = await this.getCachedMatchResults(tournamentNo);
       if (cachedData) {
-        // console.log(`MatchResultsService: Using fallback cached data - ${cachedData.live.length} live, ${cachedData.completed.length} completed matches`);
         return cachedData;
       }
       
       // If no cached data available, provide sample results for testing
       if (error instanceof Error && (error.message.includes('Premature close') || error.message.includes('timeout'))) {
-        // console.log('MatchResultsService: Network error detected, providing sample results for testing');
         return this.getSampleMatchResults(tournamentNo);
       }
       
@@ -85,39 +75,38 @@ export class MatchResultsService {
   /**
    * Transform FIVB match data to MatchResult format
    */
-  private static transformToMatchResult(match: BeachMatch): MatchResult {
+  private static transformToMatchResult(match: VisCompliantMatch): MatchResult {
     const normalizedStatus = this.normalizeMatchStatus(match.Status);
-    // console.log(`MatchResultsService: Match ${match.No}: ${match.TeamAName} vs ${match.TeamBName}, Status: ${match.Status} → ${normalizedStatus}`);
     
     return {
-      no: match.No || '',
+      no: match.No.toString(), // Convert number to string for MatchResult interface
       tournamentNo: match.tournamentNo || '',
       teamAName: match.TeamAName || 'Team A',
       teamBName: match.TeamBName || 'Team B',
       status: normalizedStatus,
       
-      // Parse scoring data using helper method
-      matchPointsA: this.parseNumericField(match.MatchPointsA),
-      matchPointsB: this.parseNumericField(match.MatchPointsB),
-      pointsTeamASet1: this.parseNumericField(match.PointsTeamASet1),
-      pointsTeamBSet1: this.parseNumericField(match.PointsTeamBSet1),
-      pointsTeamASet2: this.parseNumericField(match.PointsTeamASet2),
-      pointsTeamBSet2: this.parseNumericField(match.PointsTeamBSet2),
-      pointsTeamASet3: this.parseNumericField(match.PointsTeamASet3),
-      pointsTeamBSet3: this.parseNumericField(match.PointsTeamBSet3),
+      // Use numeric fields directly from VIS-compliant match
+      matchPointsA: match.MatchPointsA || 0,
+      matchPointsB: match.MatchPointsB || 0,
+      pointsTeamASet1: match.PointsTeamASet1 || 0,
+      pointsTeamBSet1: match.PointsTeamBSet1 || 0,
+      pointsTeamASet2: match.PointsTeamASet2 || 0,
+      pointsTeamBSet2: match.PointsTeamBSet2 || 0,
+      pointsTeamASet3: match.PointsTeamASet3 || 0,
+      pointsTeamBSet3: match.PointsTeamBSet3 || 0,
       
-      // Referee information
-      referee1No: match.NoReferee1 || undefined,
+      // Referee information - convert numbers to strings for compatibility
+      referee1No: match.NoReferee1?.toString() || undefined,
       referee1Name: match.Referee1Name || undefined,
       referee1FederationCode: match.Referee1FederationCode || undefined,
-      referee2No: match.NoReferee2 || undefined,
+      referee2No: match.NoReferee2?.toString() || undefined,
       referee2Name: match.Referee2Name || undefined,
       referee2FederationCode: match.Referee2FederationCode || undefined,
       
-      // Match metadata
-      durationSet1: match.DurationSet1 || '',
-      durationSet2: match.DurationSet2 || '',
-      durationSet3: match.DurationSet3 || '',
+      // Match metadata - convert VIS seconds to time string format  
+      durationSet1: match.DurationSet1Seconds ? convertSecondsToTimeString(match.DurationSet1Seconds) || '' : '',
+      durationSet2: match.DurationSet2Seconds ? convertSecondsToTimeString(match.DurationSet2Seconds) || '' : '', 
+      durationSet3: match.DurationSet3Seconds ? convertSecondsToTimeString(match.DurationSet3Seconds) || '' : '',
       localDate: this.parseDateField(match.LocalDate),
       localTime: match.LocalTime || '',
       court: match.Court || '',
@@ -147,7 +136,6 @@ export class MatchResultsService {
       const parsed = new Date(dateValue as string);
       return isNaN(parsed.getTime()) ? new Date() : parsed;
     } catch (error) {
-      // console.warn('Failed to parse date field:', dateValue, error);
       return new Date();
     }
   }
@@ -161,7 +149,6 @@ export class MatchResultsService {
     // Handle numeric status codes from FIVB API
     const statusCode = parseInt(status, 10);
     if (!isNaN(statusCode)) {
-      // console.log(`MatchResultsService: Normalizing numeric status code: ${statusCode}`);
       
       // FIVB Status codes mapping (based on API documentation and testing)
       switch (statusCode) {
@@ -181,7 +168,6 @@ export class MatchResultsService {
         case 25: // Walkover
           return 'Cancelled';
         default:
-          // console.warn(`MatchResultsService: Unknown status code ${statusCode}, defaulting to Scheduled`);
           return 'Scheduled';
       }
     }
@@ -238,39 +224,49 @@ export class MatchResultsService {
   /**
    * Fetch match data using existing cache/API infrastructure
    */
-  private static async fetchMatchData(tournamentNo: string): Promise<BeachMatch[]> {
-    // console.log(`MatchResultsService: fetchMatchData called for tournament ${tournamentNo}`);
+  private static async fetchMatchData(tournamentNo: string): Promise<VisCompliantMatch[]> {
     
     try {
-      // Use CacheService if available, otherwise fall back to direct API
-      // console.log('MatchResultsService: Trying to get matches from Supabase cache...');
-      const cachedMatches = await CacheService.getMatchesFromSupabase?.(tournamentNo);
-      if (cachedMatches && cachedMatches.length > 0) {
-        // console.log(`MatchResultsService: Found ${cachedMatches.length} matches in Supabase cache`);
-        return cachedMatches;
+      // Use VIS-compliant CacheService if available, otherwise fall back to direct API
+      const cacheResult = await CacheService.getMatchesVisCompliant?.(tournamentNo);
+      if (cacheResult?.data && cacheResult.data.length > 0) {
+        return cacheResult.data;
       }
-      // console.log('MatchResultsService: No matches found in Supabase cache');
     } catch (error) {
-      // console.warn('MatchResultsService: Cache service unavailable, using direct API:', error);
     }
 
     try {
       // Fallback to direct API call with timeout
-      // console.log('MatchResultsService: Calling direct API for match data...');
-      const matches = await Promise.race([
-        VisApiService.getBeachMatchList(tournamentNo),
+      const apiClient = new VisApiClient({
+        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        timeoutMs: 10000,
+        maxRetries: 3,
+        retryDelayMs: 1000,
+        exponentialBackoff: true,
+        enableLogging: true
+      });
+      
+      const response = await Promise.race([
+        apiClient.getBeachMatchList({ tournamentNo }),
         new Promise<never>((_, reject) => 
           setTimeout(() => reject(new Error('API timeout after 30 seconds')), 30000)
         )
       ]);
-      // console.log(`MatchResultsService: Direct API returned ${matches.length} matches`);
-      return matches;
+      
+      if (!response.success) {
+        throw new Error(`API request failed: ${response.error}`);
+      }
+      
+      // Parse the XML response to get VIS-compliant matches
+      const { VisResponseParser } = await import('./parsing/VisResponseParser');
+      const visCompliantMatches = VisResponseParser.parseBeachMatchesVisCompliant(response.xmlData, tournamentNo);
+      
+      return visCompliantMatches;
     } catch (error) {
       // console.error('MatchResultsService: Direct API call failed:', error);
       
       // If it's a network error, provide empty array instead of failing
       if (error instanceof Error && (error.message.includes('Premature close') || error.message.includes('timeout'))) {
-        // console.log('MatchResultsService: Network error detected in fetchMatchData, returning empty array');
         return [];
       }
       
@@ -294,7 +290,6 @@ export class MatchResultsService {
         JSON.stringify(cacheData)
       );
     } catch (error) {
-      // console.warn('Failed to cache match results:', error);
     }
   }
 
@@ -322,7 +317,6 @@ export class MatchResultsService {
 
       return cacheData.data;
     } catch (error) {
-      // console.warn('Failed to get cached match results:', error);
       return null;
     }
   }
@@ -447,7 +441,6 @@ export class MatchResultsService {
    * Get sample match results for testing when API is unavailable
    */
   static getSampleMatchResults(tournamentNo: string): MatchResultsStatus {
-    // console.log(`MatchResultsService: Providing sample match results for tournament ${tournamentNo}`);
     
     const sampleLiveMatch: MatchResult = {
       no: 'M001',

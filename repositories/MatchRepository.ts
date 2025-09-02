@@ -11,12 +11,19 @@ import {
   RepositoryError, 
   RepositoryErrorType 
 } from './base/BaseRepository';
+import { VisCompliantMatch } from '../types/match-vis-compliant';
 import { BeachMatchCore, MatchStatus, MatchResult, CourtInfo } from '../types/match-v2';
 import { BeachMatch } from '../types/match';
+
+/**
+ * MIGRATION NOTE: Updated to work with VIS-compliant match data (Story 1.3 - Task 4).
+ * Repository now handles VIS numeric types directly for improved performance.
+ */
 import { CacheKey } from '../types/cache-v2';
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { DataTransformationService } from '../services/DataTransformationService';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
+import { adaptMatchesForComponent } from '../utils/MatchInterfaceAdapter';
 import { featureFlagManager } from '../config/featureFlags';
 
 /**

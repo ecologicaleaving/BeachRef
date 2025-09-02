@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BeachMatch } from '../types/match';
+import { VisCompliantMatch, isVisCompliantMatch, convertLegacyToVisCompliant } from '../types/match-vis-compliant';
 import { RefereeAssignment, RefereeAssignmentStatus, RefereeProfile } from '../types/RefereeAssignments';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 import { CacheService } from './CacheService';
@@ -46,7 +46,7 @@ export class RefereeAssignmentsService {
   /**
    * Filter matches by referee assignment
    */
-  static filterMatchesByReferee(matches: BeachMatch[], referee: RefereeProfile): RefereeAssignment[] {
+  static filterMatchesByReferee(matches: VisCompliantMatch[], referee: RefereeProfile): RefereeAssignment[] {
     const refereeMatches = matches.filter(match => 
       match.Referee1Name === referee.name || 
       match.Referee2Name === referee.name
@@ -58,7 +58,7 @@ export class RefereeAssignmentsService {
   /**
    * Transform FIVB match data to referee assignment format
    */
-  static transformToRefereeAssignment(match: BeachMatch, referee: RefereeProfile): RefereeAssignment {
+  static transformToRefereeAssignment(match: VisCompliantMatch, referee: RefereeProfile): RefereeAssignment {
     // Parse date - handle potential null/undefined values
     let localDate: Date;
     try {
@@ -71,9 +71,9 @@ export class RefereeAssignmentsService {
     const refereeRole: 'referee1' | 'referee2' = match.Referee1Name === referee.name ? 'referee1' : 'referee2';
     
     return {
-      matchNo: match.No,
+      matchNo: match.No.toString(), // Convert number to string for RefereeAssignment interface
       tournamentNo: match.tournamentNo || '',
-      matchInTournament: match.NoInTournament || '',
+      matchInTournament: match.NoInTournament.toString(), // Convert number to string
       teamAName: match.TeamAName || 'TBD',
       teamBName: match.TeamBName || 'TBD', 
       localDate,
@@ -189,19 +189,30 @@ export class RefereeAssignmentsService {
   /**
    * Fetch match data using existing cache/API infrastructure
    */
-  private static async fetchMatchData(tournamentNo: string): Promise<BeachMatch[]> {
+  private static async fetchMatchData(tournamentNo: string): Promise<VisCompliantMatch[]> {
     try {
-      // Use CacheService if available, otherwise fall back to direct API
-      const cachedMatches = await CacheService.getMatchesFromSupabase?.(tournamentNo);
-      if (cachedMatches && cachedMatches.length > 0) {
-        return cachedMatches;
+      // Use VIS-compliant CacheService if available, otherwise fall back to direct API  
+      const cacheResult = await CacheService.getMatchesVisCompliant?.(tournamentNo);
+      if (cacheResult?.data && cacheResult.data.length > 0) {
+        return cacheResult.data;
       }
     } catch (error) {
       // console.warn('Cache service unavailable, using direct API:', error);
     }
 
-    // Fallback to direct API call
-    return await this.visApiClient.fetchMatchesForTournament(tournamentNo);
+    // Fallback to direct API call with VIS compliance conversion
+    const rawMatches = await this.visApiClient.fetchMatchesForTournament(tournamentNo);
+    
+    // Convert legacy matches to VIS-compliant format if needed
+    const visCompliantMatches: VisCompliantMatch[] = rawMatches.map(match => {
+      if (isVisCompliantMatch(match)) {
+        return match;
+      } else {
+        return convertLegacyToVisCompliant(match as any);
+      }
+    });
+    
+    return visCompliantMatches;
   }
 
   /**

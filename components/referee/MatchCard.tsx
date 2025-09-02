@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { VisCompliantMatch } from '../../types/match-vis-compliant';
 import { BeachMatch } from '../../types/match';
+import { adaptVisMatchToComponent, isVisCompliantMatchData } from '../../utils/MatchInterfaceAdapter';
+
+/**
+ * MIGRATION NOTE: This component now supports both VIS-compliant and legacy match data.
+ * VIS data is automatically transformed to maintain identical visual behavior.
+ */
 
 interface RefereeFromDB {
   No: string;
@@ -11,7 +18,7 @@ interface RefereeFromDB {
 }
 
 interface MatchCardProps {
-  match: BeachMatch;
+  match: VisCompliantMatch | BeachMatch;
   selectedReferee?: RefereeFromDB | null;
   showGenderStrip?: boolean;
 }
@@ -21,6 +28,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   selectedReferee, 
   showGenderStrip = true 
 }) => {
+  // Adapt VIS-compliant data to component format with error handling
+  const adaptedMatch = useMemo(() => {
+    try {
+      return isVisCompliantMatchData(match) 
+        ? adaptVisMatchToComponent(match)
+        : match;
+    } catch (adaptationError) {
+      // Return a safe fallback object
+      return {
+        ...match,
+        No: match.No || 'N/A',
+        TeamAName: match.TeamAName || 'Team A',
+        TeamBName: match.TeamBName || 'Team B',
+        MatchPointsA: match.MatchPointsA || 0,
+        MatchPointsB: match.MatchPointsB || 0,
+      };
+    }
+  }, [match]);
   // Helper function to convert federation/country codes to flag URL codes
   const getFlagCode = (code?: string): string | null => {
     if (!code) return null;
@@ -109,8 +134,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       </View>
     );
   };
-  const scoreA = parseInt(match.MatchPointsA || '0');
-  const scoreB = parseInt(match.MatchPointsB || '0');
+  const scoreA = parseInt(adaptedMatch.MatchPointsA || '0');
+  const scoreB = parseInt(adaptedMatch.MatchPointsB || '0');
   const teamAWon = scoreA > scoreB;
   const teamBWon = scoreB > scoreA;
 
@@ -135,33 +160,33 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   return (
     <View style={styles.matchCard}>
       {/* Gender Strip */}
-      {showGenderStrip && match.tournamentGender && (
+      {showGenderStrip && adaptedMatch.tournamentGender && (
         <View style={[
           styles.genderStrip,
-          match.tournamentGender === 'M' ? styles.menStrip : styles.womenStrip
+          adaptedMatch.tournamentGender === 'M' ? styles.menStrip : styles.womenStrip
         ]} />
       )}
       
       <View style={styles.matchHeader}>
         <View style={styles.matchInfo}>
           <View style={styles.matchNumberContainer}>
-            <Text style={styles.matchNumber}>#{match.NoInTournament || match.No}</Text>
-            {match.tournamentGender && (
+            <Text style={styles.matchNumber}>#{adaptedMatch.NoInTournament || adaptedMatch.No}</Text>
+            {adaptedMatch.tournamentGender && (
               <Text style={[
                 styles.genderSymbol,
-                match.tournamentGender === 'M' ? styles.menSymbol : styles.womenSymbol
+                adaptedMatch.tournamentGender === 'M' ? styles.menSymbol : styles.womenSymbol
               ]}>
-                {match.tournamentGender === 'M' ? '♂' : '♀'}
+                {adaptedMatch.tournamentGender === 'M' ? '♂' : '♀'}
               </Text>
             )}
           </View>
           <Text style={styles.courtInfo}>
-            {match.Court ? `C${match.Court}` : 'Court TBD'}
+            {adaptedMatch.Court ? `C${adaptedMatch.Court}` : 'Court TBD'}
           </Text>
         </View>
         <View style={styles.timeInfo}>
-          <Text style={styles.timeText}>{formatTime(match.LocalTime)}</Text>
-          <Text style={styles.dateText}>{formatDate(match.LocalDate)}</Text>
+          <Text style={styles.timeText}>{formatTime(adaptedMatch.LocalTime)}</Text>
+          <Text style={styles.dateText}>{formatDate(adaptedMatch.LocalDate)}</Text>
         </View>
       </View>
 
@@ -170,12 +195,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <View style={[styles.teamRow, teamAWon && styles.winnerTeam]}>
           <View style={styles.teamNameContainer}>
             <Text style={[styles.teamName, teamAWon && styles.winnerText]}>
-              {match.TeamAName || 'Team A'}
+              {adaptedMatch.TeamAName || 'Team A'}
             </Text>
-            {renderCountryFlag(match.TeamACountryCode)}
+            {renderCountryFlag(adaptedMatch.TeamACountryCode)}
           </View>
           <Text style={[styles.teamScore, teamAWon && styles.winnerText]}>
-            {match.MatchPointsA || '0'}
+            {adaptedMatch.MatchPointsA || '0'}
           </Text>
         </View>
         
@@ -184,40 +209,40 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <View style={[styles.teamRow, teamBWon && styles.winnerTeam]}>
           <View style={styles.teamNameContainer}>
             <Text style={[styles.teamName, teamBWon && styles.winnerText]}>
-              {match.TeamBName || 'Team B'}
+              {adaptedMatch.TeamBName || 'Team B'}
             </Text>
-            {renderCountryFlag(match.TeamBCountryCode)}
+            {renderCountryFlag(adaptedMatch.TeamBCountryCode)}
           </View>
           <Text style={[styles.teamScore, teamBWon && styles.winnerText]}>
-            {match.MatchPointsB || '0'}
+            {adaptedMatch.MatchPointsB || '0'}
           </Text>
         </View>
       </View>
 
       {/* Status */}
-      {match.Status && (
+      {adaptedMatch.Status && (
         <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>{match.Status}</Text>
+          <Text style={styles.statusText}>{adaptedMatch.Status}</Text>
         </View>
       )}
 
       {/* Referees Section */}
-      {(match.Referee1Name || match.Referee2Name) && (
+      {(adaptedMatch.Referee1Name || adaptedMatch.Referee2Name) && (
         <View style={styles.refereesSection}>
-          {match.Referee1Name && (
+          {adaptedMatch.Referee1Name && (
             <View style={styles.refereeRow}>
-              <Text style={selectedReferee?.Name === match.Referee1Name ? styles.selectedRefereeHighlight : styles.refereeText}>
-                1° {match.Referee1Name}
+              <Text style={selectedReferee?.Name === adaptedMatch.Referee1Name ? styles.selectedRefereeHighlight : styles.refereeText}>
+                1° {adaptedMatch.Referee1Name}
               </Text>
-              {renderCountryFlag(match.Referee1FederationCode)}
+              {renderCountryFlag(adaptedMatch.Referee1FederationCode)}
             </View>
           )}
-          {match.Referee2Name && (
+          {adaptedMatch.Referee2Name && (
             <View style={styles.refereeRow}>
-              <Text style={selectedReferee?.Name === match.Referee2Name ? styles.selectedRefereeHighlight : styles.refereeText}>
-                2° {match.Referee2Name}
+              <Text style={selectedReferee?.Name === adaptedMatch.Referee2Name ? styles.selectedRefereeHighlight : styles.refereeText}>
+                2° {adaptedMatch.Referee2Name}
               </Text>
-              {renderCountryFlag(match.Referee2FederationCode)}
+              {renderCountryFlag(adaptedMatch.Referee2FederationCode)}
             </View>
           )}
         </View>

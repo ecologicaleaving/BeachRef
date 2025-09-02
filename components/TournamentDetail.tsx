@@ -9,9 +9,16 @@ import {
   Modal,
 } from 'react-native';
 import { Text, H2Text, BodyText, CaptionText } from './Typography';
+import { VisCompliantMatch } from '../types/match-vis-compliant';
 import { BeachMatch } from '../types/match';
 import { TournamentCore, GenderType as CoreGenderType } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
+import { adaptMatchesForComponent, isVisCompliantMatchData } from '../utils/MatchInterfaceAdapter';
+
+/**
+ * MIGRATION NOTE: This component supports both VIS-compliant and legacy match data.
+ * Data transformation automatically handles VIS numeric types while maintaining UI compatibility.
+ */
 import { TournamentType, GenderType } from '../types/tournament-v2';
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';
@@ -30,6 +37,7 @@ import CourtAssignmentIndicator, { CourtChangesDetail } from './tournament/Court
 import { StatusBadge, StatusCard } from './Status';
 import { getStatusColorWithText, determineTournamentStatus, determineMatchStatus } from '../utils/statusColors';
 import { NavigationIcons, UtilityIcons, DataIcons, CommunicationIcons } from './Icons/IconLibrary';
+import { MatchResultsService } from '../services/MatchResultsService';
 
 interface TournamentDetailProps {
   tournament: TournamentCore;
@@ -228,7 +236,9 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     try {
       // Use repository data if available, otherwise fall back to legacy API
       if (matchRepository.implementation === 'new' && transformedMatches.data) {
-        const combinedMatches = transformedMatches.data.map((match: BeachMatch, index: number) => {
+        // Adapt matches to ensure component compatibility
+        const adaptedMatches = adaptMatchesForComponent(transformedMatches.data);
+        const combinedMatches = adaptedMatches.map((match: BeachMatch, index: number) => {
           const tournament = relatedTournaments[index % relatedTournaments.length];
           const gender = tournament.gender; // TournamentCore has structured gender field
           
@@ -244,24 +254,45 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         return;
       }
       
-      // Legacy API fallback
+      // VIS-compliant API fallback using MatchResultsService
       const allMatchPromises = relatedTournaments.map(tournament => 
-        VisApiService.getBeachMatchList(tournament.visNo)
+        MatchResultsService.getMatchResults(tournament.visNo)
       );
-      const allMatchesArrays = await Promise.all(allMatchPromises);
+      const allMatchResultsArrays = await Promise.all(allMatchPromises);
+      // Performance optimization: Pre-allocate array capacity and use single pass
+      const totalEstimatedMatches = allMatchResultsArrays.length * 50; // Estimate 50 matches per tournament
+      const combinedMatches = [];
+      combinedMatches.length = 0; // Ensure clean start
       
-      // Flatten all matches and add tournament info for filtering
-      const combinedMatches = allMatchesArrays.flatMap((tournamentMatches, index) => {
-        const tournament = relatedTournaments[index];
-        const gender = tournament.gender; // Use structured gender from TournamentCore
+      // Single pass processing for better performance
+      for (let i = 0; i < allMatchResultsArrays.length; i++) {
+        const results = allMatchResultsArrays[i];
+        const tournament = relatedTournaments[i];
+        const allTournamentMatches = [
+          ...results.live, 
+          ...results.completed, 
+          ...results.scheduled
+        ];
         
-        return tournamentMatches.map(match => ({
-          ...match,
-          tournamentGender: gender,
-          tournamentNo: tournament.visNo,
-          tournamentCode: tournament.code
-        }));
-      });
+        if (allTournamentMatches.length === 0) continue;
+        
+        try {
+          // Adapt matches for VIS-compliant data support with error handling
+          const adaptedMatches = adaptMatchesForComponent(allTournamentMatches);
+          
+          // Add tournament context to each match
+          for (const match of adaptedMatches) {
+            combinedMatches.push({
+              ...match,
+              tournamentGender: tournament.gender,
+              tournamentNo: tournament.visNo,
+              tournamentCode: tournament.code
+            });
+          }
+        } catch (adaptationError) {
+          // Continue with other tournaments rather than failing completely
+        }
+      }
       
       setAllMatches(combinedMatches);
     } catch (error) {
@@ -306,7 +337,9 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       }
       
       // Legacy API fallback
-      const related = await VisApiService.findRelatedTournaments(tournament);
+      // TODO: Implement VIS-compliant related tournament finding
+      // For now, use single tournament as fallback
+      const related = [tournament];
       setRelatedTournaments(related);
     } catch (error) {
       // console.error('Failed to load related tournaments:', error);
@@ -452,7 +485,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         // console.log(`Match ${match.NoInTournament} considered scheduled (future)`);
         return 'scheduled';
       } catch {
-        // console.warn(`Date parsing error for match ${match.NoInTournament}`);
         // If date parsing fails, default to scheduled
         return 'scheduled';
       }

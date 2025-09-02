@@ -1,0 +1,13 @@
+pre-vis-restructure-20250902/epics/EPIC-001-live-score-display.md
+pre-vis-restructure-20250902/epics/EPIC-002-enhanced-live-score-features.md
+pre-vis-restructure-20250902/epics/EPIC-003-multi-client-score-management.md
+pre-vis-restructure-20250902/epics/EPIC-004-advanced-live-score-analytics.md
+pre-vis-restructure-20250902/epics/README.md
+pre-vis-restructure-20250902/stories/004.1.matchlist-seed-duration-display.md
+pre-vis-restructure-20250902/stories/fivb-round-phase-display.story.md
+pre-vis-restructure-20250902/stories/live-score/live-score-epic-01-story-01.md
+pre-vis-restructure-20250902/stories/live-score/live-score-epic-01-story-02.md
+pre-vis-restructure-20250902/stories/live-score/live-score-epic-01-story-03.md
+pre-vis-restructure-20250902/stories/live-score/README.md
+pre-vis-restructure-20250902/stories/production-readiness.story.md
+pre-vis-restructure-20250902/stories/story-template.md

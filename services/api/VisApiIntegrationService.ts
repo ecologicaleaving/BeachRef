@@ -12,8 +12,14 @@ import {
   VisApiEndpoint 
 } from '../../types/api-v2';
 import { TournamentCore, GenderType } from '../../types/tournament-v2';
+import { VisCompliantMatch } from '../../types/match-vis-compliant';
 import { BeachMatchCore } from '../../types/match-v2';
 import { VisResponseParser } from '../parsing/VisResponseParser';
+
+/**
+ * MIGRATION NOTE: Updated to return VIS-compliant data directly from API layer.
+ * This eliminates conversion overhead and ensures consistent numeric types.
+ */
 import { DataTransformationService } from '../DataTransformationService';
 
 /**
@@ -159,7 +165,7 @@ export class VisApiIntegrationService {
     request: Omit<GetBeachMatchListRequest, 'includeResults' | 'includeReferees'>,
     includeRefereeData: boolean = false
   ): Promise<{
-    matches: BeachMatchCore[];
+    matches: VisCompliantMatch[]; // Updated to return VIS-compliant data directly
     metrics: ApiRequestMetrics;
   }> {
     const startTime = Date.now();
@@ -179,8 +185,8 @@ export class VisApiIntegrationService {
         throw new Error(`API request failed: ${response.error}`);
       }
 
-      // Parse matches directly to core domain types
-      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo);
+      // Parse matches directly to VIS-compliant types (Story 1.3 - Task 4)
+      const visCompliantMatches = VisResponseParser.parseBeachMatchesVisCompliant(response.xmlData, request.tournamentNo);
 
       // Create metrics
       const metrics = this.createRequestMetrics(
@@ -191,13 +197,13 @@ export class VisApiIntegrationService {
         response.sizeBytes || 0,
         0, // No gender merging for matches
         includeRefereeData ? 2 : 1, // Field count approximation
-        coreMatches.length > 0 ? Object.keys(coreMatches[0]).length : 0
+        visCompliantMatches.length > 0 ? Object.keys(visCompliantMatches[0]).length : 0
       );
 
       this.recordMetrics(metrics);
 
       return {
-        matches: coreMatches,
+        matches: visCompliantMatches, // Now returns VIS-compliant data directly
         metrics
       };
 

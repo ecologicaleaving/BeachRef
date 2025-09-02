@@ -67,6 +67,10 @@ export interface BeachLive {
 /**
  * Match information within BeachLive
  */
+/**
+ * @deprecated Use VisCompliantMatch from types/match-vis-compliant.ts instead  
+ * This interface will be removed in a future version as part of VIS data structure alignment
+ */
 export interface BeachLiveMatch {
   /** Match number */
   readonly no: number;

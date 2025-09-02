@@ -96,6 +96,10 @@ export interface MatchTeam {
 /**
  * Core Beach Match domain model - immutable and type-safe
  */
+/**
+ * @deprecated Use VisCompliantMatch from types/match-vis-compliant.ts instead
+ * This interface will be removed in a future version as part of VIS data structure alignment  
+ */
 export interface BeachMatchCore extends VisEntity {
   /** Tournament ID this match belongs to */
   readonly tournamentId: string;

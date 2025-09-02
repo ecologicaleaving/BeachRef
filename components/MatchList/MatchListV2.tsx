@@ -1,15 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { VisCompliantMatch } from '../../types/match-vis-compliant';
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
+
+/**
+ * MIGRATION NOTE: This component now accepts both VIS-compliant and legacy match data.
+ * The MatchInterfaceAdapter automatically transforms VIS data to component-compatible format.
+ * This allows gradual migration while maintaining identical visual behavior.
+ */
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { SetScoreService } from '../../services/SetScoreService';
 import { VisApiClient } from '../../services/api/VisApiClient';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { adaptMatchesForComponent } from '../../utils/MatchInterfaceAdapter';
 import { useMemo } from 'react';
 
-// Extended match type to include tournament-specific fields
+// Extended match type using VIS-compliant interface
+type ExtendedVisMatch = VisCompliantMatch & {
+  tournamentGender?: 'M' | 'W';
+  // Legacy compatibility properties computed from VIS data
+  id: string;
+  matchNumber: string;
+  scheduledDateTime: string;
+  court?: {
+    courtNumber?: string;
+  };
+  team1?: {
+    teamName?: string;
+    player1Name?: string;
+    player2Name?: string;
+    countryCode?: string;
+    ranking?: number;
+  };
+  team2?: {
+    teamName?: string;
+    player1Name?: string;
+    player2Name?: string;
+    countryCode?: string;
+    ranking?: number;
+  };
+  status: MatchStatus;
+  refereeAssignments?: {
+    refereeName: string;
+    federationCode?: string;
+  }[];
+  result?: {
+    team1Sets?: number;
+    team2Sets?: number;
+    winner?: number;
+    duration?: number;
+    setScores?: number[];
+  };
+  actualStartTime?: string;
+  actualEndTime?: string;
+};
+
+// Legacy compatibility type for gradual migration
 type ExtendedBeachMatch = BeachMatchCore & {
   tournamentGender?: 'M' | 'W';
   tournamentNo?: string;
@@ -22,19 +70,7 @@ type MatchWithDurationFields = {
   DurationSet3?: string;
 };
 
-const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
-  // Debug logging to understand what data we have
-  console.log('Duration Debug:', {
-    matchId: match.id,
-    hasResult: !!match.result,
-    resultDuration: match.result?.duration,
-    actualStartTime: match.actualStartTime,
-    actualEndTime: match.actualEndTime,
-    durationSet1: (match as any).DurationSet1,
-    durationSet2: (match as any).DurationSet2,
-    durationSet3: (match as any).DurationSet3,
-    matchStatus: match.status
-  });
+const getMatchDuration = (match: ExtendedVisMatch | ExtendedBeachMatch): string | null => {
   
   // First try to get duration from match result (calculated from start/end time)
   if (match.result?.duration && typeof match.result.duration === 'number') {
@@ -61,7 +97,7 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
 };
 
 interface MatchListV2Props {
-  matches: ExtendedBeachMatch[];
+  matches: ExtendedVisMatch[] | ExtendedBeachMatch[];
   loading?: boolean;
   title?: string;
   selectedReferee?: { Name: string } | null;
@@ -78,7 +114,7 @@ interface MatchListV2Props {
   onGenderFilterChange?: (gender: 'All' | 'M' | 'W') => void; // Callback for gender filter changes
   externalRefereeFilter?: string; // External referee filter to override internal state
   onRefereeFilterChange?: (referee: string) => void; // Callback for referee filter changes
-  onMatchesReady?: (matches: ExtendedBeachMatch[], targetIndex: number) => void; // Callback when matches are ready with target scroll index
+  onMatchesReady?: (matches: (ExtendedVisMatch | ExtendedBeachMatch)[], targetIndex: number) => void; // Callback when matches are ready with target scroll index
   onMatchLayout?: (matchId: string, y: number) => void; // Callback for match layout measurement
   showAllDays?: boolean; // Enhanced: Show all tournament days in timeline view
   enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
@@ -119,7 +155,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const [expandedDates, setExpandedDates] = useState<{[key: string]: boolean}>({});
   
   // State for set scores enhancement
-  const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
+  const [enhancedMatches, setEnhancedMatches] = useState<(ExtendedVisMatch | ExtendedBeachMatch)[]>([]);
   const [setScoreService] = useState(() => new SetScoreService());
   
   
@@ -258,7 +294,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     const enhanceMatches = async () => {
       try {
-        const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
+        // First adapt matches to component format (handles VIS-compliant data)
+        const adaptedMatches = adaptMatchesForComponent(matches);
+        const enhanced = await setScoreService.enhanceMatchesWithSetScores(adaptedMatches);
         const enhancedCount = enhanced.filter(match => 
           match.result?.setScores && match.result.setScores.length > 0
         ).length;
@@ -267,7 +305,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         
       } catch (error) {
         console.error('Failed to enhance matches with set scores:', error);
-        setEnhancedMatches(matches);
+        // Fallback to adapted matches without enhancement
+        const adaptedMatches = adaptMatchesForComponent(matches);
+        setEnhancedMatches(adaptedMatches);
       }
     };
 
@@ -608,7 +648,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   };
 
   // Check if match is currently live (beach volleyball rules)
-  const isMatchLive = (match: BeachMatchCore): boolean => {
+  const isMatchLive = (match: ExtendedVisMatch | ExtendedBeachMatch): boolean => {
     // Rule 1: Current time must be past scheduled time
     if (!match.scheduledDateTime) return false;
     const matchDate = new Date(match.scheduledDateTime);
@@ -666,7 +706,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   };
 
   // Render individual match card
-  const renderMatch = (match: BeachMatchCore) => {
+  const renderMatch = (match: ExtendedVisMatch | ExtendedBeachMatch) => {
     const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
     
     

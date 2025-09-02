@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Tournament } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
+import { VisCompliantMatch, convertLegacyToVisCompliant } from '../types/match-vis-compliant';
+import { BeachMatch } from '../types/match';
 
 const STORAGE_KEYS = {
   SELECTED_TOURNAMENT: '@referee_selected_tournament',
@@ -18,7 +20,14 @@ export interface UserPreferences {
 }
 
 interface CachedTournamentDetails {
-  tournament: Tournament;
+  tournament: TournamentCore;
+  cachedAt: string;
+  expiresAt: string;
+}
+
+interface CachedVisCompliantTournamentDetails {
+  tournament: TournamentCore;
+  matches: VisCompliantMatch[];
   cachedAt: string;
   expiresAt: string;
 }
@@ -27,11 +36,11 @@ export class TournamentStorageService {
   /**
    * Save the selected tournament to AsyncStorage
    */
-  static async saveSelectedTournament(tournament: Tournament): Promise<void> {
+  static async saveSelectedTournament(tournament: TournamentCore): Promise<void> {
     try {
       const tournamentData = JSON.stringify(tournament);
       await AsyncStorage.setItem(STORAGE_KEYS.SELECTED_TOURNAMENT, tournamentData);
-      // console.log('Tournament saved to storage:', tournament.No);
+      // console.log('Tournament saved to storage:', tournament.visNo);
     } catch (error) {
       // console.error('Failed to save selected tournament:', error);
       throw new Error('Failed to save tournament selection');
@@ -41,15 +50,15 @@ export class TournamentStorageService {
   /**
    * Retrieve the selected tournament from AsyncStorage
    */
-  static async getSelectedTournament(): Promise<Tournament | null> {
+  static async getSelectedTournament(): Promise<TournamentCore | null> {
     try {
       const tournamentData = await AsyncStorage.getItem(STORAGE_KEYS.SELECTED_TOURNAMENT);
       if (!tournamentData) {
         return null;
       }
       
-      const tournament = JSON.parse(tournamentData) as Tournament;
-      // console.log('Tournament loaded from storage:', tournament.No);
+      const tournament = JSON.parse(tournamentData) as TournamentCore;
+      // console.log('Tournament loaded from storage:', tournament.visNo);
       return tournament;
     } catch (error) {
       // console.error('Failed to load selected tournament:', error);
@@ -212,9 +221,9 @@ export class TournamentStorageService {
   }
 
   /**
-   * Cache detailed tournament data (including InfoSchedule, InfoLocation, etc.)
+   * Cache detailed tournament data (legacy method - maintains backward compatibility)
    */
-  static async cacheTournamentDetails(tournamentNo: string, tournament: Tournament): Promise<void> {
+  static async cacheTournamentDetails(tournamentNo: string, tournament: TournamentCore): Promise<void> {
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000));
@@ -233,9 +242,9 @@ export class TournamentStorageService {
   }
 
   /**
-   * Get cached tournament details if available and not expired
+   * Get cached tournament details if available and not expired (legacy method)
    */
-  static async getCachedTournamentDetails(tournamentNo: string): Promise<Tournament | null> {
+  static async getCachedTournamentDetails(tournamentNo: string): Promise<TournamentCore | null> {
     try {
       const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_${tournamentNo}`;
       const cachedDataStr = await AsyncStorage.getItem(cacheKey);
@@ -263,7 +272,88 @@ export class TournamentStorageService {
   }
 
   /**
-   * Clear expired tournament details caches
+   * Cache VIS-compliant tournament data with matches
+   */
+  static async cacheVisCompliantTournamentDetails(
+    tournamentNo: string, 
+    tournament: TournamentCore,
+    matches?: VisCompliantMatch[]
+  ): Promise<void> {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000));
+      
+      const cachedData: CachedVisCompliantTournamentDetails = {
+        tournament,
+        matches: matches || [],
+        cachedAt: now.toISOString(),
+        expiresAt: expiresAt.toISOString()
+      };
+      
+      const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_vis_${tournamentNo}`;
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedData));
+    } catch (error) {
+      // console.error('Failed to cache VIS-compliant tournament details:', error);
+    }
+  }
+
+  /**
+   * Get cached VIS-compliant tournament details with matches if available and not expired
+   */
+  static async getCachedVisCompliantTournamentDetails(tournamentNo: string): Promise<{
+    tournament: TournamentCore;
+    matches: VisCompliantMatch[];
+  } | null> {
+    try {
+      const cacheKey = `${STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE}_vis_${tournamentNo}`;
+      const cachedDataStr = await AsyncStorage.getItem(cacheKey);
+      
+      if (!cachedDataStr) {
+        return null;
+      }
+      
+      const cachedData: CachedVisCompliantTournamentDetails = JSON.parse(cachedDataStr);
+      const now = new Date();
+      const expiresAt = new Date(cachedData.expiresAt);
+      
+      // Check if cache is expired
+      if (now > expiresAt) {
+        // Remove expired cache
+        await AsyncStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return {
+        tournament: cachedData.tournament,
+        matches: cachedData.matches
+      };
+    } catch (error) {
+      // console.error('Failed to get cached VIS-compliant tournament details:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Migrate legacy match data to VIS-compliant format during cache retrieval
+   */
+  static async migrateLegacyMatchesToVisCompliant(matches: BeachMatch[]): Promise<VisCompliantMatch[]> {
+    const migratedMatches: VisCompliantMatch[] = [];
+    
+    for (const legacyMatch of matches) {
+      try {
+        const visCompliantMatch = convertLegacyToVisCompliant(legacyMatch);
+        migratedMatches.push(visCompliantMatch);
+      } catch (conversionError) {
+        // console.warn('Failed to convert legacy match to VIS-compliant:', conversionError);
+        // Skip matches that can't be converted rather than failing entirely
+      }
+    }
+    
+    return migratedMatches;
+  }
+
+  /**
+   * Clear expired tournament details caches (includes both legacy and VIS-compliant caches)
    */
   static async clearExpiredTournamentCaches(): Promise<void> {
     try {
@@ -279,11 +369,21 @@ export class TournamentStorageService {
         try {
           const cachedDataStr = await AsyncStorage.getItem(key);
           if (cachedDataStr) {
-            const cachedData: CachedTournamentDetails = JSON.parse(cachedDataStr);
-            const expiresAt = new Date(cachedData.expiresAt);
-            
-            if (now > expiresAt) {
-              keysToRemove.push(key);
+            // Handle both legacy and VIS-compliant cache formats
+            if (key.includes('_vis_')) {
+              const cachedData: CachedVisCompliantTournamentDetails = JSON.parse(cachedDataStr);
+              const expiresAt = new Date(cachedData.expiresAt);
+              
+              if (now > expiresAt) {
+                keysToRemove.push(key);
+              }
+            } else {
+              const cachedData: CachedTournamentDetails = JSON.parse(cachedDataStr);
+              const expiresAt = new Date(cachedData.expiresAt);
+              
+              if (now > expiresAt) {
+                keysToRemove.push(key);
+              }
             }
           }
         } catch {

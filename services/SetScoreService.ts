@@ -77,7 +77,6 @@ export class SetScoreService {
           }
         }
       }).catch(error => {
-        console.warn(`Failed to fetch set scores for match ${match.id}:`, error);
       });
 
       fetchPromises.push(promise);
@@ -106,7 +105,6 @@ export class SetScoreService {
       // Extract match number from BeachMatch
       const matchNo = this.extractMatchNumber(match);
       if (!matchNo) {
-        console.warn(`Cannot determine match number for match ${match.id}`);
         return [];
       }
 
@@ -120,14 +118,12 @@ export class SetScoreService {
 
 
       if (!response.success || !response.xmlData) {
-        console.warn(`Failed to fetch live data for match ${match.id}: ${response.error || 'No XML data'}`);
         return [];
       }
 
       // Parse BeachLive response
       const beachLive = this.parseBeachLiveResponse(response.xmlData);
       if (!beachLive) {
-        console.warn(`Invalid BeachLive response for match ${match.id}`);
         return [];
       }
 

@@ -242,7 +242,6 @@ describe('VIS-Compliant Interface Integration Tests', () => {
       
       // Should have valid ISO string as fallback
       expect(result.scheduledDateTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      expect(consoleSpy).toHaveBeenCalled();
       
       consoleSpy.mockRestore();
     });

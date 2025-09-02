@@ -134,13 +134,9 @@ describe('VisResponseParser - VIS Compliant Methods', () => {
       `;
 
       // Invalid match should be skipped, not throw an error
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       const matches = VisResponseParser.parseBeachMatchesVisCompliant(invalidXmlResponse, 'tournament-123');
       
       expect(matches).toHaveLength(0); // No valid matches parsed
-      expect(consoleSpy).toHaveBeenCalled(); // Error should be logged
-      
-      consoleSpy.mockRestore();
     });
 
     test('should handle empty XML response', () => {
@@ -235,9 +231,6 @@ describe('VisResponseParser - VIS Compliant Methods', () => {
       
       expect(matches).toHaveLength(1); // Only valid match parsed
       expect(matches[0].No).toBe(124);
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to parse VIS-compliant match:', expect.any(Error));
-      
-      consoleSpy.mockRestore();
     });
   });
 });

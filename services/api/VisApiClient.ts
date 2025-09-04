@@ -18,12 +18,21 @@ import {
   GetBeachRoundRequest,
   GetBeachRoundListRequest,
   GetBeachLiveRequest,
+  BatchRequest,
+  BatchResponse,
+  BatchRequestItem,
+  BatchResponseItem,
+  TournamentDetailBatchRequest,
   VisApiEndpoint,
   RetryConfig,
   DEFAULT_RETRY_CONFIG,
   DEFAULT_FIELD_SELECTIONS,
+  SLIM_FIELD_SELECTIONS,
+  FieldSelectionMode,
+  FieldSelectionStrategy,
   RequestMonitor
 } from '../../types/api-v2';
+import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
@@ -61,11 +70,111 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 0,
-        [VisApiEndpoint.GET_BEACH_LIVE]: 0
+        [VisApiEndpoint.GET_BEACH_LIVE]: 0,
+        [VisApiEndpoint.BATCH_REQUEST]: 0
       },
       errorsByType: {},
       lastRequestTimestamp: new Date().toISOString()
     };
+  }
+
+  /**
+   * Get optimized field selection based on context and mode
+   * @param endpoint - API endpoint
+   * @param strategy - Field selection strategy
+   * @returns Optimized field array
+   */
+  getOptimizedFields(endpoint: VisApiEndpoint, strategy: FieldSelectionStrategy): readonly string[] {
+    let fields: readonly string[];
+    
+    switch (strategy.mode) {
+      case FieldSelectionMode.SLIM:
+        fields = SLIM_FIELD_SELECTIONS[endpoint];
+        break;
+      
+      case FieldSelectionMode.CUSTOM:
+        fields = strategy.customFields || DEFAULT_FIELD_SELECTIONS[endpoint];
+        break;
+      
+      case FieldSelectionMode.FULL:
+      default:
+        // Context-aware optimization for FULL mode
+        if (strategy.contextHint === 'list') {
+          // For list views, use tournament list optimizations
+          fields = this.getListOptimizedFields(endpoint);
+        } else {
+          fields = DEFAULT_FIELD_SELECTIONS[endpoint];
+        }
+        break;
+    }
+    
+    // Record field optimization for performance monitoring
+    const defaultFields = DEFAULT_FIELD_SELECTIONS[endpoint];
+    const fieldsSaved = defaultFields.length - fields.length;
+    const estimatedBytesSaved = fieldsSaved * this.getEstimatedBytesPerField(endpoint);
+    
+    if (fieldsSaved > 0) {
+      pollingPerformanceMonitor.recordFieldOptimization(
+        endpoint,
+        strategy.mode,
+        fields.length,
+        estimatedBytesSaved
+      );
+    }
+    
+    return fields;
+  }
+  
+  /**
+   * Estimate bytes per field for bandwidth calculation
+   * @param endpoint - API endpoint
+   * @returns Estimated bytes per field
+   */
+  private getEstimatedBytesPerField(endpoint: VisApiEndpoint): number {
+    // Average field sizes based on typical VIS API responses
+    switch (endpoint) {
+      case VisApiEndpoint.GET_EVENT_LIST:
+        return 50;
+      case VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST:
+        return 45;
+      case VisApiEndpoint.GET_BEACH_TOURNAMENT:
+        return 60;
+      case VisApiEndpoint.GET_EVENT:
+        return 40;
+      case VisApiEndpoint.GET_BEACH_MATCH_LIST:
+        return 55;
+      case VisApiEndpoint.GET_BEACH_ROUND:
+        return 35;
+      case VisApiEndpoint.GET_BEACH_ROUND_LIST:
+        return 30;
+      case VisApiEndpoint.GET_BEACH_LIVE:
+        return 80;
+      case VisApiEndpoint.BATCH_REQUEST:
+        return 100;
+      default:
+        return 50;
+    }
+  }
+
+  /**
+   * Get list-optimized field selection for tournament browsing
+   * @param endpoint - API endpoint
+   * @returns List-optimized field array
+   */
+  private getListOptimizedFields(endpoint: VisApiEndpoint): readonly string[] {
+    switch (endpoint) {
+      case VisApiEndpoint.GET_EVENT_LIST:
+        return ['No', 'Name', 'City', 'CountryCode', 'StartDate', 'EndDate', 'Status', 'Gender'];
+      
+      case VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST:
+        return ['No', 'Name', 'CountryCode', 'City', 'StartDate', 'EndDate', 'Status'];
+      
+      case VisApiEndpoint.GET_BEACH_MATCH_LIST:
+        return ['MatchNo', 'DateTime', 'Status', 'Court'];
+      
+      default:
+        return DEFAULT_FIELD_SELECTIONS[endpoint];
+    }
   }
 
   /**
@@ -266,6 +375,216 @@ export class VisApiClient implements IVisApiClient {
 
 
   /**
+   * Execute batch request with multiple API calls
+   * Combines multiple requests into a single batch for improved performance
+   */
+  async executeBatchRequest(request: BatchRequest): Promise<BatchResponse> {
+    const startTime = Date.now();
+    
+    // Handle empty batch requests
+    if (request.requests.length === 0) {
+      return {
+        timestamp: new Date().toISOString(),
+        success: true,
+        durationMs: Date.now() - startTime,
+        results: [],
+        hasPartialFailures: false
+      };
+    }
+    
+    try {
+      // Build batch XML request
+      const xmlRequest = this.buildBatchRequestXml(request);
+      
+      // Execute batch request
+      const response = await this.executeRequest(VisApiEndpoint.BATCH_REQUEST, xmlRequest);
+      
+      if (!response.success) {
+        // Return failed batch response
+        return {
+          timestamp: new Date().toISOString(),
+          success: true,
+          durationMs: Date.now() - startTime,
+          results: request.requests.map((item, index) => ({
+            requestId: item.requestId || `req_${index}`,
+            type: item.type,
+            success: false,
+            error: response as VisApiErrorResponse
+          })),
+          hasPartialFailures: true
+        };
+      }
+      
+      // Parse batch response XML
+      const batchResults = this.parseBatchResponse(response.xmlData, request.requests);
+      
+      // Update monitoring for batch request
+      this.updateMonitor(VisApiEndpoint.BATCH_REQUEST, true, Date.now() - startTime);
+      
+      return {
+        timestamp: new Date().toISOString(),
+        success: true,
+        durationMs: Date.now() - startTime,
+        results: batchResults,
+        hasPartialFailures: batchResults.some(result => !result.success)
+      };
+      
+    } catch (error) {
+      // Update monitoring for failed batch request
+      this.updateMonitor(VisApiEndpoint.BATCH_REQUEST, false, Date.now() - startTime);
+      
+      // Return failed batch response
+      return {
+        timestamp: new Date().toISOString(),
+        success: true,
+        durationMs: Date.now() - startTime,
+        results: request.requests.map((item, index) => ({
+          requestId: item.requestId || `req_${index}`,
+          type: item.type,
+          success: false,
+          error: this.createErrorResponse(error, Date.now() - startTime)
+        })),
+        hasPartialFailures: true
+      };
+    }
+  }
+
+  /**
+   * Get tournament details using batch request
+   * Combines GetBeachTournament + GetBeachMatchList + GetBeachRoundList
+   */
+  async getTournamentDetailBatch(request: TournamentDetailBatchRequest): Promise<BatchResponse> {
+    const batchItems: BatchRequestItem[] = [];
+    
+    // Add tournament details request if requested
+    if (request.includeTournamentDetails !== false) {
+      batchItems.push({
+        type: VisApiEndpoint.GET_BEACH_TOURNAMENT,
+        requestId: `tournament_${request.tournamentNo}`,
+        request: {
+          tournamentNo: request.tournamentNo,
+          includeLocation: true,
+          includeVenue: true,
+          includeContacts: true
+        } as GetBeachTournamentRequest
+      });
+    }
+    
+    // Add match list request if requested
+    if (request.includeMatches !== false) {
+      batchItems.push({
+        type: VisApiEndpoint.GET_BEACH_MATCH_LIST,
+        requestId: `matches_${request.tournamentNo}`,
+        request: {
+          tournamentNo: request.tournamentNo,
+          includeResults: true,
+          includeReferees: true
+        } as GetBeachMatchListRequest
+      });
+    }
+    
+    // Add round list request if requested
+    if (request.includeRounds !== false) {
+      batchItems.push({
+        type: VisApiEndpoint.GET_BEACH_ROUND_LIST,
+        requestId: `rounds_${request.tournamentNo}`,
+        request: {
+          tournamentNo: request.tournamentNo,
+          includeTeams: true,
+          includeMatches: true
+        } as GetBeachRoundListRequest
+      });
+    }
+    
+    // Execute batch request
+    const batchRequest: BatchRequest = {
+      requests: batchItems,
+      failureStrategy: 'continue_on_partial',
+      requestId: request.requestId,
+      timestamp: request.timestamp,
+      timeoutMs: request.timeoutMs
+    };
+    
+    try {
+      const batchResponse = await this.executeBatchRequest(batchRequest);
+      
+      // If batch has partial failures and fallback is needed, attempt individual requests
+      if (batchResponse.hasPartialFailures && this.shouldFallbackToIndividual(batchResponse)) {
+        return this.fallbackToIndividualRequests(batchItems);
+      }
+      
+      return batchResponse;
+      
+    } catch (error) {
+      // If batch request completely fails, fallback to individual requests
+      console.warn('Batch request failed, falling back to individual requests:', error);
+      return this.fallbackToIndividualRequests(batchItems);
+    }
+  }
+
+  /**
+   * Determine if we should fallback to individual requests
+   */
+  private shouldFallbackToIndividual(batchResponse: BatchResponse): boolean {
+    // Fallback if more than 50% of requests failed
+    const failureRate = batchResponse.results.filter(r => !r.success).length / batchResponse.results.length;
+    return failureRate > 0.5;
+  }
+
+  /**
+   * Fallback to individual requests when batch fails
+   */
+  private async fallbackToIndividualRequests(batchItems: BatchRequestItem[]): Promise<BatchResponse> {
+    const startTime = Date.now();
+    const results: BatchResponseItem[] = [];
+    
+    // Execute each request individually
+    for (const item of batchItems) {
+      try {
+        let response: VisApiResponse;
+        
+        switch (item.type) {
+          case VisApiEndpoint.GET_BEACH_TOURNAMENT:
+            response = await this.getBeachTournament(item.request as GetBeachTournamentRequest);
+            break;
+          case VisApiEndpoint.GET_BEACH_MATCH_LIST:
+            response = await this.getBeachMatchList(item.request as GetBeachMatchListRequest);
+            break;
+          case VisApiEndpoint.GET_BEACH_ROUND_LIST:
+            response = await this.getBeachRoundList(item.request as GetBeachRoundListRequest);
+            break;
+          default:
+            throw new Error(`Unsupported fallback request type: ${item.type}`);
+        }
+        
+        results.push({
+          requestId: item.requestId,
+          type: item.type,
+          success: response.success,
+          data: response.success ? (response as VisApiSuccessResponse).xmlData : undefined,
+          error: response.success ? undefined : (response as VisApiErrorResponse)
+        });
+        
+      } catch (error) {
+        results.push({
+          requestId: item.requestId,
+          type: item.type,
+          success: false,
+          error: this.createErrorResponse(error, 0)
+        });
+      }
+    }
+    
+    return {
+      timestamp: new Date().toISOString(),
+      success: true,
+      durationMs: Date.now() - startTime,
+      results,
+      hasPartialFailures: results.some(r => !r.success)
+    };
+  }
+
+  /**
    * Get API client configuration
    */
   getConfig(): VisApiClientConfig {
@@ -418,19 +737,19 @@ export class VisApiClient implements IVisApiClient {
     const filterAttribs = [];
     
     if (request.gender) {
-      filterAttribs.push(`Gender="${request.gender}"`);
+      filterAttribs.push(`Gender="${this.escapeXmlAttribute(request.gender)}"`);
     }
     if (request.startDate) {
-      filterAttribs.push(`StartDate="${request.startDate}"`);
+      filterAttribs.push(`StartDate="${this.escapeXmlAttribute(request.startDate)}"`);
     }
     if (request.endDate) {
-      filterAttribs.push(`EndDate="${request.endDate}"`);
+      filterAttribs.push(`EndDate="${this.escapeXmlAttribute(request.endDate)}"`);
     }
     if (request.countryCode) {
-      filterAttribs.push(`CountryCode="${request.countryCode}"`);
+      filterAttribs.push(`CountryCode="${this.escapeXmlAttribute(request.countryCode)}"`);
     }
     if (request.status) {
-      filterAttribs.push(`Status="${request.status}"`);
+      filterAttribs.push(`Status="${this.escapeXmlAttribute(request.status)}"`);
     }
     
     // Always filter for beach volleyball tournaments
@@ -444,7 +763,7 @@ export class VisApiClient implements IVisApiClient {
       ? `<Filter ${filterAttribs.join(' ')} />` 
       : '';
     
-    const xmlRequest = `<Request Type="GetEventList" Fields="${fields}">${filterElement}</Request>`;
+    const xmlRequest = `<Request Type="GetEventList" Fields="${this.escapeXmlAttribute(fields)}">${filterElement}</Request>`;
     
     // XML request built successfully
     
@@ -496,7 +815,7 @@ export class VisApiClient implements IVisApiClient {
     // REQUEST THE No FIELD EXPLICITLY - this is the real tournament number we need
     const fields = 'No Code Name';
     
-    return `<Request Type="GetBeachTournament" No="${request.tournamentNo}" Fields="${fields}" />`;
+    return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
   }
 
   /**
@@ -507,7 +826,7 @@ export class VisApiClient implements IVisApiClient {
     const fields = 'No Name Code Content';
     
     // Use simple attribute format like in documentation, not Filter element
-    return `<Request Type="GetEvent" No="${request.eventNo}" Fields="${fields}" />`;
+    return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
   }
 
   /**
@@ -515,20 +834,20 @@ export class VisApiClient implements IVisApiClient {
    */
   private buildGetBeachMatchListXml(request: GetBeachMatchListRequest): string {
     // Use the EXACT format from documentation - filter parameter is NoTournament
-    const filterAttribs = [`NoTournament="${request.tournamentNo}"`];
+    const filterAttribs = [`NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`];
     
     // Add optional filters only if provided  
     if (request.courtNo) {
-      filterAttribs.push(`CourtNo="${request.courtNo}"`);
+      filterAttribs.push(`CourtNo="${this.escapeXmlAttribute(request.courtNo)}"`);
     }
     if (request.status) {
-      filterAttribs.push(`Status="${request.status}"`);
+      filterAttribs.push(`Status="${this.escapeXmlAttribute(request.status)}"`);
     }
     if (request.startDate) {
-      filterAttribs.push(`StartDate="${request.startDate}"`);
+      filterAttribs.push(`StartDate="${this.escapeXmlAttribute(request.startDate)}"`);
     }
     if (request.endDate) {
-      filterAttribs.push(`EndDate="${request.endDate}"`);
+      filterAttribs.push(`EndDate="${this.escapeXmlAttribute(request.endDate)}"`);
     }
     
     const includeResults = request.includeResults !== false;
@@ -554,8 +873,8 @@ export class VisApiClient implements IVisApiClient {
    */
   private buildGetBeachRoundXml(request: GetBeachRoundRequest): string {
     const filterAttribs = [
-      `NoTournament="${request.tournamentNo}"`,
-      `NoRound="${request.roundNo}"`
+      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`,
+      `NoRound="${this.escapeXmlAttribute(request.roundNo)}"`
     ];
     
     // Add optional includes
@@ -606,24 +925,146 @@ export class VisApiClient implements IVisApiClient {
    * Build XML request for GetBeachLiveRequest endpoint
    */
   private buildGetBeachLiveXml(request: GetBeachLiveRequest): string {
-    const attributes = [`No="${request.matchNo}"`];
+    const attributes = [`No="${this.escapeXmlAttribute(request.matchNo.toString())}"`];
     
     // Add version for bandwidth optimization (version-based polling)  
     if (request.version !== undefined) {
-      attributes.push(`Version="${request.version}"`);
+      attributes.push(`Version="${this.escapeXmlAttribute(request.version.toString())}"`);
     }
     
     // Add options if provided
     if (request.options && request.options.length > 0) {
-      attributes.push(`Options="${request.options.join(',')}"`);
+      attributes.push(`Options="${this.escapeXmlAttribute(request.options.join(','))}"`);
     }
     
     // Use default field selection for live score data
     const fields = DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_LIVE].join(' ');
     
-    const xmlRequest = `<Request Type="GetBeachLive" Fields="${fields}" ${attributes.join(' ')} />`;
+    const xmlRequest = `<Request Type="GetBeachLive" Fields="${this.escapeXmlAttribute(fields)}" ${attributes.join(' ')} />`;
     
     return xmlRequest;
+  }
+
+  /**
+   * Build XML request for batch requests
+   * Combines multiple requests into a single batch
+   */
+  private buildBatchRequestXml(request: BatchRequest): string {
+    const requestId = request.requestId || `batch_${Date.now()}`;
+    
+    // Start batch XML structure
+    let batchXml = `<BatchRequest RequestId="${this.escapeXmlAttribute(requestId)}"`;
+    
+    // Add failure strategy if specified
+    if (request.failureStrategy) {
+      batchXml += ` FailureStrategy="${this.escapeXmlAttribute(request.failureStrategy)}"`;
+    }
+    
+    batchXml += `>\n`;
+    
+    // Add each individual request
+    for (const item of request.requests) {
+      const itemRequestId = item.requestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Build the individual request XML based on type
+      let individualXml = '';
+      
+      switch (item.type) {
+        case VisApiEndpoint.GET_EVENT_LIST:
+          individualXml = this.buildGetEventListXml(item.request as GetEventListRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST:
+          individualXml = this.buildGetBeachTournamentListXml(item.request as GetBeachTournamentListRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_TOURNAMENT:
+          individualXml = this.buildGetBeachTournamentXml(item.request as GetBeachTournamentRequest);
+          break;
+        case VisApiEndpoint.GET_EVENT:
+          individualXml = this.buildGetEventXml(item.request as GetEventRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_MATCH_LIST:
+          individualXml = this.buildGetBeachMatchListXml(item.request as GetBeachMatchListRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_ROUND:
+          individualXml = this.buildGetBeachRoundXml(item.request as GetBeachRoundRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_ROUND_LIST:
+          individualXml = this.buildGetBeachRoundListXml(item.request as GetBeachRoundListRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_LIVE:
+          individualXml = this.buildGetBeachLiveXml(item.request as GetBeachLiveRequest);
+          break;
+        default:
+          throw new Error(`Unsupported batch request type: ${item.type}`);
+      }
+      
+      // Wrap individual request with RequestId attribute
+      const wrappedXml = individualXml.replace('<Request ', `<Request RequestId="${this.escapeXmlAttribute(itemRequestId)}" `);
+      batchXml += `  ${wrappedXml}\n`;
+    }
+    
+    batchXml += `</BatchRequest>`;
+    
+    return batchXml;
+  }
+
+  /**
+   * Parse batch response XML and extract individual results
+   */
+  private parseBatchResponse(xmlData: string, originalRequests: readonly BatchRequestItem[]): BatchResponseItem[] {
+    // Simple XML parsing for batch responses
+    // In a real implementation, you would use a proper XML parser
+    const results: BatchResponseItem[] = [];
+    
+    // Try to extract individual response elements from the XML
+    // This is a simplified implementation - in production you'd use fast-xml-parser
+    const responsePattern = /<Response\s+RequestId="([^"]*)"[^>]*>([\s\S]*?)<\/Response>/g;
+    const matches = Array.from(xmlData.matchAll(responsePattern));
+    
+    if (matches.length === 0) {
+      // No structured batch response - treat as single response failure
+      return originalRequests.map((item, index) => ({
+        requestId: item.requestId || `req_${index}`,
+        type: item.type,
+        success: false,
+        error: {
+          timestamp: new Date().toISOString(),
+          success: false,
+          errorCode: 'BATCH_PARSE_ERROR',
+          error: 'Failed to parse batch response',
+          durationMs: 0
+        }
+      }));
+    }
+    
+    // Process each response
+    for (const match of matches) {
+      const requestId = match[1];
+      const responseXml = match[2];
+      
+      // Find original request type
+      const originalRequest = originalRequests.find(req => req.requestId === requestId);
+      const requestType = originalRequest?.type || VisApiEndpoint.GET_EVENT_LIST;
+      
+      // Determine if response is successful (contains expected data elements)
+      const isSuccess = responseXml.includes('<') && !responseXml.includes('<Error');
+      
+      results.push({
+        requestId,
+        type: requestType,
+        success: isSuccess,
+        data: isSuccess ? responseXml : undefined,
+        error: isSuccess ? undefined : {
+          timestamp: new Date().toISOString(),
+          success: false,
+          errorCode: 'REQUEST_FAILED',
+          error: 'Individual request in batch failed',
+          durationMs: 0
+        }
+      });
+    }
+    
+    return results;
   }
 
   /**

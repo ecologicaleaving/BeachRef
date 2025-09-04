@@ -23,7 +23,9 @@ export enum VisApiEndpoint {
   /** VIS compliant round list endpoint */
   GET_BEACH_ROUND_LIST = 'GetBeachRoundList',
   /** Endpoint for live score data */
-  GET_BEACH_LIVE = 'GetBeachLive'
+  GET_BEACH_LIVE = 'GetBeachLive',
+  /** Endpoint for batch requests */
+  BATCH_REQUEST = 'BatchRequest'
 }
 
 /**
@@ -177,6 +179,71 @@ export interface GetBeachLiveRequest extends VisApiRequestBase {
 }
 
 /**
+ * Batch request item for combining multiple API calls
+ */
+export interface BatchRequestItem {
+  /** Request type/endpoint */
+  readonly type: VisApiEndpoint;
+  /** Request parameters */
+  readonly request: VisApiRequestBase;
+  /** Optional request ID for tracking */
+  readonly requestId?: string;
+}
+
+/**
+ * Batch request parameters
+ * Combines multiple API requests into a single call
+ */
+export interface BatchRequest extends VisApiRequestBase {
+  /** Array of individual requests to batch */
+  readonly requests: readonly BatchRequestItem[];
+  /** Strategy for handling partial failures */
+  readonly failureStrategy?: 'fail_all' | 'continue_on_partial';
+}
+
+/**
+ * Individual response item in batch response
+ */
+export interface BatchResponseItem {
+  /** Original request ID if provided */
+  readonly requestId?: string;
+  /** Request type that was executed */
+  readonly type: VisApiEndpoint;
+  /** Whether this individual request succeeded */
+  readonly success: boolean;
+  /** Response data if successful */
+  readonly data?: any;
+  /** Error information if failed */
+  readonly error?: VisApiErrorResponse;
+}
+
+/**
+ * Batch response containing multiple individual responses
+ */
+export interface BatchResponse extends VisApiResponseBase {
+  readonly success: true; // Batch operation itself succeeded (even with partial failures)
+  /** Array of individual response results */
+  readonly results: readonly BatchResponseItem[];
+  /** Whether any requests in the batch failed */
+  readonly hasPartialFailures: boolean;
+}
+
+/**
+ * Tournament detail batch request convenience interface
+ * Combines GetBeachTournament + GetBeachMatchList + GetBeachRoundList
+ */
+export interface TournamentDetailBatchRequest extends VisApiRequestBase {
+  /** Tournament number to fetch details for */
+  readonly tournamentNo: string;
+  /** Whether to include match list */
+  readonly includeMatches?: boolean;
+  /** Whether to include round list */
+  readonly includeRounds?: boolean;
+  /** Whether to include tournament details */
+  readonly includeTournamentDetails?: boolean;
+}
+
+/**
  * VIS API response base interface
  */
 export interface VisApiResponseBase {
@@ -302,10 +369,32 @@ export interface IVisApiClient {
   getBeachLive(request: GetBeachLiveRequest): Promise<VisApiResponse>;
   
   /**
+   * Execute batch request with multiple API calls
+   * @param request - BatchRequest with multiple requests
+   * @returns Promise with batch response
+   */
+  executeBatchRequest(request: BatchRequest): Promise<BatchResponse>;
+  
+  /**
+   * Get tournament details using batch request
+   * @param request - TournamentDetailBatchRequest with tournament ID and options
+   * @returns Promise with batch response containing tournament, matches, and rounds
+   */
+  getTournamentDetailBatch(request: TournamentDetailBatchRequest): Promise<BatchResponse>;
+  
+  /**
    * Test API connectivity
    * @returns Promise with connection status
    */
   testConnection(): Promise<boolean>;
+  
+  /**
+   * Get optimized field selection based on context and mode
+   * @param endpoint - API endpoint
+   * @param strategy - Field selection strategy
+   * @returns Optimized field array
+   */
+  getOptimizedFields(endpoint: VisApiEndpoint, strategy: FieldSelectionStrategy): readonly string[];
   
   /**
    * Get API client configuration
@@ -415,8 +504,91 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   [VisApiEndpoint.GET_BEACH_LIVE]: [
     'Version', 'PollDelay', 'Match', 'Sets', 'TeamA', 'TeamB',
     'ServingTeam', 'ServingPlayer', 'BallInPlay', 'Tournament'
+  ],
+  [VisApiEndpoint.BATCH_REQUEST]: [
+    'BatchId', 'RequestCount', 'Results', 'Success', 'Errors'
   ]
 } as const;
+
+/**
+ * Slim field selections for bandwidth optimization during frequent polling
+ */
+export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = {
+  [VisApiEndpoint.GET_EVENT_LIST]: [
+    'No', 'Name', 'StartDate', 'EndDate', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]: [
+    'No', 'Name', 'StartDate', 'EndDate', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_TOURNAMENT]: [
+    'No', 'Name', 'Status'
+  ],
+  [VisApiEndpoint.GET_EVENT]: [
+    'No', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
+    'MatchNo', 'Status', 'DateTime'
+  ],
+  [VisApiEndpoint.GET_BEACH_ROUND]: [
+    'RoundNo', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_ROUND_LIST]: [
+    'No', 'Name', 'Order'
+  ],
+  [VisApiEndpoint.GET_BEACH_LIVE]: [
+    'Version', 'PollDelay', 'Status'
+  ],
+  [VisApiEndpoint.BATCH_REQUEST]: [
+    'BatchId', 'Success', 'Errors'
+  ]
+} as const;
+
+/**
+ * Match polling status for adaptive interval management
+ */
+export enum MatchPollingStatus {
+  RUNNING = 'Running',
+  SCHEDULED = 'Scheduled', 
+  FINISHED = 'Finished'
+}
+
+/**
+ * Field selection mode for bandwidth optimization
+ */
+export enum FieldSelectionMode {
+  FULL = 'full',
+  SLIM = 'slim', 
+  CUSTOM = 'custom'
+}
+
+/**
+ * Match status polling configuration
+ */
+export interface MatchStatusPollingConfig {
+  readonly status: MatchPollingStatus;
+  readonly intervalMs: number;
+  readonly shouldPoll: boolean;
+  readonly fieldSelectionMode: FieldSelectionMode;
+}
+
+/**
+ * Field selection strategy for context-aware optimization
+ */
+export interface FieldSelectionStrategy {
+  readonly mode: FieldSelectionMode;
+  readonly customFields?: readonly string[];
+  readonly contextHint?: 'list' | 'detail' | 'polling';
+}
+
+/**
+ * Adaptive polling request with status awareness
+ */
+export interface AdaptivePollingRequest extends VisApiRequestBase {
+  readonly matchNo: number;
+  readonly currentStatus?: MatchPollingStatus;
+  readonly fieldSelectionMode?: FieldSelectionMode;
+  readonly enableAdaptivePolling?: boolean;
+}
 
 /**
  * Standard retry configuration

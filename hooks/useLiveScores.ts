@@ -12,7 +12,8 @@ import { BeachLive } from '../types/beach-live';
 import { LiveScorePollingService, LiveScoreCallback, createLiveScorePollingService } from '../services/live-score/LiveScorePollingService';
 import { ConnectionCircuitBreaker } from '../services/ConnectionCircuitBreaker';
 import { VisApiClient } from '../services/api/VisApiClient';
-import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
+import { DEFAULT_RETRY_CONFIG, MatchPollingStatus } from '../types/api-v2';
+import { matchStatusPollingManager } from '../services/MatchStatusPollingManager';
 
 /**
  * Live score state for a single match
@@ -42,6 +43,12 @@ interface UseLiveScoresOptions {
   autoStart?: boolean;
   /** Custom polling service instance */
   pollingService?: LiveScorePollingService;
+  /** Enable adaptive polling based on match status (default: false) */
+  useAdaptivePolling?: boolean;
+  /** Custom stale time for React Query cache (default: based on adaptive polling) */
+  staleTimeMs?: number;
+  /** Custom cache time for React Query cache (default: based on adaptive polling) */
+  cacheTimeMs?: number;
 }
 
 /**
@@ -70,6 +77,67 @@ interface UseLiveScoresReturn {
   refreshLiveScores: () => void;
   /** Polling service statistics */
   statistics: any;
+  /** Get adaptive polling performance metrics */
+  getAdaptivePollingMetrics: (timeRangeMs?: number) => any;
+  /** Get performance summary */
+  getPerformanceSummary: (timeRangeMs?: number) => any;
+  /** Get React Query cache configuration for a specific match */
+  getCacheConfigForMatch: (matchNo: number) => { staleTime: number; cacheTime: number };
+  /** Get overall cache configuration */
+  getCacheConfig: () => { staleTime: number; cacheTime: number };
+}
+
+/**
+ * Get React Query cache configuration based on adaptive polling settings
+ */
+function getCacheConfiguration(useAdaptivePolling: boolean, staleTimeMs?: number, cacheTimeMs?: number) {
+  if (!useAdaptivePolling) {
+    return {
+      staleTime: staleTimeMs || 5000, // 5 seconds for traditional polling
+      cacheTime: cacheTimeMs || 30000 // 30 seconds for traditional polling
+    };
+  }
+
+  // Adaptive polling cache configuration
+  return {
+    staleTime: staleTimeMs || 3000, // 3 seconds for running matches (matches fastest polling)
+    cacheTime: cacheTimeMs || 60000 // 1 minute for adaptive polling (matches scheduled interval)
+  };
+}
+
+/**
+ * Get status-specific cache times for individual matches
+ */
+function getStatusBasedCacheTime(matchNo: number, useAdaptivePolling: boolean): { staleTime: number; cacheTime: number } {
+  if (!useAdaptivePolling) {
+    return { staleTime: 5000, cacheTime: 30000 };
+  }
+
+  const status = matchStatusPollingManager.getMatchStatus(matchNo);
+  const pollingConfig = matchStatusPollingManager.getPollingConfig(status);
+
+  switch (status) {
+    case MatchPollingStatus.RUNNING:
+      return { 
+        staleTime: 2000, // Slightly less than polling interval (3s) 
+        cacheTime: 10000 // Short cache for frequently changing data
+      };
+    
+    case MatchPollingStatus.SCHEDULED:
+      return { 
+        staleTime: 25000, // Slightly less than polling interval (30s)
+        cacheTime: 120000 // Longer cache for stable data (2 minutes)
+      };
+    
+    case MatchPollingStatus.FINISHED:
+      return { 
+        staleTime: 300000, // 5 minutes (data won't change)
+        cacheTime: 600000 // 10 minutes (can cache longer)
+      };
+    
+    default:
+      return { staleTime: 5000, cacheTime: 30000 };
+  }
 }
 
 /**
@@ -77,7 +145,14 @@ interface UseLiveScoresReturn {
  * Follows the useAssignmentStatus pattern with proper lifecycle management
  */
 export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresReturn {
-  const { matchNumbers, autoStart = true, pollingService: customPollingService } = options;
+  const { 
+    matchNumbers, 
+    autoStart = true, 
+    pollingService: customPollingService,
+    useAdaptivePolling = false,
+    staleTimeMs,
+    cacheTimeMs
+  } = options;
 
   // State management
   const [liveScores, setLiveScores] = useState<Record<number, LiveScoreState>>({});
@@ -277,8 +352,8 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
     }));
 
     const callback = createLiveScoreCallback(matchNo);
-    pollingServiceRef.current.startPolling(matchNo, callback);
-  }, [isOnline, createLiveScoreCallback]);
+    pollingServiceRef.current.startPolling(matchNo, callback, [], useAdaptivePolling);
+  }, [isOnline, createLiveScoreCallback, useAdaptivePolling]);
 
   // Stop polling for specific match
   const stopPollingMatch = useCallback((matchNo: number) => {
@@ -327,6 +402,24 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
     };
   }, []);
 
+  // Cache configuration functions
+  const getCacheConfigForMatch = useCallback((matchNo: number) => {
+    return getStatusBasedCacheTime(matchNo, useAdaptivePolling);
+  }, [useAdaptivePolling]);
+
+  const getCacheConfig = useCallback(() => {
+    return getCacheConfiguration(useAdaptivePolling, staleTimeMs, cacheTimeMs);
+  }, [useAdaptivePolling, staleTimeMs, cacheTimeMs]);
+
+  // Adaptive polling metrics functions
+  const getAdaptivePollingMetrics = useCallback((timeRangeMs?: number) => {
+    return pollingServiceRef.current?.getAdaptivePollingMetrics?.(timeRangeMs) || null;
+  }, []);
+  
+  const getPerformanceSummary = useCallback((timeRangeMs?: number) => {
+    return pollingServiceRef.current?.getPerformanceSummary?.(timeRangeMs) || null;
+  }, []);
+
   // Derived state
   const isLoading = Object.values(liveScores).some(state => state.isLoading);
   const isPolling = Object.values(liveScores).some(state => state.isPolling);
@@ -342,7 +435,11 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
     stopPollingMatch,
     getLiveScore,
     refreshLiveScores,
-    statistics
+    statistics,
+    getAdaptivePollingMetrics,
+    getPerformanceSummary,
+    getCacheConfigForMatch,
+    getCacheConfig
   };
 }
 

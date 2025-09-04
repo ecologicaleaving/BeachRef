@@ -4,6 +4,8 @@ import { supabase } from './supabase';
 import { RealtimeSubscriptionService, ConnectionState } from './RealtimeSubscriptionService';
 import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
 import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
+import { matchStatusPollingManager } from './MatchStatusPollingManager';
+import { MatchPollingStatus } from '../types/api-v2';
 
 /**
  * Tournament status change event types
@@ -468,9 +470,60 @@ export class TournamentStatusSubscriptionService {
       }
     });
 
+    // Update adaptive polling for match status changes
+    this.updateAdaptivePollingFromEvents(sortedEvents);
+
     // Clear queue and reset timeout
     this.eventQueue = [];
     this.batchTimeout = null;
+  }
+
+  /**
+   * Update adaptive polling manager based on tournament status events
+   */
+  private static updateAdaptivePollingFromEvents(events: TournamentStatusEvent[]): void {
+    events.forEach(event => {
+      // Only process events that include match status changes
+      if (event.changes.status) {
+        const matchNo = this.extractMatchNumber(event);
+        if (matchNo) {
+          const pollingStatus = this.mapStatusToPollingStatus(event.newStatus);
+          matchStatusPollingManager.updateMatchStatus(matchNo, pollingStatus);
+        }
+      }
+    });
+  }
+
+  /**
+   * Extract match number from tournament event (if applicable)
+   */
+  private static extractMatchNumber(event: TournamentStatusEvent): number | null {
+    // In a real implementation, this would extract match number from the event
+    // For now, we'll return null since tournament events don't directly contain match numbers
+    // This would be extended when match-specific events are added
+    return null;
+  }
+
+  /**
+   * Map tournament/match status to polling status
+   */
+  private static mapStatusToPollingStatus(status: string): MatchPollingStatus {
+    switch (status.toLowerCase()) {
+      case 'inprogress':
+      case 'running':
+      case 'live':
+        return MatchPollingStatus.RUNNING;
+      case 'scheduled':
+      case 'upcoming':
+      case 'notstarted':
+        return MatchPollingStatus.SCHEDULED;
+      case 'finished':
+      case 'completed':
+      case 'ended':
+        return MatchPollingStatus.FINISHED;
+      default:
+        return MatchPollingStatus.SCHEDULED;
+    }
   }
 
   /**

@@ -11,10 +11,12 @@ import {
   VisApiSuccessResponse,
   VisApiErrorResponse,
   GetEventListRequest,
+  GetBeachTournamentListRequest,
   GetBeachTournamentRequest,
   GetEventRequest,
   GetBeachMatchListRequest,
   GetBeachRoundRequest,
+  GetBeachRoundListRequest,
   GetBeachLiveRequest,
   VisApiEndpoint,
   RetryConfig,
@@ -33,7 +35,15 @@ const isWebEnvironment = typeof window !== 'undefined';
 export class VisApiClient implements IVisApiClient {
   private readonly config: VisApiClientConfig;
   private readonly retryConfig: RetryConfig;
-  private readonly monitor: RequestMonitor;
+  private monitor: {
+    totalRequests: number;
+    successfulRequests: number;
+    failedRequests: number;
+    avgResponseTimeMs: number;
+    requestsByEndpoint: Record<VisApiEndpoint, number>;
+    errorsByType: Record<string, number>;
+    lastRequestTimestamp: string;
+  };
 
   constructor(config: VisApiClientConfig, retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG) {
     this.config = config;
@@ -45,10 +55,12 @@ export class VisApiClient implements IVisApiClient {
       avgResponseTimeMs: 0,
       requestsByEndpoint: {
         [VisApiEndpoint.GET_EVENT_LIST]: 0,
+        [VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 0,
         [VisApiEndpoint.GET_EVENT]: 0,
         [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND]: 0,
+        [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_LIVE]: 0
       },
       errorsByType: {},
@@ -78,6 +90,32 @@ export class VisApiClient implements IVisApiClient {
       
     } catch (error) {
       this.updateMonitor(VisApiEndpoint.GET_EVENT_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get beach tournament list (VIS compliant endpoint)
+   * Optimized with field selection for performance
+   */
+  async getBeachTournamentList(request: GetBeachTournamentListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      // Build optimized request with field selection
+      const optimizedRequest = {
+        ...request,
+        fields: request.fields || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]
+      };
+
+      const xmlRequest = this.buildGetBeachTournamentListXml(optimizedRequest);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
   }
@@ -158,6 +196,32 @@ export class VisApiClient implements IVisApiClient {
       
     } catch (error) {
       this.updateMonitor(VisApiEndpoint.GET_BEACH_ROUND, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get beach round list (VIS compliant endpoint)
+   * For round information and teams with tournament filtering
+   */
+  async getBeachRoundList(request: GetBeachRoundListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      // Build optimized request with field selection
+      const optimizedRequest = {
+        ...request,
+        fields: request.fields || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_ROUND_LIST]
+      };
+
+      const xmlRequest = this.buildGetBeachRoundListXml(optimizedRequest);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_ROUND_LIST, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_ROUND_LIST, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_ROUND_LIST, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
   }
@@ -388,6 +452,43 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
+   * Build GetBeachTournamentList XML request (VIS API format)
+   * VIS compliant tournament list endpoint with proper filtering
+   */
+  private buildGetBeachTournamentListXml(request: GetBeachTournamentListRequest): string {
+    // Build filter element with attributes - properly escape XML attribute values
+    const filterAttribs: string[] = [];
+    
+    if (request.dateFrom) {
+      filterAttribs.push(`DateFrom="${this.escapeXmlAttribute(request.dateFrom)}"`);
+    }
+    if (request.dateTo) {
+      filterAttribs.push(`DateTo="${this.escapeXmlAttribute(request.dateTo)}"`);
+    }
+    if (request.status) {
+      filterAttribs.push(`Status="${this.escapeXmlAttribute(request.status)}"`);
+    }
+    if (request.gender) {
+      filterAttribs.push(`Gender="${this.escapeXmlAttribute(request.gender)}"`);
+    }
+    if (request.countryCode) {
+      filterAttribs.push(`CountryCode="${this.escapeXmlAttribute(request.countryCode)}"`);
+    }
+    
+    // Build fields list (space-separated) - ensure we always have essential fields
+    const fields = request.fields?.join(' ') || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST].join(' ');
+    
+    // Create simple XML request (no SOAP envelope)
+    const filterElement = filterAttribs.length > 0 
+      ? `<Filter ${filterAttribs.join(' ')} />` 
+      : '';
+    
+    const xmlRequest = `<Request Type="GetBeachTournamentList" Fields="${this.escapeXmlAttribute(fields)}">${filterElement}</Request>`;
+    
+    return xmlRequest;
+  }
+
+  /**
    * Build GetBeachTournament XML request (VIS API format)
    * Based on documentation: <Request Type="GetBeachTournament" No="502" Fields="..." />
    */
@@ -468,6 +569,33 @@ export class VisApiClient implements IVisApiClient {
     const fields = '';
     
     const xmlRequest = `<Request Type="GetBeachRound" Fields="${fields}">
+  <Filter ${filterAttribs.join(' ')} />
+</Request>`;
+    
+    return xmlRequest;
+  }
+
+  /**
+   * Build XML request for GetBeachRoundList endpoint
+   * VIS compliant round list endpoint with tournament filtering
+   */
+  private buildGetBeachRoundListXml(request: GetBeachRoundListRequest): string {
+    const filterAttribs: string[] = [
+      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`
+    ];
+    
+    // Add optional includes
+    if (request.includeTeams !== undefined) {
+      filterAttribs.push(`IncludeTeams="${request.includeTeams}"`);
+    }
+    if (request.includeMatches !== undefined) {
+      filterAttribs.push(`IncludeMatches="${request.includeMatches}"`);
+    }
+    
+    // Build fields list (space-separated) - ensure we always have essential fields
+    const fields = request.fields?.join(' ') || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_ROUND_LIST].join(' ');
+    
+    const xmlRequest = `<Request Type="GetBeachRoundList" Fields="${this.escapeXmlAttribute(fields)}">
   <Filter ${filterAttribs.join(' ')} />
 </Request>`;
     
@@ -610,5 +738,19 @@ export class VisApiClient implements IVisApiClient {
     }
     
     return 'Unknown VIS API error format';
+  }
+
+  /**
+   * Escape XML attribute values to prevent injection attacks
+   * @param value - The attribute value to escape
+   * @returns Escaped XML attribute value
+   */
+  private escapeXmlAttribute(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 }

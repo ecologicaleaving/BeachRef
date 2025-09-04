@@ -10,6 +10,8 @@
 export enum VisApiEndpoint {
   /** Primary endpoint for event/tournament lists */
   GET_EVENT_LIST = 'GetEventList',
+  /** VIS compliant tournament list endpoint */
+  GET_BEACH_TOURNAMENT_LIST = 'GetBeachTournamentList',
   /** Fallback endpoint for tournament location details */
   GET_BEACH_TOURNAMENT = 'GetBeachTournament',
   /** Endpoint for officials/referee data */
@@ -18,6 +20,8 @@ export enum VisApiEndpoint {
   GET_BEACH_MATCH_LIST = 'GetBeachMatchList',
   /** Endpoint for round data */
   GET_BEACH_ROUND = 'GetBeachRound',
+  /** VIS compliant round list endpoint */
+  GET_BEACH_ROUND_LIST = 'GetBeachRoundList',
   /** Endpoint for live score data */
   GET_BEACH_LIVE = 'GetBeachLive'
 }
@@ -51,6 +55,27 @@ export interface GetEventListRequest extends VisApiRequestBase {
   readonly countryCode?: string;
   /** Filter by status */
   readonly status?: string;
+  /** Maximum number of results */
+  readonly maxResults?: number;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
+}
+
+/**
+ * GetBeachTournamentList request parameters
+ * VIS compliant tournament list endpoint
+ */
+export interface GetBeachTournamentListRequest extends VisApiRequestBase {
+  /** Filter by start date (YYYY-MM-DD format) */
+  readonly dateFrom?: string;
+  /** Filter by end date (YYYY-MM-DD format) */
+  readonly dateTo?: string;
+  /** Filter by tournament status */
+  readonly status?: string;
+  /** Filter by gender (M, W) */
+  readonly gender?: string;
+  /** Filter by country code */
+  readonly countryCode?: string;
   /** Maximum number of results */
   readonly maxResults?: number;
   /** Fields to include in response */
@@ -121,6 +146,21 @@ export interface GetBeachRoundRequest extends VisApiRequestBase {
   readonly includeTeams?: boolean;
   /** Include matches in round */
   readonly includeMatches?: boolean;
+}
+
+/**
+ * GetBeachRoundList request parameters
+ * VIS compliant round list endpoint
+ */
+export interface GetBeachRoundListRequest extends VisApiRequestBase {
+  /** Tournament number from VIS */
+  readonly tournamentNo: string;
+  /** Include teams information */
+  readonly includeTeams?: boolean;
+  /** Include matches in round */
+  readonly includeMatches?: boolean;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
 }
 
 /**
@@ -213,6 +253,13 @@ export interface IVisApiClient {
   getEventList(request: GetEventListRequest): Promise<VisApiResponse>;
   
   /**
+   * Get beach tournament list (VIS compliant endpoint)
+   * @param request - GetBeachTournamentList request parameters
+   * @returns Promise with XML response
+   */
+  getBeachTournamentList(request: GetBeachTournamentListRequest): Promise<VisApiResponse>;
+  
+  /**
    * Get beach tournament details (fallback endpoint)
    * @param request - GetBeachTournament request parameters
    * @returns Promise with XML response
@@ -239,6 +286,13 @@ export interface IVisApiClient {
    * @returns Promise with XML response
    */
   getBeachRound(request: GetBeachRoundRequest): Promise<VisApiResponse>;
+  
+  /**
+   * Get beach round list (VIS compliant endpoint)
+   * @param request - GetBeachRoundList request parameters
+   * @returns Promise with XML response
+   */
+  getBeachRoundList(request: GetBeachRoundListRequest): Promise<VisApiResponse>;
   
   /**
    * Get beach live score data
@@ -338,6 +392,9 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
     'No', 'Name', 'Code', 'City', 'Country', 'CountryCode',
     'StartDate', 'EndDate', 'Type', 'Gender', 'Status'
   ],
+  [VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]: [
+    'No', 'Name', 'CountryCode', 'City', 'StartDate', 'EndDate', 'Gender', 'Level', 'Status'
+  ],
   [VisApiEndpoint.GET_BEACH_TOURNAMENT]: [
     'Location', 'Venue', 'Address', 'ContactName', 'ContactEmail',
     'Courts', 'Surface', 'Website'
@@ -351,6 +408,9 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Name', 'Teams', 'Matches', 'Status'
+  ],
+  [VisApiEndpoint.GET_BEACH_ROUND_LIST]: [
+    'No', 'Name', 'Phase', 'Order'
   ],
   [VisApiEndpoint.GET_BEACH_LIVE]: [
     'Version', 'PollDelay', 'Match', 'Sets', 'TeamA', 'TeamB',

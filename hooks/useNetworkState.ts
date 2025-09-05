@@ -93,10 +93,10 @@ export function useNetworkState(): UseNetworkStateReturn {
         setIsInitialized(true);
         
         // console.log('useNetworkState initialized with:', {
-          networkType: initialNetworkState?.type,
-          isConnected: initialNetworkState?.isConnected,
-          qualityScore: initialConnectionQuality?.score,
-        });
+        //   networkType: initialNetworkState?.type,
+        //   isConnected: initialNetworkState?.isConnected,
+        //   qualityScore: initialConnectionQuality?.score,
+        // });
 
       } catch (error) {
         // console.error('Failed to initialize network state in hook:', error);
@@ -115,11 +115,11 @@ export function useNetworkState(): UseNetworkStateReturn {
       setConnectionStats(stats);
 
       // console.log('Network state updated in hook:', {
-        networkType: newNetworkState.type,
-        isConnected: newNetworkState.isConnected,
-        qualityLevel: newConnectionQuality.level,
-        qualityScore: newConnectionQuality.score,
-      });
+      //   networkType: newNetworkState.type,
+      //   isConnected: newNetworkState.isConnected,
+      //   qualityLevel: newConnectionQuality.level,
+      //   qualityScore: newConnectionQuality.score,
+      // });
     });
 
     // Initialize

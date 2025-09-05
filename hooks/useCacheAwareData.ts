@@ -329,10 +329,10 @@ export const useCacheAwareData = <T>(
           
           if (enablePerformanceTracking) {
             // console.debug(`Cache hit for key: ${cacheKey}`, {
-              age,
-              isStale,
-              accessCount: cachedEntry.accessCount
-            });
+            //   age,
+            //   isStale,
+            //   accessCount: cachedEntry.accessCount
+            // });
           }
           
           // If stale-while-revalidate is enabled and data is stale, fetch in background
@@ -373,9 +373,9 @@ export const useCacheAwareData = <T>(
       
       if (enablePerformanceTracking) {
         // console.debug(`Data fetched for key: ${cacheKey}`, {
-          fetchTime,
-          dataSize: JSON.stringify(result).length
-        });
+        //   fetchTime,
+        //   dataSize: JSON.stringify(result).length
+        // });
       }
       
     } catch (err) {

@@ -111,9 +111,9 @@ export const useRepositoryData = <T>(
       // Log performance metrics
       if (process.env.NODE_ENV === 'development') {
         // console.debug(`Repository data fetch completed in ${endTime - startTime}ms`, {
-          cacheHit: hasCache ? (result as any).source === 'cache' : false,
-          dataSize: result ? JSON.stringify(result).length : 0
-        });
+        //   cacheHit: hasCache ? (result as any).source === 'cache' : false,
+        //   dataSize: result ? JSON.stringify(result).length : 0
+        // });
       }
       
     } catch (err) {

@@ -156,10 +156,10 @@ export class ConnectionDiagnostics {
       }
 
       // console.log('Connection health assessment completed:', {
-        overall: health.overall,
-        score: health.score,
-        issuesCount: health.issues.length
-      });
+      //   overall: health.overall,
+      //   score: health.score,
+      //   issuesCount: health.issues.length
+      // });
 
       return health;
 

@@ -111,6 +111,7 @@ export class PollingPerformanceMonitor {
     [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 60,
     [VisApiEndpoint.GET_EVENT]: 40,
     [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 55,
+    [VisApiEndpoint.GET_BEACH_MATCH]: 75, // Individual match has more detailed data
     [VisApiEndpoint.GET_BEACH_ROUND]: 35,
     [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 30,
     [VisApiEndpoint.GET_BEACH_LIVE]: 80,

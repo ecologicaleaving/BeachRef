@@ -191,11 +191,11 @@ export abstract class BaseRepository {
     if (!this.performanceMonitoring) return;
 
     // console.log(`Repository Performance [${operation}]:`, {
-      duration: `${metrics.durationMs}ms`,
-      cacheHit: metrics.cacheHit,
-      cacheTier: metrics.cacheTier,
-      apiCalls: metrics.apiCalls,
-      transformationTime: metrics.transformationMs ? `${metrics.transformationMs}ms` : 'N/A'
-    });
+    //   duration: `${metrics.durationMs}ms`,
+    //   cacheHit: metrics.cacheHit,
+    //   cacheTier: metrics.cacheTier,
+    //   apiCalls: metrics.apiCalls,
+    //   transformationTime: metrics.transformationMs ? `${metrics.transformationMs}ms` : 'N/A'
+    // });
   }
 }

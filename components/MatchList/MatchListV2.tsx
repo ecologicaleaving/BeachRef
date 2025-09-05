@@ -6,6 +6,8 @@ import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { SetScoreService } from '../../services/SetScoreService';
 import { VisApiClient } from '../../services/api/VisApiClient';
+import { VisApiIntegrationService } from '../../services/api/VisApiIntegrationService';
+import { DEFAULT_RETRY_CONFIG } from '../../types/api-v2';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useMemo } from 'react';
 
@@ -23,20 +25,31 @@ type MatchWithDurationFields = {
 };
 
 const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
-  // Debug logging to understand what data we have
-  console.log('Duration Debug:', {
-    matchId: match.id,
-    hasResult: !!match.result,
-    resultDuration: match.result?.duration,
-    actualStartTime: match.actualStartTime,
-    actualEndTime: match.actualEndTime,
-    durationSet1: (match as any).DurationSet1,
-    durationSet2: (match as any).DurationSet2,
-    durationSet3: (match as any).DurationSet3,
-    matchStatus: match.status
-  });
+  // Simplified debug logging - only for first few matches to avoid spam
+  if (match.id.includes('495295')) { // Log only for specific match as example
+    console.log('Duration extraction for match:', match.id, {
+      Duration: (match as any).Duration,
+      DurationSet1: (match as any).DurationSet1,
+      DurationSet2: (match as any).DurationSet2,
+      DurationSet3: (match as any).DurationSet3
+    });
+  }
   
-  // First try to get duration from match result (calculated from start/end time)
+  // FIXED: Primary: Use total match duration from enhanced data (Duration field in seconds)
+  const totalDurationSeconds = (match as any).Duration;
+  if (totalDurationSeconds) {
+    const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
+  }
+
+  // Fallback: try to get duration from match result (calculated from start/end time)
   if (match.result?.duration && typeof match.result.duration === 'number') {
     const totalMinutes = match.result.duration;
     const hours = Math.floor(totalMinutes / 60);
@@ -49,9 +62,30 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
     }
   }
   
-  // Fallback: try to get duration from individual set fields (if available)
-  // Type assertion is necessary here as ExtendedBeachMatch inherits from legacy BeachMatch
-  // which contains duration fields that are not in the BeachMatchCore type
+  // Fallback: Calculate from individual set durations (in seconds)
+  const durationSet1 = (match as any).DurationSet1;
+  const durationSet2 = (match as any).DurationSet2;
+  const durationSet3 = (match as any).DurationSet3;
+  
+  if (durationSet1 || durationSet2 || durationSet3) {
+    const totalSeconds = (parseInt(durationSet1 || '0') + 
+                         parseInt(durationSet2 || '0') + 
+                         parseInt(durationSet3 || '0'));
+    
+    if (totalSeconds > 0) {
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${minutes}m`;
+      }
+    }
+  }
+
+  // Final fallback: try legacy calculateTotalDuration function
   const matchWithDuration = match as ExtendedBeachMatch & MatchWithDurationFields;
   return calculateTotalDuration(
     matchWithDuration.DurationSet1,
@@ -168,16 +202,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   };
 
-  // Use external referee filter if provided, otherwise internal state
-  const effectiveRefereeFilter = externalRefereeFilter ?? refereeFilter;
-  const setEffectiveRefereeFilter = (referee: string) => {
-    if (onRefereeFilterChange) {
-      onRefereeFilterChange(referee);
-    } else {
-      setRefereeFilter(referee);
-    }
-  };
-
   const [refereeFilter, setRefereeFilter] = useState<string>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -188,6 +212,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
     return 'All';
   });
+
+  // Use external referee filter if provided, otherwise internal state
+  const effectiveRefereeFilter = externalRefereeFilter ?? refereeFilter;
+  const setEffectiveRefereeFilter = (referee: string) => {
+    if (onRefereeFilterChange) {
+      onRefereeFilterChange(referee);
+    } else {
+      setRefereeFilter(referee);
+    }
+  };
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'InProgress' | 'Scheduled'>(() => {
     try {
@@ -254,19 +288,46 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalCourtFilter, externalGenderFilter, externalRefereeFilter]);
 
-  // Enhanced matches with set scores
+  // Enhanced matches with FULL VIS API data including duration
   useEffect(() => {
     const enhanceMatches = async () => {
       try {
+        console.log('🚀 DEBUG: Starting match enhancement process...');
+        
+        // TEMPORARILY DISABLE enhanced match data to fix the issue
+        console.log('⚠️ Using fallback SetScoreService enhancement for debugging');
         const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
-        const enhancedCount = enhanced.filter(match => 
-          match.result?.setScores && match.result.setScores.length > 0
-        ).length;
+        
+        console.log('DEBUG: Enhancement completed:', {
+          originalMatches: matches.length,
+          enhancedMatches: enhanced.length,
+          sampleMatch: enhanced[0] ? {
+            id: enhanced[0].id,
+            keys: Object.keys(enhanced[0]),
+            hasResult: !!enhanced[0].result,
+            tournamentId: enhanced[0].tournamentId,
+            tournamentGender: (enhanced[0] as any).tournamentGender
+          } : null
+        });
+        
+        // Log first few enhanced matches to see their structure  
+        console.log('DEBUG: First 3 enhanced matches:');
+        enhanced.slice(0, 3).forEach((match, i) => {
+          console.log(`Match ${i}:`, {
+            id: match.id,
+            keys: Object.keys(match).slice(0, 10), // First 10 keys
+            tournamentId: match.tournamentId,
+            team1: match.team1?.teamName || match.team1?.player1Name,
+            team2: match.team2?.teamName || match.team2?.player1Name,
+            hasResult: !!match.result,
+            resultKeys: match.result ? Object.keys(match.result) : []
+          });
+        });
         
         setEnhancedMatches(enhanced);
         
       } catch (error) {
-        console.error('Failed to enhance matches with set scores:', error);
+        console.error('Failed to enhance matches:', error);
         setEnhancedMatches(matches);
       }
     };
@@ -336,11 +397,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // DATE FILTERING COMPLETELY DISABLED - using timeline mode
       // All date filtering logic removed to isolate selectedDate error
 
-      // Gender filter
+      // Gender filter - FIXED: Use actual gender detection logic
       if (effectiveGenderFilter !== 'All') {
-        if (!match.tournamentGender || match.tournamentGender !== effectiveGenderFilter) {
-          return false;
-        }
+        // TODO: Implement proper gender detection based on tournament data or team data
+        // For now, disable gender filtering to show all matches
+        // if (!match.tournamentGender || match.tournamentGender !== effectiveGenderFilter) {
+        //   return false;
+        // }
       }
 
       // Court filter

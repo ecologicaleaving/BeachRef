@@ -109,10 +109,10 @@ export class RealtimeFallbackService {
    */
   private static handleNetworkStateChange(networkState: NetworkState, connectionQuality: ConnectionQuality): void {
     // console.log('Network state changed:', {
-      type: networkState.type,
-      quality: connectionQuality.score,
-      level: connectionQuality.level,
-    });
+    //   type: networkState.type,
+    //   quality: connectionQuality.score,
+    //   level: connectionQuality.level,
+    // });
 
     // Track connection quality history
     this.connectionQualityHistory.push(connectionQuality.score);

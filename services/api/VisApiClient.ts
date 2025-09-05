@@ -15,6 +15,7 @@ import {
   GetBeachTournamentRequest,
   GetEventRequest,
   GetBeachMatchListRequest,
+  GetBeachMatchRequest,
   GetBeachRoundRequest,
   GetBeachRoundListRequest,
   GetBeachLiveRequest,
@@ -68,6 +69,7 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 0,
         [VisApiEndpoint.GET_EVENT]: 0,
         [VisApiEndpoint.GET_BEACH_MATCH_LIST]: 0,
+        [VisApiEndpoint.GET_BEACH_MATCH]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_LIVE]: 0,
@@ -143,6 +145,8 @@ export class VisApiClient implements IVisApiClient {
         return 40;
       case VisApiEndpoint.GET_BEACH_MATCH_LIST:
         return 55;
+      case VisApiEndpoint.GET_BEACH_MATCH:
+        return 75;
       case VisApiEndpoint.GET_BEACH_ROUND:
         return 35;
       case VisApiEndpoint.GET_BEACH_ROUND_LIST:
@@ -285,6 +289,26 @@ export class VisApiClient implements IVisApiClient {
       
     } catch (error) {
       this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get individual beach match with full details
+   * For detailed match data without overcomplicated mapping
+   */
+  async getBeachMatch(request: GetBeachMatchRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      const xmlRequest = this.buildGetBeachMatchXml(request);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
   }
@@ -549,6 +573,9 @@ export class VisApiClient implements IVisApiClient {
             break;
           case VisApiEndpoint.GET_BEACH_MATCH_LIST:
             response = await this.getBeachMatchList(item.request as GetBeachMatchListRequest);
+            break;
+          case VisApiEndpoint.GET_BEACH_MATCH:
+            response = await this.getBeachMatch(item.request as GetBeachMatchRequest);
             break;
           case VisApiEndpoint.GET_BEACH_ROUND_LIST:
             response = await this.getBeachRoundList(item.request as GetBeachRoundListRequest);
@@ -869,6 +896,39 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
+   * Build GetBeachMatch XML request (VIS API format)
+   * For individual match data retrieval with full details
+   */
+  private buildGetBeachMatchXml(request: GetBeachMatchRequest): string {
+    const filterAttribs = [
+      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`,
+      `No="${this.escapeXmlAttribute(request.matchNo)}"`
+    ];
+    
+    // Add optional includes
+    const includeResults = request.includeResults !== false;
+    const includeReferees = request.includeReferees !== false;
+    const includeTeamDetails = request.includeTeamDetails !== false;
+    const includeSetScores = request.includeSetScores !== false;
+    const includeStatistics = request.includeStatistics !== false;
+    
+    filterAttribs.push(`IncludeResults="${includeResults}"`);
+    filterAttribs.push(`IncludeReferees="${includeReferees}"`);
+    filterAttribs.push(`IncludeTeamDetails="${includeTeamDetails}"`);
+    filterAttribs.push(`IncludeSetScores="${includeSetScores}"`);
+    filterAttribs.push(`IncludeStatistics="${includeStatistics}"`);
+    
+    // Include all available fields for comprehensive match data (no overcomplicated mapping)
+    const fields = '';
+    
+    const xmlRequest = `<Request Type="GetBeachMatch" Fields="${fields}">
+  <Filter ${filterAttribs.join(' ')} />
+</Request>`;
+    
+    return xmlRequest;
+  }
+
+  /**
    * Build XML request for GetBeachRound endpoint
    */
   private buildGetBeachRoundXml(request: GetBeachRoundRequest): string {
@@ -984,6 +1044,9 @@ export class VisApiClient implements IVisApiClient {
           break;
         case VisApiEndpoint.GET_BEACH_MATCH_LIST:
           individualXml = this.buildGetBeachMatchListXml(item.request as GetBeachMatchListRequest);
+          break;
+        case VisApiEndpoint.GET_BEACH_MATCH:
+          individualXml = this.buildGetBeachMatchXml(item.request as GetBeachMatchRequest);
           break;
         case VisApiEndpoint.GET_BEACH_ROUND:
           individualXml = this.buildGetBeachRoundXml(item.request as GetBeachRoundRequest);

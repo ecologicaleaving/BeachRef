@@ -12,10 +12,10 @@ export interface AppError {
 export class ErrorHandler {
   private static logError(error: AppError): void {
     // console.error(`[${error.severity.toUpperCase()}] ${error.code}: ${error.message}`, {
-      source: error.source,
-      details: error.details,
-      timestamp: error.timestamp,
-    });
+    //   source: error.source,
+    //   details: error.details,
+    //   timestamp: error.timestamp,
+    // });
   }
 
   private static shouldShowAlert(severity: AppError['severity']): boolean {

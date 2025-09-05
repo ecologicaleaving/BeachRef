@@ -8,6 +8,7 @@ import { VisApiClient } from './VisApiClient';
 import { 
   GetEventListRequest, 
   GetBeachMatchListRequest,
+  GetBeachMatchRequest,
   VisApiResponse,
   VisApiEndpoint 
 } from '../../types/api-v2';
@@ -219,6 +220,242 @@ export class VisApiIntegrationService {
   }
 
   /**
+   * Get enhanced match list with full individual match data
+   * For each match in BeachMatchList, calls GetBeachMatch to populate all data without overcomplicated mapping
+   */
+  async getMatchesWithEnhancedData(
+    request: Omit<GetBeachMatchListRequest, 'includeResults' | 'includeReferees'>,
+    options: {
+      includeRefereeData?: boolean;
+      includeSetScores?: boolean;
+      includeStatistics?: boolean;
+      parallel?: boolean;
+    } = {}
+  ): Promise<{
+    matches: any[]; // Full raw match objects without complex mapping
+    metrics: {
+      listCall: ApiRequestMetrics;
+      individualCalls: ApiRequestMetrics[];
+      totalDuration: number;
+      enhancedMatches: number;
+    };
+  }> {
+    const startTime = Date.now();
+    
+    try {
+      // Step 1: Get the match list
+      const matchListRequest: GetBeachMatchListRequest = {
+        ...request,
+        includeResults: true,
+        includeReferees: options.includeRefereeData || false
+      };
+
+      const listResponse = await this.apiClient.getBeachMatchList(matchListRequest);
+      
+      if (!listResponse.success) {
+        throw new Error(`BeachMatchList API request failed: ${listResponse.error}`);
+      }
+
+      // Parse initial match list to get match numbers
+      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo);
+      
+      const listMetrics = this.createRequestMetrics(
+        VisApiEndpoint.GET_BEACH_MATCH_LIST,
+        Date.now() - startTime,
+        true,
+        false,
+        listResponse.sizeBytes || 0,
+        0,
+        0,
+        initialMatches.length
+      );
+
+      // Step 2: For each match, call GetBeachMatch to get full data
+      const individualCallMetrics: ApiRequestMetrics[] = [];
+      const enhancedMatches: any[] = [];
+      
+      if (options.parallel) {
+        // Call GetBeachMatch for all matches in parallel
+        const enhancePromises = initialMatches.map(async (match, index) => {
+          const individualStartTime = Date.now();
+          
+          try {
+            const enhancedRequest: GetBeachMatchRequest = {
+              matchNo: match.id, // Use the VIS entity ID which is the match number
+              tournamentNo: request.tournamentNo,
+              includeResults: true,
+              includeReferees: options.includeRefereeData,
+              includeTeamDetails: true,
+              includeSetScores: options.includeSetScores,
+              includeStatistics: options.includeStatistics
+            };
+
+            const enhancedResponse = await this.apiClient.getBeachMatch(enhancedRequest);
+            
+            if (enhancedResponse.success) {
+              // Parse the full match data without complex mapping - return raw parsed data
+              const fullMatchData = this.parseRawMatchData(enhancedResponse.xmlData);
+              
+              const metrics = this.createRequestMetrics(
+                VisApiEndpoint.GET_BEACH_MATCH,
+                Date.now() - individualStartTime,
+                true,
+                false,
+                enhancedResponse.sizeBytes || 0,
+                0,
+                0,
+                Object.keys(fullMatchData).length
+              );
+              
+              return { match: fullMatchData, metrics, index };
+            } else {
+              // Fallback to original match data if individual call fails
+              const metrics = this.createRequestMetrics(
+                VisApiEndpoint.GET_BEACH_MATCH,
+                Date.now() - individualStartTime,
+                false,
+                false,
+                0,
+                0,
+                0,
+                0
+              );
+              
+              return { match, metrics, index };
+            }
+          } catch (error) {
+            // Fallback to original match data on error
+            const metrics = this.createRequestMetrics(
+              VisApiEndpoint.GET_BEACH_MATCH,
+              Date.now() - individualStartTime,
+              false,
+              false,
+              0,
+              0,
+              0,
+              0
+            );
+            
+            return { match, metrics, index };
+          }
+        });
+        
+        const results = await Promise.all(enhancePromises);
+        
+        // Sort results back to original order and extract data
+        results
+          .sort((a, b) => a.index - b.index)
+          .forEach(result => {
+            enhancedMatches.push(result.match);
+            individualCallMetrics.push(result.metrics);
+          });
+        
+      } else {
+        // Call GetBeachMatch for each match sequentially
+        for (const match of initialMatches) {
+          const individualStartTime = Date.now();
+          
+          try {
+            const enhancedRequest: GetBeachMatchRequest = {
+              matchNo: match.id, // Use the VIS entity ID which is the match number
+              tournamentNo: request.tournamentNo,
+              includeResults: true,
+              includeReferees: options.includeRefereeData,
+              includeTeamDetails: true,
+              includeSetScores: options.includeSetScores,
+              includeStatistics: options.includeStatistics
+            };
+
+            const enhancedResponse = await this.apiClient.getBeachMatch(enhancedRequest);
+            
+            if (enhancedResponse.success) {
+              // Parse the full match data without complex mapping - return raw parsed data
+              const fullMatchData = this.parseRawMatchData(enhancedResponse.xmlData);
+              enhancedMatches.push(fullMatchData);
+              
+              const metrics = this.createRequestMetrics(
+                VisApiEndpoint.GET_BEACH_MATCH,
+                Date.now() - individualStartTime,
+                true,
+                false,
+                enhancedResponse.sizeBytes || 0,
+                0,
+                0,
+                Object.keys(fullMatchData).length
+              );
+              
+              individualCallMetrics.push(metrics);
+            } else {
+              // Fallback to original match data if individual call fails
+              enhancedMatches.push(match);
+              
+              const metrics = this.createRequestMetrics(
+                VisApiEndpoint.GET_BEACH_MATCH,
+                Date.now() - individualStartTime,
+                false,
+                false,
+                0,
+                0,
+                0,
+                0
+              );
+              
+              individualCallMetrics.push(metrics);
+            }
+          } catch (error) {
+            // Fallback to original match data on error
+            enhancedMatches.push(match);
+            
+            const metrics = this.createRequestMetrics(
+              VisApiEndpoint.GET_BEACH_MATCH,
+              Date.now() - individualStartTime,
+              false,
+              false,
+              0,
+              0,
+              0,
+              0
+            );
+            
+            individualCallMetrics.push(metrics);
+          }
+        }
+      }
+
+      // Record all metrics
+      this.recordMetrics(listMetrics);
+      individualCallMetrics.forEach(metrics => this.recordMetrics(metrics));
+
+      const totalDuration = Date.now() - startTime;
+
+      return {
+        matches: enhancedMatches,
+        metrics: {
+          listCall: listMetrics,
+          individualCalls: individualCallMetrics,
+          totalDuration,
+          enhancedMatches: individualCallMetrics.filter(m => m.success).length
+        }
+      };
+
+    } catch (error) {
+      const metrics = this.createRequestMetrics(
+        VisApiEndpoint.GET_BEACH_MATCH_LIST,
+        Date.now() - startTime,
+        false,
+        false,
+        0,
+        0,
+        0,
+        0
+      );
+
+      this.recordMetrics(metrics);
+      throw error;
+    }
+  }
+
+  /**
    * Get performance analytics for API usage
    */
   getPerformanceAnalytics(): {
@@ -397,6 +634,104 @@ export class VisApiIntegrationService {
     if (this.requestMetrics.length > 1000) {
       this.requestMetrics.splice(0, this.requestMetrics.length - 1000);
     }
+  }
+
+  /**
+   * Parse raw match data without complex mapping
+   * Returns the match object as-is from the VIS API response
+   */
+  private parseRawMatchData(xmlData: string): any {
+    try {
+      // For now, use the existing VisResponseParser but return raw structure
+      // This method provides access to all VIS API fields without transformation
+      
+      // Simple XML parsing to extract match data as raw object
+      // In a production environment, you'd use fast-xml-parser for better performance
+      const matchDataRegex = /<Match[^>]*>([\s\S]*?)<\/Match>/gi;
+      const matches = Array.from(xmlData.matchAll(matchDataRegex));
+      
+      if (matches.length > 0) {
+        const matchXml = matches[0][0];
+        
+        // Extract all attributes and child elements as raw object
+        const rawMatch: any = {};
+        
+        // Extract attributes from the Match element
+        const attributeRegex = /(\w+)="([^"]*)"/g;
+        let attrMatch;
+        while ((attrMatch = attributeRegex.exec(matchXml)) !== null) {
+          rawMatch[attrMatch[1]] = attrMatch[2];
+        }
+        
+        // Extract child elements
+        const childElementRegex = /<(\w+)(?:[^>]*)>([^<]*)<\/\1>/g;
+        let childMatch;
+        while ((childMatch = childElementRegex.exec(matchXml)) !== null) {
+          const elementName = childMatch[1];
+          const elementValue = childMatch[2];
+          
+          // Don't overwrite attributes with child elements of same name
+          if (!rawMatch[elementName]) {
+            rawMatch[elementName] = elementValue;
+          }
+        }
+        
+        // Also extract complex nested structures (like Sets, Teams, etc.)
+        const setsRegex = /<Sets>([\s\S]*?)<\/Sets>/i;
+        const setsMatch = setsRegex.exec(matchXml);
+        if (setsMatch) {
+          rawMatch.Sets = this.parseNestedXmlStructure(setsMatch[1]);
+        }
+        
+        const teamsRegex = /<Teams>([\s\S]*?)<\/Teams>/i;
+        const teamsMatch = teamsRegex.exec(matchXml);
+        if (teamsMatch) {
+          rawMatch.Teams = this.parseNestedXmlStructure(teamsMatch[1]);
+        }
+        
+        const refereesRegex = /<Referees>([\s\S]*?)<\/Referees>/i;
+        const refereesMatch = refereesRegex.exec(matchXml);
+        if (refereesMatch) {
+          rawMatch.Referees = this.parseNestedXmlStructure(refereesMatch[1]);
+        }
+        
+        return rawMatch;
+      }
+      
+      // Fallback: return empty object if no match found
+      return {};
+      
+    } catch (error) {
+      console.warn('Error parsing raw match data:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Parse nested XML structures into raw objects
+   */
+  private parseNestedXmlStructure(xmlContent: string): any {
+    const result: any = {};
+    
+    // Extract child elements
+    const elementRegex = /<(\w+)(?:[^>]*?)>([^<]*)<\/\1>/g;
+    let match;
+    while ((match = elementRegex.exec(xmlContent)) !== null) {
+      const elementName = match[1];
+      const elementValue = match[2];
+      
+      // Handle arrays of similar elements (like multiple sets)
+      if (result[elementName]) {
+        if (!Array.isArray(result[elementName])) {
+          result[elementName] = [result[elementName]];
+        }
+        result[elementName].push(elementValue);
+      } else {
+        result[elementName] = elementValue;
+      }
+    }
+    
+    return result;
   }
 }
 

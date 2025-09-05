@@ -221,9 +221,9 @@ export function checkMultipleCombinations(
     const status = result.wcagAAA ? '✅ AAA' : result.wcagAA ? '⚠️  AA' : '❌ FAIL';
     
     // console.log(
-      `${index + 1}. ${combo.desc || `${combo.fg} on ${combo.bg}`}: ` +
-      `${result.ratio}:1 ${status}`
-    );
+    //   `${index + 1}. ${combo.desc || `${combo.fg} on ${combo.bg}`}: ` +
+    //   `${result.ratio}:1 ${status}`
+    // );
   });
   
   // console.log('\n======================================\n');

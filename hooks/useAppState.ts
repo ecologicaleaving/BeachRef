@@ -106,10 +106,10 @@ export function useAppState(): UseAppStateReturn {
       setStateHistory(updatedHistory);
 
       // console.log('App state changed in hook:', {
-        from: event.previousState,
-        to: event.currentState,
-        activeConnections: event.activeConnections,
-      });
+      //   from: event.previousState,
+      //   to: event.currentState,
+      //   activeConnections: event.activeConnections,
+      // });
     });
 
     // Set up periodic stats update (every 10 seconds when in background)

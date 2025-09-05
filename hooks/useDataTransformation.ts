@@ -227,11 +227,11 @@ export const useDataTransformation = <T>(
       // Log performance if enabled
       if (enablePerformanceMonitoring) {
         // console.debug(`Data transformation completed in ${transformationTime}ms`, {
-          sourceType,
-          targetType,
-          dataSize: data ? JSON.stringify(data).length : 0,
-          cached: false
-        });
+        //   sourceType,
+        //   targetType,
+        //   dataSize: data ? JSON.stringify(data).length : 0,
+        //   cached: false
+        // });
       }
 
       return {
@@ -251,11 +251,11 @@ export const useDataTransformation = <T>(
       const transformationError = error instanceof Error ? error : new Error('Transformation failed');
       
       // console.error('Data transformation failed:', {
-        error: transformationError.message,
-        transformationType,
-        dataType: data?.constructor?.name,
-        transformationTime
-      });
+      //   error: transformationError.message,
+      //   transformationType,
+      //   dataType: data?.constructor?.name,
+      //   transformationTime
+      // });
 
       return {
         data: null,
@@ -379,11 +379,11 @@ export const useBatchTransformation = <T>(
 
     if (enablePerformanceMonitoring) {
       // console.debug(`Batch transformation completed in ${transformationTime}ms`, {
-        totalItems: dataArray.length,
-        successfulItems: results.length,
-        failedItems: errors.length,
-        transformationType
-      });
+      //   totalItems: dataArray.length,
+      //   successfulItems: results.length,
+      //   failedItems: errors.length,
+      //   transformationType
+      // });
     }
 
     return {

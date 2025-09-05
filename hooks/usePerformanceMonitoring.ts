@@ -373,10 +373,10 @@ export const usePerformanceMonitoring = (
       // In a real implementation, this would send metrics to analytics service
       if (process.env.NODE_ENV === 'development') {
         // console.debug(`Flushing ${metricsBuffer.current.length} performance metrics for ${source}`, {
-          implementation,
-          abTestGroup,
-          metrics: metricsBuffer.current.slice(-5) // Show last 5 metrics
-        });
+        //   implementation,
+        //   abTestGroup,
+        //   metrics: metricsBuffer.current.slice(-5) // Show last 5 metrics
+        // });
       }
 
       // Simulate async flush

@@ -22,6 +22,8 @@ export enum VisApiEndpoint {
   GET_BEACH_ROUND = 'GetBeachRound',
   /** VIS compliant round list endpoint */
   GET_BEACH_ROUND_LIST = 'GetBeachRoundList',
+  /** Endpoint for individual match data */
+  GET_BEACH_MATCH = 'GetBeachMatch',
   /** Endpoint for live score data */
   GET_BEACH_LIVE = 'GetBeachLive',
   /** Endpoint for batch requests */
@@ -133,6 +135,27 @@ export interface GetBeachMatchListRequest extends VisApiRequestBase {
   readonly includeResults?: boolean;
   /** Include referee assignments */
   readonly includeReferees?: boolean;
+}
+
+/**
+ * GetBeachMatch request parameters
+ * For individual match data with full details
+ */
+export interface GetBeachMatchRequest extends VisApiRequestBase {
+  /** Match number from VIS */
+  readonly matchNo: string;
+  /** Tournament number from VIS */
+  readonly tournamentNo: string;
+  /** Include detailed match results */
+  readonly includeResults?: boolean;
+  /** Include referee assignments */
+  readonly includeReferees?: boolean;
+  /** Include team details */
+  readonly includeTeamDetails?: boolean;
+  /** Include set-by-set scores */
+  readonly includeSetScores?: boolean;
+  /** Include match statistics */
+  readonly includeStatistics?: boolean;
 }
 
 /**
@@ -348,6 +371,13 @@ export interface IVisApiClient {
   getBeachMatchList(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
   
   /**
+   * Get individual beach match with full details
+   * @param request - GetBeachMatch request parameters
+   * @returns Promise with XML response
+   */
+  getBeachMatch(request: GetBeachMatchRequest): Promise<VisApiResponse>;
+  
+  /**
    * Get beach round data
    * @param request - GetBeachRound request parameters
    * @returns Promise with XML response
@@ -495,6 +525,13 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
     'MatchNo', 'Court', 'DateTime', 'Status', 'Team1', 'Team2',
     'Result', 'Round', 'Phase', 'Referees'
   ],
+  [VisApiEndpoint.GET_BEACH_MATCH]: [
+    'No', 'NoInTournament', 'LocalDate', 'LocalTime', 'Status', 'Court',
+    'TeamA', 'TeamB', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode',
+    'MatchPointsA', 'MatchPointsB', 'RoundName', 'Round', 'RoundPhase',
+    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FederationCode',
+    'Sets', 'SetScores', 'Statistics', 'Duration'
+  ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Name', 'Teams', 'Matches', 'Status'
   ],
@@ -528,6 +565,9 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
   ],
   [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
     'MatchNo', 'Status', 'DateTime'
+  ],
+  [VisApiEndpoint.GET_BEACH_MATCH]: [
+    'No', 'Status', 'LocalDate', 'LocalTime'
   ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Status'

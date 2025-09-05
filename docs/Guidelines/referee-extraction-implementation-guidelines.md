@@ -1,5 +1,45 @@
 # Referee List Extraction - Implementation Guidelines
 
+## CRITICAL DISCOVERY - Form Parameter Fix
+
+**BREAKING UPDATE**: Through testing, we discovered the correct format for VIS API requests that resolves all `<BadRequestSyntax id="4" />` errors.
+
+### The Critical Fix
+
+**Form Parameter Name**: Use `Request` (NOT `xmlRequest`)
+
+```javascript
+// ✅ CORRECT - This works and returns data
+const formData = new URLSearchParams();
+formData.append('Request', xmlString);
+
+// ❌ INCORRECT - This causes BadRequestSyntax id="4" errors
+formData.append('xmlRequest', xmlString);
+```
+
+### Verified Working Example
+
+This exact XML format **successfully returned 10 referees** with Status 200:
+
+```xml
+<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+    <Filter NoEvent="1554"/>
+  </Request>
+</Requests>
+```
+
+### Key Requirements
+1. **Must use `Request` form parameter** (not `xmlRequest`)
+2. **Must wrap in `<Requests>` tag** (singular, not `<Request>`)
+3. **Must use URLSearchParams** for form data encoding
+4. **Must specify Fields attribute** for all list requests
+
+**This discovery resolves ALL previous BadRequestSyntax errors and enables successful VIS API integration.**
+
+---
+
 ## Overview
 This document provides implementation guidelines for extracting referee lists from VIS API tournaments in the BeachRef application. Based on architectural analysis of the existing codebase and VIS API specifications.
 
@@ -11,15 +51,30 @@ This document provides implementation guidelines for extracting referee lists fr
 - **Key Field Distinction**: `NoReferee` property contains actual referee ID (not registration number)
 - **Required Fields**: Always specify needed properties in `GetXxxList` requests per VIS API requirements
 
-### API Request Pattern
-```xml
-<Request Type="GetEventOfficialList" Fields="FederationCode FirstName Gender LastName NoOfficial Role Status Type">
-  <Filter NoEvent="1601"/>
-</Request>
+### API Request Pattern (Updated with Correct Format)
 
-<Request Type="GetEventRefereeList" Fields="FederationCode FirstName Gender LastName NoReferee Status Type TheoryTest StrongPoints WeakPoints">
-  <Filter NoEvent="1601"/>
-</Request>
+**IMPORTANT**: Always wrap in `<Requests>` and use `Request` form parameter:
+
+```xml
+<Requests>
+  <Request Type="GetEventOfficialList" Fields="FederationCode FirstName Gender LastName NoOfficial Role Status Type">
+    <Filter NoEvent="1601"/>
+  </Request>
+</Requests>
+```
+
+```xml
+<Requests>
+  <Request Type="GetEventRefereeList" Fields="FederationCode FirstName Gender LastName NoReferee Status Type TheoryTest StrongPoints WeakPoints">
+    <Filter NoEvent="1601"/>
+  </Request>
+</Requests>
+```
+
+```javascript
+// Implementation with correct form parameter
+const formData = new URLSearchParams();
+formData.append('Request', xmlString); // NOT 'xmlRequest'
 ```
 
 ## Implementation Architecture
@@ -142,10 +197,13 @@ const matches = await getBeachMatchList({
 ## Technical Notes
 
 ### VIS API Specifics
+- **CRITICAL**: Use `Request` form parameter (NOT `xmlRequest`) - this resolves all BadRequestSyntax errors
+- **CRITICAL**: Always wrap requests in `<Requests>` tags - this is mandatory
 - Registration number ≠ Referee ID (use `NoReferee` for actual referee identification)
 - Field specification is mandatory for all `GetXxxList` requests
 - XML response parsing follows existing patterns
-- Form data encoding required (not SOAP)
+- Form data encoding with URLSearchParams required (not SOAP)
+- **BadRequestSyntax id="4" errors** are resolved by using correct form parameter name
 
 ### Performance Considerations
 - Daily cache TTL perfectly matches referee data stability

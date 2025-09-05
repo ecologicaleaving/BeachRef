@@ -14,6 +14,7 @@ import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
+import { TournamentOperationsService } from '../services/TournamentOperationsService';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -579,6 +580,127 @@ const TournamentDetailScreenContent: React.FC = () => {
     router.back();
   };
 
+  // VIS API referee request with correct format
+  const loadDirectRefereeList = async () => {
+    try {
+      const NoEvent = tournament.visNo; // Use current tournament's event number
+      
+      const xml = `<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+    <Filter NoEvent="${NoEvent}"/>
+  </Request>
+</Requests>`;
+
+      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: "POST",
+        headers: {
+          "Accept": "application/xml",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ Request: xml })
+      });
+      
+      if (response.ok) {
+        const xmlResponse = await response.text();
+        
+        // Parse and display referee data
+        const referees = parseRefereeXML(xmlResponse);
+        
+        console.log(`Referees (${referees.length}):`);
+        referees.forEach((ref, index) => {
+          console.log(`${index + 1}. ${ref.firstName} ${ref.lastName} - ID: ${ref.noReferee}`);
+        });
+      }
+    } catch (error) {
+      // Silent fail
+    }
+  };
+
+  // Parse referee XML response
+  const parseRefereeXML = (xmlString: string) => {
+    const referees: any[] = [];
+    
+    // Extract referee data using regex (simple parsing)
+    const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
+    
+    if (refereeMatches) {
+      refereeMatches.forEach(match => {
+        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
+        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
+        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
+        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
+        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
+        
+        referees.push({
+          noReferee,
+          firstName,
+          lastName,
+          federationCode,
+          gender
+        });
+      });
+    }
+    
+    return referees;
+  };
+
+  // Load and log referee data using the referee assignment service from Story 1.3
+  const loadRefereeData = async () => {
+    try {
+      const tournamentNo = tournament.visNo;
+      
+      console.log('🏐 =============================================');
+      console.log('🏐 REFEREE EXTRACTION EPIC - STORY 1.3 RESULTS');
+      console.log('🏐 =============================================');
+      console.log('🏐 Tournament:', tournament.title || tournament.name || 'Unknown');
+      console.log('🏐 Tournament No:', tournamentNo);
+      
+      // Test all the referee methods we implemented in Story 1.3
+      console.log('🔍 Testing getAllRefereesForTournament...');
+      const allReferees = await TournamentOperationsService.getTournamentReferees(tournamentNo);
+      console.log('✅ All Referees for Tournament:', allReferees);
+      console.log('📊 Total Referees Found:', allReferees.length);
+      
+      console.log('🔍 Testing getTournamentRefereeData...');
+      const refereeData = await TournamentOperationsService.getTournamentRefereeData(tournamentNo);
+      console.log('✅ Tournament Referee Data:', refereeData);
+      
+      if (refereeData) {
+        console.log('📊 Officials Count:', refereeData.officials?.length || 0);
+        console.log('📊 Referees Count:', refereeData.referees?.length || 0);
+        console.log('📅 Data Timestamp:', refereeData.timestamp);
+        console.log('⏰ Expires At:', refereeData.expiresAt);
+      }
+      
+      console.log('🔍 Testing hasTournamentRefereeData...');
+      const hasRefereeData = await TournamentOperationsService.hasTournamentRefereeData(tournamentNo);
+      console.log('✅ Has Referee Data:', hasRefereeData);
+      
+      // Test individual referee lookup if we have referees
+      if (allReferees.length > 0) {
+        const firstReferee = allReferees[0];
+        console.log('🔍 Testing getRefereeForTournament for:', firstReferee.name);
+        const refereeProfile = await TournamentOperationsService.getRefereeForTournament(firstReferee.id, tournamentNo);
+        console.log('✅ Referee Profile:', refereeProfile);
+      }
+      
+      console.log('🏐 =============================================');
+      console.log('🏐 SUMMARY:');
+      console.log('🏐 - Total Referees:', allReferees.length);
+      console.log('🏐 - Has Referee Data:', hasRefereeData);
+      console.log('🏐 - Cache/API Status:', refereeData ? 'SUCCESS' : 'NO DATA');
+      console.log('🏐 =============================================');
+      
+    } catch (error) {
+      console.error('❌ Error loading referee data:', error);
+      console.log('🏐 =============================================');
+      console.log('🏐 REFEREE DATA LOADING FAILED');
+      console.log('🏐 Error:', error);
+      console.log('🏐 =============================================');
+    }
+  };
+
   // Load detailed tournament information and parse ALL available data
   const loadTournamentDetails = async () => {
     if (!tournament.visNo) return;
@@ -830,6 +952,12 @@ const TournamentDetailScreenContent: React.FC = () => {
       // TEMPORARILY DISABLED - loadTournamentDetails() restituisce dati sbagliati (Locarno instead of Baden)
       // loadTournamentDetails();
       loadMatches();
+      
+      // Disabled verbose referee logging
+      // loadRefereeData();
+      
+      // Also test direct API call with proper NoEvent
+      loadDirectRefereeList();
     }
     
     // Clear expired caches on first load
@@ -838,9 +966,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     });
   }, [tournament.visNo, tournamentData]); // Added tournamentData as dependency
 
-  // Debug effect for MatchList render
-  useEffect(() => {
-  }, [matches, matchesLoading]); // Removed activeTab dependency
+  // Clean up - removed debug effect
 
 
   // Handle status bar press - navigate to assignments if available
@@ -1116,6 +1242,30 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         )}
       </ScrollView>
+      
+      {/* Bottom Tab Menu */}
+      <View style={styles.bottomTabMenu}>
+        <TouchableOpacity 
+          style={[styles.tabButton, styles.activeTab]}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabText, styles.activeTabText]}>Results</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.tabButton}
+          onPress={() => router.push({
+            pathname: '/tournament-ref',
+            params: { 
+              tournamentNo: tournament.visNo,
+              tournamentName: tournament.name || tournament.title
+            }
+          })}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.tabText}>Referees</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -1699,6 +1849,36 @@ const styles = StyleSheet.create({
   },
   dropdownItemTextActive: {
     color: '#3B82F6',
+    fontWeight: '600',
+  },
+
+  // Bottom Tab Menu Styles
+  bottomTabMenu: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  activeTab: {
+    backgroundColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  activeTabText: {
+    color: colors.surface,
     fontWeight: '600',
   },
 

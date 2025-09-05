@@ -1,6 +1,44 @@
 # VIS Beach Implementation Guide
 
-> Documento operativo per valutare lo stato di implementazione della web/app basata su Expo (React/TS) e l’integrazione con VIS WebService.
+> Documento operativo per valutare lo stato di implementazione della web/app basata su Expo (React/TS) e l'integrazione con VIS WebService.
+
+## CRITICAL DISCOVERY - Form Parameter Fix
+
+**IMPORTANT UPDATE**: Through testing, we discovered the correct format for VIS API requests. **All previous `<BadRequestSyntax id="4" />` errors were caused by using the wrong form parameter name**.
+
+### Working Request Format
+
+**Correct form parameter**: Use `Request` (NOT `xmlRequest`)
+
+```javascript
+// CORRECT - Use URLSearchParams with 'Request' parameter
+const formData = new URLSearchParams();
+formData.append('Request', xmlString);
+
+// INCORRECT - This causes BadRequestSyntax errors  
+formData.append('xmlRequest', xmlString);
+```
+
+### Verified Working Example
+
+This XML format successfully returned 10 referees with Status 200:
+
+```xml
+<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+    <Filter NoEvent="1554"/>
+  </Request>
+</Requests>
+```
+
+### Key Requirements
+1. **Always wrap requests in `<Requests>` tag** - This is mandatory
+2. **Use `Request` form parameter** - Not `xmlRequest`
+3. **Use URLSearchParams for form data** - Standard HTTP form encoding
+4. **Include proper field selection** - Specify needed fields in `Fields` attribute
+
+This discovery resolves all BadRequestSyntax errors and enables successful VIS API integration.
 
 ---
 
@@ -266,7 +304,7 @@ Una richiesta **batched** riduce la latenza di andata/ritorno:
 
   * `Fields`: `NoOfficial,FirstName,LastName,Role,Status`
 
-**Batch consigliato**
+**Batch consigliato** (usando il formato corretto con parametro `Request`):
 
 ```xml
 <Requests>
@@ -275,6 +313,12 @@ Una richiesta **batched** riduce la latenza di andata/ritorno:
     <Filter NoEvent="{EVENT_NO}" />
   </Request>
 </Requests>
+```
+
+```javascript
+// Invio corretto con URLSearchParams
+const formData = new URLSearchParams();
+formData.append('Request', xmlString);
 ```
 
 **Cache**

@@ -74,13 +74,20 @@ const ExpandedFiltersView: React.FC<{
       return [];
     }
     
-    const allReferees = matches.flatMap(m => {
-      const referees = m.refereeAssignments?.map(ref => ref.refereeName) || [];
-      return referees;
+    const allReferees: string[] = [];
+    
+    matches.forEach(match => {
+      // Extract referees from Referee1Name and Referee2Name fields
+      if (match.Referee1Name && match.Referee1Name.trim()) {
+        allReferees.push(match.Referee1Name.trim());
+      }
+      if (match.Referee2Name && match.Referee2Name.trim()) {
+        allReferees.push(match.Referee2Name.trim());
+      }
     });
     
     const uniqueReferees = Array.from(new Set(allReferees)).filter(Boolean).sort();
-    console.log('🏐 Referees from matches:', uniqueReferees.length, uniqueReferees.slice(0, 5));
+    console.log('🏐 Referees extracted from matches:', uniqueReferees.length, 'referees:', uniqueReferees.slice(0, 5));
     return uniqueReferees;
   }, [matches]);
 
@@ -1369,7 +1376,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                   emptyMessage={(() => {
                     const status = getTournamentStatus();
                     if (status === 'COMPLETED') {
-                      return "Match data not available for this completed tournament";
+                      return "Loading completed tournament matches...";
                     } else if (status === 'SCHEDULED') {
                       return "Matches will be available when the tournament starts";
                     }

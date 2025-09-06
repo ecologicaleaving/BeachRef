@@ -759,9 +759,16 @@ export class CacheService {
       return [];
     }
     
-    // TODO: Parse XML response to BeachMatch objects
-    // For now, returning empty array to prevent breaking the build
-    return [];
+    // Parse XML response to BeachMatch objects using VisResponseParser
+    try {
+      const { VisResponseParser } = await import('./parsing/VisResponseParser');
+      const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentNo);
+      console.log(`✅ CacheService: Parsed ${matches.length} matches for tournament ${tournamentNo}`);
+      return matches;
+    } catch (error) {
+      console.error(`❌ CacheService: Failed to parse matches for tournament ${tournamentNo}:`, error);
+      return [];
+    }
   }
 
   // Referee cache tier methods

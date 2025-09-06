@@ -593,9 +593,6 @@ function TournamentRefScreenContent() {
   const loadReferees = async () => {
     if (!tournamentNo) return;
     
-    // Run the Davide Crescentini test first
-    await testDavideCrescentini();
-    
     setLoading(true);
     try {
       // Determine tournament status and use appropriate approach
@@ -1054,6 +1051,9 @@ function TournamentRefScreenContent() {
 
 
   useEffect(() => {
+    // Run Davide Crescentini test immediately
+    testDavideCrescentini();
+    
     loadReferees();
   }, [tournamentNo]);
 

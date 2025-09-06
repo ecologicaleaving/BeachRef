@@ -682,48 +682,34 @@ function TournamentRefScreenContent() {
 
   // Helper function to parse XML response into match objects
   const parseMatchesFromXML = (xmlText: string) => {
-    console.log('🏐 TournamentRef: Parsing XML, first 500 chars:', xmlText.substring(0, 500));
-    
     const matches: any[] = [];
     
     try {
-      // Try multiple parsing approaches since XML structure might vary
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
       
-      // Check for parsing errors
-      const parserError = xmlDoc.querySelector('parsererror');
-      if (parserError) {
-        console.error('🏐 TournamentRef: XML parsing error:', parserError.textContent);
-      }
-      
       // Try different possible XML structures
       const selectors = [
-        'BeachMatch', // Direct BeachMatch elements
-        'Beachvolleyball > BeachMatch', // Nested under Beachvolleyball
-        'Response > BeachMatch', // Nested under Response
-        'Responses > Response > BeachMatch' // Multiple levels
+        'BeachMatch',
+        'Beachvolleyball > BeachMatch',
+        'Response > BeachMatch',
+        'Responses > Response > BeachMatch'
       ];
       
       let matchNodes: NodeListOf<Element> | null = null;
       for (const selector of selectors) {
         matchNodes = xmlDoc.querySelectorAll(selector);
         if (matchNodes.length > 0) {
-          console.log(`🏐 TournamentRef: Found ${matchNodes.length} matches using selector: ${selector}`);
           break;
         }
       }
       
       if (!matchNodes || matchNodes.length === 0) {
-        console.log('🏐 TournamentRef: No matches found with any selector, trying regex approach...');
-        
         // Fallback: Use regex to extract BeachMatch elements
         const matchRegex = /<BeachMatch[^>]*>/g;
         const regexMatches = [...xmlText.matchAll(matchRegex)];
         
-        console.log(`🏐 TournamentRef: Regex found ${regexMatches.length} BeachMatch elements`);
-        
-        regexMatches.forEach((matchStr, index) => {
+        regexMatches.forEach((matchStr) => {
           const match: any = {};
           const fullMatch = matchStr[0];
           
@@ -734,15 +720,11 @@ function TournamentRefScreenContent() {
             match[attrMatch[1]] = attrMatch[2];
           }
           
-          if (index === 0) {
-            console.log('🏐 TournamentRef: Sample parsed match (regex):', match);
-          }
-          
           matches.push(match);
         });
       } else {
         // Use DOM parsing
-        matchNodes.forEach((matchNode, index) => {
+        matchNodes.forEach((matchNode) => {
           const match: any = {};
           
           // Extract all attributes from the match node
@@ -752,18 +734,12 @@ function TournamentRefScreenContent() {
             match[attr.name] = attr.value;
           }
           
-          if (index === 0) {
-            console.log('🏐 TournamentRef: Sample parsed match (DOM):', match);
-          }
-          
           matches.push(match);
         });
       }
       
-      console.log(`🏐 TournamentRef: Successfully parsed ${matches.length} matches`);
-      
     } catch (error) {
-      console.error('🏐 TournamentRef: Error parsing XML:', error);
+      // Silent fail
     }
     
     return matches;
@@ -795,7 +771,6 @@ function TournamentRefScreenContent() {
       }
 
       const xmlResponse = await response.text();
-      console.log(`🏐 GetReferee API response for ${noReferee}:`, xmlResponse.substring(0, 500));
       return parseRefereeDetailsFromXML(xmlResponse, noReferee);
     } catch (error) {
       console.error(`Failed to fetch referee details for ${noReferee}:`, error);
@@ -857,25 +832,11 @@ function TournamentRefScreenContent() {
 
   const loadRefereesFromPassedMatchData = async (): Promise<void> => {
     try {
-      console.log('🏐 TournamentRef: Using passed match data to extract referees');
-      
       if (!matchData) {
-        console.log('🏐 TournamentRef: No match data passed, falling back to API');
         return;
       }
       
       const matches = JSON.parse(matchData);
-      console.log(`🏐 TournamentRef: Using ${matches.length} matches from passed data`);
-      
-      if (matches.length > 0) {
-        console.log(`🏐 TournamentRef: Sample match data:`, {
-          sampleMatch: {
-            Referee1Name: matches[0]?.Referee1Name,
-            Referee2Name: matches[0]?.Referee2Name,
-            allFields: Object.keys(matches[0] || {})
-          }
-        });
-      }
       
       // Extract referee information from passed match data (names + NoReferee IDs)
       const refereeMap = new Map<string, {name: string, noReferee?: string}>();
@@ -901,12 +862,6 @@ function TournamentRefScreenContent() {
       });
       
       const refereeList = Array.from(refereeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-      console.log(`🏐 TournamentRef: Found ${refereeList.length} unique referees with IDs:`);
-      refereeList.forEach((ref, idx) => {
-        if (idx < 5) { // Log first 5 for debugging
-          console.log(`  ${idx + 1}. "${ref.name}" -> NoReferee: "${ref.noReferee}" (${ref.noReferee ? 'HAS ID' : 'NO ID'})`);
-        }
-      });
       
       // Fetch complete referee data for each referee with NoReferee ID
       const completeReferees = await Promise.all(
@@ -915,11 +870,10 @@ function TournamentRefScreenContent() {
             try {
               const completeData = await fetchRefereeDetails(referee.noReferee);
               if (completeData) {
-                console.log(`🏐 TournamentRef: Got complete data for ${referee.name}:`, completeData);
                 return completeData;
               }
             } catch (error) {
-              console.error(`🏐 TournamentRef: Failed to fetch details for ${referee.name}:`, error);
+              // Silent fail for individual referee fetches
             }
           }
           
@@ -938,7 +892,6 @@ function TournamentRefScreenContent() {
       
       const extractedReferees = completeReferees.filter(Boolean) as Referee[];
       
-      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
       setReferees(extractedReferees);
     } catch (error) {
       console.error('❌ TournamentRef: Error parsing passed match data:', error);
@@ -1028,7 +981,6 @@ function TournamentRefScreenContent() {
         };
       });
       
-      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
       setReferees(extractedReferees);
     } catch (error) {
       console.error('❌ TournamentRef: Error in loadRefereesFromMatchList:', error);

@@ -1475,7 +1475,9 @@ const TournamentDetailScreenContent: React.FC = () => {
               startDate: tournament.dates.startDate,
               endDate: tournament.dates.endDate,
               status: tournament.status
-            })
+            }),
+            // Pass already-loaded match data to avoid duplicate API calls
+            matchData: matches ? JSON.stringify(matches.slice(0, 100)) : undefined // Limit to 100 matches to avoid URL size issues
           }
         })}
         activeOpacity={0.8}

@@ -498,10 +498,11 @@ interface TournamentInfo {
 }
 
 function TournamentRefScreenContent() {
-  const { tournamentNo, tournamentName, tournamentData } = useLocalSearchParams<{
+  const { tournamentNo, tournamentName, tournamentData, matchData } = useLocalSearchParams<{
     tournamentNo: string;
     tournamentName: string;
     tournamentData?: string;
+    matchData?: string;
   }>();
 
   // Parse tournament data to determine status-based logic
@@ -617,9 +618,69 @@ function TournamentRefScreenContent() {
     return matches;
   };
 
-  const loadRefereesFromMatchList = async (): Promise<void> => {
+  const loadRefereesFromPassedMatchData = (): void => {
     try {
-      console.log('🏐 TournamentRef: Starting loadRefereesFromMatchList for tournament', tournamentNo);
+      console.log('🏐 TournamentRef: Using passed match data to extract referees');
+      
+      if (!matchData) {
+        console.log('🏐 TournamentRef: No match data passed, falling back to API');
+        return;
+      }
+      
+      const matches = JSON.parse(matchData);
+      console.log(`🏐 TournamentRef: Using ${matches.length} matches from passed data`);
+      
+      if (matches.length > 0) {
+        console.log(`🏐 TournamentRef: Sample match data:`, {
+          sampleMatch: {
+            Referee1Name: matches[0]?.Referee1Name,
+            Referee2Name: matches[0]?.Referee2Name,
+            allFields: Object.keys(matches[0] || {})
+          }
+        });
+      }
+      
+      // Extract referee names from passed match data
+      const refereeNames = matches
+        .flatMap(match => [match.Referee1Name, match.Referee2Name])
+        .filter((referee): referee is string => !!referee?.trim())
+        .filter((referee, index, array) => array.indexOf(referee) === index)
+        .sort();
+      
+      console.log(`🏐 TournamentRef: Found ${refereeNames.length} unique referees:`, refereeNames.slice(0, 5));
+      
+      // Convert to Referee objects
+      const extractedReferees: Referee[] = refereeNames.map(name => {
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        return {
+          noReferee: name.toLowerCase().replace(/\s+/g, '_'),
+          firstName,
+          lastName,
+          federationCode: '', // Not available from match data
+          gender: '' // Not available from match data
+        };
+      });
+      
+      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
+      setReferees(extractedReferees);
+    } catch (error) {
+      console.error('❌ TournamentRef: Error parsing passed match data:', error);
+    }
+  };
+
+  const loadRefereesFromMatchList = async (): Promise<void> => {
+    // First try to use passed match data
+    if (matchData) {
+      loadRefereesFromPassedMatchData();
+      return;
+    }
+    
+    // Fallback to API call if no match data passed
+    try {
+      console.log('🏐 TournamentRef: No passed match data, making API call for tournament', tournamentNo);
       
       // Use direct API call instead of dynamic import to avoid path issues
       const xml = `<Requests>

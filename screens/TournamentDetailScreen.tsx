@@ -238,26 +238,29 @@ const ExpandedFiltersView: React.FC<{
                     All Referees
                   </Text>
                 </TouchableOpacity>
-                {refereeNames.map((referee) => (
-                  <TouchableOpacity
-                    key={referee}
-                    style={[
-                      styles.dropdownItem,
-                      refereeFilter === referee && styles.dropdownItemActive
-                    ]}
-                    onPress={() => {
-                      setRefereeFilter(referee);
-                      setShowRefereeDropdown(false);
-                    }}
-                  >
-                    <Text style={[
-                      styles.dropdownItemText,
-                      refereeFilter === referee && styles.dropdownItemTextActive
-                    ]} numberOfLines={2}>
-                      {referee}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {(() => {
+                  console.log('🏐 DROPDOWN RENDER: refereeNames =', refereeNames);
+                  return refereeNames.map((referee) => (
+                    <TouchableOpacity
+                      key={referee}
+                      style={[
+                        styles.dropdownItem,
+                        refereeFilter === referee && styles.dropdownItemActive
+                      ]}
+                      onPress={() => {
+                        setRefereeFilter(referee);
+                        setShowRefereeDropdown(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownItemText,
+                        refereeFilter === referee && styles.dropdownItemTextActive
+                      ]} numberOfLines={2}>
+                        {referee}
+                      </Text>
+                    </TouchableOpacity>
+                  ));
+                })()}
               </ScrollView>
             </View>
           )}

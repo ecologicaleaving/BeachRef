@@ -8,6 +8,7 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { FlagImage } from '../components/FlagImage';
+import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 
 interface Referee {
   noReferee: string;
@@ -23,20 +24,6 @@ interface RefereeStats {
   matchesAsSecond: number;
   menMatches: number;
   womenMatches: number;
-}
-
-interface SeasonStats extends RefereeStats {
-  season: string;
-  averageRating?: number;
-  tournaments: number;
-}
-
-interface CareerStats extends RefereeStats {
-  yearsActive: number;
-  totalTournaments: number;
-  averageRating?: number;
-  specializations?: string[];
-  achievements?: string[];
 }
 
 type StatsTab = 'Current' | 'Season' | 'Career';
@@ -57,6 +44,12 @@ const RefereeCard = ({
   const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
   const [activeTab, setActiveTab] = useState<StatsTab>('Current');
   const [loadingStats, setLoadingStats] = useState(false);
+
+  // Helper function to display "N/D" for undefined values
+  const displayValue = (value: number | undefined): string => {
+    if (value === undefined || value === 0) return 'N/D';
+    return value.toString();
+  };
 
   // Don't render if no name data
   if (!referee.firstName.trim() && !referee.lastName.trim()) {
@@ -147,14 +140,14 @@ const RefereeCard = ({
         if (index < 2) console.log(`Sample match ${index}:`, match);
         const referee1Name = match.match(/Referee1Name="([^"]*)"/)?.[1] || '';
         const referee2Name = match.match(/Referee2Name="([^"]*)"/)?.[1] || '';
-        const teamAFed = match.match(/TeamAFederationCode="([^"]*)"/)?.[1] || '';
-        const teamBFed = match.match(/TeamBFederationCode="([^"]*)"/)?.[1] || '';
+        // const teamAFed = match.match(/TeamAFederationCode="([^"]*)"/)?.[1] || '';
+        // const teamBFed = match.match(/TeamBFederationCode="([^"]*)"/)?.[1] || '';
         const roundName = match.match(/RoundName="([^"]*)"/)?.[1] || '';
 
         if (index < 2) console.log(`Match ${index} refs: "${referee1Name}" | "${referee2Name}" | Round: "${roundName}"`);
 
         // Match referee names (case-insensitive partial match)
-        const fullRefereeName = `${referee.firstName} ${referee.lastName}`.toLowerCase().trim();
+        // const fullRefereeName = `${referee.firstName} ${referee.lastName}`.toLowerCase().trim();
         const isFirstRef = referee1Name.toLowerCase().includes(referee.firstName.toLowerCase()) && 
                           referee1Name.toLowerCase().includes(referee.lastName.toLowerCase());
         const isSecondRef = referee2Name.toLowerCase().includes(referee.firstName.toLowerCase()) && 
@@ -199,38 +192,24 @@ const RefereeCard = ({
     };
   };
 
-  const generateSeasonStats = (currentStats: RefereeStats): SeasonStats => {
-    // Generate mock season stats (extended from current tournament)
-    const seasonMultiplier = Math.floor(Math.random() * 5) + 3; // 3-7x tournament data
-    return {
-      season: new Date().getFullYear().toString(),
-      totalMatches: currentStats.totalMatches * seasonMultiplier,
-      matchesAsFirst: currentStats.matchesAsFirst * seasonMultiplier,
-      matchesAsSecond: currentStats.matchesAsSecond * seasonMultiplier,
-      menMatches: currentStats.menMatches * seasonMultiplier,
-      womenMatches: currentStats.womenMatches * seasonMultiplier,
-      tournaments: Math.floor(Math.random() * 8) + 3,
-      averageRating: Math.round((Math.random() * 2 + 8) * 10) / 10, // 8.0-10.0
-    };
+  const loadSeasonStats = async (refereeId: string, season?: string, tournamentNo?: string): Promise<SeasonStats | null> => {
+    try {
+      const seasonStats = await RefereeStatsService.getSeasonStats(refereeId, season, tournamentNo);
+      return seasonStats;
+    } catch (error) {
+      console.error('Error loading season stats:', error);
+      return null;
+    }
   };
 
-  const generateCareerStats = (currentStats: RefereeStats): CareerStats => {
-    // Generate mock career stats (much larger than season)
-    const careerMultiplier = Math.floor(Math.random() * 20) + 15; // 15-35x tournament data
-    const yearsActive = Math.floor(Math.random() * 10) + 5; // 5-15 years
-    
-    return {
-      yearsActive,
-      totalMatches: currentStats.totalMatches * careerMultiplier,
-      matchesAsFirst: currentStats.matchesAsFirst * careerMultiplier,
-      matchesAsSecond: currentStats.matchesAsSecond * careerMultiplier,
-      menMatches: currentStats.menMatches * careerMultiplier,
-      womenMatches: currentStats.womenMatches * careerMultiplier,
-      totalTournaments: Math.floor(Math.random() * 50) + 30,
-      averageRating: Math.round((Math.random() * 1.5 + 8.5) * 10) / 10, // 8.5-10.0
-      specializations: ['Beach Volleyball', 'International Events'],
-      achievements: ['FIVB Certified', 'Olympic Games Official'],
-    };
+  const loadCareerStats = async (refereeId: string, tournamentNo?: string): Promise<CareerStats | null> => {
+    try {
+      const careerStats = await RefereeStatsService.getCareerStats(refereeId, tournamentNo);
+      return careerStats;
+    } catch (error) {
+      console.error('Error loading career stats:', error);
+      return null;
+    }
   };
 
   const handleCardPress = () => {
@@ -272,14 +251,22 @@ const RefereeCard = ({
               <TouchableOpacity
                 key={tab}
                 style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
-                onPress={() => {
+                onPress={async () => {
                   setActiveTab(tab);
-                  // Generate additional stats when switching to Season/Career tabs
-                  if (tab === 'Season' && stats && !seasonStats) {
-                    setSeasonStats(generateSeasonStats(stats));
+                  // Load additional stats when switching to Season/Career tabs
+                  if (tab === 'Season' && !seasonStats) {
+                    const refereeId = `${referee.firstName} ${referee.lastName}`.trim();
+                    const seasonData = await loadSeasonStats(refereeId, undefined, tournamentNo);
+                    if (seasonData) {
+                      setSeasonStats(seasonData);
+                    }
                   }
-                  if (tab === 'Career' && stats && !careerStats) {
-                    setCareerStats(generateCareerStats(stats));
+                  if (tab === 'Career' && !careerStats) {
+                    const refereeId = `${referee.firstName} ${referee.lastName}`.trim();
+                    const careerData = await loadCareerStats(refereeId, tournamentNo);
+                    if (careerData) {
+                      setCareerStats(careerData);
+                    }
                   }
                 }}
               >
@@ -300,27 +287,27 @@ const RefereeCard = ({
                   <Text style={styles.tabTitle}>Tournament Stats</Text>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.totalMatches}</Text>
+                      <Text style={styles.statNumber}>{displayValue(stats.totalMatches)}</Text>
                       <Text style={styles.statLabel}>Total Matches</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
+                      <Text style={styles.statNumber}>{displayValue(stats.matchesAsFirst)}</Text>
                       <Text style={styles.statLabel}>As 1st Referee</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
+                      <Text style={styles.statNumber}>{displayValue(stats.matchesAsSecond)}</Text>
                       <Text style={styles.statLabel}>As 2nd Referee</Text>
                     </View>
                   </View>
                   <View style={styles.divider} />
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.menMatches}</Text>
-                      <Text style={styles.statLabel}>Men's Matches</Text>
+                      <Text style={styles.statNumber}>{displayValue(stats.menMatches)}</Text>
+                      <Text style={styles.statLabel}>Men&apos;s Matches</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{stats.womenMatches}</Text>
-                      <Text style={styles.statLabel}>Women's Matches</Text>
+                      <Text style={styles.statNumber}>{displayValue(stats.womenMatches)}</Text>
+                      <Text style={styles.statLabel}>Women&apos;s Matches</Text>
                     </View>
                   </View>
                 </View>
@@ -331,26 +318,26 @@ const RefereeCard = ({
                   <Text style={styles.tabTitle}>Season {seasonStats.season} Stats</Text>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.totalMatches}</Text>
+                      <Text style={styles.statNumber}>{displayValue(seasonStats.totalMatches)}</Text>
                       <Text style={styles.statLabel}>Total Matches</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.tournaments}</Text>
+                      <Text style={styles.statNumber}>{displayValue(seasonStats.tournaments)}</Text>
                       <Text style={styles.statLabel}>Tournaments</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.averageRating?.toFixed(1)}</Text>
+                      <Text style={styles.statNumber}>{seasonStats.averageRating ? seasonStats.averageRating.toFixed(1) : 'N/D'}</Text>
                       <Text style={styles.statLabel}>Avg Rating</Text>
                     </View>
                   </View>
                   <View style={styles.divider} />
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.matchesAsFirst}</Text>
+                      <Text style={styles.statNumber}>{displayValue(seasonStats.matchesAsFirst)}</Text>
                       <Text style={styles.statLabel}>As 1st Referee</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.matchesAsSecond}</Text>
+                      <Text style={styles.statNumber}>{displayValue(seasonStats.matchesAsSecond)}</Text>
                       <Text style={styles.statLabel}>As 2nd Referee</Text>
                     </View>
                   </View>
@@ -359,46 +346,48 @@ const RefereeCard = ({
 
               {activeTab === 'Career' && careerStats && (
                 <View>
-                  <Text style={styles.tabTitle}>Career Stats ({careerStats.yearsActive} years)</Text>
+                  <Text style={styles.tabTitle}>Career Stats ({displayValue(careerStats.yearsActive)} years)</Text>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.totalMatches}</Text>
+                      <Text style={styles.statNumber}>{displayValue(careerStats.totalMatches)}</Text>
                       <Text style={styles.statLabel}>Total Matches</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.totalTournaments}</Text>
+                      <Text style={styles.statNumber}>{displayValue(careerStats.totalTournaments)}</Text>
                       <Text style={styles.statLabel}>Tournaments</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.averageRating?.toFixed(1)}</Text>
+                      <Text style={styles.statNumber}>{careerStats.averageRating ? careerStats.averageRating.toFixed(1) : 'N/D'}</Text>
                       <Text style={styles.statLabel}>Avg Rating</Text>
                     </View>
                   </View>
                   <View style={styles.divider} />
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.matchesAsFirst}</Text>
+                      <Text style={styles.statNumber}>{displayValue(careerStats.matchesAsFirst)}</Text>
                       <Text style={styles.statLabel}>As 1st Referee</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.matchesAsSecond}</Text>
+                      <Text style={styles.statNumber}>{displayValue(careerStats.matchesAsSecond)}</Text>
                       <Text style={styles.statLabel}>As 2nd Referee</Text>
                     </View>
                   </View>
-                  {careerStats.achievements && (
-                    <>
-                      <View style={styles.divider} />
-                      <View style={styles.achievementsContainer}>
-                        <Text style={styles.achievementsTitle}>Achievements</Text>
-                        {careerStats.achievements.map((achievement, index) => (
+                  <>
+                    <View style={styles.divider} />
+                    <View style={styles.achievementsContainer}>
+                      <Text style={styles.achievementsTitle}>Achievements</Text>
+                      {careerStats.achievements && careerStats.achievements.length > 0 ? (
+                        careerStats.achievements.map((achievement, index) => (
                           <View key={index} style={styles.achievementItem}>
                             <Icon name="star" size={14} color="#FFD700" />
                             <Text style={styles.achievementText}>{achievement}</Text>
                           </View>
-                        ))}
-                      </View>
-                    </>
-                  )}
+                        ))
+                      ) : (
+                        <Text style={styles.achievementText}>N/D</Text>
+                      )}
+                    </View>
+                  </>
                 </View>
               )}
 
@@ -548,12 +537,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: colors.shadow,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

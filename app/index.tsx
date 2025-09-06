@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { WhistleLogo } from '../components/WhistleLogo';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
 
@@ -17,9 +13,6 @@ import { DefaultTournamentService } from '../services/DefaultTournamentService';
 // const { width } = Dimensions.get('window');
 
 export default function Index() {
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [scaleAnim] = useState(new Animated.Value(0.8));
-  const [showSplash] = useState(true); // setShowSplash will be used for future splash screen logic
   const router = useRouter();
 
   useEffect(() => {
@@ -53,16 +46,7 @@ export default function Index() {
     checkDefaultTournament();
   }, [router]);
 
-  const handleStartPress = () => {
-    // Animate out and navigate to tournament selection
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true,
-    }).start(() => {
-      router.push('/tournament-selection');
-    });
-  };
+  // handleStartPress removed - no longer needed as we auto-redirect
 
   // Show loading screen while checking for default tournament
   return (

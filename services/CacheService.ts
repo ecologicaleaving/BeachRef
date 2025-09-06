@@ -738,11 +738,12 @@ export class CacheService {
   }
 
   private static async getMatchesFromAPI(tournamentNo: string): Promise<BeachMatch[]> {
+    console.log(`📡 CacheService: Starting API call for tournament ${tournamentNo}`);
     const config: VisApiClientConfig = {
       baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
-      timeoutMs: 10000,
-      maxRetries: 3,
-      retryDelayMs: 1000,
+      timeoutMs: 45000, // Increase to 45 seconds for old tournaments with lots of data
+      maxRetries: 2, // Reduce retries to avoid long delays
+      retryDelayMs: 2000,
       exponentialBackoff: true,
       enableLogging: true
     };
@@ -755,15 +756,37 @@ export class CacheService {
     });
     
     if (!response.success) {
-      // console.error('CacheService: Match API call failed:', response.error);
+      console.error(`❌ CacheService: Match API call failed for tournament ${tournamentNo}:`, response.error);
+      console.error(`❌ This could be due to timeout, network issues, or tournament data unavailability`);
       return [];
     }
+    
+    console.log(`✅ CacheService: Match API call succeeded for tournament ${tournamentNo}`);
     
     // Parse XML response to BeachMatch objects using VisResponseParser
     try {
       const { VisResponseParser } = await import('./parsing/VisResponseParser');
       const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentNo);
       console.log(`✅ CacheService: Parsed ${matches.length} matches for tournament ${tournamentNo}`);
+      
+      // Log referee data in first few matches to debug referee extraction
+      if (matches.length > 0) {
+        console.log(`🏐 CacheService: Sample match data for referee debugging:`, {
+          totalMatches: matches.length,
+          sampleMatch1: {
+            id: matches[0]?.id,
+            Referee1Name: matches[0]?.Referee1Name,
+            Referee2Name: matches[0]?.Referee2Name,
+            allKeys: Object.keys(matches[0] || {})
+          },
+          sampleMatch2: matches.length > 1 ? {
+            id: matches[1]?.id,
+            Referee1Name: matches[1]?.Referee1Name,
+            Referee2Name: matches[1]?.Referee2Name
+          } : 'No second match'
+        });
+      }
+      
       return matches;
     } catch (error) {
       console.error(`❌ CacheService: Failed to parse matches for tournament ${tournamentNo}:`, error);

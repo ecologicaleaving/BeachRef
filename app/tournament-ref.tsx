@@ -550,11 +550,11 @@ function TournamentRefScreenContent() {
     console.log('🧪 TESTING: GetRefereeList filtered by No=151524');
     
     try {
-      // Test with GetRefereeList and filter by No
+      // Test with GetRefereeList and filter by specific NoReferee (should return only one)
       const testCases = [
         { 
           id: '151524', 
-          description: 'GetRefereeList filtered by No=151524',
+          description: 'GetRefereeList filtered by NoReferee=151524 (should return 1 referee)',
           xml: `<Requests>
   <Request Type="GetRefereeList"
            Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
@@ -564,20 +564,11 @@ function TournamentRefScreenContent() {
         },
         { 
           id: '151525', 
-          description: 'GetRefereeList filtered by No=151525',
+          description: 'GetRefereeList filtered by NoReferee=151525 (should return 1 referee)',
           xml: `<Requests>
   <Request Type="GetRefereeList"
            Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
     <Filter NoReferee="151525"/>
-  </Request>
-</Requests>`
-        },
-        { 
-          id: 'all', 
-          description: 'GetRefereeList without filter (first 10 referees)',
-          xml: `<Requests>
-  <Request Type="GetRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
   </Request>
 </Requests>`
         }
@@ -585,6 +576,7 @@ function TournamentRefScreenContent() {
       
       for (const testCase of testCases) {
         console.log(`\n🧪 Testing ${testCase.description}:`);
+        console.log('📤 REQUEST XML:', testCase.xml);
         
         const xml = testCase.xml;
 
@@ -600,12 +592,16 @@ function TournamentRefScreenContent() {
         if (response.ok) {
           const xmlResponse = await response.text();
           console.log(`✅ Response for "${testCase.id}":`, xmlResponse.substring(0, 1000));
+          
+          // Count how many referees returned
+          const refereeMatches = xmlResponse.match(/<Referee[^>]*>/g);
+          console.log(`📊 Number of referees returned: ${refereeMatches ? refereeMatches.length : 0}`);
         } else {
           console.log(`❌ Failed for "${testCase.id}": ${response.status} ${response.statusText}`);
         }
         
         // Small delay between requests
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
       console.error('🧪 Test failed:', error);

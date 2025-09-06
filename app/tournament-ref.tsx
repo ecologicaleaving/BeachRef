@@ -545,18 +545,16 @@ function TournamentRefScreenContent() {
   const [loading, setLoading] = useState(false);
   const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
 
-  // TEST: Simple hardcoded request for Davide Crescentini
-  const testDavideCrescentini = async () => {
-    console.log('🧪 TESTING: Hardcoded GetReferee request for Davide Crescentini');
+  // TEST: Simple hardcoded request for referee No=151524
+  const testRefereeById = async () => {
+    console.log('🧪 TESTING: Hardcoded GetReferee request for No=151524');
     
     try {
-      // Try different possible formats for the referee ID/name
+      // Test the specific numeric ID
       const testCases = [
-        { id: 'CRESCENTINI', description: 'Surname only' },
-        { id: 'DAVIDE CRESCENTINI', description: 'Full name' },
-        { id: 'Crescentini', description: 'Capitalized surname' },
-        { id: 'Davide Crescentini', description: 'Proper case full name' },
-        { id: '12345', description: 'Sample numeric ID' }
+        { id: '151524', description: 'Referee ID 151524' },
+        { id: '151525', description: 'Referee ID 151525 (test nearby)' },
+        { id: '100000', description: 'Sample ID 100000' }
       ];
       
       for (const testCase of testCases) {
@@ -1051,8 +1049,8 @@ function TournamentRefScreenContent() {
 
 
   useEffect(() => {
-    // Run Davide Crescentini test immediately
-    testDavideCrescentini();
+    // Run referee ID test immediately
+    testRefereeById();
     
     loadReferees();
   }, [tournamentNo]);

@@ -732,6 +732,7 @@ function TournamentRefScreenContent() {
       }
 
       const xmlResponse = await response.text();
+      console.log(`🏐 GetReferee API response for ${noReferee}:`, xmlResponse.substring(0, 500));
       return parseRefereeDetailsFromXML(xmlResponse, noReferee);
     } catch (error) {
       console.error(`Failed to fetch referee details for ${noReferee}:`, error);
@@ -837,7 +838,12 @@ function TournamentRefScreenContent() {
       });
       
       const refereeList = Array.from(refereeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-      console.log(`🏐 TournamentRef: Found ${refereeList.length} unique referees with IDs:`, refereeList.slice(0, 3));
+      console.log(`🏐 TournamentRef: Found ${refereeList.length} unique referees with IDs:`);
+      refereeList.forEach((ref, idx) => {
+        if (idx < 5) { // Log first 5 for debugging
+          console.log(`  ${idx + 1}. "${ref.name}" -> NoReferee: "${ref.noReferee}" (${ref.noReferee ? 'HAS ID' : 'NO ID'})`);
+        }
+      });
       
       // Fetch complete referee data for each referee with NoReferee ID
       const completeReferees = await Promise.all(

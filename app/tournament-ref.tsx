@@ -60,6 +60,7 @@ const RefereeCard = ({
     return null;
   }
 
+
   const loadRefereeStats = async (tournamentNo: string) => {
     if (stats || loadingStats) return; // Don't reload if already loaded or loading
     
@@ -70,23 +71,19 @@ const RefereeCard = ({
       
       if (tournamentInfo) {
         tournamentStatus = DefaultTournamentService.getTournamentStatus(tournamentInfo.startDate, tournamentInfo.endDate);
-        // console.log(`Tournament ${tournamentInfo.name} status: ${tournamentStatus}`);
       }
 
       // For LIVE and SCHEDULED tournaments, try VIS API first, fallback to match list
       // For COMPLETED tournaments, use match list approach only
       if (tournamentStatus === 'COMPLETED') {
-        console.log('Using match list approach for COMPLETED tournament');
         await loadStatsFromMatchList(tournamentNo);
       } else {
-        console.log('Using VIS API approach for LIVE/SCHEDULED tournament with fallback');
         // Try VIS API first for LIVE/future tournaments
         const refereeId = `${referee.firstName} ${referee.lastName}`.trim();
         try {
           // Try to get stats from RefereeStatsService (VIS API)
           const currentStats = await RefereeStatsService.getCurrentTournamentStats(refereeId, tournamentNo);
           if (currentStats && currentStats.totalMatches > 0) {
-            console.log('Successfully got stats from VIS API:', currentStats);
             const mappedStats: RefereeStats = {
               totalMatches: currentStats.totalMatches,
               matchesAsFirst: currentStats.matchesAsFirst,
@@ -97,11 +94,9 @@ const RefereeCard = ({
             setStats(mappedStats);
             return;
           } else {
-            console.log('No data from VIS API, falling back to match list');
             await loadStatsFromMatchList(tournamentNo);
           }
         } catch (error) {
-          console.error('VIS API failed, falling back to match list:', error);
           await loadStatsFromMatchList(tournamentNo);
         }
       }
@@ -126,10 +121,11 @@ const RefereeCard = ({
       // Get matches for this tournament to calculate real stats (original approach)
       const xml = `<Requests>
   <Request Type="GetBeachMatchList"
-           Fields="No Referee1Name Referee2Name TeamAFederationCode TeamBFederationCode RoundName">
+           Fields="No NoTournament TournamentGender Referee1Name Referee2Name TeamAFederationCode TeamBFederationCode RoundName">
     <Filter NoEvent="${tournamentNo}" IncludeReferees="true"/>
   </Request>
 </Requests>`;
+
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -142,14 +138,9 @@ const RefereeCard = ({
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log('Match data XML response:', xmlResponse.substring(0, 1000));
         const realStats = calculateRefereeStats(xmlResponse, referee);
-        console.log(`Final stats for ${referee.firstName} ${referee.lastName}:`, realStats);
         setStats(realStats);
       } else {
-        console.log('API request failed:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.log('Error response:', errorText);
         // Fallback to N/D if API fails
         const emptyStats: RefereeStats = {
           totalMatches: 0,
@@ -183,66 +174,52 @@ const RefereeCard = ({
     let menMatches = 0;
     let womenMatches = 0;
 
-    const refereeName = `${referee.firstName} ${referee.lastName}`.trim();
-    console.log(`Looking for referee: "${refereeName}" (firstName: "${referee.firstName}", lastName: "${referee.lastName}")`);
-    console.log(`Found ${matchMatches?.length || 0} BeachMatch elements in XML`);
-    
-    // Also check if we have any content at all  
-    const hasContent = xmlString.includes('BeachMatch');
-    console.log(`XML contains BeachMatch: ${hasContent}`);
-    
-    // Check for any matches at all
-    const allMatches = xmlString.match(/<BeachMatch[^>]*>/g);
-    console.log(`Total BeachMatch tags found: ${allMatches?.length || 0}`);
+    // const refereeName = `${referee.firstName} ${referee.lastName}`.trim();
 
     if (matchMatches && matchMatches.length > 0) {
-      matchMatches.forEach((match, index) => {
-        if (index < 2) console.log(`Sample match ${index}:`, match);
+      matchMatches.forEach((match) => {
         const referee1Name = match.match(/Referee1Name="([^"]*)"/)?.[1] || '';
         const referee2Name = match.match(/Referee2Name="([^"]*)"/)?.[1] || '';
         // const teamAFed = match.match(/TeamAFederationCode="([^"]*)"/)?.[1] || '';
         // const teamBFed = match.match(/TeamBFederationCode="([^"]*)"/)?.[1] || '';
         const roundName = match.match(/RoundName="([^"]*)"/)?.[1] || '';
 
-        if (index < 2) console.log(`Match ${index} refs: "${referee1Name}" | "${referee2Name}" | Round: "${roundName}"`);
-
         // Match referee names (case-insensitive partial match)
-        // const fullRefereeName = `${referee.firstName} ${referee.lastName}`.toLowerCase().trim();
         const isFirstRef = referee1Name.toLowerCase().includes(referee.firstName.toLowerCase()) && 
                           referee1Name.toLowerCase().includes(referee.lastName.toLowerCase());
         const isSecondRef = referee2Name.toLowerCase().includes(referee.firstName.toLowerCase()) && 
                            referee2Name.toLowerCase().includes(referee.lastName.toLowerCase());
 
-        // Debug name matching for first few matches
-        if (index < 3) {
-          console.log(`Name matching debug for match ${index}:`);
-          console.log(`  Referee1Name: "${referee1Name}" vs "${referee.firstName} ${referee.lastName}"`);
-          console.log(`  Referee2Name: "${referee2Name}" vs "${referee.firstName} ${referee.lastName}"`);
-          console.log(`  Match 1st: ${isFirstRef}, Match 2nd: ${isSecondRef}`);
-        }
-
         if (isFirstRef || isSecondRef) {
-          console.log(`MATCH FOUND! Referee ${refereeName} in match ${index} - 1st: ${isFirstRef}, 2nd: ${isSecondRef}, Round: "${roundName}"`);
-          
           totalMatches++;
           
           if (isFirstRef) matchesAsFirst++;
           if (isSecondRef) matchesAsSecond++;
 
-          // Determine gender from round name (common pattern: "Men's/Women's")
-          const roundNameLower = roundName.toLowerCase();
-          if (roundNameLower.includes('women') || roundNameLower.includes("women's") || roundNameLower.includes('w ')) {
+          // Try to determine gender from multiple sources
+          // const roundNameLower = roundName.toLowerCase();
+          
+          // Extract TournamentGender field which contains "M" or "W"
+          const tournamentGender = match.match(/TournamentGender="([^"]*)"/)?.[1] || '';
+          // const matchNo = match.match(/No="([^"]*)"/)?.[1] || '';
+          
+          // Use TournamentGender to determine match gender
+          let isWomensMatch = false;
+          
+          if (tournamentGender === '1') {
+            isWomensMatch = true;
+          }
+          
+          if (isWomensMatch) {
             womenMatches++;
-            console.log(`Women's match found (${roundName}), total: ${womenMatches}`);
           } else {
-            // Default to men's - most beach volleyball tournaments are men's
             menMatches++;
-            console.log(`Men's match found (${roundName}), total: ${menMatches}`);
           }
         }
       });
     }
 
+    
     return {
       totalMatches,
       matchesAsFirst,
@@ -263,9 +240,7 @@ const RefereeCard = ({
 
       // For LIVE and SCHEDULED tournaments, use VIS API; for COMPLETED, use existing approach
       if (tournamentStatus === 'COMPLETED') {
-        console.log('Season stats: Using standard approach for COMPLETED tournament');
       } else {
-        console.log('Season stats: Using VIS API approach for LIVE/SCHEDULED tournament');
       }
       
       const seasonStats = await RefereeStatsService.getSeasonStats(refereeId, season, tournamentNo);
@@ -287,9 +262,7 @@ const RefereeCard = ({
 
       // For LIVE and SCHEDULED tournaments, use VIS API; for COMPLETED, use existing approach
       if (tournamentStatus === 'COMPLETED') {
-        console.log('Career stats: Using standard approach for COMPLETED tournament');
       } else {
-        console.log('Career stats: Using VIS API approach for LIVE/SCHEDULED tournament');
       }
       
       const careerStats = await RefereeStatsService.getCareerStats(refereeId, tournamentNo);
@@ -539,50 +512,32 @@ function TournamentRefScreenContent() {
     return null;
   }, [tournamentData]);
   
-  // console.log(`Tournament data loaded:`, tournament ? `${tournament.name} (${tournament.status})` : 'none');
   
   const [referees, setReferees] = useState<Referee[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
 
-  // Clean simple debug function
-  const debugRefereeCards = () => {
-    console.log('🐛 DEBUG: Referee cards status');
-    console.log('📊 Referees state:', referees.length, 'referees');
-    console.log('🔄 Loading state:', loading);
-    if (referees.length > 0) {
-      console.log('📋 First referee:', referees[0]);
-      console.log('✅ Cards should be visible');
-    } else {
-      console.log('❌ No referees in state - cards will not render');
-    }
-  };
 
   const loadReferees = async () => {
     if (!tournamentNo) return;
     
     setLoading(true);
     try {
+      
       // Determine tournament status and use appropriate approach
       let tournamentStatus = 'SCHEDULED'; // fallback
       
       if (tournament) {
         tournamentStatus = DefaultTournamentService.getTournamentStatus(tournament.startDate, tournament.endDate);
-        // console.log(`Loading referees for tournament ${tournament.name}:`);
-        // console.log(`  Raw status: ${tournament.status}`);
-        // console.log(`  Calculated status: ${tournamentStatus}`);
       }
 
       // For COMPLETED tournaments, extract referees from match list
       // For LIVE/SCHEDULED tournaments, try GetEventRefereeList first, fallback to match list
       if (tournamentStatus === 'COMPLETED') {
-        console.log('Loading referees from match list for COMPLETED tournament');
         await loadRefereesFromMatchList();
       } else {
-        console.log('Loading referees from GetEventRefereeList for LIVE/SCHEDULED tournament');
         const success = await loadRefereesFromAPI();
         if (!success) {
-          console.log('GetEventRefereeList failed, falling back to match list approach');
           await loadRefereesFromMatchList();
         }
       }
@@ -613,17 +568,14 @@ function TournamentRefScreenContent() {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log('GetEventRefereeList response:', xmlResponse.substring(0, 500));
         const parsedReferees = parseRefereeXML(xmlResponse);
         if (parsedReferees.length > 0) {
           setReferees(parsedReferees);
           return true;
         } else {
-          console.log('No referees found in GetEventRefereeList response');
           return false;
         }
       } else {
-        console.log('GetEventRefereeList API failed:', response.status, response.statusText);
         return false;
       }
     } catch (error) {
@@ -697,6 +649,7 @@ function TournamentRefScreenContent() {
     return matches;
   };
 
+  /*
   const fetchRefereeDetailsByName = async (firstName: string, lastName: string, tournamentNo: string): Promise<Referee | null> => {
     try {
       const xml = `<Requests>
@@ -732,38 +685,63 @@ function TournamentRefScreenContent() {
       return null;
     }
   };
+  */
+
 
   const fetchAllRefereesFromAPI = async (): Promise<Referee[]> => {
     try {
-      const xml = `<Requests>
+      
+      // Try GetEventRefereeList first
+      let xml = `<Requests>
   <Request Type="GetEventRefereeList"
            Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
     <Filter NoEvent="${tournamentNo}"/>
   </Request>
 </Requests>`;
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+      let response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
           "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: new URLSearchParams({ Request: xml }),
-        signal: controller.signal
+        body: new URLSearchParams({ Request: xml })
       });
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`GetEventRefereeList API failed: ${response.status}`);
+      if (response.ok) {
+        const xmlResponse = await response.text();
+        const referees = parseRefereeXML(xmlResponse);
+        
+        if (referees.length > 0) {
+          return referees;
+        }
       }
+      
+      // Fallback: Try GetRefereeList without event filter
+      xml = `<Requests>
+  <Request Type="GetRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
+  </Request>
+</Requests>`;
 
-      const xmlResponse = await response.text();
-      console.log('🔍 fetchAllRefereesFromAPI response:', xmlResponse.substring(0, 500));
-      return parseRefereeXML(xmlResponse);
+      response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: "POST",
+        headers: {
+          "Accept": "application/xml",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ Request: xml })
+      });
+
+      if (response.ok) {
+        const xmlResponse = await response.text();
+        const referees = parseRefereeListXML(xmlResponse);
+        if (referees.length > 0) {
+          return referees;
+        }
+      }
+      
+      return [];
     } catch (error) {
       console.error('Failed to fetch all referees from API:', error);
       return [];
@@ -809,6 +787,7 @@ function TournamentRefScreenContent() {
     }
   };
 
+  /*
   const parseRefereeDetailsFromXML = (xmlString: string, noReferee: string): Referee | null => {
     try {
       // Parse the XML response to extract referee details
@@ -860,52 +839,25 @@ function TournamentRefScreenContent() {
       return null;
     }
   };
+  */
 
   const loadRefereesFromPassedMatchData = async (): Promise<void> => {
     try {
       if (!matchData) {
-        console.log('🏐 TournamentRef: No match data passed');
         return;
       }
       
-      console.log('🏐 TournamentRef: Parsing passed match data...');
       const matches = JSON.parse(matchData);
-      console.log(`🏐 TournamentRef: Got ${matches.length} matches from passed data`);
-      
-      // DEBUG: Log the first few matches to see their structure
-      if (matches.length > 0) {
-        console.log('🔍 DEBUG: First match structure:', matches[0]);
-        console.log('🔍 DEBUG: First match keys:', Object.keys(matches[0] || {}));
-        
-        const sampleMatch = matches[0];
-        console.log('🔍 DEBUG: refereeAssignments structure:', sampleMatch?.refereeAssignments);
-        
-        // Check for other possible referee field names
-        const allKeys = Object.keys(sampleMatch || {});
-        const refereeKeys = allKeys.filter(key => key.toLowerCase().includes('referee') || key.toLowerCase().includes('ref'));
-        console.log('🔍 DEBUG: All referee-related keys found:', refereeKeys);
-      }
       
       // Extract referee information using multiple field name variations
       const refereeMap = new Map<string, {name: string, noReferee?: string, federationCode?: string, gender?: string, function?: string}>();
       
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         // Extract referees from refereeAssignments field
         const refereeAssignments = match.refereeAssignments;
         
-        if (index < 3) {
-          console.log(`🔍 Match ${index} DEBUG - refereeAssignments:`, refereeAssignments);
-        }
-        
         if (refereeAssignments && Array.isArray(refereeAssignments)) {
-          refereeAssignments.forEach((assignment, assignmentIndex) => {
-            if (index < 3) {
-              console.log(`🔍 Assignment ${assignmentIndex}:`, assignment);
-              console.log(`🔍 Assignment keys:`, Object.keys(assignment));
-              console.log(`🔍 Assignment gender field:`, assignment.gender);
-              console.log(`🔍 Assignment federationCode field:`, assignment.federationCode);
-            }
-            
+          refereeAssignments.forEach((assignment) => {
             // Try different possible field names for referee name
             const refereeName = assignment.refereeName || 
                               assignment.name || 
@@ -947,15 +899,10 @@ function TournamentRefScreenContent() {
                   function: refereeFunction 
                 });
               }
-              if (index < 5) console.log(`🏐 Match ${index}: Found referee = "${name}" (No: ${refereeNo}, Fed: ${federationCode}, Gender: ${gender})`);
             }
           });
         } else if (refereeAssignments && typeof refereeAssignments === 'object') {
           // If refereeAssignments is an object rather than array
-          if (index < 3) {
-            console.log(`🔍 Match ${index} - refereeAssignments is object, keys:`, Object.keys(refereeAssignments));
-          }
-          
           // Try to extract referee names from object structure
           Object.values(refereeAssignments).forEach((assignment: any) => {
             if (assignment && typeof assignment === 'object') {
@@ -989,27 +936,21 @@ function TournamentRefScreenContent() {
                     function: refereeFunction 
                   });
                 }
-                if (index < 5) console.log(`🏐 Match ${index}: Found referee = "${name}" (No: ${refereeNo}, Fed: ${federationCode}, Gender: ${gender})`);
-              }
+                }
             }
           });
         }
       });
       
       const refereeList = Array.from(refereeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-      console.log(`🏐 TournamentRef: Extracted ${refereeList.length} unique referees from passed data:`, refereeList.map(r => r.name));
-      
       // For passed match data, try to enhance with complete referee details from API
       const extractedReferees: Referee[] = [];
       
       // First, try to get all referees from the primary API to get complete data (including gender)
-      console.log('🔍 Attempting to fetch complete referee list from API for gender data...');
       let apiReferees: Referee[] = [];
       try {
         apiReferees = await fetchAllRefereesFromAPI();
-        console.log(`✅ Successfully got ${apiReferees.length} referees from API with complete data`);
       } catch (error) {
-        console.log('❌ Failed to get referee list from API:', error);
         apiReferees = [];
       }
       
@@ -1028,11 +969,6 @@ function TournamentRefScreenContent() {
               apiRef.lastName.toLowerCase() === lastName.toLowerCase()
             ) || null;
             
-            if (completeData) {
-              console.log(`✅ Enhanced referee ${referee.name} with API data (gender: ${completeData.gender})`);
-            } else {
-              console.log(`❌ No API match found for referee ${referee.name}`);
-            }
           }
           
           // Use complete data if available, otherwise create basic referee object with extracted data
@@ -1047,19 +983,11 @@ function TournamentRefScreenContent() {
           
           extractedReferees.push(refereeData);
         } catch (error) {
-          console.error(`❌ Error processing referee ${referee.name}:`, error);
         }
       }
       
-      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees from passed match data`);
       setReferees(extractedReferees);
-      
-      console.log(`🎯 REFEREES SET: ${extractedReferees.length} referees loaded from passed data`);
-      if (extractedReferees.length > 0) {
-        console.log('📋 First referee:', extractedReferees[0]);
-      }
     } catch (error) {
-      console.error('❌ TournamentRef: Error parsing passed match data:', error);
       throw error; // Re-throw to trigger fallback
     }
   };
@@ -1067,19 +995,16 @@ function TournamentRefScreenContent() {
   const loadRefereesFromMatchList = async (): Promise<void> => {
     // First try to use passed match data
     if (matchData) {
-      console.log('🏐 TournamentRef: Using passed match data to extract referees');
       try {
         await loadRefereesFromPassedMatchData();
-        console.log('🏐 TournamentRef: Successfully loaded referees from passed match data');
         return;
       } catch (error) {
-        console.error('❌ TournamentRef: Error using passed match data, falling back to API:', error);
+        console.error('Error using passed match data, falling back to API:', error);
       }
     }
     
     // Fallback to API call if no match data passed or if parsing failed
     try {
-      console.log('🏐 TournamentRef: Making API call for tournament matches', tournamentNo);
       
       // Use CacheService first to get matches if available
       let matches: any[] = [];
@@ -1091,24 +1016,20 @@ function TournamentRefScreenContent() {
         
         if (matchesResult.success && matchesResult.data && matchesResult.data.length > 0) {
           matches = matchesResult.data;
-          console.log(`🏐 TournamentRef: Got ${matches.length} matches from CacheService`);
-        } else {
-          console.log('🏐 TournamentRef: CacheService returned no matches, trying direct API');
         }
       } catch {
-        console.log('🏐 TournamentRef: CacheService not available, using direct API');
+        // CacheService not available, continue to direct API
       }
       
       // If CacheService didn't work, make direct API call
       if (matches.length === 0) {
         const xml = `<Requests>
   <Request Type="GetBeachMatchList"
-           Fields="No NoInTournament TeamAName TeamBName LocalDate LocalTime Court Status Round MatchPointsA MatchPointsB PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 NoReferee1 NoReferee2 Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode">
+           Fields="No NoInTournament TournamentGender TeamAName TeamBName LocalDate LocalTime Court Status Round MatchPointsA MatchPointsB PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 NoReferee1 NoReferee2 Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode">
     <Filter NoEvent="${tournamentNo}" IncludeReferees="true"/>
   </Request>
 </Requests>`;
 
-        console.log('🏐 TournamentRef: Making direct API request for match list...');
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000);
@@ -1126,33 +1047,18 @@ function TournamentRefScreenContent() {
         clearTimeout(timeoutId);
         
         if (!response.ok) {
-          console.error(`🏐 TournamentRef: API request failed with status ${response.status}`);
           throw new Error(`API request failed: ${response.status}`);
         }
         
         const xmlResponse = await response.text();
-        console.log('🏐 TournamentRef: Raw XML response length:', xmlResponse.length);
         
         matches = parseMatchesFromXML(xmlResponse);
-      }
-      
-      console.log(`🏐 TournamentRef: Processing ${matches.length} matches to extract referees`);
-      
-      if (matches.length > 0) {
-        // Log sample match for debugging
-        const sampleMatch = matches[0];
-        console.log(`🏐 TournamentRef: Sample match data:`, {
-          Referee1Name: sampleMatch?.Referee1Name || sampleMatch?.Referee1,
-          Referee2Name: sampleMatch?.Referee2Name || sampleMatch?.Referee2,
-          availableFields: Object.keys(sampleMatch || {}),
-          hasRefereeData: !!(sampleMatch?.Referee1Name || sampleMatch?.Referee1 || sampleMatch?.Referee2Name || sampleMatch?.Referee2)
-        });
       }
       
       // Extract referee names using refereeAssignments field (more robust)
       const refereeNames = new Set<string>();
       
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         const refereeAssignments = match.refereeAssignments;
         
         if (refereeAssignments && Array.isArray(refereeAssignments)) {
@@ -1166,7 +1072,6 @@ function TournamentRefScreenContent() {
             
             if (refereeName && refereeName.trim()) {
               refereeNames.add(refereeName.trim());
-              if (index < 3) console.log(`🏐 Match ${index}: Found referee = "${refereeName}"`);
             }
           });
         } else if (refereeAssignments && typeof refereeAssignments === 'object') {
@@ -1179,7 +1084,6 @@ function TournamentRefScreenContent() {
               
               if (refereeName && refereeName.trim()) {
                 refereeNames.add(refereeName.trim());
-                if (index < 3) console.log(`🏐 Match ${index}: Found referee = "${refereeName}"`);
               }
             }
           });
@@ -1187,16 +1091,12 @@ function TournamentRefScreenContent() {
       });
       
       const sortedRefereeNames = Array.from(refereeNames).sort();
-      console.log(`🏐 TournamentRef: Extracted ${sortedRefereeNames.length} unique referees:`, sortedRefereeNames.slice(0, 10));
       
       // Try to get complete referee data from API to enhance with gender information
-      console.log('🔍 Attempting to fetch complete referee list from API for gender data...');
       let apiReferees: Referee[] = [];
       try {
         apiReferees = await fetchAllRefereesFromAPI();
-        console.log(`✅ Successfully got ${apiReferees.length} referees from API with complete data`);
       } catch (error) {
-        console.log('❌ Failed to get referee list from API:', error);
         apiReferees = [];
       }
       
@@ -1214,9 +1114,6 @@ function TournamentRefScreenContent() {
             apiRef.lastName.toLowerCase() === lastName.toLowerCase()
           ) || null;
           
-          if (completeData) {
-            console.log(`✅ Enhanced referee ${name} with API data (gender: ${completeData.gender})`);
-          }
         }
         
         // Use complete data if available, otherwise create basic referee object
@@ -1229,15 +1126,10 @@ function TournamentRefScreenContent() {
         };
       });
       
-      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
-      console.log(`🔍 DEBUG: First few referees being set:`, extractedReferees.slice(0, 3));
       setReferees(extractedReferees);
       
     } catch (error) {
-      console.error('❌ TournamentRef: Error in loadRefereesFromMatchList:', error);
-      if (error.name === 'AbortError') {
-        console.error('❌ TournamentRef: Request timed out after 45 seconds');
-      }
+      console.error('Error in loadRefereesFromMatchList:', error);
       setReferees([]);
     }
   };
@@ -1253,6 +1145,7 @@ function TournamentRefScreenContent() {
         const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
         const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
         const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
+        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
         
         // Only add referee if they have at least a name
         if (firstName.trim() || lastName.trim()) {
@@ -1261,7 +1154,38 @@ function TournamentRefScreenContent() {
             firstName,
             lastName,
             federationCode,
-            gender
+            gender,
+            level
+          });
+        }
+      });
+    }
+    
+    return referees;
+  };
+
+  const parseRefereeListXML = (xmlString: string): Referee[] => {
+    const referees: Referee[] = [];
+    const refereeMatches = xmlString.match(/<Referee[^>]*>/g);
+    
+    if (refereeMatches) {
+      refereeMatches.forEach(match => {
+        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || match.match(/No="([^"]*)"/)?.[1] || '';
+        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
+        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
+        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
+        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
+        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
+        
+        // Only add referee if they have at least a name
+        if (firstName.trim() || lastName.trim()) {
+          referees.push({
+            noReferee,
+            firstName,
+            lastName,
+            federationCode,
+            gender,
+            level
           });
         }
       });
@@ -1275,12 +1199,6 @@ function TournamentRefScreenContent() {
     loadReferees();
   }, [tournamentNo]);
 
-  useEffect(() => {
-    // Debug cards after referees state changes
-    if (referees.length > 0) {
-      debugRefereeCards();
-    }
-  }, [referees]);
 
   return (
     <Container style={styles.container}>
@@ -1301,17 +1219,13 @@ function TournamentRefScreenContent() {
           <RefreshControl refreshing={loading} onRefresh={loadReferees} />
         }
       >
-        {(() => {
-          console.log(`🎯 RENDER DEBUG: referees=${referees.length}, loading=${loading}`);
-          return referees.length === 0 && !loading ? (
+        {referees.length === 0 && !loading ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>No referees found for this tournament</Text>
             </View>
           ) : (
             <View style={styles.refereeList}>
-              {referees.map((referee, index) => {
-                console.log(`📋 Rendering card ${index}: ${referee.firstName} ${referee.lastName}`);
-                return (
+              {referees.map((referee, index) => (
                   <RefereeCard 
                     key={referee.noReferee || index} 
                     referee={referee} 
@@ -1324,11 +1238,9 @@ function TournamentRefScreenContent() {
                       );
                     }}
                   />
-                );
-              })}
+              ))}
             </View>
-          );
-        })()}
+          )}
       </ScrollView>
     </Container>
   );

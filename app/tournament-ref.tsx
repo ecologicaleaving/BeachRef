@@ -545,24 +545,48 @@ function TournamentRefScreenContent() {
   const [loading, setLoading] = useState(false);
   const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
 
-  // TEST: Simple hardcoded request for referee No=151524
+  // TEST: GetRefereeList filtered by specific No
   const testRefereeById = async () => {
-    console.log('🧪 TESTING: Hardcoded GetReferee request for No=151524');
+    console.log('🧪 TESTING: GetRefereeList filtered by No=151524');
     
     try {
-      // Test the specific numeric ID
+      // Test with GetRefereeList and filter by No
       const testCases = [
-        { id: '151524', description: 'Referee ID 151524' },
-        { id: '151525', description: 'Referee ID 151525 (test nearby)' },
-        { id: '100000', description: 'Sample ID 100000' }
+        { 
+          id: '151524', 
+          description: 'GetRefereeList filtered by No=151524',
+          xml: `<Requests>
+  <Request Type="GetRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
+    <Filter NoReferee="151524"/>
+  </Request>
+</Requests>`
+        },
+        { 
+          id: '151525', 
+          description: 'GetRefereeList filtered by No=151525',
+          xml: `<Requests>
+  <Request Type="GetRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
+    <Filter NoReferee="151525"/>
+  </Request>
+</Requests>`
+        },
+        { 
+          id: 'all', 
+          description: 'GetRefereeList without filter (first 10 referees)',
+          xml: `<Requests>
+  <Request Type="GetRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
+  </Request>
+</Requests>`
+        }
       ];
       
       for (const testCase of testCases) {
-        console.log(`\n🧪 Testing GetReferee with ${testCase.description}: "${testCase.id}"`);
+        console.log(`\n🧪 Testing ${testCase.description}:`);
         
-        const xml = `<Requests>
-  <Request Type="GetReferee" No="${testCase.id}" VISId="VIS" />
-</Requests>`;
+        const xml = testCase.xml;
 
         const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
           method: "POST",

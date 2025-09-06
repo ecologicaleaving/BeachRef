@@ -57,7 +57,9 @@
       "Bash(npm start:*)",
       "Bash(npx expo start:*)",
       "Bash(start http://localhost:8084)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:chatgpt.com)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": [],

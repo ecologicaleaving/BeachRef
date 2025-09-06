@@ -44,6 +44,8 @@ const ExpandedFiltersView: React.FC<{
   showRefereeDropdown: boolean;
   setShowRefereeDropdown: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
+  refereeNamesFromAPI: string[];
+  getTournamentStatus: () => string;
 }> = ({
   matches,
   genderFilter,
@@ -54,7 +56,9 @@ const ExpandedFiltersView: React.FC<{
   setRefereeFilter,
   showRefereeDropdown,
   setShowRefereeDropdown,
-  setShowFilters
+  setShowFilters,
+  refereeNamesFromAPI,
+  getTournamentStatus
 }) => {
   // Memoize court numbers to prevent recalculation on every render
   const courtNumbers = React.useMemo(() => {
@@ -1282,6 +1286,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                     showRefereeDropdown={showRefereeDropdown}
                     setShowRefereeDropdown={setShowRefereeDropdown}
                     setShowFilters={setShowFilters}
+                    refereeNamesFromAPI={refereeNamesFromAPI}
+                    getTournamentStatus={getTournamentStatus}
                   />
                 )}
               </View>

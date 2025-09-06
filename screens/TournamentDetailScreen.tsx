@@ -43,6 +43,7 @@ const ExpandedFiltersView: React.FC<{
   setRefereeFilter: (filter: string) => void;
   showRefereeDropdown: boolean;
   setShowRefereeDropdown: (show: boolean) => void;
+  setShowFilters: (show: boolean) => void;
 }> = ({
   matches,
   genderFilter,
@@ -52,7 +53,8 @@ const ExpandedFiltersView: React.FC<{
   refereeFilter,
   setRefereeFilter,
   showRefereeDropdown,
-  setShowRefereeDropdown
+  setShowRefereeDropdown,
+  setShowFilters
 }) => {
   // Memoize court numbers to prevent recalculation on every render
   const courtNumbers = React.useMemo(() => {
@@ -201,6 +203,20 @@ const ExpandedFiltersView: React.FC<{
             </View>
           )}
         </View>
+      </View>
+      
+      {/* Save Button */}
+      <View style={styles.saveButtonContainer}>
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={() => {
+            // Save the filter settings (they're already applied in real-time)
+            // Close the filters panel
+            setShowFilters(false);
+          }}
+        >
+          <Text style={styles.saveButtonText}>Save & Close</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -1204,6 +1220,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                     setRefereeFilter={setRefereeFilter}
                     showRefereeDropdown={showRefereeDropdown}
                     setShowRefereeDropdown={setShowRefereeDropdown}
+                    setShowFilters={setShowFilters}
                   />
                 )}
               </View>
@@ -1322,7 +1339,14 @@ const TournamentDetailScreenContent: React.FC = () => {
           pathname: '/tournament-ref',
           params: { 
             tournamentNo: tournament.visNo,
-            tournamentName: tournament.name || tournament.title
+            tournamentName: tournament.name || tournament.title,
+            tournamentData: JSON.stringify({
+              visNo: tournament.visNo,
+              name: tournament.name || tournament.title,
+              startDate: tournament.dates.startDate,
+              endDate: tournament.dates.endDate,
+              status: tournament.status
+            })
           }
         })}
         activeOpacity={0.8}
@@ -1949,6 +1973,27 @@ const styles = StyleSheet.create({
     transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
 
+  // Save button styles for filters panel
+  saveButtonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 
 });
 

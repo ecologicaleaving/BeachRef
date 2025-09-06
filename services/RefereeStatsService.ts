@@ -129,6 +129,42 @@ export class RefereeStatsService {
   }
 
   /**
+   * Get current tournament statistics for a referee
+   */
+  static async getCurrentTournamentStats(refereeId: string, tournamentNo: string): Promise<RefereeStats | null> {
+    try {
+      console.log(`Fetching current tournament stats for referee "${refereeId}" in tournament ${tournamentNo}`);
+      
+      // Use the current date range (tournament could be ongoing)
+      const today = new Date();
+      const monthAgo = new Date(today);
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      const monthFromNow = new Date(today);
+      monthFromNow.setMonth(monthFromNow.getMonth() + 1);
+      
+      const startDate = monthAgo.toISOString().split('T')[0];
+      const endDate = monthFromNow.toISOString().split('T')[0];
+      
+      const matchStats = await RefereeStatsService.getMatchesForRefereeInDateRange(
+        refereeId,
+        startDate,
+        endDate,
+        tournamentNo
+      );
+      
+      if (!matchStats || matchStats.totalMatches === 0) {
+        console.log(`No current tournament data found for referee ${refereeId}, returning null`);
+        return null;
+      }
+      
+      return matchStats;
+    } catch (error) {
+      console.error('Error fetching current tournament stats:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get career statistics for a referee
    */
   static async getCareerStats(refereeId: string, tournamentNo?: string): Promise<CareerStats | null> {

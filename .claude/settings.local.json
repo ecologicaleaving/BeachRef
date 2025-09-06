@@ -56,7 +56,8 @@
       "Read(//c/Users/KreshOS/Documents/00-Projeto/vistest/**)",
       "Bash(npm start:*)",
       "Bash(npx expo start:*)",
-      "Bash(start http://localhost:8084)"
+      "Bash(start http://localhost:8084)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": [],

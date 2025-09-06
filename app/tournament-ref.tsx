@@ -9,6 +9,7 @@ import { colors } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { FlagImage } from '../components/FlagImage';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
+import { DefaultTournamentService } from '../services/DefaultTournamentService';
 
 interface Referee {
   noReferee: string;
@@ -32,12 +33,14 @@ const RefereeCard = ({
   referee, 
   tournamentNo, 
   expanded, 
-  onToggle 
+  onToggle,
+  tournamentInfo 
 }: { 
   referee: Referee; 
   tournamentNo: string;
   expanded: boolean;
   onToggle: () => void;
+  tournamentInfo: TournamentInfo | null;
 }) => {
   const [stats, setStats] = useState<RefereeStats | null>(null);
   const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
@@ -61,7 +64,65 @@ const RefereeCard = ({
     
     setLoadingStats(true);
     try {
-      // Get matches for this tournament to calculate real stats
+      // Determine tournament status and use appropriate data source
+      let tournamentStatus = 'SCHEDULED'; // fallback
+      
+      if (tournamentInfo) {
+        tournamentStatus = DefaultTournamentService.getTournamentStatus(tournamentInfo.startDate, tournamentInfo.endDate);
+        console.log(`Tournament ${tournamentInfo.name} status: ${tournamentStatus}`);
+      }
+
+      // For LIVE and SCHEDULED tournaments, try VIS API first, fallback to match list
+      // For COMPLETED tournaments, use match list approach only
+      if (tournamentStatus === 'COMPLETED') {
+        console.log('Using match list approach for COMPLETED tournament');
+        await loadStatsFromMatchList(tournamentNo);
+      } else {
+        console.log('Using VIS API approach for LIVE/SCHEDULED tournament with fallback');
+        // Try VIS API first for LIVE/future tournaments
+        const refereeId = `${referee.firstName} ${referee.lastName}`.trim();
+        try {
+          // Try to get stats from RefereeStatsService (VIS API)
+          const currentStats = await RefereeStatsService.getCurrentTournamentStats(refereeId, tournamentNo);
+          if (currentStats && currentStats.totalMatches > 0) {
+            console.log('Successfully got stats from VIS API:', currentStats);
+            const mappedStats: RefereeStats = {
+              totalMatches: currentStats.totalMatches,
+              matchesAsFirst: currentStats.matchesAsFirst,
+              matchesAsSecond: currentStats.matchesAsSecond,
+              menMatches: currentStats.menMatches || 0,
+              womenMatches: currentStats.womenMatches || 0,
+            };
+            setStats(mappedStats);
+            return;
+          } else {
+            console.log('No data from VIS API, falling back to match list');
+            await loadStatsFromMatchList(tournamentNo);
+          }
+        } catch (error) {
+          console.error('VIS API failed, falling back to match list:', error);
+          await loadStatsFromMatchList(tournamentNo);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading referee stats:', error);
+      // Final fallback - show N/D
+      const emptyStats: RefereeStats = {
+        totalMatches: 0,
+        matchesAsFirst: 0,
+        matchesAsSecond: 0,
+        menMatches: 0,
+        womenMatches: 0,
+      };
+      setStats(emptyStats);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const loadStatsFromMatchList = async (tournamentNo: string) => {
+    try {
+      // Get matches for this tournament to calculate real stats (original approach)
       const xml = `<Requests>
   <Request Type="GetBeachMatchList"
            Fields="No Referee1Name Referee2Name TeamAFederationCode TeamBFederationCode RoundName">
@@ -88,29 +149,27 @@ const RefereeCard = ({
         console.log('API request failed:', response.status, response.statusText);
         const errorText = await response.text();
         console.log('Error response:', errorText);
-        // Fallback to mock data if API fails
-        const mockStats: RefereeStats = {
-          totalMatches: Math.floor(Math.random() * 15) + 3,
-          matchesAsFirst: Math.floor(Math.random() * 8) + 1,
-          matchesAsSecond: Math.floor(Math.random() * 8) + 1,
-          menMatches: Math.floor(Math.random() * 8) + 1,
-          womenMatches: Math.floor(Math.random() * 8) + 1,
+        // Fallback to N/D if API fails
+        const emptyStats: RefereeStats = {
+          totalMatches: 0,
+          matchesAsFirst: 0,
+          matchesAsSecond: 0,
+          menMatches: 0,
+          womenMatches: 0,
         };
-        setStats(mockStats);
+        setStats(emptyStats);
       }
     } catch (error) {
-      console.error('Error loading referee stats:', error);
-      // Fallback to mock data on error
-      const mockStats: RefereeStats = {
-        totalMatches: Math.floor(Math.random() * 15) + 3,
-        matchesAsFirst: Math.floor(Math.random() * 8) + 1,
-        matchesAsSecond: Math.floor(Math.random() * 8) + 1,
-        menMatches: Math.floor(Math.random() * 8) + 1,
-        womenMatches: Math.floor(Math.random() * 8) + 1,
+      console.error('Error in match list approach:', error);
+      // Fallback to N/D on error
+      const emptyStats: RefereeStats = {
+        totalMatches: 0,
+        matchesAsFirst: 0,
+        matchesAsSecond: 0,
+        menMatches: 0,
+        womenMatches: 0,
       };
-      setStats(mockStats);
-    } finally {
-      setLoadingStats(false);
+      setStats(emptyStats);
     }
   };
 
@@ -194,6 +253,20 @@ const RefereeCard = ({
 
   const loadSeasonStats = async (refereeId: string, season?: string, tournamentNo?: string): Promise<SeasonStats | null> => {
     try {
+      // Determine tournament status to decide data approach
+      let tournamentStatus = 'SCHEDULED'; // fallback
+      
+      if (tournamentInfo) {
+        tournamentStatus = DefaultTournamentService.getTournamentStatus(tournamentInfo.startDate, tournamentInfo.endDate);
+      }
+
+      // For LIVE and SCHEDULED tournaments, use VIS API; for COMPLETED, use existing approach
+      if (tournamentStatus === 'COMPLETED') {
+        console.log('Season stats: Using standard approach for COMPLETED tournament');
+      } else {
+        console.log('Season stats: Using VIS API approach for LIVE/SCHEDULED tournament');
+      }
+      
       const seasonStats = await RefereeStatsService.getSeasonStats(refereeId, season, tournamentNo);
       return seasonStats;
     } catch (error) {
@@ -204,6 +277,20 @@ const RefereeCard = ({
 
   const loadCareerStats = async (refereeId: string, tournamentNo?: string): Promise<CareerStats | null> => {
     try {
+      // Determine tournament status to decide data approach
+      let tournamentStatus = 'SCHEDULED'; // fallback
+      
+      if (tournamentInfo) {
+        tournamentStatus = DefaultTournamentService.getTournamentStatus(tournamentInfo.startDate, tournamentInfo.endDate);
+      }
+
+      // For LIVE and SCHEDULED tournaments, use VIS API; for COMPLETED, use existing approach
+      if (tournamentStatus === 'COMPLETED') {
+        console.log('Career stats: Using standard approach for COMPLETED tournament');
+      } else {
+        console.log('Career stats: Using VIS API approach for LIVE/SCHEDULED tournament');
+      }
+      
       const careerStats = await RefereeStatsService.getCareerStats(refereeId, tournamentNo);
       return careerStats;
     } catch (error) {
@@ -402,11 +489,34 @@ const RefereeCard = ({
   );
 };
 
+interface TournamentInfo {
+  visNo: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
 function TournamentRefScreenContent() {
-  const { tournamentNo, tournamentName } = useLocalSearchParams<{
+  const { tournamentNo, tournamentName, tournamentData } = useLocalSearchParams<{
     tournamentNo: string;
     tournamentName: string;
+    tournamentData?: string;
   }>();
+
+  // Parse tournament data to determine status-based logic
+  const tournament: TournamentInfo | null = React.useMemo(() => {
+    if (tournamentData) {
+      try {
+        return JSON.parse(tournamentData) as TournamentInfo;
+      } catch (error) {
+        console.error('Error parsing tournament data:', error);
+      }
+    }
+    return null;
+  }, [tournamentData]);
+  
+  console.log(`Tournament data loaded:`, tournament ? `${tournament.name} (${tournament.status})` : 'none');
   
   const [referees, setReferees] = useState<Referee[]>([]);
   const [loading, setLoading] = useState(false);
@@ -416,6 +526,36 @@ function TournamentRefScreenContent() {
     if (!tournamentNo) return;
     
     setLoading(true);
+    try {
+      // Determine tournament status and use appropriate approach
+      let tournamentStatus = 'SCHEDULED'; // fallback
+      
+      if (tournament) {
+        tournamentStatus = DefaultTournamentService.getTournamentStatus(tournament.startDate, tournament.endDate);
+        console.log(`Loading referees for tournament ${tournament.name} with status: ${tournamentStatus}`);
+      }
+
+      // For COMPLETED tournaments, extract referees from match list
+      // For LIVE/SCHEDULED tournaments, try GetEventRefereeList first, fallback to match list
+      if (tournamentStatus === 'COMPLETED') {
+        console.log('Loading referees from match list for COMPLETED tournament');
+        await loadRefereesFromMatchList();
+      } else {
+        console.log('Loading referees from GetEventRefereeList for LIVE/SCHEDULED tournament');
+        const success = await loadRefereesFromAPI();
+        if (!success) {
+          console.log('GetEventRefereeList failed, falling back to match list approach');
+          await loadRefereesFromMatchList();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading referees:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRefereesFromAPI = async (): Promise<boolean> => {
     try {
       const xml = `<Requests>
   <Request Type="GetEventRefereeList"
@@ -435,13 +575,103 @@ function TournamentRefScreenContent() {
       
       if (response.ok) {
         const xmlResponse = await response.text();
+        console.log('GetEventRefereeList response:', xmlResponse.substring(0, 500));
         const parsedReferees = parseRefereeXML(xmlResponse);
-        setReferees(parsedReferees);
+        if (parsedReferees.length > 0) {
+          setReferees(parsedReferees);
+          return true;
+        } else {
+          console.log('No referees found in GetEventRefereeList response');
+          return false;
+        }
+      } else {
+        console.log('GetEventRefereeList API failed:', response.status, response.statusText);
+        return false;
       }
     } catch (error) {
-      console.error('Error loading referees:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error in loadRefereesFromAPI:', error);
+      return false;
+    }
+  };
+
+  // Helper function to parse XML response into match objects
+  const parseMatchesFromXML = (xmlText: string) => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    const matches: any[] = [];
+    
+    const matchNodes = xmlDoc.querySelectorAll('Beachvolleyball > BeachMatch');
+    matchNodes.forEach(matchNode => {
+      const match: any = {};
+      
+      // Extract all attributes from the match node
+      const attributes = matchNode.attributes;
+      for (let i = 0; i < attributes.length; i++) {
+        const attr = attributes[i];
+        match[attr.name] = attr.value;
+      }
+      
+      matches.push(match);
+    });
+    
+    return matches;
+  };
+
+  const loadRefereesFromMatchList = async (): Promise<void> => {
+    try {
+      // Use direct API call instead of dynamic import to avoid path issues
+      const xml = `<Requests>
+  <Request Type="GetBeachMatchList"
+           Fields="No NoInTournament TeamAName TeamBName LocalDate LocalTime Court Status Round MatchPointsA MatchPointsB PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 NoReferee1 NoReferee2 Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode">
+    <Filter NoEvent="${tournamentNo}" IncludeReferees="true"/>
+  </Request>
+</Requests>`;
+
+      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: "POST",
+        headers: {
+          "Accept": "application/xml",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ Request: xml })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      const xmlResponse = await response.text();
+      const matches = parseMatchesFromXML(xmlResponse);
+      console.log(`Loaded ${matches.length} matches to extract referees from`);
+      
+      // Use the same approach as TournamentDetail.tsx
+      const refereeNames = matches
+        .flatMap(match => [match.Referee1Name, match.Referee2Name])
+        .filter((referee): referee is string => !!referee)
+        .filter((referee, index, array) => array.indexOf(referee) === index)
+        .sort();
+      
+      console.log(`Found ${refereeNames.length} unique referees:`, refereeNames.slice(0, 5));
+      
+      // Convert to Referee objects
+      const extractedReferees: Referee[] = refereeNames.map(name => {
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        return {
+          noReferee: name.toLowerCase().replace(/\s+/g, '_'),
+          firstName,
+          lastName,
+          federationCode: '', // Not available from match data
+          gender: '' // Not available from match data
+        };
+      });
+      
+      setReferees(extractedReferees);
+    } catch (error) {
+      console.error('Error in loadRefereesFromMatchList:', error);
+      setReferees([]);
     }
   };
 
@@ -472,6 +702,7 @@ function TournamentRefScreenContent() {
     
     return referees;
   };
+
 
   useEffect(() => {
     loadReferees();
@@ -508,6 +739,7 @@ function TournamentRefScreenContent() {
                 referee={referee} 
                 tournamentNo={tournamentNo || ''} 
                 expanded={expandedRefereeId === referee.noReferee}
+                tournamentInfo={tournament}
                 onToggle={() => {
                   setExpandedRefereeId(
                     expandedRefereeId === referee.noReferee ? null : referee.noReferee

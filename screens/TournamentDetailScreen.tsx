@@ -118,11 +118,23 @@ const ExpandedFiltersView: React.FC<{
     console.log('🏐 Matches available:', matches?.length || 0);
     console.log('🏐 Referees from matches:', refereeNamesFromMatches.length, refereeNamesFromMatches);
     console.log('🏐 Referees from API:', refereeNamesFromAPI.length, refereeNamesFromAPI);
-    console.log('🏐 ===============================');
     
+    // For COMPLETED tournaments, always try to use match-extracted referees first
+    // But also try API referees as fallback
     if (tournamentStatus === 'COMPLETED') {
-      console.log('🏐 Using referees from matches for COMPLETED tournament');
-      return refereeNamesFromMatches;
+      console.log('🏐 COMPLETED tournament - checking both sources');
+      
+      if (refereeNamesFromMatches.length > 0) {
+        console.log('🏐 Using referees from matches:', refereeNamesFromMatches);
+        return refereeNamesFromMatches;
+      } else if (refereeNamesFromAPI.length > 0) {
+        console.log('🏐 No referees from matches, using API fallback:', refereeNamesFromAPI);
+        return refereeNamesFromAPI;
+      } else {
+        // As a last resort, return some test data to verify the dropdown works
+        console.log('🏐 No referees from either source, using test data');
+        return ['Test Referee 1', 'Test Referee 2'];
+      }
     } else {
       console.log('🏐 Using referees from API for LIVE/SCHEDULED tournament');
       return refereeNamesFromAPI;

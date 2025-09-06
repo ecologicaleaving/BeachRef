@@ -69,32 +69,56 @@ const ExpandedFiltersView: React.FC<{
 
   // Memoize referee names from matches (for COMPLETED tournaments)
   const refereeNamesFromMatches = React.useMemo(() => {
-    console.log('🏐 Extracting referee names from matches:', matches?.length || 0, 'matches');
+    console.log('🏐 ===== MATCH REFEREE EXTRACTION DEBUG =====');
+    console.log('🏐 Total matches available:', matches?.length || 0);
+    
     if (!matches || matches.length === 0) {
+      console.log('🏐 No matches available for referee extraction');
       return [];
     }
     
     const allReferees: string[] = [];
     
-    matches.forEach(match => {
+    // Log sample matches for debugging
+    console.log('🏐 Sample match structure (first 3):');
+    matches.slice(0, 3).forEach((match, idx) => {
+      console.log(`  Match ${idx + 1}:`, {
+        id: match.id || 'no id',
+        Referee1Name: match.Referee1Name || 'none',
+        Referee2Name: match.Referee2Name || 'none',
+        status: match.status,
+        keys: Object.keys(match)
+      });
+    });
+    
+    matches.forEach((match, index) => {
       // Extract referees from Referee1Name and Referee2Name fields
       if (match.Referee1Name && match.Referee1Name.trim()) {
         allReferees.push(match.Referee1Name.trim());
+        console.log(`🏐 Found Referee1 in match ${index + 1}: "${match.Referee1Name}"`);
       }
       if (match.Referee2Name && match.Referee2Name.trim()) {
         allReferees.push(match.Referee2Name.trim());
+        console.log(`🏐 Found Referee2 in match ${index + 1}: "${match.Referee2Name}"`);
       }
     });
     
     const uniqueReferees = Array.from(new Set(allReferees)).filter(Boolean).sort();
-    console.log('🏐 Referees extracted from matches:', uniqueReferees.length, 'referees:', uniqueReferees.slice(0, 5));
+    console.log('🏐 Total referees extracted:', uniqueReferees.length);
+    console.log('🏐 Final referee list:', uniqueReferees);
+    console.log('🏐 ==========================================');
     return uniqueReferees;
   }, [matches]);
 
   // Combined referee names using dual system
   const refereeNames = React.useMemo(() => {
     const tournamentStatus = getTournamentStatus();
-    console.log('🏐 Determining referee source for status:', tournamentStatus);
+    console.log('🏐 ===== REFEREE LIST DEBUG =====');
+    console.log('🏐 Tournament status:', tournamentStatus);
+    console.log('🏐 Matches available:', matches?.length || 0);
+    console.log('🏐 Referees from matches:', refereeNamesFromMatches.length, refereeNamesFromMatches);
+    console.log('🏐 Referees from API:', refereeNamesFromAPI.length, refereeNamesFromAPI);
+    console.log('🏐 ===============================');
     
     if (tournamentStatus === 'COMPLETED') {
       console.log('🏐 Using referees from matches for COMPLETED tournament');
@@ -103,7 +127,7 @@ const ExpandedFiltersView: React.FC<{
       console.log('🏐 Using referees from API for LIVE/SCHEDULED tournament');
       return refereeNamesFromAPI;
     }
-  }, [refereeNamesFromMatches, refereeNamesFromAPI]);
+  }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
 
   return (
     <View style={styles.expandedFilters}>
@@ -636,23 +660,39 @@ const TournamentDetailScreenContent: React.FC = () => {
     const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
     const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
     
+    console.log('🏐 ===== TOURNAMENT STATUS DEBUG =====');
+    console.log('🏐 Tournament name:', tournament.name);
+    console.log('🏐 Start date:', startDate);
+    console.log('🏐 End date:', endDate);
+    console.log('🏐 Today:', new Date().toISOString().split('T')[0]);
+    
     if (!startDate) {
+      console.log('🏐 No start date -> SCHEDULED');
       return 'SCHEDULED';
     }
     
     const today = new Date().toISOString().split('T')[0];
     const startDateOnly = startDate.split('T')[0];
     
+    console.log('🏐 Start date only:', startDateOnly);
+    console.log('🏐 Today vs Start:', today, 'vs', startDateOnly);
+    
     if (today < startDateOnly) {
+      console.log('🏐 Today < Start -> SCHEDULED');
       return 'SCHEDULED';
     }
     
     if (endDate) {
       const endDateOnly = endDate.split('T')[0];
+      console.log('🏐 End date only:', endDateOnly);
+      console.log('🏐 Today vs End:', today, 'vs', endDateOnly);
+      
       if (today > endDateOnly) {
+        console.log('🏐 Today > End -> COMPLETED');
         return 'COMPLETED';
       }
       if (today >= startDateOnly && today <= endDateOnly) {
+        console.log('🏐 Today between Start-End -> LIVE NOW');
         return 'LIVE NOW';
       }
     } else {

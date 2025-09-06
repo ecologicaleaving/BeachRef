@@ -17,6 +17,7 @@ interface Referee {
   lastName: string;
   federationCode: string;
   gender: string;
+  level?: string;
 }
 
 interface RefereeStats {
@@ -311,23 +312,44 @@ const RefereeCard = ({
       <View style={styles.cardHeader}>
         <View style={styles.topRow}>
           <View style={styles.nameSection}>
-            <FlagImage
-              federationCode={referee.federationCode}
-              teamName={referee.federationCode}
-              size="small"
-              style={styles.flag}
-            />
-            <Text style={styles.refereeName} numberOfLines={2}>
-              {referee.firstName} {referee.lastName}
-            </Text>
+            {referee.federationCode ? (
+              <FlagImage
+                federationCode={referee.federationCode}
+                teamName={referee.federationCode}
+                size="small"
+                style={styles.flag}
+              />
+            ) : (
+              <View style={[styles.flag, styles.placeholderFlag]} />
+            )}
+            <View style={styles.refereeInfo}>
+              <Text style={styles.refereeName} numberOfLines={2}>
+                {referee.firstName} {referee.lastName}
+              </Text>
+              <View style={styles.refereeMetadata}>
+                {referee.federationCode && (
+                  <Text style={styles.federationCode}>
+                    {referee.federationCode}
+                  </Text>
+                )}
+                {referee.level && (
+                  <Text style={styles.refereeLevel}>
+                    Level {referee.level}
+                  </Text>
+                )}
+                {referee.gender && (
+                  <Text style={styles.gender}>
+                    {referee.gender === '0' || referee.gender.toLowerCase() === 'm' ? '♂' : 
+                     referee.gender === '1' || referee.gender.toLowerCase() === 'f' ? '♀' : '?'}
+                  </Text>
+                )}
+              </View>
+            </View>
           </View>
           <Text style={styles.expandIcon}>
             {expanded ? '▼' : '▶'}
           </Text>
         </View>
-        <Text style={styles.gender}>
-          {referee.gender === '0' ? 'Male' : referee.gender === '1' ? 'Female' : 'Unknown'}
-        </Text>
       </View>
       
       {expanded && (
@@ -684,7 +706,92 @@ function TournamentRefScreenContent() {
     return matches;
   };
 
-  const loadRefereesFromPassedMatchData = (): void => {
+  const fetchRefereeDetails = async (noReferee: string): Promise<Referee | null> => {
+    try {
+      const xml = `<Requests>
+  <Request Type="GetReferee" No="${noReferee}" VISId="VIS" />
+</Requests>`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for individual referee
+
+      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: "POST",
+        headers: {
+          "Accept": "application/xml",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ Request: xml }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`GetReferee API failed: ${response.status}`);
+      }
+
+      const xmlResponse = await response.text();
+      return parseRefereeDetailsFromXML(xmlResponse, noReferee);
+    } catch (error) {
+      console.error(`Failed to fetch referee details for ${noReferee}:`, error);
+      return null;
+    }
+  };
+
+  const parseRefereeDetailsFromXML = (xmlString: string, noReferee: string): Referee | null => {
+    try {
+      // Parse the XML response to extract referee details
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+      
+      // Look for Referee elements
+      const refereeElement = xmlDoc.querySelector('Referee');
+      if (!refereeElement) {
+        // Try attribute-based parsing for self-closing tags
+        const refereeMatch = xmlString.match(/<Referee[^>]*>/);
+        if (refereeMatch) {
+          const refString = refereeMatch[0];
+          const firstName = refString.match(/FirstName="([^"]*)"/)?.[1] || '';
+          const lastName = refString.match(/LastName="([^"]*)"/)?.[1] || '';
+          const federationCode = refString.match(/FederationCode="([^"]*)"/)?.[1] || '';
+          const gender = refString.match(/Gender="([^"]*)"/)?.[1] || '';
+          const level = refString.match(/Level="([^"]*)"/)?.[1] || '';
+          
+          return {
+            noReferee,
+            firstName,
+            lastName,
+            federationCode,
+            gender,
+            level
+          };
+        }
+        return null;
+      }
+
+      // Extract referee details from DOM
+      const firstName = refereeElement.getAttribute('FirstName') || '';
+      const lastName = refereeElement.getAttribute('LastName') || '';
+      const federationCode = refereeElement.getAttribute('FederationCode') || '';
+      const gender = refereeElement.getAttribute('Gender') || '';
+      const level = refereeElement.getAttribute('Level') || '';
+
+      return {
+        noReferee,
+        firstName,
+        lastName,
+        federationCode,
+        gender,
+        level
+      };
+    } catch (error) {
+      console.error('Error parsing referee XML:', error);
+      return null;
+    }
+  };
+
+  const loadRefereesFromPassedMatchData = async (): Promise<void> => {
     try {
       console.log('🏐 TournamentRef: Using passed match data to extract referees');
       
@@ -706,29 +813,61 @@ function TournamentRefScreenContent() {
         });
       }
       
-      // Extract referee names from passed match data
-      const refereeNames = matches
-        .flatMap(match => [match.Referee1Name, match.Referee2Name])
-        .filter((referee): referee is string => !!referee?.trim())
-        .filter((referee, index, array) => array.indexOf(referee) === index)
-        .sort();
+      // Extract referee information from passed match data (names + NoReferee IDs)
+      const refereeMap = new Map<string, {name: string, noReferee?: string}>();
       
-      console.log(`🏐 TournamentRef: Found ${refereeNames.length} unique referees:`, refereeNames.slice(0, 5));
-      
-      // Convert to Referee objects
-      const extractedReferees: Referee[] = refereeNames.map(name => {
-        const nameParts = name.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+      matches.forEach(match => {
+        // Referee 1
+        if (match.Referee1Name && match.Referee1Name.trim()) {
+          const name = match.Referee1Name.trim();
+          refereeMap.set(name, {
+            name,
+            noReferee: match.NoReferee1 || refereeMap.get(name)?.noReferee
+          });
+        }
         
-        return {
-          noReferee: name.toLowerCase().replace(/\s+/g, '_'),
-          firstName,
-          lastName,
-          federationCode: '', // Not available from match data
-          gender: '' // Not available from match data
-        };
+        // Referee 2  
+        if (match.Referee2Name && match.Referee2Name.trim()) {
+          const name = match.Referee2Name.trim();
+          refereeMap.set(name, {
+            name,
+            noReferee: match.NoReferee2 || refereeMap.get(name)?.noReferee
+          });
+        }
       });
+      
+      const refereeList = Array.from(refereeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      console.log(`🏐 TournamentRef: Found ${refereeList.length} unique referees with IDs:`, refereeList.slice(0, 3));
+      
+      // Fetch complete referee data for each referee with NoReferee ID
+      const completeReferees = await Promise.all(
+        refereeList.map(async (referee) => {
+          if (referee.noReferee) {
+            try {
+              const completeData = await fetchRefereeDetails(referee.noReferee);
+              if (completeData) {
+                console.log(`🏐 TournamentRef: Got complete data for ${referee.name}:`, completeData);
+                return completeData;
+              }
+            } catch (error) {
+              console.error(`🏐 TournamentRef: Failed to fetch details for ${referee.name}:`, error);
+            }
+          }
+          
+          // Fallback to basic data from name parsing
+          const nameParts = referee.name.trim().split(' ');
+          return {
+            noReferee: referee.noReferee || referee.name.toLowerCase().replace(/\s+/g, '_'),
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            federationCode: '',
+            gender: '',
+            level: ''
+          };
+        })
+      );
+      
+      const extractedReferees = completeReferees.filter(Boolean) as Referee[];
       
       console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
       setReferees(extractedReferees);
@@ -952,11 +1091,44 @@ const styles = StyleSheet.create({
   flag: {
     marginRight: 8,
   },
+  placeholderFlag: {
+    width: 20,
+    height: 15,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 2,
+  },
+  refereeInfo: {
+    flex: 1,
+  },
   refereeName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
-    flex: 1,
+  },
+  refereeMetadata: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 12,
+  },
+  federationCode: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+    backgroundColor: '#F0F4F8',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  refereeLevel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    backgroundColor: '#FFF3CD',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FFEAA7',
   },
   rightSection: {
     flexDirection: 'row',
@@ -964,7 +1136,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   gender: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.textSecondary,
   },
   expandIcon: {

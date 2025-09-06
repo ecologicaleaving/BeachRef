@@ -408,7 +408,7 @@ const RefereeCard = ({
                       <Text style={styles.statLabel}>Tournaments</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{seasonStats.averageRating ? seasonStats.averageRating.toFixed(1) : 'N/D'}</Text>
+                      <Text style={styles.statNumber}>{seasonStats.averageRating && typeof seasonStats.averageRating === 'number' ? seasonStats.averageRating.toFixed(1) : 'N/D'}</Text>
                       <Text style={styles.statLabel}>Avg Rating</Text>
                     </View>
                   </View>
@@ -439,7 +439,7 @@ const RefereeCard = ({
                       <Text style={styles.statLabel}>Tournaments</Text>
                     </View>
                     <View style={styles.statItem}>
-                      <Text style={styles.statNumber}>{careerStats.averageRating ? careerStats.averageRating.toFixed(1) : 'N/D'}</Text>
+                      <Text style={styles.statNumber}>{careerStats.averageRating && typeof careerStats.averageRating === 'number' ? careerStats.averageRating.toFixed(1) : 'N/D'}</Text>
                       <Text style={styles.statLabel}>Avg Rating</Text>
                     </View>
                   </View>

@@ -545,8 +545,56 @@ function TournamentRefScreenContent() {
   const [loading, setLoading] = useState(false);
   const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
 
+  // TEST: Simple hardcoded request for Davide Crescentini
+  const testDavideCrescentini = async () => {
+    console.log('🧪 TESTING: Hardcoded GetReferee request for Davide Crescentini');
+    
+    try {
+      // Try different possible formats for the referee ID/name
+      const testCases = [
+        { id: 'CRESCENTINI', description: 'Surname only' },
+        { id: 'DAVIDE CRESCENTINI', description: 'Full name' },
+        { id: 'Crescentini', description: 'Capitalized surname' },
+        { id: 'Davide Crescentini', description: 'Proper case full name' },
+        { id: '12345', description: 'Sample numeric ID' }
+      ];
+      
+      for (const testCase of testCases) {
+        console.log(`\n🧪 Testing GetReferee with ${testCase.description}: "${testCase.id}"`);
+        
+        const xml = `<Requests>
+  <Request Type="GetReferee" No="${testCase.id}" VISId="VIS" />
+</Requests>`;
+
+        const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+          method: "POST",
+          headers: {
+            "Accept": "application/xml",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({ Request: xml })
+        });
+
+        if (response.ok) {
+          const xmlResponse = await response.text();
+          console.log(`✅ Response for "${testCase.id}":`, xmlResponse.substring(0, 1000));
+        } else {
+          console.log(`❌ Failed for "${testCase.id}": ${response.status} ${response.statusText}`);
+        }
+        
+        // Small delay between requests
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (error) {
+      console.error('🧪 Test failed:', error);
+    }
+  };
+
   const loadReferees = async () => {
     if (!tournamentNo) return;
+    
+    // Run the Davide Crescentini test first
+    await testDavideCrescentini();
     
     setLoading(true);
     try {

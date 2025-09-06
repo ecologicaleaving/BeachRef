@@ -1477,7 +1477,18 @@ const TournamentDetailScreenContent: React.FC = () => {
               status: tournament.status
             }),
             // Pass already-loaded match data to avoid duplicate API calls
-            matchData: matches ? JSON.stringify(matches.slice(0, 100)) : undefined // Limit to 100 matches to avoid URL size issues
+            matchData: (() => {
+              console.log('🏐 TournamentDetail: Passing match data:', {
+                matchesAvailable: !!matches,
+                matchCount: matches?.length || 0,
+                sampleMatch: matches?.[0] ? {
+                  id: matches[0].id,
+                  Referee1Name: matches[0].Referee1Name,
+                  Referee2Name: matches[0].Referee2Name
+                } : 'No matches'
+              });
+              return matches ? JSON.stringify(matches.slice(0, 100)) : undefined; // Limit to 100 matches to avoid URL size issues
+            })()
           }
         })}
         activeOpacity={0.8}

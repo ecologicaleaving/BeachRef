@@ -597,23 +597,89 @@ function TournamentRefScreenContent() {
 
   // Helper function to parse XML response into match objects
   const parseMatchesFromXML = (xmlText: string) => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    console.log('🏐 TournamentRef: Parsing XML, first 500 chars:', xmlText.substring(0, 500));
+    
     const matches: any[] = [];
     
-    const matchNodes = xmlDoc.querySelectorAll('Beachvolleyball > BeachMatch');
-    matchNodes.forEach(matchNode => {
-      const match: any = {};
+    try {
+      // Try multiple parsing approaches since XML structure might vary
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
       
-      // Extract all attributes from the match node
-      const attributes = matchNode.attributes;
-      for (let i = 0; i < attributes.length; i++) {
-        const attr = attributes[i];
-        match[attr.name] = attr.value;
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        console.error('🏐 TournamentRef: XML parsing error:', parserError.textContent);
       }
       
-      matches.push(match);
-    });
+      // Try different possible XML structures
+      const selectors = [
+        'BeachMatch', // Direct BeachMatch elements
+        'Beachvolleyball > BeachMatch', // Nested under Beachvolleyball
+        'Response > BeachMatch', // Nested under Response
+        'Responses > Response > BeachMatch' // Multiple levels
+      ];
+      
+      let matchNodes: NodeListOf<Element> | null = null;
+      for (const selector of selectors) {
+        matchNodes = xmlDoc.querySelectorAll(selector);
+        if (matchNodes.length > 0) {
+          console.log(`🏐 TournamentRef: Found ${matchNodes.length} matches using selector: ${selector}`);
+          break;
+        }
+      }
+      
+      if (!matchNodes || matchNodes.length === 0) {
+        console.log('🏐 TournamentRef: No matches found with any selector, trying regex approach...');
+        
+        // Fallback: Use regex to extract BeachMatch elements
+        const matchRegex = /<BeachMatch[^>]*>/g;
+        const regexMatches = [...xmlText.matchAll(matchRegex)];
+        
+        console.log(`🏐 TournamentRef: Regex found ${regexMatches.length} BeachMatch elements`);
+        
+        regexMatches.forEach((matchStr, index) => {
+          const match: any = {};
+          const fullMatch = matchStr[0];
+          
+          // Extract all attributes using regex
+          const attrRegex = /(\w+)="([^"]*)"/g;
+          let attrMatch;
+          while ((attrMatch = attrRegex.exec(fullMatch)) !== null) {
+            match[attrMatch[1]] = attrMatch[2];
+          }
+          
+          if (index === 0) {
+            console.log('🏐 TournamentRef: Sample parsed match (regex):', match);
+          }
+          
+          matches.push(match);
+        });
+      } else {
+        // Use DOM parsing
+        matchNodes.forEach((matchNode, index) => {
+          const match: any = {};
+          
+          // Extract all attributes from the match node
+          const attributes = matchNode.attributes;
+          for (let i = 0; i < attributes.length; i++) {
+            const attr = attributes[i];
+            match[attr.name] = attr.value;
+          }
+          
+          if (index === 0) {
+            console.log('🏐 TournamentRef: Sample parsed match (DOM):', match);
+          }
+          
+          matches.push(match);
+        });
+      }
+      
+      console.log(`🏐 TournamentRef: Successfully parsed ${matches.length} matches`);
+      
+    } catch (error) {
+      console.error('🏐 TournamentRef: Error parsing XML:', error);
+    }
     
     return matches;
   };

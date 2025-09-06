@@ -56,7 +56,7 @@ const RefereeCard = ({
   };
 
   // Don't render if no name data
-  if (!referee.firstName.trim() && !referee.lastName.trim()) {
+  if (!(referee.firstName || '').trim() && !(referee.lastName || '').trim()) {
     return null;
   }
 
@@ -297,17 +297,17 @@ const RefereeCard = ({
             )}
             <View style={styles.refereeInfo}>
               <Text style={styles.refereeName} numberOfLines={2}>
-                {referee.firstName} {referee.lastName}
+                {`${referee.firstName || ''} ${referee.lastName || ''}`.trim()}
               </Text>
               <View style={styles.refereeMetadata}>
                 {referee.federationCode && (
                   <Text style={styles.federationCode}>
-                    {referee.federationCode}
+                    {String(referee.federationCode)}
                   </Text>
                 )}
                 {referee.level && (
                   <Text style={styles.refereeLevel}>
-                    Level {referee.level}
+                    Level {String(referee.level)}
                   </Text>
                 )}
                 {referee.gender && (
@@ -462,7 +462,7 @@ const RefereeCard = ({
                         careerStats.achievements.map((achievement, index) => (
                           <View key={index} style={styles.achievementItem}>
                             <Icon name="star" size={14} color="#FFD700" />
-                            <Text style={styles.achievementText}>{achievement}</Text>
+                            <Text style={styles.achievementText}>{String(achievement || '')}</Text>
                           </View>
                         ))
                       ) : (

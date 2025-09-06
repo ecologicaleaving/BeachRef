@@ -127,6 +127,46 @@ export class CacheKeyBuilder implements ICacheKeyBuilder {
   }
 
   /**
+   * Build cache key for referee list
+   * Tournament officials and referees data
+   */
+  refereeList(tournamentId: string, filters?: Record<string, any>): CacheKey {
+    const parts = ['referees', `tournament_${this.normalizeValue(tournamentId)}`];
+    
+    if (filters?.type) {
+      parts.push(`type_${this.normalizeValue(filters.type)}`);
+    }
+    
+    if (filters?.status) {
+      parts.push(`status_${this.normalizeValue(filters.status)}`);
+    }
+    
+    if (filters?.role) {
+      parts.push(`role_${this.normalizeValue(filters.role)}`);
+    }
+    
+    if (filters?.federationCode) {
+      parts.push(`federation_${this.normalizeValue(filters.federationCode)}`);
+    }
+    
+    // Add version
+    parts.push(this.keyVersion);
+    
+    const key = parts.join('_');
+    return createCacheKey(key);
+  }
+
+  /**
+   * Build cache key for individual referee details
+   * Single referee profile data
+   */
+  refereeDetails(refereeId: string): CacheKey {
+    const normalizedId = this.normalizeValue(refereeId);
+    const key = `referee_profile_${normalizedId}_${this.keyVersion}`;
+    return createCacheKey(key);
+  }
+
+  /**
    * Build versioned cache key
    * Allows for cache invalidation via version bumping
    */

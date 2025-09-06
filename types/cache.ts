@@ -38,6 +38,7 @@ export interface CacheConfiguration {
     matchesScheduled: number;
     matchesLive: number;
     matchesFinished: number;
+    referees: number;
   };
 }
 

@@ -1,14 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Tournament } from '../types/tournament';
+import { TournamentRefereeData } from '../types/referee-v2';
 
 const STORAGE_KEYS = {
   SELECTED_TOURNAMENT: '@referee_selected_tournament',
   USER_PREFERENCES: '@referee_user_preferences',
   COURT_PREFERENCES: '@referee_court_preferences',
   TOURNAMENT_DETAILS_CACHE: '@referee_tournament_details_cache',
+  REFEREE_DATA_CACHE: '@referee_data_cache',
 } as const;
 
 const CACHE_EXPIRY_HOURS = 6; // Cache expires after 6 hours
+const REFEREE_CACHE_EXPIRY_HOURS = 24; // Referee data expires after 24 hours
 
 export interface UserPreferences {
   selectedCourt?: string;
@@ -19,6 +22,12 @@ export interface UserPreferences {
 
 interface CachedTournamentDetails {
   tournament: Tournament;
+  cachedAt: string;
+  expiresAt: string;
+}
+
+interface CachedRefereeData {
+  refereeData: TournamentRefereeData;
   cachedAt: string;
   expiresAt: string;
 }
@@ -301,6 +310,107 @@ export class TournamentStorageService {
   }
 
   /**
+   * Cache referee data for a tournament with 24-hour TTL
+   */
+  static async cacheRefereeData(tournamentNo: string, refereeData: TournamentRefereeData): Promise<void> {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + (REFEREE_CACHE_EXPIRY_HOURS * 60 * 60 * 1000));
+      
+      const cachedData: CachedRefereeData = {
+        refereeData,
+        cachedAt: now.toISOString(),
+        expiresAt: expiresAt.toISOString()
+      };
+      
+      const cacheKey = `${STORAGE_KEYS.REFEREE_DATA_CACHE}_${tournamentNo}`;
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedData));
+    } catch (error) {
+      console.error('Failed to cache referee data:', error);
+    }
+  }
+
+  /**
+   * Get cached referee data if available and not expired
+   */
+  static async getCachedRefereeData(tournamentNo: string): Promise<TournamentRefereeData | null> {
+    try {
+      const cacheKey = `${STORAGE_KEYS.REFEREE_DATA_CACHE}_${tournamentNo}`;
+      const cachedDataStr = await AsyncStorage.getItem(cacheKey);
+      
+      if (!cachedDataStr) {
+        return null;
+      }
+      
+      const cachedData: CachedRefereeData = JSON.parse(cachedDataStr);
+      const now = new Date();
+      const expiresAt = new Date(cachedData.expiresAt);
+      
+      // Check if cache is expired
+      if (now > expiresAt) {
+        // Remove expired cache
+        await AsyncStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return cachedData.refereeData;
+    } catch (error) {
+      console.error('Failed to get cached referee data:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear expired referee data caches
+   */
+  static async clearExpiredRefereeCaches(): Promise<void> {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const refereeCacheKeys = keys.filter(key => 
+        key.startsWith(STORAGE_KEYS.REFEREE_DATA_CACHE)
+      );
+      
+      const now = new Date();
+      const keysToRemove: string[] = [];
+      
+      for (const key of refereeCacheKeys) {
+        try {
+          const cachedDataStr = await AsyncStorage.getItem(key);
+          if (cachedDataStr) {
+            const cachedData: CachedRefereeData = JSON.parse(cachedDataStr);
+            const expiresAt = new Date(cachedData.expiresAt);
+            
+            if (now > expiresAt) {
+              keysToRemove.push(key);
+            }
+          }
+        } catch {
+          // If parsing fails, remove the key
+          keysToRemove.push(key);
+        }
+      }
+      
+      if (keysToRemove.length > 0) {
+        await AsyncStorage.multiRemove(keysToRemove);
+      }
+    } catch (error) {
+      console.error('Failed to clear expired referee caches:', error);
+    }
+  }
+
+  /**
+   * Remove referee data cache for a specific tournament
+   */
+  static async clearRefereeDataCache(tournamentNo: string): Promise<void> {
+    try {
+      const cacheKey = `${STORAGE_KEYS.REFEREE_DATA_CACHE}_${tournamentNo}`;
+      await AsyncStorage.removeItem(cacheKey);
+    } catch (error) {
+      console.error('Failed to clear referee data cache:', error);
+    }
+  }
+
+  /**
    * Clear all referee-related data (for testing or reset purposes)
    */
   static async clearAllData(): Promise<void> {
@@ -308,7 +418,7 @@ export class TournamentStorageService {
       const keys = Object.values(STORAGE_KEYS);
       await AsyncStorage.multiRemove(keys);
       
-      // Also clear tournament-specific court preferences and details cache
+      // Also clear tournament-specific court preferences, details cache, and referee data cache
       const allKeys = await AsyncStorage.getAllKeys();
       const courtPreferenceKeys = allKeys.filter(key => 
         key.startsWith(STORAGE_KEYS.COURT_PREFERENCES)
@@ -316,8 +426,11 @@ export class TournamentStorageService {
       const tournamentDetailsKeys = allKeys.filter(key => 
         key.startsWith(STORAGE_KEYS.TOURNAMENT_DETAILS_CACHE)
       );
+      const refereeDataKeys = allKeys.filter(key => 
+        key.startsWith(STORAGE_KEYS.REFEREE_DATA_CACHE)
+      );
       
-      const keysToRemove = [...courtPreferenceKeys, ...tournamentDetailsKeys];
+      const keysToRemove = [...courtPreferenceKeys, ...tournamentDetailsKeys, ...refereeDataKeys];
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove);
       }

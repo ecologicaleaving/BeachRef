@@ -115,7 +115,9 @@ export class PollingPerformanceMonitor {
     [VisApiEndpoint.GET_BEACH_ROUND]: 35,
     [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 30,
     [VisApiEndpoint.GET_BEACH_LIVE]: 80,
-    [VisApiEndpoint.BATCH_REQUEST]: 100
+    [VisApiEndpoint.BATCH_REQUEST]: 100,
+    [VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]: 45,
+    [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: 50
   };
 
   /**

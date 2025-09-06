@@ -19,6 +19,8 @@ import {
   GetBeachRoundRequest,
   GetBeachRoundListRequest,
   GetBeachLiveRequest,
+  GetEventOfficialListRequest,
+  GetEventRefereeListRequest,
   BatchRequest,
   BatchResponse,
   BatchRequestItem,
@@ -73,7 +75,9 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_BEACH_ROUND]: 0,
         [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_LIVE]: 0,
-        [VisApiEndpoint.BATCH_REQUEST]: 0
+        [VisApiEndpoint.BATCH_REQUEST]: 0,
+        [VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]: 0,
+        [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: 0
       },
       errorsByType: {},
       lastRequestTimestamp: new Date().toISOString()
@@ -375,6 +379,72 @@ export class VisApiClient implements IVisApiClient {
       
     } catch (error) {
       this.updateMonitor(VisApiEndpoint.GET_BEACH_LIVE, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get event official list using dedicated VIS API endpoint
+   * Optimized with field selection and circuit breaker integration
+   */
+  async getEventOfficialList(request: GetEventOfficialListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      // Build optimized request with field selection
+      const optimizedRequest = {
+        ...request,
+        fields: request.fields || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]
+      };
+
+      const xmlRequest = this.buildGetEventOfficialListXml(optimizedRequest);
+      
+      // Log the exact XML request being sent to debug 400 errors
+      console.log('🔍 GetEventOfficialList XML Request:');
+      console.log('EventNo:', optimizedRequest.eventNo);
+      console.log('Fields:', optimizedRequest.fields);
+      console.log('XML Request:', xmlRequest);
+      
+      const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_OFFICIAL_LIST, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_EVENT_OFFICIAL_LIST, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_EVENT_OFFICIAL_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get event referee list using dedicated VIS API endpoint  
+   * Optimized with field selection and circuit breaker integration
+   */
+  async getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+    
+    try {
+      // Build optimized request with field selection
+      const optimizedRequest = {
+        ...request,
+        fields: request.fields || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_EVENT_REFEREE_LIST]
+      };
+
+      const xmlRequest = this.buildGetEventRefereeListXml(optimizedRequest);
+      
+      // Log the exact XML request being sent to debug 400 errors
+      console.log('🔍 GetEventRefereeList XML Request:');
+      console.log('EventNo:', optimizedRequest.eventNo);
+      console.log('Fields:', optimizedRequest.fields);
+      console.log('XML Request:', xmlRequest);
+      
+      const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_REFEREE_LIST, xmlRequest);
+      
+      this.updateMonitor(VisApiEndpoint.GET_EVENT_REFEREE_LIST, true, Date.now() - startTime);
+      return response;
+      
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_EVENT_REFEREE_LIST, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
   }
@@ -839,8 +909,8 @@ export class VisApiClient implements IVisApiClient {
    * Based on documentation: <Request Type="GetBeachTournament" No="502" Fields="..." />
    */
   private buildGetBeachTournamentXml(request: GetBeachTournamentRequest): string {
-    // REQUEST THE No FIELD EXPLICITLY - this is the real tournament number we need
-    const fields = 'No Code Name';
+    // REQUEST NoEvent field - this is needed to filter referee list
+    const fields = 'No Code Name NoEvent';
     
     return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
   }
@@ -1006,6 +1076,32 @@ export class VisApiClient implements IVisApiClient {
   }
 
   /**
+   * Build GetEventOfficialList XML request
+   */
+  private buildGetEventOfficialListXml(request: GetEventOfficialListRequest): string {
+    // Use exact fields from VIS Implementation Guidelines section 4.3
+    const fields = request.fields && request.fields.length > 0 
+      ? request.fields.join(' ')
+      : 'NoOfficial FirstName LastName Role Status';
+    
+    // Use Filter element with NoEvent per VIS API specification
+    return `<Request Type="GetEventOfficialList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request>`;
+  }
+
+  /**
+   * Build GetEventRefereeList XML request  
+   */
+  private buildGetEventRefereeListXml(request: GetEventRefereeListRequest): string {
+    // Use exact fields from VIS Implementation Guidelines section 4.3
+    const fields = request.fields && request.fields.length > 0
+      ? request.fields.join(' ')
+      : 'NoReferee FirstName LastName Gender Role Status';
+    
+    // Use Filter element with NoEvent per VIS API specification
+    return `<Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request>`;
+  }
+
+  /**
    * Build XML request for batch requests
    * Combines multiple requests into a single batch
    */
@@ -1056,6 +1152,12 @@ export class VisApiClient implements IVisApiClient {
           break;
         case VisApiEndpoint.GET_BEACH_LIVE:
           individualXml = this.buildGetBeachLiveXml(item.request as GetBeachLiveRequest);
+          break;
+        case VisApiEndpoint.GET_EVENT_OFFICIAL_LIST:
+          individualXml = this.buildGetEventOfficialListXml(item.request as GetEventOfficialListRequest);
+          break;
+        case VisApiEndpoint.GET_EVENT_REFEREE_LIST:
+          individualXml = this.buildGetEventRefereeListXml(item.request as GetEventRefereeListRequest);
           break;
         default:
           throw new Error(`Unsupported batch request type: ${item.type}`);

@@ -25,15 +25,6 @@ type MatchWithDurationFields = {
 };
 
 const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
-  // Simplified debug logging - only for first few matches to avoid spam
-  if (match.id.includes('495295')) { // Log only for specific match as example
-    console.log('Duration extraction for match:', match.id, {
-      Duration: (match as any).Duration,
-      DurationSet1: (match as any).DurationSet1,
-      DurationSet2: (match as any).DurationSet2,
-      DurationSet3: (match as any).DurationSet3
-    });
-  }
   
   // FIXED: Primary: Use total match duration from enhanced data (Duration field in seconds)
   const totalDurationSeconds = (match as any).Duration;
@@ -62,25 +53,38 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
     }
   }
   
-  // Fallback: Calculate from individual set durations (in seconds)
+  // Fallback: Calculate from individual set durations
+  // Handle both formats: seconds (integers) and "mm:ss" format (strings)
   const durationSet1 = (match as any).DurationSet1;
   const durationSet2 = (match as any).DurationSet2;
   const durationSet3 = (match as any).DurationSet3;
   
   if (durationSet1 || durationSet2 || durationSet3) {
-    const totalSeconds = (parseInt(durationSet1 || '0') + 
-                         parseInt(durationSet2 || '0') + 
-                         parseInt(durationSet3 || '0'));
+    // Check if durations are in "mm:ss" format (strings) or seconds (numbers)
+    const isStringFormat = typeof durationSet1 === 'string' && durationSet1.includes(':');
     
-    if (totalSeconds > 0) {
-      const totalMinutes = Math.floor(totalSeconds / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
+    if (isStringFormat) {
+      // Use the utility function for "mm:ss" format
+      const totalDuration = calculateTotalDuration(durationSet1, durationSet2, durationSet3);
+      if (totalDuration) {
+        return totalDuration;
+      }
+    } else {
+      // Handle seconds format (integers) - ensure all three sets are included
+      const totalSeconds = (parseInt(durationSet1 || '0') + 
+                           parseInt(durationSet2 || '0') + 
+                           parseInt(durationSet3 || '0'));
       
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
+      if (totalSeconds > 0) {
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        
+        if (hours > 0) {
+          return `${hours}h ${minutes}m`;
+        } else {
+          return `${minutes}m`;
+        }
       }
     }
   }
@@ -832,6 +836,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                     styles.resultScore,
                     matchWithResult.result.winner === 2 && styles.winnerScore
                   ]}>{matchWithResult.result.team2Sets}</Text>
+                  {(() => {
+                    const totalDuration = getMatchDuration(match);
+                    return totalDuration ? (
+                      <Text style={styles.durationText}>{totalDuration}</Text>
+                    ) : null;
+                  })()}
                 </View>
                 {(() => {
                   // Show set scores for ANY number of complete sets (even 1 set = 2 scores)
@@ -888,12 +898,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                     })()}
                   </View>
                 )}
-                {(() => {
-                  const totalDuration = getMatchDuration(match);
-                  return totalDuration ? (
-                    <Text style={styles.durationText}>({totalDuration})</Text>
-                  ) : null;
-                })()}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -1598,11 +1602,10 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   durationText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '400',
-    color: '#9CA3AF',
-    marginTop: 2,
-    textAlign: 'center',
+    color: '#6B7280',
+    marginLeft: 12,
   },
   countryCode: {
     fontSize: 12,

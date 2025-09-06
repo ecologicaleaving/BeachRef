@@ -27,7 +27,13 @@ export enum VisApiEndpoint {
   /** Endpoint for live score data */
   GET_BEACH_LIVE = 'GetBeachLive',
   /** Endpoint for batch requests */
-  BATCH_REQUEST = 'BatchRequest'
+  BATCH_REQUEST = 'BatchRequest',
+  /** Endpoint for event official lists */
+  GET_EVENT_OFFICIAL_LIST = 'GetEventOfficialList',
+  /** Endpoint for event referee lists */
+  GET_EVENT_REFEREE_LIST = 'GetEventRefereeList',
+  /** Endpoint for general referee lists */
+  GET_REFEREE_LIST = 'GetRefereeList'
 }
 
 /**
@@ -199,6 +205,28 @@ export interface GetBeachLiveRequest extends VisApiRequestBase {
   readonly version?: number;
   /** Options for data filtering */
   readonly options?: readonly string[];
+}
+
+/**
+ * GetEventOfficialList request parameters
+ * For retrieving officials list for a specific event
+ */
+export interface GetEventOfficialListRequest extends VisApiRequestBase {
+  /** Event number to get officials for */
+  readonly eventNo: string;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
+}
+
+/**
+ * GetEventRefereeList request parameters
+ * For retrieving referee list for a specific event  
+ */
+export interface GetEventRefereeListRequest extends VisApiRequestBase {
+  /** Event number to get referees for */
+  readonly eventNo: string;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
 }
 
 /**
@@ -413,6 +441,20 @@ export interface IVisApiClient {
   getTournamentDetailBatch(request: TournamentDetailBatchRequest): Promise<BatchResponse>;
   
   /**
+   * Get event official list using dedicated VIS API endpoint
+   * @param request - GetEventOfficialList request parameters  
+   * @returns Promise with XML response containing official list
+   */
+  getEventOfficialList(request: GetEventOfficialListRequest): Promise<VisApiResponse>;
+  
+  /**
+   * Get event referee list using dedicated VIS API endpoint
+   * @param request - GetEventRefereeList request parameters
+   * @returns Promise with XML response containing referee list
+   */
+  getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse>;
+  
+  /**
    * Test API connectivity
    * @returns Promise with connection status
    */
@@ -544,6 +586,12 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   ],
   [VisApiEndpoint.BATCH_REQUEST]: [
     'BatchId', 'RequestCount', 'Results', 'Success', 'Errors'
+  ],
+  [VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]: [
+    'NoOfficial', 'FirstName', 'LastName', 'Role', 'Status'
+  ],
+  [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: [
+    'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Gender', 'Type', 'Status'
   ]
 } as const;
 
@@ -580,6 +628,12 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
   ],
   [VisApiEndpoint.BATCH_REQUEST]: [
     'BatchId', 'Success', 'Errors'
+  ],
+  [VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]: [
+    'FirstName', 'LastName', 'NoOfficial', 'Role', 'Status'
+  ],
+  [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: [
+    'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
   ]
 } as const;
 

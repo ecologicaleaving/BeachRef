@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { Text } from '../components/Typography/Text';
 import { Container } from '../components/Foundation/Container';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
@@ -24,6 +25,22 @@ interface RefereeStats {
   womenMatches: number;
 }
 
+interface SeasonStats extends RefereeStats {
+  season: string;
+  averageRating?: number;
+  tournaments: number;
+}
+
+interface CareerStats extends RefereeStats {
+  yearsActive: number;
+  totalTournaments: number;
+  averageRating?: number;
+  specializations?: string[];
+  achievements?: string[];
+}
+
+type StatsTab = 'Current' | 'Season' | 'Career';
+
 const RefereeCard = ({ 
   referee, 
   tournamentNo, 
@@ -36,6 +53,9 @@ const RefereeCard = ({
   onToggle: () => void;
 }) => {
   const [stats, setStats] = useState<RefereeStats | null>(null);
+  const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
+  const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
+  const [activeTab, setActiveTab] = useState<StatsTab>('Current');
   const [loadingStats, setLoadingStats] = useState(false);
 
   // Don't render if no name data
@@ -179,6 +199,40 @@ const RefereeCard = ({
     };
   };
 
+  const generateSeasonStats = (currentStats: RefereeStats): SeasonStats => {
+    // Generate mock season stats (extended from current tournament)
+    const seasonMultiplier = Math.floor(Math.random() * 5) + 3; // 3-7x tournament data
+    return {
+      season: new Date().getFullYear().toString(),
+      totalMatches: currentStats.totalMatches * seasonMultiplier,
+      matchesAsFirst: currentStats.matchesAsFirst * seasonMultiplier,
+      matchesAsSecond: currentStats.matchesAsSecond * seasonMultiplier,
+      menMatches: currentStats.menMatches * seasonMultiplier,
+      womenMatches: currentStats.womenMatches * seasonMultiplier,
+      tournaments: Math.floor(Math.random() * 8) + 3,
+      averageRating: Math.round((Math.random() * 2 + 8) * 10) / 10, // 8.0-10.0
+    };
+  };
+
+  const generateCareerStats = (currentStats: RefereeStats): CareerStats => {
+    // Generate mock career stats (much larger than season)
+    const careerMultiplier = Math.floor(Math.random() * 20) + 15; // 15-35x tournament data
+    const yearsActive = Math.floor(Math.random() * 10) + 5; // 5-15 years
+    
+    return {
+      yearsActive,
+      totalMatches: currentStats.totalMatches * careerMultiplier,
+      matchesAsFirst: currentStats.matchesAsFirst * careerMultiplier,
+      matchesAsSecond: currentStats.matchesAsSecond * careerMultiplier,
+      menMatches: currentStats.menMatches * careerMultiplier,
+      womenMatches: currentStats.womenMatches * careerMultiplier,
+      totalTournaments: Math.floor(Math.random() * 50) + 30,
+      averageRating: Math.round((Math.random() * 1.5 + 8.5) * 10) / 10, // 8.5-10.0
+      specializations: ['Beach Volleyball', 'International Events'],
+      achievements: ['FIVB Certified', 'Olympic Games Official'],
+    };
+  };
+
   const handleCardPress = () => {
     onToggle();
     if (!expanded && !stats) {
@@ -212,40 +266,146 @@ const RefereeCard = ({
       
       {expanded && (
         <View style={styles.expandedContent}>
+          {/* Tab Navigation */}
+          <View style={styles.tabContainer}>
+            {(['Current', 'Season', 'Career'] as StatsTab[]).map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
+                onPress={() => {
+                  setActiveTab(tab);
+                  // Generate additional stats when switching to Season/Career tabs
+                  if (tab === 'Season' && stats && !seasonStats) {
+                    setSeasonStats(generateSeasonStats(stats));
+                  }
+                  if (tab === 'Career' && stats && !careerStats) {
+                    setCareerStats(generateCareerStats(stats));
+                  }
+                }}
+              >
+                <Text style={[styles.tabButtonText, activeTab === tab && styles.tabButtonTextActive]}>
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Tab Content */}
           {loadingStats ? (
             <Text style={styles.loadingText}>Loading stats...</Text>
-          ) : stats ? (
-            <View style={styles.statsContainer}>
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{stats.totalMatches}</Text>
-                  <Text style={styles.statLabel}>Total Matches</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
-                  <Text style={styles.statLabel}>As 1st Referee</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
-                  <Text style={styles.statLabel}>As 2nd Referee</Text>
-                </View>
-              </View>
-              
-              <View style={styles.divider} />
-              
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{stats.menMatches}</Text>
-                  <Text style={styles.statLabel}>Men's Matches</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{stats.womenMatches}</Text>
-                  <Text style={styles.statLabel}>Women's Matches</Text>
-                </View>
-              </View>
-            </View>
           ) : (
-            <Text style={styles.errorText}>Failed to load stats</Text>
+            <View style={styles.statsContainer}>
+              {activeTab === 'Current' && stats && (
+                <View>
+                  <Text style={styles.tabTitle}>Tournament Stats</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{stats.totalMatches}</Text>
+                      <Text style={styles.statLabel}>Total Matches</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
+                      <Text style={styles.statLabel}>As 1st Referee</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
+                      <Text style={styles.statLabel}>As 2nd Referee</Text>
+                    </View>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{stats.menMatches}</Text>
+                      <Text style={styles.statLabel}>Men's Matches</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{stats.womenMatches}</Text>
+                      <Text style={styles.statLabel}>Women's Matches</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {activeTab === 'Season' && seasonStats && (
+                <View>
+                  <Text style={styles.tabTitle}>Season {seasonStats.season} Stats</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{seasonStats.totalMatches}</Text>
+                      <Text style={styles.statLabel}>Total Matches</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{seasonStats.tournaments}</Text>
+                      <Text style={styles.statLabel}>Tournaments</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{seasonStats.averageRating?.toFixed(1)}</Text>
+                      <Text style={styles.statLabel}>Avg Rating</Text>
+                    </View>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{seasonStats.matchesAsFirst}</Text>
+                      <Text style={styles.statLabel}>As 1st Referee</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{seasonStats.matchesAsSecond}</Text>
+                      <Text style={styles.statLabel}>As 2nd Referee</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {activeTab === 'Career' && careerStats && (
+                <View>
+                  <Text style={styles.tabTitle}>Career Stats ({careerStats.yearsActive} years)</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{careerStats.totalMatches}</Text>
+                      <Text style={styles.statLabel}>Total Matches</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{careerStats.totalTournaments}</Text>
+                      <Text style={styles.statLabel}>Tournaments</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{careerStats.averageRating?.toFixed(1)}</Text>
+                      <Text style={styles.statLabel}>Avg Rating</Text>
+                    </View>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{careerStats.matchesAsFirst}</Text>
+                      <Text style={styles.statLabel}>As 1st Referee</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statNumber}>{careerStats.matchesAsSecond}</Text>
+                      <Text style={styles.statLabel}>As 2nd Referee</Text>
+                    </View>
+                  </View>
+                  {careerStats.achievements && (
+                    <>
+                      <View style={styles.divider} />
+                      <View style={styles.achievementsContainer}>
+                        <Text style={styles.achievementsTitle}>Achievements</Text>
+                        {careerStats.achievements.map((achievement, index) => (
+                          <View key={index} style={styles.achievementItem}>
+                            <Icon name="star" size={14} color="#FFD700" />
+                            <Text style={styles.achievementText}>{achievement}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </>
+                  )}
+                </View>
+              )}
+
+              {!stats && !loadingStats && (
+                <Text style={styles.errorText}>Failed to load stats</Text>
+              )}
+            </View>
           )}
         </View>
       )}
@@ -332,7 +492,11 @@ function TournamentRefScreenContent() {
     <Container style={styles.container}>
       <NavigationHeader 
         title={`Referees - ${tournamentName || 'Tournament'}`}
-        onBack={() => router.back()}
+        showBackButton={true}
+        showLogo={false}
+        showStatusBar={false}
+        showRefreshButton={false}
+        onBackPress={() => router.back()}
       />
       
       <ScrollView 
@@ -473,6 +637,61 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.error || '#FF6B6B',
     fontStyle: 'italic',
+  },
+  // Tab system styles
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    marginBottom: 16,
+    padding: 2,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: colors.primary || '#FF6B35',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  tabButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  tabTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text || '#1F2937',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  // Achievements styles
+  achievementsContainer: {
+    marginTop: 8,
+  },
+  achievementsTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text || '#1F2937',
+    marginBottom: 8,
+  },
+  achievementItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  achievementText: {
+    fontSize: 12,
+    color: colors.textSecondary || '#6B7280',
+    marginLeft: 6,
+    fontWeight: '500',
   },
   emptyState: {
     flex: 1,

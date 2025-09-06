@@ -231,9 +231,9 @@ export class TournamentStatusSubscriptionService {
       const newTournament = payload.new;
       
       // console.log(`Tournament status change detected for ${newTournament.no}:`, {
-        oldStatus: oldTournament.status,
-        newStatus: newTournament.status
-      });
+      //   oldStatus: oldTournament.status,
+      //   newStatus: newTournament.status
+      // });
 
       // Track message for performance monitoring
       const messageSize = JSON.stringify(payload).length;
@@ -259,9 +259,9 @@ export class TournamentStatusSubscriptionService {
       const newMatch = payload.new;
       
       // console.log(`Match schedule change detected for tournament ${newMatch.tournament_no}:`, {
-        match: newMatch.no_in_tournament,
-        changes: this.detectMatchChanges(oldMatch, newMatch)
-      });
+      //   match: newMatch.no_in_tournament,
+      //   changes: this.detectMatchChanges(oldMatch, newMatch)
+      // });
 
       // Track message for performance monitoring
       const messageSize = JSON.stringify(payload).length;

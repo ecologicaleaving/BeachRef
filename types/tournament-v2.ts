@@ -102,6 +102,9 @@ export interface TournamentCore extends VisEntity {
   /** Current tournament status */
   readonly status: TournamentStatus;
   
+  /** Event number for referee API calls - extracted from VIS API */
+  readonly NoEvent?: string;
+  
   /** Host city */
   readonly city?: string;
   

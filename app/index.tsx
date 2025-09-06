@@ -9,33 +9,49 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Radio, Award, Calendar, Play, ArrowRight, ChevronRight } from 'lucide-react';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { WhistleLogo } from '../components/WhistleLogo';
+import { DefaultTournamentService } from '../services/DefaultTournamentService';
 
-const { width } = Dimensions.get('window');
+// Window dimensions available but not currently used
+// const { width } = Dimensions.get('window');
 
 export default function Index() {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash] = useState(true); // setShowSplash will be used for future splash screen logic
   const router = useRouter();
 
   useEffect(() => {
-    // Animate splash screen entrance
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, scaleAnim]);
+    // Check for default tournament and redirect accordingly
+    const checkDefaultTournament = async () => {
+      try {
+        const defaultTournament = await DefaultTournamentService.getDefaultTournament();
+        if (defaultTournament) {
+          // Redirect directly to the default tournament detail page
+          router.replace({
+            pathname: '/tournament-detail',
+            params: {
+              tournamentData: JSON.stringify({
+                visNo: defaultTournament.visNo,
+                name: defaultTournament.name,
+                title: defaultTournament.name
+              })
+            }
+          });
+        } else {
+          // No default tournament, redirect to tournament selection
+          router.replace('/tournament-selection');
+        }
+      } catch (error) {
+        console.error('Error checking default tournament:', error);
+        // Fallback to tournament selection if error
+        router.replace('/tournament-selection');
+      }
+    };
+    
+    checkDefaultTournament();
+  }, [router]);
 
   const handleStartPress = () => {
     // Animate out and navigate to tournament selection
@@ -48,88 +64,12 @@ export default function Index() {
     });
   };
 
-  if (showSplash) {
-    return (
-      <View style={styles.splashContainer}>
-        <StatusBar barStyle="light-content" backgroundColor="#1B365D" />
-        
-        {/* Beach Background Effect */}
-        <View style={styles.backgroundPattern}>
-          <View style={[styles.sand, styles.sand1]} />
-          <View style={[styles.sand, styles.sand2]} />
-          <View style={[styles.sand, styles.sand3]} />
-        </View>
-
-        <Animated.View 
-          style={[
-            styles.contentContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }],
-            },
-          ]}
-        >
-          {/* Top Section */}
-          <View style={styles.topSection}>
-            {/* Whistle Logo */}
-            <WhistleLogo width={180} height={120} style={styles.logo} />
-            
-            {/* App Name - Moved higher */}
-            <Text style={styles.appName}>BeachRef</Text>
-            <Text style={styles.appTagline}>Referee Assignment and Match Result Monitor</Text>
-
-            {/* Feature Icons */}
-            <View style={styles.featuresContainer}>
-              <View style={styles.featureItem}>
-                <Radio 
-                  size={48} 
-                  color="#B8D4E3" 
-                  strokeWidth={2}
-                />
-                <Text style={styles.featureText}>Live Score</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Award 
-                  size={48} 
-                  color="#B8D4E3" 
-                  strokeWidth={2}
-                />
-                <Text style={styles.featureText}>Results</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Calendar 
-                  size={48} 
-                  color="#B8D4E3" 
-                  strokeWidth={2}
-                />
-                <Text style={styles.featureText}>Assignments</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Start Button */}
-          <TouchableOpacity 
-            style={styles.startButton}
-            onPress={handleStartPress}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.startButtonText}>Get Started</Text>
-            <Play size={20} color="#FFFFFF" fill="#FFFFFF" style={styles.startButtonIcon} />
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Professional Badge - Fixed at bottom */}
-        <View style={styles.bottomBadge}>
-          <Text style={styles.professionalText}>Powered by FIVB VIS System</Text>
-        </View>
-      </View>
-    );
-  }
-
-  // If splash is hidden, just show a simple fallback (shouldn't normally reach here)
+  // Show loading screen while checking for default tournament
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1B365D' }}>
-      <Text style={{ color: '#FFFFFF', fontSize: 18 }}>Loading...</Text>
+    <View style={styles.loadingContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#1B365D" />
+      <WhistleLogo width={120} height={80} style={styles.loadingLogo} />
+      <Text style={styles.loadingText}>Loading...</Text>
     </View>
   );
 }
@@ -278,5 +218,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#1B365D',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingLogo: {
+    marginBottom: 20,
+    opacity: 0.8,
+  },
+  loadingText: {
+    color: '#B8D4E3',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

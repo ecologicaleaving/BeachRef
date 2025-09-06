@@ -8,6 +8,7 @@ import { supabase } from './supabase';
 import { NetworkMonitor } from './NetworkMonitor';
 import { VisApiClient } from './api/VisApiClient';
 import { VisApiClientConfig, DEFAULT_RETRY_CONFIG } from '../types/api-v2';
+import { TournamentRefereeData } from '../types/referee-v2';
 
 /**
  * Multi-tier cache service with intelligent fallback logic
@@ -35,7 +36,8 @@ export class CacheService {
         tournaments: 24 * 60 * 60 * 1000, // 24 hours
         matchesScheduled: 15 * 60 * 1000, // 15 minutes
         matchesLive: 30 * 1000, // 30 seconds
-        matchesFinished: 24 * 60 * 60 * 1000 // 24 hours
+        matchesFinished: 24 * 60 * 60 * 1000, // 24 hours
+        referees: 24 * 60 * 60 * 1000 // 24 hours
       },
       ...config
     };
@@ -188,6 +190,100 @@ export class CacheService {
       }
       
       const staleData = await this.getStaleData(baseCacheKey);
+      if (staleData) {
+        return {
+          data: staleData,
+          source: 'localStorage',
+          fromCache: true,
+          timestamp: Date.now()
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Get referee data with 24-hour TTL multi-tier caching
+   */
+  static async getRefereeData(tournamentNo: string): Promise<CacheResult<TournamentRefereeData>> {
+    this.ensureInitialized();
+    const requestId = this.generateRequestId();
+    const cacheKey = this.generateCacheKey('referees', { tournamentNo });
+
+    this.stats.startTimer(requestId);
+
+    try {
+      // Tier 1: Memory Cache
+      const memoryResult = this.getRefereesFromMemory(cacheKey);
+      if (memoryResult) {
+        this.stats.recordHit('memory', requestId);
+        return {
+          data: memoryResult,
+          source: 'memory',
+          fromCache: true,
+          timestamp: Date.now()
+        };
+      }
+
+      // Tier 2: Local Storage
+      const localResult = await this.getRefereesFromLocalStorage(cacheKey);
+      if (localResult) {
+        this.setInMemory(cacheKey, localResult, this.config.defaultTTL.referees);
+        this.stats.recordHit('localStorage', requestId);
+        return {
+          data: localResult,
+          source: 'localStorage',
+          fromCache: true,
+          timestamp: Date.now()
+        };
+      }
+
+      // Tier 2.5: Offline Storage (when network is unavailable)
+      if (!this.networkMonitor.isConnected) {
+        const offlineResult = await this.getRefereesFromOfflineStorage(cacheKey);
+        if (offlineResult) {
+          this.stats.recordHit('offline', requestId);
+          return {
+            data: offlineResult,
+            source: 'offline',
+            fromCache: true,
+            timestamp: Date.now()
+          };
+        }
+        
+        throw new Error('No cached referee data available offline');
+      }
+
+      // Tier 4: Direct API Fallback (only when network available)
+      const apiResult = await this.getRefereesFromAPI(tournamentNo);
+      
+      // Update all cache tiers with fresh data
+      await this.setLocalStorage(cacheKey, apiResult, this.config.defaultTTL.referees);
+      await this.setOfflineStorage(cacheKey, apiResult);
+      this.setInMemory(cacheKey, apiResult, this.config.defaultTTL.referees);
+      
+      this.stats.recordHit('api', requestId);
+      return {
+        data: apiResult,
+        source: 'api',
+        fromCache: false,
+        timestamp: Date.now()
+      };
+
+    } catch (error) {
+      // Final fallback: try offline storage first, then stale data
+      const offlineData = await this.getRefereesFromOfflineStorage(cacheKey);
+      if (offlineData) {
+        return {
+          data: offlineData,
+          source: 'offline',
+          fromCache: true,
+          timestamp: Date.now()
+        };
+      }
+      
+      const staleData = await this.getStaleData(cacheKey);
       if (staleData) {
         return {
           data: staleData,
@@ -666,6 +762,174 @@ export class CacheService {
     // TODO: Parse XML response to BeachMatch objects
     // For now, returning empty array to prevent breaking the build
     return [];
+  }
+
+  // Referee cache tier methods
+  private static getRefereesFromMemory(cacheKey: string): TournamentRefereeData | null {
+    const entry = this.memoryCache.get(cacheKey);
+    return entry ? entry.data : null;
+  }
+
+  private static async getRefereesFromLocalStorage(cacheKey: string): Promise<TournamentRefereeData | null> {
+    const cachedData = await this.localStorage.get(cacheKey);
+    return cachedData ? cachedData.data : null;
+  }
+
+  private static async getRefereesFromOfflineStorage(cacheKey: string): Promise<TournamentRefereeData | null> {
+    return await this.localStorage.getOffline(cacheKey);
+  }
+
+  private static async getRefereesFromAPI(tournamentNo: string): Promise<TournamentRefereeData> {
+    const config: VisApiClientConfig = {
+      baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+      timeoutMs: 10000,
+      maxRetries: 3,
+      retryDelayMs: 1000,
+      exponentialBackoff: true,
+      enableLogging: true
+    };
+    
+    const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+    const timestamp = new Date().toISOString();
+    
+    try {
+      // Make parallel calls for officials and referees
+      const [officialsResponse, refereesResponse] = await Promise.all([
+        visApi.getEventOfficialList({
+          eventNo: tournamentNo,
+          fields: ['NoOfficial', 'FirstName', 'LastName', 'Role', 'Status']
+        }),
+        visApi.getEventRefereeList({
+          eventNo: tournamentNo,
+          fields: ['NoReferee', 'FirstName', 'LastName', 'Gender', 'Role', 'Status']
+        })
+      ]);
+      
+      if (!officialsResponse.success || !refereesResponse.success) {
+        throw new Error('Failed to fetch referee data from API');
+      }
+      
+      // Log XML responses for debugging
+      console.log('=== OFFICIALS XML RESPONSE ===');
+      console.log('Tournament:', tournamentNo);
+      console.log('Response XML:', officialsResponse.xmlData);
+      console.log('===============================');
+      
+      console.log('=== REFEREES XML RESPONSE ===');
+      console.log('Tournament:', tournamentNo);
+      console.log('Response XML:', refereesResponse.xmlData);
+      console.log('==============================');
+      
+      // Parse responses and create combined data structure
+      const officials = this.parseOfficialListXml(officialsResponse.xmlData);
+      const referees = this.parseRefereeListXml(refereesResponse.xmlData);
+      
+      return {
+        officials,
+        referees,
+        eventNo: tournamentNo,
+        timestamp,
+        expiresAt: new Date(Date.now() + this.config.defaultTTL.referees).toISOString()
+      };
+      
+    } catch (error) {
+      console.error('CacheService: Referee API call failed:', error);
+      console.log('=== REFEREE API ERROR DETAILS ===');
+      console.log('Tournament:', tournamentNo);
+      console.log('Error:', error);
+      console.log('=================================');
+      
+      // Return empty structure for fallback compatibility
+      return {
+        officials: [],
+        referees: [],
+        eventNo: tournamentNo,
+        timestamp,
+        expiresAt: new Date(Date.now() + this.config.defaultTTL.referees).toISOString()
+      };
+    }
+  }
+
+  private static parseOfficialListXml(xmlData: string): any[] {
+    return this.parseXmlList(xmlData, 'Official', {
+      federationCode: 'FederationCode',
+      firstName: 'FirstName',
+      gender: 'Gender',
+      lastName: 'LastName',
+      noOfficial: 'NoOfficial',
+      role: 'Role',
+      status: 'Status',
+      type: 'Type'
+    }, ['noOfficial', 'firstName', 'lastName']);
+  }
+
+  private static parseRefereeListXml(xmlData: string): any[] {
+    return this.parseXmlList(xmlData, 'Referee', {
+      federationCode: 'FederationCode',
+      firstName: 'FirstName',
+      gender: 'Gender',
+      lastName: 'LastName',
+      noReferee: 'NoReferee',
+      status: 'Status',
+      type: 'Type',
+      theoryTest: 'TheoryTest',
+      strongPoints: 'StrongPoints',
+      weakPoints: 'WeakPoints'
+    }, ['noReferee', 'firstName', 'lastName']);
+  }
+
+  /**
+   * Generic XML list parser to reduce code duplication
+   * Extracts elements and maps XML tags to object properties
+   */
+  private static parseXmlList(
+    xmlData: string, 
+    elementName: string, 
+    fieldMapping: Record<string, string>, 
+    requiredFields: string[]
+  ): any[] {
+    try {
+      const items: any[] = [];
+      
+      // Parse elements from XML structure
+      const elementRegex = new RegExp(`<${elementName}>(.*?)<\/${elementName}>`, 'gs');
+      const elementMatches = xmlData.match(elementRegex) || [];
+      
+      elementMatches.forEach(elementMatch => {
+        try {
+          const getValue = (tagName: string): string => {
+            const regex = new RegExp(`<${tagName}>([^<]*)<\/${tagName}>`, 'i');
+            const result = elementMatch.match(regex);
+            return result ? result[1] || '' : '';
+          };
+          
+          const item: any = {};
+          
+          // Map all fields from XML to object properties
+          Object.entries(fieldMapping).forEach(([objectKey, xmlTag]) => {
+            const value = getValue(xmlTag);
+            if (xmlTag === 'TheoryTest' || xmlTag === 'StrongPoints' || xmlTag === 'WeakPoints') {
+              item[objectKey] = value || undefined;
+            } else {
+              item[objectKey] = value;
+            }
+          });
+          
+          // Only include items with required fields populated
+          const hasRequiredFields = requiredFields.every(field => item[field]);
+          if (hasRequiredFields) {
+            items.push(item);
+          }
+        } catch (parseError) {
+          console.warn(`Failed to parse ${elementName.toLowerCase()} entry:`, parseError);
+        }
+      });
+      
+      return items;
+    } catch (error) {
+      console.error(`${elementName} XML parsing failed:`, error);
+      return [];
+    }
   }
 
   private static calculateMatchesTTL(matches: BeachMatch[]): number {

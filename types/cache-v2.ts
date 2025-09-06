@@ -196,6 +196,21 @@ export interface ICacheKeyBuilder {
   refereeAssignments(refereeId: string, dateRange?: Record<string, any>): CacheKey;
   
   /**
+   * Build cache key for referee list
+   * @param tournamentId - Tournament ID
+   * @param filters - Referee filter parameters
+   * @returns Semantic cache key
+   */
+  refereeList(tournamentId: string, filters?: Record<string, any>): CacheKey;
+  
+  /**
+   * Build cache key for referee details
+   * @param refereeId - Referee ID
+   * @returns Semantic cache key
+   */
+  refereeDetails(refereeId: string): CacheKey;
+  
+  /**
    * Build versioned cache key
    * @param baseKey - Base cache key
    * @param version - Version number

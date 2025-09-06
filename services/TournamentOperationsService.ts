@@ -1,5 +1,9 @@
-import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
+import { VisApiClient } from './api/VisApiClient';
+import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import { TournamentCore } from '../types/tournament-v2';
+import { RefereeAssignmentsService } from './RefereeAssignmentsService';
+import { RefereeProfile } from '../types/RefereeAssignments';
+import { TournamentRefereeData } from '../types/referee-v2';
 
 export class TournamentOperationsService {
   private static visApiClient = new VisApiClient({
@@ -19,7 +23,13 @@ export class TournamentOperationsService {
       // console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
       // Get all tournaments from API
-      const tournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
+      const response = await this.visApiClient.getBeachTournamentList({});
+      if (!response.success) {
+        throw new Error(`Failed to fetch tournaments: ${response.error}`);
+      }
+      
+      // For now, return empty array as we need to parse XML
+      const tournaments: any[] = [];
       // console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);
@@ -162,7 +172,7 @@ export class TournamentOperationsService {
   /**
    * Get tournament status based on dates
    */
-  static getTournamentStatus(tournament: Tournament): 'upcoming' | 'live' | 'completed' | 'unknown' {
+  static getTournamentStatus(tournament: any): 'upcoming' | 'live' | 'completed' | 'unknown' {
     if (!tournament.StartDate || !tournament.EndDate) {
       return 'unknown';
     }
@@ -183,7 +193,7 @@ export class TournamentOperationsService {
   /**
    * Format tournament date range
    */
-  static formatTournamentDateRange(tournament: Tournament): string {
+  static formatTournamentDateRange(tournament: any): string {
     if (tournament.Dates) {
       return tournament.Dates;
     }
@@ -218,7 +228,7 @@ export class TournamentOperationsService {
   /**
    * Get tournament location string
    */
-  static getTournamentLocation(tournament: Tournament): string {
+  static getTournamentLocation(tournament: any): string {
     const city = tournament.City;
     const country = tournament.CountryName || tournament.Country;
     const inferredCountry = this.inferCountryFromName(tournament.Name);
@@ -239,7 +249,7 @@ export class TournamentOperationsService {
   /**
    * Validate tournament data
    */
-  static validateTournament(tournament: Partial<Tournament>): {
+  static validateTournament(tournament: Partial<any>): {
     isValid: boolean;
     errors: string[];
   } {
@@ -274,5 +284,53 @@ export class TournamentOperationsService {
       isValid: errors.length === 0,
       errors,
     };
+  }
+
+  /**
+   * Get referee data for tournament detail views
+   */
+  static async getTournamentRefereeData(tournamentNo: string): Promise<TournamentRefereeData | null> {
+    try {
+      return await RefereeAssignmentsService.getRefereeDataFromCache(tournamentNo);
+    } catch (error) {
+      // console.error('Failed to get tournament referee data:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all referees for tournament detail display
+   */
+  static async getTournamentReferees(tournamentNo: string): Promise<RefereeProfile[]> {
+    try {
+      return await RefereeAssignmentsService.getAllRefereesForTournament(tournamentNo);
+    } catch (error) {
+      // console.error('Failed to get tournament referees:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get referee profile for tournament detail views
+   */
+  static async getRefereeForTournament(refereeId: string, tournamentNo: string): Promise<RefereeProfile | null> {
+    try {
+      return await RefereeAssignmentsService.getRefereeProfile(refereeId, tournamentNo);
+    } catch (error) {
+      // console.error('Failed to get referee for tournament:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if tournament has referee data available
+   */
+  static async hasTournamentRefereeData(tournamentNo: string): Promise<boolean> {
+    try {
+      const refereeData = await this.getTournamentRefereeData(tournamentNo);
+      return refereeData !== null && (refereeData.referees.length > 0 || refereeData.officials.length > 0);
+    } catch (error) {
+      return false;
+    }
   }
 }

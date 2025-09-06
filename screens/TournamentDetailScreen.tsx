@@ -8,13 +8,16 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Switch,
 } from 'react-native';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
+import { DefaultTournamentService } from '../services/DefaultTournamentService';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -212,6 +215,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Removed tab system - showing ranking by default
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
   const [refreshing, setRefreshing] = useState(false);
+  const [isDefault, setIsDefault] = useState(false);
   
   // Filter states for external control of MatchListV2 - preserved during refresh
   // Date filtering disabled - showing all days in timeline
@@ -257,6 +261,60 @@ const TournamentDetailScreenContent: React.FC = () => {
       return {} as TournamentCore;
     }
   }, [tournamentData]);
+
+  // Check if this tournament is default on mount
+  useEffect(() => {
+    const checkDefaultStatus = async () => {
+      if (tournament.visNo) {
+        const defaultStatus = await DefaultTournamentService.isDefaultTournament(tournament.visNo);
+        setIsDefault(defaultStatus);
+      }
+    };
+    checkDefaultStatus();
+  }, [tournament.visNo]);
+
+  // Check if tournament can be set as default (only LIVE tournaments)
+  const tournamentStatus = DefaultTournamentService.getTournamentStatus(
+    tournament.dates?.startDate, 
+    tournament.dates?.endDate
+  );
+  const canBeDefault = tournamentStatus === 'LIVE NOW';
+
+  // Handle default switch toggle
+  const handleDefaultToggle = async (value: boolean) => {
+    if (!tournament.visNo) return;
+    
+    try {
+      const result = await DefaultTournamentService.toggleDefaultTournament(
+        tournament.visNo, 
+        tournament.title || tournament.name || `Tournament ${tournament.visNo}`,
+        tournament.dates?.startDate,
+        tournament.dates?.endDate
+      );
+      
+      if (result.success) {
+        setIsDefault(result.isDefault);
+        
+        if (result.isDefault) {
+          Alert.alert(
+            'Default Set', 
+            'This tournament is now your default. The homepage will redirect here.',
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        // Show error message for why it couldn't be set as default
+        Alert.alert(
+          'Cannot Set as Default', 
+          result.reason || 'This tournament cannot be set as default.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling default tournament:', error);
+      Alert.alert('Error', 'Could not update default tournament setting');
+    }
+  };
 
   // Assignment status management
   const { 
@@ -993,11 +1051,12 @@ const TournamentDetailScreenContent: React.FC = () => {
     <View style={styles.container}>
       <NavigationHeader 
         title={tournament.name || 'Tournament Details'} 
-        showBackButton={true}
+        showBackButton={false}
+        showHomeButton={true}
         showRefreshButton={false}
         showStatusBar={false}
         showLogo={false}
-        onBackPress={() => router.push('/tournament-selection')}
+        onHomePress={() => router.push('/')}
       />
 
       {/* Tournament Info - Scrollable */}
@@ -1080,9 +1139,22 @@ const TournamentDetailScreenContent: React.FC = () => {
               </View>
               
               <View style={styles.dateRow}>
-                <Text style={styles.dateIcon}>📅</Text>
+                <Icon name="calendar-outline" size={16} color="#6B7280" style={styles.dateIcon} />
                 <Text style={styles.tournamentDate}>{getDateRange()}</Text>
               </View>
+
+              {canBeDefault && (
+                <View style={styles.defaultSwitchRow}>
+                  <Text style={styles.defaultSwitchLabel}>Set as Default</Text>
+                  <Switch
+                    value={isDefault}
+                    onValueChange={handleDefaultToggle}
+                    trackColor={{ false: '#D1D5DB', true: colors.primary }}
+                    thumbColor={isDefault ? '#FFFFFF' : '#9CA3AF'}
+                    style={styles.defaultSwitch}
+                  />
+                </View>
+              )}
 
               {/* Tab system removed - showing matches directly */}
             </View>
@@ -1243,29 +1315,20 @@ const TournamentDetailScreenContent: React.FC = () => {
         )}
       </ScrollView>
       
-      {/* Bottom Tab Menu */}
-      <View style={styles.bottomTabMenu}>
-        <TouchableOpacity 
-          style={[styles.tabButton, styles.activeTab]}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.tabText, styles.activeTabText]}>Results</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.tabButton}
-          onPress={() => router.push({
-            pathname: '/tournament-ref',
-            params: { 
-              tournamentNo: tournament.visNo,
-              tournamentName: tournament.name || tournament.title
-            }
-          })}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.tabText}>Referees</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Floating Whistle Button */}
+      <TouchableOpacity
+        style={styles.whistleButton}
+        onPress={() => router.push({
+          pathname: '/tournament-ref',
+          params: { 
+            tournamentNo: tournament.visNo,
+            tournamentName: tournament.name || tournament.title
+          }
+        })}
+        activeOpacity={0.8}
+      >
+        <Icon name="volleyball" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -1731,7 +1794,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateIcon: {
-    fontSize: 16,
     marginRight: 8,
   },
   tournamentDate: {
@@ -1852,34 +1914,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Bottom Tab Menu Styles
-  bottomTabMenu: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  activeTab: {
+  // Floating Whistle Button Styles
+  whistleButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  tabText: {
-    fontSize: 16,
+  whistleIcon: {
+    fontSize: 24,
+  },
+  defaultSwitchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  defaultSwitchLabel: {
+    fontSize: 14,
+    color: '#6B7280',
     fontWeight: '500',
-    color: colors.textSecondary,
   },
-  activeTabText: {
-    color: colors.surface,
-    fontWeight: '600',
+  defaultSwitch: {
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
 
 

@@ -7,6 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import WhistleLogo from '../WhistleLogo';
 
@@ -14,7 +15,9 @@ interface NavigationHeaderProps {
   title: string;
   subtitle?: string;
   showBackButton?: boolean;
+  showHomeButton?: boolean;
   onBackPress?: () => void;
+  onHomePress?: () => void;
   rightComponent?: React.ReactNode;
   backgroundColor?: string;
   titleColor?: string;
@@ -29,7 +32,9 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   title,
   subtitle,
   showBackButton = false,
+  showHomeButton = false,
   onBackPress,
+  onHomePress,
   rightComponent,
   backgroundColor = '#1B365D',
   titleColor = '#FFFFFF',
@@ -56,6 +61,14 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
   const handleLogoPress = () => {
     router.push('/tournament-selection');
+  };
+
+  const handleHomePress = () => {
+    if (onHomePress) {
+      onHomePress();
+    } else {
+      router.push('/');
+    }
   };
 
   const handleRefresh = () => {
@@ -96,8 +109,21 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleBackPress}
               activeOpacity={0.7}
             >
+              <Icon name="arrow-left" size={20} color={titleColor} style={{ marginRight: 4 }} />
               <Text style={[styles.backButtonText, { color: titleColor }]}>
-                ← Back
+                Back
+              </Text>
+            </TouchableOpacity>
+          )}
+          {showHomeButton && (
+            <TouchableOpacity
+              style={styles.homeButton}
+              onPress={handleHomePress}
+              activeOpacity={0.7}
+            >
+              <Icon name="home-outline" size={20} color={titleColor} style={{ marginRight: 4 }} />
+              <Text style={[styles.homeButtonText, { color: titleColor }]}>
+                Home
               </Text>
             </TouchableOpacity>
           )}
@@ -121,9 +147,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleRefresh}
               activeOpacity={0.7}
             >
-              <Text style={[styles.refreshButtonText, { color: titleColor }]}>
-                🔄
-              </Text>
+              <Icon name="refresh" size={20} color={titleColor} />
             </TouchableOpacity>
           )}
           {rightComponent}
@@ -166,8 +190,22 @@ const styles = StyleSheet.create({
     padding: 8,
     minHeight: 44,
     justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   backButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  homeButton: {
+    padding: 8,
+    minHeight: 44,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  homeButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',

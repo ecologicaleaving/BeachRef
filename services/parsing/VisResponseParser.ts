@@ -28,6 +28,16 @@ import {
   determineMatchImportance
 } from '../../types/match-v2';
 
+import {
+  RefereeOfficial,
+  EventReferee,
+  OfficialRole,
+  OfficialStatus,
+  OfficialType,
+  OfficialListResponse,
+  RefereeListResponse
+} from '../../types/referee-v2';
+
 /**
  * Tournament location data from GetBeachTournament
  */
@@ -530,5 +540,188 @@ export class VisResponseParser {
     const regex = new RegExp(`${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
     const match = xml.match(regex);
     return match ? match[1].trim() : undefined;
+  }
+
+  /**
+   * Parse GetEventOfficialList response
+   * Extract official list data from VIS API response  
+   */
+  static parseEventOfficialList(xmlResponse: string): OfficialListResponse {
+    try {
+      const officials: RefereeOfficial[] = [];
+      const timestamp = new Date().toISOString();
+      
+      // Extract officials using VIS API attribute format
+      // Expected format: <Official FederationCode="ITA" FirstName="Marco" ... />
+      const officialMatches = xmlResponse.match(/<Official[^>]*\/>/g);
+      
+      if (officialMatches) {
+        for (const officialXml of officialMatches) {
+          const federationCode = this.extractXmlAttribute(officialXml, 'FederationCode') || '';
+          const firstName = this.extractXmlAttribute(officialXml, 'FirstName') || '';
+          const lastName = this.extractXmlAttribute(officialXml, 'LastName') || '';
+          const gender = this.extractXmlAttribute(officialXml, 'Gender') as 'M' | 'W' || 'M';
+          const noOfficial = this.extractXmlAttribute(officialXml, 'NoOfficial') || '';
+          const roleStr = this.extractXmlAttribute(officialXml, 'Role') || 'TECHNICAL_OFFICIAL';
+          const statusStr = this.extractXmlAttribute(officialXml, 'Status') || 'ACTIVE';
+          const typeStr = this.extractXmlAttribute(officialXml, 'Type') || 'TECHNICAL';
+          
+          // Map string values to enum values with fallbacks
+          const role = this.mapOfficialRole(roleStr);
+          const status = this.mapOfficialStatus(statusStr);
+          const type = this.mapOfficialType(typeStr);
+          
+          if (federationCode && firstName && lastName && noOfficial) {
+            officials.push({
+              federationCode,
+              firstName,
+              lastName,
+              gender,
+              noOfficial,
+              role,
+              status,
+              type
+            });
+          }
+        }
+      }
+      
+      return {
+        officials,
+        totalCount: officials.length,
+        timestamp
+      };
+      
+    } catch (error) {
+      throw new VisParsingError(
+        'Failed to parse Event official list response',
+        'parseEventOfficialList',
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Parse GetEventRefereeList response
+   * Extract referee list data from VIS API response with extended fields
+   */
+  static parseEventRefereeList(xmlResponse: string): RefereeListResponse {
+    try {
+      const referees: EventReferee[] = [];
+      const timestamp = new Date().toISOString();
+      
+      // Extract referees using VIS API attribute format
+      // Expected format: <Referee FederationCode="USA" FirstName="John" ... NoReferee="123" ... />
+      const refereeMatches = xmlResponse.match(/<Referee[^>]*\/>/g);
+      
+      if (refereeMatches) {
+        for (const refereeXml of refereeMatches) {
+          const federationCode = this.extractXmlAttribute(refereeXml, 'FederationCode') || '';
+          const firstName = this.extractXmlAttribute(refereeXml, 'FirstName') || '';
+          const lastName = this.extractXmlAttribute(refereeXml, 'LastName') || '';
+          const gender = this.extractXmlAttribute(refereeXml, 'Gender') as 'M' | 'W' || 'M';
+          const noReferee = this.extractXmlAttribute(refereeXml, 'NoReferee') || '';
+          const statusStr = this.extractXmlAttribute(refereeXml, 'Status') || 'ACTIVE';
+          const typeStr = this.extractXmlAttribute(refereeXml, 'Type') || 'REFEREE';
+          const theoryTest = this.extractXmlAttribute(refereeXml, 'TheoryTest');
+          const strongPoints = this.extractXmlAttribute(refereeXml, 'StrongPoints');
+          const weakPoints = this.extractXmlAttribute(refereeXml, 'WeakPoints');
+          
+          // Map string values to enum values
+          const status = this.mapOfficialStatus(statusStr);
+          const type = this.mapOfficialType(typeStr);
+          
+          if (federationCode && firstName && lastName && noReferee) {
+            referees.push({
+              federationCode,
+              firstName,
+              lastName,
+              gender,
+              noReferee,
+              status,
+              type,
+              theoryTest,
+              strongPoints,
+              weakPoints
+            });
+          }
+        }
+      }
+      
+      return {
+        referees,
+        totalCount: referees.length,
+        timestamp
+      };
+      
+    } catch (error) {
+      throw new VisParsingError(
+        'Failed to parse Event referee list response',
+        'parseEventRefereeList',
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Map VIS role string to OfficialRole enum
+   */
+  private static mapOfficialRole(roleStr: string): OfficialRole {
+    switch (roleStr?.toUpperCase()) {
+      case 'REFEREE1':
+      case 'REFEREE_1':
+        return OfficialRole.REFEREE_1;
+      case 'REFEREE2':
+      case 'REFEREE_2':
+        return OfficialRole.REFEREE_2;
+      case 'CHALLENGEREFEREE':
+      case 'CHALLENGE_REFEREE':
+        return OfficialRole.CHALLENGE_REFEREE;
+      case 'TECHNICALOFFICIAL':
+      case 'TECHNICAL_OFFICIAL':
+        return OfficialRole.TECHNICAL_OFFICIAL;
+      case 'TOURNAMENTDIRECTOR':
+      case 'TOURNAMENT_DIRECTOR':
+        return OfficialRole.TOURNAMENT_DIRECTOR;
+      case 'MATCHCOMMISSIONER':
+      case 'MATCH_COMMISSIONER':
+        return OfficialRole.MATCH_COMMISSIONER;
+      default:
+        return OfficialRole.TECHNICAL_OFFICIAL;
+    }
+  }
+
+  /**
+   * Map VIS status string to OfficialStatus enum
+   */
+  private static mapOfficialStatus(statusStr: string): OfficialStatus {
+    switch (statusStr?.toUpperCase()) {
+      case 'ACTIVE':
+        return OfficialStatus.ACTIVE;
+      case 'INACTIVE':
+        return OfficialStatus.INACTIVE;
+      case 'SUSPENDED':
+        return OfficialStatus.SUSPENDED;
+      case 'RESTRICTED':
+        return OfficialStatus.RESTRICTED;
+      default:
+        return OfficialStatus.ACTIVE;
+    }
+  }
+
+  /**
+   * Map VIS type string to OfficialType enum
+   */
+  private static mapOfficialType(typeStr: string): OfficialType {
+    switch (typeStr?.toUpperCase()) {
+      case 'REFEREE':
+        return OfficialType.REFEREE;
+      case 'TECHNICAL':
+        return OfficialType.TECHNICAL;
+      case 'ADMINISTRATIVE':
+        return OfficialType.ADMINISTRATIVE;
+      default:
+        return OfficialType.TECHNICAL;
+    }
   }
 }

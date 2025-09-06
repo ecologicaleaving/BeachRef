@@ -49,7 +49,14 @@
       "Read(/C:\\Users\\KreshOS\\Documents\\00-Progetti\\vistest\\components\\MatchList/**)",
       "Read(/C:\\Users\\KreshOS\\Documents\\00-Progetti\\vistest\\docs\\guidelines/**)",
       "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/docs/epics/**)",
-      "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/docs/**)"
+      "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/docs/**)",
+      "Bash(cd:*)",
+      "Bash(npm test:*)",
+      "Bash(sed:*)",
+      "Read(//c/Users/KreshOS/Documents/00-Projeto/vistest/**)",
+      "Bash(npm start:*)",
+      "Bash(npx expo start:*)",
+      "Bash(start http://localhost:8084)"
     ],
     "deny": [],
     "ask": [],

@@ -11,13 +11,15 @@ import {
   ScrollView,
   Dimensions,
   TouchableWithoutFeedback,
+  Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Clock, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { TournamentCore } from '../types/tournament-v2';
 import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import VisTournamentList from '../components/VisTournamentList';
+import { DefaultTournamentService } from '../services/DefaultTournamentService';
 import { VisTournamentItem } from '../components/VisTournamentList';
 import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
@@ -28,6 +30,58 @@ interface TournamentCardProps {
 }
 
 const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) => {
+  const [isDefault, setIsDefault] = useState(false);
+
+  // Check if this tournament is default on mount
+  useEffect(() => {
+    const checkDefaultStatus = async () => {
+      const defaultStatus = await DefaultTournamentService.isDefaultTournament(tournament.visNo);
+      setIsDefault(defaultStatus);
+    };
+    checkDefaultStatus();
+  }, [tournament.visNo]);
+
+  // Check if tournament can be set as default (only LIVE tournaments)
+  const tournamentStatus = DefaultTournamentService.getTournamentStatus(
+    tournament.dates?.startDate, 
+    tournament.dates?.endDate
+  );
+  const canBeDefault = tournamentStatus === 'LIVE NOW';
+
+  // Handle default switch toggle
+  const handleDefaultToggle = async (value: boolean) => {
+    try {
+      const result = await DefaultTournamentService.toggleDefaultTournament(
+        tournament.visNo, 
+        tournament.title || tournament.name || `Tournament ${tournament.visNo}`,
+        tournament.dates?.startDate,
+        tournament.dates?.endDate
+      );
+      
+      if (result.success) {
+        setIsDefault(result.isDefault);
+        
+        if (result.isDefault) {
+          Alert.alert(
+            'Default Set', 
+            'This tournament is now your default. The homepage will redirect here.',
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        // Show error message for why it couldn't be set as default
+        Alert.alert(
+          'Cannot Set as Default', 
+          result.reason || 'This tournament cannot be set as default.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling default tournament:', error);
+      Alert.alert('Error', 'Could not update default tournament setting');
+    }
+  };
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
     try {
@@ -361,10 +415,25 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) 
       
       
       {getDateRange() && (
-        <Text style={styles.tournamentDate}>📅 {getDateRange()}</Text>
+        <View style={styles.dateRow}>
+          <Icon name="calendar-outline" size={14} color="#6B7280" style={styles.dateIcon} />
+          <Text style={styles.tournamentDate}>{getDateRange()}</Text>
+        </View>
       )}
       
       <View style={styles.cardFooter}>
+        {canBeDefault && (
+          <View style={styles.defaultSwitchContainer}>
+            <Text style={styles.defaultSwitchLabel}>Default</Text>
+            <Switch
+              value={isDefault}
+              onValueChange={handleDefaultToggle}
+              trackColor={{ false: '#D1D5DB', true: colors.primary }}
+              thumbColor={isDefault ? '#FFFFFF' : '#9CA3AF'}
+              style={styles.defaultSwitch}
+            />
+          </View>
+        )}
         <TouchableOpacity style={styles.openButton} onPress={onPress}>
           <Text style={styles.openButtonText}>OPEN</Text>
         </TouchableOpacity>
@@ -580,6 +649,7 @@ const TournamentSelectionScreen: React.FC = () => {
         const visNo = getValue('No');
         const code = getValue('Code');
         const name = getValue('Name');
+        const NoEvent = visNo; // In GetEventList, the 'No' field IS the event number for referee filtering
         const startDate = getValue('StartDate');
         const endDate = getValue('EndDate');
         const city = getValue('City');
@@ -613,6 +683,7 @@ const TournamentSelectionScreen: React.FC = () => {
             country: country || undefined,
             countryCode: countryCode || undefined,
             location: location || undefined,
+            NoEvent: NoEvent || undefined, // Include NoEvent for referee API calls
             // Add extra fields for enhanced location display
             ...(venue && { venue }),
             ...(continent && { continent })
@@ -1286,7 +1357,7 @@ const TournamentSelectionScreen: React.FC = () => {
           
             {Object.keys(groupedTournaments).length === 0 && !initialLoading && !tournamentLoading ? (
               <View style={styles.emptyState}>
-                <Clock size={48} color="#9CA3AF" strokeWidth={2} />
+                <Icon name="clock-outline" size={48} color="#9CA3AF" />
                 <Text style={styles.emptyText}>No tournaments found</Text>
                 <Text style={styles.emptySubtext}>
                   No tournaments available
@@ -1572,6 +1643,14 @@ const styles = StyleSheet.create({
   countryFlag: {
     marginLeft: 8,
   },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  dateIcon: {
+    marginRight: 6,
+  },
   tournamentDate: {
     fontSize: 14,
     color: '#6B7280',
@@ -1621,9 +1700,22 @@ const styles = StyleSheet.create({
   },
   cardFooter: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 8,
+  },
+  defaultSwitchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  defaultSwitchLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  defaultSwitch: {
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
   openButton: {
     backgroundColor: '#FF6B35',

@@ -619,6 +619,8 @@ function TournamentRefScreenContent() {
 
   const loadRefereesFromMatchList = async (): Promise<void> => {
     try {
+      console.log('🏐 TournamentRef: Starting loadRefereesFromMatchList for tournament', tournamentNo);
+      
       // Use direct API call instead of dynamic import to avoid path issues
       const xml = `<Requests>
   <Request Type="GetBeachMatchList"
@@ -627,22 +629,45 @@ function TournamentRefScreenContent() {
   </Request>
 </Requests>`;
 
+      console.log('🏐 TournamentRef: Making API request for match list...');
+      
+      // Add timeout to the fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+      
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
           "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: new URLSearchParams({ Request: xml })
+        body: new URLSearchParams({ Request: xml }),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
+        console.error(`🏐 TournamentRef: API request failed with status ${response.status}`);
         throw new Error(`API request failed: ${response.status}`);
       }
       
+      console.log('🏐 TournamentRef: API request successful, parsing response...');
       const xmlResponse = await response.text();
+      console.log('🏐 TournamentRef: Raw XML response length:', xmlResponse.length);
+      
       const matches = parseMatchesFromXML(xmlResponse);
-      console.log(`Loaded ${matches.length} matches to extract referees from`);
+      console.log(`🏐 TournamentRef: Loaded ${matches.length} matches to extract referees from`);
+      
+      if (matches.length > 0) {
+        console.log(`🏐 TournamentRef: Sample match data:`, {
+          sampleMatch: {
+            Referee1Name: matches[0]?.Referee1Name,
+            Referee2Name: matches[0]?.Referee2Name,
+            allFields: Object.keys(matches[0] || {})
+          }
+        });
+      }
       
       // Use the same approach as TournamentDetail.tsx
       const refereeNames = matches
@@ -651,7 +676,7 @@ function TournamentRefScreenContent() {
         .filter((referee, index, array) => array.indexOf(referee) === index)
         .sort();
       
-      console.log(`Found ${refereeNames.length} unique referees:`, refereeNames.slice(0, 5));
+      console.log(`🏐 TournamentRef: Found ${refereeNames.length} unique referees:`, refereeNames.slice(0, 5));
       
       // Convert to Referee objects
       const extractedReferees: Referee[] = refereeNames.map(name => {
@@ -668,9 +693,13 @@ function TournamentRefScreenContent() {
         };
       });
       
+      console.log(`🏐 TournamentRef: Setting ${extractedReferees.length} referees in state`);
       setReferees(extractedReferees);
     } catch (error) {
-      console.error('Error in loadRefereesFromMatchList:', error);
+      console.error('❌ TournamentRef: Error in loadRefereesFromMatchList:', error);
+      if (error.name === 'AbortError') {
+        console.error('❌ TournamentRef: Request timed out after 45 seconds');
+      }
       setReferees([]);
     }
   };

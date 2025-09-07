@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
 import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
-import { FlagImage } from '../FlagImage';
-import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
+import { MatchList, MatchCard } from '../entities/Match';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { SetScoreService } from '../../services/SetScoreService';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
@@ -700,14 +699,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   };
 
-  // Render individual match card
+  // Render individual match card using unified component
   const renderMatch = (match: BeachMatchCore) => {
-    const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
-    
-    
-    // Extract proper round display data using transformer service
-    const roundData = MatchDataTransformer.getRoundDisplayData(match as any);
-    
     // Merge live scores with match result for live matches
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
@@ -729,11 +722,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         };
       }
     }
-    
+
     return (
       <View 
-        key={match.id} 
-        style={styles.matchCard} 
+        key={match.id}
         nativeID={`match-${match.id}`}
         onLayout={(event) => {
           if (onMatchLayout) {
@@ -741,254 +733,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           }
         }}
       >
-        <View style={styles.matchHeader}>
-          <View style={styles.leftBadgeContainer}>
-            {match.tournamentGender && (
-              <View style={[
-                styles.genderBadge,
-                match.tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
-              ]}>
-                <Text style={[
-                  styles.genderBadgeText,
-                  match.tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
-                ]}>{match.tournamentGender}</Text>
-              </View>
-            )}
-          </View>
-          
-          <View style={styles.timeCourtContainer}>
-            <View style={styles.timeContainer}>
-              {isMatchLive(match) && (
-                <View style={styles.liveDot} />
-              )}
-              <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
-            </View>
-            <Text style={styles.courtText}>
-              {match.court?.courtNumber ? (
-                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-              ) : 'TBD'}
-            </Text>
-          </View>
-          
-          <View style={styles.rightBadgeContainer}>
-            <View style={[styles.statusBadge, { backgroundColor: '#6B7280' }]}>
-              <RoundPhaseDisplay
-                round={roundData.round}
-                phase={roundData.phase}
-                emphasis="medium"
-                color="textPrimary"
-                style={styles.statusText}
-              />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.flagsAndResultRow}>
-          <FlagImage
-            federationCode={match.team1?.countryCode}
-            teamName={match.team1?.teamName}
-            size="medium"
-            style={styles.leftFlag}
-          />
-          
-          <View style={styles.centerResultContainer}>
-            {matchWithResult.result ? (
-              <View style={styles.resultContainerWithSets}>
-                <View style={styles.resultContainer}>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 1 && styles.winnerScore
-                  ]}>{matchWithResult.result.team1Sets}</Text>
-                  <Text style={styles.scoreSeparator}>-</Text>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 2 && styles.winnerScore
-                  ]}>{matchWithResult.result.team2Sets}</Text>
-                  {(() => {
-                    const totalDuration = getMatchDuration(match);
-                    return totalDuration ? (
-                      <Text style={styles.durationText}>{totalDuration}</Text>
-                    ) : null;
-                  })()}
-                </View>
-                {(() => {
-                  // Show set scores for ANY number of complete sets (even 1 set = 2 scores)
-                  const hasSetScores = matchWithResult.result.setScores && matchWithResult.result.setScores.length >= 2;
-                  
-                  
-                  
-                  
-                  return hasSetScores;
-                })() && (
-                  <View style={styles.setScoresContainer}>
-                    {(() => {
-                      const setScores = matchWithResult.result.setScores;
-                      const sets = [];
-                      
-                      // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
-                      for (let i = 0; i < setScores.length; i += 2) {
-                        if (i + 1 < setScores.length) {
-                          const team1Score = setScores[i];
-                          const team2Score = setScores[i + 1];
-                          const setNumber = Math.floor(i / 2) + 1;
-                          const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                          
-                          // Check if this set is completed
-                          // A set is completed if:
-                          // 1. Match is finished, OR
-                          // 2. One team has winning score with 2+ point lead (21+ for sets 1&2, 15+ for set 3), OR  
-                          // 3. This is not the last set in the array (meaning next set has started)
-                          const isMatchFinished = match.status === MatchStatus.FINISHED;
-                          const isThirdSet = setNumber === 3;
-                          const minWinScore = isThirdSet ? 15 : 21;
-                          const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
-                                                  (team2Score >= minWinScore && team2Score - team1Score >= 2);
-                          const isNotLastSet = setNumber < Math.floor(setScores.length / 2);
-                          const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
-                          
-                          sets.push(
-                            <View key={setNumber} style={styles.individualSet}>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 1 && isSetComplete && styles.winningSetScore
-                              ]}>{team1Score}</Text>
-                              <Text style={styles.setScoreSeparator}>-</Text>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 2 && isSetComplete && styles.winningSetScore
-                              ]}>{team2Score}</Text>
-                            </View>
-                          );
-                        }
-                      }
-                      
-                      return sets;
-                    })()}
-                  </View>
-                )}
-              </View>
-            ) : (
-              <Text style={styles.vsText}>vs</Text>
-            )}
-          </View>
-          
-          <FlagImage
-            federationCode={match.team2?.countryCode}
-            teamName={match.team2?.teamName}
-            size="medium"
-            style={styles.rightFlag}
-          />
-        </View>
-
-        <View style={styles.teamsContainer}>
-          <View style={styles.teamsRow}>
-            <View style={styles.teamSection}>
-              {match.team1?.teamName ? (
-                <Text style={[
-                  styles.teamName,
-                  styles.leftTeamName,
-                  matchWithResult.result?.winner === 1 && styles.winnerTeam
-                ]} numberOfLines={2}>
-                  {match.team1.teamName}
-                  {match.team1?.ranking && <Text style={styles.rankingText}> (#{match.team1.ranking})</Text>}
-                </Text>
-              ) : (
-                <View style={styles.playersContainer}>
-                  {match.team1?.player1Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.leftTeamName,
-                      matchWithResult.result?.winner === 1 && styles.winnerTeam
-                    ]}>
-                      {(match.team1.player1Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team1?.player2Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.leftTeamName,
-                      matchWithResult.result?.winner === 1 && styles.winnerTeam
-                    ]}>
-                      {(match.team1.player2Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team1?.ranking && (
-                    <Text style={[styles.rankingText, styles.leftTeamName]}>
-                      (#{match.team1.ranking})
-                    </Text>
-                  )}
-                </View>
-              )}
-              <Text style={[styles.countryCode, styles.leftCountryCode]}>
-                {match.team1?.countryCode || ''}
-              </Text>
-            </View>
-            
-            <View style={styles.teamSection}>
-              {match.team2?.teamName ? (
-                <Text style={[
-                  styles.teamName,
-                  styles.rightTeamName,
-                  matchWithResult.result?.winner === 2 && styles.winnerTeam
-                ]} numberOfLines={2}>
-                  {match.team2.teamName}
-                  {match.team2?.ranking && <Text style={styles.rankingText}> (#{match.team2.ranking})</Text>}
-                </Text>
-              ) : (
-                <View style={styles.playersContainer}>
-                  {match.team2?.player1Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.rightTeamName,
-                      matchWithResult.result?.winner === 2 && styles.winnerTeam
-                    ]}>
-                      {(match.team2.player1Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team2?.player2Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.rightTeamName,
-                      matchWithResult.result?.winner === 2 && styles.winnerTeam
-                    ]}>
-                      {(match.team2.player2Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team2?.ranking && (
-                    <Text style={[styles.rankingText, styles.rightTeamName]}>
-                      (#{match.team2.ranking})
-                    </Text>
-                  )}
-                </View>
-              )}
-              <Text style={[styles.countryCode, styles.rightCountryCode]}>
-                {match.team2?.countryCode || ''}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {match.refereeAssignments && match.refereeAssignments.length > 0 && (
-          <View style={styles.refereesContainer}>
-            {match.refereeAssignments.map((referee, index) => (
-              <View key={index} style={styles.refereeRow}>
-                <View style={styles.refereeContentRow}>
-                  <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
-                  <Text style={styles.refereeName}>{referee.refereeName}</Text>
-                  <FlagImage
-                    federationCode={referee.federationCode}
-                    teamName={referee.refereeName}
-                    size="medium"
-                    style={styles.refereeFlag}
-                  />
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        <MatchCard
+          match={matchWithResult}
+          showStatusBadge={true}
+          showReferee={true}
+          showDuration={true}
+          compact={false}
+          variant={isMatchLive(match) ? 'live' : 'default'}
+        />
       </View>
     );
   };
+
+
+
 
   if (loading) {
     return (

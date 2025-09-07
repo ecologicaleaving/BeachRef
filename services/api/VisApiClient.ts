@@ -947,14 +947,22 @@ export class VisApiClient implements IVisApiClient {
       filterAttribs.push(`EndDate="${this.escapeXmlAttribute(request.endDate)}"`);
     }
     
+    // Add referee filtering - NoReferee1 = RefereeId, NoReferee2 = RefereeId
+    if (request.NoReferee1) {
+      filterAttribs.push(`NoReferee1="${this.escapeXmlAttribute(request.NoReferee1)}"`);
+    }
+    if (request.NoReferee2) {
+      filterAttribs.push(`NoReferee2="${this.escapeXmlAttribute(request.NoReferee2)}"`);
+    }
+    
     const includeResults = request.includeResults !== false;
     const includeReferees = request.includeReferees !== false;
     
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Include all federation code fields for flag display, plus match results
-    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode';
+    // Include all federation code fields for flag display, plus match results and referee IDs
+    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">

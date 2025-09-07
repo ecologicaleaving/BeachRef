@@ -86,8 +86,8 @@ export interface EventReferee {
   readonly gender: 'M' | 'W';
   /** Referee's last name */
   readonly lastName: string;
-  /** Actual referee identification number (NoReferee - NOT registration number) */
-  readonly noReferee: string;
+  /** Referee ID - 6-digit number from NoReferee VIS field */
+  readonly RefereeId: string;
   /** Current status */
   readonly status: OfficialStatus;
   /** Type classification */

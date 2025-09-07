@@ -59,7 +59,12 @@
       "Bash(start http://localhost:8084)",
       "Bash(find:*)",
       "WebFetch(domain:chatgpt.com)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(start http://localhost:8082)",
+      "Bash(git pull:*)",
+      "Bash(md-tree:*)",
+      "Bash(npm run web:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": [],

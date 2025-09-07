@@ -5,9 +5,6 @@ import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { SetScoreService } from '../../services/SetScoreService';
-import { VisApiClient } from '../../services/api/VisApiClient';
-import { VisApiIntegrationService } from '../../services/api/VisApiIntegrationService';
-import { DEFAULT_RETRY_CONFIG } from '../../types/api-v2';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useMemo } from 'react';
 
@@ -296,37 +293,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     const enhanceMatches = async () => {
       try {
-        console.log('🚀 DEBUG: Starting match enhancement process...');
-        
         // TEMPORARILY DISABLE enhanced match data to fix the issue
-        console.log('⚠️ Using fallback SetScoreService enhancement for debugging');
         const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
-        
-        console.log('DEBUG: Enhancement completed:', {
-          originalMatches: matches.length,
-          enhancedMatches: enhanced.length,
-          sampleMatch: enhanced[0] ? {
-            id: enhanced[0].id,
-            keys: Object.keys(enhanced[0]),
-            hasResult: !!enhanced[0].result,
-            tournamentId: enhanced[0].tournamentId,
-            tournamentGender: (enhanced[0] as any).tournamentGender
-          } : null
-        });
-        
-        // Log first few enhanced matches to see their structure  
-        console.log('DEBUG: First 3 enhanced matches:');
-        enhanced.slice(0, 3).forEach((match, i) => {
-          console.log(`Match ${i}:`, {
-            id: match.id,
-            keys: Object.keys(match).slice(0, 10), // First 10 keys
-            tournamentId: match.tournamentId,
-            team1: match.team1?.teamName || match.team1?.player1Name,
-            team2: match.team2?.teamName || match.team2?.player1Name,
-            hasResult: !!match.result,
-            resultKeys: match.result ? Object.keys(match.result) : []
-          });
-        });
         
         setEnhancedMatches(enhanced);
         

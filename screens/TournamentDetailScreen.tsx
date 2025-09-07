@@ -69,74 +69,44 @@ const ExpandedFiltersView: React.FC<{
 
   // Memoize referee names from matches (for COMPLETED tournaments)
   const refereeNamesFromMatches = React.useMemo(() => {
-    console.log('🏐 ===== MATCH REFEREE EXTRACTION DEBUG =====');
-    console.log('🏐 Total matches available:', matches?.length || 0);
-    
     if (!matches || matches.length === 0) {
-      console.log('🏐 No matches available for referee extraction');
       return [];
     }
     
     const allReferees: string[] = [];
     
-    // Log sample matches for debugging
-    console.log('🏐 Sample match structure (first 3):');
-    matches.slice(0, 3).forEach((match, idx) => {
-      console.log(`  Match ${idx + 1}:`, {
-        id: match.id || 'no id',
-        Referee1Name: match.Referee1Name || 'none',
-        Referee2Name: match.Referee2Name || 'none',
-        status: match.status,
-        keys: Object.keys(match)
-      });
-    });
     
     matches.forEach((match, index) => {
       // Extract referees from Referee1Name and Referee2Name fields
       if (match.Referee1Name && match.Referee1Name.trim()) {
         allReferees.push(match.Referee1Name.trim());
-        console.log(`🏐 Found Referee1 in match ${index + 1}: "${match.Referee1Name}"`);
       }
       if (match.Referee2Name && match.Referee2Name.trim()) {
         allReferees.push(match.Referee2Name.trim());
-        console.log(`🏐 Found Referee2 in match ${index + 1}: "${match.Referee2Name}"`);
       }
     });
     
     const uniqueReferees = Array.from(new Set(allReferees)).filter(Boolean).sort();
-    console.log('🏐 Total referees extracted:', uniqueReferees.length);
-    console.log('🏐 Final referee list:', uniqueReferees);
-    console.log('🏐 ==========================================');
     return uniqueReferees;
   }, [matches]);
 
   // Combined referee names using dual system
   const refereeNames = React.useMemo(() => {
     const tournamentStatus = getTournamentStatus();
-    console.log('🏐 ===== REFEREE LIST DEBUG =====');
-    console.log('🏐 Tournament status:', tournamentStatus);
-    console.log('🏐 Matches available:', matches?.length || 0);
-    console.log('🏐 Referees from matches:', refereeNamesFromMatches.length, refereeNamesFromMatches);
-    console.log('🏐 Referees from API:', refereeNamesFromAPI.length, refereeNamesFromAPI);
     
     // For COMPLETED tournaments, always try to use match-extracted referees first
     // But also try API referees as fallback
     if (tournamentStatus === 'COMPLETED') {
-      console.log('🏐 COMPLETED tournament - checking both sources');
       
       if (refereeNamesFromMatches.length > 0) {
-        console.log('🏐 Using referees from matches:', refereeNamesFromMatches);
         return refereeNamesFromMatches;
       } else if (refereeNamesFromAPI.length > 0) {
-        console.log('🏐 No referees from matches, using API fallback:', refereeNamesFromAPI);
         return refereeNamesFromAPI;
       } else {
         // As a last resort, return some test data to verify the dropdown works
-        console.log('🏐 No referees from either source, using test data');
         return ['Test Referee 1', 'Test Referee 2'];
       }
     } else {
-      console.log('🏐 Using referees from API for LIVE/SCHEDULED tournament');
       return refereeNamesFromAPI;
     }
   }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
@@ -251,7 +221,6 @@ const ExpandedFiltersView: React.FC<{
                   </Text>
                 </TouchableOpacity>
                 {(() => {
-                  console.log('🏐 DROPDOWN RENDER: refereeNames =', refereeNames);
                   return refereeNames.map((referee) => (
                     <TouchableOpacity
                       key={referee}
@@ -675,39 +644,26 @@ const TournamentDetailScreenContent: React.FC = () => {
     const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
     const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
     
-    console.log('🏐 ===== TOURNAMENT STATUS DEBUG =====');
-    console.log('🏐 Tournament name:', tournament.name);
-    console.log('🏐 Start date:', startDate);
-    console.log('🏐 End date:', endDate);
-    console.log('🏐 Today:', new Date().toISOString().split('T')[0]);
     
     if (!startDate) {
-      console.log('🏐 No start date -> SCHEDULED');
       return 'SCHEDULED';
     }
     
     const today = new Date().toISOString().split('T')[0];
     const startDateOnly = startDate.split('T')[0];
     
-    console.log('🏐 Start date only:', startDateOnly);
-    console.log('🏐 Today vs Start:', today, 'vs', startDateOnly);
     
     if (today < startDateOnly) {
-      console.log('🏐 Today < Start -> SCHEDULED');
       return 'SCHEDULED';
     }
     
     if (endDate) {
       const endDateOnly = endDate.split('T')[0];
-      console.log('🏐 End date only:', endDateOnly);
-      console.log('🏐 Today vs End:', today, 'vs', endDateOnly);
       
       if (today > endDateOnly) {
-        console.log('🏐 Today > End -> COMPLETED');
         return 'COMPLETED';
       }
       if (today >= startDateOnly && today <= endDateOnly) {
-        console.log('🏐 Today between Start-End -> LIVE NOW');
         return 'LIVE NOW';
       }
     } else {
@@ -755,14 +711,11 @@ const TournamentDetailScreenContent: React.FC = () => {
     setRefereesLoading(true);
     try {
       const tournamentStatus = getTournamentStatus();
-      console.log('🏐 Loading referees for tournament status:', tournamentStatus);
       
       if (tournamentStatus === 'COMPLETED') {
-        console.log('🏐 Using match list approach for COMPLETED tournament');
         // Referees will be extracted from matches - no API call needed
         setRefereeNamesFromAPI([]);
       } else {
-        console.log('🏐 Using GetEventRefereeList for LIVE/SCHEDULED tournament');
         await loadRefereesFromAPI();
       }
     } catch (error) {
@@ -796,7 +749,6 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log('🏐 GetEventRefereeList response:', xmlResponse.substring(0, 500));
         
         // Parse and store referee data
         const referees = parseRefereeXML(xmlResponse);
@@ -805,10 +757,8 @@ const TournamentDetailScreenContent: React.FC = () => {
           .map(ref => `${ref.firstName} ${ref.lastName}`.trim())
           .sort();
         
-        console.log(`🏐 API Referees (${refereeNames.length}):`, refereeNames.slice(0, 5));
         setRefereeNamesFromAPI(refereeNames);
       } else {
-        console.log('🏐 GetEventRefereeList API failed:', response.status);
         setRefereeNamesFromAPI([]);
       }
     } catch (error) {
@@ -845,61 +795,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     return referees;
   };
 
-  // Load and log referee data using the referee assignment service from Story 1.3
-  const loadRefereeData = async () => {
-    try {
-      const tournamentNo = tournament.visNo;
-      
-      console.log('🏐 =============================================');
-      console.log('🏐 REFEREE EXTRACTION EPIC - STORY 1.3 RESULTS');
-      console.log('🏐 =============================================');
-      console.log('🏐 Tournament:', tournament.title || tournament.name || 'Unknown');
-      console.log('🏐 Tournament No:', tournamentNo);
-      
-      // Test all the referee methods we implemented in Story 1.3
-      console.log('🔍 Testing getAllRefereesForTournament...');
-      const allReferees = await TournamentOperationsService.getTournamentReferees(tournamentNo);
-      console.log('✅ All Referees for Tournament:', allReferees);
-      console.log('📊 Total Referees Found:', allReferees.length);
-      
-      console.log('🔍 Testing getTournamentRefereeData...');
-      const refereeData = await TournamentOperationsService.getTournamentRefereeData(tournamentNo);
-      console.log('✅ Tournament Referee Data:', refereeData);
-      
-      if (refereeData) {
-        console.log('📊 Officials Count:', refereeData.officials?.length || 0);
-        console.log('📊 Referees Count:', refereeData.referees?.length || 0);
-        console.log('📅 Data Timestamp:', refereeData.timestamp);
-        console.log('⏰ Expires At:', refereeData.expiresAt);
-      }
-      
-      console.log('🔍 Testing hasTournamentRefereeData...');
-      const hasRefereeData = await TournamentOperationsService.hasTournamentRefereeData(tournamentNo);
-      console.log('✅ Has Referee Data:', hasRefereeData);
-      
-      // Test individual referee lookup if we have referees
-      if (allReferees.length > 0) {
-        const firstReferee = allReferees[0];
-        console.log('🔍 Testing getRefereeForTournament for:', firstReferee.name);
-        const refereeProfile = await TournamentOperationsService.getRefereeForTournament(firstReferee.id, tournamentNo);
-        console.log('✅ Referee Profile:', refereeProfile);
-      }
-      
-      console.log('🏐 =============================================');
-      console.log('🏐 SUMMARY:');
-      console.log('🏐 - Total Referees:', allReferees.length);
-      console.log('🏐 - Has Referee Data:', hasRefereeData);
-      console.log('🏐 - Cache/API Status:', refereeData ? 'SUCCESS' : 'NO DATA');
-      console.log('🏐 =============================================');
-      
-    } catch (error) {
-      console.error('❌ Error loading referee data:', error);
-      console.log('🏐 =============================================');
-      console.log('🏐 REFEREE DATA LOADING FAILED');
-      console.log('🏐 Error:', error);
-      console.log('🏐 =============================================');
-    }
-  };
 
   // Load detailed tournament information and parse ALL available data
   const loadTournamentDetails = async () => {
@@ -1154,8 +1049,6 @@ const TournamentDetailScreenContent: React.FC = () => {
       // loadTournamentDetails();
       loadMatches();
       
-      // Enable referee logging to debug referee list issue
-      loadRefereeData();
       
       // Load referee list using dual system (GetEventRefereeList for LIVE/SCHEDULED, matches for COMPLETED)
       loadRefereeList();
@@ -1478,15 +1371,6 @@ const TournamentDetailScreenContent: React.FC = () => {
             }),
             // Pass already-loaded match data to avoid duplicate API calls
             matchData: (() => {
-              console.log('🏐 TournamentDetail: Passing match data:', {
-                matchesAvailable: !!matches,
-                matchCount: matches?.length || 0,
-                sampleMatch: matches?.[0] ? {
-                  id: matches[0].id,
-                  Referee1Name: matches[0].Referee1Name,
-                  Referee2Name: matches[0].Referee2Name
-                } : 'No matches'
-              });
               return matches ? JSON.stringify(matches.slice(0, 100)) : undefined; // Limit to 100 matches to avoid URL size issues
             })()
           }

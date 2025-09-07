@@ -91,23 +91,15 @@ export class RefereeStatsService {
         return cached.data;
       }
 
-      console.log(`🏐 ===== SEASON STATS REQUEST =====`);
-      console.log(`📅 Referee: "${refereeId}"`);
-      console.log(`📅 Season: ${season}`);
-      console.log(`⏰ Time: ${new Date().toISOString()}`);
-      console.log(`🏐 ================================`);
       
       // First resolve referee to NoReferee ID (use any tournament for resolution)
       const refereeNo = await RefereeStatsService.resolveRefereeIdFromAnyTournament(refereeId);
       if (!refereeNo) {
-        console.log(`❌ Could not resolve referee "${refereeId}" to NoReferee ID for season query`);
         return RefereeStatsService.generateNoDataSeasonStats(season);
       }
       
-      console.log(`✅ Resolved referee "${refereeId}" to NoReferee: ${refereeNo} for season query`);
       
       // Use the dual-role VIS API queries with Season filter
-      console.log(`📡 Making dual VIS API season queries (Season=${season}, NoReferee=${refereeNo})...`);
       
       const [firstRefMatches, secondRefMatches] = await Promise.all([
         RefereeStatsService.querySeasonMatchesWithNoReferee(refereeNo, 'first', season),
@@ -119,11 +111,9 @@ export class RefereeStatsService {
       const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
       
       if (uniqueMatches.length === 0) {
-        console.log(`❌ No season matches found for referee ${refereeId} (NoReferee: ${refereeNo}) in season ${season}`);
         return RefereeStatsService.generateNoDataSeasonStats(season);
       }
       
-      console.log(`✅ Found ${uniqueMatches.length} season matches for referee after deduplication`);
       
       // Calculate statistics from VIS matches
       const matchStats = RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
@@ -150,23 +140,15 @@ export class RefereeStatsService {
    */
   static async getCurrentTournamentStats(refereeId: string, tournamentNo: string): Promise<RefereeStats | null> {
     try {
-      console.log(`🏐 ===== CURRENT TOURNAMENT STATS REQUEST =====`);
-      console.log(`👤 Referee: "${refereeId}"`);
-      console.log(`🏆 Tournament: ${tournamentNo}`);
-      console.log(`⏰ Time: ${new Date().toISOString()}`);
-      console.log(`🏐 ==========================================`);
       
       // First resolve referee to NoReferee ID
       const refereeNo = await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournamentNo);
       if (!refereeNo) {
-        console.log(`❌ Could not resolve referee "${refereeId}" to NoReferee ID`);
         return null;
       }
       
-      console.log(`✅ Resolved referee "${refereeId}" to NoReferee: ${refereeNo}`);
       
       // Use the dual-role VIS API approach as specified in ChatGPT conversation
-      console.log(`📡 Making dual VIS API queries for tournament matches...`);
       
       const [firstRefMatches, secondRefMatches] = await Promise.all([
         RefereeStatsService.queryTournamentMatchesWithNoReferee(refereeNo, 'first', tournamentNo),
@@ -178,11 +160,9 @@ export class RefereeStatsService {
       const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
       
       if (uniqueMatches.length === 0) {
-        console.log(`❌ No matches found for referee ${refereeId} (NoReferee: ${refereeNo}) in tournament ${tournamentNo}`);
         return null;
       }
       
-      console.log(`✅ Found ${uniqueMatches.length} matches for referee after deduplication`);
       
       // Calculate statistics
       return RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
@@ -205,22 +185,15 @@ export class RefereeStatsService {
         return cached.data;
       }
 
-      console.log(`🏐 ===== CAREER STATS REQUEST =====`);
-      console.log(`👤 Referee: "${refereeId}"`);
-      console.log(`⏰ Time: ${new Date().toISOString()}`);
-      console.log(`🏐 ================================`);
 
       // First resolve referee to NoReferee ID (use any tournament for resolution)
       const refereeNo = await RefereeStatsService.resolveRefereeIdFromAnyTournament(refereeId);
       if (!refereeNo) {
-        console.log(`❌ Could not resolve referee "${refereeId}" to NoReferee ID for career query`);
         return RefereeStatsService.generateNoDataCareerStats();
       }
       
-      console.log(`✅ Resolved referee "${refereeId}" to NoReferee: ${refereeNo} for career query`);
       
       // Use the dual-role VIS API queries with NO date filters (full career)
-      console.log(`📡 Making dual VIS API career queries (NoReferee=${refereeNo} only - no date filters)...`);
       
       const [firstRefMatches, secondRefMatches] = await Promise.all([
         RefereeStatsService.queryCareerMatchesWithNoReferee(refereeNo, 'first'),
@@ -232,11 +205,9 @@ export class RefereeStatsService {
       const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
       
       if (uniqueMatches.length === 0) {
-        console.log(`❌ No career matches found for referee ${refereeId} (NoReferee: ${refereeNo})`);
         return RefereeStatsService.generateNoDataCareerStats();
       }
       
-      console.log(`✅ Found ${uniqueMatches.length} career matches for referee after deduplication`);
       
       // Calculate statistics from VIS matches
       const matchStats = RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
@@ -271,23 +242,18 @@ export class RefereeStatsService {
    */
   private static async getTournamentsForSeason(season: string): Promise<any[]> {
     try {
-      console.log(`📅 Getting tournaments for season ${season}`);
       
       // Use existing CacheService to get tournaments, filtered by year
       const tournamentsResult = await CacheService.getTournaments();
       
       if (!tournamentsResult.success || !tournamentsResult.data || tournamentsResult.data.length === 0) {
-        console.log('❌ No tournaments available in cache');
         return [];
       }
       
       const allTournaments = tournamentsResult.data;
-      console.log(`📊 Total tournaments in cache: ${allTournaments.length}`);
       
       // Log first few tournaments for debugging
-      console.log('📋 Sample tournaments in cache:');
       allTournaments.slice(0, 3).forEach(t => {
-        console.log(`  - ${t.name} (${t.visNo}) ${t.startDate} to ${t.endDate}`);
       });
       
       // Filter tournaments by season year
@@ -297,11 +263,8 @@ export class RefereeStatsService {
         return tournamentYear === season;
       });
       
-      console.log(`✅ Tournaments for season ${season}: ${seasonTournaments.length}`);
       if (seasonTournaments.length > 0) {
-        console.log('📋 Season tournaments:');
         seasonTournaments.forEach(t => {
-          console.log(`  - ${t.name} (${t.visNo}) ${t.startDate}`);
         });
       }
       return seasonTournaments;
@@ -320,50 +283,32 @@ export class RefereeStatsService {
   ): Promise<TournamentRefereeData[]> {
     const results: TournamentRefereeData[] = [];
     
-    console.log(`🔍 Aggregating stats for referee "${refereeId}" across ${tournaments.length} tournaments`);
 
     for (const tournament of tournaments) {
       try {
-        console.log(`🏆 Processing tournament: ${tournament.name} (${tournament.visNo})`);
         
         // Get matches for this tournament
-        console.log(`📡 Making CacheService.getMatches("${tournament.visNo}") call...`);
         const matchesResult = await CacheService.getMatches(tournament.visNo);
-        
-        console.log(`📊 CacheService.getMatches result:`, {
-          success: matchesResult.success,
-          dataLength: matchesResult.success ? matchesResult.data?.length : 'N/A',
-          error: matchesResult.success ? 'None' : matchesResult.error
-        });
         
         const matches = matchesResult.success ? matchesResult.data : null;
         if (!matches || matches.length === 0) {
-          console.log(`❌ No matches found for tournament ${tournament.visNo}`);
           continue;
         }
         
-        console.log(`✅ Found ${matches.length} matches in tournament ${tournament.visNo}`);
         
         // Log sample matches for debugging
-        console.log(`📋 Sample matches (first 3):`);
         matches.slice(0, 3).forEach((match, idx) => {
-          console.log(`  ${idx + 1}. ${match.MatchNo || match.id || 'Unknown'}: "${match.Referee1Name || match.Referee1 || 'None'}" vs "${match.Referee2Name || match.Referee2 || 'None'}" (${match.Gender || 'Unknown gender'})`);
         });
 
         // Filter matches where this referee officiated
-        console.log(`🎯 Filtering matches for referee "${refereeId}"...`);
         const refereeMatches = RefereeStatsService.filterMatchesForReferee(matches, refereeId);
         
-        console.log(`🔍 Filtering result: ${refereeMatches.length} matches found for referee`);
         if (refereeMatches.length > 0) {
-          console.log(`📝 Referee matches in ${tournament.name}:`);
           refereeMatches.forEach((match, idx) => {
-            console.log(`  ${idx + 1}. ${match.matchId}: ${match.position} referee, ${match.gender} match`);
           });
         }
 
         if (refereeMatches.length > 0) {
-          console.log(`✅ Adding ${refereeMatches.length} matches for referee in tournament ${tournament.name}`);
           results.push({
             tournamentVisNo: tournament.visNo,
             tournamentName: tournament.name,
@@ -372,7 +317,6 @@ export class RefereeStatsService {
             matches: refereeMatches,
           });
         } else {
-          console.log(`⚠️ No matches found for referee in tournament ${tournament.name}`);
         }
       } catch (error) {
         console.error(`❌ Error processing tournament ${tournament.visNo}:`, error);
@@ -380,17 +324,13 @@ export class RefereeStatsService {
       }
     }
     
-    console.log(`🎯 Aggregation complete: found ${results.length} tournaments with referee data`);
     
     // Log final summary
     if (results.length > 0) {
-      console.log(`📊 Final aggregation summary:`);
       let totalMatches = 0;
       results.forEach(result => {
-        console.log(`  - ${result.tournamentName}: ${result.matches.length} matches`);
         totalMatches += result.matches.length;
       });
-      console.log(`  🎯 Total matches across all tournaments: ${totalMatches}`);
     }
     
     return results;
@@ -408,14 +348,11 @@ export class RefereeStatsService {
     const searchId = refereeId.toLowerCase().trim();
     const nameParts = searchId.split(' ');
     
-    console.log(`🎯 Filtering ${matches.length} matches for referee "${refereeId}"`);
-    console.log(`🔍 Search criteria: "${searchId}" (${nameParts.length} name parts: [${nameParts.join(', ')}])`);
     
     const filteredMatches = matches.filter(match => {
       const referee1 = (match.Referee1Name || match.Referee1 || '').trim().toLowerCase();
       const referee2 = (match.Referee2Name || match.Referee2 || '').trim().toLowerCase();
       
-      console.log(`🏐 Checking match ${match.MatchNo || match.id}: "${referee1}" vs "${referee2}"`);
       
       // More precise name matching - check if both first and last names are present
       if (nameParts.length >= 2) {
@@ -430,13 +367,8 @@ export class RefereeStatsService {
         const ref2HasLastName = referee2.includes(lastName);
         const ref2HasBoth = ref2HasFirstName && ref2HasLastName;
         
-        console.log(`  🔍 Name matching analysis:`);
-        console.log(`    First name "${firstName}": Ref1=${ref1HasFirstName}, Ref2=${ref2HasFirstName}`);
-        console.log(`    Last name "${lastName}": Ref1=${ref1HasLastName}, Ref2=${ref2HasLastName}`);
-        console.log(`    Both names: Ref1=${ref1HasBoth}, Ref2=${ref2HasBoth}`);
         
         const matches = ref1HasBoth || ref2HasBoth;
-        console.log(`    ✅ Match result: ${matches ? 'FOUND' : 'NOT FOUND'}`);
         
         return matches;
       } else {
@@ -445,8 +377,6 @@ export class RefereeStatsService {
         const ref2Match = referee2.includes(searchId);
         const matches = ref1Match || ref2Match;
         
-        console.log(`  🔍 Single name matching: Ref1=${ref1Match}, Ref2=${ref2Match}`);
-        console.log(`    ✅ Match result: ${matches ? 'FOUND' : 'NOT FOUND'}`);
         
         return matches;
       }
@@ -470,7 +400,6 @@ export class RefereeStatsService {
                match.RoundName?.toLowerCase().includes('women') ||
                match.Round?.toLowerCase().includes('women')) ? 'women' as const : 'men' as const;
       
-      console.log(`  📝 Match ${match.MatchNo || match.id}: ${isFirstReferee ? 'FIRST' : 'SECOND'} referee, ${gender.toUpperCase()} match`);
       
       return {
         matchId: match.id || match.MatchNo || match.No,
@@ -480,7 +409,6 @@ export class RefereeStatsService {
       };
     });
     
-    console.log(`🎯 Filtering complete: ${filteredMatches.length} matches found for referee "${refereeId}"`);
     return filteredMatches;
   }
 
@@ -565,7 +493,6 @@ export class RefereeStatsService {
       if (tournamentsResult.success && tournamentsResult.data && tournamentsResult.data.length > 0) {
         const tournaments = tournamentsResult.data;
         // Use the first available tournament as representative
-        console.log(`Using tournament ${tournaments[0].visNo} (${tournaments[0].name}) for referee stats`);
         return tournaments[0].visNo;
       }
     } catch (error) {
@@ -711,10 +638,19 @@ export class RefereeStatsService {
    */
   private static async resolveRefereeIdFromTournament(refereeId: string, tournamentNo: string): Promise<string | null> {
     try {
-      const nameParts = refereeId.trim().split(' ');
+      // First, check if refereeId is already a valid 6-digit NoReferee ID
+      if (/^\d{6}$/.test(refereeId)) {
+        return refereeId;
+      }
+      
+      // If it contains underscores, it's a fallback name - convert to proper name format
+      const cleanName = refereeId.includes('_') ? refereeId.replace(/_/g, ' ') : refereeId;
+      const nameParts = cleanName.trim().split(' ');
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
       
+      
+      // Try both name-based and NoReferee-based filtering
       const xml = `<Requests>
   <Request Type="GetEventRefereeList"
            Fields="NoReferee FirstName LastName FederationCode Status Role">
@@ -722,10 +658,6 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`📡 VIS API REQUEST - GetEventRefereeList:`);
-      console.log(`🌐 URL: https://www.fivb.org/Vis2009/XmlRequest.asmx`);
-      console.log(`📝 XML Request:`);
-      console.log(xml);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -738,22 +670,16 @@ export class RefereeStatsService {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log(`📥 VIS API RESPONSE - GetEventRefereeList:`);
-        console.log(`📋 Raw XML Response:`);
-        console.log(xmlResponse);
         
         const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/); 
         const resolvedNoReferee = refereeNoMatch?.[1];
         
         if (resolvedNoReferee) {
-          console.log(`✅ Successfully resolved referee "${refereeId}" to NoReferee: ${resolvedNoReferee}`);
           return resolvedNoReferee;
         } else {
-          console.log(`⚠️ No NoReferee found in response for "${refereeId}"`);
           return null;
         }
       } else {
-        console.log(`❌ VIS API request failed with status: ${response.status}`);
         return null;
       }
     } catch (error) {
@@ -781,10 +707,6 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`📡 VIS API REQUEST - GetBeachMatchList (${role} referee):`);
-      console.log(`🌐 URL: https://www.fivb.org/Vis2009/XmlRequest.asmx`);
-      console.log(`📝 XML Request:`);
-      console.log(xml);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -797,13 +719,9 @@ export class RefereeStatsService {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log(`📥 VIS API RESPONSE - GetBeachMatchList (${role} referee):`);
-        console.log(`📋 Raw XML Response:`);
-        console.log(xmlResponse);
         
         return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
       } else {
-        console.log(`❌ Tournament query failed for ${role} referee role:`, response.status);
         return [];
       }
     } catch (error) {
@@ -819,13 +737,11 @@ export class RefereeStatsService {
     const matches: any[] = [];
     
     try {
-      console.log(`🔍 Parsing XML for ${refereeRole} referee matches...`);
       
       // Extract BeachMatch elements
       const matchRegex = /<BeachMatch[^>]*\/?>/g;
       const matchEntries = [...xmlData.matchAll(matchRegex)];
       
-      console.log(`📊 Found ${matchEntries.length} BeachMatch elements in XML`);
       
       for (const [matchEntry] of matchEntries) {
         const match: any = { refereeRole };
@@ -854,11 +770,9 @@ export class RefereeStatsService {
           rawMatch: match
         };
         
-        console.log(`📝 Parsed match: ${parsedMatch.matchId} - ${refereeRole} referee, ${gender} match`);
         matches.push(parsedMatch);
       }
       
-      console.log(`✅ Successfully parsed ${matches.length} matches for ${refereeRole} referee role`);
       return matches;
     } catch (error) {
       console.error('❌ Error parsing matches from XML:', error);
@@ -873,20 +787,16 @@ export class RefereeStatsService {
     const seen = new Set<string>();
     const unique: any[] = [];
     
-    console.log(`🔍 Deduplicating ${matches.length} matches...`);
     
     for (const match of matches) {
       const matchId = match.matchId;
       if (matchId && !seen.has(matchId)) {
         seen.add(matchId);
         unique.push(match);
-        console.log(`✅ Added unique match: ${matchId} (${match.refereeRole} referee)`);
       } else {
-        console.log(`⚠️ Skipping duplicate match: ${matchId}`);
       }
     }
     
-    console.log(`🎯 Deduplication complete: ${unique.length} unique matches from ${matches.length} total`);
     return unique;
   }
 
@@ -902,7 +812,6 @@ export class RefereeStatsService {
       womenMatches: 0
     };
 
-    console.log(`📊 Calculating stats from ${matches.length} parsed matches...`);
 
     for (const match of matches) {
       // Determine referee role based on which NoReferee field matches
@@ -918,10 +827,8 @@ export class RefereeStatsService {
         stats.menMatches++;
       }
       
-      console.log(`  📝 Match ${match.matchId}: ${match.refereeRole} referee, ${match.gender} match (NoReferee1: ${match.noReferee1}, NoReferee2: ${match.noReferee2})`);
     }
 
-    console.log(`🎯 Final statistics:`, stats);
     return stats;
   }
 
@@ -930,15 +837,18 @@ export class RefereeStatsService {
    */
   private static async resolveRefereeIdFromAnyTournament(refereeId: string): Promise<string | null> {
     try {
+      // First, check if refereeId is already a valid 6-digit NoReferee ID
+      if (/^\d{6}$/.test(refereeId)) {
+        return refereeId;
+      }
+      
       // Get tournaments to use for referee ID resolution
       const tournamentsResult = await CacheService.getTournaments();
       if (!tournamentsResult.success || !tournamentsResult.data || tournamentsResult.data.length === 0) {
-        console.log('❌ No tournaments available for referee ID resolution');
         return null;
       }
       
       const tournaments = tournamentsResult.data;
-      console.log(`🔍 Using tournament ${tournaments[0].name} (${tournaments[0].visNo}) for referee ID resolution`);
       
       return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0].visNo);
     } catch (error) {
@@ -965,10 +875,6 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`📡 VIS API REQUEST - GetBeachMatchList Season (${role} referee):`);
-      console.log(`🌐 URL: https://www.fivb.org/Vis2009/XmlRequest.asmx`);
-      console.log(`📝 XML Request:`);
-      console.log(xml);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -981,13 +887,9 @@ export class RefereeStatsService {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log(`📥 VIS API RESPONSE - GetBeachMatchList Season (${role} referee):`);
-        console.log(`📋 Raw XML Response:`);
-        console.log(xmlResponse);
         
         return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
       } else {
-        console.log(`❌ Season query failed for ${role} referee role:`, response.status);
         return [];
       }
     } catch (error) {
@@ -1013,10 +915,6 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`📡 VIS API REQUEST - GetBeachMatchList Career (${role} referee):`);
-      console.log(`🌐 URL: https://www.fivb.org/Vis2009/XmlRequest.asmx`);
-      console.log(`📝 XML Request:`);
-      console.log(xml);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -1029,13 +927,9 @@ export class RefereeStatsService {
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        console.log(`📥 VIS API RESPONSE - GetBeachMatchList Career (${role} referee):`);
-        console.log(`📋 Raw XML Response:`);
-        console.log(xmlResponse);
         
         return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
       } else {
-        console.log(`❌ Career query failed for ${role} referee role:`, response.status);
         return [];
       }
     } catch (error) {

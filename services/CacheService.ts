@@ -899,13 +899,13 @@ export class CacheService {
       firstName: 'FirstName',
       gender: 'Gender',
       lastName: 'LastName',
-      noReferee: 'NoReferee',
+      RefereeId: 'NoReferee', // Map NoReferee from XML to RefereeId variable
       status: 'Status',
       type: 'Type',
       theoryTest: 'TheoryTest',
       strongPoints: 'StrongPoints',
       weakPoints: 'WeakPoints'
-    }, ['noReferee', 'firstName', 'lastName']);
+    }, ['RefereeId', 'firstName', 'lastName']); // Use RefereeId as required field
   }
 
   /**

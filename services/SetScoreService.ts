@@ -205,14 +205,11 @@ export class SetScoreService {
       }
 
       // LOG XML RESPONSE FOR DEBUGGING
-      console.log(`=== XML RESPONSE FOR MATCH ${match.id} ===`);
-      console.log('Raw XML Data:', response.xmlData);
       
       // Try to format XML nicely for debugging
       try {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(response.xmlData, 'text/xml');
-        console.log('=== FORMATTED XML STRUCTURE ===');
         
         // Log all XML elements and their attributes
         const allElements = xmlDoc.getElementsByTagName('*');
@@ -223,16 +220,9 @@ export class SetScoreService {
             const attr = element.attributes[j];
             attributes[attr.name] = attr.value;
           }
-          console.log(`${element.tagName}:`, {
-            attributes,
-            textContent: element.textContent?.trim() || '',
-            childElementCount: element.children.length
-          });
         }
       } catch (xmlParseError) {
-        console.log('XML parsing error:', xmlParseError);
       }
-      console.log('=== END XML DEBUG ===');
 
       // Parse BeachLive response
       const beachLive = this.parseBeachLiveResponse(response.xmlData);
@@ -247,12 +237,6 @@ export class SetScoreService {
       const enhancedTeamData = this.extractEnhancedTeamDataFromXml(response.xmlData);
       
       // LOG ALL EXTRACTED DATA
-      console.log(`=== ENHANCED DATA FOR MATCH ${match.id} ===`);
-      console.log('Set Scores:', setScores);
-      console.log('Enhanced Set Data:', enhancedSetData);
-      console.log('Enhanced Team Data:', enhancedTeamData);
-      console.log('Total Duration:', enhancedSetData.reduce((total, set) => total + set.durationSeconds, 0), 'seconds');
-      console.log('=== END ENHANCED DATA ===');
       
       // Cache the result AND XML source for debugging
       this.setScoreCache.set(match.id, setScores);

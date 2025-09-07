@@ -26,22 +26,7 @@ const ToolsSelectionScreenContent: React.FC = () => {
   }, [tournamentData]);
 
   const tools = [
-    {
-      id: 'court-monitor',
-      title: 'Court Monitor',
-      description: 'Monitor matches by court and time',
-      icon: '📺',
-      route: '/court-monitor',
-      color: '#4A90A4',
-    },
-    {
-      id: 'referee-monitor',
-      title: 'Referee Monitor', 
-      description: 'Monitor referee assignments and schedules',
-      icon: '👨‍⚖️',
-      route: '/referee-monitor',
-      color: colors.success,
-    }
+    // Tools removed as per user request - only using tournament details and referee list
   ];
 
   const handleToolPress = (tool: typeof tools[0]) => {
@@ -72,31 +57,17 @@ const ToolsSelectionScreenContent: React.FC = () => {
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.pageTitle}>Select a Tool</Text>
-        <Text style={styles.pageSubtitle}>Choose the monitoring tool you want to use</Text>
+        <Text style={styles.pageTitle}>Tools</Text>
+        <Text style={styles.pageSubtitle}>Monitoring tools have been simplified - use Tournament Details and Referee List</Text>
 
         <View style={styles.toolsGrid}>
-          {tools.map((tool) => (
-            <TouchableOpacity
-              key={tool.id}
-              style={[styles.toolCard, { borderLeftColor: tool.color }]}
-              onPress={() => handleToolPress(tool)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.toolHeader}>
-                <View style={[styles.toolIcon, { backgroundColor: tool.color }]}>
-                  <Text style={styles.toolIconText}>{tool.icon}</Text>
-                </View>
-                <View style={styles.toolInfo}>
-                  <Text style={styles.toolTitle}>{tool.title}</Text>
-                  <Text style={styles.toolDescription}>{tool.description}</Text>
-                </View>
-              </View>
-              <View style={styles.toolAction}>
-                <Text style={[styles.actionText, { color: tool.color }]}>Open →</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          <View style={styles.emptyToolsMessage}>
+            <Text style={styles.emptyText}>📋</Text>
+            <Text style={styles.emptyTitle}>Simplified Interface</Text>
+            <Text style={styles.emptyDescription}>
+              Use the Tournament Details screen for match monitoring and the Referee List (🏐 button) for referee tools.
+            </Text>
+          </View>
         </View>
 
         {tournament.Name && (
@@ -247,6 +218,32 @@ const styles = StyleSheet.create({
   tournamentSelectButtonText: {
     fontSize: 18,
     color: '#FFFFFF',
+  },
+  emptyToolsMessage: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  emptyText: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 

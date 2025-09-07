@@ -30,6 +30,7 @@ import { MatchListV2 } from '../components/MatchList/MatchListV2';
 import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
+import { TournamentCard } from '../components/entities/Tournament';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Separate component for expanded filters to prevent hooks issues
@@ -1162,35 +1163,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                 </View>
               </View>
               
-              <View style={styles.titleRow}>
-                <FlagImage
-                  federationCode={tournament.countryCode || tournament.country}
-                  teamName={tournament.country}
-                  size="medium"
-                  style={styles.tournamentFlag}
-                />
-                <Text style={styles.tournamentName}>
-                  {tournament.title || tournament.name}
-                </Text>
-              </View>
-              
-              <View style={styles.dateRow}>
-                <Icon name="calendar-outline" size={16} color="#6B7280" style={styles.dateIcon} />
-                <Text style={styles.tournamentDate}>{getDateRange()}</Text>
-              </View>
-
-              {canBeDefault && (
-                <View style={styles.defaultSwitchRow}>
-                  <Text style={styles.defaultSwitchLabel}>Set as Default</Text>
-                  <Switch
-                    value={isDefault}
-                    onValueChange={handleDefaultToggle}
-                    trackColor={{ false: '#D1D5DB', true: colors.primary }}
-                    thumbColor={isDefault ? '#FFFFFF' : '#9CA3AF'}
-                    style={styles.defaultSwitch}
-                  />
-                </View>
-              )}
+              {/* Use unified TournamentCard component */}
+              <TournamentCard
+                tournament={tournament}
+                onPress={() => {}} // No action needed since we're already on the detail screen
+                showDefaultToggle={canBeDefault}
+                showStatusBadge={true}
+                compact={false}
+              />
 
               {/* Tab system removed - showing matches directly */}
             </View>
@@ -1825,32 +1805,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginHorizontal: 2,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  tournamentFlag: {
-    marginRight: 8,
-  },
-  tournamentName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    flex: 1,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateIcon: {
-    marginRight: 8,
-  },
-  tournamentDate: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
+  // Removed unused tournament header styles - now using TournamentCard component
   liveBadgeStyle: {
     backgroundColor: '#FFFFFF', // White background
     flexDirection: 'row',
@@ -1984,20 +1939,7 @@ const styles = StyleSheet.create({
   whistleIcon: {
     fontSize: 24,
   },
-  defaultSwitchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  defaultSwitchLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  defaultSwitch: {
-    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-  },
+  // Removed unused default switch styles - now handled by TournamentCard component
 
   // Save button styles for filters panel
   saveButtonContainer: {

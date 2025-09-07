@@ -18,429 +18,11 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { TournamentCore } from '../types/tournament-v2';
 import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
-import VisTournamentList from '../components/VisTournamentList';
+import { TournamentCard } from '../components/entities/Tournament';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
-import { VisTournamentItem } from '../components/VisTournamentList';
-import { FlagImage } from '../components/FlagImage';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
-interface TournamentCardProps {
-  tournament: TournamentCore;
-  onPress: () => void;
-}
-
-const TournamentCard: React.FC<TournamentCardProps> = ({ tournament, onPress }) => {
-  const [isDefault, setIsDefault] = useState(false);
-
-  // Check if this tournament is default on mount
-  useEffect(() => {
-    const checkDefaultStatus = async () => {
-      const defaultStatus = await DefaultTournamentService.isDefaultTournament(tournament.visNo);
-      setIsDefault(defaultStatus);
-    };
-    checkDefaultStatus();
-  }, [tournament.visNo]);
-
-  // Check if tournament can be set as default (only LIVE tournaments)
-  const tournamentStatus = DefaultTournamentService.getTournamentStatus(
-    tournament.dates?.startDate, 
-    tournament.dates?.endDate
-  );
-  const canBeDefault = tournamentStatus === 'LIVE NOW';
-
-  // Handle default switch toggle
-  const handleDefaultToggle = async (value: boolean) => {
-    try {
-      const result = await DefaultTournamentService.toggleDefaultTournament(
-        tournament.visNo, 
-        tournament.title || tournament.name || `Tournament ${tournament.visNo}`,
-        tournament.dates?.startDate,
-        tournament.dates?.endDate
-      );
-      
-      if (result.success) {
-        setIsDefault(result.isDefault);
-        
-        if (result.isDefault) {
-          Alert.alert(
-            'Default Set', 
-            'This tournament is now your default. The homepage will redirect here.',
-            [{ text: 'OK' }]
-          );
-        }
-      } else {
-        // Show error message for why it couldn't be set as default
-        Alert.alert(
-          'Cannot Set as Default', 
-          result.reason || 'This tournament cannot be set as default.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error toggling default tournament:', error);
-      Alert.alert('Error', 'Could not update default tournament setting');
-    }
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  // Helper function to infer country from tournament name
-  const inferCountryFromName = (name?: string): string | undefined => {
-    if (!name) return undefined;
-    const nameLower = name.toLowerCase();
-    
-    if (nameLower.includes('dusseldorf') || nameLower.includes('düsseldorf')) return 'Germany';
-    if (nameLower.includes('hamburg') || nameLower.includes('berlin') || nameLower.includes('munich')) return 'Germany';
-    if (nameLower.includes('rome') || nameLower.includes('roma') || nameLower.includes('italy')) return 'Italy';
-    if (nameLower.includes('paris') || nameLower.includes('france')) return 'France';
-    if (nameLower.includes('madrid') || nameLower.includes('spain')) return 'Spain';
-    if (nameLower.includes('vienna') || nameLower.includes('austria')) return 'Austria';
-    if (nameLower.includes('doha') || nameLower.includes('qatar')) return 'Qatar';
-    if (nameLower.includes('tokyo') || nameLower.includes('japan')) return 'Japan';
-    if (nameLower.includes('sydney') || nameLower.includes('australia')) return 'Australia';
-    if (nameLower.includes('toronto') || nameLower.includes('vancouver') || nameLower.includes('canada') || nameLower.includes('montreal')) return 'Canada';
-    if (nameLower.includes('brazil') || nameLower.includes('rio') || nameLower.includes('sao paulo')) return 'Brazil';
-    if (nameLower.includes('usa') || nameLower.includes('america') || nameLower.includes('miami') || nameLower.includes('los angeles') || nameLower.includes('new york')) return 'USA';
-    if (nameLower.includes('poland') || nameLower.includes('warsaw') || nameLower.includes('krakow')) return 'Poland';
-    if (nameLower.includes('netherlands') || nameLower.includes('amsterdam') || nameLower.includes('den haag')) return 'Netherlands';
-    if (nameLower.includes('norway') || nameLower.includes('oslo')) return 'Norway';
-    if (nameLower.includes('sweden') || nameLower.includes('stockholm')) return 'Sweden';
-    if (nameLower.includes('denmark') || nameLower.includes('copenhagen')) return 'Denmark';
-    if (nameLower.includes('finland') || nameLower.includes('helsinki')) return 'Finland';
-    if (nameLower.includes('turkey') || nameLower.includes('istanbul') || nameLower.includes('ankara')) return 'Turkey';
-    if (nameLower.includes('mexico') || nameLower.includes('cancun') || nameLower.includes('acapulco')) return 'Mexico';
-    if (nameLower.includes('argentina') || nameLower.includes('buenos aires')) return 'Argentina';
-    if (nameLower.includes('chile') || nameLower.includes('santiago') || nameLower.includes('viña del mar')) return 'Chile';
-    
-    return undefined;
-  };
-
-  const getLocation = () => {
-    // Try different combinations of available location data
-    const city = tournament.city;
-    const country = tournament.country;
-    const location = (tournament as any).location;
-    const venue = (tournament as any).venue;
-    const continent = (tournament as any).continent;
-    
-    // Prefer city, country combination
-    if (city && country) {
-      return `${city}, ${country}`;
-    }
-    
-    // Try other combinations
-    if (location && country) {
-      return `${location}, ${country}`;
-    }
-    
-    if (venue && city) {
-      return `${venue}, ${city}`;
-    }
-    
-    if (venue && country) {
-      return `${venue}, ${country}`;
-    }
-    
-    // Single field options
-    if (location) return location;
-    if (city) return city;
-    if (country) return country;
-    if (venue) return venue;
-    if (continent) return continent;
-    
-    // Fallback: try to extract from tournament name
-    return inferLocationFromName(tournament.name || tournament.title) || null;
-  };
-  
-  // Helper function to extract location from tournament name
-  const inferLocationFromName = (name?: string): string | null => {
-    if (!name) return null;
-    
-    const nameLower = name.toLowerCase();
-    
-    // Common city patterns
-    const cityPatterns = [
-      { pattern: 'doha', location: 'Doha, Qatar' },
-      { pattern: 'dubai', location: 'Dubai, UAE' },
-      { pattern: 'rome', location: 'Rome, Italy' },
-      { pattern: 'paris', location: 'Paris, France' },
-      { pattern: 'madrid', location: 'Madrid, Spain' },
-      { pattern: 'vienna', location: 'Vienna, Austria' },
-      { pattern: 'hamburg', location: 'Hamburg, Germany' },
-      { pattern: 'berlin', location: 'Berlin, Germany' },
-      { pattern: 'munich', location: 'Munich, Germany' },
-      { pattern: 'ostrava', location: 'Ostrava, Czech Republic' },
-      { pattern: 'espinho', location: 'Espinho, Portugal' },
-      { pattern: 'gstaad', location: 'Gstaad, Switzerland' },
-      { pattern: 'brasilia', location: 'Brasília, Brazil' },
-      { pattern: 'brasília', location: 'Brasília, Brazil' },
-      { pattern: 'rio', location: 'Rio de Janeiro, Brazil' },
-      { pattern: 'sao paulo', location: 'São Paulo, Brazil' },
-      { pattern: 'cancun', location: 'Cancún, Mexico' },
-      { pattern: 'acapulco', location: 'Acapulco, Mexico' },
-      { pattern: 'singapore', location: 'Singapore' },
-      { pattern: 'tokyo', location: 'Tokyo, Japan' },
-      { pattern: 'osaka', location: 'Osaka, Japan' },
-      { pattern: 'sydney', location: 'Sydney, Australia' },
-      { pattern: 'gold coast', location: 'Gold Coast, Australia' },
-      { pattern: 'vancouver', location: 'Vancouver, Canada' },
-      { pattern: 'toronto', location: 'Toronto, Canada' },
-      { pattern: 'montreal', location: 'Montreal, Canada' },
-      { pattern: 'manhattan beach', location: 'Manhattan Beach, USA' },
-      { pattern: 'hermosa beach', location: 'Hermosa Beach, USA' },
-      { pattern: 'huntington beach', location: 'Huntington Beach, USA' },
-      { pattern: 'long beach', location: 'Long Beach, USA' },
-    ];
-    
-    for (const { pattern, location } of cityPatterns) {
-      if (nameLower.includes(pattern)) {
-        return location;
-      }
-    }
-    
-    return null;
-  };
-
-  // Compact date formatting functions (moved from TournamentDateExtractor)
-  const formatCompactDate = (dateStr?: string): string => {
-    if (!dateStr) return '';
-    
-    try {
-      const date = new Date(dateStr);
-      const day = date.getDate().toString().padStart(2, '0');
-      const monthName = getMonthNameShort(date.getMonth());
-      
-      return `${day} ${monthName}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatCompactDateRange = (startDate: string, endDate: string): string => {
-    try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      
-      const startDay = start.getDate().toString().padStart(2, '0');
-      const endDay = end.getDate().toString().padStart(2, '0');
-      const monthName = getMonthNameShort(start.getMonth());
-      
-      // If same date, show as single date
-      if (startDate === endDate) {
-        return `${startDay} ${monthName}`;
-      }
-      
-      // Check if they're in the same month/year
-      if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-        return `${startDay} - ${endDay} ${monthName}`;
-      } else {
-        // Different months - show month for each date
-        const endMonthName = getMonthNameShort(end.getMonth());
-        return `${startDay} ${monthName} - ${endDay} ${endMonthName}`;
-      }
-    } catch {
-      return `${startDate} - ${endDate}`;
-    }
-  };
-
-  const getMonthNameShort = (monthIndex: number): string => {
-    const monthNames = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return monthNames[monthIndex] || 'Jan';
-  };
-
-  const getDateRange = () => {
-    // Use TournamentCore dates object
-    const startDate = tournament.dates?.startDate;
-    const endDate = tournament.dates?.endDate;
-    
-    if (!startDate && !endDate) {
-      return 'Dates TBD';
-    }
-    
-    if (startDate && endDate) {
-      if (startDate === endDate) {
-        return formatCompactDate(startDate);
-      }
-      return formatCompactDateRange(startDate, endDate);
-    }
-    
-    return formatCompactDate(startDate || endDate);
-  };
-
-  const getStatusIndicator = () => {
-    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return (
-      <View style={[styles.statusIndicator, { backgroundColor: '#6B7280' }]}>
-        <Text style={styles.statusText}>SCHEDULED</Text>
-      </View>
-    );
-    
-    const now = new Date();
-    const start = new Date(tournament.dates.startDate);
-    const end = new Date(tournament.dates.endDate);
-    
-    let status = '';
-    let backgroundColor = '#6B7280';
-    
-    // If start date is after today = SCHEDULED
-    if (start > now) {
-      status = 'SCHEDULED';
-      backgroundColor = '#6B7280';
-    }
-    // If start less than today and end after today = LIVE NOW  
-    else if (start <= now && end >= now) {
-      status = 'LIVE NOW';
-      backgroundColor = colors.success;
-    }
-    // If end is less than today = COMPLETED
-    else {
-      status = 'COMPLETED';
-      backgroundColor = '#1B365D';
-    }
-    
-    return (
-      <View style={[styles.statusIndicator, { backgroundColor }]}>
-        <Text style={styles.statusText}>{status}</Text>
-      </View>
-    );
-  };
-
-  // Get gender badge (like in match cards)
-  const getGenderBadge = () => {
-    const gender = tournament.gender;
-    if (!gender) return null;
-    
-    let genderText = '';
-    let genderStyle = styles.mixedSymbol;
-    
-    if (gender === 'M') {
-      genderText = '♂';
-      genderStyle = styles.menSymbol;
-    } else if (gender === 'W') {
-      genderText = '♀';
-      genderStyle = styles.womenSymbol;
-    } else {
-      genderText = '⚭'; // Mixed symbol
-      genderStyle = styles.mixedSymbol;
-    }
-    
-    return (
-      <View style={styles.genderBadge}>
-        <Text style={[styles.genderSymbol, genderStyle]}>
-          {genderText}
-        </Text>
-      </View>
-    );
-  };
-
-  // Get prize money info
-  const getPrizeInfo = () => {
-    const prize = tournament.PrizeMoney || tournament.Prize;
-    const currency = tournament.Currency;
-    if (!prize) return null;
-    
-    return (
-      <Text style={styles.tournamentPrize}>
-        💰 {currency ? `${currency} ` : ''}${prize}
-      </Text>
-    );
-  };
-
-  // Get venue/surface info
-  const getVenueInfo = () => {
-    const venue = tournament.Venue;
-    const surface = tournament.Surface;
-    const courts = tournament.Courts;
-    
-    if (venue || surface || courts) {
-      const parts = [];
-      if (venue) parts.push(venue);
-      if (surface) parts.push(`${surface} surface`);
-      if (courts) parts.push(`${courts} courts`);
-      
-      return (
-        <Text style={styles.tournamentVenue} numberOfLines={1}>
-          🏐 {parts.join(' • ')}
-        </Text>
-      );
-    }
-    return null;
-  };
-
-  // Get teams/gender info
-  const getParticipantsInfo = () => {
-    const teams = tournament.Teams || tournament.MaxTeams;
-    const gender = tournament.Gender;
-    const participants = tournament.Participants;
-    
-    if (teams || gender || participants) {
-      const parts = [];
-      if (gender) parts.push(gender === 'M' ? 'Men' : gender === 'W' ? 'Women' : 'Mixed');
-      if (teams) parts.push(`${teams} teams`);
-      if (participants && !teams) parts.push(`${participants} participants`);
-      
-      return (
-        <Text style={styles.tournamentParticipants}>
-          👥 {parts.join(' • ')}
-        </Text>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <TouchableOpacity style={styles.tournamentCard} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.cardHeader}>
-        {getStatusIndicator()}
-        {getGenderBadge()}
-      </View>
-      
-      <Text style={styles.tournamentName}>
-        {tournament.title || tournament.name || `Tournament ${tournament.visNo}`}
-      </Text>
-      
-      
-      {getDateRange() && (
-        <View style={styles.dateRow}>
-          <Icon name="calendar-outline" size={14} color="#6B7280" style={styles.dateIcon} />
-          <Text style={styles.tournamentDate}>{getDateRange()}</Text>
-        </View>
-      )}
-      
-      <View style={styles.cardFooter}>
-        {canBeDefault && (
-          <View style={styles.defaultSwitchContainer}>
-            <Text style={styles.defaultSwitchLabel}>Default</Text>
-            <Switch
-              value={isDefault}
-              onValueChange={handleDefaultToggle}
-              trackColor={{ false: '#D1D5DB', true: colors.primary }}
-              thumbColor={isDefault ? '#FFFFFF' : '#9CA3AF'}
-              style={styles.defaultSwitch}
-            />
-          </View>
-        )}
-        <TouchableOpacity style={styles.openButton} onPress={onPress}>
-          <Text style={styles.openButtonText}>OPEN</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
-};
+// Removed local TournamentCard component - using unified component from entities/Tournament
 
 
 const TournamentSelectionScreen: React.FC = () => {
@@ -1142,7 +724,10 @@ const TournamentSelectionScreen: React.FC = () => {
     return (
       <TournamentCard 
         tournament={item} 
-        onPress={() => handleTournamentPress(item)} 
+        onPress={() => handleTournamentPress(item)}
+        showDefaultToggle={true}
+        showStatusBadge={true}
+        compact={false}
       />
     );
   };
@@ -1231,9 +816,12 @@ const TournamentSelectionScreen: React.FC = () => {
     return (
       <View style={styles.liveTournamentsSection}>
         {liveTournaments.length === 1 ? (
-          <VisTournamentItem 
+          <TournamentCard 
             tournament={liveTournaments[0]}
             onPress={() => handleTournamentPress(liveTournaments[0])}
+            showDefaultToggle={true}
+            showStatusBadge={true}
+            compact={false}
           />
         ) : (
           <ScrollView 
@@ -1244,9 +832,12 @@ const TournamentSelectionScreen: React.FC = () => {
           >
             {liveTournaments.map((tournament, index) => (
               <View key={tournament.id} style={styles.liveCarouselItem}>
-                <VisTournamentItem 
+                <TournamentCard 
                   tournament={tournament}
                   onPress={() => handleTournamentPress(tournament)}
+                  showDefaultToggle={true}
+                  showStatusBadge={true}
+                  compact={true}
                 />
               </View>
             ))}
@@ -1438,12 +1029,13 @@ const TournamentSelectionScreen: React.FC = () => {
                                   {/* Month Content - Tournaments */}
                                   {isMonthExpanded && (
                                     <View style={styles.tournamentsContainer}>
-                                      <VisTournamentList
-                                        tournaments={monthTournaments}
-                                        onTournamentPress={handleTournamentPress}
-                                        loading={false}
-                                        error={null}
-                                        onRetry={() => loadTournaments(true)}
+                                      <FlatList
+                                        data={monthTournaments}
+                                        keyExtractor={(item) => item.visNo || item.id}
+                                        renderItem={renderTournament}
+                                        showsVerticalScrollIndicator={false}
+                                        scrollEnabled={false}
+                                        nestedScrollEnabled={false}
                                       />
                                     </View>
                                   )}

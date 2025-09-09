@@ -2,10 +2,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Disable package exports to fix white screen issues with SDK 53
-// This resolves the "dual package hazard" where both ESM and CommonJS 
-// versions of libraries get loaded simultaneously
-config.resolver.unstable_enablePackageExports = false;
+// Configure package exports for SDK 53 with TanStack Query compatibility
+// Temporarily enable package exports to fix TanStack Query import issues
+config.resolver.unstable_enablePackageExports = true;
 
 // Production optimizations
 if (process.env.NODE_ENV === 'production') {

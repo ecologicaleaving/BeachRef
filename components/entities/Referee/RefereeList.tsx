@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -12,9 +12,53 @@ import { EventReferee, RefereeOfficial, isActiveOfficial } from '../../../types/
 import { RefereeCard } from './RefereeCard';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
 import { colors } from '../../../theme/tokens';
+import { useReferees, RefereesFilters } from '../../../hooks/useReferees';
+import { RefereeDTO } from '../../../services/DualReadService';
+import { featureFlags } from '../../../hooks/compatibility/FeatureFlags';
+
+/**
+ * Transforms RefereeDTO from hook to EventReferee/RefereeOfficial for component compatibility
+ * Maintains backward compatibility with existing component interfaces
+ * @param dto RefereeDTO from useReferees hook
+ * @returns EventReferee or RefereeOfficial expected by components
+ */
+const transformRefereeDTO = (dto: RefereeDTO): EventReferee | RefereeOfficial => {
+  // Base referee properties
+  const baseReferee = {
+    id: dto.id,
+    visNo: dto.visNo,
+    firstName: dto.firstName,
+    lastName: dto.lastName,
+    gender: dto.gender as 'M' | 'W',
+    federationCode: dto.federationCode,
+    status: dto.status || 'ACTIVE',
+    type: dto.type || 'Referee',
+    role: dto.role,
+    assignments: dto.assignments || [],
+    isOnline: dto.isOnline || false,
+    lastSeenAt: dto.lastSeenAt,
+  };
+
+  // Return as EventReferee or RefereeOfficial based on available data
+  if (dto.role) {
+    return {
+      ...baseReferee,
+      role: dto.role,
+      assignmentHistory: dto.assignmentHistory || [],
+      qualifications: dto.qualifications || [],
+      notes: dto.notes,
+    } as RefereeOfficial;
+  } else {
+    return {
+      ...baseReferee,
+      eventAssignments: dto.assignments || [],
+      availability: dto.availability || [],
+    } as EventReferee;
+  }
+};
 
 export interface RefereeListProps {
-  referees: (EventReferee | RefereeOfficial)[];
+  referees?: (EventReferee | RefereeOfficial)[]; // Made optional to allow hook-based data fetching
   onRefereePress?: (referee: EventReferee | RefereeOfficial) => void;
   loading?: boolean;
   error?: string | null;
@@ -33,6 +77,13 @@ export interface RefereeListProps {
   emptyMessage?: string;
   variant?: 'default' | 'assignment' | 'selection';
   assignmentCounts?: Record<string, number>;
+  // New props for hook-based data fetching
+  tournamentCodes?: string[]; // Enable filtering by tournaments
+  federationCode?: string;
+  refereeFilters?: RefereesFilters; // Additional filters for useReferees hook
+  enableRealTime?: boolean; // Enable real-time updates for assignments
+  enableAssignmentUpdates?: boolean; // Enable assignment status updates
+  includeOnlineStatus?: boolean; // Include online status information
 }
 
 /**
@@ -40,10 +91,10 @@ export interface RefereeListProps {
  * Displays referees with filtering, sorting, and grouping capabilities
  */
 export const RefereeList: React.FC<RefereeListProps> = ({
-  referees,
+  referees: propReferees,
   onRefereePress,
-  loading = false,
-  error = null,
+  loading: propLoading = false,
+  error: propError = null,
   onRefresh,
   refreshing = false,
   showStatusBadge = true,
@@ -59,7 +110,60 @@ export const RefereeList: React.FC<RefereeListProps> = ({
   emptyMessage = 'No referees found',
   variant = 'default',
   assignmentCounts = {},
+  // New hook-based props
+  tournamentCodes,
+  federationCode,
+  refereeFilters,
+  enableRealTime = false,
+  enableAssignmentUpdates = false,
+  includeOnlineStatus = false,
 }) => {
+  // Hook-based data fetching when tournament codes or filters are provided AND feature flag is enabled
+  const shouldUseHook = !!(tournamentCodes?.length || federationCode || refereeFilters) && 
+                        featureFlags.shouldUseNewHook('RefereeList', 'referees');
+  const hookFilters = useMemo((): RefereesFilters => ({
+    tournamentCodes,
+    federationCode,
+    includeAssignments: showAssignments,
+    ...refereeFilters,
+  }), [tournamentCodes, federationCode, showAssignments, refereeFilters]);
+
+  const {
+    data: rawReferees = [],
+    isLoading: hookLoading,
+    error: hookError,
+    forceRefresh,
+    assignmentCounts: hookAssignmentCounts,
+  } = useReferees(
+    shouldUseHook ? hookFilters : undefined,
+    {
+      enableRealTimeUpdates: enableRealTime,
+      enableAssignmentUpdates,
+      includeOnlineStatus,
+      enablePerformanceMonitoring: true,
+      groupByFederation: false,
+    }
+  );
+
+  // Transform hook data to component format
+  const hookReferees = useMemo(() => {
+    return shouldUseHook ? rawReferees.map(transformRefereeDTO) : [];
+  }, [rawReferees, shouldUseHook]);
+
+  // Use either prop referees or hook referees
+  const referees = propReferees || hookReferees;
+  const loading = propLoading || (shouldUseHook ? hookLoading : false);
+  const error = propError || (hookError?.message || null);
+  
+  // Use hook assignment counts if available, otherwise use props
+  const finalAssignmentCounts = shouldUseHook ? hookAssignmentCounts : assignmentCounts;
+
+  // Track hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseHook && hookError) {
+      featureFlags.recordError('RefereeList', hookError.message || 'Unknown hook error');
+    }
+  }, [shouldUseHook, hookError]);
   
   // Filter and sort referees
   const filteredReferees = useMemo(() => {
@@ -151,7 +255,7 @@ export const RefereeList: React.FC<RefereeListProps> = ({
   // Get assignment count for referee
   const getAssignmentCount = (referee: EventReferee | RefereeOfficial): number => {
     const id = 'RefereeId' in referee ? referee.RefereeId : referee.noOfficial;
-    return assignmentCounts[id] || 0;
+    return finalAssignmentCounts[id] || 0;
   };
 
   // Render referee item
@@ -166,7 +270,7 @@ export const RefereeList: React.FC<RefereeListProps> = ({
       variant={variant}
       assignmentCount={getAssignmentCount(item)}
     />
-  ), [onRefereePress, showStatusBadge, showRole, showAssignments, compactMode, variant, assignmentCounts]);
+  ), [onRefereePress, showStatusBadge, showRole, showAssignments, compactMode, variant, finalAssignmentCounts]);
 
   // Render section header for grouped display
   const renderSectionHeader = ({ section }: { section: { title: string } }) => {
@@ -188,8 +292,11 @@ export const RefereeList: React.FC<RefereeListProps> = ({
       <Text style={styles.emptySubtitle}>
         {error ? error : emptyMessage}
       </Text>
-      {error && onRefresh && (
-        <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
+      {error && (onRefresh || shouldUseHook) && (
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
+        >
           <UtilityIcons.Refresh style={styles.retryIcon} />
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
@@ -231,10 +338,10 @@ export const RefereeList: React.FC<RefereeListProps> = ({
           }}
           ListEmptyComponent={renderEmpty}
           refreshControl={
-            onRefresh ? (
+            (onRefresh || shouldUseHook) ? (
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={onRefresh}
+                onRefresh={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
                 colors={[colors.accent]}
                 tintColor={colors.accent}
               />
@@ -259,10 +366,10 @@ export const RefereeList: React.FC<RefereeListProps> = ({
         renderItem={renderReferee}
         ListEmptyComponent={renderEmpty}
         refreshControl={
-          onRefresh ? (
+          (onRefresh || shouldUseHook) ? (
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={onRefresh}
+              onRefresh={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
               colors={[colors.accent]}
               tintColor={colors.accent}
             />

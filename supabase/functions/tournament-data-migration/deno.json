@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "std/": "https://deno.land/std@0.207.0/"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["es2022", "dom"],
+    "strict": true
+  }
+}

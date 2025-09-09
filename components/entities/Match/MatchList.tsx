@@ -8,14 +8,85 @@ import {
   Text,
   RefreshControl,
 } from 'react-native';
-import { BeachMatchCore } from '../../../types/match-v2';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../../types/match-v2';
 import { MatchCard } from './MatchCard';
 import { determineMatchStatus } from '../../../utils/statusColors';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
 import { colors } from '../../../theme/tokens';
+import { useMatches, MatchesFilters } from '../../../hooks/useMatches';
+import { MatchDTO } from '../../../services/DualReadService';
+import { featureFlags } from '../../../hooks/compatibility/FeatureFlags';
+
+/**
+ * Transforms MatchDTO from hook to BeachMatchCore for component compatibility
+ * Maintains backward compatibility with existing component interfaces
+ * @param dto MatchDTO from useMatches hook
+ * @returns BeachMatchCore expected by components
+ */
+const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
+  // Transform result if it exists
+  const result: MatchResult | undefined = dto.result ? {
+    team1Sets: dto.result.team1Sets,
+    team2Sets: dto.result.team2Sets,
+    setScores: dto.result.setScores.flatMap(score => [score.a, score.b]),
+    duration: dto.result.duration,
+    winner: dto.result.winner,
+    forfeit: dto.result.forfeit,
+  } : undefined;
+
+  // Transform teams
+  const team1: MatchTeam = {
+    teamNumber: dto.team1.teamNumber,
+    teamName: dto.team1.teamName,
+    player1Name: dto.team1.player1Name,
+    player2Name: dto.team1.player2Name,
+    countryCode: dto.team1.countryCode,
+    ranking: dto.team1.ranking,
+  };
+
+  const team2: MatchTeam = {
+    teamNumber: dto.team2.teamNumber,
+    teamName: dto.team2.teamName,
+    player1Name: dto.team2.player1Name,
+    player2Name: dto.team2.player2Name,
+    countryCode: dto.team2.countryCode,
+    ranking: dto.team2.ranking,
+  };
+
+  // Transform court info
+  const court: CourtInfo = {
+    courtNumber: dto.court.courtNumber,
+    courtName: dto.court.courtName,
+    surface: dto.court.surface,
+    location: dto.court.location,
+  };
+
+  return {
+    id: dto.id,
+    visNo: dto.visNo,
+    version: 1,
+    lastUpdated: new Date().toISOString(),
+    tournamentId: dto.tournamentCode, // Using tournamentCode as tournamentId
+    matchCode: dto.matchCode,
+    round: dto.round,
+    phaseCode: dto.phaseCode,
+    status: dto.status as MatchStatus,
+    court,
+    scheduledDateTime: dto.scheduledDateTime,
+    actualStartTime: dto.actualStartTime,
+    actualEndTime: dto.actualEndTime,
+    team1,
+    team2,
+    result,
+    refereeAssignments: (dto as any).refereeAssignments || [],
+    notes: (dto as any).notes,
+    weather: (dto as any).weather,
+    importance: (dto as any).importance,
+  };
+};
 
 export interface MatchListProps {
-  matches: BeachMatchCore[];
+  matches?: BeachMatchCore[]; // Made optional to allow hook-based data fetching
   onMatchPress?: (match: BeachMatchCore) => void;
   loading?: boolean;
   error?: string | null;
@@ -32,6 +103,12 @@ export interface MatchListProps {
   maxItems?: number;
   emptyMessage?: string;
   variant?: 'default' | 'referee' | 'live';
+  // New props for hook-based data fetching
+  tournamentCode?: string; // Enable filtering by tournament
+  eventId?: number;
+  matchFilters?: MatchesFilters; // Additional filters for useMatches hook
+  enableRealTime?: boolean; // Enable real-time updates for live matches
+  enableLiveScores?: boolean; // Enable live score updates
 }
 
 /**
@@ -39,10 +116,10 @@ export interface MatchListProps {
  * Consolidates MatchListV2 and other match list implementations
  */
 export const MatchList: React.FC<MatchListProps> = ({
-  matches,
+  matches: propMatches,
   onMatchPress,
-  loading = false,
-  error = null,
+  loading: propLoading = false,
+  error: propError = null,
   onRefresh,
   refreshing = false,
   showStatusBadge = true,
@@ -56,7 +133,54 @@ export const MatchList: React.FC<MatchListProps> = ({
   maxItems,
   emptyMessage = 'No matches found',
   variant = 'default',
+  // New hook-based props
+  tournamentCode,
+  eventId,
+  matchFilters,
+  enableRealTime = false,
+  enableLiveScores = false,
 }) => {
+  // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
+  const shouldUseHook = !!tournamentCode && featureFlags.shouldUseNewHook('MatchList', 'matches');
+  const hookFilters = useMemo((): MatchesFilters => ({
+    tournamentCode,
+    eventId,
+    ...matchFilters,
+  }), [tournamentCode, eventId, matchFilters]);
+
+  const hookResult = useMatches(
+    shouldUseHook ? hookFilters : undefined,
+    {
+      enableRealTimeUpdates: enableRealTime,
+      enableLiveScores,
+      enablePerformanceMonitoring: true,
+      groupByReferee: true,
+    }
+  );
+
+  const {
+    data: rawMatches = [],
+    loading: hookLoading = false,
+    error: hookError,
+    refetch: forceRefresh,
+  } = hookResult || {};
+
+  // Transform hook data to component format
+  const hookMatches = useMemo(() => {
+    return shouldUseHook ? rawMatches.map(transformMatchDTO) : [];
+  }, [rawMatches, shouldUseHook]);
+
+  // Use either prop matches or hook matches
+  const matches = propMatches || hookMatches;
+  const loading = propLoading || (shouldUseHook ? hookLoading : false);
+  const error = propError || (hookError?.message || null);
+
+  // Track hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseHook && hookError) {
+      featureFlags.recordError('MatchList', hookError.message || 'Unknown hook error');
+    }
+  }, [shouldUseHook, hookError]);
   
   // Filter and sort matches
   const filteredMatches = useMemo(() => {
@@ -73,7 +197,8 @@ export const MatchList: React.FC<MatchListProps> = ({
     // Apply gender filter
     if (filterByGender !== 'all') {
       filtered = filtered.filter(match => {
-        const gender = (match as any).tournamentGender || match.teams?.gender;
+        // Use tournamentGender if available on extended match types
+        const gender = (match as any).tournamentGender;
         return gender === filterByGender;
       });
     }
@@ -81,8 +206,8 @@ export const MatchList: React.FC<MatchListProps> = ({
     // Apply court filter
     if (filterByCourt !== 'all') {
       filtered = filtered.filter(match => {
-        const courtName = match.court?.name || match.court?.number?.toString();
-        return courtName === filterByCourt;
+        const courtNumber = match.court?.courtNumber || match.court?.courtName;
+        return courtNumber === filterByCourt;
       });
     }
 
@@ -101,8 +226,8 @@ export const MatchList: React.FC<MatchListProps> = ({
       }
       
       // Within same status, sort by time
-      const timeA = a.scheduledTime?.time || '';
-      const timeB = b.scheduledTime?.time || '';
+      const timeA = a.scheduledDateTime || '';
+      const timeB = b.scheduledDateTime || '';
       return timeA.localeCompare(timeB);
     });
 
@@ -169,8 +294,11 @@ export const MatchList: React.FC<MatchListProps> = ({
       <Text style={styles.emptySubtitle}>
         {error ? error : emptyMessage}
       </Text>
-      {error && onRefresh && (
-        <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
+      {error && (onRefresh || shouldUseHook) && (
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
+        >
           <UtilityIcons.Refresh style={styles.retryIcon} />
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
@@ -208,10 +336,10 @@ export const MatchList: React.FC<MatchListProps> = ({
           }}
           ListEmptyComponent={renderEmpty}
           refreshControl={
-            onRefresh ? (
+            (onRefresh || shouldUseHook) ? (
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={onRefresh}
+                onRefresh={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
                 colors={[colors.accent]}
                 tintColor={colors.accent}
               />
@@ -236,10 +364,10 @@ export const MatchList: React.FC<MatchListProps> = ({
         renderItem={renderMatch}
         ListEmptyComponent={renderEmpty}
         refreshControl={
-          onRefresh ? (
+          (onRefresh || shouldUseHook) ? (
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={onRefresh}
+              onRefresh={() => shouldUseHook ? forceRefresh() : onRefresh?.()}
               colors={[colors.accent]}
               tintColor={colors.accent}
             />

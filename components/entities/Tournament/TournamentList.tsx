@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   FlatList,
@@ -9,10 +9,10 @@ import {
   Text,
   RefreshControl,
 } from 'react-native';
-import { TournamentCore } from '../../../types/tournament-v2';
+import { TournamentCore, TournamentStatus, GenderType, TournamentType } from '../../../types/tournament-v2';
 import { TournamentCard } from './TournamentCard';
-import { CacheService } from '../../../services/CacheService';
-import { CacheResult } from '../../../types/cache';
+import { useTournaments, TournamentsFilters } from '../../../hooks/useTournaments';
+import { TournamentDTO } from '../../../services/DualReadService';
 import { NetworkStatus, OfflineBanner } from '../../offline';
 import { DataFreshness } from '../../DataFreshness';
 import { useNetworkStatus } from '../../../hooks/useNetworkStatus';
@@ -25,6 +25,41 @@ import { useStorageMonitoring } from '../../../hooks/useStorageManager';
 import { TournamentStatusLegend } from '../../tournament/TournamentStatusIndicator';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
 import { colors } from '../../../theme/tokens';
+
+/**
+ * Transforms TournamentDTO from hook to TournamentCore for component compatibility
+ * Maintains backward compatibility with existing component interfaces
+ * @param dto TournamentDTO from useTournaments hook
+ * @returns TournamentCore expected by components
+ */
+const transformTournamentDTO = (dto: TournamentDTO): TournamentCore => ({
+  id: dto.id,
+  visNo: dto.visNo,
+  version: 1, // Default version - could be enhanced with actual versioning
+  lastUpdated: new Date().toISOString(), // Current timestamp as fallback
+  code: dto.code,
+  name: dto.name,
+  title: dto.title,
+  gender: dto.gender as GenderType,
+  tournamentType: dto.tournamentType as TournamentType,
+  dates: dto.dates,
+  status: dto.status as TournamentStatus,
+  NoEvent: undefined, // Not provided in DTO - consider adding to TournamentDTO interface
+  city: dto.city,
+  country: dto.country,
+  countryCode: dto.countryCode,
+  location: dto.location,
+  // Adding default values for optional TournamentCore fields to ensure type safety
+  venue: undefined,
+  address: undefined,
+  courts: undefined,
+  prizeMoney: undefined,
+  currency: undefined,
+  website: undefined,
+  parentEventNo: undefined,
+  series: undefined,
+  category: undefined,
+});
 
 export interface TournamentListProps {
   onTournamentPress: (tournament: TournamentCore) => void;
@@ -53,75 +88,72 @@ export const TournamentList: React.FC<TournamentListProps> = ({
   filterByStatus = 'all',
   maxItems,
 }) => {
-  const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Convert filterByStatus to TournamentStatus for hook
+  const statusFilter = useMemo((): 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | undefined => {
+    switch (filterByStatus) {
+      case 'live': return 'ACTIVE';
+      case 'upcoming': return 'UPCOMING';
+      case 'completed': return 'COMPLETED';
+      default: return undefined; // 'all' case
+    }
+  }, [filterByStatus]);
+
+  // Create filters for useTournaments hook
+  const tournamentsFilters = useMemo((): TournamentsFilters => ({
+    status: statusFilter,
+  }), [statusFilter]);
+
+  // Use the new useTournaments hook
+  const tournamentsQuery = useTournaments(tournamentsFilters, {
+    enableRealTimeUpdates: true,
+    enablePerformanceMonitoring: true,
+  });
+
+  const {
+    data: rawTournaments = [],
+    isLoading: loading,
+    isRefetching: refreshing,
+    error: hookError,
+    source,
+    performance,
+    forceRefresh,
+  } = tournamentsQuery;
+
+  // Transform TournamentDTO to TournamentCore and apply maxItems filter
+  // Memoized transformation to prevent unnecessary re-renders
+  const tournaments = useMemo(() => {
+    if (!rawTournaments?.length) return [];
+    
+    const transformedTournaments = rawTournaments.map(transformTournamentDTO);
+    return maxItems && maxItems > 0 
+      ? transformedTournaments.slice(0, maxItems)
+      : transformedTournaments;
+  }, [rawTournaments, maxItems]);
+
+  // Convert hook error to string for compatibility
+  const error = hookError?.message || null;
 
   // Network and data freshness hooks
   const networkStatus = useNetworkStatus();
-  const isOnline = networkStatus.isOnline;
+  const isOnline = !networkStatus.isOffline;
   const isOfflineData = useIsOfflineData(tournaments);
   const dataFreshness = useDataFreshness(tournaments);
   
   // Auto-sync and storage monitoring
   useAutoSync();
-  const { storageStatus, showStorageAlert } = useStorageMonitoring();
+  const storageMonitoring = useStorageMonitoring();
+  const showStorageAlert = storageMonitoring.shouldShowAlert;
 
-  // Load tournaments from cache/API
-  const loadTournaments = useCallback(async (forceRefresh = false) => {
-    try {
-      setError(null);
-      
-      const result: CacheResult<TournamentCore[]> = await CacheService.getTournaments(
-        {},
-        forceRefresh
-      );
-
-      if (result.success && result.data) {
-        let filteredTournaments = result.data;
-
-        // Apply status filter
-        if (filterByStatus !== 'all') {
-          // Add filtering logic here based on tournament status
-          // This would need to be implemented based on your status determination logic
-        }
-
-        // Apply max items limit
-        if (maxItems && maxItems > 0) {
-          filteredTournaments = filteredTournaments.slice(0, maxItems);
-        }
-
-        setTournaments(filteredTournaments);
-      } else {
-        setError(result.error || 'Failed to load tournaments');
-      }
-    } catch (error) {
-      console.error('Error loading tournaments:', error);
-      setError('Failed to load tournaments');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filterByStatus, maxItems]);
-
-  // Initial load
-  useEffect(() => {
-    loadTournaments();
-  }, [loadTournaments]);
-
-  // Handle refresh
+  // Handle refresh with hook
   const handleRefresh = useCallback(() => {
     if (!refreshEnabled) return;
-    setRefreshing(true);
-    loadTournaments(true);
-  }, [loadTournaments, refreshEnabled]);
+    forceRefresh();
+  }, [forceRefresh, refreshEnabled]);
 
-  // Handle retry on error
+  // Handle retry on error with hook
   const handleRetry = useCallback(() => {
-    setLoading(true);
-    loadTournaments(true);
-  }, [loadTournaments]);
+    forceRefresh();
+  }, [forceRefresh]);
 
   // Render tournament item
   const renderTournament = useCallback(({ item }: { item: TournamentCore }) => (
@@ -143,7 +175,7 @@ export const TournamentList: React.FC<TournamentListProps> = ({
           {isOfflineData && <OfflineBanner />}
           <DataFreshness data={tournaments} />
           <SyncStatus />
-          {showStorageAlert && <StorageAlert status={storageStatus} />}
+          {showStorageAlert && <StorageAlert />}
         </>
       )}
       

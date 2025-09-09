@@ -24,6 +24,8 @@ import { VisResponseParser } from '../services/parsing/VisResponseParser';
 // DataTransformationService no longer needed - using BeachMatchCore directly
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import { useLiveScores } from '../hooks/useLiveScores';
+import { useTournaments } from '../hooks/useTournaments';
+import { featureFlags } from '../hooks/compatibility/FeatureFlags';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
@@ -325,6 +327,96 @@ const TournamentDetailScreenContent: React.FC = () => {
       return {} as TournamentCore;
     }
   }, [tournamentData]);
+
+  // Define getTournamentStatus early to avoid temporal dead zone issues
+  const getTournamentStatus = React.useCallback(() => {
+    // Use the same logic as TournamentSelectionScreen for consistency
+    const startDate = tournament.dates?.startDate;
+    const endDate = tournament.dates?.endDate;
+    
+    if (!startDate) {
+      return 'SCHEDULED';
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const startDateOnly = startDate.split('T')[0];
+    
+    if (today < startDateOnly) {
+      return 'SCHEDULED';
+    }
+    
+    if (endDate) {
+      const endDateOnly = endDate.split('T')[0];
+      
+      if (today > endDateOnly) {
+        return 'COMPLETED';
+      }
+      if (today >= startDateOnly && today <= endDateOnly) {
+        return 'LIVE NOW';
+      }
+    } else {
+      // Only start date available - consider live for reasonable duration
+      const start = new Date(startDate);
+      const weekAfter = new Date(start);
+      weekAfter.setDate(start.getDate() + 7);
+      
+      const now = new Date();
+      if (now >= start && now <= weekAfter) {
+        return 'LIVE NOW';
+      }
+      if (now > weekAfter) {
+        return 'COMPLETED';
+      }
+    }
+    
+    return 'SCHEDULED';
+  }, [tournament.dates?.startDate, tournament.dates?.endDate]);
+
+  // Hybrid tournament data management - use hook for enhanced caching and real-time updates
+  // Only use tournament hook if feature flag is enabled
+  const shouldUseTournamentHook = featureFlags.shouldUseNewHook('TournamentDetailScreen', 'tournaments');
+  
+  const {
+    data: hookTournaments = [],
+    isLoading: tournamentHookLoading,
+    error: tournamentHookError,
+    forceRefresh: refreshTournamentData
+  } = useTournaments(
+    (tournament?.visNo && shouldUseTournamentHook) ? {
+      tournamentCode: tournament.visNo,
+      includeDetails: true
+    } : undefined,
+    {
+      enableRealTimeUpdates: getTournamentStatus() !== 'COMPLETED',
+      cacheStrategy: getTournamentStatus() === 'COMPLETED' ? 'historical' : 'live',
+      enablePerformanceMonitoring: true
+    }
+  );
+
+  // Track tournament hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseTournamentHook && tournamentHookError) {
+      featureFlags.recordError('TournamentDetailScreen', tournamentHookError.message || 'Unknown tournament hook error');
+    }
+  }, [shouldUseTournamentHook, tournamentHookError]);
+
+  // Get enhanced tournament data from hook if available, fallback to props
+  const enhancedTournament = React.useMemo(() => {
+    if (hookTournaments.length > 0) {
+      const hookTournament = hookTournaments.find(t => t.visNo === tournament?.visNo);
+      if (hookTournament) {
+        // Merge hook data with existing tournament data
+        return {
+          ...tournament,
+          ...hookTournament,
+          // Preserve complex data from original parsing
+          beachTournaments: (tournament as any).beachTournaments,
+          tournamentNo: (tournament as any).tournamentNo,
+        };
+      }
+    }
+    return tournament;
+  }, [tournament, hookTournaments]);
 
   // Check if this tournament is default on mount
   useEffect(() => {
@@ -640,50 +732,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     return 'Dates TBD';
   };
 
-  const getTournamentStatus = () => {
-    // Use the same logic as TournamentSelectionScreen for consistency
-    const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
-    const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
-    
-    
-    if (!startDate) {
-      return 'SCHEDULED';
-    }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const startDateOnly = startDate.split('T')[0];
-    
-    
-    if (today < startDateOnly) {
-      return 'SCHEDULED';
-    }
-    
-    if (endDate) {
-      const endDateOnly = endDate.split('T')[0];
-      
-      if (today > endDateOnly) {
-        return 'COMPLETED';
-      }
-      if (today >= startDateOnly && today <= endDateOnly) {
-        return 'LIVE NOW';
-      }
-    } else {
-      // Only start date available - consider live for reasonable duration
-      const start = new Date(startDate);
-      const weekAfter = new Date(start);
-      weekAfter.setDate(start.getDate() + 7);
-      
-      const now = new Date();
-      if (now >= start && now <= weekAfter) {
-        return 'LIVE NOW';
-      }
-      if (now > weekAfter) {
-        return 'COMPLETED';
-      }
-    }
-    
-    return 'SCHEDULED';
-  };
 
 
   const getStatusColor = () => {
@@ -1326,6 +1374,19 @@ const TournamentDetailScreenContent: React.FC = () => {
                   showAllDays={true}
                   liveScores={liveScores}
                   getLiveScore={getLiveScore}
+                  // Hybrid hook features - provide tournament code for enhanced caching and real-time updates
+                  tournamentCode={enhancedTournament?.visNo}
+                  enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
+                  enableLiveScores={getTournamentStatus() === 'LIVE'}
+                  matchFilters={{
+                    // Use the tournament numbers from the existing complex loading logic
+                    tournamentCode: enhancedTournament?.visNo,
+                    // Add date range if available from enhanced tournament data
+                    dateRange: enhancedTournament?.dates ? {
+                      startDate: enhancedTournament.dates.startDate,
+                      endDate: enhancedTournament.dates.endDate
+                    } : undefined
+                  }}
                 />
               </View>
             )}

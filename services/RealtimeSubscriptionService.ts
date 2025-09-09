@@ -30,6 +30,7 @@ type ConnectionStateListener = (state: ConnectionState, error?: string) => void;
  * - Component lifecycle management
  */
 export class RealtimeSubscriptionService {
+  private static instance: RealtimeSubscriptionService | null = null;
   private static activeSubscriptions = new Map<string, any>();
   private static subscriptionConfigs = new Map<string, SubscriptionConfig>();
   private static connectionState: ConnectionState = ConnectionState.DISCONNECTED;
@@ -45,6 +46,46 @@ export class RealtimeSubscriptionService {
   private static readonly BASE_RETRY_DELAY = 1000; // 1 second
   private static readonly MAX_RETRY_DELAY = 30000; // 30 seconds
   private static readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
+
+  /**
+   * Private constructor to prevent direct instantiation
+   */
+  private constructor() {}
+
+  /**
+   * Get singleton instance
+   */
+  public static getInstance(): RealtimeSubscriptionService {
+    if (!RealtimeSubscriptionService.instance) {
+      RealtimeSubscriptionService.instance = new RealtimeSubscriptionService();
+    }
+    return RealtimeSubscriptionService.instance;
+  }
+
+  /**
+   * Instance method: Subscribe to matches for a tournament (delegates to static method)
+   */
+  public subscribeToMatches(tournamentCode: string, callback?: (match: any) => void): string | null {
+    // Extract tournament number from code if needed
+    const tournamentNo = tournamentCode;
+    
+    // Subscribe to tournament and return subscription ID
+    RealtimeSubscriptionService.subscribeTournament(tournamentNo, true);
+    
+    // Return subscription ID for compatibility
+    return `matches_${tournamentNo}`;
+  }
+
+  /**
+   * Instance method: Unsubscribe from a subscription (delegates to static method)
+   */
+  public unsubscribe(subscriptionId: string): void {
+    // Extract tournament number from subscription ID
+    const tournamentNo = subscriptionId.replace('matches_', '');
+    
+    // Unsubscribe from tournament
+    RealtimeSubscriptionService.unsubscribeTournament(tournamentNo);
+  }
 
   /**
    * Initialize the real-time subscription service with app state monitoring

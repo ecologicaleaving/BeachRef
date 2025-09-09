@@ -17,13 +17,25 @@ import {
 } from '../types/monitoring'
 
 export class ErrorLogger {
+  private static instance: ErrorLogger | null = null;
   private supabase: SupabaseClient
 
-  constructor() {
+  private constructor() {
     const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    // Use anonymous key for client-side logging, service key only available server-side
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
     
-    this.supabase = createClient(supabaseUrl, supabaseServiceKey)
+    this.supabase = createClient(supabaseUrl, supabaseKey)
+  }
+
+  /**
+   * Get the singleton instance of ErrorLogger
+   */
+  public static getInstance(): ErrorLogger {
+    if (!ErrorLogger.instance) {
+      ErrorLogger.instance = new ErrorLogger();
+    }
+    return ErrorLogger.instance;
   }
 
   /**

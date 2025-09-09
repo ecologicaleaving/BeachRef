@@ -1,16 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
-import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
 import { MatchList, MatchCard } from '../entities/Match';
-import { MatchDataTransformer } from '../../services/MatchDataTransformer';
-import { SetScoreService } from '../../services/SetScoreService';
+import { useMatches, MatchesFilters } from '../../hooks/useMatches';
+import { MatchDTO } from '../../services/DualReadService';
+import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
-import { useMemo } from 'react';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
   tournamentGender?: 'M' | 'W';
   tournamentNo?: string;
+};
+
+/**
+ * Transforms MatchDTO from hook to BeachMatchCore for component compatibility
+ * Maintains backward compatibility with existing component interfaces
+ * @param dto MatchDTO from useMatches hook
+ * @returns BeachMatchCore expected by components
+ */
+const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
+  // Transform result if it exists
+  const result: MatchResult | undefined = dto.result ? {
+    team1Sets: dto.result.team1Sets,
+    team2Sets: dto.result.team2Sets,
+    setScores: dto.result.setScores.flatMap(score => [score.a, score.b]),
+    duration: dto.result.duration,
+    winner: dto.result.winner,
+    forfeit: dto.result.forfeit,
+  } : undefined;
+
+  // Transform teams
+  const team1: MatchTeam = {
+    teamNumber: dto.team1.teamNumber,
+    teamName: dto.team1.teamName,
+    player1Name: dto.team1.player1Name,
+    player2Name: dto.team1.player2Name,
+    countryCode: dto.team1.countryCode,
+    ranking: dto.team1.ranking,
+  };
+
+  const team2: MatchTeam = {
+    teamNumber: dto.team2.teamNumber,
+    teamName: dto.team2.teamName,
+    player1Name: dto.team2.player1Name,
+    player2Name: dto.team2.player2Name,
+    countryCode: dto.team2.countryCode,
+    ranking: dto.team2.ranking,
+  };
+
+  // Transform court info
+  const court: CourtInfo = {
+    courtNumber: dto.court.courtNumber,
+    courtName: dto.court.courtName,
+    surface: dto.court.surface,
+    location: dto.court.location,
+  };
+
+  return {
+    id: dto.id,
+    visNo: dto.visNo,
+    version: 1,
+    lastUpdated: new Date().toISOString(),
+    tournamentId: dto.tournamentCode, // Using tournamentCode as tournamentId
+    matchCode: dto.matchCode,
+    round: dto.round,
+    phaseCode: dto.phaseCode,
+    status: dto.status as MatchStatus,
+    court,
+    scheduledDateTime: dto.scheduledDateTime,
+    actualStartTime: dto.actualStartTime,
+    actualEndTime: dto.actualEndTime,
+    team1,
+    team2,
+    result,
+    refereeAssignments: (dto as any).refereeAssignments || [],
+    notes: (dto as any).notes,
+    weather: (dto as any).weather,
+    importance: (dto as any).importance,
+  };
 };
 
 // Type-safe helper to extract duration fields from match data
@@ -95,11 +163,17 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
 };
 
 interface MatchListV2Props {
-  matches: ExtendedBeachMatch[];
+  matches?: ExtendedBeachMatch[]; // Made optional to allow hook-based data fetching
   loading?: boolean;
   title?: string;
   selectedReferee?: { Name: string } | null;
   emptyMessage?: string;
+  // New props for hook-based data fetching
+  tournamentCode?: string; // Enable filtering by tournament
+  eventId?: number;
+  matchFilters?: MatchesFilters; // Additional filters for useMatches hook
+  enableRealTime?: boolean; // Enable real-time updates for live matches
+  enableLiveScores?: boolean; // Enable live score updates
   showDateNavigator?: boolean;
   showGenderFilter?: boolean;
   showStatsInFilter?: boolean;
@@ -121,11 +195,17 @@ interface MatchListV2Props {
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
-  matches,
-  loading = false,
+  matches: propMatches,
+  loading: propLoading = false,
   title = "Matches",
   selectedReferee,
   emptyMessage = "No matches found",
+  // New hook-based props
+  tournamentCode,
+  eventId,
+  matchFilters,
+  enableRealTime = false,
+  enableLiveScores = false,
   showDateNavigator = true,
   showGenderFilter = true,
   showStatsInFilter = true,
@@ -145,6 +225,46 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   liveScores,
   getLiveScore,
 }) => {
+  // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
+  const shouldUseHook = !!tournamentCode && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
+  const hookFilters = useMemo((): MatchesFilters => ({
+    tournamentCode,
+    eventId,
+    ...matchFilters,
+  }), [tournamentCode, eventId, matchFilters]);
+
+  const hookResult = useMatches(
+    shouldUseHook ? hookFilters : undefined,
+    {
+      enableRealTimeUpdates: enableRealTime,
+      enableLiveScores,
+      enablePerformanceMonitoring: true,
+      groupByReferee: true,
+    }
+  );
+
+  // Extract hook data safely
+  const rawMatches = hookResult?.data || [];
+  const hookLoading = hookResult?.isLoading || false;
+  const hookError = hookResult?.error || null;
+  const forceRefresh = hookResult?.forceRefresh || (() => Promise.resolve());
+
+  // Track hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseHook && hookError) {
+      featureFlags.recordError('MatchListV2', hookError.message || 'Unknown hook error');
+    }
+  }, [shouldUseHook, hookError]);
+
+  // Transform hook data to component format
+  const hookMatches = useMemo(() => {
+    return shouldUseHook ? rawMatches.map(transformMatchDTO) : [];
+  }, [rawMatches, shouldUseHook]);
+
+  // Use either prop matches or hook matches
+  const activeMatches = propMatches || hookMatches;
+  const loading = propLoading || (shouldUseHook ? hookLoading : false);
+  const error = hookError?.message || null;
   // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
@@ -154,7 +274,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
-  const [setScoreService] = useState(() => new SetScoreService());
+  const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
   
   
 
@@ -293,35 +413,37 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const enhanceMatches = async () => {
       try {
         // TEMPORARILY DISABLE enhanced match data to fix the issue
-        const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
-        
-        setEnhancedMatches(enhanced);
-        
+        if (setScoreService) {
+          const enhanced = await setScoreService.enhanceMatchesWithSetScores(activeMatches);
+          setEnhancedMatches(enhanced);
+        } else {
+          setEnhancedMatches(activeMatches);
+        }
       } catch (error) {
         console.error('Failed to enhance matches:', error);
-        setEnhancedMatches(matches);
+        setEnhancedMatches(activeMatches);
       }
     };
 
-    if (matches.length > 0) {
+    if (activeMatches.length > 0) {
       enhanceMatches();
     } else {
       setEnhancedMatches([]);
     }
-  }, [matches, setScoreService]);
+  }, [activeMatches, setScoreService]);
 
   // Reset filters when tournament changes (matches change)
   React.useEffect(() => {
     // Reset only content filters when matches array changes (indicates tournament change)
     // Keep sort order preference
-    if (matches.length > 0) {
+    if (activeMatches.length > 0) {
       setEffectiveCourtFilter('All');
       setEffectiveGenderFilter('All');
       setEffectiveRefereeFilter('All');
       setStatusFilter('All');
       setShowRefereeDropdown(false);
     }
-  }, [matches]); // Only depend on matches array reference change
+  }, [activeMatches]); // Only depend on matches array reference change
 
   // uniqueDates calculation REMOVED - DateNavigator disabled
 
@@ -329,7 +451,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
-    const courtNumbers = matches
+    const courtNumbers = activeMatches
       .map(match => match.court?.courtNumber)
       .filter((courtNumber): courtNumber is string => !!courtNumber)
       .map(courtNumber => String(courtNumber)); // Ensure all are strings
@@ -338,23 +460,23 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     
     return unique;
-  }, [matches]);
+  }, [activeMatches]);
 
   // Extract unique referees
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
-    matches.forEach(match => {
+    activeMatches.forEach(match => {
       match.refereeAssignments?.forEach(referee => {
         if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
     });
     return Array.from(refereeNames).sort();
-  }, [matches]);
+  }, [activeMatches]);
 
   // Filter matches based on current filters
   const filteredMatches = React.useMemo(() => {
     // ALWAYS use enhanced matches if available, even if empty
-    const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : matches;
+    const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : activeMatches;
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
     
     
@@ -454,7 +576,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
 
     // Final result logging will happen in UI render
-  }, [matches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
+  }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
 
 
   // Calculate target match for auto-scroll and notify parent
@@ -747,6 +869,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
 
 
+
+  // Error state
+  if (error && shouldUseHook) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => forceRefresh()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -1075,6 +1209,23 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#6B7280',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#DC2626',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   filtersContainer: {
     backgroundColor: '#F9FAFB',

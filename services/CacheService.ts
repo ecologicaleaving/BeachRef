@@ -54,6 +54,22 @@ export class CacheService {
   }
 
   /**
+   * Get singleton instance for compatibility with DualReadService
+   * Returns a wrapper that provides instance methods for the static class
+   */
+  static getInstance() {
+    this.ensureInitialized();
+    return {
+      getTournaments: (filters?: FilterOptions) => this.getTournaments(filters),
+      getMatches: (tournamentCode: string) => this.getMatches(tournamentCode),
+      getRefereeData: (tournamentCode: string) => this.getRefereeData(tournamentCode),
+      clearCache: () => this.clearCache(),
+      getCacheStats: () => this.getCacheStats(),
+      invalidate: (pattern: string) => this.invalidate(pattern),
+    };
+  }
+
+  /**
    * Get tournaments with multi-tier fallback
    */
   static async getTournaments(filters?: FilterOptions): Promise<CacheResult<TournamentCore[]>> {

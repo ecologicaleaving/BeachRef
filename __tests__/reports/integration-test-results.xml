@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Integration Tests" tests="72" failures="12" errors="0" time="364.785">
+  <testsuite name="Simplified End-to-End Data Flow Integration" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:44" time="4.835" tests="8">
+    <testcase classname="Simplified End-to-End Data Flow Integration VIS Adapter Mock → Frontend Flow" name="should fetch and validate tournament data from VIS Adapter mock" time="0.161">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration VIS Adapter Mock → Frontend Flow" name="should fetch and validate match data with tournament context" time="0.082">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration VIS Adapter Mock → Frontend Flow" name="should fetch and validate referee data with assignments" time="0.053">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration DataSync Service Mock Integration" name="should handle tournament sync operations" time="0.035">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration DataSync Service Mock Integration" name="should handle full sync workflow with performance validation" time="0.023">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration Performance Benchmarking" name="should measure and validate API response times" time="0.035">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration Performance Benchmarking" name="should demonstrate database queries are 50%+ faster than API calls" time="0.002">
+    </testcase>
+    <testcase classname="Simplified End-to-End Data Flow Integration Performance Benchmarking" name="should establish performance baseline for regression detection" time="0.054">
+    </testcase>
+  </testsuite>
+  <testsuite name="Error Handling and Fallback Testing" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:49" time="1.158" tests="6">
+    <testcase classname="Error Handling and Fallback Testing DualReadService Fallback Scenarios" name="should test DualReadService fallback when database is unavailable" time="0.099">
+    </testcase>
+    <testcase classname="Error Handling and Fallback Testing DualReadService Fallback Scenarios" name="should test API fallback when VIS Adapter fails during sync" time="0.08">
+    </testcase>
+    <testcase classname="Error Handling and Fallback Testing DualReadService Fallback Scenarios" name="should test partial sync failure recovery and data consistency" time="0.065">
+    </testcase>
+    <testcase classname="Error Handling and Fallback Testing CircuitBreaker Pattern Testing" name="should test CircuitBreaker behavior under various failure conditions" time="0.04">
+    </testcase>
+    <testcase classname="Error Handling and Fallback Testing CircuitBreaker Pattern Testing" name="should validate error messages and user feedback in failure scenarios" time="0.02">
+    </testcase>
+    <testcase classname="Error Handling and Fallback Testing Graceful Degradation Testing" name="should test graceful degradation for partial system failures" time="0.028">
+    </testcase>
+  </testsuite>
+  <testsuite name="Component Migration Validation Testing" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:50" time="0.768" tests="5">
+    <testcase classname="Component Migration Validation Testing TournamentList Component Parity" name="should test TournamentList component with old vs new data sources" time="0.09">
+    </testcase>
+    <testcase classname="Component Migration Validation Testing TournamentList Component Parity" name="should test MatchListV2 component functionality and performance" time="0.024">
+    </testcase>
+    <testcase classname="Component Migration Validation Testing TournamentList Component Parity" name="should validate all component props, states, and behaviors remain identical" time="0.038">
+    </testcase>
+    <testcase classname="Component Migration Validation Testing TournamentList Component Parity" name="should test component loading states, error states, and refresh functionality" time="0.021">
+    </testcase>
+    <testcase classname="Component Migration Validation Testing TournamentList Component Parity" name="should compare visual rendering and user interaction patterns" time="0.033">
+    </testcase>
+  </testsuite>
+  <testsuite name="Integration Test Infrastructure" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:51" time="0.612" tests="14">
+    <testcase classname="Integration Test Infrastructure Test Environment Setup" name="should create complete integration test environment" time="0.044">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Test Environment Setup" name="should create minimal integration test environment" time="0.031">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Test Database Setup" name="should setup and cleanup test database" time="0.025">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure VIS Adapter Mock" name="should setup and configure VIS Adapter mock" time="0.001">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure VIS Adapter Mock" name="should setup fetch mock for VIS endpoints" time="0.002">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure VIS Adapter Mock" name="should simulate network errors" time="0.014">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure VIS Adapter Mock" name="should simulate API errors" time="0.002">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Test Data Fixtures" name="should generate complete test dataset" time="0.016">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Performance and Network Utilities" name="should provide performance measurement utilities" time="0.004">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Performance and Network Utilities" name="should provide network simulation utilities" time="0.004">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Performance and Network Utilities" name="should provide database test utilities" time="0.008">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Performance and Network Utilities" name="should provide test cleanup utilities" time="0.001">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Custom Jest Matchers" name="should provide performance range matcher" time="0.006">
+    </testcase>
+    <testcase classname="Integration Test Infrastructure Custom Jest Matchers" name="should provide DTO structure validation matchers" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Referee Tournament Integration" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:51" time="0.609" tests="11">
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should successfully get tournament referee data" time="0.008">
+    </testcase>
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should successfully get all tournament referees" time="0.003">
+    </testcase>
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should successfully get specific referee for tournament" time="0.005">
+    </testcase>
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should correctly identify tournaments with referee data" time="0.001">
+    </testcase>
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should correctly identify tournaments without referee data" time="0">
+    </testcase>
+    <testcase classname="Referee Tournament Integration TournamentOperationsService integration with referee data" name="should handle errors gracefully" time="0.003">
+    </testcase>
+    <testcase classname="Referee Tournament Integration End-to-end referee data flow" name="should handle complete referee workflow from tournament perspective" time="0.011">
+    </testcase>
+    <testcase classname="Referee Tournament Integration End-to-end referee data flow" name="should handle fallback scenarios in tournament workflow" time="0.002">
+    </testcase>
+    <testcase classname="Referee Tournament Integration End-to-end referee data flow" name="should handle performance requirements for large tournaments" time="0.001">
+    </testcase>
+    <testcase classname="Referee Tournament Integration Service layer integration patterns" name="should maintain consistent error handling across services" time="0.001">
+    </testcase>
+    <testcase classname="Referee Tournament Integration Service layer integration patterns" name="should maintain service layer abstraction" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Offline Functionality Testing" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:52" time="0.83" tests="7">
+    <testcase classname="Offline Functionality Testing Network Disconnection Scenarios" name="should handle app functionality when network is completely disconnected" time="0.092">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Network Disconnection Scenarios" name="should validate TanStack Query persistence works with populated database" time="0.046">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Network Disconnection Scenarios" name="should test offline browsing of tournaments, matches, referee assignments" time="0.043">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Network Disconnection Scenarios" name="should verify data freshness indicators work correctly in offline mode" time="0.076">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Network Disconnection Scenarios" name="should test sync behavior when coming back online" time="0.028">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Offline State Management" name="should maintain offline state indicators" time="0.022">
+    </testcase>
+    <testcase classname="Offline Functionality Testing Offline State Management" name="should validate offline data storage and retrieval" time="0.034">
+    </testcase>
+  </testsuite>
+  <testsuite name="Assignment Integration Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-09T15:17:53" time="0.399" tests="8">
+    <testcase classname="Assignment Integration Tests Assignment workflow integration" name="should handle current assignment workflow correctly" time="0.006">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Assignment workflow integration" name="should handle upcoming assignment workflow correctly" time="0.001">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Assignment workflow integration" name="should handle completed assignment workflow correctly" time="0.002">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Assignment sorting and prioritization" name="should sort mixed assignments correctly by priority and time" time="0.004">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Real-time countdown behavior" name="should handle countdown transitions correctly" time="0.004">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Real-time countdown behavior" name="should handle overdue assignment countdown correctly" time="0.002">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Touch target compliance validation" name="should validate minimum touch target requirements are met" time="0.002">
+    </testcase>
+    <testcase classname="Assignment Integration Tests Assignment Card Props Integration" name="should support all required assignment card configurations" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="Adaptive Polling Integration" errors="0" failures="12" skipped="0" timestamp="2025-09-09T15:17:44" time="363.893" tests="13">
+    <testcase classname="Adaptive Polling Integration Adaptive Polling Lifecycle" name="should start with correct interval for running matches" time="30.047">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:83:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:82:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Adaptive Polling Lifecycle" name="should adapt polling interval based on status changes" time="30.025">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:107:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:82:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Adaptive Polling Lifecycle" name="should stop polling when match finishes" time="30.004">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:126:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:82:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Field Selection Integration" name="should use slim fields for running matches" time="30.009">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:147:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:146:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Field Selection Integration" name="should use full fields for scheduled matches" time="30.014">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:162:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:146:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Performance Monitoring Integration" name="should track bandwidth savings from version-based polling" time="30.008">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:179:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:178:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Performance Monitoring Integration" name="should provide comprehensive performance metrics" time="30.003">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:207:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:178:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Error Handling and Resilience" name="should handle API errors gracefully with adaptive polling" time="30.006">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:228:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:227:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Error Handling and Resilience" name="should continue polling after circuit breaker recovery" time="30.015">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:244:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:227:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Multiple Match Scenarios" name="should handle multiple matches with different statuses" time="30.009">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:267:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:266:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Multiple Match Scenarios" name="should track performance across multiple matches" time="30.006">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:291:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:266:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Backward Compatibility" name="should work without adaptive polling enabled" time="30.015">
+      <failure>Error: thrown: &quot;Exceeded timeout of 30000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:310:5)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:309:3)
+    at _dispatchDescribe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\KreshOS\Documents\00-Progetti\VisTest\__tests__\integration\AdaptivePolling.integration.test.ts:24:1)
+    at Runtime._execModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\KreshOS\Documents\00-Progetti\VisTest\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Adaptive Polling Integration Backward Compatibility" name="should maintain existing statistics interface" time="0.005">
+    </testcase>
+  </testsuite>
+</testsuites>

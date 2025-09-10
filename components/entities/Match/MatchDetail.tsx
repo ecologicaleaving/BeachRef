@@ -11,7 +11,7 @@ import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { determineMatchStatus, getStatusColorWithText } from '../../../utils/statusColors';
+import { determineMatchStatus } from '../../../utils/statusColors';
 import { colors } from '../../../theme/tokens';
 
 export interface MatchDetailProps {

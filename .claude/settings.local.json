@@ -79,7 +79,9 @@
       "Bash(grep:*)",
       "Bash(done)",
       "Bash(npx eslint:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Read(//c/Users/KreshOS/Downloads/**)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": [],

@@ -129,6 +129,8 @@ export function useMatches(
             round_phase,
             utc_datetime,
             local_datetime,
+            actual_start_time,
+            actual_end_time,
             court,
             team_a_name,
             team_b_name,
@@ -174,40 +176,85 @@ export function useMatches(
         
         if (!dbError && dbData && dbData.length > 0) {
           // Transform database data to MatchDTO format
-          const matches: MatchDTO[] = dbData.map(row => ({
-            id: row.id.toString(),
-            visNo: row.vis_match_no?.toString() || '',
-            tournamentCode: row.tournament_code,
-            matchCode: `${row.tournament_code}-${row.vis_match_no}`,
-            round: row.round_name || row.round_code || '',
-            phaseCode: row.round_phase,
-            status: (row.status as 'SCHEDULED' | 'RUNNING' | 'FINISHED' | 'INTERRUPTED' | 'CANCELLED' | 'POSTPONED' | 'TBD') || 'SCHEDULED',
-            court: {
-              courtNumber: row.court || '',
-              courtName: row.court,
-            },
-            scheduledDateTime: row.utc_datetime || row.local_datetime || '',
-            actualStartTime: row.status === 'RUNNING' ? row.utc_datetime : undefined,
-            team1: {
-              teamNumber: 1,
-              teamName: row.team_a_name || '',
-              player1Name: '',
-              player2Name: '',
-            },
-            team2: {
-              teamNumber: 2,
-              teamName: row.team_b_name || '',
-              player1Name: '',
-              player2Name: '',
-            },
-            result: row.result ? {
-              team1Sets: 0,
-              team2Sets: 0,
-              setScores: row.sets || [],
-              winner: row.result.winner,
-              forfeit: row.result.forfeit,
-            } : undefined,
-          }));
+          const matches: MatchDTO[] = dbData.map(row => {
+            // Extract referee data from relational query
+            const referees = row.match_referees || [];
+            const referee1 = referees.find(mr => mr.role === 'R1')?.referees;
+            const referee2 = referees.find(mr => mr.role === 'R2')?.referees;
+            const challengeReferee = referees.find(mr => mr.role === 'CHALLENGE')?.referees;
+
+            // Build referee names
+            const referee1Name = referee1 ? `${referee1.first_name} ${referee1.last_name}`.trim() : '';
+            const referee2Name = referee2 ? `${referee2.first_name} ${referee2.last_name}`.trim() : '';
+            const challengeRefereeName = challengeReferee ? `${challengeReferee.first_name} ${challengeReferee.last_name}`.trim() : '';
+
+            // Parse set scores if available
+            let setScores: number[] = [];
+            if (row.sets && Array.isArray(row.sets)) {
+              setScores = row.sets;
+            } else if (row.result?.setScores && Array.isArray(row.result.setScores)) {
+              setScores = row.result.setScores;
+            }
+
+            // Calculate duration from start/end times if available
+            let duration: number | undefined;
+            if (row.result?.duration) {
+              duration = row.result.duration;
+            } else if (row.actual_start_time && row.actual_end_time) {
+              const startTime = new Date(row.actual_start_time).getTime();
+              const endTime = new Date(row.actual_end_time).getTime();
+              duration = Math.round((endTime - startTime) / 60000); // Duration in minutes
+            }
+
+            return {
+              id: row.id.toString(),
+              visNo: row.vis_match_no?.toString() || '',
+              tournamentCode: row.tournament_code,
+              matchCode: `${row.tournament_code}-${row.vis_match_no}`,
+              round: row.round_name || row.round_code || '',
+              phaseCode: row.round_phase,
+              status: (row.status as 'SCHEDULED' | 'RUNNING' | 'FINISHED' | 'INTERRUPTED' | 'CANCELLED' | 'POSTPONED' | 'TBD') || 'SCHEDULED',
+              court: {
+                courtNumber: row.court || '',
+                courtName: row.court,
+              },
+              scheduledDateTime: row.utc_datetime || row.local_datetime || '',
+              actualStartTime: row.status === 'RUNNING' ? row.utc_datetime : undefined,
+              team1: {
+                teamNumber: 1,
+                teamName: row.team_a_name || '',
+                player1Name: '',
+                player2Name: '',
+              },
+              team2: {
+                teamNumber: 2,
+                teamName: row.team_b_name || '',
+                player1Name: '',
+                player2Name: '',
+              },
+              result: row.result ? {
+                team1Sets: 0,
+                team2Sets: 0,
+                setScores: setScores,
+                winner: row.result.winner,
+                forfeit: row.result.forfeit,
+                duration: duration,
+              } : undefined,
+              // Add referee data for legacy compatibility
+              Referee1Name: referee1Name,
+              Referee2Name: referee2Name,
+              ChallengeRefereeName: challengeRefereeName,
+              Referee1FederationCode: referee1?.federation || '',
+              Referee2FederationCode: referee2?.federation || '',
+              // Add set scores for legacy compatibility
+              Sets: setScores,
+              SetScores: setScores,
+              Duration: duration,
+              // Add round phase information
+              RoundName: row.round_name,
+              RoundPhase: row.round_phase,
+            } as MatchDTO & any; // Cast to include legacy fields
+          });
 
           const endTime = Date.now();
           

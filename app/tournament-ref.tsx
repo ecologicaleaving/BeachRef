@@ -116,11 +116,11 @@ const RefereeCard = ({
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.menMatches}</Text>
-          <Text style={styles.statLabel}>Men's Matches</Text>
+          <Text style={styles.statLabel}>Men&apos;s Matches</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.womenMatches}</Text>
-          <Text style={styles.statLabel}>Women's Matches</Text>
+          <Text style={styles.statLabel}>Women&apos;s Matches</Text>
         </View>
       </View>
     );
@@ -1223,7 +1223,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 100,
   },
-  emptyText: {
+  emptyStateText: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',

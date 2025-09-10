@@ -5,13 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { BeachMatchCore } from '../../../types/match-v2';
+import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
-import { StatusBadge } from '../../Status';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
-import { determineMatchStatus, getStatusColorWithText } from '../../../utils/statusColors';
-import { MatchDataTransformer } from '../../../services/MatchDataTransformer';
 import { colors } from '../../../theme/tokens';
+import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 
 export interface MatchCardProps {
   match: BeachMatchCore;
@@ -24,62 +22,52 @@ export interface MatchCardProps {
 }
 
 /**
- * Unified Match Card Component
- * Consolidates MatchCard, LiveMatchCard, CompletedMatchCard functionality
+ * Match Card Component - Based on Master Branch MatchListV2 Design
+ * Exact replica of the compact design from the deployed app
  */
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
   onPress,
-  showStatusBadge = true,
-  showReferee = false,
-  showDuration = false,
-  compact = false,
   variant = 'default',
 }) => {
-  // Determine match status
-  const matchStatus = determineMatchStatus(match);
-  
-  // Map match status to TournamentStatus for StatusBadge
-  const statusForBadge = (() => {
-    switch (matchStatus) {
-      case 'current': return 'current';
-      case 'completed': return 'completed';
-      case 'upcoming': return 'upcoming';
-      default: return 'upcoming';
-    }
-  })();
-
   // Format time display
-  const formatTime = (timeStr?: string) => {
-    if (!timeStr) return '';
+  const formatTime = (dateTimeString: string): string => {
     try {
-      // Handle different time formats (HH:MM:SS or HH:MM)
-      const timeParts = timeStr.split(':');
-      if (timeParts.length >= 2) {
-        return `${timeParts[0]}:${timeParts[1]}`;
-      }
-      return timeStr;
+      const date = new Date(dateTimeString);
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
     } catch {
-      return timeStr;
+      return 'TBD';
     }
   };
 
-  // Get match duration if available
-  const getMatchDuration = (): string | null => {
-    const totalDurationSeconds = (match as any).Duration;
-    if (totalDurationSeconds) {
-      const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
-      }
-    }
+  // Check if match is live
+  const isMatchLive = (match: BeachMatchCore): boolean => {
+    if (!match.scheduledDateTime) return false;
+    const matchDate = new Date(match.scheduledDateTime);
+    const now = new Date();
+    const isAfterScheduledTime = matchDate < now;
+    
+    const team1Sets = match.result?.team1Sets || 0;
+    const team2Sets = match.result?.team2Sets || 0;
+    const matchNotFinished = team1Sets < 2 && team2Sets < 2;
+    
+    const statusIsRunning = match.status === MatchStatus.RUNNING;
+    
+    const timeSinceStart = now.getTime() - matchDate.getTime();
+    const withinReasonableTimeframe = timeSinceStart <= 2 * 60 * 60 * 1000; // 2 hours
+    
+    return isAfterScheduledTime && matchNotFinished && (statusIsRunning || withinReasonableTimeframe);
+  };
 
-    // Fallback to match result duration
+  // Get match duration (from master branch logic) - check multiple sources
+  const getMatchDuration = (match: BeachMatchCore): string | null => {
+    const matchWithDuration = match as any;
+    
+    // First try to get duration from match result (calculated from start/end time)
     if (match.result?.duration && typeof match.result.duration === 'number') {
       const totalMinutes = match.result.duration;
       const hours = Math.floor(totalMinutes / 60);
@@ -91,373 +79,836 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         return `${minutes}m`;
       }
     }
-
+    
+    // Check for Duration field in seconds (from enhanced data)
+    const totalDurationSeconds = matchWithDuration.Duration;
+    if (totalDurationSeconds && !isNaN(parseInt(totalDurationSeconds))) {
+      const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      if (totalMinutes > 0) {
+        if (hours > 0) {
+          return `${hours}h ${minutes}m`;
+        } else {
+          return `${minutes}m`;
+        }
+      }
+    }
+    
+    // Check for calculated time from start/end times
+    if (match.actualStartTime && match.actualEndTime) {
+      try {
+        const startTime = new Date(match.actualStartTime).getTime();
+        const endTime = new Date(match.actualEndTime).getTime();
+        
+        if (!isNaN(startTime) && !isNaN(endTime) && endTime > startTime) {
+          const totalMinutes = Math.round((endTime - startTime) / (1000 * 60));
+          const hours = Math.floor(totalMinutes / 60);
+          const minutes = totalMinutes % 60;
+          
+          if (totalMinutes > 0) {
+            if (hours > 0) {
+              return `${hours}h ${minutes}m`;
+            } else {
+              return `${minutes}m`;
+            }
+          }
+        }
+      } catch (error) {
+        // Skip if date parsing fails
+      }
+    }
+    
+    // Fallback: try to get duration from individual set fields using utility
+    try {
+      const durationResult = calculateTotalDuration(
+        matchWithDuration.DurationSet1,
+        matchWithDuration.DurationSet2,
+        matchWithDuration.DurationSet3
+      );
+      
+      if (durationResult && durationResult !== 'N/A' && durationResult !== '0m') {
+        return durationResult;
+      }
+    } catch (error) {
+      // Skip if calculateTotalDuration fails
+    }
+    
+    // Try legacy format for individual set durations if available
+    let totalSeconds = 0;
+    let hasAnyDuration = false;
+    
+    // Check legacy set duration fields in seconds format
+    [matchWithDuration.DurationSet1, matchWithDuration.DurationSet2, matchWithDuration.DurationSet3]
+      .forEach((duration) => {
+        if (duration && !isNaN(parseInt(duration))) {
+          totalSeconds += parseInt(duration);
+          hasAnyDuration = true;
+        }
+      });
+    
+    if (hasAnyDuration && totalSeconds > 0) {
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${minutes}m`;
+      }
+    }
+    
+    console.log('Duration Debug - No duration found:', {
+      matchId: match.id,
+      resultDuration: match.result?.duration,
+      DurationField: matchWithDuration.Duration,
+      actualStartTime: match.actualStartTime,
+      actualEndTime: match.actualEndTime,
+      DurationSet1: matchWithDuration.DurationSet1,
+      DurationSet2: matchWithDuration.DurationSet2,
+      DurationSet3: matchWithDuration.DurationSet3,
+      calculatedTotal: totalSeconds
+    });
+    
     return null;
   };
 
-  // Get gender symbol and style
-  const getGenderDisplay = () => {
-    const gender = (match as any).tournamentGender || match.teams?.gender;
-    if (!gender) return null;
+  // Extract round data - check multiple possible sources including legacy BeachMatch fields
+  const getRoundDisplayData = () => {
+    const rawMatch = match as any;
     
-    let genderText = '';
-    let genderStyle = styles.genderMixed;
+    // Check various possible sources for round information
+    const round = match.round || rawMatch.Round || rawMatch.RoundDisplayText || rawMatch.RoundName;
+    const phase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
     
-    if (gender === 'M') {
-      genderText = '♂';
-      genderStyle = styles.genderMale;
-    } else if (gender === 'W') {
-      genderText = '♀';
-      genderStyle = styles.genderFemale;
-    } else {
-      genderText = '⚭';
-      genderStyle = styles.genderMixed;
+    console.log('Round Debug:', {
+      matchId: match.id,
+      round: match.round,
+      rawRound: rawMatch.Round,
+      roundDisplayText: rawMatch.RoundDisplayText,
+      roundName: rawMatch.RoundName,
+      phase: phase,
+      allRawData: {
+        Round: rawMatch.Round,
+        RoundDisplayText: rawMatch.RoundDisplayText,
+        RoundName: rawMatch.RoundName,
+        RoundPhase: rawMatch.RoundPhase,
+        phase: rawMatch.phase
+      }
+    });
+    
+    // Check for medal matches first (gold/bronze)
+    if (round && (round.toLowerCase().includes('gold') || round.toLowerCase().includes('bronze'))) {
+      return { 
+        round: round.toLowerCase().includes('gold') ? 'Gold' : 'Bronze', 
+        phase: 'Medal' 
+      };
     }
     
-    return (
-      <View style={styles.genderBadge}>
-        <Text style={[styles.genderSymbol, genderStyle]}>
-          {genderText}
-        </Text>
-      </View>
-    );
-  };
-
-  // Get match score display
-  const getScoreDisplay = () => {
-    if (!match.teams?.teamA || !match.teams?.teamB) return null;
-    
-    const scoreA = match.teams.teamA.matchPoints || 0;
-    const scoreB = match.teams.teamB.matchPoints || 0;
-    
-    if (scoreA === 0 && scoreB === 0 && matchStatus === 'upcoming') {
-      return null; // Don't show 0-0 for upcoming matches
+    // Check for phase-based medal determination
+    if (phase && (phase.toLowerCase().includes('gold') || phase.toLowerCase().includes('bronze'))) {
+      return { 
+        round: phase.toLowerCase().includes('gold') ? 'Gold' : 'Bronze', 
+        phase: 'Medal' 
+      };
     }
     
-    return (
-      <View style={styles.scoreContainer}>
-        <Text style={[
-          styles.scoreText,
-          scoreA > scoreB && styles.scoreWinner,
-          compact && styles.scoreTextCompact
-        ]}>
-          {scoreA}
-        </Text>
-        <Text style={[styles.scoreSeparator, compact && styles.scoreSeparatorCompact]}>
-          -
-        </Text>
-        <Text style={[
-          styles.scoreText,
-          scoreB > scoreA && styles.scoreWinner,
-          compact && styles.scoreTextCompact
-        ]}>
-          {scoreB}
-        </Text>
-      </View>
-    );
-  };
-
-  // Get referee display
-  const getRefereeDisplay = () => {
-    if (!showReferee || !match.officials?.referee1) return null;
+    // Check for finals and playoffs
+    if (round && round.toLowerCase().includes('final') && !round.toLowerCase().includes('semi')) {
+      // Could be Gold Medal Match
+      return { round: 'Final', phase: undefined };
+    }
     
-    const referee = match.officials.referee1;
-    return (
-      <Text style={[styles.refereeText, compact && styles.refereeTextCompact]}>
-        R1: {referee.name || `#${referee.number}`}
-      </Text>
-    );
+    // Check for semifinals 
+    if (round && (round.toLowerCase().includes('semi') || round.toLowerCase().includes('sf'))) {
+      return { round: 'Semifinal', phase: undefined };
+    }
+    
+    // Check for quarterfinals
+    if (round && (round.toLowerCase().includes('quarter') || round.toLowerCase().includes('qf'))) {
+      return { round: 'Quarterfinal', phase: undefined };
+    }
+    
+    // Check for elimination matches
+    if (round && (round.toLowerCase().includes('elimin') || round.toLowerCase().includes('ko'))) {
+      return { round: 'Elimination', phase: undefined };
+    }
+    
+    // Check for pool matches
+    if (round && (round.toLowerCase().includes('pool') || round.toLowerCase().includes('group'))) {
+      return { round: 'Pool', phase: phase };
+    }
+    
+    // If we have a number-based round system, try to interpret it
+    if (round && /^[0-9]+$/.test(round.toString())) {
+      const roundNum = parseInt(round.toString());
+      if (roundNum <= 2) {
+        return { round: 'Final', phase: undefined };
+      } else if (roundNum <= 4) {
+        return { round: 'Semifinal', phase: undefined };
+      } else if (roundNum <= 8) {
+        return { round: 'Quarterfinal', phase: undefined };
+      } else {
+        return { round: 'Elimination', phase: undefined };
+      }
+    }
+    
+    // Default fallback - be more intelligent about the default
+    return { 
+      round: round || 'TBD',
+      phase: phase
+    };
   };
+  
+  const roundData = getRoundDisplayData();
+
+  const matchWithResult = match; // Use match as-is for now
+  
+  // Debug logging to see what data we have
+  console.log('Match Data Debug:', {
+    matchId: match.id,
+    result: match.result,
+    setScores: match.result?.setScores,
+    duration: match.result?.duration,
+    refereeAssignments: match.refereeAssignments,
+    rawMatch: match
+  });
 
   return (
     <TouchableOpacity 
       style={[
-        styles.card,
-        compact && styles.cardCompact,
-        variant === 'live' && styles.cardLive,
-        variant === 'referee' && styles.cardReferee,
+        styles.matchCard,
+        variant === 'live' && styles.liveCard,
       ]} 
       onPress={() => onPress?.(match)}
       activeOpacity={0.7}
     >
-      <View style={styles.cardHeader}>
-        <View style={styles.matchInfo}>
-          <Text style={[styles.matchNumber, compact && styles.matchNumberCompact]}>
-            #{match.matchNumber || match.id}
-          </Text>
-          <Text style={[styles.courtInfo, compact && styles.courtInfoCompact]}>
-            Court {match.court?.name || match.court?.number || 'TBD'}
+      {/* Match Header - Compact horizontal layout */}
+      <View style={styles.matchHeader}>
+        <View style={styles.leftBadgeContainer}>
+          {(match as any).tournamentGender && (
+            <View style={[
+              styles.genderBadge,
+              (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
+            ]}>
+              <Text style={[
+                styles.genderBadgeText,
+                (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+              ]}>
+                {(match as any).tournamentGender}
+              </Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.timeCourtContainer}>
+          <View style={styles.timeContainer}>
+            {isMatchLive(match) && (
+              <View style={styles.liveDot} />
+            )}
+            <Text style={styles.matchTime}>
+              {match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}
+            </Text>
+          </View>
+          <Text style={styles.courtText}>
+            {match.court?.courtNumber ? (
+              match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+            ) : 'TBD'}
           </Text>
         </View>
         
-        <View style={styles.headerRight}>
-          {getGenderDisplay()}
-          {showStatusBadge && (
-            <StatusBadge
-              status={statusForBadge}
-              size="small"
-              variant="solid"
-              style={styles.statusBadge}
+        <View style={styles.rightBadgeContainer}>
+          <View style={styles.statusBadge}>
+            <RoundPhaseDisplay
+              round={roundData.round}
+              phase={roundData.phase}
+              emphasis="medium"
+              color="textPrimary"
+              style={styles.statusText}
             />
-          )}
+          </View>
         </View>
       </View>
 
+      {/* Flags and Result Row */}
+      <View style={styles.flagsAndResultRow}>
+        <FlagImage
+          countryCode={match.team1?.countryCode}
+          style={styles.leftFlag}
+        />
+        
+        <View style={styles.centerResultContainer}>
+          {matchWithResult.result ? (
+            <View style={styles.resultContainerWithSets}>
+              <View style={styles.resultContainer}>
+                <Text style={[
+                  styles.resultScore,
+                  matchWithResult.result.winner === 1 && styles.winnerScore
+                ]}>
+                  {matchWithResult.result.team1Sets}
+                </Text>
+                <Text style={styles.scoreSeparator}>-</Text>
+                <Text style={[
+                  styles.resultScore,
+                  matchWithResult.result.winner === 2 && styles.winnerScore
+                ]}>
+                  {matchWithResult.result.team2Sets}
+                </Text>
+              </View>
+              
+              {/* Set Scores Display - check multiple sources */}
+              {(() => {
+                // First check if we have setScores in result
+                if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                  return true;
+                }
+                
+                // Check legacy BeachMatch format for individual set score fields
+                const rawMatch = match as any;
+                const hasLegacySetScores = (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) ||
+                                          (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) ||
+                                          (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3);
+                
+                return hasLegacySetScores;
+              })() && (
+                <View style={styles.setScoresContainer}>
+                  {(() => {
+                    const sets = [];
+                    
+                    // Try to use result.setScores first
+                    if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                      const setScores = matchWithResult.result.setScores;
+                      
+                      // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
+                      for (let i = 0; i < setScores.length; i += 2) {
+                        if (i + 1 < setScores.length) {
+                          const team1Score = setScores[i];
+                          const team2Score = setScores[i + 1];
+                          const setNumber = Math.floor(i / 2) + 1;
+                          const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                          
+                          // Check if this set is completed
+                          const isMatchFinished = match.status === MatchStatus.FINISHED;
+                          const isThirdSet = setNumber === 3;
+                          const minWinScore = isThirdSet ? 15 : 21;
+                          const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
+                                                  (team2Score >= minWinScore && team2Score - team1Score >= 2);
+                          const isNotLastSet = setNumber < Math.floor(setScores.length / 2);
+                          const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
+                          
+                          sets.push(
+                            <View key={setNumber} style={styles.individualSet}>
+                              <Text style={[
+                                styles.setScore,
+                                isWinningSet === 1 && isSetComplete && styles.winningSetScore
+                              ]}>
+                                {team1Score}
+                              </Text>
+                              <Text style={styles.setScoreSeparator}>-</Text>
+                              <Text style={[
+                                styles.setScore,
+                                isWinningSet === 2 && isSetComplete && styles.winningSetScore
+                              ]}>
+                                {team2Score}
+                              </Text>
+                            </View>
+                          );
+                        }
+                      }
+                    } else {
+                      // Fallback to legacy BeachMatch format
+                      const rawMatch = match as any;
+                      
+                      // Set 1
+                      if (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) {
+                        const team1Score = parseInt(rawMatch.PointsTeamASet1);
+                        const team2Score = parseInt(rawMatch.PointsTeamBSet1);
+                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                        
+                        sets.push(
+                          <View key={1} style={styles.individualSet}>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 1 && styles.winningSetScore
+                            ]}>
+                              {team1Score}
+                            </Text>
+                            <Text style={styles.setScoreSeparator}>-</Text>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 2 && styles.winningSetScore
+                            ]}>
+                              {team2Score}
+                            </Text>
+                          </View>
+                        );
+                      }
+                      
+                      // Set 2
+                      if (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) {
+                        const team1Score = parseInt(rawMatch.PointsTeamASet2);
+                        const team2Score = parseInt(rawMatch.PointsTeamBSet2);
+                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                        
+                        sets.push(
+                          <View key={2} style={styles.individualSet}>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 1 && styles.winningSetScore
+                            ]}>
+                              {team1Score}
+                            </Text>
+                            <Text style={styles.setScoreSeparator}>-</Text>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 2 && styles.winningSetScore
+                            ]}>
+                              {team2Score}
+                            </Text>
+                          </View>
+                        );
+                      }
+                      
+                      // Set 3
+                      if (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3) {
+                        const team1Score = parseInt(rawMatch.PointsTeamASet3);
+                        const team2Score = parseInt(rawMatch.PointsTeamBSet3);
+                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                        
+                        sets.push(
+                          <View key={3} style={styles.individualSet}>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 1 && styles.winningSetScore
+                            ]}>
+                              {team1Score}
+                            </Text>
+                            <Text style={styles.setScoreSeparator}>-</Text>
+                            <Text style={[
+                              styles.setScore,
+                              isWinningSet === 2 && styles.winningSetScore
+                            ]}>
+                              {team2Score}
+                            </Text>
+                          </View>
+                        );
+                      }
+                    }
+                    
+                    return sets;
+                  })()}
+                </View>
+              )}
+              
+              {/* Duration Display */}
+              {(() => {
+                const totalDuration = getMatchDuration(match);
+                return totalDuration ? (
+                  <Text style={styles.durationText}>({totalDuration})</Text>
+                ) : null;
+              })()}
+            </View>
+          ) : (
+            <Text style={styles.vsText}>vs</Text>
+          )}
+        </View>
+        
+        <FlagImage
+          countryCode={match.team2?.countryCode}
+          style={styles.rightFlag}
+        />
+      </View>
+
+      {/* Teams Container */}
       <View style={styles.teamsContainer}>
-        <View style={styles.teamRow}>
-          <View style={styles.teamInfo}>
-            <FlagImage 
-              countryCode={match.teams?.teamA?.federationCode || ''} 
-              style={[styles.flag, compact && styles.flagCompact]} 
-            />
-            <Text style={[styles.teamName, compact && styles.teamNameCompact]}>
-              {match.teams?.teamA?.name || 'Team A'}
+        <View style={styles.teamsRow}>
+          <View style={styles.teamSection}>
+            <Text style={[
+              styles.teamName,
+              styles.leftTeamName,
+              matchWithResult.result?.winner === 1 && styles.winnerTeam
+            ]} numberOfLines={2}>
+              {match.team1?.teamName || 'Team A'}
+            </Text>
+            <Text style={[styles.countryCode, styles.leftCountryCode]}>
+              {match.team1?.countryCode || ''}
             </Text>
           </View>
-          {getScoreDisplay()}
-        </View>
-        
-        <View style={styles.teamRow}>
-          <View style={styles.teamInfo}>
-            <FlagImage 
-              countryCode={match.teams?.teamB?.federationCode || ''} 
-              style={[styles.flag, compact && styles.flagCompact]} 
-            />
-            <Text style={[styles.teamName, compact && styles.teamNameCompact]}>
-              {match.teams?.teamB?.name || 'Team B'}
+          
+          <View style={styles.teamSection}>
+            <Text style={[
+              styles.teamName,
+              styles.rightTeamName,
+              matchWithResult.result?.winner === 2 && styles.winnerTeam
+            ]} numberOfLines={2}>
+              {match.team2?.teamName || 'Team B'}
+            </Text>
+            <Text style={[styles.countryCode, styles.rightCountryCode]}>
+              {match.team2?.countryCode || ''}
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.cardFooter}>
-        <View style={styles.footerLeft}>
-          <RoundPhaseDisplay 
-            round={match.round}
-            phase={match.phase}
-            style={[styles.roundPhase, compact && styles.roundPhaseCompact]}
-          />
-          <Text style={[styles.timeText, compact && styles.timeTextCompact]}>
-            {formatTime(match.scheduledTime?.time)}
-          </Text>
-        </View>
+      {/* Referees Section - support both new and legacy data formats */}
+      {(() => {
+        const rawMatch = match as any;
+        const hasRefereeAssignments = match.refereeAssignments && match.refereeAssignments.length > 0;
+        const hasLegacyReferees = rawMatch.Referee1Name || rawMatch.Referee2Name;
         
-        <View style={styles.footerRight}>
-          {showDuration && getMatchDuration() && (
-            <Text style={[styles.durationText, compact && styles.durationTextCompact]}>
-              {getMatchDuration()}
-            </Text>
-          )}
-          {getRefereeDisplay()}
+        return hasRefereeAssignments || hasLegacyReferees;
+      })() && (
+        <View style={styles.refereesContainer}>
+          {(() => {
+            const refereeRows = [];
+            const rawMatch = match as any;
+            
+            // Try to use new format refereeAssignments first
+            if (match.refereeAssignments && match.refereeAssignments.length > 0) {
+              match.refereeAssignments.forEach((referee, index) => {
+                // Determine referee position based on function or index
+                let position = '';
+                if (referee.function?.includes('1st') || referee.function?.includes('Referee 1')) {
+                  position = '1°';
+                } else if (referee.function?.includes('2nd') || referee.function?.includes('Referee 2')) {
+                  position = '2°';
+                } else if (referee.function?.includes('Challenge') || referee.function?.includes('CR')) {
+                  position = 'CR';
+                } else {
+                  // Fallback to index-based
+                  position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
+                }
+
+                refereeRows.push(
+                  <View key={`assignment-${index}`} style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <Text style={styles.refereePosition}>{position}</Text>
+                      <Text style={styles.refereeName}>{referee.refereeName}</Text>
+                      <FlagImage
+                        countryCode={referee.federationCode}
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  </View>
+                );
+              });
+            } else {
+              // Fallback to legacy BeachMatch format
+              if (rawMatch.Referee1Name) {
+                refereeRows.push(
+                  <View key="referee1" style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <Text style={styles.refereePosition}>1°</Text>
+                      <Text style={styles.refereeName}>{rawMatch.Referee1Name}</Text>
+                      <FlagImage
+                        countryCode={rawMatch.Referee1FederationCode}
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  </View>
+                );
+              }
+              
+              if (rawMatch.Referee2Name) {
+                refereeRows.push(
+                  <View key="referee2" style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <Text style={styles.refereePosition}>2°</Text>
+                      <Text style={styles.refereeName}>{rawMatch.Referee2Name}</Text>
+                      <FlagImage
+                        countryCode={rawMatch.Referee2FederationCode}
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  </View>
+                );
+              }
+              
+              // Check for challenge referee in legacy format
+              if (rawMatch.ChallengeRefereeName) {
+                refereeRows.push(
+                  <View key="challenge-referee" style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <Text style={styles.refereePosition}>CR</Text>
+                      <Text style={styles.refereeName}>{rawMatch.ChallengeRefereeName}</Text>
+                      <FlagImage
+                        countryCode={rawMatch.ChallengeRefereeFederationCode}
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  </View>
+                );
+              }
+            }
+            
+            return refereeRows;
+          })()}
         </View>
-      </View>
+      )}
     </TouchableOpacity>
   );
 };
 
+// Exact styles from master branch MatchListV2
 const styles = StyleSheet.create({
-  card: {
+  matchCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginVertical: 4,
     marginHorizontal: 16,
-    marginVertical: 6,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  cardCompact: {
-    padding: 12,
-    marginVertical: 4,
-  },
-  cardLive: {
+  liveCard: {
     borderColor: colors.success,
     borderWidth: 2,
     backgroundColor: '#F0FDF4',
   },
-  cardReferee: {
-    borderColor: colors.accent,
-    borderWidth: 1,
-  },
-  cardHeader: {
+  matchHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  matchInfo: {
-    flexDirection: 'row',
+  leftBadgeContainer: {
+    flex: 0.8,
+    alignItems: 'flex-start',
+  },
+  timeCourtContainer: {
+    flex: 2,
     alignItems: 'center',
-    flex: 1,
   },
-  matchNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    marginRight: 12,
-  },
-  matchNumberCompact: {
-    fontSize: 14,
-    marginRight: 8,
-  },
-  courtInfo: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  courtInfoCompact: {
-    fontSize: 13,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  rightBadgeContainer: {
+    flex: 0.8,
+    alignItems: 'flex-end',
   },
   genderBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    minWidth: 20,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#374151',
   },
-  genderSymbol: {
-    fontSize: 16,
+  menBadge: {
+    // Same styling as base genderBadge
+  },
+  womenBadge: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
+  genderBadgeText: {
+    fontSize: 12,
     fontWeight: 'bold',
+    color: '#374151',
   },
-  genderMale: {
-    color: '#3B82F6',
+  menBadgeText: {
+    // Same as base genderBadgeText
   },
-  genderFemale: {
-    color: '#EC4899',
+  womenBadgeText: {
+    color: '#FFFFFF',
   },
-  genderMixed: {
-    color: '#8B5CF6',
-  },
-  statusBadge: {
-    marginLeft: 8,
-  },
-  teamsContainer: {
-    marginBottom: 12,
-  },
-  teamRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  teamInfo: {
+  timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    justifyContent: 'center',
+    marginBottom: 2,
   },
-  flag: {
-    width: 24,
-    height: 18,
+  liveDot: {
+    width: 6,
+    height: 6,
     borderRadius: 3,
-    marginRight: 8,
+    backgroundColor: colors.success,
+    marginRight: 4,
   },
-  flagCompact: {
-    width: 20,
-    height: 15,
-    marginRight: 6,
-  },
-  teamName: {
-    fontSize: 16,
+  matchTime: {
+    fontSize: 14,
     fontWeight: '600',
     color: '#1B365D',
-    flex: 1,
+    textAlign: 'center',
   },
-  teamNameCompact: {
-    fontSize: 14,
+  courtText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    textAlign: 'center',
   },
-  scoreContainer: {
+  statusBadge: {
+    backgroundColor: '#6B7280',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 10,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  flagsAndResultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  leftFlag: {
+    flex: 0.8,
+  },
+  rightFlag: {
+    flex: 0.8,
+  },
+  centerResultContainer: {
+    flex: 2,
+    alignItems: 'center',
+  },
+  resultContainerWithSets: {
+    alignItems: 'center',
+  },
+  resultContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  scoreText: {
+  resultScore: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: '#374151',
     minWidth: 24,
     textAlign: 'center',
   },
-  scoreTextCompact: {
-    fontSize: 16,
-    minWidth: 20,
-  },
-  scoreWinner: {
+  winnerScore: {
     color: colors.success,
   },
   scoreSeparator: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#9CA3AF',
-    marginHorizontal: 6,
-  },
-  scoreSeparatorCompact: {
-    fontSize: 14,
     marginHorizontal: 4,
   },
-  cardFooter: {
+  vsText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  teamsContainer: {
+    // Container for teams
+  },
+  teamsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  teamSection: {
+    flex: 1,
     alignItems: 'center',
-    paddingTop: 12,
+  },
+  teamName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1B365D',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  leftTeamName: {
+    textAlign: 'center',
+  },
+  rightTeamName: {
+    textAlign: 'center',
+  },
+  winnerTeam: {
+    color: colors.success,
+    fontWeight: 'bold',
+  },
+  countryCode: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  leftCountryCode: {
+    textAlign: 'center',
+  },
+  rightCountryCode: {
+    textAlign: 'center',
+  },
+  refereesContainer: {
+    marginTop: 4,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
-  footerLeft: {
+  refereeRow: {
+    marginBottom: 4,
+    justifyContent: 'center',
+  },
+  refereeContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    justifyContent: 'center',
   },
-  footerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  roundPhase: {
-    marginRight: 12,
-  },
-  roundPhaseCompact: {
+  refereePosition: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#374151',
     marginRight: 8,
   },
-  timeText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+  refereeFlag: {
+    marginLeft: 8,
   },
-  timeTextCompact: {
-    fontSize: 13,
+  refereeName: {
+    fontSize: 15,
+    color: '#374151',
+    fontWeight: '500',
+    marginHorizontal: 8,
+  },
+  setScoresContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  individualSet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  setScore: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  setScoreSeparator: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#9CA3AF',
+    marginHorizontal: 3,
+  },
+  winningSetScore: {
+    color: '#059669',
+    fontWeight: '700',
   },
   durationText: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginRight: 12,
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  durationTextCompact: {
     fontSize: 11,
-    marginRight: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-  },
-  refereeText: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  refereeTextCompact: {
-    fontSize: 11,
+    fontWeight: '400',
+    color: '#9CA3AF',
+    marginTop: 2,
+    textAlign: 'center',
   },
 });

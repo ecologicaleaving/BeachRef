@@ -58,7 +58,8 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     location: dto.court.location,
   };
 
-  return {
+  // Create the core BeachMatchCore object
+  const beachMatchCore: BeachMatchCore = {
     id: dto.id,
     visNo: dto.visNo,
     version: 1,
@@ -80,6 +81,47 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     weather: (dto as any).weather,
     importance: (dto as any).importance,
   };
+
+  // Preserve ALL original DTO fields for legacy compatibility
+  // This allows MatchCard to access legacy fields like PointsTeamASet1, Referee1Name, etc.
+  const preservedMatch = {
+    ...beachMatchCore,
+    ...(dto as any), // Spread all original DTO fields to preserve legacy data
+    
+    // Ensure core fields override any conflicts from DTO
+    id: beachMatchCore.id,
+    visNo: beachMatchCore.visNo,
+    version: beachMatchCore.version,
+    lastUpdated: beachMatchCore.lastUpdated,
+    tournamentId: beachMatchCore.tournamentId,
+    matchCode: beachMatchCore.matchCode,
+    round: beachMatchCore.round,
+    phaseCode: beachMatchCore.phaseCode,
+    status: beachMatchCore.status,
+    court: beachMatchCore.court,
+    scheduledDateTime: beachMatchCore.scheduledDateTime,
+    actualStartTime: beachMatchCore.actualStartTime,
+    actualEndTime: beachMatchCore.actualEndTime,
+    team1: beachMatchCore.team1,
+    team2: beachMatchCore.team2,
+    result: beachMatchCore.result,
+    refereeAssignments: beachMatchCore.refereeAssignments,
+  };
+
+  console.log('Transform Debug:', {
+    matchId: dto.id,
+    originalDTO: dto,
+    hasReferee1Name: !!(dto as any).Referee1Name,
+    hasReferee2Name: !!(dto as any).Referee2Name,
+    hasPointsTeamASet1: !!(dto as any).PointsTeamASet1,
+    hasPointsTeamBSet1: !!(dto as any).PointsTeamBSet1,
+    hasDuration: !!(dto as any).Duration,
+    hasDurationSet1: !!(dto as any).DurationSet1,
+    resultSetScores: result?.setScores,
+    preservedFields: Object.keys(preservedMatch)
+  });
+
+  return preservedMatch;
 };
 
 // Type-safe helper to extract duration fields from match data

@@ -10,7 +10,6 @@ import { colors, spacing } from '../../theme/tokens';
 import { getStatusColor } from '../../utils/colors';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from './RoundPhaseDisplay';
-import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 
 export interface MatchInfo {
   matchId: string;
@@ -71,8 +70,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   const { container, emphasis } = getVariantStyles();
   
-  // Extract proper round display data using transformer service
-  const roundData = MatchDataTransformer.getRoundDisplayData(match as any);
+  // Extract proper round display data from match
+  const roundData = {
+    round: match.round || 'TBD',
+    phase: match.phase
+  };
 
   return (
     <Pressable

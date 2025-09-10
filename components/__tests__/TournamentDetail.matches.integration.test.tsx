@@ -7,7 +7,6 @@ import { BeachMatch } from '../../types/match';
 
 // Mock the services
 jest.mock('../../services/visApi');
-jest.mock('../../services/CacheService');
 jest.mock('../../services/RealtimeSubscriptionService');
 
 const mockVisApiService = VisApiService as jest.Mocked<typeof VisApiService>;

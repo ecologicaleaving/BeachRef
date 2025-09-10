@@ -148,7 +148,6 @@ export class SyncManager {
       case 'referees':
         // For now, we'll use a placeholder since CacheService doesn't have getReferees
         // This would be implemented when referee caching is added to CacheService
-        console.log('Referees sync task processed (placeholder)');
         break;
       
       default:

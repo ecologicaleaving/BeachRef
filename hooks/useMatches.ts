@@ -44,9 +44,12 @@ export interface MatchesQueryResult {
 }
 
 /**
- * Simplified matches hook with database-first strategy and intelligent cache strategies
- * Provides real-time updates for live matches and historical caching for completed matches
+ * Modern matches hook with VIS API-first strategy following documented architecture
+ * Provides complete match data with set scores directly from VIS API
+ * Uses database as fallback cache for offline/error scenarios
  */
+// SetScoreService enhancement removed - VIS API now provides complete data with set scores directly
+
 export function useMatches(
   filters?: MatchesFilters,
   config: MatchesConfig = {}
@@ -103,20 +106,77 @@ export function useMatches(
   // Create query key using TanStack Query key factory
   const queryKey = queryKeys.matches.list(filters);
 
-  // Real-time subscription setup for live matches (simplified for database-first approach)
+  // Real-time subscription setup for live matches (VIS API-first approach)
   useEffect(() => {
     // Note: Real-time updates will be handled by TanStack Query refetch intervals
-    // when cacheStrategy === 'live'
+    // when cacheStrategy === 'live', fetching fresh data from VIS API
   }, [cacheStrategy, filters?.tournamentCode]);
 
-  // Database-first query function with VIS Adapter fallback
+  // VIS API-first query function following documented architecture
   const queryFn = async (): Promise<MatchDTO[]> => {
     const startTime = Date.now();
     let fallbackUsed = false;
     
     try {
-      // Priority 1: Direct Supabase database query
+      // Priority 1: VIS API via VIS Adapter (as per documentation)
+      // This ensures we get complete match data with set scores directly from VIS API
+      if (currentConfig.enableFallback !== false) { // VIS API is now primary, not fallback
+        try {
+          // Build query parameters for VIS Adapter (following documented architecture)
+          const queryParams = new URLSearchParams();
+          if (filters?.tournamentCode) queryParams.append('tournamentCode', filters.tournamentCode);
+          if (filters?.eventId) queryParams.append('eventId', filters.eventId.toString());
+          if (filters?.round) queryParams.append('round', filters.round);
+          if (filters?.status) queryParams.append('status', filters.status);
+          if (filters?.date) queryParams.append('date', filters.date);
+          if (filters?.dateRange) {
+            queryParams.append('startDate', filters.dateRange.startDate);
+            queryParams.append('endDate', filters.dateRange.endDate);
+          }
+          queryParams.append('mode', 'upsert');
+          
+          const visUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '') + 
+                        `/functions/v1/vis-adapter/vis/matches?${queryParams}`;
+          
+          const response = await fetch(visUrl, {
+            headers: {
+              'Authorization': `Bearer ${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const visResult = await response.json();
+            if (visResult.success && visResult.data) {
+              const endTime = Date.now();
+              
+              // Update metadata - VIS API is now primary source
+              setReadMetadata({
+                source: 'api',
+                performance: { queryTime: endTime - startTime, fallbackUsed: false }
+              });
+
+              let matches = visResult.data;
+              
+              // VIS API already provides complete data with set scores - no SetScoreService needed
+                
+              // Apply referee grouping if requested
+              if (currentConfig.groupByReferee) {
+                matches = groupMatchesByReferee(matches);
+              }
+
+              return matches;
+            }
+          }
+        } catch (error) {
+          // VIS Adapter request failed, continue to database fallback
+        }
+      }
+
+      // Priority 2: Database fallback (for cached/offline scenarios)
       if (supabase) {
+        fallbackUsed = true;
+        
         let query = supabase
           .from('matches')
           .select(`
@@ -150,7 +210,7 @@ export function useMatches(
             )
           `);
 
-        // Apply filters using database indexes for optimal performance
+        // Apply filters
         if (filters?.tournamentCode) {
           query = query.eq('tournament_code', filters.tournamentCode);
         }
@@ -177,33 +237,26 @@ export function useMatches(
         if (!dbError && dbData && dbData.length > 0) {
           // Transform database data to MatchDTO format
           const matches: MatchDTO[] = dbData.map(row => {
-            // Extract referee data from relational query
+            // Extract referee data
             const referees = row.match_referees || [];
             const referee1 = referees.find(mr => mr.role === 'R1')?.referees;
             const referee2 = referees.find(mr => mr.role === 'R2')?.referees;
             const challengeReferee = referees.find(mr => mr.role === 'CHALLENGE')?.referees;
 
-            // Build referee names
             const referee1Name = referee1 ? `${referee1.first_name} ${referee1.last_name}`.trim() : '';
             const referee2Name = referee2 ? `${referee2.first_name} ${referee2.last_name}`.trim() : '';
             const challengeRefereeName = challengeReferee ? `${challengeReferee.first_name} ${challengeReferee.last_name}`.trim() : '';
 
-            // Parse set scores if available
-            let setScores: number[] = [];
+            // Parse cached set scores if available
+            let setScores: Array<{ a: number; b: number }> = [];
             if (row.sets && Array.isArray(row.sets)) {
-              setScores = row.sets;
-            } else if (row.result?.setScores && Array.isArray(row.result.setScores)) {
-              setScores = row.result.setScores;
-            }
-
-            // Calculate duration from start/end times if available
-            let duration: number | undefined;
-            if (row.result?.duration) {
-              duration = row.result.duration;
-            } else if (row.actual_start_time && row.actual_end_time) {
-              const startTime = new Date(row.actual_start_time).getTime();
-              const endTime = new Date(row.actual_end_time).getTime();
-              duration = Math.round((endTime - startTime) / 60000); // Duration in minutes
+              // Convert from number[] to { a, b }[] format
+              const flatScores = row.sets;
+              for (let i = 0; i < flatScores.length; i += 2) {
+                if (i + 1 < flatScores.length) {
+                  setScores.push({ a: flatScores[i], b: flatScores[i + 1] });
+                }
+              }
             }
 
             return {
@@ -219,7 +272,6 @@ export function useMatches(
                 courtName: row.court,
               },
               scheduledDateTime: row.utc_datetime || row.local_datetime || '',
-              actualStartTime: row.status === 'RUNNING' ? row.utc_datetime : undefined,
               team1: {
                 teamNumber: 1,
                 teamName: row.team_a_name || '',
@@ -232,28 +284,19 @@ export function useMatches(
                 player1Name: '',
                 player2Name: '',
               },
-              result: row.result ? {
+              result: setScores.length > 0 ? {
                 team1Sets: 0,
                 team2Sets: 0,
                 setScores: setScores,
-                winner: row.result.winner,
-                forfeit: row.result.forfeit,
-                duration: duration,
+                winner: row.result?.winner,
+                forfeit: row.result?.forfeit,
+                duration: row.result?.duration,
               } : undefined,
-              // Add referee data for legacy compatibility
+              // Legacy compatibility fields
               Referee1Name: referee1Name,
               Referee2Name: referee2Name,
               ChallengeRefereeName: challengeRefereeName,
-              Referee1FederationCode: referee1?.federation || '',
-              Referee2FederationCode: referee2?.federation || '',
-              // Add set scores for legacy compatibility
-              Sets: setScores,
-              SetScores: setScores,
-              Duration: duration,
-              // Add round phase information
-              RoundName: row.round_name,
-              RoundPhase: row.round_phase,
-            } as MatchDTO & any; // Cast to include legacy fields
+            } as MatchDTO & any;
           });
 
           const endTime = Date.now();
@@ -264,62 +307,12 @@ export function useMatches(
             performance: { queryTime: endTime - startTime, fallbackUsed }
           });
 
-          // Apply referee grouping if requested
+
           if (currentConfig.groupByReferee) {
             return groupMatchesByReferee(matches);
           }
 
           return matches;
-        }
-      }
-
-      // Priority 2: VIS Adapter fallback (if enabled and database failed/empty)
-      if (currentConfig.enableFallback) {
-        fallbackUsed = true;
-        
-        // Build query parameters for VIS Adapter
-        const queryParams = new URLSearchParams();
-        if (filters?.tournamentCode) queryParams.append('tournamentCode', filters.tournamentCode);
-        if (filters?.eventId) queryParams.append('eventId', filters.eventId.toString());
-        if (filters?.round) queryParams.append('round', filters.round);
-        if (filters?.status) queryParams.append('status', filters.status);
-        if (filters?.date) queryParams.append('date', filters.date);
-        if (filters?.dateRange) {
-          queryParams.append('startDate', filters.dateRange.startDate);
-          queryParams.append('endDate', filters.dateRange.endDate);
-        }
-        queryParams.append('mode', 'upsert');
-        
-        const visUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '') + 
-                      `/functions/v1/vis-adapter/vis/matches?${queryParams}`;
-        
-        const response = await fetch(visUrl, {
-          headers: {
-            'Authorization': `Bearer ${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const visResult = await response.json();
-          if (visResult.success && visResult.data) {
-            const endTime = Date.now();
-            
-            // Update metadata
-            setReadMetadata({
-              source: 'api',
-              performance: { queryTime: endTime - startTime, fallbackUsed }
-            });
-
-            let matches = visResult.data;
-            
-            // Apply referee grouping if requested
-            if (currentConfig.groupByReferee) {
-              matches = groupMatchesByReferee(matches);
-            }
-
-            return matches;
-          }
         }
       }
 
@@ -340,7 +333,6 @@ export function useMatches(
         performance: { queryTime: endTime - startTime, fallbackUsed }
       });
       
-      console.error('Match query error:', error);
       throw error;
     }
   };

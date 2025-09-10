@@ -399,11 +399,6 @@ export class VisApiClient implements IVisApiClient {
 
       const xmlRequest = this.buildGetEventOfficialListXml(optimizedRequest);
       
-      // Log the exact XML request being sent to debug 400 errors
-      console.log('🔍 GetEventOfficialList XML Request:');
-      console.log('EventNo:', optimizedRequest.eventNo);
-      console.log('Fields:', optimizedRequest.fields);
-      console.log('XML Request:', xmlRequest);
       
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_OFFICIAL_LIST, xmlRequest);
       
@@ -432,11 +427,6 @@ export class VisApiClient implements IVisApiClient {
 
       const xmlRequest = this.buildGetEventRefereeListXml(optimizedRequest);
       
-      // Log the exact XML request being sent to debug 400 errors
-      console.log('🔍 GetEventRefereeList XML Request:');
-      console.log('EventNo:', optimizedRequest.eventNo);
-      console.log('Fields:', optimizedRequest.fields);
-      console.log('XML Request:', xmlRequest);
       
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_REFEREE_LIST, xmlRequest);
       

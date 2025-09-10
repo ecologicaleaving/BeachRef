@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NetworkMonitor } from './NetworkMonitor';
 import { ErrorLogger } from './ErrorLogger';
 import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
+import { SetScoreService } from './SetScoreService';
 // CacheService import removed to prevent circular dependency
 // Note: This was causing a circular dependency with CacheServiceCompatibility
 import { FilterOptions } from '../types/cache';
@@ -156,6 +157,7 @@ export class DualReadService {
   private networkMonitor: NetworkMonitor;
   private errorLogger: ErrorLogger;
   private circuitBreaker: ConnectionCircuitBreaker;
+  private setScoreService: SetScoreService;
   // cacheService removed to prevent circular dependency
 
   private config: DualReadConfig = {
@@ -185,6 +187,7 @@ export class DualReadService {
     this.networkMonitor = NetworkMonitor.getInstance();
     this.errorLogger = ErrorLogger.getInstance();
     this.circuitBreaker = ConnectionCircuitBreaker.getInstance();
+    this.setScoreService = new SetScoreService();
     // cacheService removed to prevent circular dependency
   }
 
@@ -789,7 +792,7 @@ export class DualReadService {
   }
 
   /**
-   * Get matches from API
+   * Get matches from API with enhanced set scores
    */
   private async getMatchesFromAPI(filters?: any): Promise<MatchDTO[]> {
     const edgeUrl = process.env.EXPO_PUBLIC_EDGE_URL;
@@ -813,8 +816,27 @@ export class DualReadService {
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
-    const matches = await response.json();
-    return Array.isArray(matches) ? matches : [];
+    const rawMatches = await response.json();
+    const matches = Array.isArray(rawMatches) ? rawMatches : [];
+
+    // Transform raw API matches to MatchDTO format with set scores
+    const transformedMatches: MatchDTO[] = await Promise.all(
+      matches.map(async (match: any) => {
+        try {
+          return await this.transformMatchFromAPI(match);
+        } catch (error) {
+          await this.errorLogger.logError(error as Error, {
+            context: 'DualReadService.getMatchesFromAPI.transformMatch',
+            severity: 'medium',
+            matchId: match.MatchNo
+          });
+          // Return match without enhanced set scores on transform error
+          return this.transformMatchFromAPIBasic(match);
+        }
+      })
+    );
+
+    return transformedMatches;
   }
 
   /**
@@ -1013,6 +1035,168 @@ export class DualReadService {
         forfeit: result.forfeit || false
       } : undefined
     };
+  }
+
+  /**
+   * Transform match data from API format to DTO with enhanced set scores
+   */
+  private async transformMatchFromAPI(apiMatch: any): Promise<MatchDTO> {
+    // First create basic DTO structure
+    const basicMatch = this.transformMatchFromAPIBasic(apiMatch);
+
+    // Skip set score enhancement for non-finished matches
+    if (!apiMatch.Status || apiMatch.Status.toLowerCase() !== 'finished') {
+      return basicMatch;
+    }
+
+    // Try to enhance with set scores using SetScoreService
+    try {
+      // Create a match object for SetScoreService
+      const matchForEnhancement = {
+        id: apiMatch.MatchNo?.toString() || '',
+        visNo: apiMatch.MatchNo?.toString() || '',
+        tournamentId: apiMatch.TournamentNo?.toString() || '',
+        tournamentCode: apiMatch.TournamentNo?.toString() || '',
+        matchCode: apiMatch.MatchNo?.toString() || '',
+        matchNo: apiMatch.MatchNo || 0,
+        round: apiMatch.Round || '',
+        team1: {
+          teamNumber: 1,
+          teamName: apiMatch.TeamAName || 'Team A',
+          player1Name: apiMatch.Player1TeamA || 'Player 1',
+          player2Name: apiMatch.Player2TeamA || 'Player 2',
+          countryCode: apiMatch.TeamACountry || apiMatch.FedTeamA
+        },
+        team2: {
+          teamNumber: 2,
+          teamName: apiMatch.TeamBName || 'Team B',
+          player1Name: apiMatch.Player1TeamB || 'Player 1',
+          player2Name: apiMatch.Player2TeamB || 'Player 2',
+          countryCode: apiMatch.TeamBCountry || apiMatch.FedTeamB
+        },
+        status: 'FINISHED' as const,
+        court: { courtNumber: apiMatch.Court?.toString() || '1', courtName: `Court ${apiMatch.Court || 1}` },
+        scheduledDateTime: apiMatch.DateTime || apiMatch.UTCDateTime || '',
+        refereeAssignments: [],
+        result: basicMatch.result
+      };
+
+      const [enhancedMatch] = await this.setScoreService.enhanceMatchesWithSetScores([matchForEnhancement]);
+
+      if (enhancedMatch?.result?.setScores && enhancedMatch.result.setScores.length > 0) {
+        // Transform enhanced result to DTO format
+        const setScoresForDTO: Array<{ a: number; b: number }> = [];
+        const scores = enhancedMatch.result.setScores;
+        
+        for (let i = 0; i < scores.length; i += 2) {
+          if (i + 1 < scores.length) {
+            setScoresForDTO.push({
+              a: scores[i],
+              b: scores[i + 1]
+            });
+          }
+        }
+
+        return {
+          ...basicMatch,
+          result: {
+            ...basicMatch.result!,
+            setScores: setScoresForDTO
+          }
+        };
+      }
+    } catch (error) {
+      // Log error but don't fail the transformation
+      await this.errorLogger.logError(error as Error, {
+        context: 'DualReadService.transformMatchFromAPI.setScoreEnhancement',
+        severity: 'low',
+        matchId: apiMatch.MatchNo
+      });
+    }
+
+    return basicMatch;
+  }
+
+  /**
+   * Transform match data from API format to basic DTO (fallback without set scores)
+   */
+  private transformMatchFromAPIBasic(apiMatch: any): MatchDTO {
+    // Extract basic result data if match is finished
+    let result = undefined;
+    if (apiMatch.Status && apiMatch.Status.toLowerCase() === 'finished') {
+      // Try to determine winner from PointsTeam fields
+      const team1TotalSets = [
+        apiMatch.PointsTeamASet1 > apiMatch.PointsTeamBSet1 ? 1 : 0,
+        apiMatch.PointsTeamASet2 > apiMatch.PointsTeamBSet2 ? 1 : 0,
+        apiMatch.PointsTeamASet3 > apiMatch.PointsTeamBSet3 ? 1 : 0
+      ].reduce((sum, setWon) => sum + setWon, 0);
+      
+      const team2TotalSets = [
+        apiMatch.PointsTeamBSet1 > apiMatch.PointsTeamASet1 ? 1 : 0,
+        apiMatch.PointsTeamBSet2 > apiMatch.PointsTeamASet2 ? 1 : 0,
+        apiMatch.PointsTeamBSet3 > apiMatch.PointsTeamASet3 ? 1 : 0
+      ].reduce((sum, setWon) => sum + setWon, 0);
+
+      result = {
+        team1Sets: team1TotalSets,
+        team2Sets: team2TotalSets,
+        setScores: [], // Will be enhanced by SetScoreService if available
+        winner: team1TotalSets > team2TotalSets ? 1 : team2TotalSets > team1TotalSets ? 2 : undefined,
+        forfeit: false
+      };
+    }
+
+    return {
+      id: apiMatch.MatchNo?.toString() || '',
+      visNo: apiMatch.MatchNo?.toString() || '',
+      tournamentCode: apiMatch.TournamentNo?.toString() || '',
+      matchNo: apiMatch.MatchNo || 0,
+      status: this.mapAPIStatusToDTO(apiMatch.Status) as any,
+      round: apiMatch.Round || '',
+      court: {
+        courtNumber: apiMatch.Court?.toString() || '1',
+        courtName: apiMatch.Court ? `Court ${apiMatch.Court}` : 'Court 1'
+      },
+      scheduledDateTime: apiMatch.DateTime || apiMatch.UTCDateTime || '',
+      actualStartTime: apiMatch.LocalDateTime,
+      team1: {
+        teamNumber: 1,
+        teamName: apiMatch.TeamAName || 'Team A',
+        player1Name: apiMatch.Player1TeamA || 'Player 1',
+        player2Name: apiMatch.Player2TeamA || 'Player 2',
+        countryCode: apiMatch.TeamACountry || apiMatch.FedTeamA
+      },
+      team2: {
+        teamNumber: 2,
+        teamName: apiMatch.TeamBName || 'Team B',
+        player1Name: apiMatch.Player1TeamB || 'Player 1',
+        player2Name: apiMatch.Player2TeamB || 'Player 2',
+        countryCode: apiMatch.TeamBCountry || apiMatch.FedTeamB
+      },
+      result
+    };
+  }
+
+  /**
+   * Map API status to DTO status format
+   */
+  private mapAPIStatusToDTO(apiStatus: string): string {
+    if (!apiStatus) return 'SCHEDULED';
+    
+    const status = apiStatus.toLowerCase();
+    switch (status) {
+      case 'finished':
+        return 'FINISHED';
+      case 'live':
+      case 'playing':
+      case 'running':
+        return 'LIVE';
+      case 'scheduled':
+      case 'ready':
+        return 'SCHEDULED';
+      default:
+        return 'SCHEDULED';
+    }
   }
 
   /**

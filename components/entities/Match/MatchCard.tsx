@@ -160,17 +160,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       }
     }
     
-    console.log('Duration Debug - No duration found:', {
-      matchId: match.id,
-      resultDuration: match.result?.duration,
-      DurationField: matchWithDuration.Duration,
-      actualStartTime: match.actualStartTime,
-      actualEndTime: match.actualEndTime,
-      DurationSet1: matchWithDuration.DurationSet1,
-      DurationSet2: matchWithDuration.DurationSet2,
-      DurationSet3: matchWithDuration.DurationSet3,
-      calculatedTotal: totalSeconds
-    });
     
     return null;
   };
@@ -183,21 +172,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const round = match.round || rawMatch.Round || rawMatch.RoundDisplayText || rawMatch.RoundName;
     const phase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
     
-    console.log('Round Debug:', {
-      matchId: match.id,
-      round: match.round,
-      rawRound: rawMatch.Round,
-      roundDisplayText: rawMatch.RoundDisplayText,
-      roundName: rawMatch.RoundName,
-      phase: phase,
-      allRawData: {
-        Round: rawMatch.Round,
-        RoundDisplayText: rawMatch.RoundDisplayText,
-        RoundName: rawMatch.RoundName,
-        RoundPhase: rawMatch.RoundPhase,
-        phase: rawMatch.phase
-      }
-    });
     
     // Check for medal matches first (gold/bronze)
     if (round && (round.toLowerCase().includes('gold') || round.toLowerCase().includes('bronze'))) {
@@ -266,15 +240,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   const matchWithResult = match; // Use match as-is for now
   
-  // Debug logging to see what data we have
-  console.log('Match Data Debug:', {
-    matchId: match.id,
-    result: match.result,
-    setScores: match.result?.setScores,
-    duration: match.result?.duration,
-    refereeAssignments: match.refereeAssignments,
-    rawMatch: match
-  });
 
   return (
     <TouchableOpacity 

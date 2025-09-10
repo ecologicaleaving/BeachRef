@@ -407,6 +407,17 @@ export class CacheServiceCompatibility {
   }
 
   /**
+   * Get live score for a match (compatibility method)
+   * This method provides backward compatibility for live score access
+   */
+  static getLiveScore(matchNumber: string): any {
+    // This is a compatibility shim - the actual live score functionality
+    // should be handled by the useLiveScores hook directly
+    // Return null to indicate no live score available from cache service
+    return null;
+  }
+
+  /**
    * Check if using new hook system
    */
   static isUsingNewHooks(): boolean {

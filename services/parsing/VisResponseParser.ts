@@ -110,10 +110,6 @@ export class VisResponseParser {
         }
       }
 
-      // Debug: Log the parsed tournaments to see venue data
-      if (tournaments.length > 0) {
-        console.log('🏐 Parsed tournaments with venue data:', JSON.stringify(tournaments.slice(0, 2), null, 2));
-      }
 
       return tournaments;
       

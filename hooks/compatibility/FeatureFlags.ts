@@ -78,6 +78,13 @@ class FeatureFlagManager {
    */
   private async loadFlags(): Promise<void> {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        // Server-side rendering or Node.js environment - use defaults
+        this.flags = { ...this.defaultFlags };
+        return;
+      }
+
       const storedFlags = await AsyncStorage.getItem('@feature_flags');
       if (storedFlags) {
         this.flags = { ...this.defaultFlags, ...JSON.parse(storedFlags) };
@@ -92,7 +99,6 @@ class FeatureFlagManager {
         this.migrationStatuses = new Map(statusArray);
       }
     } catch (error) {
-      console.warn('Failed to load feature flags, using defaults:', error);
       this.flags = { ...this.defaultFlags };
     }
   }
@@ -151,9 +157,6 @@ class FeatureFlagManager {
     
     await this.saveFlags();
     
-    if (this.getFlag('enableMigrationLogging')) {
-      console.log(`✅ Enabled ${hookType} hook for component: ${component}`);
-    }
   }
 
   /**
@@ -235,13 +238,6 @@ class FeatureFlagManager {
     
     await this.saveFlags();
     
-    if (this.getFlag('enableMigrationLogging')) {
-      console.log(`📊 Performance comparison for ${component}:`, {
-        old: `${oldSystemTime}ms`,
-        new: `${newSystemTime}ms`,
-        improvement: `${improvement.toFixed(1)}%`
-      });
-    }
   }
 
   /**
@@ -321,9 +317,6 @@ class FeatureFlagManager {
     
     await this.setFlag(flagKey, shouldEnable);
     
-    if (this.getFlag('enableMigrationLogging')) {
-      console.log(`🎲 Gradual rollout for ${hookType}: ${shouldEnable ? 'enabled' : 'disabled'} (${percentage}%)`);
-    }
   }
 
   /**

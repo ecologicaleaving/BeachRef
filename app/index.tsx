@@ -16,34 +16,27 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for default tournament and redirect accordingly
-    const checkDefaultTournament = async () => {
+    const checkDefaultTournamentAndRedirect = async () => {
       try {
         const defaultTournament = await DefaultTournamentService.getDefaultTournament();
+        
         if (defaultTournament) {
-          // Redirect directly to the default tournament detail page
-          router.replace({
-            pathname: '/tournament-detail',
-            params: {
-              tournamentData: JSON.stringify({
-                visNo: defaultTournament.visNo,
-                name: defaultTournament.name,
-                title: defaultTournament.name
-              })
-            }
-          });
+          console.log('Default tournament found:', defaultTournament.name);
+          router.replace('/tournament-detail');
         } else {
-          // No default tournament, redirect to tournament selection
+          console.log('No default tournament found, redirecting to tournament selection...');
           router.replace('/tournament-selection');
         }
       } catch (error) {
         console.error('Error checking default tournament:', error);
-        // Fallback to tournament selection if error
         router.replace('/tournament-selection');
       }
     };
     
-    checkDefaultTournament();
+    // Small delay to show loading screen briefly
+    const timer = setTimeout(checkDefaultTournamentAndRedirect, 500);
+    
+    return () => clearTimeout(timer);
   }, [router]);
 
   // handleStartPress removed - no longer needed as we auto-redirect

@@ -214,7 +214,6 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
       syncUnsubscribe.current = syncManager.current.addSyncCallback((taskType) => {
         if (currentConfig.enablePerformanceTracking) {
           // Track successful sync operations
-          console.log(`Sync operation completed: ${taskType}`);
         }
 
         // Update sync status and visual indicators
@@ -332,7 +331,6 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
       // Performance tracking
       if (currentConfig.enablePerformanceTracking) {
-        console.log(`Force sync completed in ${Date.now() - startTime}ms`);
       }
 
       if (currentConfig.enableVisualIndicators) {
@@ -354,7 +352,6 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
       // Performance tracking for errors
       if (currentConfig.enablePerformanceTracking) {
-        console.log(`Force sync failed after ${Date.now() - startTime}ms:`, errorMessage);
       }
 
       if (currentConfig.enableVisualIndicators) {

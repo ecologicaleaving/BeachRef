@@ -170,9 +170,6 @@ export class RefereeAnalyticsExportService {
           throw new Error(`Unsupported export format: ${format}`);
       }
 
-      // Log export performance
-      const exportTime = performance.now() - startTime;
-      console.log(`Export completed: ${format.toUpperCase()} | ${filteredData.length} records | ${Math.round(exportTime)}ms`);
 
       return blob;
     } catch (error) {

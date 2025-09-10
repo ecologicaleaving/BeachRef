@@ -3,7 +3,7 @@ import { BeachMatch } from '../types/match';
 import { RefereeAssignment, RefereeAssignmentStatus, RefereeProfile } from '../types/RefereeAssignments';
 import { VisApiClient } from './api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { TournamentRefereeData, EventReferee, RefereeOfficial, getOfficialDisplayName, isActiveOfficial, OfficialStatus, OfficialType } from '../types/referee-v2';
 
 export class RefereeAssignmentsService {

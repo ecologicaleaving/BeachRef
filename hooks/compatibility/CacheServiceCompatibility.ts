@@ -8,7 +8,8 @@ import { TournamentCore, GenderType } from '../../types/tournament-v2';
 import { BeachMatch } from '../../types/match';
 import { CacheResult, FilterOptions } from '../../types/cache';
 import { TournamentRefereeData } from '../../types/referee-v2';
-import { DualReadService, TournamentDTO, MatchDTO, RefereeDTO } from '../../services/DualReadService';
+import type { TournamentDTO, MatchDTO, RefereeDTO } from '../../services/DualReadService';
+// Import as type only to prevent circular dependency - we'll get instance dynamically
 import { queryClient } from '../../lib/queryClient';
 import { queryPerformanceMonitor } from '../../lib/queryPerformance';
 
@@ -98,7 +99,11 @@ function transformFiltersToNew(filters?: FilterOptions) {
  * Maintains exact same interface while using new DualReadService internally
  */
 export class CacheServiceCompatibility {
-  private static dualReadService = DualReadService.getInstance();
+  // Get DualReadService instance dynamically to prevent circular dependency
+  private static getDualReadService() {
+    const { DualReadService } = require('../../services/DualReadService');
+    return DualReadService.getInstance();
+  }
 
   // Service initialization moved to initialize() method to avoid static block timing issues
   private static initialized = false;
@@ -108,7 +113,7 @@ export class CacheServiceCompatibility {
    */
   private static ensureInitialized(): void {
     if (!this.initialized) {
-      this.dualReadService.configure({
+      CacheServiceCompatibility.getDualReadService().configure({
         readStrategy: 'db_first',
         fallbackEnabled: true,
         enablePerformanceMonitoring: true
@@ -131,7 +136,11 @@ export class CacheServiceCompatibility {
       if (USE_NEW_HOOKS) {
         // Use new hook-based system
         const newFilters = transformFiltersToNew(filters);
-        const result = await this.dualReadService.getTournaments(newFilters);
+        const result = await CacheServiceCompatibility.getDualReadService().getTournaments(newFilters);
+        
+        if (!result) {
+          throw new Error('DualReadService returned undefined result');
+        }
         
         const legacyData = result.data ? 
           result.data.map(transformTournamentToLegacy) : [];
@@ -187,9 +196,13 @@ export class CacheServiceCompatibility {
     try {
       if (USE_NEW_HOOKS) {
         // Use new hook-based system
-        const result = await this.dualReadService.getMatches({
+        const result = await CacheServiceCompatibility.getDualReadService().getMatches({
           tournamentCode: tournamentNo
         });
+        
+        if (!result) {
+          throw new Error('DualReadService returned undefined result for matches');
+        }
         
         const legacyData = result.data ? 
           result.data.map(transformMatchToLegacy) : [];
@@ -245,10 +258,14 @@ export class CacheServiceCompatibility {
     try {
       if (USE_NEW_HOOKS) {
         // Use new hook-based system
-        const result = await this.dualReadService.getReferees({
+        const result = await CacheServiceCompatibility.getDualReadService().getReferees({
           tournamentCodes: [tournamentNo],
           includeAssignments: true
         });
+        
+        if (!result) {
+          throw new Error('DualReadService returned undefined result for referees');
+        }
         
         // Transform to legacy format - take first referee as primary data
         const legacyData = result.data && result.data.length > 0 ? 
@@ -325,7 +342,7 @@ export class CacheServiceCompatibility {
         ['tournaments', 'matches', 'referees'];
       
       for (const type of cacheTypes) {
-        await this.dualReadService.invalidateCache(type as any);
+        await CacheServiceCompatibility.getDualReadService().invalidateCache(type as any);
       }
     } else {
       // Would call original CacheService.clearCache
@@ -343,7 +360,7 @@ export class CacheServiceCompatibility {
   }> {
     if (USE_NEW_HOOKS) {
       // Get performance metrics from DualReadService
-      const performanceMetrics = this.dualReadService.getPerformanceMetrics();
+      const performanceMetrics = CacheServiceCompatibility.getDualReadService().getPerformanceMetrics();
       
       // Calculate aggregated stats
       let totalRequests = 0;
@@ -381,7 +398,7 @@ export class CacheServiceCompatibility {
    */
   static initialize(config?: any): void {
     // Configure DualReadService with provided config
-    this.dualReadService.configure({
+    CacheServiceCompatibility.getDualReadService().configure({
       readStrategy: 'db_first',
       fallbackEnabled: true,
       enablePerformanceMonitoring: true,

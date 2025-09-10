@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { BeachMatch } from '../types/match';
 import { TournamentCore } from '../types/tournament-v2';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from '../services/api/VisApiClient';
-import { CacheService } from '../services/CacheService';
+import { CacheServiceCompatibility as CacheService } from './compatibility/CacheServiceCompatibility';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 /**

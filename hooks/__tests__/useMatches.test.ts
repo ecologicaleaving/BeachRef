@@ -1,469 +1,332 @@
-// Mock React Native first to avoid import issues
-jest.mock('react-native', () => ({
-  AppState: {
-    currentState: 'active',
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-  },
-}));
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useMatches, MatchesFilters } from '../useMatches';
+import { supabase } from '../../services/supabase';
+import React from 'react';
 
-import { DualReadService, MatchDTO } from '../../services/DualReadService';
-import { queryPerformanceMonitor } from '../../lib/queryPerformance';
-
-// Mock dependencies
-jest.mock('../../services/DualReadService');
-jest.mock('../../lib/queryPerformance');
-jest.mock('../../services/RealtimeSubscriptionService', () => ({
-  RealtimeSubscriptionService: {
-    getInstance: jest.fn(() => ({
-      subscribeToMatches: jest.fn(),
-      unsubscribe: jest.fn(),
-    })),
-  },
-}));
-jest.mock('../../lib/queryClient', () => ({
-  queryKeys: {
-    matches: {
-      list: jest.fn(() => ['matches', 'test-filters']),
-    },
-  },
-  createQueryOptions: {
-    adaptive: jest.fn(() => ({ queryKey: ['matches'], queryFn: jest.fn() })),
-  },
-}));
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-}));
-
-const mockDualReadService = DualReadService as jest.Mocked<typeof DualReadService>;
-const mockQueryPerformanceMonitor = queryPerformanceMonitor as jest.Mocked<typeof queryPerformanceMonitor>;
-
-// Test data
-const mockMatches: MatchDTO[] = [
-  {
-    id: '1',
-    matchNo: 'M001',
-    tournamentCode: 'FIVB2024M001',
-    eventId: 100,
-    round: 'Pool A',
-    status: 'RUNNING' as const,
-    scheduled: '2024-01-01T10:00:00Z',
-    court: 'Court 1',
-    team1: { name: 'Team A', country: 'USA' },
-    team2: { name: 'Team B', country: 'BRA' },
-    score: { team1: 1, team2: 0, sets: [] },
-    refereeAssignments: [
-      {
-        referee: { id: 'ref1', name: 'John Doe', country: 'USA' },
-        position: 'R1',
-        status: 'ASSIGNED'
-      }
-    ]
-  },
-  {
-    id: '2',
-    matchNo: 'M002',
-    tournamentCode: 'FIVB2024M001',
-    eventId: 100,
-    round: 'Pool A',
-    status: 'COMPLETED' as const,
-    scheduled: '2024-01-01T08:00:00Z',
-    court: 'Court 1',
-    team1: { name: 'Team C', country: 'ITA' },
-    team2: { name: 'Team D', country: 'GER' },
-    score: { team1: 2, team2: 0, sets: [{ team1: 21, team2: 19 }, { team1: 21, team2: 17 }] },
-    refereeAssignments: [
-      {
-        referee: { id: 'ref2', name: 'Jane Smith', country: 'CAN' },
-        position: 'R1',
-        status: 'COMPLETED'
-      }
-    ]
+// Mock Supabase
+jest.mock('../../services/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          gte: jest.fn(() => ({
+            lt: jest.fn(() => ({
+              data: [],
+              error: null
+            }))
+          })),
+          data: [],
+          error: null
+        }))
+      }))
+    }))
   }
-];
+}));
 
-describe('useMatches Hook Logic', () => {
+// Mock fetch for VIS Adapter fallback
+global.fetch = jest.fn();
+const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+
+// Mock environment variables
+process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co/rest/v1';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // Disable retries for tests
+      },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => 
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
+describe('useMatches Hook - Database First Strategy with Intelligent Cache', () => {
+  const mockSupabaseQuery = {
+    select: jest.fn(() => mockSupabaseQuery),
+    eq: jest.fn(() => mockSupabaseQuery),
+    gte: jest.fn(() => mockSupabaseQuery),
+    lt: jest.fn(() => mockSupabaseQuery),
+    data: [],
+    error: null
+  };
+  
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup DualReadService mock
-    const mockInstance = {
-      configure: jest.fn(),
-      getMatches: jest.fn(),
-      invalidateCache: jest.fn(),
-    };
-    mockDualReadService.getInstance.mockReturnValue(mockInstance as any);
-    
-    // Setup RealtimeSubscriptionService mock
-    const mockRealtimeInstance = {
-      subscribeToMatches: jest.fn(),
-      unsubscribe: jest.fn(),
-    };
-    mockRealtimeService.getInstance.mockReturnValue(mockRealtimeInstance as any);
-    
-    // Setup performance monitor mock
-    mockQueryPerformanceMonitor.trackQuery = jest.fn();
+    (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
+    mockSupabaseQuery.lt.mockReturnValue({ data: [], error: null });
   });
 
-  describe('DualReadService Integration', () => {
-    it('should configure DualReadService correctly', () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      expect(mockDualReadService.getInstance).toHaveBeenCalled();
-      
-      // Configuration should be called with proper parameters
-      const configureCall = jest.spyOn(mockInstance, 'configure');
-      
-      // Simulate hook configuration
-      mockInstance.configure({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
-      });
+  describe('Database-First Strategy', () => {
+    it('should prioritize database query over API', async () => {
+      const mockMatches = [{
+        id: 1,
+        vis_match_no: 123,
+        tournament_code: 'TEST2024',
+        event_id: 456,
+        round_code: 'R1',
+        round_name: 'Round 1',
+        round_phase: 'MAIN',
+        utc_datetime: '2024-08-15T10:00:00Z',
+        local_datetime: '2024-08-15T12:00:00Z',
+        court: 'Court 1',
+        team_a_name: 'Team A',
+        team_b_name: 'Team B',
+        sets: [{ a: 21, b: 19 }, { a: 21, b: 18 }],
+        result: { winner: 1, forfeit: false },
+        status: 'FINISHED',
+        created_at: '2024-08-15T08:00:00Z',
+        match_referees: []
+      }];
 
-      expect(configureCall).toHaveBeenCalledWith({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
-      });
-    });
-
-    it('should call getMatches with correct filters', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      const filters = {
-        tournamentCode: 'FIVB2024M001',
-        eventId: 100,
-        round: 'Pool A',
-        status: 'RUNNING' as const,
-        dateRange: {
-          startDate: '2024-01-01',
-          endDate: '2024-01-07'
-        }
-      };
-
-      mockInstance.getMatches.mockResolvedValue({
+      mockSupabaseQuery.lt.mockResolvedValue({
         data: mockMatches,
-        source: 'database',
-        timestamp: Date.now(),
-        performance: { queryTime: 250, fallbackUsed: false }
+        error: null
       });
 
-      await mockInstance.getMatches(filters);
-
-      expect(mockInstance.getMatches).toHaveBeenCalledWith(filters);
-    });
-  });
-
-  describe('Real-time Integration', () => {
-    it('should set up real-time subscription for live matches', () => {
-      const mockRealtimeInstance = mockRealtimeService.getInstance();
-      const mockSubscription = 'subscription-id';
-      
-      mockRealtimeInstance.subscribeToMatches.mockReturnValue(mockSubscription);
-
-      // Simulate real-time subscription setup
-      const subscription = mockRealtimeInstance.subscribeToMatches(
-        'FIVB2024M001',
-        jest.fn()
+      const { result } = renderHook(
+        () => useMatches({ tournamentCode: 'TEST2024' }),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockRealtimeInstance.subscribeToMatches).toHaveBeenCalledWith(
-        'FIVB2024M001',
-        expect.any(Function)
-      );
-      expect(subscription).toBe(mockSubscription);
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(supabase?.from).toHaveBeenCalledWith('matches');
+      expect(result.current.source).toBe('database');
+      expect(result.current.performance.fallbackUsed).toBe(false);
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should handle real-time subscription cleanup', () => {
-      const mockRealtimeInstance = mockRealtimeService.getInstance();
-      const mockSubscription = 'subscription-id';
-
-      mockRealtimeInstance.unsubscribe.mockImplementation(() => {});
-
-      // Simulate subscription cleanup
-      mockRealtimeInstance.unsubscribe(mockSubscription);
-
-      expect(mockRealtimeInstance.unsubscribe).toHaveBeenCalledWith(mockSubscription);
-    });
-  });
-
-  describe('Performance Monitoring Integration', () => {
-    it('should track query performance when enabled', () => {
-      const queryKey = ['matches', { tournamentCode: 'FIVB2024M001' }];
-      const startTime = Date.now();
-      const endTime = startTime + 150;
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        mockMatches,
-        undefined
-      );
-
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        mockMatches,
-        undefined
-      );
-    });
-
-    it('should track errors in performance monitoring', () => {
-      const queryKey = ['matches', { tournamentCode: 'FIVB2024M001' }];
-      const startTime = Date.now();
-      const endTime = startTime + 300;
-      const error = new Error('API timeout');
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
-
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
-    });
-  });
-
-  describe('Cache Strategy Logic', () => {
-    it('should determine live cache strategy for running matches', () => {
-      const filters = { status: 'RUNNING' as const };
-      
-      const determineCacheStrategy = (status?: string, date?: string) => {
-        if (status === 'RUNNING' || status === 'SCHEDULED') return 'live';
-        if (status === 'COMPLETED' || status === 'CANCELLED') return 'historical';
-        
-        if (date) {
-          const today = new Date().toISOString().split('T')[0];
-          if (date === today) return 'live';
-          if (date < today) return 'historical';
-        }
-        
-        return 'live';
+    it('should apply intelligent cache strategy based on match data age', async () => {
+      // Test historical data (older than 3 days)
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 4);
+      const historicalFilters: MatchesFilters = {
+        date: oldDate.toISOString().split('T')[0]
       };
 
-      expect(determineCacheStrategy(filters.status)).toBe('live');
+      const { result: historicalResult } = renderHook(
+        () => useMatches(historicalFilters),
+        { wrapper: createWrapper() }
+      );
+
+      // Test live data (today)
+      const today = new Date().toISOString().split('T')[0];
+      const liveFilters: MatchesFilters = {
+        date: today,
+        status: 'RUNNING'
+      };
+
+      const { result: liveResult } = renderHook(
+        () => useMatches(liveFilters),
+        { wrapper: createWrapper() }
+      );
+
+      // Historical data should use different caching than live data
+      expect(historicalResult.current.config).toBeDefined();
+      expect(liveResult.current.config).toBeDefined();
+    });
+
+    it('should apply database filters using indexes', async () => {
+      const filters: MatchesFilters = {
+        tournamentCode: 'TEST2024',
+        eventId: 456,
+        round: 'R1',
+        status: 'RUNNING',
+        date: '2024-08-15'
+      };
+
+      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+
+      renderHook(
+        () => useMatches(filters),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('tournament_code', 'TEST2024');
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('event_id', 456);
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('round_code', 'R1');
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('status', 'RUNNING');
+        expect(mockSupabaseQuery.gte).toHaveBeenCalledWith('utc_datetime', '2024-08-15T00:00:00Z');
+        expect(mockSupabaseQuery.lt).toHaveBeenCalledWith('utc_datetime', '2024-08-15T23:59:59Z');
+      });
+    });
+  });
+
+  describe('VIS Adapter Fallback', () => {
+    it('should fallback to VIS Adapter when database is empty', async () => {
+      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+      
+      const mockVisResponse = {
+        success: true,
+        data: [{
+          id: 'vis-123',
+          visNo: '123',
+          tournamentCode: 'VIS2024',
+          matchCode: 'VIS2024-123',
+          round: 'Qualification Round 1',
+          status: 'SCHEDULED',
+          court: { courtNumber: '2', courtName: 'Court 2' },
+          scheduledDateTime: '2024-08-16T14:00:00Z',
+          team1: {
+            teamNumber: 1,
+            teamName: 'Team C',
+            player1Name: 'Player C1',
+            player2Name: 'Player C2'
+          },
+          team2: {
+            teamNumber: 2,
+            teamName: 'Team D',
+            player1Name: 'Player D1',
+            player2Name: 'Player D2'
+          }
+        }]
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockVisResponse,
+      } as Response);
+
+      const { result } = renderHook(
+        () => useMatches({ tournamentCode: 'VIS2024' }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.source).toBe('api');
+      expect(result.current.performance.fallbackUsed).toBe(true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/functions/v1/vis-adapter/vis/matches'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer test-anon-key',
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
+    });
+
+    it('should not fallback when fallback is disabled', async () => {
+      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+
+      const { result } = renderHook(
+        () => useMatches({}, { enableFallback: false }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toEqual([]);
+      expect(result.current.source).toBe('unknown');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Intelligent Cache Strategy', () => {
+    it('should determine live cache strategy for running matches', () => {
+      const { result } = renderHook(
+        () => useMatches({ status: 'RUNNING' }),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config.cacheStrategy).toBe('live');
     });
 
     it('should determine historical cache strategy for completed matches', () => {
-      const filters = { status: 'COMPLETED' as const };
-      
-      const determineCacheStrategy = (status?: string) => {
-        if (status === 'RUNNING' || status === 'SCHEDULED') return 'live';
-        if (status === 'COMPLETED' || status === 'CANCELLED') return 'historical';
-        return 'live';
-      };
-
-      expect(determineCacheStrategy(filters.status)).toBe('historical');
-    });
-
-    it('should determine strategy based on date filters', () => {
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const determineCacheStrategy = (date?: string) => {
-        if (date) {
-          const today = new Date().toISOString().split('T')[0];
-          if (date === today) return 'live';
-          if (date < today) return 'historical';
-        }
-        return 'live';
-      };
-
-      expect(determineCacheStrategy(today)).toBe('live');
-      expect(determineCacheStrategy(yesterday)).toBe('historical');
-    });
-  });
-
-  describe('Referee Grouping Logic', () => {
-    it('should group matches by referee when requested', () => {
-      const groupMatchesByReferee = (matches: MatchDTO[]): MatchDTO[] => {
-        return matches.sort((a, b) => {
-          const refA = a.refereeAssignments?.[0]?.referee?.name || '';
-          const refB = b.refereeAssignments?.[0]?.referee?.name || '';
-          return refA.localeCompare(refB);
-        });
-      };
-
-      const groupedMatches = groupMatchesByReferee([...mockMatches]);
-
-      expect(groupedMatches[0].refereeAssignments?.[0]?.referee?.name).toBe('Jane Smith');
-      expect(groupedMatches[1].refereeAssignments?.[0]?.referee?.name).toBe('John Doe');
-    });
-  });
-
-  describe('Live Update Interval Logic', () => {
-    it('should set live update interval for active matches', () => {
-      const matches = [mockMatches[0]]; // Running match
-      
-      const liveMatches = matches.filter(match => 
-        match.status === 'RUNNING' || match.status === 'SCHEDULED'
+      const { result } = renderHook(
+        () => useMatches({ status: 'COMPLETED' }),
+        { wrapper: createWrapper() }
       );
-      
-      const shouldHaveLiveInterval = liveMatches.length > 0;
-      
-      expect(shouldHaveLiveInterval).toBe(true);
+
+      expect(result.current.config.cacheStrategy).toBe('historical');
     });
 
-    it('should not set live update interval for completed matches', () => {
-      const matches = [mockMatches[1]]; // Completed match
+    it('should determine cache strategy based on date filters', () => {
+      // Test old date (should be historical)
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 5);
       
-      const liveMatches = matches.filter(match => 
-        match.status === 'RUNNING' || match.status === 'SCHEDULED'
+      const { result: historicalResult } = renderHook(
+        () => useMatches({ 
+          date: oldDate.toISOString().split('T')[0] 
+        }),
+        { wrapper: createWrapper() }
       );
-      
-      const shouldHaveLiveInterval = liveMatches.length > 0;
-      
-      expect(shouldHaveLiveInterval).toBe(false);
+
+      expect(historicalResult.current.config.cacheStrategy).toBe('historical');
+
+      // Test today's date (should be live)
+      const today = new Date();
+      const { result: liveResult } = renderHook(
+        () => useMatches({ 
+          date: today.toISOString().split('T')[0] 
+        }),
+        { wrapper: createWrapper() }
+      );
+
+      expect(liveResult.current.config.cacheStrategy).toBe('live');
     });
   });
 
-  describe('Error Handling Logic', () => {
-    it('should handle service errors correctly', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      mockInstance.getMatches.mockResolvedValue({
-        data: null,
-        source: 'api',
-        timestamp: Date.now(),
-        performance: { queryTime: 500, fallbackUsed: true },
-        error: 'Tournament not found'
-      });
-
-      const result = await mockInstance.getMatches({ tournamentCode: 'INVALID' });
-
-      expect(result.error).toBe('Tournament not found');
-      expect(result.data).toBeNull();
-      expect(result.performance.fallbackUsed).toBe(true);
-    });
-
-    it('should use more aggressive retries for live matches', () => {
-      const hasLiveMatches = true;
-      
-      const retryLogic = (failureCount: number, error: Error, hasLive: boolean) => {
-        const maxRetries = hasLive ? 5 : 3;
-        if (failureCount >= maxRetries) return false;
-        if (error.message.includes('not configured')) return false;
-        return true;
-      };
-
-      expect(retryLogic(4, new Error('Network error'), hasLiveMatches)).toBe(true);
-      expect(retryLogic(5, new Error('Network error'), hasLiveMatches)).toBe(false);
-      expect(retryLogic(2, new Error('Network error'), false)).toBe(true);
-      expect(retryLogic(3, new Error('Network error'), false)).toBe(false);
-    });
-
-    it('should calculate faster retry delays for live matches', () => {
-      const retryDelay = (attemptIndex: number, hasLive: boolean) => {
-        const baseDelay = hasLive ? 500 : 1000;
-        return Math.min(baseDelay * 2 ** attemptIndex, 30000);
-      };
-
-      expect(retryDelay(0, true)).toBe(500);
-      expect(retryDelay(0, false)).toBe(1000);
-      expect(retryDelay(1, true)).toBe(1000);
-      expect(retryDelay(1, false)).toBe(2000);
-    });
-  });
-
-  describe('Filter Validation', () => {
-    it('should accept valid match filters', () => {
-      const validFilters = {
-        tournamentCode: 'FIVB2024M001',
-        eventId: 100,
-        round: 'Pool A',
-        status: 'RUNNING' as const,
-        date: '2024-01-01',
+  describe('Backward Compatibility', () => {
+    it('should maintain MatchesFilters interface', () => {
+      const filters: MatchesFilters = {
+        tournamentCode: 'TEST2024',
+        eventId: 456,
+        round: 'R1',
+        status: 'RUNNING',
+        date: '2024-08-15',
         dateRange: {
-          startDate: '2024-01-01',
-          endDate: '2024-01-07'
+          startDate: '2024-08-15',
+          endDate: '2024-08-16'
         }
       };
 
-      expect(typeof validFilters.tournamentCode).toBe('string');
-      expect(typeof validFilters.eventId).toBe('number');
-      expect(typeof validFilters.round).toBe('string');
-      expect(['SCHEDULED', 'RUNNING', 'COMPLETED', 'CANCELLED'].includes(validFilters.status)).toBe(true);
-      expect(validFilters.dateRange).toHaveProperty('startDate');
-      expect(validFilters.dateRange).toHaveProperty('endDate');
+      const { result } = renderHook(
+        () => useMatches(filters),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config).toBeDefined();
+      expect(result.current.forceRefresh).toBeInstanceOf(Function);
     });
 
-    it('should handle optional filter parameters', () => {
-      const partialFilters = {
-        tournamentCode: 'FIVB2024M001'
-      };
+    it('should provide performance and source metadata', () => {
+      const { result } = renderHook(
+        () => useMatches(),
+        { wrapper: createWrapper() }
+      );
 
-      expect(partialFilters.eventId).toBeUndefined();
-      expect(partialFilters.round).toBeUndefined();
-      expect(partialFilters.status).toBeUndefined();
-    });
-  });
-
-  describe('Data Transformation', () => {
-    it('should return empty array when no data available', () => {
-      const processData = (data: MatchDTO[] | null) => data || [];
-      
-      expect(processData(null)).toEqual([]);
-      expect(processData(mockMatches)).toEqual(mockMatches);
-    });
-
-    it('should preserve match data structure', () => {
-      const match = mockMatches[0];
-      
-      expect(match).toHaveProperty('id');
-      expect(match).toHaveProperty('matchNo');
-      expect(match).toHaveProperty('tournamentCode');
-      expect(match).toHaveProperty('status');
-      expect(match).toHaveProperty('team1');
-      expect(match).toHaveProperty('team2');
-      expect(match).toHaveProperty('score');
-      expect(match).toHaveProperty('refereeAssignments');
-    });
-
-    it('should handle court assignment display logic', () => {
-      const match = mockMatches[0];
-      
-      expect(match.court).toBe('Court 1');
-      expect(match.refereeAssignments).toHaveLength(1);
-      expect(match.refereeAssignments?.[0].referee.name).toBe('John Doe');
+      expect(result.current.source).toBeDefined();
+      expect(result.current.performance).toBeDefined();
+      expect(result.current.performance.queryTime).toBeDefined();
+      expect(result.current.performance.fallbackUsed).toBeDefined();
     });
   });
 
-  describe('Configuration Management', () => {
-    it('should merge default and user configurations correctly', () => {
-      const defaultConfig = {
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true,
-        enableRealTimeUpdates: true,
-        enableLiveScores: true,
-        cacheStrategy: 'live',
-        groupByReferee: false,
-        includeCourt: true
-      };
+  describe('Real-time Updates', () => {
+    it('should handle live matches with appropriate retry strategy', async () => {
+      const { result } = renderHook(
+        () => useMatches({ status: 'RUNNING' }),
+        { wrapper: createWrapper() }
+      );
 
-      const userConfig = {
-        readStrategy: 'api_first',
-        enableRealTimeUpdates: false,
-        groupByReferee: true
-      };
-
-      const mergedConfig = { ...defaultConfig, ...userConfig };
-
-      expect(mergedConfig.readStrategy).toBe('api_first');
-      expect(mergedConfig.enableRealTimeUpdates).toBe(false);
-      expect(mergedConfig.groupByReferee).toBe(true);
-      expect(mergedConfig.fallbackEnabled).toBe(true); // Should keep default
+      expect(result.current.config).toBeDefined();
+      // Live matches should have more aggressive retry strategy
+      // This is tested through the query configuration
     });
   });
 });

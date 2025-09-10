@@ -1,589 +1,533 @@
-import { queryPerformanceMonitor } from '../../lib/queryPerformance';
-import { FilterOptions } from '../../types/cache';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useOfflineSync, OfflineSyncConfig } from '../useOfflineSync';
+import { NetworkMonitor } from '../../services/NetworkMonitor';
+import { SyncManager } from '../../services/SyncManager';
+import { supabase } from '../../services/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
 
 // Mock dependencies
 jest.mock('../../services/NetworkMonitor');
 jest.mock('../../services/SyncManager');
-jest.mock('../../lib/queryPerformance');
-jest.mock('../../lib/queryClient', () => ({
-  queryClient: {
-    invalidateQueries: jest.fn(),
-  },
-}));
+jest.mock('../../services/supabase');
+jest.mock('@react-native-async-storage/async-storage');
 
-// Mock NetworkMonitor without importing it
+// Mock timers
+jest.useFakeTimers();
+
 const mockNetworkMonitor = {
-  getInstance: jest.fn(),
+  getInstance: jest.fn(() => mockNetworkMonitor),
   isConnected: true,
-  addListener: jest.fn(),
-  removeListener: jest.fn(),
+  addListener: jest.fn(() => jest.fn()),
   getNetworkState: jest.fn(),
-  getConnectionQuality: jest.fn(),
-  checkReachability: jest.fn(),
+  getConnectionQuality: jest.fn(() => 'good'),
+  checkReachability: jest.fn(() => Promise.resolve(true)),
 };
 
-// Mock SyncManager without importing it  
 const mockSyncManager = {
-  getInstance: jest.fn(),
+  getInstance: jest.fn(() => mockSyncManager),
   addSyncTask: jest.fn(),
-  addSyncCallback: jest.fn(),
-  getSyncStatus: jest.fn(),
+  clearSyncQueue: jest.fn(),
   forceSyncAll: jest.fn(),
   resumeSync: jest.fn(),
-  clearSyncQueue: jest.fn(),
+  getSyncStatus: jest.fn(() => ({
+    isProcessing: false,
+    queueLength: 0,
+    lastSyncAttempt: Date.now(),
+    networkConnected: true
+  })),
+  addSyncCallback: jest.fn(() => jest.fn()),
 };
 
-const mockQueryPerformanceMonitor = queryPerformanceMonitor as jest.Mocked<typeof queryPerformanceMonitor>;
-
-// Test data
-const mockSyncStatus = {
-  queueLength: 0,
-  isProcessing: false,
-  lastSyncAttempt: Date.now() - 60000,
-  networkConnected: true,
+const mockSupabase = {
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        data: [],
+        error: null
+      })),
+      in: jest.fn(() => ({
+        data: [],
+        error: null
+      }))
+    })),
+    update: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        data: null,
+        error: null
+      }))
+    }))
+  }))
 };
 
-const mockNetworkState = {
-  isConnected: true,
-  type: 'wifi',
-  isInternetReachable: true,
+const mockAsyncStorage = {
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
 };
 
-describe('useOfflineSync Hook Logic', () => {
+// Setup mocks
+(NetworkMonitor as jest.Mocked<typeof NetworkMonitor>).getInstance = mockNetworkMonitor.getInstance;
+(SyncManager as jest.Mocked<typeof SyncManager>).getInstance = mockSyncManager.getInstance;
+(supabase as any) = mockSupabase;
+(AsyncStorage as jest.Mocked<typeof AsyncStorage>).setItem = mockAsyncStorage.setItem;
+(AsyncStorage as jest.Mocked<typeof AsyncStorage>).getItem = mockAsyncStorage.getItem;
+(AsyncStorage as jest.Mocked<typeof AsyncStorage>).removeItem = mockAsyncStorage.removeItem;
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => 
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
+describe('useOfflineSync Hook - Enhanced Queue Management', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup NetworkMonitor mock
-    const mockNetworkInstance = {
+    mockNetworkMonitor.getNetworkState.mockResolvedValue({
       isConnected: true,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      getNetworkState: jest.fn(),
-      getConnectionQuality: jest.fn(),
-      checkReachability: jest.fn(),
-    };
-    mockNetworkMonitor.getInstance.mockReturnValue(mockNetworkInstance);
-    
-    // Setup SyncManager mock
-    const mockSyncInstance = {
-      addSyncTask: jest.fn(),
-      addSyncCallback: jest.fn(),
-      getSyncStatus: jest.fn(),
-      forceSyncAll: jest.fn(),
-      resumeSync: jest.fn(),
-      clearSyncQueue: jest.fn(),
-    };
-    mockSyncManager.getInstance.mockReturnValue(mockSyncInstance);
-    
-    // Setup default return values
-    mockNetworkInstance.getNetworkState.mockResolvedValue(mockNetworkState);
-    mockNetworkInstance.getConnectionQuality.mockReturnValue('good');
-    mockNetworkInstance.checkReachability.mockResolvedValue(true);
-    mockSyncInstance.getSyncStatus.mockReturnValue(mockSyncStatus);
-    
-    // Setup performance monitor mock
-    mockQueryPerformanceMonitor.trackQuery = jest.fn();
-  });
-
-  describe('NetworkMonitor Integration', () => {
-    it('should integrate with NetworkMonitor for connectivity status', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      expect(mockNetworkMonitor.getInstance).toHaveBeenCalled();
-      expect(mockNetworkInstance.addListener).toBeDefined();
-      expect(mockNetworkInstance.getNetworkState).toBeDefined();
-      expect(mockNetworkInstance.getConnectionQuality).toBeDefined();
-    });
-
-    it('should handle network state changes', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      // Test that the addListener method can be called with a function
-      const mockCallback = jest.fn();
-      const unsubscribe = mockNetworkInstance.addListener(mockCallback);
-      
-      // Simulate network state change by calling the callback manually
-      mockCallback(false); // Going offline
-      mockCallback(true);  // Going online
-      
-      expect(mockNetworkInstance.addListener).toHaveBeenCalledWith(mockCallback);
-      expect(mockCallback).toHaveBeenCalledWith(false);
-      expect(mockCallback).toHaveBeenCalledWith(true);
-    });
-
-    it('should get detailed network information', async () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      const networkState = await mockNetworkInstance.getNetworkState();
-      
-      expect(mockNetworkInstance.getNetworkState).toHaveBeenCalled();
-      expect(networkState).toEqual(mockNetworkState);
-    });
-
-    it('should check network reachability', async () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      mockNetworkInstance.checkReachability.mockResolvedValue(true);
-      const isReachable = await mockNetworkInstance.checkReachability();
-      
-      expect(mockNetworkInstance.checkReachability).toHaveBeenCalled();
-      expect(isReachable).toBe(true);
-    });
-
-    it('should get connection quality indicator', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      mockNetworkInstance.getConnectionQuality.mockReturnValue('excellent');
-      const quality = mockNetworkInstance.getConnectionQuality();
-      
-      expect(quality).toBe('excellent');
+      isInternetReachable: true
     });
   });
 
-  describe('SyncManager Integration', () => {
-    it('should integrate with SyncManager for queue management', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      expect(mockSyncManager.getInstance).toHaveBeenCalled();
-      expect(mockSyncInstance.addSyncTask).toBeDefined();
-      expect(mockSyncInstance.getSyncStatus).toBeDefined();
-      expect(mockSyncInstance.addSyncCallback).toBeDefined();
-    });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+  });
 
-    it('should add sync tasks to queue', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const filters: FilterOptions = { season: 2024, gender: 'M' };
-      mockSyncInstance.addSyncTask('tournaments', filters, undefined, 3);
-      
-      expect(mockSyncInstance.addSyncTask).toHaveBeenCalledWith(
-        'tournaments',
-        filters,
-        undefined,
-        3
+  describe('Initialization and Configuration', () => {
+    it('should initialize with default configuration', () => {
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
       );
+
+      expect(result.current.config.enableAutoSync).toBe(true);
+      expect(result.current.config.syncIntervalMs).toBe(5 * 60 * 1000);
+      expect(result.current.config.persistOfflineActions).toBe(true);
+      expect(result.current.syncStatus.isOnline).toBe(true);
+      expect(result.current.syncStatus.conflictCount).toBe(0);
     });
 
-    it('should handle sync completion callbacks', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      const mockCallback = jest.fn();
-      
-      mockSyncInstance.addSyncCallback.mockImplementation((callback) => {
-        // Simulate sync completion
-        callback('tournaments');
-        return jest.fn(); // Return unsubscribe function
+    it('should merge custom configuration', () => {
+      const config: OfflineSyncConfig = {
+        enableAutoSync: false,
+        syncIntervalMs: 10000,
+        maxRetries: 5,
+        enableVisualIndicators: false
+      };
+
+      const { result } = renderHook(
+        () => useOfflineSync(config),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config.enableAutoSync).toBe(false);
+      expect(result.current.config.syncIntervalMs).toBe(10000);
+      expect(result.current.config.maxRetries).toBe(5);
+      expect(result.current.config.enableVisualIndicators).toBe(false);
+    });
+
+    it('should load offline queue on initialization', async () => {
+      mockAsyncStorage.getItem.mockResolvedValueOnce(JSON.stringify({
+        queueLength: 3,
+        timestamp: Date.now(),
+        isProcessing: false
+      }));
+
+      const { result } = renderHook(
+        () => useOfflineSync({ persistOfflineActions: true }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('offline_sync_queue');
+      });
+    });
+  });
+
+  describe('Network Status Management', () => {
+    it('should handle network state changes', async () => {
+      let networkCallback: (isOnline: boolean) => void = () => {};
+      mockNetworkMonitor.addListener.mockImplementation((callback) => {
+        networkCallback = callback;
+        return jest.fn();
       });
 
-      const unsubscribe = mockSyncInstance.addSyncCallback(mockCallback);
-      
-      expect(mockSyncInstance.addSyncCallback).toHaveBeenCalledWith(expect.any(Function));
-      expect(typeof unsubscribe).toBe('function');
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
+      );
+
+      // Simulate going offline
+      act(() => {
+        networkCallback(false);
+      });
+
+      expect(result.current.showOfflineIndicator).toBe(true);
+      expect(result.current.syncMessage).toBe('Working offline');
+
+      // Simulate coming back online
+      act(() => {
+        networkCallback(true);
+      });
+
+      await waitFor(() => {
+        expect(result.current.syncMessage).toBe('Connection restored - syncing data...');
+      });
     });
 
-    it('should get sync status information', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const status = mockSyncInstance.getSyncStatus();
-      
-      expect(mockSyncInstance.getSyncStatus).toHaveBeenCalled();
-      expect(status).toEqual(mockSyncStatus);
-    });
+    it('should refresh network status', async () => {
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
 
-    it('should force sync all data', async () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const mockResult = {
-        tournaments: true,
-        matches: ['FIVB2024M001'],
-      };
-      
-      mockSyncInstance.forceSyncAll.mockResolvedValue(mockResult);
-      const result = await mockSyncInstance.forceSyncAll();
-      
-      expect(mockSyncInstance.forceSyncAll).toHaveBeenCalled();
-      expect(result).toEqual(mockResult);
-    });
+      await act(async () => {
+        await result.current.actions.refreshNetworkStatus();
+      });
 
-    it('should resume sync operations', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      mockSyncInstance.resumeSync();
-      
-      expect(mockSyncInstance.resumeSync).toHaveBeenCalled();
+      expect(mockNetworkMonitor.checkReachability).toHaveBeenCalled();
+      expect(mockNetworkMonitor.getConnectionQuality).toHaveBeenCalled();
+    });
+  });
+
+  describe('Sync Queue Management', () => {
+    it('should queue sync tasks', async () => {
+      const { result } = renderHook(
+        () => useOfflineSync({ persistOfflineActions: true }),
+        { wrapper: createWrapper() }
+      );
+
+      act(() => {
+        result.current.actions.queueSync('tournaments', { season: 2024 });
+      });
+
+      expect(mockSyncManager.addSyncTask).toHaveBeenCalledWith(
+        'tournaments',
+        { season: 2024 },
+        undefined,
+        3 // default maxRetries
+      );
+      expect(mockAsyncStorage.setItem).toHaveBeenCalled();
     });
 
     it('should clear sync queue', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      mockSyncInstance.clearSyncQueue();
-      
-      expect(mockSyncInstance.clearSyncQueue).toHaveBeenCalled();
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
+      );
+
+      act(() => {
+        result.current.actions.clearSyncQueue();
+      });
+
+      expect(mockSyncManager.clearSyncQueue).toHaveBeenCalled();
+      expect(result.current.syncMessage).toBe('Sync queue cleared');
+    });
+
+    it('should handle force sync', async () => {
+      mockSyncManager.forceSyncAll.mockResolvedValue({ success: true });
+
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        await result.current.actions.forceSync();
+      });
+
+      expect(mockSyncManager.forceSyncAll).toHaveBeenCalled();
+      expect(result.current.syncMessage).toBe('Sync completed successfully');
+    });
+
+    it('should handle force sync errors', async () => {
+      const error = new Error('Sync failed');
+      mockSyncManager.forceSyncAll.mockRejectedValue(error);
+
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        try {
+          await result.current.actions.forceSync();
+        } catch (e) {
+          // Expected to throw
+        }
+      });
+
+      expect(result.current.syncStatus.syncErrors).toContain('Sync failed');
+      expect(result.current.syncMessage).toBe('Sync failed: Sync failed');
     });
   });
 
-  describe('Performance Monitoring Integration', () => {
-    it('should track sync performance when enabled', () => {
-      const queryKey = ['offline-sync', 'tournaments'];
-      const startTime = Date.now();
-      const endTime = startTime + 1500;
-      const result = { taskType: 'tournaments', success: true };
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        result,
-        undefined
+  describe('Conflict Resolution', () => {
+    it('should resolve sync conflicts', async () => {
+      const mockConflicts = [
+        { id: 1, table_name: 'tournaments', has_conflicts: true },
+        { id: 2, table_name: 'matches', has_conflicts: true }
+      ];
+
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            data: mockConflicts,
+            error: null
+          }))
+        })),
+        update: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            data: null,
+            error: null
+          }))
+        }))
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        result,
-        undefined
-      );
+      await act(async () => {
+        await result.current.actions.resolveConflicts();
+      });
+
+      expect(result.current.syncStatus.conflictCount).toBe(0);
+      expect(result.current.syncMessage).toBe('Resolved 2 sync conflicts');
     });
 
-    it('should track sync errors in performance monitoring', () => {
-      const queryKey = ['offline-sync', 'force-sync'];
-      const startTime = Date.now();
-      const endTime = startTime + 2000;
-      const error = new Error('Network timeout');
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
+    it('should handle conflict resolution errors', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            data: null,
+            error: { message: 'Database error' }
+          }))
+        }))
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
+      await act(async () => {
+        try {
+          await result.current.actions.resolveConflicts();
+        } catch (e) {
+          // Expected to throw
+        }
+      });
+
+      expect(result.current.syncStatus.syncErrors).toContain('Database error');
     });
   });
 
-  describe('Sync Status Logic', () => {
-    it('should calculate correct sync status from services', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      const expectedStatus = {
-        isOnline: true,
-        isSyncing: false,
-        pendingTasks: 0,
-        connectionQuality: 'good',
-        lastSyncTime: mockSyncStatus.lastSyncAttempt,
-      };
-      
-      mockSyncInstance.getSyncStatus.mockReturnValue(mockSyncStatus);
-      mockNetworkInstance.getConnectionQuality.mockReturnValue('good');
-      
-      const syncStatus = mockSyncInstance.getSyncStatus();
-      const quality = mockNetworkInstance.getConnectionQuality();
-      
-      expect(syncStatus.isProcessing).toBe(expectedStatus.isSyncing);
-      expect(syncStatus.queueLength).toBe(expectedStatus.pendingTasks);
-      expect(syncStatus.networkConnected).toBe(expectedStatus.isOnline);
-      expect(quality).toBe(expectedStatus.connectionQuality);
+  describe('Data Freshness Monitoring', () => {
+    it('should check data freshness', async () => {
+      const mockSyncStatuses = [
+        { table_name: 'tournaments', last_sync_at: '2024-01-01T10:00:00Z' },
+        { table_name: 'matches', last_sync_at: '2024-01-01T11:00:00Z' },
+        { table_name: 'referees', last_sync_at: '2024-01-01T12:00:00Z' }
+      ];
+
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          in: jest.fn(() => ({
+            data: mockSyncStatuses,
+            error: null
+          }))
+        }))
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        await result.current.actions.checkDataFreshness();
+      });
+
+      expect(result.current.syncStatus.dataFreshness).toEqual({
+        tournaments: '2024-01-01T10:00:00Z',
+        matches: '2024-01-01T11:00:00Z',
+        referees: '2024-01-01T12:00:00Z'
+      });
     });
 
-    it('should handle sync progress indicators', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const syncStatusWithProgress = {
-        ...mockSyncStatus,
+    it('should handle data freshness check errors gracefully', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          in: jest.fn(() => ({
+            data: null,
+            error: { message: 'Network error' }
+          }))
+        }))
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        await result.current.actions.checkDataFreshness();
+      });
+
+      // Should not throw error, but log it
+      expect(result.current.syncStatus.dataFreshness).toBeDefined();
+    });
+  });
+
+  describe('Offline Queue Persistence', () => {
+    it('should persist offline queue', async () => {
+      mockSyncManager.getSyncStatus.mockReturnValue({
         isProcessing: true,
+        queueLength: 5,
+        lastSyncAttempt: Date.now(),
+        networkConnected: false
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync({ persistOfflineActions: true }),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        await result.current.actions.persistOfflineQueue();
+      });
+
+      expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
+        'offline_sync_queue',
+        expect.stringContaining('"queueLength":5')
+      );
+    });
+
+    it('should load offline queue from storage', async () => {
+      const mockQueueData = {
         queueLength: 3,
+        timestamp: Date.now(),
+        isProcessing: false
       };
-      
-      mockSyncInstance.getSyncStatus.mockReturnValue(syncStatusWithProgress);
-      const status = mockSyncInstance.getSyncStatus();
-      
-      expect(status.isProcessing).toBe(true);
-      expect(status.queueLength).toBe(3);
-    });
 
-    it('should track connection quality changes', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      const qualityStates = ['excellent', 'good', 'poor', 'offline'] as const;
-      
-      qualityStates.forEach(quality => {
-        mockNetworkInstance.getConnectionQuality.mockReturnValue(quality);
-        const currentQuality = mockNetworkInstance.getConnectionQuality();
-        expect(currentQuality).toBe(quality);
-      });
-    });
-  });
+      mockAsyncStorage.getItem.mockResolvedValue(JSON.stringify(mockQueueData));
 
-  describe('Offline/Online State Transitions', () => {
-    it('should handle offline to online transition', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      // Test that network listener can handle state transitions
-      const mockCallback = jest.fn();
-      mockNetworkInstance.addListener(mockCallback);
-
-      // Simulate going offline then online by calling the callback manually
-      mockCallback(false); // Offline
-      mockCallback(true);  // Online - should trigger sync resume
-
-      expect(mockNetworkInstance.addListener).toHaveBeenCalledWith(mockCallback);
-      expect(mockCallback).toHaveBeenCalledWith(false);
-      expect(mockCallback).toHaveBeenCalledWith(true);
-      
-      // In the real hook, when going online, sync resume would be triggered
-      // We can verify this indirectly by ensuring the methods are available
-      expect(mockSyncInstance.resumeSync).toBeDefined();
-    });
-
-    it('should queue sync tasks when offline', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      // Simulate offline state
-      mockNetworkInstance.isConnected = false;
-      
-      // Add sync task while offline
-      const filters: FilterOptions = { season: 2024 };
-      mockSyncInstance.addSyncTask('tournaments', filters);
-      
-      expect(mockSyncInstance.addSyncTask).toHaveBeenCalledWith(
-        'tournaments',
-        filters
+      const { result } = renderHook(
+        () => useOfflineSync({ persistOfflineActions: true }),
+        { wrapper: createWrapper() }
       );
-    });
 
-    it('should handle sync resumption on reconnection', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      // Simulate network reconnection triggering sync resume
-      mockSyncInstance.resumeSync();
-      
-      expect(mockSyncInstance.resumeSync).toHaveBeenCalled();
-    });
-  });
-
-  describe('Visual Indicator Logic', () => {
-    it('should determine when to show offline indicator', () => {
-      const isOnline = false;
-      const shouldShowOfflineIndicator = !isOnline;
-      
-      expect(shouldShowOfflineIndicator).toBe(true);
-    });
-
-    it('should determine when to show sync indicator', () => {
-      const isSyncing = true;
-      const shouldShowSyncIndicator = isSyncing;
-      
-      expect(shouldShowSyncIndicator).toBe(true);
-    });
-
-    it('should generate appropriate sync messages', () => {
-      const generateSyncMessage = (isOnline: boolean, isSyncing: boolean, taskType?: string) => {
-        if (!isOnline) return 'Working offline';
-        if (isSyncing && taskType) return `${taskType} sync in progress`;
-        if (isOnline && !isSyncing) return 'Connection restored - syncing data...';
-        return null;
-      };
-
-      expect(generateSyncMessage(false, false)).toBe('Working offline');
-      expect(generateSyncMessage(true, true, 'tournaments')).toBe('tournaments sync in progress');
-      expect(generateSyncMessage(true, false)).toBe('Connection restored - syncing data...');
-    });
-  });
-
-  describe('Sync Actions Logic', () => {
-    it('should handle force sync action', async () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const mockResult = {
-        tournaments: true,
-        matches: ['FIVB2024M001', 'FIVB2024W001'],
-      };
-      
-      mockSyncInstance.forceSyncAll.mockResolvedValue(mockResult);
-      
-      // Simulate force sync action
-      const result = await mockSyncInstance.forceSyncAll();
-      
-      expect(mockSyncInstance.forceSyncAll).toHaveBeenCalled();
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should handle queue sync action', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      // Simulate queueing different types of sync tasks
-      const tournamentFilters: FilterOptions = { season: 2024, gender: 'M' };
-      mockSyncInstance.addSyncTask('tournaments', tournamentFilters);
-      mockSyncInstance.addSyncTask('matches', undefined, 'FIVB2024M001');
-      
-      expect(mockSyncInstance.addSyncTask).toHaveBeenCalledWith(
-        'tournaments',
-        tournamentFilters
-      );
-      expect(mockSyncInstance.addSyncTask).toHaveBeenCalledWith(
-        'matches',
-        undefined,
-        'FIVB2024M001'
-      );
-    });
-
-    it('should handle clear sync queue action', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      mockSyncInstance.clearSyncQueue();
-      
-      expect(mockSyncInstance.clearSyncQueue).toHaveBeenCalled();
-    });
-
-    it('should handle retry failed tasks action', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      // Simulate retry action
-      mockSyncInstance.resumeSync();
-      
-      expect(mockSyncInstance.resumeSync).toHaveBeenCalled();
-    });
-
-    it('should handle network status refresh action', async () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      await mockNetworkInstance.getNetworkState();
-      await mockNetworkInstance.checkReachability();
-      
-      expect(mockNetworkInstance.getNetworkState).toHaveBeenCalled();
-      expect(mockNetworkInstance.checkReachability).toHaveBeenCalled();
-    });
-  });
-
-  describe('Error Handling Logic', () => {
-    it('should handle sync errors correctly', async () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      const syncError = new Error('Sync service unavailable');
-      mockSyncInstance.forceSyncAll.mockRejectedValue(syncError);
-      
-      try {
-        await mockSyncInstance.forceSyncAll();
-      } catch (error) {
-        expect(error).toBe(syncError);
-      }
-      
-      expect(mockSyncInstance.forceSyncAll).toHaveBeenCalled();
-    });
-
-    it('should handle network errors gracefully', async () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      const networkError = new Error('Network unreachable');
-      mockNetworkInstance.checkReachability.mockRejectedValue(networkError);
-      
-      try {
-        await mockNetworkInstance.checkReachability();
-      } catch (error) {
-        expect(error).toBe(networkError);
-      }
-    });
-
-    it('should prevent sync operations when offline', () => {
-      const mockNetworkInstance = mockNetworkMonitor.getInstance();
-      
-      mockNetworkInstance.isConnected = false;
-      
-      const canSync = mockNetworkInstance.isConnected;
-      expect(canSync).toBe(false);
-      
-      if (!canSync) {
-        const error = new Error('Cannot sync while offline');
-        expect(error.message).toBe('Cannot sync while offline');
-      }
-    });
-  });
-
-  describe('Configuration Management', () => {
-    it('should merge default and user configurations correctly', () => {
-      const defaultConfig = {
-        enableAutoSync: true,
-        syncIntervalMs: 5 * 60 * 1000,
-        maxRetries: 3,
-        enablePerformanceTracking: true,
-        enableVisualIndicators: true,
-        syncOnReconnect: true,
-        persistOfflineActions: true,
-      };
-
-      const userConfig = {
-        enableAutoSync: false,
-        syncIntervalMs: 10 * 60 * 1000,
-        maxRetries: 5,
-      };
-
-      const mergedConfig = { ...defaultConfig, ...userConfig };
-
-      expect(mergedConfig.enableAutoSync).toBe(false);
-      expect(mergedConfig.syncIntervalMs).toBe(10 * 60 * 1000);
-      expect(mergedConfig.maxRetries).toBe(5);
-      expect(mergedConfig.enablePerformanceTracking).toBe(true); // Should keep default
-    });
-
-    it('should handle sync-specific configuration options', () => {
-      const syncConfig = {
-        enableAutoSync: true,
-        enableVisualIndicators: true,
-        syncOnReconnect: true,
-        persistOfflineActions: true,
-      };
-
-      expect(typeof syncConfig.enableAutoSync).toBe('boolean');
-      expect(typeof syncConfig.enableVisualIndicators).toBe('boolean');
-      expect(typeof syncConfig.syncOnReconnect).toBe('boolean');
-      expect(typeof syncConfig.persistOfflineActions).toBe('boolean');
-    });
-  });
-
-  describe('Data Persistence Logic', () => {
-    it('should handle offline action persistence', () => {
-      const offlineActions = [
-        { type: 'tournaments', filters: { season: 2024 }, timestamp: Date.now() },
-        { type: 'matches', tournamentNo: 'FIVB2024M001', timestamp: Date.now() },
-      ];
-
-      // Simulate storing offline actions
-      const persistedActions = [...offlineActions];
-      
-      expect(persistedActions).toHaveLength(2);
-      expect(persistedActions[0].type).toBe('tournaments');
-      expect(persistedActions[1].type).toBe('matches');
-    });
-
-    it('should handle sync queue restoration', () => {
-      const mockSyncInstance = mockSyncManager.getInstance();
-      
-      // Simulate restoring sync tasks from persistence
-      const restoredTasks = [
-        { type: 'tournaments', filters: { season: 2024 } },
-        { type: 'matches', tournamentNo: 'FIVB2024M001' },
-      ];
-
-      restoredTasks.forEach(task => {
-        mockSyncInstance.addSyncTask(
-          task.type as 'tournaments' | 'matches',
-          'filters' in task ? task.filters : undefined,
-          'tournamentNo' in task ? task.tournamentNo : undefined
-        );
+      await act(async () => {
+        await result.current.actions.loadOfflineQueue();
       });
 
-      expect(mockSyncInstance.addSyncTask).toHaveBeenCalledTimes(2);
+      expect(mockAsyncStorage.getItem).toHaveBeenCalledWith('offline_sync_queue');
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('offline_sync_queue');
+      expect(result.current.syncStatus.pendingTasks).toBe(3);
+    });
+
+    it('should handle storage errors gracefully', async () => {
+      mockAsyncStorage.setItem.mockRejectedValue(new Error('Storage error'));
+
+      const { result } = renderHook(
+        () => useOfflineSync({ persistOfflineActions: true }),
+        { wrapper: createWrapper() }
+      );
+
+      await act(async () => {
+        await result.current.actions.persistOfflineQueue();
+      });
+
+      // Should not throw error, but log it
+      expect(mockAsyncStorage.setItem).toHaveBeenCalled();
+    });
+  });
+
+  describe('Visual Indicators', () => {
+    it('should show sync indicators when enabled', async () => {
+      mockSyncManager.getSyncStatus.mockReturnValue({
+        isProcessing: true,
+        queueLength: 2,
+        lastSyncAttempt: Date.now(),
+        networkConnected: true
+      });
+
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: true }),
+        { wrapper: createWrapper() }
+      );
+
+      // Trigger status update
+      act(() => {
+        jest.advanceTimersByTime(30000); // 30 seconds
+      });
+
+      await waitFor(() => {
+        expect(result.current.showSyncIndicator).toBe(true);
+      });
+    });
+
+    it('should not show indicators when disabled', () => {
+      const { result } = renderHook(
+        () => useOfflineSync({ enableVisualIndicators: false }),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.showOfflineIndicator).toBe(false);
+      expect(result.current.showSyncIndicator).toBe(false);
+      expect(result.current.syncMessage).toBeNull();
+    });
+  });
+
+  describe('Auto-sync Management', () => {
+    it('should enable auto-sync', () => {
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
+
+      act(() => {
+        result.current.actions.enableAutoSync();
+      });
+
+      expect(mockSyncManager.resumeSync).toHaveBeenCalled();
+    });
+
+    it('should disable auto-sync', () => {
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
+
+      act(() => {
+        result.current.actions.disableAutoSync();
+      });
+
+      expect(mockSyncManager.clearSyncQueue).toHaveBeenCalled();
+    });
+  });
+
+  describe('Periodic Updates', () => {
+    it('should perform periodic status updates', async () => {
+      const { result } = renderHook(
+        () => useOfflineSync(),
+        { wrapper: createWrapper() }
+      );
+
+      // Fast forward 30 seconds to trigger periodic update
+      act(() => {
+        jest.advanceTimersByTime(30000);
+      });
+
+      expect(mockSyncManager.getSyncStatus).toHaveBeenCalled();
     });
   });
 });

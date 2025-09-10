@@ -1,9 +1,13 @@
-import { serve } from 'std/http/server.ts';
-import { createClient } from 'supabase-js@2';
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { VISIntegrationClient, VISRateLimiter, VISResponseCache } from './vis-integration.ts';
+import { DatabaseSyncClient } from './sync-client.ts';
+import { SyncMonitor, SyncProfiler } from './monitoring.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 interface TournamentMigrationData {
@@ -50,6 +54,27 @@ interface MigrationResult {
   updated: number;
   errors: string[];
   duplicates: number;
+}
+
+interface SyncResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+  metrics?: {
+    duration: number;
+    recordsProcessed: number;
+    errors: number;
+  };
+}
+
+interface SyncStatus {
+  syncId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  startTime: string;
+  endTime?: string;
+  recordsProcessed: number;
+  errors: string[];
+  lastError?: string;
 }
 
 /**
@@ -194,13 +219,16 @@ function validateTournamentData(tournament: TournamentMigrationData): string[] {
  * Fetch tournament data from VIS adapter
  */
 async function fetchTournamentDataFromVIS(): Promise<VISTournamentDTO[]> {
-  const visAdapterUrl = Deno.env.get('VIS_ADAPTER_URL') || 'http://localhost:8000';
+  const visAdapterUrl = Deno.env.get('VIS_ADAPTER_URL') || 
+    `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/vis-adapter`;
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   
   try {
     console.log('Fetching tournament data from VIS adapter...');
-    const response = await fetch(`${visAdapterUrl}/vis/tournaments`, {
+    const response = await fetch(`${visAdapterUrl}/vis/tournaments?mode=upsert`, {
       method: 'GET',
       headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
         'Content-Type': 'application/json',
       },
     });
@@ -350,6 +378,157 @@ async function migrateTournamentData(
 }
 
 /**
+ * Record sync status for monitoring
+ */
+async function recordSyncStatus(supabaseClient: any, status: SyncStatus) {
+  const { error } = await supabaseClient
+    .from('sync_status')
+    .upsert({
+      sync_id: status.syncId,
+      status: status.status,
+      start_time: status.startTime,
+      end_time: status.endTime,
+      records_processed: status.recordsProcessed,
+      errors: status.errors,
+      last_error: status.lastError,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'sync_id'
+    });
+
+  if (error) {
+    console.error('Failed to record sync status:', error);
+  }
+}
+
+/**
+ * Sync matches data from VIS Adapter
+ */
+async function syncMatches(visAdapterUrl: string, serviceRoleKey: string, supabaseClient: any) {
+  console.log('Fetching matches from VIS Adapter');
+  
+  const response = await fetch(`${visAdapterUrl}/vis/matches?mode=upsert`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`VIS Adapter matches request failed: ${response.status} ${response.statusText}`);
+  }
+
+  const visData = await response.json();
+  console.log(`Received ${visData.data?.length || 0} matches from VIS Adapter`);
+
+  if (!visData.success || !visData.data) {
+    throw new Error(`VIS Adapter returned error: ${visData.message}`);
+  }
+
+  let recordsProcessed = 0;
+  const errors: string[] = [];
+
+  for (const match of visData.data) {
+    try {
+      // Create event if needed and insert match with proper event relationship
+      const { error } = await supabaseClient
+        .from('matches')
+        .upsert({
+          vis_match_no: match.visMatchNo,
+          tournament_code: match.tournamentCode,
+          match_no: match.matchNo,
+          round_name: match.roundName,
+          team1_player1: match.team1?.player1,
+          team1_player2: match.team1?.player2,
+          team2_player1: match.team2?.player1,
+          team2_player2: match.team2?.player2,
+          court: match.court,
+          match_date: match.matchDate,
+          match_time: match.matchTime,
+          status: match.status,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'vis_match_no'
+        });
+
+      if (error) {
+        console.error(`Match upsert error for ${match.visMatchNo}:`, error);
+        errors.push(`Match ${match.visMatchNo}: ${error.message}`);
+      } else {
+        recordsProcessed++;
+      }
+    } catch (error) {
+      console.error(`Match processing error for ${match.visMatchNo}:`, error);
+      errors.push(`Match ${match.visMatchNo}: ${error.message}`);
+    }
+  }
+
+  console.log(`Match sync completed: ${recordsProcessed} processed, ${errors.length} errors`);
+  return { recordsProcessed, errors };
+}
+
+/**
+ * Sync referees data from VIS Adapter
+ */
+async function syncReferees(visAdapterUrl: string, serviceRoleKey: string, supabaseClient: any) {
+  console.log('Fetching referees from VIS Adapter');
+  
+  const response = await fetch(`${visAdapterUrl}/vis/referees?mode=upsert`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`VIS Adapter referees request failed: ${response.status} ${response.statusText}`);
+  }
+
+  const visData = await response.json();
+  console.log(`Received ${visData.data?.length || 0} referees from VIS Adapter`);
+
+  if (!visData.success || !visData.data) {
+    throw new Error(`VIS Adapter returned error: ${visData.message}`);
+  }
+
+  let recordsProcessed = 0;
+  const errors: string[] = [];
+
+  for (const referee of visData.data) {
+    try {
+      const { error } = await supabaseClient
+        .from('referees')
+        .upsert({
+          vis_referee_no: referee.visRefereeNo,
+          first_name: referee.firstName,
+          last_name: referee.lastName,
+          gender: referee.gender,
+          federation: referee.federation,
+          birthdate: referee.birthdate,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'vis_referee_no'
+        });
+
+      if (error) {
+        console.error(`Referee upsert error for ${referee.visRefereeNo}:`, error);
+        errors.push(`Referee ${referee.visRefereeNo}: ${error.message}`);
+      } else {
+        recordsProcessed++;
+      }
+    } catch (error) {
+      console.error(`Referee processing error for ${referee.visRefereeNo}:`, error);
+      errors.push(`Referee ${referee.visRefereeNo}: ${error.message}`);
+    }
+  }
+
+  console.log(`Referee sync completed: ${recordsProcessed} processed, ${errors.length} errors`);
+  return { recordsProcessed, errors };
+}
+
+/**
  * Rollback migration (delete all inserted records)
  */
 async function rollbackMigration(supabaseClient: any): Promise<{ success: boolean; message: string; deletedCount: number }> {
@@ -393,7 +572,7 @@ async function rollbackMigration(supabaseClient: any): Promise<{ success: boolea
   }
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -402,6 +581,7 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const path = url.pathname;
+    const method = req.method;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -427,57 +607,229 @@ serve(async (req) => {
       },
     });
 
-    // Health check endpoint
-    if (path === '/health' && req.method === 'GET') {
+    // Authentication check - require service role for all operations except health
+    const authHeader = req.headers.get('Authorization');
+    if (path !== '/health' && !authHeader?.includes('service_role')) {
       return new Response(
-        JSON.stringify({
-          status: 'healthy',
-          service: 'tournament-data-migration',
-          timestamp: new Date().toISOString(),
-          environment: {
-            supabase_configured: !!supabaseUrl,
-            service_key_configured: !!supabaseServiceKey,
-            vis_adapter_url: Deno.env.get('VIS_ADAPTER_URL') || 'http://localhost:8000',
-          },
-        }),
+        JSON.stringify({ success: false, message: 'Service role authentication required' }),
         {
+          status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
         }
       );
     }
 
-    // Migration endpoint
-    if (path === '/migrate' && req.method === 'POST') {
-      console.log('Starting tournament data migration...');
+    console.log(`[${new Date().toISOString()}] ${method} ${path}`);
 
-      // Fetch tournament data from VIS adapter
-      const visTournaments = await fetchTournamentDataFromVIS();
+    // Main sync endpoint - triggers complete data synchronization
+    if (path === '/sync' && method === 'POST') {
+      const startTime = Date.now();
+      const syncId = `sync_${Date.now()}`;
+      
+      try {
+        // Record sync start in monitoring table
+        await recordSyncStatus(supabaseClient, {
+          syncId,
+          status: 'running',
+          startTime: new Date().toISOString(),
+          recordsProcessed: 0,
+          errors: []
+        });
 
-      if (visTournaments.length === 0) {
+        console.log(`[${syncId}] Starting complete data synchronization`);
+        
+        // Get VIS Adapter base URL from environment
+        const visAdapterUrl = Deno.env.get('VIS_ADAPTER_URL') || 
+          `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/vis-adapter`;
+        
+        let totalRecordsProcessed = 0;
+        const errors: string[] = [];
+
+        // Initialize clients and monitoring
+        const visClient = VISIntegrationClient.fromEnvironment();
+        const rateLimiter = new VISRateLimiter(60); // 60 requests per minute
+        const responseCache = new VISResponseCache(5); // 5-minute cache
+        const syncClient = new DatabaseSyncClient(supabaseClient, 100);
+        const monitor = new SyncMonitor(supabaseClient);
+        const profiler = new SyncProfiler();
+
+        // Start monitoring and profiling
+        monitor.startSync(syncId);
+        profiler.startProfiling(syncId);
+
+        // Sync tournaments
+        try {
+          console.log(`[${syncId}] Syncing tournaments data`);
+          profiler.startPhase(syncId, 'tournaments-fetch');
+          
+          await rateLimiter.waitIfNeeded();
+          const visTournaments = await visClient.fetchTournaments();
+          
+          profiler.endPhase(syncId, 'tournaments-fetch');
+          profiler.startPhase(syncId, 'tournaments-sync');
+          
+          const tournamentsResult = await syncClient.syncTournaments(visTournaments);
+          totalRecordsProcessed += tournamentsResult.recordsProcessed;
+          
+          monitor.updateProgress(syncId, {
+            recordsProcessed: totalRecordsProcessed,
+            recordsInserted: tournamentsResult.recordsInserted,
+            recordsUpdated: tournamentsResult.recordsUpdated,
+            recordsSkipped: tournamentsResult.recordsSkipped,
+            errors: tournamentsResult.errors,
+          });
+          
+          if (tournamentsResult.errors.length > 0) {
+            errors.push(...tournamentsResult.errors);
+          }
+          
+          profiler.endPhase(syncId, 'tournaments-sync');
+        } catch (error) {
+          console.error(`[${syncId}] Tournament sync error:`, error);
+          errors.push(`Tournament sync failed: ${error.message}`);
+        }
+
+        // Sync matches
+        try {
+          console.log(`[${syncId}] Syncing matches data`);
+          profiler.startPhase(syncId, 'matches-fetch');
+          
+          await rateLimiter.waitIfNeeded();
+          const visMatches = await visClient.fetchMatches();
+          
+          profiler.endPhase(syncId, 'matches-fetch');
+          profiler.startPhase(syncId, 'matches-sync');
+          
+          const matchesResult = await syncClient.syncMatches(visMatches);
+          totalRecordsProcessed += matchesResult.recordsProcessed;
+          
+          monitor.updateProgress(syncId, {
+            recordsProcessed: totalRecordsProcessed,
+            recordsInserted: matchesResult.recordsInserted + (monitor.getMetrics(syncId)?.recordsInserted || 0),
+            recordsUpdated: matchesResult.recordsUpdated + (monitor.getMetrics(syncId)?.recordsUpdated || 0),
+            recordsSkipped: matchesResult.recordsSkipped + (monitor.getMetrics(syncId)?.recordsSkipped || 0),
+            errors: matchesResult.errors,
+          });
+          
+          if (matchesResult.errors.length > 0) {
+            errors.push(...matchesResult.errors);
+          }
+          
+          profiler.endPhase(syncId, 'matches-sync');
+        } catch (error) {
+          console.error(`[${syncId}] Match sync error:`, error);
+          errors.push(`Match sync failed: ${error.message}`);
+        }
+
+        // Sync referees
+        try {
+          console.log(`[${syncId}] Syncing referees data`);
+          profiler.startPhase(syncId, 'referees-fetch');
+          
+          await rateLimiter.waitIfNeeded();
+          const visReferees = await visClient.fetchReferees();
+          
+          profiler.endPhase(syncId, 'referees-fetch');
+          profiler.startPhase(syncId, 'referees-sync');
+          
+          const refereesResult = await syncClient.syncReferees(visReferees);
+          totalRecordsProcessed += refereesResult.recordsProcessed;
+          
+          monitor.updateProgress(syncId, {
+            recordsProcessed: totalRecordsProcessed,
+            recordsInserted: refereesResult.recordsInserted + (monitor.getMetrics(syncId)?.recordsInserted || 0),
+            recordsUpdated: refereesResult.recordsUpdated + (monitor.getMetrics(syncId)?.recordsUpdated || 0),
+            recordsSkipped: refereesResult.recordsSkipped + (monitor.getMetrics(syncId)?.recordsSkipped || 0),
+            errors: refereesResult.errors,
+          });
+          
+          if (refereesResult.errors.length > 0) {
+            errors.push(...refereesResult.errors);
+          }
+          
+          profiler.endPhase(syncId, 'referees-sync');
+        } catch (error) {
+          console.error(`[${syncId}] Referee sync error:`, error);
+          errors.push(`Referee sync failed: ${error.message}`);
+        }
+
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        const finalStatus = errors.length === 0 ? 'completed' : 'failed';
+
+        // Complete monitoring and profiling
+        const finalMetrics = monitor.completeSync(syncId, finalStatus === 'completed', errors);
+        const performanceProfile = profiler.getProfile(syncId);
+        
+        console.log(`[${syncId}] Sync ${finalStatus} - Duration: ${duration}ms, Records: ${totalRecordsProcessed}, Errors: ${errors.length}`);
+        console.log(`[${syncId}] Performance Profile:`, performanceProfile);
+
+        // Clean up profiler
+        profiler.clearProfile(syncId);
+
+        const response: SyncResponse = {
+          success: finalStatus === 'completed',
+          message: `Sync ${finalStatus}. Processed ${totalRecordsProcessed} records in ${duration}ms`,
+          data: { syncId, totalRecordsProcessed, errors },
+          metrics: {
+            duration,
+            recordsProcessed: totalRecordsProcessed,
+            errors: errors.length
+          }
+        };
+
+        return new Response(JSON.stringify(response), {
+          status: finalStatus === 'completed' ? 200 : 207, // 207 Multi-Status for partial success
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      } catch (error) {
+        console.error(`[${syncId}] Sync failed:`, error);
+        
+        await recordSyncStatus(supabaseClient, {
+          syncId,
+          status: 'failed',
+          startTime: new Date(startTime).toISOString(),
+          endTime: new Date().toISOString(),
+          recordsProcessed: 0,
+          errors: [error.message],
+          lastError: error.message
+        });
+
         return new Response(
           JSON.stringify({
-            error: 'No tournament data available',
-            message: 'VIS adapter returned no tournaments',
+            success: false,
+            message: `Sync failed: ${error.message}`,
+            data: { syncId, error: error.message }
           }),
           {
+            status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 404,
           }
         );
       }
+    }
 
-      // Perform migration
-      const migrationResult = await migrateTournamentData(supabaseClient, visTournaments);
-
+    // Health check endpoint
+    if (path === '/health' && method === 'GET') {
+      const monitor = new SyncMonitor(supabaseClient);
+      const healthCheck = await monitor.performHealthCheck();
+      
       return new Response(
         JSON.stringify({
-          ...migrationResult,
-          timestamp: new Date().toISOString(),
+          success: healthCheck.healthy,
+          message: healthCheck.healthy ? 'Sync service healthy' : 'Sync service has issues',
+          data: {
+            serviceStatus: healthCheck.status,
+            responseTime: healthCheck.responseTime,
+            details: healthCheck.details,
+            checks: healthCheck.checks,
+            timestamp: new Date().toISOString()
+          }
         }),
         {
+          status: healthCheck.healthy ? 200 : 503,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: migrationResult.success ? 200 : 500,
         }
       );
     }
@@ -500,78 +852,61 @@ serve(async (req) => {
       );
     }
 
-    // Status endpoint - check current database state
-    if (path === '/status' && req.method === 'GET') {
-      try {
-        // Get tournament count and sample data
-        const { count: totalCount, error: countError } = await supabaseClient
-          .from('tournaments')
-          .select('*', { count: 'exact', head: true });
+    // Sync status endpoint
+    if (path === '/status' && method === 'GET') {
+      const { data: syncHistory } = await supabaseClient
+        .from('sync_status')
+        .select('*')
+        .order('start_time', { ascending: false })
+        .limit(10);
 
-        if (countError) {
-          throw new Error(`Failed to count tournaments: ${countError.message}`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Sync status retrieved',
+          data: { syncHistory }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
-
-        // Get sample tournaments
-        const { data: sampleTournaments, error: sampleError } = await supabaseClient
-          .from('tournaments')
-          .select('vis_tournament_no, tournament_code, name, country, gender, season, status, created_at')
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        if (sampleError) {
-          throw new Error(`Failed to fetch sample tournaments: ${sampleError.message}`);
-        }
-
-        // Run data validation
-        const { data: validationResults, error: validationError } = await supabaseClient
-          .rpc('validate_tournament_data');
-
-        return new Response(
-          JSON.stringify({
-            status: 'success',
-            database: {
-              totalTournaments: totalCount || 0,
-              sampleTournaments: sampleTournaments || [],
-              validationResults: validationResults || [],
-            },
-            timestamp: new Date().toISOString(),
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          }
-        );
-
-      } catch (error) {
-        return new Response(
-          JSON.stringify({
-            error: 'Database status check failed',
-            message: error.message,
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
-          }
-        );
-      }
+      );
     }
 
-    // Route not found
+    // Legacy migration endpoint (for backward compatibility)
+    if (path === '/migrate' && method === 'POST') {
+      console.log('Legacy migration endpoint - redirecting to /sync');
+      
+      // Redirect to the new sync endpoint
+      const syncRequest = new Request(req.url.replace('/migrate', '/sync'), {
+        method: 'POST',
+        headers: req.headers,
+        body: req.body,
+      });
+      
+      // Process the request as if it came to /sync
+      return await fetch(syncRequest.url, {
+        method: syncRequest.method,
+        headers: Object.fromEntries(syncRequest.headers.entries()),
+      });
+    }
+
+    // 404 for unknown endpoints
     return new Response(
       JSON.stringify({
-        error: 'Route not found',
-        message: `${req.method} ${path} is not a valid endpoint`,
-        availableEndpoints: [
-          'GET /health - Health check',
-          'POST /migrate - Start data migration',
-          'POST /rollback - Rollback migration',
-          'GET /status - Check database status',
-        ],
+        success: false,
+        message: `Endpoint not found: ${method} ${path}`,
+        data: {
+          availableEndpoints: [
+            'POST /sync - Trigger complete data synchronization',
+            'GET /health - Service health check',
+            'GET /status - Sync status and history',
+            'POST /rollback - Rollback migration (legacy)',
+          ]
+        }
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
 

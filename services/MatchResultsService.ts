@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BeachMatch } from '../types/match';
 import { MatchResult, MatchResultsStatus, MatchResultsCache } from '../types/MatchResults';
 import { VisApiClient } from './api/VisApiClient';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 
 export class MatchResultsService {
   private static readonly MATCH_RESULTS_CACHE_KEY = '@match_results_cache';

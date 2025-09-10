@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/145</span>
+                <span class='fraction'>0/136</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/144</span>
+                <span class='fraction'>0/135</span>
             </div>
         
             
@@ -742,12 +742,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -807,7 +807,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -853,13 +853,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -924,10 +924,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -935,6 +934,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -989,7 +989,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1002,6 +1001,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1027,7 +1027,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1274,12 +1274,12 @@ export class TournamentStatusMonitor {
       // Cache the result
 <span class="cstat-no" title="statement not covered" >      this.scheduleChangeCache.set(tournamentNo, result);</span>
       
-<span class="cstat-no" title="statement not covered" >      console.log(`Detected ${result.changeCount} schedule changes for tournament ${tournamentNo} (${significantChanges} significant)`);</span>
+      // console.log(`Detected ${result.changeCount} schedule changes for tournament ${tournamentNo} (${significantChanges} significant)`);
       
 <span class="cstat-no" title="statement not covered" >      return result;</span>
       
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(`Error detecting schedule changes for tournament ${tournamentNo}:`, error);</span>
+      // console.error(`Error detecting schedule changes for tournament ${tournamentNo}:`, error);
 <span class="cstat-no" title="statement not covered" >      return {</span>
         tournamentNo,
         changedMatches: [],
@@ -1339,7 +1339,7 @@ export class TournamentStatusMonitor {
     // Cache the progress
 <span class="cstat-no" title="statement not covered" >    this.tournamentProgressCache.set(tournamentNo, progress);</span>
     
-<span class="cstat-no" title="statement not covered" >    console.log(`Tournament ${tournamentNo} progress: ${completionPercentage}% (${completedMatches}/${totalMatches} matches)`);</span>
+    // console.log(`Tournament ${tournamentNo} progress: ${completionPercentage}% (${completedMatches}/${totalMatches} matches)`);
     
 <span class="cstat-no" title="statement not covered" >    return progress;</span>
   }
@@ -1385,13 +1385,13 @@ export class TournamentStatusMonitor {
         
 <span class="cstat-no" title="statement not covered" >        this.courtChangeHistory.set(tournamentNo, existing);</span>
         
-<span class="cstat-no" title="statement not covered" >        console.log(`Tracked ${courtChanges.length} court assignment changes for tournament ${tournamentNo}`);</span>
+        // console.log(`Tracked ${courtChanges.length} court assignment changes for tournament ${tournamentNo}`);
       }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return courtChanges;</span>
       
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(`Error tracking court assignment changes for tournament ${tournamentNo}:`, error);</span>
+      // console.error(`Error tracking court assignment changes for tournament ${tournamentNo}:`, error);
 <span class="cstat-no" title="statement not covered" >      return [];</span>
     }
   }
@@ -1456,10 +1456,10 @@ export class TournamentStatusMonitor {
           sync_source: 'tournament_status_monitor'
         });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      console.log(`Updated sync status for tournament ${tournamentNo}: ${changeType}`);</span>
+      // console.log(`Updated sync status for tournament ${tournamentNo}: ${changeType}`);
       
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(`Error updating sync status for tournament ${tournamentNo}:`, error);</span>
+      // console.error(`Error updating sync status for tournament ${tournamentNo}:`, error);
     }
   }
 &nbsp;
@@ -1525,7 +1525,7 @@ export class TournamentStatusMonitor {
 <span class="cstat-no" title="statement not covered" >    this.scheduleChangeCache.clear();</span>
 <span class="cstat-no" title="statement not covered" >    this.courtChangeHistory.clear();</span>
 <span class="cstat-no" title="statement not covered" >    this.syncStatusMap.clear();</span>
-<span class="cstat-no" title="statement not covered" >    console.log('Tournament status monitoring data cleared');</span>
+    // console.log('Tournament status monitoring data cleared');
   }
 &nbsp;
   // Private helper methods
@@ -1559,7 +1559,7 @@ export class TournamentStatusMonitor {
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return null;</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(`Error fetching previous match data for ${matchNo}:`, error);</span>
+      // console.error(`Error fetching previous match data for ${matchNo}:`, error);
 <span class="cstat-no" title="statement not covered" >      return null;</span>
     }
   }
@@ -1666,7 +1666,7 @@ export class TournamentStatusMonitor {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-13T17:49:37.448Z
+                at 2025-09-09T18:19:26.344Z
             </div>
         <script src="../prettify.js"></script>
         <script>

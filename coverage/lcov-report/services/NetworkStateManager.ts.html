@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/172</span>
+                <span class='fraction'>0/164</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/157</span>
+                <span class='fraction'>0/149</span>
             </div>
         
             
@@ -776,7 +776,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -807,9 +807,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -838,7 +838,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -937,7 +937,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -946,7 +945,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1140,7 +1140,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1257,7 +1257,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1380,7 +1380,7 @@ export class NetworkStateManager {
 <span class="fstat-no" title="function not covered" >  pr</span>ivate constructor() {
     // Initialize synchronously for better testability
 <span class="cstat-no" title="statement not covered" >    this.initializeNetworkMonitoring().catch(<span class="fstat-no" title="function not covered" >er</span>ror =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Failed to initialize NetworkStateManager:', error);</span>
+      // console.error('Failed to initialize NetworkStateManager:', error);
 <span class="cstat-no" title="statement not covered" >      this.setOfflineState();</span>
     });
 <span class="cstat-no" title="statement not covered" >    this.startQualityAssessment();</span>
@@ -1411,9 +1411,9 @@ export class NetworkStateManager {
       });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      this.isInitialized = true;</span>
-<span class="cstat-no" title="statement not covered" >      console.log('NetworkStateManager initialized successfully');</span>
+      // console.log('NetworkStateManager initialized successfully');
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('Failed to initialize network monitoring:', error);</span>
+      // console.error('Failed to initialize network monitoring:', error);
 <span class="cstat-no" title="statement not covered" >      this.setOfflineState();</span>
 <span class="cstat-no" title="statement not covered" >      this.isInitialized = true; </span>// Still mark as initialized even on error
     }
@@ -1442,11 +1442,11 @@ export class NetworkStateManager {
 <span class="cstat-no" title="statement not covered" >    this.assessConnectionQuality();</span>
 <span class="cstat-no" title="statement not covered" >    this.notifyListeners();</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    console.log('Network state updated:', {</span>
-      type: networkState.type,
-      isConnected: networkState.isConnected,
-      isInternetReachable: networkState.isInternetReachable
-    });
+    // console.log('Network state updated:', {
+    //   type: networkState.type,
+    //   isConnected: networkState.isConnected,
+    //   isInternetReachable: networkState.isInternetReachable
+    // });
   }
 &nbsp;
   /**
@@ -1541,16 +1541,16 @@ export class NetworkStateManager {
 <span class="cstat-no" title="statement not covered" >        this.latencyHistory.shift();</span>
       }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      console.log('Connection quality assessed:', {</span>
-        score: qualityScore,
-        level: this.connectionQuality.level,
-        strategy: this.connectionQuality.recommendation,
-        latency,
-        networkType: this.networkState.type
-      });
+      // console.log('Connection quality assessed:', {
+      //   score: qualityScore,
+      //   level: this.connectionQuality.level,
+      //   strategy: this.connectionQuality.recommendation,
+      //   latency,
+      //   networkType: this.networkState.type
+      // });
 &nbsp;
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('Failed to assess connection quality:', error);</span>
+      // console.error('Failed to assess connection quality:', error);
       // Fallback quality assessment
 <span class="cstat-no" title="statement not covered" >      this.connectionQuality = {</span>
         score: 30,
@@ -1744,7 +1744,7 @@ export class NetworkStateManager {
 <span class="cstat-no" title="statement not covered" >        try {</span>
 <span class="cstat-no" title="statement not covered" >          listener(this.networkState!, this.connectionQuality!);</span>
         } catch (error) {
-<span class="cstat-no" title="statement not covered" >          console.error('Error in network state listener:', error);</span>
+          // console.error('Error in network state listener:', error);
         }
       });
     }
@@ -1861,7 +1861,7 @@ export class NetworkStateManager {
 <span class="cstat-no" title="statement not covered" >    this.qualityHistory = [];</span>
 <span class="cstat-no" title="statement not covered" >    this.latencyHistory = [];</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    console.log('NetworkStateManager cleaned up');</span>
+    // console.log('NetworkStateManager cleaned up');
   }
 &nbsp;
   /**
@@ -1882,7 +1882,7 @@ export default NetworkStateManager;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-13T17:49:37.448Z
+                at 2025-09-09T18:19:26.344Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/68</span>
+                <span class='fraction'>0/63</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/68</span>
+                <span class='fraction'>0/63</span>
             </div>
         
             
@@ -466,29 +466,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -500,6 +477,29 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -554,9 +554,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -775,14 +775,14 @@ export function <span class="fstat-no" title="function not covered" >useNetworkS
 <span class="cstat-no" title="statement not covered" >        setLastUpdated(Date.now());</span>
 <span class="cstat-no" title="statement not covered" >        setIsInitialized(true);</span>
         
-<span class="cstat-no" title="statement not covered" >        console.log('useNetworkState initialized with:', {</span>
-          networkType: initialNetworkState?.type,
-          isConnected: initialNetworkState?.isConnected,
-          qualityScore: initialConnectionQuality?.score,
-        });
+        // console.log('useNetworkState initialized with:', {
+        //   networkType: initialNetworkState?.type,
+        //   isConnected: initialNetworkState?.isConnected,
+        //   qualityScore: initialConnectionQuality?.score,
+        // });
 &nbsp;
       } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error('Failed to initialize network state in hook:', error);</span>
+        // console.error('Failed to initialize network state in hook:', error);
 <span class="cstat-no" title="statement not covered" >        setIsInitialized(true); </span>// Still mark as initialized even on error
       }
     };
@@ -797,12 +797,12 @@ export function <span class="fstat-no" title="function not covered" >useNetworkS
       const stats = <span class="cstat-no" title="statement not covered" >networkStateManager.getConnectionStats();</span>
 <span class="cstat-no" title="statement not covered" >      setConnectionStats(stats);</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      console.log('Network state updated in hook:', {</span>
-        networkType: newNetworkState.type,
-        isConnected: newNetworkState.isConnected,
-        qualityLevel: newConnectionQuality.level,
-        qualityScore: newConnectionQuality.score,
-      });
+      // console.log('Network state updated in hook:', {
+      //   networkType: newNetworkState.type,
+      //   isConnected: newNetworkState.isConnected,
+      //   qualityLevel: newConnectionQuality.level,
+      //   qualityScore: newConnectionQuality.score,
+      // });
     });
 &nbsp;
     // Initialize
@@ -863,9 +863,9 @@ export function <span class="fstat-no" title="function not covered" >useNetworkS
 <span class="cstat-no" title="statement not covered" >      setConnectionStats(updatedStats);</span>
 <span class="cstat-no" title="statement not covered" >      setLastUpdated(Date.now());</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      console.log('Network state reassessment completed');</span>
+      // console.log('Network state reassessment completed');
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('Failed to force network reassessment:', error);</span>
+      // console.error('Failed to force network reassessment:', error);
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
   };
@@ -997,7 +997,7 @@ export default useNetworkState;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-13T17:49:37.448Z
+                at 2025-09-09T18:19:26.344Z
             </div>
         <script src="../prettify.js"></script>
         <script>

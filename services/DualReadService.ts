@@ -2,7 +2,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NetworkMonitor } from './NetworkMonitor';
 import { ErrorLogger } from './ErrorLogger';
 import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
-import { CacheService } from './CacheService';
+// CacheService import removed to prevent circular dependency
+// Note: This was causing a circular dependency with CacheServiceCompatibility
 import { FilterOptions } from '../types/cache';
 
 export type ReadStrategy = 'db_first' | 'api_first' | 'db_only' | 'api_only';
@@ -155,7 +156,7 @@ export class DualReadService {
   private networkMonitor: NetworkMonitor;
   private errorLogger: ErrorLogger;
   private circuitBreaker: ConnectionCircuitBreaker;
-  private cacheService: CacheService;
+  // cacheService removed to prevent circular dependency
 
   private config: DualReadConfig = {
     readStrategy: 'db_first',
@@ -184,7 +185,7 @@ export class DualReadService {
     this.networkMonitor = NetworkMonitor.getInstance();
     this.errorLogger = ErrorLogger.getInstance();
     this.circuitBreaker = ConnectionCircuitBreaker.getInstance();
-    this.cacheService = CacheService.getInstance();
+    // cacheService removed to prevent circular dependency
   }
 
   static getInstance(): DualReadService {
@@ -1157,8 +1158,9 @@ export class DualReadService {
    */
   async invalidateCache(type: 'tournaments' | 'matches' | 'events' | 'referees', filters?: any): Promise<void> {
     if (this.config.cacheInvalidationStrategy === 'immediate') {
-      // Implement cache invalidation logic based on your cache service
-      await this.cacheService.clearCache([type]);
+      // Cache invalidation is now handled by TanStack Query in the simplified hooks
+      // This method is kept for compatibility but doesn't need to do anything
+      // as cache invalidation happens automatically through the query client
     }
   }
 

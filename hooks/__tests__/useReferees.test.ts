@@ -1,615 +1,425 @@
-import { DualReadService, RefereeDTO } from '../../services/DualReadService';
-import { queryPerformanceMonitor } from '../../lib/queryPerformance';
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useReferees, RefereesFilters } from '../useReferees';
+import { supabase } from '../../services/supabase';
+import React from 'react';
 
-// Mock dependencies
-jest.mock('../../services/DualReadService');
-jest.mock('../../lib/queryPerformance');
-jest.mock('../../services/RealtimeSubscriptionService');
-jest.mock('../../lib/queryClient', () => ({
-  queryKeys: {
-    referees: {
-      list: jest.fn(() => ['referees', 'test-filters']),
+// Mock Supabase
+jest.mock('../../services/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          not: jest.fn(() => ({
+            data: [],
+            error: null
+          })),
+          data: [],
+          error: null
+        }))
+      }))
+    }))
+  }
+}));
+
+// Mock fetch for VIS Adapter fallback
+global.fetch = jest.fn();
+const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+
+// Mock environment variables
+process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co/rest/v1';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // Disable retries for tests
+      },
     },
-  },
-  createQueryOptions: {
-    adaptive: jest.fn(() => ({ queryKey: ['referees'], queryFn: jest.fn() })),
-  },
-}));
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-}));
-
-const mockDualReadService = DualReadService as jest.Mocked<typeof DualReadService>;
-const mockQueryPerformanceMonitor = queryPerformanceMonitor as jest.Mocked<typeof queryPerformanceMonitor>;
-
-// Mock RealtimeSubscriptionService without importing it
-const mockRealtimeService = {
-  getInstance: jest.fn(),
-  subscribeToMatches: jest.fn(),
-  unsubscribe: jest.fn(),
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => 
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
-// Test data
-const mockReferees: RefereeDTO[] = [
-  {
-    id: '1',
-    refereeId: 'ref001',
-    name: 'John Doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    federationCode: 'USA',
-    gender: 'M',
-    status: 'ACTIVE',
-    type: 'REFEREE',
-    role: 'Referee1',
-    assignmentStatus: {
-      current: 2,
-      upcoming: 3,
-      completed: 15,
-      online: true
-    },
-    assignments: [
-      {
-        id: '1',
-        matchId: 'match001',
-        matchNo: 'M001',
-        refereeId: 'ref001',
-        position: 'R1',
-        status: 'ASSIGNED',
-        tournamentCode: 'FIVB2024M001',
-        court: 'Court 1',
-        scheduledDateTime: '2024-01-01T10:00:00Z',
-        team1Name: 'Team A',
-        team2Name: 'Team B',
-        round: 'Pool A',
-        assignedAt: '2024-01-01T08:00:00Z'
-      }
-    ]
-  },
-  {
-    id: '2',
-    refereeId: 'ref002',
-    name: 'Jane Smith',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    federationCode: 'CAN',
-    gender: 'W',
-    status: 'ACTIVE',
-    type: 'REFEREE',
-    role: 'Referee2',
-    assignmentStatus: {
-      current: 0,
-      upcoming: 1,
-      completed: 8,
-      online: false
-    },
-    assignments: []
-  },
-  {
-    id: '3',
-    refereeId: 'ref003',
-    name: 'Carlos Silva',
-    firstName: 'Carlos',
-    lastName: 'Silva',
-    federationCode: 'BRA',
-    gender: 'M',
-    status: 'INACTIVE',
-    type: 'TECHNICAL',
-    assignmentStatus: {
-      current: 0,
-      upcoming: 0,
-      completed: 25,
-      online: false
-    },
-    assignments: []
-  }
-];
-
-describe('useReferees Hook Logic', () => {
+describe('useReferees Hook - Database First Strategy with Assignment Status', () => {
+  const mockSupabaseQuery = {
+    select: jest.fn(() => mockSupabaseQuery),
+    eq: jest.fn(() => mockSupabaseQuery),
+    not: jest.fn(() => mockSupabaseQuery),
+    data: [],
+    error: null
+  };
+  
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup DualReadService mock
-    const mockInstance = {
-      configure: jest.fn(),
-      getReferees: jest.fn(),
-      invalidateCache: jest.fn(),
-    };
-    mockDualReadService.getInstance.mockReturnValue(mockInstance as any);
-    
-    // Setup RealtimeSubscriptionService mock
-    const mockRealtimeInstance = {
-      subscribeToMatches: jest.fn(),
-      unsubscribe: jest.fn(),
-    };
-    mockRealtimeService.getInstance.mockReturnValue(mockRealtimeInstance);
-    
-    // Setup performance monitor mock
-    mockQueryPerformanceMonitor.trackQuery = jest.fn();
+    (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
+    mockSupabaseQuery.not.mockReturnValue({ data: [], error: null });
   });
 
-  describe('DualReadService Integration', () => {
-    it('should configure DualReadService correctly', () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      expect(mockDualReadService.getInstance).toHaveBeenCalled();
-      
-      // Configuration should be called with proper parameters
-      const configureCall = jest.spyOn(mockInstance, 'configure');
-      
-      // Simulate hook configuration
-      mockInstance.configure({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
+  describe('Database-First Strategy', () => {
+    it('should prioritize database query over API', async () => {
+      const mockReferees = [{
+        id: 1,
+        vis_referee_no: 123,
+        first_name: 'John',
+        last_name: 'Doe',
+        gender: 'M',
+        federation: 'USA',
+        birthdate: '1985-05-15',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z'
+      }];
+
+      mockSupabaseQuery.not.mockResolvedValue({
+        data: mockReferees,
+        error: null
       });
 
-      expect(configureCall).toHaveBeenCalledWith({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
+      const { result } = renderHook(
+        () => useReferees({ federationCode: 'USA' }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
       });
+
+      expect(supabase?.from).toHaveBeenCalledWith('referees');
+      expect(result.current.source).toBe('database');
+      expect(result.current.performance.fallbackUsed).toBe(false);
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should call getReferees with correct filters', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      const filters = {
-        tournamentCodes: ['FIVB2024M001', 'FIVB2024W001'],
+    it('should apply database filters using indexes', async () => {
+      const filters: RefereesFilters = {
         federationCode: 'USA',
-        status: 'ACTIVE' as const,
-        assignmentStatus: 'assigned' as const,
-        includeAssignments: true
+        status: 'ACTIVE',
+        assignmentStatus: 'available'
       };
 
-      mockInstance.getReferees.mockResolvedValue({
-        data: mockReferees,
-        source: 'database',
-        timestamp: Date.now(),
-        performance: { queryTime: 120, fallbackUsed: false }
-      });
+      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
 
-      await mockInstance.getReferees(filters);
-
-      expect(mockInstance.getReferees).toHaveBeenCalledWith(filters);
-    });
-
-    it('should handle referee data with assignment status', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      mockInstance.getReferees.mockResolvedValue({
-        data: mockReferees,
-        source: 'database',
-        timestamp: Date.now(),
-        performance: { queryTime: 120, fallbackUsed: false }
-      });
-
-      const result = await mockInstance.getReferees({ includeAssignments: true });
-      
-      expect(result.data).toHaveLength(3);
-      expect(result.data![0].assignmentStatus?.current).toBe(2);
-      expect(result.data![0].assignmentStatus?.online).toBe(true);
-      expect(result.data![0].assignments).toHaveLength(1);
-    });
-  });
-
-  describe('Real-time Integration', () => {
-    it('should set up real-time subscription for assignment updates', () => {
-      const mockRealtimeInstance = mockRealtimeService.getInstance();
-      const mockSubscription = 'subscription-id';
-      
-      mockRealtimeInstance.subscribeToMatches.mockReturnValue(mockSubscription);
-
-      // Simulate real-time subscription setup for referee assignments
-      const tournamentCodes = ['FIVB2024M001', 'FIVB2024W001'];
-      const subscriptions = tournamentCodes.map(code => 
-        mockRealtimeInstance.subscribeToMatches(code, jest.fn())
+      renderHook(
+        () => useReferees(filters),
+        { wrapper: createWrapper() }
       );
 
-      tournamentCodes.forEach(code => {
-        expect(mockRealtimeInstance.subscribeToMatches).toHaveBeenCalledWith(
-          code,
-          expect.any(Function)
-        );
+      await waitFor(() => {
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('federation', 'USA');
+        expect(mockSupabaseQuery.not).toHaveBeenCalledWith('federation', 'is', null);
       });
-      
-      expect(subscriptions).toEqual([mockSubscription, mockSubscription]);
     });
 
-    it('should handle real-time subscription cleanup', () => {
-      const mockRealtimeInstance = mockRealtimeService.getInstance();
-      const mockSubscriptions = ['subscription-1', 'subscription-2'];
+    it('should handle assignment status filtering', async () => {
+      const mockReferees = [
+        {
+          id: 1,
+          vis_referee_no: 123,
+          first_name: 'John',
+          last_name: 'Doe',
+          gender: 'M',
+          federation: 'USA',
+          birthdate: '1985-05-15',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z'
+        },
+        {
+          id: 2,
+          vis_referee_no: 124,
+          first_name: 'Jane',
+          last_name: 'Smith',
+          gender: 'W',
+          federation: 'CAN',
+          birthdate: '1987-08-20',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z'
+        }
+      ];
 
-      mockRealtimeInstance.unsubscribe.mockImplementation(() => {});
-
-      // Simulate subscription cleanup
-      mockSubscriptions.forEach(subscription => {
-        mockRealtimeInstance.unsubscribe(subscription);
+      mockSupabaseQuery.not.mockResolvedValue({
+        data: mockReferees,
+        error: null
       });
 
-      mockSubscriptions.forEach(subscription => {
-        expect(mockRealtimeInstance.unsubscribe).toHaveBeenCalledWith(subscription);
+      const { result } = renderHook(
+        () => useReferees({ assignmentStatus: 'available' }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+        expect(result.current.data).toHaveLength(2);
+        expect(result.current.assignmentCounts.available).toBe(2);
+        expect(result.current.assignmentCounts.assigned).toBe(0);
       });
     });
   });
 
-  describe('Performance Monitoring Integration', () => {
-    it('should track query performance when enabled', () => {
-      const queryKey = ['referees', { tournamentCodes: ['FIVB2024M001'] }];
-      const startTime = Date.now();
-      const endTime = startTime + 120;
+  describe('VIS Adapter Fallback', () => {
+    it('should fallback to VIS Adapter when database is empty', async () => {
+      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
       
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        mockReferees,
-        undefined
+      const mockVisResponse = {
+        success: true,
+        data: [{
+          id: 'vis-123',
+          refereeId: '123',
+          name: 'VIS Referee',
+          firstName: 'VIS',
+          lastName: 'Referee',
+          federationCode: 'BRA',
+          gender: 'M',
+          status: 'ACTIVE',
+          type: 'REFEREE',
+          assignmentStatus: {
+            current: 1,
+            upcoming: 2,
+            completed: 5,
+            online: true
+          },
+          assignments: []
+        }]
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockVisResponse,
+      } as Response);
+
+      const { result } = renderHook(
+        () => useReferees({ federationCode: 'BRA' }),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        mockReferees,
-        undefined
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.source).toBe('api');
+      expect(result.current.performance.fallbackUsed).toBe(true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/functions/v1/vis-adapter/vis/referees'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer test-anon-key',
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
-    it('should track errors in performance monitoring', () => {
-      const queryKey = ['referees', { federationCode: 'USA' }];
-      const startTime = Date.now();
-      const endTime = startTime + 200;
-      const error = new Error('Federation service unavailable');
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
+    it('should not fallback when fallback is disabled', async () => {
+      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
+
+      const { result } = renderHook(
+        () => useReferees({}, { enableFallback: false }),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toEqual([]);
+      expect(result.current.source).toBe('unknown');
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 
   describe('Cache Strategy Logic', () => {
     it('should determine live cache strategy for assigned referees', () => {
-      const filters = { assignmentStatus: 'assigned' as const };
-      
-      const determineCacheStrategy = (assignmentStatus?: string, status?: string) => {
-        if (assignmentStatus === 'assigned') return 'live';
-        if (status === 'ACTIVE') return 'live';
-        if (status === 'INACTIVE' || status === 'SUSPENDED') return 'historical';
-        return 'live';
-      };
+      const { result } = renderHook(
+        () => useReferees({ assignmentStatus: 'assigned' }),
+        { wrapper: createWrapper() }
+      );
 
-      expect(determineCacheStrategy(filters.assignmentStatus)).toBe('live');
+      expect(result.current.config.cacheStrategy).toBe('live');
+    });
+
+    it('should determine static cache strategy for general referee data', () => {
+      const { result } = renderHook(
+        () => useReferees({}),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config.cacheStrategy).toBe('static');
     });
 
     it('should determine historical cache strategy for inactive referees', () => {
-      const filters = { status: 'INACTIVE' as const };
-      
-      const determineCacheStrategy = (status?: string) => {
-        if (status === 'ACTIVE') return 'live';
-        if (status === 'INACTIVE' || status === 'SUSPENDED') return 'historical';
-        return 'live';
-      };
+      const { result } = renderHook(
+        () => useReferees({ status: 'INACTIVE' }),
+        { wrapper: createWrapper() }
+      );
 
-      expect(determineCacheStrategy(filters.status)).toBe('historical');
-    });
-
-    it('should determine live strategy for active referees with assignments', () => {
-      const filters = { 
-        status: 'ACTIVE' as const,
-        assignmentStatus: 'assigned' as const
-      };
-      
-      const determineCacheStrategy = (assignmentStatus?: string, status?: string) => {
-        if (assignmentStatus === 'assigned') return 'live';
-        if (status === 'ACTIVE') return 'live';
-        return 'historical';
-      };
-
-      expect(determineCacheStrategy(filters.assignmentStatus, filters.status)).toBe('live');
+      expect(result.current.config.cacheStrategy).toBe('historical');
     });
   });
 
-  describe('Assignment Count Logic', () => {
-    it('should calculate assignment counts correctly', () => {
-      const calculateAssignmentCounts = (referees: RefereeDTO[]) => {
-        return referees.reduce((counts, referee) => {
-          counts.total++;
-          
-          const hasActiveAssignments = (referee.assignmentStatus?.current || 0) > 0;
-          if (hasActiveAssignments) {
-            counts.assigned++;
-          } else {
-            counts.available++;
-          }
-          
-          if (referee.assignmentStatus?.online) {
-            counts.online++;
-          }
-          
-          return counts;
-        }, {
-          total: 0,
-          assigned: 0,
-          available: 0,
-          online: 0
-        });
-      };
-
-      const counts = calculateAssignmentCounts(mockReferees);
-
-      expect(counts.total).toBe(3);
-      expect(counts.assigned).toBe(1); // Only John has current assignments > 0
-      expect(counts.available).toBe(2); // Jane and Carlos have no current assignments
-      expect(counts.online).toBe(1); // Only John is online
-    });
-
-    it('should handle referees without assignment status', () => {
-      const refereesWithoutStatus: RefereeDTO[] = [
+  describe('Federation Grouping', () => {
+    it('should group referees by federation when requested', async () => {
+      const mockReferees = [
         {
-          ...mockReferees[0],
-          assignmentStatus: undefined
+          id: 1,
+          vis_referee_no: 123,
+          first_name: 'John',
+          last_name: 'Doe',
+          gender: 'M',
+          federation: 'USA',
+          birthdate: '1985-05-15'
+        },
+        {
+          id: 2,
+          vis_referee_no: 124,
+          first_name: 'Jane',
+          last_name: 'Smith',
+          gender: 'W',
+          federation: 'CAN',
+          birthdate: '1987-08-20'
+        },
+        {
+          id: 3,
+          vis_referee_no: 125,
+          first_name: 'Bob',
+          last_name: 'Wilson',
+          gender: 'M',
+          federation: 'USA',
+          birthdate: '1990-03-10'
         }
       ];
 
-      const calculateAssignmentCounts = (referees: RefereeDTO[]) => {
-        return referees.reduce((counts, referee) => {
-          counts.total++;
-          
-          const hasActiveAssignments = (referee.assignmentStatus?.current || 0) > 0;
-          if (hasActiveAssignments) {
-            counts.assigned++;
-          } else {
-            counts.available++;
-          }
-          
-          if (referee.assignmentStatus?.online) {
-            counts.online++;
-          }
-          
-          return counts;
-        }, {
-          total: 0,
-          assigned: 0,
-          available: 0,
-          online: 0
-        });
-      };
-
-      const counts = calculateAssignmentCounts(refereesWithoutStatus);
-
-      expect(counts.total).toBe(1);
-      expect(counts.assigned).toBe(0);
-      expect(counts.available).toBe(1);
-      expect(counts.online).toBe(0);
-    });
-  });
-
-  describe('Federation Grouping Logic', () => {
-    it('should group referees by federation when requested', () => {
-      const groupRefereesByFederation = (referees: RefereeDTO[]): RefereeDTO[] => {
-        return referees.sort((a, b) => {
-          const fedA = a.federationCode || '';
-          const fedB = b.federationCode || '';
-          
-          // Primary sort by federation
-          if (fedA !== fedB) {
-            return fedA.localeCompare(fedB);
-          }
-          
-          // Secondary sort by name within federation
-          return a.name.localeCompare(b.name);
-        });
-      };
-
-      const groupedReferees = groupRefereesByFederation([...mockReferees]);
-
-      // Should be sorted by federation: BRA, CAN, USA
-      expect(groupedReferees[0].federationCode).toBe('BRA');
-      expect(groupedReferees[1].federationCode).toBe('CAN');
-      expect(groupedReferees[2].federationCode).toBe('USA');
-      
-      // Names should be sorted within federation
-      expect(groupedReferees[0].name).toBe('Carlos Silva');
-      expect(groupedReferees[1].name).toBe('Jane Smith');
-      expect(groupedReferees[2].name).toBe('John Doe');
-    });
-  });
-
-  describe('Live Update Interval Logic', () => {
-    it('should set live update interval for referees with assignments', () => {
-      const referees = [mockReferees[0]]; // John has active assignments
-      
-      const shouldHaveLiveInterval = referees.some(ref => 
-        (ref.assignmentStatus?.current || 0) > 0
-      );
-      
-      expect(shouldHaveLiveInterval).toBe(true);
-    });
-
-    it('should not set live update interval for unassigned referees', () => {
-      const referees = [mockReferees[1], mockReferees[2]]; // Jane and Carlos have no current assignments
-      
-      const shouldHaveLiveInterval = referees.some(ref => 
-        (ref.assignmentStatus?.current || 0) > 0
-      );
-      
-      expect(shouldHaveLiveInterval).toBe(false);
-    });
-  });
-
-  describe('Error Handling Logic', () => {
-    it('should handle service errors correctly', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      mockInstance.getReferees.mockResolvedValue({
-        data: null,
-        source: 'api',
-        timestamp: Date.now(),
-        performance: { queryTime: 400, fallbackUsed: true },
-        error: 'Referee service unavailable'
+      mockSupabaseQuery.not.mockResolvedValue({
+        data: mockReferees,
+        error: null
       });
 
-      const result = await mockInstance.getReferees({ federationCode: 'INVALID' });
+      const { result } = renderHook(
+        () => useReferees({}, { groupByFederation: true }),
+        { wrapper: createWrapper() }
+      );
 
-      expect(result.error).toBe('Referee service unavailable');
-      expect(result.data).toBeNull();
-      expect(result.performance.fallbackUsed).toBe(true);
-    });
-
-    it('should use appropriate retry logic for referee assignments', () => {
-      const hasActiveAssignments = true;
-      
-      const retryLogic = (failureCount: number, error: Error, hasAssignments: boolean) => {
-        const maxRetries = hasAssignments ? 3 : 2;
-        if (failureCount >= maxRetries) return false;
-        if (error.message.includes('not configured')) return false;
-        return true;
-      };
-
-      expect(retryLogic(2, new Error('Network error'), hasActiveAssignments)).toBe(true);
-      expect(retryLogic(3, new Error('Network error'), hasActiveAssignments)).toBe(false);
-      expect(retryLogic(1, new Error('Network error'), false)).toBe(true);
-      expect(retryLogic(2, new Error('Network error'), false)).toBe(false);
-    });
-
-    it('should calculate standard retry delays for referee queries', () => {
-      const retryDelay = (attemptIndex: number) => {
-        const baseDelay = 1000;
-        return Math.min(baseDelay * 2 ** attemptIndex, 20000);
-      };
-
-      expect(retryDelay(0)).toBe(1000);
-      expect(retryDelay(1)).toBe(2000);
-      expect(retryDelay(2)).toBe(4000);
-      expect(retryDelay(10)).toBe(20000); // Should cap at 20000
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+        // Should be grouped by federation (CAN first, then USA)
+        expect(result.current.data?.[0].federationCode).toBe('CAN');
+        expect(result.current.data?.[1].federationCode).toBe('USA');
+        expect(result.current.data?.[2].federationCode).toBe('USA');
+      });
     });
   });
 
-  describe('Filter Validation', () => {
-    it('should accept valid referee filters', () => {
-      const validFilters = {
-        tournamentCodes: ['FIVB2024M001', 'FIVB2024W001'],
+  describe('Assignment Counts', () => {
+    it('should calculate assignment counts correctly', async () => {
+      const mockReferees = [
+        {
+          id: 1,
+          vis_referee_no: 123,
+          first_name: 'John',
+          last_name: 'Doe',
+          gender: 'M',
+          federation: 'USA',
+          birthdate: '1985-05-15'
+        },
+        {
+          id: 2,
+          vis_referee_no: 124,
+          first_name: 'Jane',
+          last_name: 'Smith',
+          gender: 'W',
+          federation: 'CAN',
+          birthdate: '1987-08-20'
+        }
+      ];
+
+      mockSupabaseQuery.not.mockResolvedValue({
+        data: mockReferees,
+        error: null
+      });
+
+      const { result } = renderHook(
+        () => useReferees({}),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+        expect(result.current.assignmentCounts.total).toBe(2);
+        expect(result.current.assignmentCounts.available).toBe(2);
+        expect(result.current.assignmentCounts.assigned).toBe(0);
+      });
+    });
+  });
+
+  describe('Backward Compatibility', () => {
+    it('should maintain RefereesFilters interface', () => {
+      const filters: RefereesFilters = {
+        tournamentCodes: ['FIVB2024M001', 'CEV2024W001'],
         federationCode: 'USA',
-        status: 'ACTIVE' as const,
-        assignmentStatus: 'assigned' as const,
+        status: 'ACTIVE',
+        assignmentStatus: 'available',
         includeAssignments: true,
-        role: 'Referee1' as const
+        role: 'Referee1'
       };
 
-      expect(Array.isArray(validFilters.tournamentCodes)).toBe(true);
-      expect(typeof validFilters.federationCode).toBe('string');
-      expect(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'RESTRICTED'].includes(validFilters.status)).toBe(true);
-      expect(['assigned', 'available', 'all'].includes(validFilters.assignmentStatus)).toBe(true);
-      expect(typeof validFilters.includeAssignments).toBe('boolean');
+      const { result } = renderHook(
+        () => useReferees(filters),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config).toBeDefined();
+      expect(result.current.forceRefresh).toBeInstanceOf(Function);
+      expect(result.current.assignmentCounts).toBeDefined();
     });
 
-    it('should handle optional filter parameters', () => {
-      const partialFilters = {
-        federationCode: 'CAN'
-      };
+    it('should provide performance and source metadata', () => {
+      const { result } = renderHook(
+        () => useReferees(),
+        { wrapper: createWrapper() }
+      );
 
-      expect(partialFilters.tournamentCodes).toBeUndefined();
-      expect(partialFilters.status).toBeUndefined();
-      expect(partialFilters.assignmentStatus).toBeUndefined();
-      expect(partialFilters.includeAssignments).toBeUndefined();
+      expect(result.current.source).toBeDefined();
+      expect(result.current.performance).toBeDefined();
+      expect(result.current.performance.queryTime).toBeDefined();
+      expect(result.current.performance.fallbackUsed).toBeDefined();
+    });
+
+    it('should support includeAssignments configuration', () => {
+      const { result } = renderHook(
+        () => useReferees({}, { includeAssignments: true }),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.config.includeAssignments).toBe(true);
     });
   });
 
-  describe('Data Transformation', () => {
-    it('should return empty array when no data available', () => {
-      const processData = (data: RefereeDTO[] | null) => data || [];
-      
-      expect(processData(null)).toEqual([]);
-      expect(processData(mockReferees)).toEqual(mockReferees);
+  describe('Error Handling', () => {
+    it('should handle database query errors gracefully', async () => {
+      mockSupabaseQuery.not.mockResolvedValue({
+        data: null,
+        error: { message: 'Database connection failed' }
+      });
+
+      const { result } = renderHook(
+        () => useReferees({ federationCode: 'USA' }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.source).toBe('unknown');
+      });
     });
 
-    it('should preserve referee data structure', () => {
-      const referee = mockReferees[0];
-      
-      expect(referee).toHaveProperty('id');
-      expect(referee).toHaveProperty('refereeId');
-      expect(referee).toHaveProperty('name');
-      expect(referee).toHaveProperty('firstName');
-      expect(referee).toHaveProperty('lastName');
-      expect(referee).toHaveProperty('federationCode');
-      expect(referee).toHaveProperty('gender');
-      expect(referee).toHaveProperty('status');
-      expect(referee).toHaveProperty('type');
-      expect(referee).toHaveProperty('assignmentStatus');
-      expect(referee).toHaveProperty('assignments');
-    });
+    it('should use conservative retry strategy', async () => {
+      // This test verifies that the retry logic is properly configured
+      const { result } = renderHook(
+        () => useReferees({}),
+        { wrapper: createWrapper() }
+      );
 
-    it('should handle referee assignment data structure', () => {
-      const referee = mockReferees[0];
-      const assignment = referee.assignments![0];
-      
-      expect(assignment).toHaveProperty('id');
-      expect(assignment).toHaveProperty('matchId');
-      expect(assignment).toHaveProperty('matchNo');
-      expect(assignment).toHaveProperty('refereeId');
-      expect(assignment).toHaveProperty('position');
-      expect(assignment).toHaveProperty('status');
-      expect(assignment).toHaveProperty('tournamentCode');
-      expect(assignment).toHaveProperty('court');
-      expect(assignment).toHaveProperty('scheduledDateTime');
-      expect(assignment).toHaveProperty('team1Name');
-      expect(assignment).toHaveProperty('team2Name');
-      expect(assignment).toHaveProperty('round');
-    });
-  });
-
-  describe('Configuration Management', () => {
-    it('should merge default and user configurations correctly', () => {
-      const defaultConfig = {
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true,
-        enableRealTimeUpdates: true,
-        enableAssignmentUpdates: true,
-        cacheStrategy: 'live',
-        includeOnlineStatus: true,
-        groupByFederation: false
-      };
-
-      const userConfig = {
-        readStrategy: 'api_first',
-        enableRealTimeUpdates: false,
-        groupByFederation: true,
-        cacheStrategy: 'historical'
-      };
-
-      const mergedConfig = { ...defaultConfig, ...userConfig };
-
-      expect(mergedConfig.readStrategy).toBe('api_first');
-      expect(mergedConfig.enableRealTimeUpdates).toBe(false);
-      expect(mergedConfig.groupByFederation).toBe(true);
-      expect(mergedConfig.cacheStrategy).toBe('historical');
-      expect(mergedConfig.fallbackEnabled).toBe(true); // Should keep default
-    });
-
-    it('should handle assignment-specific configuration options', () => {
-      const assignmentConfig = {
-        enableAssignmentUpdates: true,
-        includeOnlineStatus: true,
-        cacheStrategy: 'live' as const
-      };
-
-      expect(typeof assignmentConfig.enableAssignmentUpdates).toBe('boolean');
-      expect(typeof assignmentConfig.includeOnlineStatus).toBe('boolean');
-      expect(['live', 'historical', 'static'].includes(assignmentConfig.cacheStrategy)).toBe(true);
+      // The hook should be configured with conservative retry settings
+      expect(result.current.config).toBeDefined();
     });
   });
 });

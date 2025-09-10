@@ -6,7 +6,7 @@
 
 import { VisApiClient } from './api/VisApiClient';
 import { LocalStorageManager } from './LocalStorageManager';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { VisApiEndpoint, GetBeachMatchListRequest, GetEventRefereeListRequest } from '../types/api-v2';
 
 export interface RefereeStats {

@@ -2,7 +2,6 @@ import { Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { CacheWarmupService } from "../services/CacheWarmupService";
 import { preloadBrandAssets } from "../assets/brand";
 import { colors } from "../theme/tokens";
 import { queryClient } from "../lib/queryClient";
@@ -24,11 +23,8 @@ export default function RootLayout() {
         // Initialize brand assets
         await preloadBrandAssets();
         
-        // Initialize cache warmup service
-        await CacheWarmupService.initialize();
-        
-        // Schedule periodic warmup every 30 minutes
-        CacheWarmupService.schedulePeriodicWarmup(30);
+        // Cache warmup replaced by database-first strategy with TanStack Query
+        // Performance monitoring and data persistence handled by queryClient
         
       } catch (error) {
         // Handle initialization errors gracefully

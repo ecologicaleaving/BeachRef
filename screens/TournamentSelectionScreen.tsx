@@ -353,14 +353,6 @@ const TournamentSelectionScreen: React.FC = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      // Force a complete cache refresh
-      const { CacheService } = await import('../services/CacheService');
-      
-      // Clear memory and local storage caches
-      if (typeof CacheService.clearCache === 'function') {
-        await CacheService.clearCache();
-      }
-      
       await loadTournaments(true);
     } finally {
       setRefreshing(false);

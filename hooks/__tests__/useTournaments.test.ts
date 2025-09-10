@@ -1,312 +1,210 @@
-import { DualReadService, TournamentDTO } from '../../services/DualReadService';
-import { queryPerformanceMonitor } from '../../lib/queryPerformance';
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useTournaments, TournamentsFilters } from '../useTournaments';
+import { supabase } from '../../services/supabase';
+import React from 'react';
 
-// Mock dependencies
-jest.mock('../../services/DualReadService');
-jest.mock('../../lib/queryPerformance');
-jest.mock('../../lib/queryClient', () => ({
-  queryKeys: {
-    tournaments: {
-      list: jest.fn(),
-    },
-    matches: {
-      list: jest.fn(),
-    },
-    referees: {
-      list: jest.fn(),
-    },
-  },
-  createQueryOptions: {
-    adaptive: jest.fn(),
-  },
-}));
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-}));
-
-const mockDualReadService = DualReadService as jest.Mocked<typeof DualReadService>;
-const mockQueryPerformanceMonitor = queryPerformanceMonitor as jest.Mocked<typeof queryPerformanceMonitor>;
-
-// Test data
-const mockTournaments: TournamentDTO[] = [
-  {
-    id: '1',
-    visNo: 'VIS001',
-    code: 'FIVB2024M001',
-    name: 'Test Tournament',
-    gender: 'M' as const,
-    tournamentType: 'FIVB' as const,
-    dates: {
-      startDate: '2024-01-01',
-      endDate: '2024-01-07'
-    },
-    status: 'ACTIVE' as const,
-    city: 'Test City',
-    country: 'Test Country'
+// Mock Supabase
+jest.mock('../../services/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          data: [],
+          error: null
+        }))
+      }))
+    }))
   }
-];
+}));
 
-describe('useTournaments Hook Logic', () => {
+// Mock fetch for VIS Adapter fallback
+global.fetch = jest.fn();
+const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+
+// Mock environment variables
+process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co/rest/v1';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // Disable retries for tests
+      },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => 
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
+describe('useTournaments Hook - Database First Strategy', () => {
+  const mockSupabaseQuery = {
+    select: jest.fn(() => mockSupabaseQuery),
+    eq: jest.fn(() => mockSupabaseQuery),
+    data: [],
+    error: null
+  };
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup DualReadService mock
-    const mockInstance = {
-      configure: jest.fn(),
-      getTournaments: jest.fn(),
-      invalidateCache: jest.fn(),
-    };
-    mockDualReadService.getInstance.mockReturnValue(mockInstance as any);
-    
-    // Setup performance monitor mock
-    mockQueryPerformanceMonitor.trackQuery = jest.fn();
+    (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
+    mockSupabaseQuery.eq.mockReturnValue({ data: [], error: null });
   });
 
-  describe('DualReadService Integration', () => {
-    it('should configure DualReadService correctly', () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      // Import and test the hook configuration logic
-      expect(mockDualReadService.getInstance).toHaveBeenCalled();
-      
-      // Configuration should be called with proper parameters
-      const configureCall = jest.spyOn(mockInstance, 'configure');
-      
-      // Simulate hook configuration
-      mockInstance.configure({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
-      });
-
-      expect(configureCall).toHaveBeenCalledWith({
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true
-      });
-    });
-
-    it('should call getTournaments with correct filters', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      const filters = {
+  describe('Database-First Strategy', () => {
+    it('should prioritize database query over API', async () => {
+      const mockTournaments = [{
+        id: 1,
+        vis_tournament_no: 123,
+        tournament_code: 'TEST2024',
+        name: 'Test Tournament',
+        gender: 'M',
+        type: 'FIVB',
         season: 2024,
-        gender: 'M' as const,
-        country: 'USA',
-        status: 'ACTIVE' as const
-      };
+        status: 'ACTIVE',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z'
+      }];
 
-      mockInstance.getTournaments.mockResolvedValue({
+      mockSupabaseQuery.eq.mockResolvedValue({
         data: mockTournaments,
-        source: 'database',
-        timestamp: Date.now(),
-        performance: { queryTime: 150, fallbackUsed: false }
+        error: null
       });
 
-      await mockInstance.getTournaments(filters);
-
-      expect(mockInstance.getTournaments).toHaveBeenCalledWith(filters);
-    });
-  });
-
-  describe('Performance Monitoring Integration', () => {
-    it('should track query performance when enabled', () => {
-      const queryKey = ['tournaments', { season: 2024 }];
-      const startTime = Date.now();
-      const endTime = startTime + 100;
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        mockTournaments,
-        undefined
+      const { result } = renderHook(
+        () => useTournaments({ season: 2024 }),
+        { wrapper: createWrapper() }
       );
 
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        mockTournaments,
-        undefined
-      );
-    });
-
-    it('should track errors in performance monitoring', () => {
-      const queryKey = ['tournaments', { season: 2024 }];
-      const startTime = Date.now();
-      const endTime = startTime + 100;
-      const error = new Error('Network error');
-      
-      queryPerformanceMonitor.trackQuery(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
-
-      expect(mockQueryPerformanceMonitor.trackQuery).toHaveBeenCalledWith(
-        queryKey,
-        startTime,
-        endTime,
-        null,
-        error
-      );
-    });
-  });
-
-  describe('Cache Strategy Logic', () => {
-    it('should determine live cache strategy for active tournaments', () => {
-      const filters = { status: 'ACTIVE' as const };
-      
-      // Test the cache strategy determination logic
-      const determineCacheStrategy = (status?: string) => {
-        if (status === 'ACTIVE') return 'live';
-        if (status === 'COMPLETED') return 'historical';
-        if (status === 'CANCELLED') return 'historical';
-        return 'live';
-      };
-
-      expect(determineCacheStrategy(filters.status)).toBe('live');
-    });
-
-    it('should determine historical cache strategy for completed tournaments', () => {
-      const filters = { status: 'COMPLETED' as const };
-      
-      const determineCacheStrategy = (status?: string) => {
-        if (status === 'ACTIVE') return 'live';
-        if (status === 'COMPLETED') return 'historical';
-        if (status === 'CANCELLED') return 'historical';
-        return 'live';
-      };
-
-      expect(determineCacheStrategy(filters.status)).toBe('historical');
-    });
-
-    it('should default to live strategy for unspecified status', () => {
-      const determineCacheStrategy = (status?: string) => {
-        if (status === 'ACTIVE') return 'live';
-        if (status === 'COMPLETED') return 'historical';
-        if (status === 'CANCELLED') return 'historical';
-        return 'live';
-      };
-
-      expect(determineCacheStrategy(undefined)).toBe('live');
-    });
-  });
-
-  describe('Error Handling Logic', () => {
-    it('should handle service errors correctly', async () => {
-      const mockInstance = mockDualReadService.getInstance();
-      
-      mockInstance.getTournaments.mockResolvedValue({
-        data: null,
-        source: 'api',
-        timestamp: Date.now(),
-        performance: { queryTime: 300, fallbackUsed: true },
-        error: 'Service unavailable'
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
       });
 
-      const result = await mockInstance.getTournaments({ season: 2024 });
-
-      expect(result.error).toBe('Service unavailable');
-      expect(result.data).toBeNull();
-      expect(result.performance.fallbackUsed).toBe(true);
+      expect(supabase?.from).toHaveBeenCalledWith('tournaments');
+      expect(result.current.source).toBe('database');
+      expect(result.current.performance.fallbackUsed).toBe(false);
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('should handle network errors with proper retry logic', () => {
-      // Test retry logic
-      const retryLogic = (failureCount: number, error: Error) => {
-        if (failureCount >= 3) return false;
-        if (error.message.includes('not configured')) return false;
-        return true;
-      };
-
-      expect(retryLogic(2, new Error('Network error'))).toBe(true);
-      expect(retryLogic(3, new Error('Network error'))).toBe(false);
-      expect(retryLogic(1, new Error('Service not configured'))).toBe(false);
-    });
-
-    it('should calculate exponential backoff delay correctly', () => {
-      const retryDelay = (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000);
-
-      expect(retryDelay(0)).toBe(1000);
-      expect(retryDelay(1)).toBe(2000);
-      expect(retryDelay(2)).toBe(4000);
-      expect(retryDelay(10)).toBe(30000); // Should cap at 30000
-    });
-  });
-
-  describe('Filter Validation', () => {
-    it('should accept valid tournament filters', () => {
-      const validFilters = {
+    it('should apply database filters using indexes', async () => {
+      const filters: TournamentsFilters = {
         season: 2024,
-        gender: 'M' as const,
+        gender: 'W',
         country: 'USA',
-        status: 'ACTIVE' as const
+        status: 'ACTIVE'
       };
 
-      // Test filter type validation
-      expect(typeof validFilters.season).toBe('number');
-      expect(['M', 'W'].includes(validFilters.gender)).toBe(true);
-      expect(typeof validFilters.country).toBe('string');
-      expect(['UPCOMING', 'ACTIVE', 'COMPLETED', 'CANCELLED'].includes(validFilters.status)).toBe(true);
-    });
+      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
 
-    it('should handle optional filter parameters', () => {
-      const partialFilters = {
-        season: 2024
-      };
+      renderHook(
+        () => useTournaments(filters),
+        { wrapper: createWrapper() }
+      );
 
-      expect(partialFilters.gender).toBeUndefined();
-      expect(partialFilters.country).toBeUndefined();
-      expect(partialFilters.status).toBeUndefined();
+      await waitFor(() => {
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('season', 2024);
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('gender', 'W');
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('country', 'USA');
+        expect(mockSupabaseQuery.eq).toHaveBeenCalledWith('status', 'ACTIVE');
+      });
     });
   });
 
-  describe('Data Transformation', () => {
-    it('should return empty array when no data available', () => {
-      const processData = (data: TournamentDTO[] | null) => data || [];
+  describe('VIS Adapter Fallback', () => {
+    it('should fallback to VIS Adapter when database is empty', async () => {
+      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
       
-      expect(processData(null)).toEqual([]);
-      expect(processData(mockTournaments)).toEqual(mockTournaments);
+      const mockVisResponse = {
+        success: true,
+        data: [{
+          id: 'vis-123',
+          visNo: '123',
+          code: 'VIS2024',
+          name: 'VIS Tournament',
+          gender: 'W',
+          tournamentType: 'BPT',
+          dates: {
+            startDate: '2024-08-01T00:00:00Z',
+            endDate: '2024-08-07T00:00:00Z',
+          },
+          status: 'UPCOMING'
+        }]
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockVisResponse,
+      } as Response);
+
+      const { result } = renderHook(
+        () => useTournaments({ season: 2024 }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.source).toBe('api');
+      expect(result.current.performance.fallbackUsed).toBe(true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/functions/v1/vis-adapter/vis/tournaments'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer test-anon-key',
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
     });
 
-    it('should preserve tournament data structure', () => {
-      const tournament = mockTournaments[0];
-      
-      expect(tournament).toHaveProperty('id');
-      expect(tournament).toHaveProperty('visNo');
-      expect(tournament).toHaveProperty('code');
-      expect(tournament).toHaveProperty('name');
-      expect(tournament).toHaveProperty('gender');
-      expect(tournament).toHaveProperty('tournamentType');
-      expect(tournament).toHaveProperty('dates');
-      expect(tournament).toHaveProperty('status');
+    it('should not fallback when fallback is disabled', async () => {
+      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
+
+      const { result } = renderHook(
+        () => useTournaments({}, { enableFallback: false }),
+        { wrapper: createWrapper() }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toEqual([]);
+      expect(result.current.source).toBe('unknown');
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 
-  describe('Configuration Management', () => {
-    it('should merge default and user configurations correctly', () => {
-      const defaultConfig = {
-        readStrategy: 'db_first',
-        fallbackEnabled: true,
-        enablePerformanceMonitoring: true,
-        enableRealTimeUpdates: true,
-        cacheStrategy: 'live'
+  describe('Backward Compatibility', () => {
+    it('should maintain TournamentsFilters interface', () => {
+      const filters: TournamentsFilters = {
+        season: 2024,
+        gender: 'M',
+        country: 'USA',
+        status: 'ACTIVE'
       };
 
-      const userConfig = {
-        readStrategy: 'api_first',
-        enableRealTimeUpdates: false
-      };
+      const { result } = renderHook(
+        () => useTournaments(filters),
+        { wrapper: createWrapper() }
+      );
 
-      const mergedConfig = { ...defaultConfig, ...userConfig };
+      expect(result.current.config).toBeDefined();
+      expect(result.current.forceRefresh).toBeInstanceOf(Function);
+    });
 
-      expect(mergedConfig.readStrategy).toBe('api_first');
-      expect(mergedConfig.enableRealTimeUpdates).toBe(false);
-      expect(mergedConfig.fallbackEnabled).toBe(true); // Should keep default
+    it('should provide performance and source metadata', () => {
+      const { result } = renderHook(
+        () => useTournaments(),
+        { wrapper: createWrapper() }
+      );
+
+      expect(result.current.source).toBeDefined();
+      expect(result.current.performance).toBeDefined();
+      expect(result.current.performance.queryTime).toBeDefined();
+      expect(result.current.performance.fallbackUsed).toBeDefined();
     });
   });
 });

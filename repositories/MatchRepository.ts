@@ -15,7 +15,7 @@ import { BeachMatchCore, MatchStatus, MatchResult, CourtInfo } from '../types/ma
 import { BeachMatch } from '../types/match';
 import { CacheKey } from '../types/cache-v2';
 import { GetBeachMatchListRequest } from '../types/api-v2';
-import { DataTransformationService } from '../services/DataTransformationService';
+// DataTransformationService removed - transformations now handled in simplified hooks
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
 import { featureFlagManager } from '../config/featureFlags';
 
@@ -86,14 +86,8 @@ export interface IMatchRepository {
  * Match repository implementation with referee support and real-time updates
  */
 export class MatchRepository extends BaseRepository implements IMatchRepository {
-  private readonly transformationService: DataTransformationService;
-
-  constructor(
-    config: BaseRepositoryConfig, 
-    transformationService: DataTransformationService
-  ) {
+  constructor(config: BaseRepositoryConfig) {
     super(config);
-    this.transformationService = transformationService;
   }
 
   /**
@@ -433,10 +427,9 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
       const matchesResult = await this.getByTournamentAsync(tournamentId);
       
       // Transform to legacy format
+      // Transformation now handled in simplified hooks - direct passthrough
       const transformStart = Date.now();
-      const legacyMatches = matchesResult.data.map(match => 
-        this.transformationService.matchCoreToLegacy(match)
-      );
+      const legacyMatches = matchesResult.data; // Direct passthrough - transformation in hooks
       const transformationMs = Date.now() - transformStart;
 
       const metrics = this.completePerformanceMonitoring(

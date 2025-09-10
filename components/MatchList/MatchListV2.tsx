@@ -6,6 +6,7 @@ import { useMatches, MatchesFilters } from '../../hooks/useMatches';
 import { MatchDTO } from '../../services/DualReadService';
 import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -225,6 +226,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   liveScores,
   getLiveScore,
 }) => {
+  // Analytics tracking for match list interactions
+  const { trackRefereeInteraction } = useRefereeScreenAnalytics();
+  
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
   const shouldUseHook = !!tournamentCode && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
   const hookFilters = useMemo((): MatchesFilters => ({
@@ -305,6 +309,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external court filter if provided, otherwise internal state
   const effectiveCourtFilter = externalCourtFilter ?? courtFilter;
   const setEffectiveCourtFilter = (court: string) => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'court_filter_change', {
+      previous_filter: effectiveCourtFilter,
+      new_filter: court,
+      is_external: !!externalCourtFilter
+    });
+    
     if (onCourtFilterChange) {
       onCourtFilterChange(court);
     } else {
@@ -315,6 +326,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external gender filter if provided, otherwise internal state
   const effectiveGenderFilter = externalGenderFilter ?? genderFilter;
   const setEffectiveGenderFilter = (gender: 'All' | 'M' | 'W') => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'gender_filter_change', {
+      previous_filter: effectiveGenderFilter,
+      new_filter: gender,
+      is_external: !!externalGenderFilter
+    });
+    
     if (onGenderFilterChange) {
       onGenderFilterChange(gender);
     } else {
@@ -336,6 +354,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external referee filter if provided, otherwise internal state
   const effectiveRefereeFilter = externalRefereeFilter ?? refereeFilter;
   const setEffectiveRefereeFilter = (referee: string) => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'referee_filter_change', {
+      previous_filter: effectiveRefereeFilter,
+      new_filter: referee,
+      is_external: !!externalRefereeFilter
+    });
+    
     if (onRefereeFilterChange) {
       onRefereeFilterChange(referee);
     } else {
@@ -747,6 +772,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Reset all filters to default values
   const resetFilters = () => {
+    // Track filter reset analytics
+    trackRefereeInteraction('filter', 'reset_all_filters', {
+      previous_court: effectiveCourtFilter,
+      previous_gender: effectiveGenderFilter,
+      previous_referee: effectiveRefereeFilter,
+      previous_status: statusFilter,
+      matches_count_before: filteredMatches.length
+    });
+    
     setEffectiveCourtFilter('All');
     setEffectiveGenderFilter('All');
     setEffectiveRefereeFilter('All');

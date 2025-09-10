@@ -1,7 +1,7 @@
 import { BeachMatch } from '../types/match';
 import { Tournament } from '../types/tournament';
 import { supabase } from './supabase';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { AppState } from 'react-native';
 import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
 import { RealtimeFallbackService } from './RealtimeFallbackService';

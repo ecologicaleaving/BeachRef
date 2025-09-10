@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { NetworkMonitor } from '../services/NetworkMonitor';
 import { SyncManager } from '../services/SyncManager';
 import { queryClient } from '../lib/queryClient';
-import { queryPerformanceMonitor } from '../lib/queryPerformance';
+import { supabase } from '../services/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FilterOptions } from '../types/cache';
 
 export interface OfflineSyncConfig {
@@ -27,16 +28,26 @@ export interface SyncStatus {
   pendingTasks: number;
   connectionQuality: 'excellent' | 'good' | 'poor' | 'offline';
   syncErrors: string[];
+  conflictCount: number;
+  dataFreshness?: {
+    tournaments: string | null;
+    matches: string | null;
+    referees: string | null;
+  };
 }
 
 export interface OfflineSyncActions {
   forceSync: () => Promise<void>;
-  queueSync: (type: 'tournaments' | 'matches', filters?: FilterOptions, tournamentNo?: string) => void;
+  queueSync: (type: 'tournaments' | 'matches' | 'referees', filters?: FilterOptions, tournamentNo?: string) => void;
   clearSyncQueue: () => void;
   retryFailedTasks: () => Promise<void>;
   enableAutoSync: () => void;
   disableAutoSync: () => void;
   refreshNetworkStatus: () => Promise<void>;
+  resolveConflicts: () => Promise<void>;
+  checkDataFreshness: () => Promise<void>;
+  persistOfflineQueue: () => Promise<void>;
+  loadOfflineQueue: () => Promise<void>;
 }
 
 export interface OfflineSyncResult {
@@ -72,7 +83,13 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     isSyncing: false,
     pendingTasks: 0,
     connectionQuality: 'good',
-    syncErrors: []
+    syncErrors: [],
+    conflictCount: 0,
+    dataFreshness: {
+      tournaments: null,
+      matches: null,
+      referees: null
+    }
   });
 
   // Visual indicator state
@@ -88,6 +105,72 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
   const networkUnsubscribe = useRef<(() => void) | null>(null);
   const syncUnsubscribe = useRef<(() => void) | null>(null);
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Persist offline queue to AsyncStorage
+  const persistOfflineQueue = useCallback(async () => {
+    try {
+      const queueStatus = syncManager.current.getSyncStatus();
+      await AsyncStorage.setItem('offline_sync_queue', JSON.stringify({
+        queueLength: queueStatus.queueLength,
+        timestamp: Date.now(),
+        isProcessing: queueStatus.isProcessing
+      }));
+    } catch (error) {
+      console.error('Failed to persist offline queue:', error);
+    }
+  }, []);
+
+  // Load offline queue from AsyncStorage
+  const loadOfflineQueue = useCallback(async () => {
+    try {
+      const queueData = await AsyncStorage.getItem('offline_sync_queue');
+      if (queueData) {
+        const queue = JSON.parse(queueData);
+        setSyncStatus(prev => ({
+          ...prev,
+          pendingTasks: queue.queueLength || 0
+        }));
+
+        // Clear the stored queue after loading
+        await AsyncStorage.removeItem('offline_sync_queue');
+      }
+    } catch (error) {
+      console.error('Failed to load offline queue:', error);
+    }
+  }, []);
+
+  // Check data freshness using Story 5.1 sync status
+  const checkDataFreshness = useCallback(async () => {
+    try {
+      const { data: syncStatuses, error } = await supabase
+        .from('sync_status')
+        .select('table_name, last_sync_at')
+        .in('table_name', ['tournaments', 'matches', 'referees']);
+
+      if (error) throw error;
+
+      const freshness = syncStatuses?.reduce((acc, status) => {
+        acc[status.table_name as keyof typeof acc] = status.last_sync_at;
+        return acc;
+      }, {
+        tournaments: null as string | null,
+        matches: null as string | null,
+        referees: null as string | null
+      }) || {
+        tournaments: null,
+        matches: null,
+        referees: null
+      };
+
+      setSyncStatus(prev => ({
+        ...prev,
+        dataFreshness: freshness
+      }));
+
+    } catch (error) {
+      console.error('Failed to check data freshness:', error);
+    }
+  }, []);
 
   // Initialize services and set up listeners
   useEffect(() => {
@@ -131,16 +214,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
       syncUnsubscribe.current = syncManager.current.addSyncCallback((taskType) => {
         if (currentConfig.enablePerformanceTracking) {
           // Track successful sync operations
-          const endTime = Date.now();
-          const startTime = syncStatus.lastSyncTime || endTime;
-          
-          queryPerformanceMonitor.trackQuery(
-            ['offline-sync', taskType],
-            startTime,
-            endTime,
-            { taskType, success: true },
-            undefined
-          );
+          console.log(`Sync operation completed: ${taskType}`);
         }
 
         // Update sync status and visual indicators
@@ -161,8 +235,19 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     setupNetworkMonitoring();
     setupSyncMonitoring();
 
+    // Load offline queue on initialization
+    if (currentConfig.persistOfflineActions) {
+      loadOfflineQueue();
+    }
+
+    // Check data freshness on initialization
+    checkDataFreshness();
+
     // Set up periodic status updates
-    const statusInterval = setInterval(updateSyncStatus, 10000); // Every 10 seconds
+    const statusInterval = setInterval(() => {
+      updateSyncStatus();
+      checkDataFreshness();
+    }, 30000); // Every 30 seconds
 
     return () => {
       // Cleanup
@@ -177,7 +262,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
       }
       clearInterval(statusInterval);
     };
-  }, [currentConfig]);
+  }, [currentConfig, loadOfflineQueue, checkDataFreshness]);
 
   // Update network status from NetworkMonitor
   const updateNetworkStatus = useCallback(async () => {
@@ -247,13 +332,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
       // Performance tracking
       if (currentConfig.enablePerformanceTracking) {
-        queryPerformanceMonitor.trackQuery(
-          ['offline-sync', 'force-sync'],
-          startTime,
-          Date.now(),
-          result,
-          undefined
-        );
+        console.log(`Force sync completed in ${Date.now() - startTime}ms`);
       }
 
       if (currentConfig.enableVisualIndicators) {
@@ -275,13 +354,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
       // Performance tracking for errors
       if (currentConfig.enablePerformanceTracking) {
-        queryPerformanceMonitor.trackQuery(
-          ['offline-sync', 'force-sync'],
-          startTime,
-          Date.now(),
-          null,
-          error as Error
-        );
+        console.log(`Force sync failed after ${Date.now() - startTime}ms:`, errorMessage);
       }
 
       if (currentConfig.enableVisualIndicators) {
@@ -298,7 +371,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
   // Queue sync task
   const queueSync = useCallback((
-    type: 'tournaments' | 'matches',
+    type: 'tournaments' | 'matches' | 'referees',
     filters?: FilterOptions,
     tournamentNo?: string
   ) => {
@@ -312,11 +385,16 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     // Update pending tasks count
     updateSyncStatus();
 
+    // Persist queue if enabled
+    if (currentConfig.persistOfflineActions) {
+      persistOfflineQueue();
+    }
+
     if (currentConfig.enableVisualIndicators && !syncStatus.isOnline) {
       setSyncMessage(`${type} sync queued for when online`);
       setTimeout(() => setSyncMessage(null), 3000);
     }
-  }, [currentConfig.maxRetries, currentConfig.enableVisualIndicators, syncStatus.isOnline]);
+  }, [currentConfig.maxRetries, currentConfig.enableVisualIndicators, currentConfig.persistOfflineActions, syncStatus.isOnline]);
 
   // Clear sync queue
   const clearSyncQueue = useCallback(() => {
@@ -370,6 +448,62 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     }));
   }, [updateNetworkStatus]);
 
+  // Resolve sync conflicts using server data priority
+  const resolveConflicts = useCallback(async () => {
+    if (!syncStatus.isOnline) {
+      throw new Error('Cannot resolve conflicts while offline');
+    }
+
+    try {
+      // Check for conflicts in sync_status table (Story 5.1 integration)
+      const { data: conflicts, error } = await supabase
+        .from('sync_status')
+        .select('*')
+        .eq('has_conflicts', true);
+
+      if (error) throw error;
+
+      let resolvedCount = 0;
+      if (conflicts && conflicts.length > 0) {
+        // For each conflict, prioritize server data and mark as resolved
+        for (const conflict of conflicts) {
+          await supabase
+            .from('sync_status')
+            .update({ 
+              has_conflicts: false, 
+              resolved_at: new Date().toISOString(),
+              resolution_strategy: 'server_wins'
+            })
+            .eq('id', conflict.id);
+          resolvedCount++;
+        }
+
+        // Invalidate affected queries
+        await queryClient.invalidateQueries();
+      }
+
+      setSyncStatus(prev => ({
+        ...prev,
+        conflictCount: 0,
+        syncErrors: prev.syncErrors.filter(err => !err.includes('conflict'))
+      }));
+
+      if (currentConfig.enableVisualIndicators && resolvedCount > 0) {
+        setSyncMessage(`Resolved ${resolvedCount} sync conflicts`);
+        setTimeout(() => setSyncMessage(null), 3000);
+      }
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to resolve conflicts';
+      setSyncStatus(prev => ({
+        ...prev,
+        syncErrors: [...prev.syncErrors, errorMessage]
+      }));
+      throw error;
+    }
+  }, [syncStatus.isOnline, currentConfig.enableVisualIndicators]);
+
+
   // Actions object
   const actions: OfflineSyncActions = {
     forceSync,
@@ -378,7 +512,11 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     retryFailedTasks,
     enableAutoSync,
     disableAutoSync,
-    refreshNetworkStatus
+    refreshNetworkStatus,
+    resolveConflicts,
+    checkDataFreshness,
+    persistOfflineQueue,
+    loadOfflineQueue
   };
 
   return {

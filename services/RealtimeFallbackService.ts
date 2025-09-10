@@ -1,6 +1,6 @@
 import { BeachMatch } from '../types/match';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
 import NetworkStateManager, { ConnectionStrategy, NetworkState, ConnectionQuality } from './NetworkStateManager';
 

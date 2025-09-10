@@ -81,6 +81,21 @@ class QueryPerformanceMonitor {
   }
 
   /**
+   * Record query performance (alias for trackQuery with simplified interface)
+   * Compatible with analytics collection usage
+   */
+  recordQuery(operationName: string, duration: number, dataCount?: number, category: string = 'query'): void {
+    const queryKey = [category, operationName];
+    const endTime = Date.now();
+    const startTime = endTime - duration;
+    
+    // Create mock data object based on dataCount for size estimation
+    const mockData = dataCount ? new Array(dataCount).fill({}) : null;
+    
+    this.trackQuery(queryKey, startTime, endTime, mockData);
+  }
+
+  /**
    * Get performance metrics for a specific query
    */
   getMetrics(queryKey: unknown[]): QueryPerformanceMetrics | undefined {
@@ -233,7 +248,7 @@ export const performanceValidator = {
     totalQueries: number;
     passedQueries: number;
     failedQueries: number;
-    issues: Array<{ queryKey: string; issues: string[] }>;
+    issues: { queryKey: string; issues: string[] }[];
   } {
     const allMetrics = queryPerformanceMonitor.getAllMetrics();
     const results = allMetrics.map(metrics => {
@@ -316,7 +331,7 @@ export const memoryMonitor = {
     queryCount: number;
     totalDataSize: number;
     averageQuerySize: number;
-    largestQueries: Array<{ queryKey: string; size: number }>;
+    largestQueries: { queryKey: string; size: number }[];
   } {
     const allQueries = queryClient.getQueryCache().getAll();
     const querySizes = allQueries.map(query => {

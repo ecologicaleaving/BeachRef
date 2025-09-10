@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CacheService } from '../services/CacheService';
+import { CacheServiceCompatibility as CacheService } from './compatibility/CacheServiceCompatibility';
 
 interface StorageUsage {
   totalSize: number;

@@ -88,6 +88,30 @@ export const queryKeys = {
     assignments: () => ['referees', 'assignments'] as const,
     assignment: (params?: { tournamentCode?: string }) => ['referees', 'assignments', params] as const,
   },
+  analytics: {
+    all: ['analytics'] as const,
+    dashboard: (params?: { 
+      timeRange?: { start: string; end: string }; 
+      config?: any 
+    }) => ['analytics', 'dashboard', params] as const,
+    tournaments: () => ['analytics', 'tournaments'] as const,
+    tournamentMetrics: (params?: { 
+      tournamentCodes?: string[]; 
+      dateRange?: { start: string; end: string } 
+    }) => ['analytics', 'tournaments', 'metrics', params] as const,
+    referees: () => ['analytics', 'referees'] as const,
+    refereePerformance: (params?: {
+      refereeIds?: string[];
+      tournamentCodes?: string[];
+      dateRange?: { start: string; end: string };
+      performanceThreshold?: number;
+      roleTypes?: ('FIRST' | 'SECOND' | 'CHALLENGE')[];
+      federationCode?: string;
+      includeTrends?: boolean;
+    }) => ['analytics', 'referees', 'performance', params] as const,
+    workload: (params?: { tournamentCode?: string; dateRange?: { start: string; end: string } }) => 
+      ['analytics', 'referees', 'workload', params] as const,
+  },
 } as const;
 
 // Query options factory for intelligent cache strategies
@@ -173,6 +197,7 @@ export const invalidateQueries = {
   tournaments: () => queryClient.invalidateQueries({ queryKey: ['tournaments'] }),
   matches: () => queryClient.invalidateQueries({ queryKey: ['matches'] }),
   referees: () => queryClient.invalidateQueries({ queryKey: ['referees'] }),
+  analytics: () => queryClient.invalidateQueries({ queryKey: ['analytics'] }),
   all: () => queryClient.invalidateQueries(),
 };
 

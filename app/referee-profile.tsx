@@ -1,0 +1,541 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { EventReferee, RefereeOfficial, getOfficialDisplayName } from '../types/referee-v2';
+import { FlagImage } from '../components/FlagImage';
+import { StatusBadge } from '../components/Status';
+import NavigationHeader from '../components/navigation/NavigationHeader';
+import { RefereeAnalyticsDashboard } from '../components/RefereeAnalytics/RefereeAnalyticsDashboard';
+import { RefereePerformanceWidget } from '../components/RefereeAnalytics/RefereePerformanceWidget';
+import { useRefereeAnalytics } from '../hooks/useRefereeAnalytics';
+import { colors, designTokens } from '../theme/tokens';
+import { ActionIcons } from '../components/Icons/IconLibrary';
+
+/**
+ * Individual Referee Profile Dashboard Screen
+ * Displays comprehensive referee information, statistics, and analytics
+ */
+const RefereeProfileScreen: React.FC = () => {
+  const { refereeData } = useLocalSearchParams<{ refereeData: string }>();
+  const router = useRouter();
+  const [referee, setReferee] = useState<EventReferee | RefereeOfficial | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'assignments'>('overview');
+
+  // Load referee from params
+  useEffect(() => {
+    if (refereeData) {
+      try {
+        const parsedReferee = JSON.parse(refereeData) as EventReferee | RefereeOfficial;
+        setReferee(parsedReferee);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error parsing referee data:', error);
+        router.back();
+      }
+    } else {
+      router.back();
+    }
+  }, [refereeData, router]);
+
+  // Get referee analytics
+  const { 
+    data: analyticsData, 
+    isLoading: analyticsLoading, 
+    error: analyticsError,
+    refetch: refetchAnalytics
+  } = useRefereeAnalytics(
+    referee ? { refereeIds: [referee.id] } : undefined,
+    { 
+      enabled: !!referee,
+      cacheStrategy: 'historical',
+      enablePerformanceMonitoring: true 
+    }
+  );
+
+  const refereeStats = useMemo(() => {
+    if (!analyticsData?.data || analyticsData.data.length === 0) return null;
+    return analyticsData.data[0];
+  }, [analyticsData]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetchAnalytics();
+    } catch (error) {
+      console.error('Error refreshing referee data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  if (loading || !referee) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading referee profile...</Text>
+      </View>
+    );
+  }
+
+  // Get referee status for badge
+  const statusForBadge = (() => {
+    switch (referee.status) {
+      case 'Active': return 'current';
+      case 'Inactive': return 'completed';
+      case 'Suspended': return 'cancelled';
+      case 'Restricted': return 'emergency';
+      default: return 'completed';
+    }
+  })();
+
+  // Get gender display
+  const getGenderSymbol = () => {
+    const gender = referee.gender;
+    return gender === 'M' ? '♂' : gender === 'W' ? '♀' : '⚭';
+  };
+
+  return (
+    <View style={styles.container}>
+      <NavigationHeader
+        title="Referee Profile"
+        onBackPress={handleBack}
+        showBackButton={true}
+      />
+      
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+          />
+        }
+      >
+        {/* Referee Header Card */}
+        <View style={styles.headerCard}>
+          <View style={styles.refereeHeader}>
+            <View style={styles.refereeBasicInfo}>
+              <FlagImage 
+                countryCode={referee.federationCode} 
+                size="large"
+                style={styles.headerFlag}
+              />
+              <View style={styles.refereeNameSection}>
+                <Text style={styles.refereeName}>
+                  {getOfficialDisplayName(referee)}
+                </Text>
+                <Text style={styles.refereeId}>
+                  {'RefereeId' in referee ? `#${referee.RefereeId}` : `#${referee.noOfficial}`}
+                </Text>
+                <View style={styles.refereeMetadata}>
+                  <Text style={styles.federationText}>{referee.federationCode}</Text>
+                  <Text style={styles.genderText}>{getGenderSymbol()}</Text>
+                  <Text style={styles.typeText}>{referee.type}</Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.headerRight}>
+              <StatusBadge
+                status={statusForBadge}
+                size="medium"
+                variant="solid"
+                style={styles.statusBadge}
+              />
+            </View>
+          </View>
+
+          {/* Quick Stats Row */}
+          {refereeStats && (
+            <View style={styles.quickStatsRow}>
+              <View style={styles.quickStat}>
+                <Text style={styles.quickStatValue}>{refereeStats.total_assignments}</Text>
+                <Text style={styles.quickStatLabel}>Matches</Text>
+              </View>
+              <View style={styles.quickStat}>
+                <Text style={styles.quickStatValue}>{refereeStats.tournaments_worked.length}</Text>
+                <Text style={styles.quickStatLabel}>Tournaments</Text>
+              </View>
+              <View style={styles.quickStat}>
+                <Text style={styles.quickStatValue}>{Math.round(refereeStats.completion_rate * 100)}%</Text>
+                <Text style={styles.quickStatLabel}>Complete</Text>
+              </View>
+              {refereeStats.performance_score && (
+                <View style={styles.quickStat}>
+                  <Text style={[
+                    styles.quickStatValue,
+                    refereeStats.performance_score >= 80 ? styles.statGood : 
+                    refereeStats.performance_score >= 60 ? styles.statOkay : styles.statPoor
+                  ]}>
+                    {Math.round(refereeStats.performance_score)}
+                  </Text>
+                  <Text style={styles.quickStatLabel}>Score</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Tab Navigation */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'overview' && styles.activeTab]}
+            onPress={() => setActiveTab('overview')}
+          >
+            <Text style={[styles.tabText, activeTab === 'overview' && styles.activeTabText]}>
+              Overview
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'analytics' && styles.activeTab]}
+            onPress={() => setActiveTab('analytics')}
+          >
+            <Text style={[styles.tabText, activeTab === 'analytics' && styles.activeTabText]}>
+              Analytics
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'assignments' && styles.activeTab]}
+            onPress={() => setActiveTab('assignments')}
+          >
+            <Text style={[styles.tabText, activeTab === 'assignments' && styles.activeTabText]}>
+              History
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && referee && (
+          <View style={styles.tabContent}>
+            {/* Experience Section */}
+            {'theoryTest' in referee && (referee.theoryTest || referee.strongPoints) && (
+              <View style={styles.sectionCard}>
+                <Text style={styles.sectionTitle}>Experience</Text>
+                {referee.theoryTest && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Theory Test:</Text>
+                    <Text style={styles.detailValue}>{referee.theoryTest}</Text>
+                  </View>
+                )}
+                {referee.strongPoints && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Strong Points:</Text>
+                    <Text style={styles.detailValue}>{referee.strongPoints}</Text>
+                  </View>
+                )}
+                {'weakPoints' in referee && referee.weakPoints && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Areas for Improvement:</Text>
+                    <Text style={styles.detailValue}>{referee.weakPoints}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Role Breakdown */}
+            {refereeStats && (
+              <View style={styles.sectionCard}>
+                <Text style={styles.sectionTitle}>Role Distribution</Text>
+                <View style={styles.roleGrid}>
+                  <View style={styles.roleItem}>
+                    <Text style={styles.roleCount}>{refereeStats.first_referee_count}</Text>
+                    <Text style={styles.roleLabel}>First Referee</Text>
+                  </View>
+                  <View style={styles.roleItem}>
+                    <Text style={styles.roleCount}>{refereeStats.second_referee_count}</Text>
+                    <Text style={styles.roleLabel}>Second Referee</Text>
+                  </View>
+                  {refereeStats.challenge_referee_count > 0 && (
+                    <View style={styles.roleItem}>
+                      <Text style={styles.roleCount}>{refereeStats.challenge_referee_count}</Text>
+                      <Text style={styles.roleLabel}>Challenge Referee</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {activeTab === 'analytics' && referee && (
+          <View style={styles.tabContent}>
+            <RefereeAnalyticsDashboard
+              refereeId={referee.id}
+              enableComparisons={false}
+              enableExport={true}
+            />
+          </View>
+        )}
+
+        {activeTab === 'assignments' && referee && (
+          <View style={styles.tabContent}>
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>Assignment History</Text>
+              {refereeStats?.tournaments_worked && refereeStats.tournaments_worked.length > 0 ? (
+                <View style={styles.tournamentsList}>
+                  {refereeStats.tournaments_worked.map((tournament, index) => (
+                    <View key={index} style={styles.tournamentItem}>
+                      <ActionIcons.Tournament style={styles.tournamentIcon} />
+                      <Text style={styles.tournamentName}>{tournament}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyText}>No tournament history available</Text>
+              )}
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  content: {
+    flex: 1,
+  },
+  headerCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  refereeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  refereeBasicInfo: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+  headerFlag: {
+    marginRight: 12,
+    marginTop: 4,
+  },
+  refereeNameSection: {
+    flex: 1,
+  },
+  refereeName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  refereeId: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  refereeMetadata: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  federationText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  genderText: {
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  typeText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+  },
+  statusBadge: {
+    marginBottom: 8,
+  },
+  quickStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  quickStat: {
+    alignItems: 'center',
+  },
+  quickStatValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  quickStatLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statGood: {
+    color: colors.success,
+  },
+  statOkay: {
+    color: '#F59E0B',
+  },
+  statPoor: {
+    color: '#EF4444',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeTabText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  tabContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#111827',
+    flex: 2,
+    textAlign: 'right',
+  },
+  roleGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  roleItem: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  roleCount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  roleLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  tournamentsList: {
+    gap: 12,
+  },
+  tournamentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+  },
+  tournamentIcon: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginRight: 12,
+  },
+  tournamentName: {
+    fontSize: 14,
+    color: '#111827',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 20,
+    fontStyle: 'italic',
+  },
+});
+
+export default RefereeProfileScreen;

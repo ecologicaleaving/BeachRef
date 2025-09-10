@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { queryPerformanceMonitor } from '../lib/queryPerformance';
 import { ErrorLogger } from '../services/ErrorLogger';
 
@@ -121,13 +122,41 @@ export function useAnalyticsCollection(
   const flushTimeoutRef = useRef<NodeJS.Timeout>();
   const errorLogger = ErrorLogger.getInstance();
 
+  // On web without an analytics endpoint configured, disable auto-flush and raise batch size to avoid frequent flush attempts
+  useEffect(() => {
+    const analyticsUrl = process.env.EXPO_PUBLIC_ANALYTICS_URL;
+    if (Platform.OS === 'web' && !analyticsUrl) {
+      setCurrentConfig(prev => ({
+        ...prev,
+        flushIntervalMs: 0,
+        batchSize: Math.max(prev.batchSize || 10, 1000)
+      }));
+    }
+  }, []);
+
   // Mutation for sending analytics events to backend
   const sendEventsMutation = useMutation({
     mutationFn: async (events: AnalyticsEvent[]) => {
-      const startTime = performance.now();
+      const now = () => (typeof performance !== 'undefined' && typeof performance.now === 'function') ? performance.now() : Date.now();
+      const startTime = now();
       
       try {
-        const response = await fetch('/api/analytics/events', {
+        // Determine analytics endpoint. On web, skip if not configured to avoid 404s
+        const analyticsUrl = process.env.EXPO_PUBLIC_ANALYTICS_URL;
+        if (Platform.OS === 'web' && !analyticsUrl) {
+          // Treat as success and silently drop in dev web
+          const endTime = now();
+          const duration = endTime - startTime;
+          setPerformance(prev => ({
+            ...prev,
+            eventsSent: prev.eventsSent + events.length,
+            avgFlushTime: (prev.avgFlushTime + duration) / 2,
+            lastError: undefined
+          }));
+          return { skipped: true } as any;
+        }
+
+        const response = await fetch(analyticsUrl || '/api/analytics/events', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -139,7 +168,7 @@ export function useAnalyticsCollection(
           throw new Error(`Analytics API error: ${response.status}`);
         }
 
-        const endTime = performance.now();
+        const endTime = now();
         const duration = endTime - startTime;
 
         // Update performance metrics
@@ -169,10 +198,14 @@ export function useAnalyticsCollection(
         }));
 
         if (currentConfig.enableErrorTracking) {
-          errorLogger.logError(error as Error, {
-            context: 'analytics_collection',
-            eventCount: events.length,
-            config: currentConfig
+          // Use proper ErrorLogger signature
+          errorLogger.logError({
+            entity_type: 'analytics_collection',
+            error: errorMessage,
+            context: {
+              eventCount: events.length,
+              config: currentConfig
+            }
           });
         }
 

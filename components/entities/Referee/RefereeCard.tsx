@@ -10,6 +10,7 @@ import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { colors } from '../../../theme/tokens';
+import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';
 
 export interface RefereeCardProps {
   referee: EventReferee | RefereeOfficial;
@@ -17,8 +18,9 @@ export interface RefereeCardProps {
   showStatusBadge?: boolean;
   showRole?: boolean;
   showAssignments?: boolean;
+  showStatistics?: boolean;
   compact?: boolean;
-  variant?: 'default' | 'assignment' | 'selection';
+  variant?: 'default' | 'assignment' | 'selection' | 'analytics';
   assignmentCount?: number;
 }
 
@@ -32,10 +34,21 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
   showStatusBadge = true,
   showRole = false,
   showAssignments = false,
+  showStatistics = false,
   compact = false,
   variant = 'default',
   assignmentCount = 0,
 }) => {
+  
+  // Get referee analytics data if statistics should be shown
+  const { data: analyticsData, isLoading: analyticsLoading } = useRefereeAnalytics(
+    showStatistics ? { refereeIds: [referee.id] } : undefined, 
+    { 
+      enabled: showStatistics,
+      cacheStrategy: 'historical',
+      enablePerformanceMonitoring: true 
+    }
+  );
   
   // Determine referee status for badge
   const statusForBadge = (() => {
@@ -139,6 +152,81 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
     );
   };
 
+  // Get statistics display
+  const getStatisticsDisplay = () => {
+    if (!showStatistics) return null;
+    
+    if (analyticsLoading) {
+      return (
+        <View style={styles.statisticsContainer}>
+          <Text style={styles.statisticsLoading}>Loading stats...</Text>
+        </View>
+      );
+    }
+    
+    if (!analyticsData?.data || analyticsData.data.length === 0) {
+      return (
+        <View style={styles.statisticsContainer}>
+          <Text style={styles.statisticsEmpty}>No statistics available</Text>
+        </View>
+      );
+    }
+    
+    const refereeStats = analyticsData.data[0]; // First referee from the data
+    
+    return (
+      <View style={styles.statisticsContainer}>
+        <View style={styles.statisticsGrid}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{refereeStats.total_assignments}</Text>
+            <Text style={styles.statLabel}>Matches</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{refereeStats.tournaments_worked.length}</Text>
+            <Text style={styles.statLabel}>Tournaments</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{Math.round(refereeStats.completion_rate * 100)}%</Text>
+            <Text style={styles.statLabel}>Complete Rate</Text>
+          </View>
+          {refereeStats.performance_score && (
+            <View style={styles.statItem}>
+              <Text style={[
+                styles.statValue,
+                refereeStats.performance_score >= 80 ? styles.statGood : 
+                refereeStats.performance_score >= 60 ? styles.statOkay : styles.statPoor
+              ]}>
+                {Math.round(refereeStats.performance_score)}
+              </Text>
+              <Text style={styles.statLabel}>Score</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.roleBreakdown}>
+          <View style={styles.roleItem}>
+            <Text style={styles.roleCount}>{refereeStats.first_referee_count}</Text>
+            <Text style={styles.roleLabel}>R1</Text>
+          </View>
+          <Text style={styles.roleSeparator}>|</Text>
+          <View style={styles.roleItem}>
+            <Text style={styles.roleCount}>{refereeStats.second_referee_count}</Text>
+            <Text style={styles.roleLabel}>R2</Text>
+          </View>
+          {refereeStats.challenge_referee_count > 0 && (
+            <>
+              <Text style={styles.roleSeparator}>|</Text>
+              <View style={styles.roleItem}>
+                <Text style={styles.roleCount}>{refereeStats.challenge_referee_count}</Text>
+                <Text style={styles.roleLabel}>CR</Text>
+              </View>
+            </>
+          )}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <TouchableOpacity 
       style={[
@@ -146,6 +234,7 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
         compact && styles.cardCompact,
         variant === 'assignment' && styles.cardAssignment,
         variant === 'selection' && styles.cardSelection,
+        variant === 'analytics' && styles.cardAnalytics,
         !isActiveOfficial(referee) && styles.cardInactive,
       ]} 
       onPress={() => onPress?.(referee)}
@@ -194,6 +283,7 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
         </View>
 
         {!compact && getExperienceDisplay()}
+        {getStatisticsDisplay()}
       </View>
 
       <View style={styles.cardFooter}>
@@ -406,5 +496,91 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
+  },
+  
+  // Analytics variant card style
+  cardAnalytics: {
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  
+  // Statistics display styles
+  statisticsContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  statisticsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10,
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statGood: {
+    color: colors.success,
+  },
+  statOkay: {
+    color: '#F59E0B',
+  },
+  statPoor: {
+    color: '#EF4444',
+  },
+  roleBreakdown: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F9FAFB',
+  },
+  roleItem: {
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  roleCount: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 1,
+  },
+  roleLabel: {
+    fontSize: 9,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  roleSeparator: {
+    fontSize: 12,
+    color: '#D1D5DB',
+    paddingHorizontal: 4,
+  },
+  statisticsLoading: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  statisticsEmpty: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 4,
+    fontStyle: 'italic',
   },
 });

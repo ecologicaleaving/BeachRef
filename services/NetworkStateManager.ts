@@ -296,9 +296,13 @@ export class NetworkStateManager {
   private async measureLatency(): Promise<number> {
     const startTime = Date.now();
     try {
-      // Use a lightweight endpoint to measure latency
+      // Use a same-origin endpoint on web to avoid CORS; fallback to httpbin in native
+      const testUrl = (typeof window !== 'undefined' && window.location?.origin)
+        ? window.location.origin + '/' // same-origin request avoids CORS
+        : 'https://httpbin.org/json';
+
       const response = await Promise.race([
-        fetch('https://httpbin.org/json', { 
+        fetch(testUrl, { 
           method: 'GET',
           cache: 'no-cache',
         }),
@@ -307,7 +311,7 @@ export class NetworkStateManager {
         )
       ]);
 
-      if (response.ok) {
+      if ((response as any)?.ok) {
         return Date.now() - startTime;
       } else {
         return 2000; // Default high latency for failed requests

@@ -72,7 +72,7 @@ export interface RefereeAnalyticsQueryResult extends UseQueryResult<RefereePerfo
  * Following TanStack Query patterns established in useReferees
  */
 export function useRefereeAnalytics(
-  filters: RefereeAnalyticsFilters,
+  filters?: RefereeAnalyticsFilters,
   config: AnalyticsConfig = {}
 ): RefereeAnalyticsQueryResult {
   const [currentConfig, setCurrentConfig] = useState<AnalyticsConfig>({
@@ -101,8 +101,8 @@ export function useRefereeAnalytics(
 
   // Set default date range if not provided (last 30 days)
   const effectiveFilters: RefereeAnalyticsFilters = {
-    ...filters,
-    dateRange: filters.dateRange || {
+    ...(filters || {}),
+    dateRange: filters?.dateRange || {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       end: new Date().toISOString().split('T')[0]
     }

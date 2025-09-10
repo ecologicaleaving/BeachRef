@@ -144,6 +144,15 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Match importance level */
   readonly importance?: 'LOW' | 'MEDIUM' | 'HIGH' | 'FINAL';
+  
+  /** Match number within tournament for display (NoInTournament from VIS API) */
+  readonly noInTournament?: string;
+  
+  /** Team A position/seed in main draw bracket */
+  readonly teamAPositionInMainDraw?: string;
+  
+  /** Team B position/seed in main draw bracket */
+  readonly teamBPositionInMainDraw?: string;
 }
 
 /**

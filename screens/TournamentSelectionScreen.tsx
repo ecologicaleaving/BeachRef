@@ -14,7 +14,7 @@ import {
   Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { Icon } from '../components/Icons/MaterialCommunityIcons';
 import { TournamentCore } from '../types/tournament-v2';
 import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';

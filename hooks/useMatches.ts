@@ -356,6 +356,7 @@ export function useMatches(
     queryKey,
     queryFn,
     ...cacheOptions,
+    enabled: Boolean(filters),
     retry: (failureCount, error) => {
       // More aggressive retries for live matches
       const maxRetries = hasLiveMatches ? 5 : 3;

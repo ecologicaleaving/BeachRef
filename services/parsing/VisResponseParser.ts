@@ -286,11 +286,15 @@ export class VisResponseParser {
   private static parseSingleMatch(matchXml: string, tournamentId: string): BeachMatchCore | null {
     // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
     const visNo = this.extractXmlAttribute(matchXml, 'No');
-    const matchCode = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
+    const noInTournament = this.extractXmlAttribute(matchXml, 'NoInTournament');
+    const matchCode = noInTournament || this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
     const round = this.extractXmlAttribute(matchXml, 'Round') || '';
     const roundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase') || '';
     const roundName = this.extractXmlAttribute(matchXml, 'RoundName') || '';
     
+    // Extract team position fields
+    const teamAPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamAPositionInMainDraw');
+    const teamBPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamBPositionInMainDraw');
     
     if (!visNo || !matchCode) {
       return null;
@@ -364,6 +368,10 @@ export class VisResponseParser {
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
       weather: this.extractXmlAttribute(matchXml, 'Weather'),
       importance,
+      // Add additional VIS API fields
+      noInTournament: noInTournament,
+      teamAPositionInMainDraw: teamAPositionInMainDraw,
+      teamBPositionInMainDraw: teamBPositionInMainDraw,
       // Add duration fields for debugging and access
       DurationSet1: durationSet1,
       DurationSet2: durationSet2,

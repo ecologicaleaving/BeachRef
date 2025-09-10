@@ -331,9 +331,12 @@ const TournamentDetailScreenContent: React.FC = () => {
       const firstMatch = matches[0];
       console.log('📋 KEY FIELDS FROM FIRST MATCH:');
       console.log('- matchCode:', firstMatch.matchCode);
+      console.log('- noInTournament:', (firstMatch as any).noInTournament);
       console.log('- round:', firstMatch.round);
       console.log('- roundName:', firstMatch.roundName);
       console.log('- roundPhase:', firstMatch.roundPhase);
+      console.log('- teamAPositionInMainDraw:', (firstMatch as any).teamAPositionInMainDraw);
+      console.log('- teamBPositionInMainDraw:', (firstMatch as any).teamBPositionInMainDraw);
       console.log('- visNo:', firstMatch.visNo);
       console.log('- id:', firstMatch.id);
       console.log('- scheduledDateTime:', firstMatch.scheduledDateTime);

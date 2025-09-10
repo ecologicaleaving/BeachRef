@@ -219,6 +219,7 @@ export function useTournaments(
     queryKey,
     queryFn,
     ...cacheOptions,
+    enabled: Boolean(filters),
     retry: (failureCount, error) => {
       // Retry logic: max 3 retries, exponential backoff
       if (failureCount >= 3) return false;

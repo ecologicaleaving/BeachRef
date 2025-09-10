@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
 import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
 import { MatchList, MatchCard } from '../entities/Match';
 import { useMatches, MatchesFilters } from '../../hooks/useMatches';
@@ -234,7 +234,7 @@ interface MatchListV2Props {
   showAllDays?: boolean; // Enhanced: Show all tournament days in timeline view
   enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
   liveScores?: { [matchNumber: string]: any }; // External live scores data
-  getLiveScore?: (matchNumber: string) => any; // Function to get live score for a match
+  getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -272,7 +272,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
   
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
-  const shouldUseHook = !!tournamentCode && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
+  // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
+  const shouldUseHook = !!tournamentCode && Platform.OS !== 'web' && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
   const hookFilters = useMemo((): MatchesFilters => ({
     tournamentCode,
     eventId,
@@ -841,27 +842,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Check if match is currently live (beach volleyball rules)
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    // Rule 1: Current time must be past scheduled time
-    if (!match.scheduledDateTime) return false;
-    const matchDate = new Date(match.scheduledDateTime);
-    const now = new Date();
-    const isAfterScheduledTime = matchDate < now;
-    
-    // Rule 2: Match must not be finished (no team has won 2 sets yet)
+    // Consider live strictly when VIS status is RUNNING and nobody has won yet
     const team1Sets = match.result?.team1Sets || 0;
     const team2Sets = match.result?.team2Sets || 0;
     const matchNotFinished = team1Sets < 2 && team2Sets < 2;
-    
-    // Rule 3: Check if match status indicates it's running
-    const statusIsRunning = match.status === MatchStatus.RUNNING || match.status === MatchStatus.IN_PROGRESS;
-    
-    // Rule 4: For matches without explicit status, assume live if started within reasonable timeframe (2 hours)
-    const timeSinceStart = now.getTime() - matchDate.getTime();
-    const withinReasonableTimeframe = timeSinceStart <= 2 * 60 * 60 * 1000; // 2 hours
-    
-    // Match is live if:
-    // - Time has passed AND match not finished AND (status indicates running OR within reasonable timeframe)
-    return isAfterScheduledTime && matchNotFinished && (statusIsRunning || withinReasonableTimeframe);
+    return match.status === MatchStatus.RUNNING && matchNotFinished;
   };
 
   // Get status display text and color
@@ -902,14 +887,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     // Merge live scores with match result for live matches
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
-      const liveScore = getLiveScore(match.matchNumber);
+      // Support VIS match numbers like "M001"/"W012" by stripping non-digits
+      const rawCode = (match as any).visNo || (match as any).matchCode || '';
+      const numericCode = String(rawCode).replace(/\D/g, '');
+      const matchNo = parseInt(numericCode || '', 10);
+      const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
       if (liveScore && liveScore.sets && liveScore.sets.length > 0) {
         // Create enhanced result from live score data
         const liveResult = {
-          team1Sets: liveScore.sets.filter((set: any, index: number) => 
-            index % 2 === 0 && set.pointsTeamA > set.pointsTeamB).length,
-          team2Sets: liveScore.sets.filter((set: any, index: number) => 
-            index % 2 === 0 && set.pointsTeamA < set.pointsTeamB).length,
+          team1Sets: liveScore.sets.filter((set: any) => set.pointsTeamA > set.pointsTeamB).length,
+          team2Sets: liveScore.sets.filter((set: any) => set.pointsTeamB > set.pointsTeamA).length,
           winner: undefined, // Live matches don't have a winner yet
           setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
         };
@@ -947,7 +934,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
 
   // Error state
-  if (error && shouldUseHook) {
+  // If hook errors, gracefully fall back to propMatches instead of blocking the UI
+  // Only show error screen if there are no provided matches to render
+  if (error && shouldUseHook && (!propMatches || propMatches.length === 0)) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>{error}</Text>

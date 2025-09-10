@@ -67,6 +67,7 @@ export interface RefereeListProps {
   showStatusBadge?: boolean;
   showRole?: boolean;
   showAssignments?: boolean;
+  showStatistics?: boolean;
   compactMode?: boolean;
   filterByStatus?: 'all' | 'active' | 'inactive' | 'suspended' | 'restricted';
   filterByGender?: 'all' | 'M' | 'W';
@@ -75,7 +76,7 @@ export interface RefereeListProps {
   groupByStatus?: boolean;
   maxItems?: number;
   emptyMessage?: string;
-  variant?: 'default' | 'assignment' | 'selection';
+  variant?: 'default' | 'assignment' | 'selection' | 'analytics';
   assignmentCounts?: Record<string, number>;
   // New props for hook-based data fetching
   tournamentCodes?: string[]; // Enable filtering by tournaments
@@ -100,6 +101,7 @@ export const RefereeList: React.FC<RefereeListProps> = ({
   showStatusBadge = true,
   showRole = false,
   showAssignments = false,
+  showStatistics = false,
   compactMode = false,
   filterByStatus = 'all',
   filterByGender = 'all',
@@ -266,11 +268,12 @@ export const RefereeList: React.FC<RefereeListProps> = ({
       showStatusBadge={showStatusBadge}
       showRole={showRole}
       showAssignments={showAssignments}
+      showStatistics={showStatistics}
       compact={compactMode}
       variant={variant}
       assignmentCount={getAssignmentCount(item)}
     />
-  ), [onRefereePress, showStatusBadge, showRole, showAssignments, compactMode, variant, finalAssignmentCounts]);
+  ), [onRefereePress, showStatusBadge, showRole, showAssignments, showStatistics, compactMode, variant, finalAssignmentCounts]);
 
   // Render section header for grouped display
   const renderSectionHeader = ({ section }: { section: { title: string } }) => {

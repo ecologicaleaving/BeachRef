@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
@@ -30,6 +31,30 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onPress,
   variant = 'default',
 }) => {
+  const router = useRouter();
+  
+  // Navigate to referee profile
+  const handleRefereePress = (refereeName: string, federationCode?: string) => {
+    // Create a mock referee object for navigation
+    const refereeData = {
+      id: refereeName, // Use name as ID for now
+      firstName: refereeName.split(' ')[0] || refereeName,
+      lastName: refereeName.split(' ').slice(1).join(' ') || '',
+      federationCode: federationCode || 'UNK',
+      gender: 'M' as const, // Default gender
+      status: 'Active' as const,
+      type: 'Referee' as const,
+      noOfficial: refereeName, // Use name as identifier
+    };
+    
+    router.push({
+      pathname: '/referee-profile',
+      params: {
+        refereeData: JSON.stringify(refereeData)
+      }
+    });
+  };
+  
   // Format time display
   const formatTime = (dateTimeString: string): string => {
     try {
@@ -291,7 +316,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 styles.genderBadgeText,
                 (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
               ]}>
-                {(match as any).tournamentGender}
+                {(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
               </Text>
             </View>
           )}
@@ -328,10 +353,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
       {/* Flags and Result Row */}
       <View style={styles.flagsAndResultRow}>
-        <FlagImage
-          countryCode={match.team1?.countryCode}
-          style={styles.leftFlag}
-        />
+        <View style={styles.leftFlagContainer}>
+          <FlagImage
+            countryCode={match.team1?.countryCode}
+            size="large"
+            style={styles.leftFlag}
+          />
+          <Text style={[styles.countryCode, styles.leftCountryCode]}>
+            {match.team1?.countryCode || ''}
+          </Text>
+        </View>
         
         <View style={styles.centerResultContainer}>
           {matchWithResult.result ? (
@@ -516,10 +547,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           )}
         </View>
         
-        <FlagImage
-          countryCode={match.team2?.countryCode}
-          style={styles.rightFlag}
-        />
+        <View style={styles.rightFlagContainer}>
+          <FlagImage
+            countryCode={match.team2?.countryCode}
+            size="large"
+            style={styles.rightFlag}
+          />
+          <Text style={[styles.countryCode, styles.rightCountryCode]}>
+            {match.team2?.countryCode || ''}
+          </Text>
+        </View>
       </View>
 
       {/* Teams Container */}
@@ -532,9 +569,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               matchWithResult.result?.winner === 1 && styles.winnerTeam
             ]} numberOfLines={2}>
               {match.team1?.teamName || 'Team A'}
-            </Text>
-            <Text style={[styles.countryCode, styles.leftCountryCode]}>
-              {match.team1?.countryCode || ''}
+              {(match as any).teamAPositionInMainDraw && ` (${(match as any).teamAPositionInMainDraw})`}
             </Text>
           </View>
           
@@ -545,9 +580,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               matchWithResult.result?.winner === 2 && styles.winnerTeam
             ]} numberOfLines={2}>
               {match.team2?.teamName || 'Team B'}
-            </Text>
-            <Text style={[styles.countryCode, styles.rightCountryCode]}>
-              {match.team2?.countryCode || ''}
+              {(match as any).teamBPositionInMainDraw && ` (${(match as any).teamBPositionInMainDraw})`}
             </Text>
           </View>
         </View>
@@ -586,7 +619,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View key={`assignment-${index}`} style={styles.refereeRow}>
                     <View style={styles.refereeContentRow}>
                       <Text style={styles.refereePosition}>{position}</Text>
-                      <Text style={styles.refereeName}>{referee.refereeName}</Text>
+                      <TouchableOpacity onPress={() => handleRefereePress(referee.refereeName, referee.federationCode)}>
+                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{referee.refereeName}</Text>
+                      </TouchableOpacity>
                       <FlagImage
                         countryCode={referee.federationCode}
                         style={styles.refereeFlag}
@@ -602,7 +637,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View key="referee1" style={styles.refereeRow}>
                     <View style={styles.refereeContentRow}>
                       <Text style={styles.refereePosition}>1°</Text>
-                      <Text style={styles.refereeName}>{rawMatch.Referee1Name}</Text>
+                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee1Name, rawMatch.Referee1FederationCode)}>
+                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee1Name}</Text>
+                      </TouchableOpacity>
                       <FlagImage
                         countryCode={rawMatch.Referee1FederationCode}
                         style={styles.refereeFlag}
@@ -617,7 +654,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View key="referee2" style={styles.refereeRow}>
                     <View style={styles.refereeContentRow}>
                       <Text style={styles.refereePosition}>2°</Text>
-                      <Text style={styles.refereeName}>{rawMatch.Referee2Name}</Text>
+                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee2Name, rawMatch.Referee2FederationCode)}>
+                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee2Name}</Text>
+                      </TouchableOpacity>
                       <FlagImage
                         countryCode={rawMatch.Referee2FederationCode}
                         style={styles.refereeFlag}
@@ -633,7 +672,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View key="challenge-referee" style={styles.refereeRow}>
                     <View style={styles.refereeContentRow}>
                       <Text style={styles.refereePosition}>CR</Text>
-                      <Text style={styles.refereeName}>{rawMatch.ChallengeRefereeName}</Text>
+                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.ChallengeRefereeName, rawMatch.ChallengeRefereeFederationCode)}>
+                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.ChallengeRefereeName}</Text>
+                      </TouchableOpacity>
                       <FlagImage
                         countryCode={rawMatch.ChallengeRefereeFederationCode}
                         style={styles.refereeFlag}
@@ -745,7 +786,7 @@ const styles = StyleSheet.create({
   },
   courtText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#374151',
     fontWeight: '500',
     textAlign: 'center',
   },
@@ -767,11 +808,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  leftFlag: {
+  leftFlagContainer: {
     flex: 0.8,
+    alignItems: 'flex-start',
+  },
+  rightFlagContainer: {
+    flex: 0.8,
+    alignItems: 'flex-end',
+  },
+  leftFlag: {
+    marginBottom: 2,
   },
   rightFlag: {
-    flex: 0.8,
+    marginBottom: 2,
   },
   centerResultContainer: {
     flex: 2,
@@ -803,12 +852,12 @@ const styles = StyleSheet.create({
   scoreSeparator: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginHorizontal: 4,
   },
   vsText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
     fontWeight: '500',
   },
   teamsContainer: {
@@ -830,25 +879,29 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   leftTeamName: {
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
   },
   rightTeamName: {
-    textAlign: 'center',
+    textAlign: 'right',
+    alignSelf: 'flex-end',
   },
   winnerTeam: {
     color: colors.success,
     fontWeight: 'bold',
   },
   countryCode: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    fontWeight: '500',
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '600',
   },
   leftCountryCode: {
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
   },
   rightCountryCode: {
-    textAlign: 'center',
+    textAlign: 'right', 
+    alignSelf: 'flex-end',
   },
   refereesContainer: {
     marginTop: 4,
@@ -880,6 +933,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginHorizontal: 8,
   },
+  refereeNameClickable: {
+    textDecorationLine: 'underline',
+    color: colors.primary,
+  },
   setScoresContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -899,12 +956,12 @@ const styles = StyleSheet.create({
   setScore: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#374151',
   },
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginHorizontal: 3,
   },
   activeSetScore: {

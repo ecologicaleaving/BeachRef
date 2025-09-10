@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ViewStyle, AccessibilityRole } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ViewStyle, AccessibilityRole, Platform, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { 
   IconSize, 
@@ -64,7 +64,12 @@ export const Icon: React.FC<IconProps> = React.memo(({
     style,
   ];
 
-  const iconElement = (
+  const iconElement = Platform.OS === 'web' ? (
+    // Web fallback to avoid font loading timeouts
+    <Text aria-label={variantIconName} style={{ fontSize: iconStyles.size, color: iconStyles.color, opacity: iconStyles.variant === 'filled' && !isEmergency ? 0.95 : 1.0 }}>
+      ●
+    </Text>
+  ) : (
     <Ionicons
       name={variantIconName as any}
       size={iconStyles.size}

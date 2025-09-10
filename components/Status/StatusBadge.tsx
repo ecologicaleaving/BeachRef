@@ -81,7 +81,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = React.memo(({
   const displayIcon = icon || STATUS_ICONS[status];
 
   const getVariantStyles = (): ViewStyle => {
-    const borderWidth = statusColorThemes.border[status].width;
+    const borderWidth = statusColorThemes.border[status]?.width || 1;
     
     switch (variant) {
       case 'solid':

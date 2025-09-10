@@ -164,14 +164,44 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return null;
   };
 
-  // Extract round data - check multiple possible sources including legacy BeachMatch fields
+  // Extract round data - prioritize roundName attribute
   const getRoundDisplayData = () => {
     const rawMatch = match as any;
     
-    // Check various possible sources for round information
-    const round = match.round || rawMatch.Round || rawMatch.RoundDisplayText || rawMatch.RoundName;
-    const phase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
+    // First priority: use the roundName attribute directly
+    if (match.roundName && match.roundName.trim()) {
+      const roundName = match.roundName.trim();
+      
+      // Special handling for finals
+      if (roundName.toLowerCase().includes('final')) {
+        // Check if it's the First Place final (Gold Medal)
+        if (roundName.toLowerCase().includes('first place') || 
+            roundName.toLowerCase().includes('1st place') ||
+            roundName.toLowerCase().includes('gold')) {
+          return { 
+            round: 'GOLD',
+            phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
+          };
+        }
+        // Other finals are Bronze Medal matches
+        else {
+          return { 
+            round: 'BRONZE',
+            phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
+          };
+        }
+      }
+      
+      // For non-final rounds, use the roundName as-is
+      return { 
+        round: roundName,
+        phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
+      };
+    }
     
+    // Fallback: check other possible sources for round information  
+    const round = match.round || rawMatch.Round || rawMatch.RoundDisplayText;
+    const phase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
     
     // Check for medal matches first (gold/bronze)
     if (round && (round.toLowerCase().includes('gold') || round.toLowerCase().includes('bronze'))) {
@@ -191,7 +221,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     
     // Check for finals and playoffs
     if (round && round.toLowerCase().includes('final') && !round.toLowerCase().includes('semi')) {
-      // Could be Gold Medal Match
       return { round: 'Final', phase: undefined };
     }
     
@@ -229,7 +258,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       }
     }
     
-    // Default fallback - be more intelligent about the default
+    // Default fallback
     return { 
       round: round || 'TBD',
       phase: phase
@@ -307,20 +336,31 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <View style={styles.centerResultContainer}>
           {matchWithResult.result ? (
             <View style={styles.resultContainerWithSets}>
-              <View style={styles.resultContainer}>
-                <Text style={[
-                  styles.resultScore,
-                  matchWithResult.result.winner === 1 && styles.winnerScore
-                ]}>
-                  {matchWithResult.result.team1Sets}
-                </Text>
-                <Text style={styles.scoreSeparator}>-</Text>
-                <Text style={[
-                  styles.resultScore,
-                  matchWithResult.result.winner === 2 && styles.winnerScore
-                ]}>
-                  {matchWithResult.result.team2Sets}
-                </Text>
+              {/* Main score and duration row */}
+              <View style={styles.scoreAndDurationRow}>
+                <View style={styles.resultContainer}>
+                  <Text style={[
+                    styles.resultScore,
+                    matchWithResult.result.winner === 1 && styles.winnerScore
+                  ]}>
+                    {matchWithResult.result.team1Sets}
+                  </Text>
+                  <Text style={styles.scoreSeparator}>-</Text>
+                  <Text style={[
+                    styles.resultScore,
+                    matchWithResult.result.winner === 2 && styles.winnerScore
+                  ]}>
+                    {matchWithResult.result.team2Sets}
+                  </Text>
+                </View>
+                
+                {/* Duration Display - moved to the right of the score */}
+                {(() => {
+                  const totalDuration = getMatchDuration(match);
+                  return totalDuration ? (
+                    <Text style={styles.durationText}>({totalDuration})</Text>
+                  ) : null;
+                })()}
               </View>
               
               {/* Set Scores Display - check multiple sources */}
@@ -347,6 +387,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       const setScores = matchWithResult.result.setScores;
                       
                       // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
+                      const totalSets = Math.floor(setScores.length / 2);
                       for (let i = 0; i < setScores.length; i += 2) {
                         if (i + 1 < setScores.length) {
                           const team1Score = setScores[i];
@@ -360,21 +401,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           const minWinScore = isThirdSet ? 15 : 21;
                           const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
                                                   (team2Score >= minWinScore && team2Score - team1Score >= 2);
-                          const isNotLastSet = setNumber < Math.floor(setScores.length / 2);
+                          const isNotLastSet = setNumber < totalSets;
                           const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
+                          const isActiveSet = match.status === MatchStatus.RUNNING && setNumber === totalSets && !isSetComplete;
                           
                           sets.push(
                             <View key={setNumber} style={styles.individualSet}>
                               <Text style={[
                                 styles.setScore,
-                                isWinningSet === 1 && isSetComplete && styles.winningSetScore
+                                isWinningSet === 1 && isSetComplete && styles.winningSetScore,
+                                isActiveSet && styles.activeSetScore
                               ]}>
                                 {team1Score}
                               </Text>
                               <Text style={styles.setScoreSeparator}>-</Text>
                               <Text style={[
                                 styles.setScore,
-                                isWinningSet === 2 && isSetComplete && styles.winningSetScore
+                                isWinningSet === 2 && isSetComplete && styles.winningSetScore,
+                                isActiveSet && styles.activeSetScore
                               ]}>
                                 {team2Score}
                               </Text>
@@ -466,14 +510,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   })()}
                 </View>
               )}
-              
-              {/* Duration Display */}
-              {(() => {
-                const totalDuration = getMatchDuration(match);
-                return totalDuration ? (
-                  <Text style={styles.durationText}>({totalDuration})</Text>
-                ) : null;
-              })()}
             </View>
           ) : (
             <Text style={styles.vsText}>vs</Text>
@@ -744,6 +780,12 @@ const styles = StyleSheet.create({
   resultContainerWithSets: {
     alignItems: 'center',
   },
+  scoreAndDurationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
   resultContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -865,15 +907,18 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginHorizontal: 3,
   },
+  activeSetScore: {
+    color: '#111827',
+    fontWeight: '700',
+  },
   winningSetScore: {
     color: '#059669',
     fontWeight: '700',
   },
   durationText: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: '#9CA3AF',
-    marginTop: 2,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
     textAlign: 'center',
   },
 });

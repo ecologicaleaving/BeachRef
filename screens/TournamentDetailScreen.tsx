@@ -9,12 +9,13 @@ import {
   Alert,
   RefreshControl,
   Switch,
+  Platform,
 } from 'react-native';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { Icon } from '../components/Icons/MaterialCommunityIcons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
-import { BeachMatchCore } from '../types/match-v2';
+import { BeachMatchCore, MatchStatus } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
@@ -313,6 +314,79 @@ const TournamentDetailScreenContent: React.FC = () => {
     
     // Auto-scroll logic disabled - will work on it later
   };
+
+  // DEBUG: Log match objects on demand
+  const handleDebugLogMatches = () => {
+    console.log('🐛 DEBUG: Manual match logging triggered');
+    console.log('📊 Current matches state:', matches);
+    
+    if (matches && matches.length > 0) {
+      console.log(`📈 Total matches loaded: ${matches.length}`);
+      
+      // Log first match in detail
+      console.log('🔍 FIRST MATCH OBJECT:');
+      console.log(JSON.stringify(matches[0], null, 2));
+      
+      // Log specific fields we're looking for
+      const firstMatch = matches[0];
+      console.log('📋 KEY FIELDS FROM FIRST MATCH:');
+      console.log('- matchCode:', firstMatch.matchCode);
+      console.log('- round:', firstMatch.round);
+      console.log('- roundName:', firstMatch.roundName);
+      console.log('- roundPhase:', firstMatch.roundPhase);
+      console.log('- visNo:', firstMatch.visNo);
+      console.log('- id:', firstMatch.id);
+      console.log('- scheduledDateTime:', firstMatch.scheduledDateTime);
+      console.log('- status:', firstMatch.status);
+      console.log('- court:', firstMatch.court);
+      console.log('- team1:', firstMatch.team1);
+      console.log('- team2:', firstMatch.team2);
+      console.log('- result:', firstMatch.result);
+      
+      // Check for duration fields (might be in different places)
+      console.log('⏱️ DURATION FIELDS:');
+      console.log('- DurationSet1:', (firstMatch as any).DurationSet1);
+      console.log('- DurationSet2:', (firstMatch as any).DurationSet2);
+      console.log('- DurationSet3:', (firstMatch as any).DurationSet3);
+      console.log('- result.duration:', firstMatch.result?.duration);
+      
+      // Check if we have any duration data at all
+      const hasDurationData = (firstMatch as any).DurationSet1 || (firstMatch as any).DurationSet2 || (firstMatch as any).DurationSet3;
+      console.log('- Has any duration data:', hasDurationData);
+      if (!hasDurationData) {
+        console.log('🚨 No duration data found! The VIS API might not be returning DurationSet fields.');
+      }
+      
+      // Log all available fields
+      console.log('🗂️ ALL FIELDS IN MATCH OBJECT:');
+      console.log(Object.keys(firstMatch).sort());
+      
+      // Log a few more matches for comparison
+      if (matches.length > 1) {
+        console.log('🔍 SECOND MATCH FOR COMPARISON:');
+        const secondMatch = matches[1];
+        console.log('- matchCode:', secondMatch.matchCode);
+        console.log('- round:', secondMatch.round);
+        console.log('- roundName:', secondMatch.roundName);
+        console.log('- status:', secondMatch.status);
+      }
+      
+      if (matches.length > 2) {
+        console.log('🔍 THIRD MATCH FOR COMPARISON:');
+        const thirdMatch = matches[2];
+        console.log('- matchCode:', thirdMatch.matchCode);
+        console.log('- round:', thirdMatch.round);
+        console.log('- roundName:', thirdMatch.roundName);
+        console.log('- status:', thirdMatch.status);
+      }
+      
+    } else {
+      console.log('❌ No matches loaded yet or matches is null/empty');
+      console.log('- matches is null:', matches === null);
+      console.log('- matches length:', matches?.length);
+      console.log('- matchesLoading:', matchesLoading);
+    }
+  };
   
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -374,7 +448,8 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Hybrid tournament data management - use hook for enhanced caching and real-time updates
   // Only use tournament hook if feature flag is enabled
-  const shouldUseTournamentHook = featureFlags.shouldUseNewHook('TournamentDetailScreen', 'tournaments');
+  // Avoid Supabase function calls on web (CORS); rely on provided tournament data
+  const shouldUseTournamentHook = Platform.OS !== 'web' && featureFlags.shouldUseNewHook('TournamentDetailScreen', 'tournaments');
   
   const {
     data: hookTournaments = [],
@@ -483,13 +558,20 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Get match numbers for live score polling
   const matchNumbers = React.useMemo(() => {
     if (!matches) return [];
+    const toNumericMatchNo = (m: any): number | null => {
+      const raw = m?.visNo || m?.matchCode || '';
+      const digits = String(raw).replace(/\D/g, '');
+      const n = parseInt(digits || '', 10);
+      return Number.isFinite(n) ? n : null;
+    };
     return matches
       .filter(match => {
         // Only poll for matches that are likely to have live scores
         const status = match.status;
-        return status === 'InProgress' || status === 'Scheduled';
+        return status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED;
       })
-      .map(match => match.matchNumber);
+      .map(m => toNumericMatchNo(m))
+      .filter((v): v is number => v !== null);
   }, [matches]);
 
   // Live scores hook with automatic lifecycle management
@@ -1049,9 +1131,42 @@ const TournamentDetailScreenContent: React.FC = () => {
               return dateA.getTime() - dateB.getTime();
             });
             
+            // Log match objects for inspection
+            console.log('🏐 MATCH OBJECTS LOADED:');
+            console.log(`📊 Total matches: ${sortedMatches.length}`);
+            
+            if (sortedMatches.length > 0) {
+              console.log('🔍 Sample match object (first match):');
+              console.log(JSON.stringify(sortedMatches[0], null, 2));
+              
+              // Log specific fields we're interested in
+              const firstMatch = sortedMatches[0];
+              console.log('📋 Key fields in match object:');
+              console.log('- matchCode/NoInTournament:', firstMatch.matchCode);
+              console.log('- round:', firstMatch.round);
+              console.log('- roundName:', firstMatch.roundName);
+              console.log('- DurationSet1:', (firstMatch as any).DurationSet1);
+              console.log('- DurationSet2:', (firstMatch as any).DurationSet2);
+              console.log('- DurationSet3:', (firstMatch as any).DurationSet3);
+              
+              // Log a few more matches to see variety
+              if (sortedMatches.length > 1) {
+                console.log('🔍 Second match for comparison:');
+                const secondMatch = sortedMatches[1];
+                console.log('- matchCode:', secondMatch.matchCode);
+                console.log('- round:', secondMatch.round);
+                console.log('- roundName:', secondMatch.roundName);
+              }
+              
+              // Log all available fields from the first match
+              console.log('🗂️ All fields in match object:');
+              console.log(Object.keys(sortedMatches[0]).sort());
+            }
+            
             setMatches(sortedMatches);
             setMatchesLoading(false);
           } catch (parseError) {
+            console.error('❌ Error parsing matches:', parseError);
             setMatches([]);
             setMatchesLoading(false);
           }
@@ -1253,6 +1368,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                     }}
                   >
                     <Text style={styles.resetFiltersText}>Reset Filters</Text>
+                  </TouchableOpacity>
+                  
+                  {/* DEBUG BUTTON - Temporary for logging match objects */}
+                  <TouchableOpacity 
+                    style={styles.debugButton}
+                    onPress={handleDebugLogMatches}
+                  >
+                    <Text style={styles.debugButtonText}>🐛 Log Matches</Text>
                   </TouchableOpacity>
                 </View>
                 
@@ -2021,6 +2144,22 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // DEBUG BUTTON STYLES - Temporary for development
+  debugButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#8B5CF6', // Purple background for debug
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+  },
+  
+  debugButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 

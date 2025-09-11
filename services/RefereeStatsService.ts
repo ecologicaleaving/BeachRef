@@ -68,7 +68,9 @@ export class RefereeStatsService {
         retryDelayMs: 1000,
         enableLogging: true,
         exponentialBackoff: true,
-        headers: {}
+        headers: {
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+        }
       });
     }
     return RefereeStatsService.visApiClient;
@@ -663,7 +665,8 @@ export class RefereeStatsService {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -671,14 +674,48 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/); 
+        // Try direct attribute match first
+        const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/);
         const resolvedNoReferee = refereeNoMatch?.[1];
-        
         if (resolvedNoReferee) {
           return resolvedNoReferee;
-        } else {
-          return null;
         }
+
+        // Fallback: query all referees for the event and match by name client-side
+        const fallbackXml = `<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Status Role">
+    <Filter NoEvent="${tournamentNo}"/>
+  </Request>
+</Requests>`;
+
+        const fallbackResp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+          method: "POST",
+          headers: {
+            "Accept": "application/xml",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
+          },
+          body: new URLSearchParams({ Request: fallbackXml })
+        });
+
+        if (fallbackResp.ok) {
+          const fallbackXmlText = await fallbackResp.text();
+          // Find EventReferee entries and match by first/last name
+          const entries = fallbackXmlText.match(/<EventReferee[^>]*>/g) || [];
+          const targetFirst = firstName.toLowerCase();
+          const targetLast = lastName.toLowerCase();
+          for (const entry of entries) {
+            const f = (entry.match(/FirstName="([^"]*)"/)?.[1] || '').toLowerCase();
+            const l = (entry.match(/LastName="([^"]*)"/)?.[1] || '').toLowerCase();
+            if (f === targetFirst && l === targetLast) {
+              const no = entry.match(/NoReferee="([^"]*)"/)?.[1];
+              if (no) return no;
+            }
+          }
+        }
+
+        return null;
       } else {
         return null;
       }
@@ -697,6 +734,18 @@ export class RefereeStatsService {
     tournamentNo: string
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        console.warn(`❌ Invalid referee ID "${refereeNo}" - skipping VIS API tournament query`);
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        console.warn(`❌ Invalid referee ID format "${refereeNo}" - expected 6-digit number`);
+        return [];
+      }
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
       const xml = `<Requests>
@@ -707,12 +756,14 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
+      console.log(`🔍 Querying tournament ${tournamentNo} matches for referee ${refereeNo} as ${role} referee`);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -720,12 +771,15 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        const matches = RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        console.log(`✅ Found ${matches.length} tournament matches for referee ${refereeNo} as ${role} referee`);
+        return matches;
       } else {
+        console.warn(`❌ VIS API responded with status ${response.status} for referee ${refereeNo}`);
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying tournament matches for ${role} referee:`, error);
+      console.error(`❌ Error querying tournament matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }
@@ -866,6 +920,18 @@ export class RefereeStatsService {
     season: string
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        console.warn(`❌ Invalid referee ID "${refereeNo}" - skipping VIS API season query`);
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        console.warn(`❌ Invalid referee ID format "${refereeNo}" - expected 6-digit number`);
+        return [];
+      }
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
       const xml = `<Requests>
@@ -875,12 +941,12 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -888,12 +954,13 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        const matches = RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        return matches;
       } else {
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying season matches for ${role} referee:`, error);
+      console.error(`❌ Error querying season matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }
@@ -906,6 +973,19 @@ export class RefereeStatsService {
     role: 'first' | 'second'
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      // This prevents returning ALL matches (185) when referee resolution fails
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        console.warn(`❌ Invalid referee ID "${refereeNo}" - skipping VIS API query to prevent returning all matches`);
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        console.warn(`❌ Invalid referee ID format "${refereeNo}" - expected 6-digit number`);
+        return [];
+      }
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
       const xml = `<Requests>
@@ -915,12 +995,12 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -928,12 +1008,13 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        const matches = RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        return matches;
       } else {
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying career matches for ${role} referee:`, error);
+      console.error(`❌ Error querying career matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }

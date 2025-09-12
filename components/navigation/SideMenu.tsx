@@ -46,7 +46,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, title, onPress, disabled = fa
 
 export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentContext = 'default', tournamentName }) => {
   const router = useRouter();
-  const slideAnim = React.useRef(new Animated.Value(-280)).current;
+  const slideAnim = React.useRef(new Animated.Value(280)).current;
 
   useEffect(() => {
     if (isVisible) {
@@ -57,7 +57,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
       }).start();
     } else {
       Animated.timing(slideAnim, {
-        toValue: -280,
+        toValue: 280,
         duration: 300,
         useNativeDriver: true,
       }).start();
@@ -190,15 +190,15 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     position: 'absolute',
-    left: 280,
+    left: 0,
     top: 0,
-    right: 0,
+    right: 280,
     bottom: 0,
     backgroundColor: 'transparent',
   },
   menuContainer: {
     position: 'absolute',
-    left: 0,
+    right: 0,
     top: 0,
     bottom: 0,
     width: 280,
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
   closeButtonContainer: {
     position: 'absolute',
     top: 0,
-    left: 0,
+    right: 0,
     zIndex: 1000,
   },
   closeButton: {
     padding: 8,
     marginTop: 12,
-    marginLeft: 16,
+    marginRight: 16,
     minHeight: 44,
     minWidth: 44,
     justifyContent: 'center',

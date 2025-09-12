@@ -993,17 +993,21 @@ export class RefereeStatsService {
 
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
-      // Use tournament approach but with season date range
-      const seasonStartDate = `${season}-01-01`;
-      const seasonEndDate = `${season}-12-31`;
+      // Use tournament approach but with proper beach volleyball season date range
+      // Beach volleyball season typically runs from March to February of next year
+      const seasonStartDate = `${season}-03-01`;
+      const seasonEndDate = `${parseInt(season) + 1}-02-28`;
       
+      // Since VIS API ignores date filters, get all matches and filter client-side
       const xml = `<Requests>
-  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee in ${season} -->
+  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
   <Request Type="GetBeachMatchList"
            Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
-    <Filter ${refereeField}="${refereeNo}" DateFrom="${seasonStartDate}" DateTo="${seasonEndDate}"/>
+    <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
+
+      console.log(`🏐 Season query for ${refereeNo} (${role}): ${seasonStartDate} to ${seasonEndDate}`);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -1018,6 +1022,24 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
+        console.log(`🏐 Season query returned ${matches.length} total matches for ${refereeNo} (${role})`);
+        
+        // Client-side date filtering since VIS API ignores date filters
+        const seasonStart = new Date(seasonStartDate);
+        const seasonEnd = new Date(seasonEndDate);
+        const filteredMatches = matches.filter(match => {
+          const matchDate = new Date(match.LocalDateTime || match.date || '');
+          return matchDate >= seasonStart && matchDate <= seasonEnd;
+        });
+        
+        console.log(`🏐 After client-side filtering: ${filteredMatches.length} matches for ${season} season (${seasonStartDate} to ${seasonEndDate})`);
+        if (filteredMatches.length > 0) {
+          console.log('Sample filtered season match dates:', filteredMatches.slice(0, 3).map(m => m.LocalDateTime || m.date));
+        }
+        
+        // Replace matches with filtered matches for subsequent processing
+        matches.length = 0;
+        matches.push(...filteredMatches);
         // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
         try {
           for (const m of matches) {
@@ -1028,14 +1050,14 @@ export class RefereeStatsService {
         } catch {}
 
         // Apply the same defensive filtering as tournament queries
-        let filteredMatches = matches.filter((m: any) => {
+        let roleFilteredMatches = matches.filter((m: any) => {
           const first = (m.NoReferee1 ?? m.noReferee1 ?? (m.rawMatch?.NoReferee1 ?? '')).toString().trim();
           const second = (m.NoReferee2 ?? m.noReferee2 ?? (m.rawMatch?.NoReferee2 ?? '')).toString().trim();
           const target = refereeNo.toString().trim();
           return role === 'first' ? first === target : second === target;
         });
 
-        return filteredMatches;
+        return roleFilteredMatches;
       } else {
         return [];
       }
@@ -1066,18 +1088,20 @@ export class RefereeStatsService {
 
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
-      // Use tournament approach but with extended date range for career (last 10 years)
-      const currentYear = new Date().getFullYear();
+      // Use tournament approach but with extended date range for career (last 10 years)  
+      const currentYear = 2024; // Fixed to 2024 for current season
       const careerStartDate = `${currentYear - 10}-01-01`;
       const careerEndDate = `${currentYear}-12-31`;
       
       const xml = `<Requests>
-  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career) -->
+  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
   <Request Type="GetBeachMatchList"
            Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
-    <Filter ${refereeField}="${refereeNo}" DateFrom="${careerStartDate}" DateTo="${careerEndDate}"/>
+    <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
+
+      console.log(`🏐 Career query for ${refereeNo} (${role}): ${careerStartDate} to ${careerEndDate}`);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -1092,6 +1116,10 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
+        console.log(`🏐 Career query returned ${matches.length} matches for ${refereeNo} (${role})`);
+        if (matches.length > 0) {
+          console.log('Sample career match dates:', matches.slice(0, 3).map(m => m.date || m.LocalDateTime));
+        }
         // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
         try {
           for (const m of matches) {
@@ -1102,14 +1130,14 @@ export class RefereeStatsService {
         } catch {}
 
         // Apply the same defensive filtering as tournament queries
-        let filteredMatches = matches.filter((m: any) => {
+        let roleFilteredMatches = matches.filter((m: any) => {
           const first = (m.NoReferee1 ?? m.noReferee1 ?? (m.rawMatch?.NoReferee1 ?? '')).toString().trim();
           const second = (m.NoReferee2 ?? m.noReferee2 ?? (m.rawMatch?.NoReferee2 ?? '')).toString().trim();
           const target = refereeNo.toString().trim();
           return role === 'first' ? first === target : second === target;
         });
 
-        return filteredMatches;
+        return roleFilteredMatches;
       } else {
         return [];
       }

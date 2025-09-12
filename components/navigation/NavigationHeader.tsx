@@ -123,13 +123,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
-          {showBurgerMenu && (
-            <BurgerButton 
-              onPress={() => setSideMenuVisible(true)}
-              color={titleColor}
-            />
-          )}
-          {showLogo && !showBurgerMenu && (
+          {showLogo && (
             <TouchableOpacity 
               onPress={handleLogoPress}
               activeOpacity={0.8}
@@ -186,6 +180,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             </TouchableOpacity>
           )}
           {rightComponent}
+          {showBurgerMenu && (
+            <BurgerButton 
+              onPress={() => setSideMenuVisible(true)}
+              color={titleColor}
+            />
+          )}
         </View>
       </View>
       

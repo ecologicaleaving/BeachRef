@@ -7,7 +7,9 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
+import { FlagImage } from '../components/FlagImage';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
+import { RefereeCard as CanonicalRefereeCard } from '../components/entities/Referee/RefereeCard';
 
 interface Referee {
   RefereeId: string; // 6-digit NoReferee from VIS API
@@ -47,34 +49,81 @@ const RefereeCard = ({
   const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Load stats when card is expanded
+  // Load current stats immediately on mount for R1/R2 totals display
+  useEffect(() => {
+    if (referee?.RefereeId && !currentStats) {
+      loadCurrentStats();
+    }
+  }, [referee?.RefereeId]);
+
+  // Load stats when card is expanded or tab changes
   useEffect(() => {
     if (expanded && referee?.RefereeId) {
       loadRefereeStats();
     }
   }, [expanded, referee?.RefereeId, activeTab]);
 
-  const loadRefereeStats = async () => {
+  const loadCurrentStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) return;
     
-    setStatsLoading(true);
     try {
+      const current = await RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
+      setCurrentStats(current);
+    } catch (error) {
+      console.error('Error loading current stats for collapsed card:', error);
+    }
+  };
+
+  const loadRefereeStats = async () => {
+    if (!referee?.RefereeId || !tournamentNo) {
+      console.log('Missing referee ID or tournament number:', { refereeId: referee?.RefereeId, tournamentNo });
+      return;
+    }
+    
+    console.log(`Loading ${activeTab} stats for referee ${referee.RefereeId}`);
+    setStatsLoading(true);
+    
+    try {
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
+
       switch (activeTab) {
         case 'Current':
-          const current = await RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
+          const currentPromise = RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
+          const current = await Promise.race([currentPromise, timeout]);
+          console.log('Current stats loaded:', current);
           setCurrentStats(current);
           break;
         case 'Season':
-          const season = await RefereeStatsService.getSeasonStats(referee.RefereeId, '2024');
+          // Use current calendar year for season stats, not tournament year
+          const currentYear = new Date().getFullYear();
+          const seasonYear = currentYear.toString();
+          console.log('Loading season stats for year:', seasonYear, '(current year)');
+          const seasonPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
+          const season = await Promise.race([seasonPromise, timeout]);
+          console.log('Season stats loaded:', season);
           setSeasonStats(season);
           break;
         case 'Career':
-          const career = await RefereeStatsService.getCareerStats(referee.RefereeId);
+          console.log('Loading career stats');
+          const careerPromise = RefereeStatsService.getCareerStats(referee.RefereeId);
+          const career = await Promise.race([careerPromise, timeout]);
+          console.log('Career stats loaded:', career);
           setCareerStats(career);
           break;
       }
     } catch (error) {
-      console.error('Error loading referee stats:', error);
+      console.error(`Error loading ${activeTab} stats for referee ${referee.RefereeId}:`, error);
+      // Set empty stats on error to prevent indefinite loading
+      switch (activeTab) {
+        case 'Season':
+          setSeasonStats(null);
+          break;
+        case 'Career':
+          setCareerStats(null);
+          break;
+      }
     } finally {
       setStatsLoading(false);
     }
@@ -104,23 +153,23 @@ const RefereeCard = ({
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.totalMatches}</Text>
-          <Text style={styles.statLabel}>Total Matches</Text>
+          <Text style={styles.statLabel}>TOT</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
-          <Text style={styles.statLabel}>As First Ref</Text>
+          <Text style={styles.statLabel}>R1</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
-          <Text style={styles.statLabel}>As Second Ref</Text>
+          <Text style={styles.statLabel}>R2</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.menMatches}</Text>
-          <Text style={styles.statLabel}>Men&apos;s Matches</Text>
+          <Text style={styles.statLabel}>M</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{stats.womenMatches}</Text>
-          <Text style={styles.statLabel}>Women&apos;s Matches</Text>
+          <Text style={styles.statLabel}>W</Text>
         </View>
       </View>
     );
@@ -130,20 +179,33 @@ const RefereeCard = ({
   return (
     <View style={styles.card}>
       <TouchableOpacity style={styles.cardHeader} onPress={onToggle} activeOpacity={0.7}>
+        {referee?.federationCode && (
+          <View style={styles.flagSection}>
+            <FlagImage federationCode={referee.federationCode} size="medium" style={styles.flagLeft} />
+            <Text style={styles.countryCode}>{referee.federationCode}</Text>
+          </View>
+        )}
         <View style={styles.refereeMainInfo}>
           <Text style={styles.refereeName}>
-            {referee?.firstName || 'Unknown'} {referee?.lastName || 'Referee'}
+            {referee?.firstName || 'Unknown'}
           </Text>
-          <Text style={styles.refereeId}>
-            ID: {referee?.RefereeId || 'N/A'}
+          <Text style={styles.refereeLastName}>
+            {referee?.lastName || 'Referee'}
           </Text>
         </View>
         <View style={styles.cardHeaderRight}>
-          {referee?.federationCode && (
-            <Text style={styles.federationCode}>
-              {referee.federationCode}
-            </Text>
-          )}
+          {/* Always show basic R1/R2 totals */}
+          <View style={styles.roleTotals}>
+            <View style={styles.roleTotal}>
+              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
+              <Text style={styles.roleTotalLabel}>R1</Text>
+            </View>
+            <Text style={styles.roleTotalSeparator}>•</Text>
+            <View style={styles.roleTotal}>
+              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
+              <Text style={styles.roleTotalLabel}>R2</Text>
+            </View>
+          </View>
           <Text style={styles.expandIcon}>
             {expanded ? '▼' : '▶'}
           </Text>
@@ -212,22 +274,10 @@ function TournamentRefScreenContent() {
     setLoading(true);
     try {
       
-      // Determine tournament status and use appropriate approach
-      let tournamentStatus = 'SCHEDULED'; // fallback
-      
-      if (tournament) {
-        tournamentStatus = DefaultTournamentService.getTournamentStatus(tournament.startDate, tournament.endDate);
-      }
-
-      // For COMPLETED tournaments, extract referees from match list
-      // For LIVE/SCHEDULED tournaments, try GetEventRefereeList first, fallback to match list
-      if (tournamentStatus === 'COMPLETED') {
+      // Roster-first approach for all statuses
+      const rosterOk = await loadRefereesFromAPI();
+      if (!rosterOk) {
         await loadRefereesFromMatchList();
-      } else {
-        const success = await loadRefereesFromAPI();
-        if (!success) {
-          await loadRefereesFromMatchList();
-        }
       }
     } catch (error) {
       console.error('Error loading referees:', error);
@@ -258,14 +308,16 @@ function TournamentRefScreenContent() {
         const xmlResponse = await response.text();
         const parsedReferees = parseRefereeXML(xmlResponse);
         if (parsedReferees.length > 0) {
-          setReferees(parsedReferees);
-          return true;
-        } else {
-          return false;
+          const normalized = parsedReferees.map(r => ({
+            ...r,
+            RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
+          })).filter(r => r.firstName?.trim() || r.lastName?.trim());
+          setReferees(normalized);
+          console.log(`[RosterInit] referees=${normalized.length} withIDs=${normalized.filter(r=>/^\d{6}$/.test(r.RefereeId||'')).length}`);
+          return normalized.length > 0;
         }
-      } else {
-        return false;
       }
+      return false;
     } catch (error) {
       console.error('Error in loadRefereesFromAPI:', error);
       return false;
@@ -610,8 +662,9 @@ function TournamentRefScreenContent() {
           }
           
           // Use complete data if available, or create referee with found NoReferee ID
+          const validId = /^\d{6}$/.test(foundNoReferee) ? foundNoReferee : '';
           const refereeData: Referee = completeData || {
-            RefereeId: foundNoReferee || referee.name.trim(), // Keep proper name format for resolution
+            RefereeId: validId, // Only set when a valid 6-digit NoReferee is found
             firstName,
             lastName,
             federationCode: referee.federationCode || '',
@@ -743,7 +796,7 @@ function TournamentRefScreenContent() {
       // Create a reverse mapping: NoReferee ID → Referee name using GetEventRefereeList
       const idToRefereeMap = new Map<string, {firstName: string, lastName: string, federationCode: string, gender: string}>();
       
-      if (noRefereeIds.size > 0) {
+      if (true) {
         try {
           // Get all referees for this event to build ID-to-name mapping
           const refereeListXml = `<Requests>
@@ -777,6 +830,10 @@ function TournamentRefScreenContent() {
                 
                 if (noReferee && /^\d{6}$/.test(noReferee)) {
                   idToRefereeMap.set(noReferee, { firstName, lastName, federationCode, gender });
+                  const key1 = `${firstName} ${lastName}`.trim().toLowerCase();
+                  const key2 = `${lastName} ${firstName}`.trim().toLowerCase();
+                  if (key1) nameToIdFromAPI.set(key1, noReferee);
+                  if (key2) nameToIdFromAPI.set(key2, noReferee);
                 }
               });
             }
@@ -832,7 +889,7 @@ function TournamentRefScreenContent() {
           
           // Use complete data if available, otherwise create basic referee object
           const refereeObj = completeData || {
-            RefereeId: name.trim(), // Use name for resolution
+            RefereeId: resolvedId, // Use event roster resolution if available
             firstName,
             lastName,
             federationCode: '',
@@ -1006,6 +1063,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 4,
   },
+  flagRow: {
+    marginTop: 4,
+  },
   federationCode: {
     fontSize: 14,
     fontWeight: '600',
@@ -1028,6 +1088,15 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     marginBottom: 16,
+  },
+  compactStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  compactStat: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   tab: {
     flex: 1,
@@ -1093,6 +1162,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
+  },
+  refereeLastName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 2,
   },
   refereeMetadata: {
     flexDirection: 'row',
@@ -1233,6 +1308,53 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginTop: 4,
   },
+  // Flag and role totals styles
+  flagSection: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  flagLeft: {
+    width: 32,
+    height: 24,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  countryCode: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  roleTotals: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleTotal: {
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  roleTotalCount: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    lineHeight: 14,
+  },
+  roleTotalLabel: {
+    fontSize: 8,
+    color: '#9CA3AF',
+    fontWeight: '500',
+    lineHeight: 10,
+  },
+  roleTotalSeparator: {
+    fontSize: 10,
+    color: '#D1D5DB',
+    paddingHorizontal: 2,
+  },
 });
 
 // Wrapper component with AssignmentStatusProvider
@@ -1243,3 +1365,9 @@ export default function TournamentRefScreen() {
     </AssignmentStatusProvider>
   );
 }
+
+
+
+
+
+

@@ -769,7 +769,7 @@ export class RefereeStatsService {
       // Try to resolve using the first available tournament
       return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0].visNo);
     } catch (error) {
-      console.error('Ã¢ÂÅ' Error resolving referee ID from tournaments:', error);
+      console.error('❌ Error resolving referee ID from tournaments:', error);
       return null;
     }
   }

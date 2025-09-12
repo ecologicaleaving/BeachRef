@@ -15,7 +15,7 @@ import { TournamentCore, GenderType, TournamentType, TournamentStatus } from '..
 import { Tournament } from '../types/tournament';
 import { CacheKey } from '../types/cache-v2';
 import { GetEventListRequest } from '../types/api-v2';
-import { DataTransformationService } from '../services/DataTransformationService';
+// DataTransformationService removed - transformations now handled in simplified hooks
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
 import { VisApiIntegrationService } from '../services/api/VisApiIntegrationService';
 import { featureFlagManager } from '../config/featureFlags';
@@ -66,15 +66,10 @@ export interface ITournamentRepository {
  * Tournament repository implementation with smart caching and legacy compatibility
  */
 export class TournamentRepository extends BaseRepository implements ITournamentRepository {
-  private readonly transformationService: DataTransformationService;
   private readonly apiIntegrationService: VisApiIntegrationService;
 
-  constructor(
-    config: BaseRepositoryConfig, 
-    transformationService: DataTransformationService
-  ) {
+  constructor(config: BaseRepositoryConfig) {
     super(config);
-    this.transformationService = transformationService;
     this.apiIntegrationService = new VisApiIntegrationService(config.apiClient);
   }
 
@@ -266,9 +261,9 @@ export class TournamentRepository extends BaseRepository implements ITournamentR
         };
       }
 
-      // Transform to legacy format
+      // Transformation now handled in simplified hooks - direct passthrough
       const transformStart = Date.now();
-      const legacyTournament = this.transformationService.tournamentCoreToLegacy(tournamentCore);
+      const legacyTournament = tournamentCore; // Direct passthrough - transformation in hooks
       const transformationMs = Date.now() - transformStart;
 
       const metrics = this.completePerformanceMonitoring(
@@ -302,11 +297,9 @@ export class TournamentRepository extends BaseRepository implements ITournamentR
       // Get tournaments in new format
       const tournamentsResult = await this.getListAsync();
       
-      // Transform to legacy format
+      // Transformation now handled in simplified hooks - direct passthrough
       const transformStart = Date.now();
-      const legacyTournaments = tournamentsResult.data.map(tournament => 
-        this.transformationService.tournamentCoreToLegacy(tournament)
-      );
+      const legacyTournaments = tournamentsResult.data; // Direct passthrough - transformation in hooks
       const transformationMs = Date.now() - transformStart;
 
       const metrics = this.completePerformanceMonitoring(

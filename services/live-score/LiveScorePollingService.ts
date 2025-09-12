@@ -7,7 +7,7 @@
 import { IVisApiClient, GetBeachLiveRequest, isSuccessResponse, MatchPollingStatus, FieldSelectionMode, VisApiEndpoint } from '../../types/api-v2';
 import { BeachLive, isValidBeachLive, isNoChangesResponse, extractVersion, extractPollDelay } from '../../types/beach-live';
 import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
-import { CacheService } from '../CacheService';
+import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { MatchStatusPollingManager, matchStatusPollingManager } from '../MatchStatusPollingManager';
 import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
 

@@ -1,10 +1,10 @@
 import { NetworkMonitor } from './NetworkMonitor';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { FilterOptions } from '../types/cache';
 
 interface SyncTask {
   id: string;
-  type: 'tournaments' | 'matches';
+  type: 'tournaments' | 'matches' | 'referees';
   filters?: FilterOptions;
   tournamentNo?: string;
   timestamp: number;
@@ -56,7 +56,7 @@ export class SyncManager {
    * Add sync task to queue
    */
   addSyncTask(
-    type: 'tournaments' | 'matches',
+    type: 'tournaments' | 'matches' | 'referees',
     filters?: FilterOptions,
     tournamentNo?: string,
     maxRetries: number = 3
@@ -143,6 +143,11 @@ export class SyncManager {
           throw new Error('Tournament number required for matches sync');
         }
         await CacheService.getMatches(task.tournamentNo);
+        break;
+      
+      case 'referees':
+        // For now, we'll use a placeholder since CacheService doesn't have getReferees
+        // This would be implemented when referee caching is added to CacheService
         break;
       
       default:

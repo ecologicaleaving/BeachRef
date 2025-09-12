@@ -219,13 +219,15 @@ export const TouchTargetManager: React.FC<TouchTargetManagerProps> = React.memo(
     endTime: 0,
   });
   
+  const now = () => (typeof performance !== 'undefined' && typeof performance.now === 'function') ? performance.now() : Date.now();
+
   const handlePressIn = useCallback(() => {
-    touchPerformanceRef.current.startTime = performance.now();
+    touchPerformanceRef.current.startTime = now();
     onPressIn?.();
   }, [onPressIn]);
   
   const handlePressOut = useCallback(() => {
-    touchPerformanceRef.current.endTime = performance.now();
+    touchPerformanceRef.current.endTime = now();
     onPressOut?.();
   }, [onPressOut]);
   

@@ -57,7 +57,6 @@ export class DefaultTournamentService {
       if (defaultTournament.startDate || defaultTournament.endDate) {
         const status = this.getTournamentStatus(defaultTournament.startDate, defaultTournament.endDate);
         if (status === 'COMPLETED') {
-          console.log('Default tournament has finished, clearing default');
           await this.clearDefaultTournament();
           return null;
         }

@@ -7,7 +7,7 @@
 import { TournamentRepository, ITournamentRepository } from './TournamentRepository';
 import { MatchRepository, IMatchRepository } from './MatchRepository';
 import { BaseRepositoryConfig } from './base/BaseRepository';
-import { DataTransformationService } from '../services/DataTransformationService';
+// DataTransformationService removed - transformations now handled in simplified hooks
 import { featureFlagManager } from '../config/featureFlags';
 
 /**
@@ -88,13 +88,11 @@ export interface PerformanceComparison {
  */
 export class RepositoryFactory {
   private readonly config: RepositoryFactoryConfig;
-  private readonly transformationService: DataTransformationService;
   private readonly performanceMetrics: Map<string, any[]> = new Map();
   private readonly abTestAssignments: Map<string, 'control' | 'treatment'> = new Map();
 
   constructor(config: RepositoryFactoryConfig) {
     this.config = config;
-    this.transformationService = new DataTransformationService();
   }
 
   /**
@@ -106,17 +104,11 @@ export class RepositoryFactory {
     let repository: ITournamentRepository;
     
     if (selection.implementation === 'new') {
-      repository = new TournamentRepository(
-        this.config.baseConfig,
-        this.transformationService
-      );
+      repository = new TournamentRepository(this.config.baseConfig);
     } else {
       // For now, we'll use the new repository as legacy adapter
       // In production, this would be the actual legacy implementation
-      repository = new TournamentRepository(
-        this.config.baseConfig,
-        this.transformationService
-      );
+      repository = new TournamentRepository(this.config.baseConfig);
     }
 
     // Wrap with performance monitoring if enabled

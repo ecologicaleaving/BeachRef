@@ -10,7 +10,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { useAssignmentStatus } from '../../hooks/useAssignmentStatus';
 import { designTokens } from '../../theme/tokens';
 
-export type TabRoute = 'details' | 'monitor';
+export type TabRoute = 'details' | 'monitor' | 'analytics';
 
 interface Tab {
   key: TabRoute;
@@ -37,6 +37,12 @@ const tabs: Tab[] = [
     icon: 'REF',
     route: '/ref-mode',
   },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    icon: '📊',
+    route: '/analytics-dashboard',
+  },
 ];
 
 export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
@@ -60,6 +66,7 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
     // Auto-detect based on current pathname
     if (pathname.includes('tournament-detail')) return 'details';
     if (pathname.includes('referee-settings')) return 'monitor';
+    if (pathname.includes('analytics-dashboard')) return 'analytics';
     return 'details'; // Default
   };
 
@@ -74,6 +81,9 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
       case 'monitor':
         // Show sync issues or offline status
         return (!isOnline || syncStatus !== 'synced') ? 1 : 0;
+      case 'analytics':
+        // Show analytics updates or performance issues
+        return 0; // No badge for analytics for now
       default:
         return 0;
     }
@@ -86,6 +96,8 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
         return designTokens.colors.secondary;
       case 'monitor':
         return !isOnline ? designTokens.colors.error : designTokens.colors.warning;
+      case 'analytics':
+        return designTokens.colors.accent; // Use accent color for analytics badge
       default:
         return designTokens.colors.secondary;
     }

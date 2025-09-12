@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { BeachMatch } from '../types/match';
 import { TournamentCore } from '../types/tournament-v2';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from '../services/api/VisApiClient';
-import { CacheService } from '../services/CacheService';
+import { CacheServiceCompatibility as CacheService } from './compatibility/CacheServiceCompatibility';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 /**
@@ -22,7 +22,10 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
     maxRetries: 3,
     retryDelayMs: 1000,
     exponentialBackoff: true,
-    enableLogging: true
+    enableLogging: true,
+    headers: {
+      'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+    }
   }, DEFAULT_RETRY_CONFIG);
 
   // Use real-time subscription hook

@@ -4,11 +4,40 @@
  */
 
 import React from 'react';
+import { Text, Platform } from 'react-native';
 import { MaterialCommunityIcons as MCIcons } from '@expo/vector-icons';
 import { colors } from '../../theme/tokens';
 
-// Re-export MaterialCommunityIcons as the default icon library
-export const Icon = MCIcons;
+// Platform-aware Icon wrapper to avoid web font timeouts
+export const Icon: React.FC<{ name: string; size?: number; color?: string; style?: any }> = ({ name, size = 24, color = '#000', style }) => {
+  if (Platform.OS === 'web') {
+    // Minimal, font-free fallback for web dev to avoid 6000ms font timeouts
+    let fallback = '⬤';
+    if (name?.toLowerCase().includes('volleyball')) {
+      fallback = '🏐';
+    } else if (name?.toLowerCase().includes('menu')) {
+      fallback = '☰';
+    } else if (name?.toLowerCase().includes('close')) {
+      fallback = '✕';
+    } else if (name?.toLowerCase().includes('information')) {
+      fallback = 'ℹ';
+    } else if (name?.toLowerCase().includes('account')) {
+      fallback = '👥';
+    } else if (name?.toLowerCase().includes('whistle')) {
+      fallback = '🔔';
+    } else if (name?.toLowerCase().includes('tournament')) {
+      fallback = '🏆';
+    } else if (name?.toLowerCase().includes('arrow-left')) {
+      fallback = '←';
+    }
+    return (
+      <Text aria-label={name} style={[{ fontSize: size, color }, style]}>
+        {fallback}
+      </Text>
+    );
+  }
+  return <MCIcons name={name as any} size={size} color={color} style={style} />;
+};
 
 // Standard icon sizes
 export const IconSizes = {

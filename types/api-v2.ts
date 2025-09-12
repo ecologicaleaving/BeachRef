@@ -141,6 +141,10 @@ export interface GetBeachMatchListRequest extends VisApiRequestBase {
   readonly includeResults?: boolean;
   /** Include referee assignments */
   readonly includeReferees?: boolean;
+  /** Filter by first referee ID (NoReferee1 = RefereeId) */
+  readonly NoReferee1?: string;
+  /** Filter by second referee ID (NoReferee2 = RefereeId) */
+  readonly NoReferee2?: string;
 }
 
 /**

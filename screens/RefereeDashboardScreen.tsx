@@ -27,6 +27,7 @@ import {
 } from '../components/Hierarchy';
 import { designTokens } from '../theme/tokens';
 import { getEmergencyContacts, EmergencyContact } from '../utils/assignmentDashboard';
+import { useRefereeScreenAnalytics } from '../hooks/useAnalyticsCollection';
 
 const RefereeDashboardScreenContent: React.FC = () => {
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -34,6 +35,9 @@ const RefereeDashboardScreenContent: React.FC = () => {
   const [tournament, setTournament] = React.useState<Tournament>({} as Tournament);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  
+  // Analytics tracking for referee dashboard
+  const { trackRefereeScreenView, trackRefereeInteraction } = useRefereeScreenAnalytics();
   
   // Assignment management
   const {
@@ -60,15 +64,23 @@ const RefereeDashboardScreenContent: React.FC = () => {
     refreshStatuses
   } = useAssignmentStatus();
 
-  // Load tournament from params or storage
+  // Load tournament from params or storage with analytics
   React.useEffect(() => {
     const loadTournament = async () => {
+      const startTime = performance.now();
       try {
         // First try to get from navigation params
         if (tournamentData) {
           const parsedTournament = JSON.parse(tournamentData) as Tournament;
           setTournament(parsedTournament);
           setLoading(false);
+          
+          // Track successful screen view with load metrics
+          const loadTime = performance.now() - startTime;
+          trackRefereeScreenView('referee_dashboard', {
+            loadTime: Math.round(loadTime),
+            dataCount: currentAssignment ? 1 : 0
+          });
           return;
         }
 
@@ -76,12 +88,24 @@ const RefereeDashboardScreenContent: React.FC = () => {
         const storedTournament = await TournamentStorageService.getSelectedTournament();
         if (storedTournament) {
           setTournament(storedTournament);
+          
+          // Track successful screen view with load metrics
+          const loadTime = performance.now() - startTime;
+          trackRefereeScreenView('referee_dashboard', {
+            loadTime: Math.round(loadTime),
+            dataCount: currentAssignment ? 1 : 0
+          });
         } else {
           // Navigate back to tournament selection if no tournament is available
           router.replace('/tournament-selection');
           return;
         }
       } catch (error) {
+        // Track error but still navigate back
+        trackRefereeInteraction('error', 'dashboard_load', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          loadTime: Math.round(performance.now() - startTime)
+        });
         // Navigate back to tournament selection on error
         router.replace('/tournament-selection');
         return;
@@ -91,7 +115,7 @@ const RefereeDashboardScreenContent: React.FC = () => {
     };
 
     loadTournament();
-  }, [tournamentData, router]);
+  }, [tournamentData, router, trackRefereeScreenView, trackRefereeInteraction, currentAssignment]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -128,38 +152,79 @@ const RefereeDashboardScreenContent: React.FC = () => {
   };
 
   const handleSwitchTournament = () => {
+    trackRefereeInteraction('view_details', 'tournament_switch', {
+      current_tournament: tournament.Name || 'Unknown'
+    });
     router.push('/tournament-selection');
   };
 
   const handleSettings = () => {
+    trackRefereeInteraction('view_details', 'settings_access', {
+      source: 'dashboard'
+    });
     router.push('/referee-settings');
   };
 
   const handleAssignments = () => {
+    trackRefereeInteraction('view_details', 'assignments_view', {
+      current_assignments_count: upcomingAssignments?.length || 0
+    });
     router.push('/my-assignments');
   };
 
   const handleResults = () => {
+    trackRefereeInteraction('view_details', 'results_view', {
+      source: 'dashboard'
+    });
     router.push('/match-results');
   };
   
   const handleViewAssignmentDetails = () => {
+    trackRefereeInteraction('view_details', 'assignment_details', {
+      assignment_id: currentAssignment?.id || 'none'
+    });
     router.push('/my-assignments');
   };
   
   const handleEnterResults = () => {
+    trackRefereeInteraction('assign', 'enter_results', {
+      assignment_id: currentAssignment?.id || 'none'
+    });
     router.push('/match-results');
   };
   
   const handleAssignmentPress = (assignment: any) => {
+    trackRefereeInteraction('view_details', 'assignment_press', {
+      assignment_id: assignment?.id || 'unknown'
+    });
     router.push('/my-assignments');
   };
   
   const onRefresh = async () => {
+    const refreshStartTime = performance.now();
+    trackRefereeInteraction('filter', 'refresh_dashboard', {
+      trigger: 'user_pull_to_refresh'
+    });
+    
     setRefreshing(true);
     try {
       await refreshAssignments();
       refreshStatuses();
+      
+      // Track successful refresh
+      const refreshTime = performance.now() - refreshStartTime;
+      trackRefereeInteraction('filter', 'refresh_complete', {
+        duration_ms: Math.round(refreshTime),
+        assignments_count: upcomingAssignments?.length || 0,
+        status: 'success'
+      });
+    } catch (error) {
+      // Track failed refresh
+      const refreshTime = performance.now() - refreshStartTime;
+      trackRefereeInteraction('error', 'refresh_failed', {
+        duration_ms: Math.round(refreshTime),
+        error: error instanceof Error ? error.message : 'Unknown refresh error'
+      });
     } finally {
       setRefreshing(false);
     }
@@ -179,6 +244,10 @@ const RefereeDashboardScreenContent: React.FC = () => {
 
   // Handle status press - navigate to assignment details
   const handleStatusPress = () => {
+    trackRefereeInteraction('view_details', 'status_press', {
+      current_status: currentAssignmentStatus?.status || 'unknown',
+      assignment_count: statusCounts.total
+    });
     router.push('/my-assignments');
   };
   

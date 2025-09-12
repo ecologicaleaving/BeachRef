@@ -40,7 +40,7 @@ export const MonitorOptions: React.FC<MonitorOptionsProps> = ({
           </View>
           <Text style={styles.optionTitle}>Referee Monitor</Text>
           <Text style={styles.optionDescription}>
-            Follow a specific referee's matches and schedule
+            Follow a specific referee&apos;s matches and schedule
           </Text>
         </TouchableOpacity>
       </View>

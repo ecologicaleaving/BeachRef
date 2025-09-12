@@ -38,6 +38,8 @@ import {
   RefereeListResponse
 } from '../../types/referee-v2';
 
+import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+
 /**
  * Tournament location data from GetBeachTournament
  */
@@ -110,10 +112,6 @@ export class VisResponseParser {
         }
       }
 
-      // Debug: Log the parsed tournaments to see venue data
-      if (tournaments.length > 0) {
-        console.log('🏐 Parsed tournaments with venue data:', JSON.stringify(tournaments.slice(0, 2), null, 2));
-      }
 
       return tournaments;
       
@@ -288,11 +286,15 @@ export class VisResponseParser {
   private static parseSingleMatch(matchXml: string, tournamentId: string): BeachMatchCore | null {
     // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
     const visNo = this.extractXmlAttribute(matchXml, 'No');
-    const matchCode = this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
+    const noInTournament = this.extractXmlAttribute(matchXml, 'NoInTournament');
+    const matchCode = noInTournament || this.extractXmlAttribute(matchXml, 'MatchNo') || this.extractXmlAttribute(matchXml, 'No') || visNo;
     const round = this.extractXmlAttribute(matchXml, 'Round') || '';
     const roundPhase = this.extractXmlAttribute(matchXml, 'RoundPhase') || '';
     const roundName = this.extractXmlAttribute(matchXml, 'RoundName') || '';
     
+    // Extract team position fields
+    const teamAPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamAPositionInMainDraw');
+    const teamBPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamBPositionInMainDraw');
     
     if (!visNo || !matchCode) {
       return null;
@@ -337,6 +339,11 @@ export class VisResponseParser {
     const refereeAssignments = this.parseMatchReferees(matchXml);
     const result = this.parseMatchResult(matchXml);
     const importance = determineMatchImportance(round, this.extractXmlAttribute(matchXml, 'Phase'));
+    
+    // Extract duration fields for debugging and future use
+    const durationSet1 = this.extractXmlAttribute(matchXml, 'DurationSet1');
+    const durationSet2 = this.extractXmlAttribute(matchXml, 'DurationSet2');
+    const durationSet3 = this.extractXmlAttribute(matchXml, 'DurationSet3');
 
     return {
       id,
@@ -360,7 +367,15 @@ export class VisResponseParser {
       refereeAssignments,
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
       weather: this.extractXmlAttribute(matchXml, 'Weather'),
-      importance
+      importance,
+      // Add additional VIS API fields
+      noInTournament: noInTournament,
+      teamAPositionInMainDraw: teamAPositionInMainDraw,
+      teamBPositionInMainDraw: teamBPositionInMainDraw,
+      // Add duration fields for debugging and access
+      DurationSet1: durationSet1,
+      DurationSet2: durationSet2,
+      DurationSet3: durationSet3
     } as any;
   }
 
@@ -450,40 +465,87 @@ export class VisResponseParser {
    * Parse match result from XML
    */
   private static parseMatchResult(matchXml: string): MatchResult | undefined {
-    // VIS API uses MatchPointsA, MatchPointsB for set scores
+    // VIS API exposes total sets via MatchPointsA/B
     const matchPointsA = this.extractXmlAttribute(matchXml, 'MatchPointsA');
     const matchPointsB = this.extractXmlAttribute(matchXml, 'MatchPointsB');
-    
-    
     if (!matchPointsA || !matchPointsB) return undefined;
 
-    // Individual set scores are not available in GetBeachMatchList
-    // They must be fetched separately using GetBeachLive API
+    // Attempt to extract individual set scores when present in MatchList fields
     const setScores: number[] = [];
-    
+    const pA1 = this.extractXmlAttribute(matchXml, 'PointsTeamASet1');
+    const pB1 = this.extractXmlAttribute(matchXml, 'PointsTeamBSet1');
+    const pA2 = this.extractXmlAttribute(matchXml, 'PointsTeamASet2');
+    const pB2 = this.extractXmlAttribute(matchXml, 'PointsTeamBSet2');
+    const pA3 = this.extractXmlAttribute(matchXml, 'PointsTeamASet3');
+    const pB3 = this.extractXmlAttribute(matchXml, 'PointsTeamBSet3');
+    const pushPair = (a?: string, b?: string) => {
+      const na = parseInt(a || '');
+      const nb = parseInt(b || '');
+      if (!isNaN(na) && !isNaN(nb)) {
+        setScores.push(na, nb);
+      }
+    };
+    pushPair(pA1, pB1);
+    pushPair(pA2, pB2);
+    pushPair(pA3, pB3);
+
     const team1Sets = parseInt(matchPointsA) || 0;
     const team2Sets = parseInt(matchPointsB) || 0;
-    
-    const startTime = this.extractXmlAttribute(matchXml, 'StartTime');
-    const endTime = this.extractXmlAttribute(matchXml, 'EndTime');
+
+    // Extract duration from DurationSet1/2/3 fields (VIS API format: "mm:ss")
+    const durationSet1 = this.extractXmlAttribute(matchXml, 'DurationSet1');
+    const durationSet2 = this.extractXmlAttribute(matchXml, 'DurationSet2');
+    const durationSet3 = this.extractXmlAttribute(matchXml, 'DurationSet3');
     
     let duration: number | undefined;
-    if (startTime && endTime) {
+    
+    // If we have set durations, calculate total using MatchDurationFormatter
+    if (durationSet1 || durationSet2 || durationSet3) {
       try {
-        const startDate = new Date(startTime);
-        const endDate = new Date(endTime);
-        if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-          const durationResult = calculateMatchDuration(startDate, endDate);
-          duration = durationResult.totalMinutes;
+        const totalDurationStr = calculateTotalDuration(durationSet1, durationSet2, durationSet3);
+        
+        if (totalDurationStr) {
+          // Convert "1h 25m" format to minutes
+          const hourMatch = totalDurationStr.match(/(\d+)h/);
+          const minuteMatch = totalDurationStr.match(/(\d+)m/);
+          const hours = hourMatch ? parseInt(hourMatch[1]) : 0;
+          const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0;
+          let totalPlayingTime = hours * 60 + minutes;
+          
+          // Add break time between sets (1 minute per set break)
+          // Count how many sets were actually played
+          const setsPlayed = [durationSet1, durationSet2, durationSet3].filter(set => set && set.trim()).length;
+          const setBreaks = Math.max(0, setsPlayed - 1); // Number of breaks = sets - 1
+          const breakTimeMinutes = setBreaks * 1; // 1 minute per break
+          
+          duration = totalPlayingTime + breakTimeMinutes;
+          
+          console.log(`⏱️ Duration calculation: ${totalPlayingTime}min playing + ${breakTimeMinutes}min breaks = ${duration}min total`);
         }
       } catch (error) {
-        // Invalid date strings, duration remains undefined
+        console.warn('Error calculating duration from set times:', error);
       }
     }
     
+    // Fallback: try calculating from start/end times if set durations not available
+    if (!duration) {
+      const startTime = this.extractXmlAttribute(matchXml, 'StartTime');
+      const endTime = this.extractXmlAttribute(matchXml, 'EndTime');
+      if (startTime && endTime) {
+        try {
+          const startDate = new Date(startTime);
+          const endDate = new Date(endTime);
+          if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+            const durationResult = calculateMatchDuration(startDate.toISOString(), endDate.toISOString());
+            duration = durationResult;
+          }
+        } catch {}
+      }
+    }
+
     const winner = team1Sets > team2Sets ? 1 : (team2Sets > team1Sets ? 2 : undefined);
     const status = this.extractXmlAttribute(matchXml, 'Status') || '';
-    
+
     return {
       team1Sets,
       team2Sets,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,12 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { Icon } from '../Icons/MaterialCommunityIcons';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import WhistleLogo from '../WhistleLogo';
+import { BurgerButton } from './BurgerButton';
+import { SideMenu } from './SideMenu';
+import { DefaultTournamentService } from '../../services/DefaultTournamentService';
 
 interface NavigationHeaderProps {
   title: string;
@@ -26,6 +29,7 @@ interface NavigationHeaderProps {
   showLogo?: boolean;
   onRefresh?: () => void;
   showRefreshButton?: boolean;
+  showBurgerMenu?: boolean;
 }
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
@@ -43,8 +47,33 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showLogo = true,
   onRefresh,
   showRefreshButton = true,
+  showBurgerMenu = true,
 }) => {
   const router = useRouter();
+  const [sideMenuVisible, setSideMenuVisible] = useState(false);
+  const [defaultTournament, setDefaultTournament] = useState<any>(null);
+  const [isLoadingDefaultTournament, setIsLoadingDefaultTournament] = useState(true);
+
+  // Check if there's a default tournament set
+  useEffect(() => {
+    const checkDefaultTournament = async () => {
+      try {
+        const tournament = await DefaultTournamentService.getDefaultTournament();
+        setDefaultTournament(tournament);
+      } catch (error) {
+        console.warn('Error checking default tournament:', error);
+        setDefaultTournament(null);
+      } finally {
+        setIsLoadingDefaultTournament(false);
+      }
+    };
+
+    checkDefaultTournament();
+  }, []);
+
+  // Show contextual menu only when a default tournament is set
+  const isTournamentContext = defaultTournament !== null;
+  const tournamentName = defaultTournament?.name || defaultTournament?.title;
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -151,8 +180,21 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             </TouchableOpacity>
           )}
           {rightComponent}
+          {showBurgerMenu && (
+            <BurgerButton 
+              onPress={() => setSideMenuVisible(true)}
+              color={titleColor}
+            />
+          )}
         </View>
       </View>
+      
+      <SideMenu 
+        isVisible={sideMenuVisible} 
+        onClose={() => setSideMenuVisible(false)}
+        currentContext={isTournamentContext ? 'tournament' : 'default'}
+        tournamentName={tournamentName}
+      />
     </SafeAreaView>
   );
 };

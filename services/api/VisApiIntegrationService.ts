@@ -15,7 +15,7 @@ import {
 import { TournamentCore, GenderType } from '../../types/tournament-v2';
 import { BeachMatchCore } from '../../types/match-v2';
 import { VisResponseParser } from '../parsing/VisResponseParser';
-import { DataTransformationService } from '../DataTransformationService';
+// DataTransformationService removed - transformations now handled in simplified hooks
 
 /**
  * API request performance metrics

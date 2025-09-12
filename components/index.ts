@@ -29,3 +29,6 @@ export * from './Dashboard';
 
 // Live Score Components (EPIC-001 Story 1.2)
 export * from './live-score';
+
+// Analytics Components (Story 4.3)
+export * from './Analytics';

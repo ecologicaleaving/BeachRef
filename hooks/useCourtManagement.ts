@@ -42,7 +42,10 @@ export const useCourtManagement = (): UseCourtManagement => {
     maxRetries: 3,
     retryDelayMs: 1000,
     exponentialBackoff: true,
-    enableLogging: true
+    enableLogging: true,
+    headers: {
+      'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+    }
   }, DEFAULT_RETRY_CONFIG);
 
   const inferCountryFromName = useCallback((name?: string): string | undefined => {

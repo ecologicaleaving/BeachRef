@@ -1,5 +1,5 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
+// Connection circuit breaker types are imported when needed
 
 /**
  * Network state information
@@ -139,8 +139,8 @@ export class NetworkStateManager {
 
       this.isInitialized = true;
       // console.log('NetworkStateManager initialized successfully');
-    } catch (error) {
-      // console.error('Failed to initialize network monitoring:', error);
+    } catch {
+      // console.error('Failed to initialize network monitoring:', _error);
       this.setOfflineState();
       this.isInitialized = true; // Still mark as initialized even on error
     }
@@ -276,7 +276,7 @@ export class NetworkStateManager {
       //   networkType: this.networkState.type
       // });
 
-    } catch (error) {
+    } catch {
       // console.error('Failed to assess connection quality:', error);
       // Fallback quality assessment
       this.connectionQuality = {
@@ -296,9 +296,13 @@ export class NetworkStateManager {
   private async measureLatency(): Promise<number> {
     const startTime = Date.now();
     try {
-      // Use a lightweight endpoint to measure latency
+      // Use a same-origin endpoint on web to avoid CORS; fallback to httpbin in native
+      const testUrl = (typeof window !== 'undefined' && window.location?.origin)
+        ? window.location.origin + '/' // same-origin request avoids CORS
+        : 'https://httpbin.org/json';
+
       const response = await Promise.race([
-        fetch('https://httpbin.org/json', { 
+        fetch(testUrl, { 
           method: 'GET',
           cache: 'no-cache',
         }),
@@ -307,12 +311,12 @@ export class NetworkStateManager {
         )
       ]);
 
-      if (response.ok) {
+      if ((response as any)?.ok) {
         return Date.now() - startTime;
       } else {
         return 2000; // Default high latency for failed requests
       }
-    } catch (error) {
+    } catch {
       return 3000; // Default very high latency for errors
     }
   }
@@ -470,7 +474,7 @@ export class NetworkStateManager {
       this.listeners.forEach(listener => {
         try {
           listener(this.networkState!, this.connectionQuality!);
-        } catch (error) {
+        } catch {
           // console.error('Error in network state listener:', error);
         }
       });

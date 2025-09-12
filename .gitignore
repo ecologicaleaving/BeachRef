@@ -38,3 +38,8 @@ yarn-error.*
 
 app-example
 expo-go.apk
+
+# Project documentation and architecture
+docs/
+archive/
+architecture/

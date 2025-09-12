@@ -13,7 +13,6 @@ import { StatusBadge } from '../Status/StatusBadge';
 import { Text } from '../Typography/Text';
 import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
 import { colors, spacing, typography } from '../../theme/tokens';
-import { MatchDataTransformer } from '../../services/MatchDataTransformer';
 import { BeachLive, BeachMatchStatus } from '../../types/beach-live';
 import { BeachMatch } from '../../types/match';
 
@@ -56,7 +55,10 @@ export const LiveScoreCard: React.FC<LiveScoreCardProps> = React.memo(({
   const matchData = hasLiveData ? beachLive.match : null;
   
   // Extract proper round display data for fallback match
-  const roundData = fallbackMatch ? MatchDataTransformer.getRoundDisplayData(fallbackMatch) : { round: 'TBD', phase: undefined };
+  const roundData = fallbackMatch ? {
+    round: fallbackMatch.Round || 'TBD',
+    phase: (fallbackMatch as any).phase
+  } : { round: 'TBD', phase: undefined };
   const teamA = hasLiveData ? beachLive.teamA : { 
     name: fallbackMatch?.TeamAName || 'Team A',
     federationCode: fallbackMatch?.TeamAFederationCode || '',

@@ -1,17 +1,127 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
-import { BeachMatchCore, MatchStatus } from '../../types/match-v2';
-import { FlagImage } from '../FlagImage';
-import { RoundPhaseDisplay } from '../Typography/RoundPhaseDisplay';
-import { MatchDataTransformer } from '../../services/MatchDataTransformer';
-import { SetScoreService } from '../../services/SetScoreService';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
+import { MatchList, MatchCard } from '../entities/Match';
+import { useMatches, MatchesFilters } from '../../hooks/useMatches';
+import { MatchDTO } from '../../services/DualReadService';
+import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
-import { useMemo } from 'react';
+import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
   tournamentGender?: 'M' | 'W';
   tournamentNo?: string;
+};
+
+/**
+ * Transforms MatchDTO from hook to BeachMatchCore for component compatibility
+ * Maintains backward compatibility with existing component interfaces
+ * @param dto MatchDTO from useMatches hook
+ * @returns BeachMatchCore expected by components
+ */
+const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
+  // Transform result if it exists
+  const result: MatchResult | undefined = dto.result ? {
+    team1Sets: dto.result.team1Sets,
+    team2Sets: dto.result.team2Sets,
+    setScores: dto.result.setScores.flatMap(score => [score.a, score.b]),
+    duration: dto.result.duration,
+    winner: dto.result.winner,
+    forfeit: dto.result.forfeit,
+  } : undefined;
+
+  // Transform teams
+  const team1: MatchTeam = {
+    teamNumber: dto.team1.teamNumber,
+    teamName: dto.team1.teamName,
+    player1Name: dto.team1.player1Name,
+    player2Name: dto.team1.player2Name,
+    countryCode: dto.team1.countryCode,
+    ranking: dto.team1.ranking,
+  };
+
+  const team2: MatchTeam = {
+    teamNumber: dto.team2.teamNumber,
+    teamName: dto.team2.teamName,
+    player1Name: dto.team2.player1Name,
+    player2Name: dto.team2.player2Name,
+    countryCode: dto.team2.countryCode,
+    ranking: dto.team2.ranking,
+  };
+
+  // Transform court info
+  const court: CourtInfo = {
+    courtNumber: dto.court.courtNumber,
+    courtName: dto.court.courtName,
+    surface: dto.court.surface,
+    location: dto.court.location,
+  };
+
+  // Create the core BeachMatchCore object
+  const beachMatchCore: BeachMatchCore = {
+    id: dto.id,
+    visNo: dto.visNo,
+    version: 1,
+    lastUpdated: new Date().toISOString(),
+    tournamentId: dto.tournamentCode, // Using tournamentCode as tournamentId
+    matchCode: dto.matchCode,
+    round: dto.round,
+    phaseCode: dto.phaseCode,
+    status: dto.status as MatchStatus,
+    court,
+    scheduledDateTime: dto.scheduledDateTime,
+    actualStartTime: dto.actualStartTime,
+    actualEndTime: dto.actualEndTime,
+    team1,
+    team2,
+    result,
+    refereeAssignments: (dto as any).refereeAssignments || [],
+    notes: (dto as any).notes,
+    weather: (dto as any).weather,
+    importance: (dto as any).importance,
+  };
+
+  // Preserve ALL original DTO fields for legacy compatibility
+  // This allows MatchCard to access legacy fields like PointsTeamASet1, Referee1Name, etc.
+  const preservedMatch = {
+    ...beachMatchCore,
+    ...(dto as any), // Spread all original DTO fields to preserve legacy data
+    
+    // Ensure core fields override any conflicts from DTO
+    id: beachMatchCore.id,
+    visNo: beachMatchCore.visNo,
+    version: beachMatchCore.version,
+    lastUpdated: beachMatchCore.lastUpdated,
+    tournamentId: beachMatchCore.tournamentId,
+    matchCode: beachMatchCore.matchCode,
+    round: beachMatchCore.round,
+    phaseCode: beachMatchCore.phaseCode,
+    status: beachMatchCore.status,
+    court: beachMatchCore.court,
+    scheduledDateTime: beachMatchCore.scheduledDateTime,
+    actualStartTime: beachMatchCore.actualStartTime,
+    actualEndTime: beachMatchCore.actualEndTime,
+    team1: beachMatchCore.team1,
+    team2: beachMatchCore.team2,
+    result: beachMatchCore.result,
+    refereeAssignments: beachMatchCore.refereeAssignments,
+  };
+
+  console.log('Transform Debug:', {
+    matchId: dto.id,
+    originalDTO: dto,
+    hasReferee1Name: !!(dto as any).Referee1Name,
+    hasReferee2Name: !!(dto as any).Referee2Name,
+    hasPointsTeamASet1: !!(dto as any).PointsTeamASet1,
+    hasPointsTeamBSet1: !!(dto as any).PointsTeamBSet1,
+    hasDuration: !!(dto as any).Duration,
+    hasDurationSet1: !!(dto as any).DurationSet1,
+    resultSetScores: result?.setScores,
+    preservedFields: Object.keys(preservedMatch)
+  });
+
+  return preservedMatch;
 };
 
 // Type-safe helper to extract duration fields from match data
@@ -96,11 +206,17 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
 };
 
 interface MatchListV2Props {
-  matches: ExtendedBeachMatch[];
+  matches?: ExtendedBeachMatch[]; // Made optional to allow hook-based data fetching
   loading?: boolean;
   title?: string;
   selectedReferee?: { Name: string } | null;
   emptyMessage?: string;
+  // New props for hook-based data fetching
+  tournamentCode?: string; // Enable filtering by tournament
+  eventId?: number;
+  matchFilters?: MatchesFilters; // Additional filters for useMatches hook
+  enableRealTime?: boolean; // Enable real-time updates for live matches
+  enableLiveScores?: boolean; // Enable live score updates
   showDateNavigator?: boolean;
   showGenderFilter?: boolean;
   showStatsInFilter?: boolean;
@@ -118,15 +234,21 @@ interface MatchListV2Props {
   showAllDays?: boolean; // Enhanced: Show all tournament days in timeline view
   enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
   liveScores?: { [matchNumber: string]: any }; // External live scores data
-  getLiveScore?: (matchNumber: string) => any; // Function to get live score for a match
+  getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
-  matches,
-  loading = false,
+  matches: propMatches,
+  loading: propLoading = false,
   title = "Matches",
   selectedReferee,
   emptyMessage = "No matches found",
+  // New hook-based props
+  tournamentCode,
+  eventId,
+  matchFilters,
+  enableRealTime = false,
+  enableLiveScores = false,
   showDateNavigator = true,
   showGenderFilter = true,
   showStatsInFilter = true,
@@ -146,6 +268,50 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   liveScores,
   getLiveScore,
 }) => {
+  // Analytics tracking for match list interactions
+  const { trackRefereeInteraction } = useRefereeScreenAnalytics();
+  
+  // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
+  // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
+  const shouldUseHook = !!tournamentCode && Platform.OS !== 'web' && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
+  const hookFilters = useMemo((): MatchesFilters => ({
+    tournamentCode,
+    eventId,
+    ...matchFilters,
+  }), [tournamentCode, eventId, matchFilters]);
+
+  const hookResult = useMatches(
+    shouldUseHook ? hookFilters : undefined,
+    {
+      enableRealTimeUpdates: enableRealTime,
+      enableLiveScores,
+      enablePerformanceMonitoring: true,
+      groupByReferee: true,
+    }
+  );
+
+  // Extract hook data safely
+  const rawMatches = hookResult?.data || [];
+  const hookLoading = hookResult?.isLoading || false;
+  const hookError = hookResult?.error || null;
+  const forceRefresh = hookResult?.forceRefresh || (() => Promise.resolve());
+
+  // Track hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseHook && hookError) {
+      featureFlags.recordError('MatchListV2', hookError.message || 'Unknown hook error');
+    }
+  }, [shouldUseHook, hookError]);
+
+  // Transform hook data to component format
+  const hookMatches = useMemo(() => {
+    return shouldUseHook ? rawMatches.map(transformMatchDTO) : [];
+  }, [rawMatches, shouldUseHook]);
+
+  // Use either prop matches or hook matches
+  const activeMatches = propMatches || hookMatches;
+  const loading = propLoading || (shouldUseHook ? hookLoading : false);
+  const error = hookError?.message || null;
   // State for collapsible referees and dropdown
   const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
@@ -155,7 +321,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
-  const [setScoreService] = useState(() => new SetScoreService());
+  const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
   
   
 
@@ -186,6 +352,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external court filter if provided, otherwise internal state
   const effectiveCourtFilter = externalCourtFilter ?? courtFilter;
   const setEffectiveCourtFilter = (court: string) => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'court_filter_change', {
+      previous_filter: effectiveCourtFilter,
+      new_filter: court,
+      is_external: !!externalCourtFilter
+    });
+    
     if (onCourtFilterChange) {
       onCourtFilterChange(court);
     } else {
@@ -196,6 +369,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external gender filter if provided, otherwise internal state
   const effectiveGenderFilter = externalGenderFilter ?? genderFilter;
   const setEffectiveGenderFilter = (gender: 'All' | 'M' | 'W') => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'gender_filter_change', {
+      previous_filter: effectiveGenderFilter,
+      new_filter: gender,
+      is_external: !!externalGenderFilter
+    });
+    
     if (onGenderFilterChange) {
       onGenderFilterChange(gender);
     } else {
@@ -217,6 +397,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use external referee filter if provided, otherwise internal state
   const effectiveRefereeFilter = externalRefereeFilter ?? refereeFilter;
   const setEffectiveRefereeFilter = (referee: string) => {
+    // Track filter analytics
+    trackRefereeInteraction('filter', 'referee_filter_change', {
+      previous_filter: effectiveRefereeFilter,
+      new_filter: referee,
+      is_external: !!externalRefereeFilter
+    });
+    
     if (onRefereeFilterChange) {
       onRefereeFilterChange(referee);
     } else {
@@ -294,35 +481,37 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const enhanceMatches = async () => {
       try {
         // TEMPORARILY DISABLE enhanced match data to fix the issue
-        const enhanced = await setScoreService.enhanceMatchesWithSetScores(matches);
-        
-        setEnhancedMatches(enhanced);
-        
+        if (setScoreService) {
+          const enhanced = await setScoreService.enhanceMatchesWithSetScores(activeMatches);
+          setEnhancedMatches(enhanced);
+        } else {
+          setEnhancedMatches(activeMatches);
+        }
       } catch (error) {
         console.error('Failed to enhance matches:', error);
-        setEnhancedMatches(matches);
+        setEnhancedMatches(activeMatches);
       }
     };
 
-    if (matches.length > 0) {
+    if (activeMatches.length > 0) {
       enhanceMatches();
     } else {
       setEnhancedMatches([]);
     }
-  }, [matches, setScoreService]);
+  }, [activeMatches, setScoreService]);
 
   // Reset filters when tournament changes (matches change)
   React.useEffect(() => {
     // Reset only content filters when matches array changes (indicates tournament change)
     // Keep sort order preference
-    if (matches.length > 0) {
+    if (activeMatches.length > 0) {
       setEffectiveCourtFilter('All');
       setEffectiveGenderFilter('All');
       setEffectiveRefereeFilter('All');
       setStatusFilter('All');
       setShowRefereeDropdown(false);
     }
-  }, [matches]); // Only depend on matches array reference change
+  }, [activeMatches]); // Only depend on matches array reference change
 
   // uniqueDates calculation REMOVED - DateNavigator disabled
 
@@ -330,7 +519,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Extract unique courts
   const uniqueCourts = React.useMemo(() => {
-    const courtNumbers = matches
+    const courtNumbers = activeMatches
       .map(match => match.court?.courtNumber)
       .filter((courtNumber): courtNumber is string => !!courtNumber)
       .map(courtNumber => String(courtNumber)); // Ensure all are strings
@@ -339,23 +528,23 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     
     return unique;
-  }, [matches]);
+  }, [activeMatches]);
 
   // Extract unique referees
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
-    matches.forEach(match => {
+    activeMatches.forEach(match => {
       match.refereeAssignments?.forEach(referee => {
         if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
     });
     return Array.from(refereeNames).sort();
-  }, [matches]);
+  }, [activeMatches]);
 
   // Filter matches based on current filters
   const filteredMatches = React.useMemo(() => {
     // ALWAYS use enhanced matches if available, even if empty
-    const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : matches;
+    const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : activeMatches;
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
     
     
@@ -455,7 +644,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
 
     // Final result logging will happen in UI render
-  }, [matches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
+  }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
 
 
   // Calculate target match for auto-scroll and notify parent
@@ -626,6 +815,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Reset all filters to default values
   const resetFilters = () => {
+    // Track filter reset analytics
+    trackRefereeInteraction('filter', 'reset_all_filters', {
+      previous_court: effectiveCourtFilter,
+      previous_gender: effectiveGenderFilter,
+      previous_referee: effectiveRefereeFilter,
+      previous_status: statusFilter,
+      matches_count_before: filteredMatches.length
+    });
+    
     setEffectiveCourtFilter('All');
     setEffectiveGenderFilter('All');
     setEffectiveRefereeFilter('All');
@@ -644,27 +842,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Check if match is currently live (beach volleyball rules)
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    // Rule 1: Current time must be past scheduled time
-    if (!match.scheduledDateTime) return false;
-    const matchDate = new Date(match.scheduledDateTime);
-    const now = new Date();
-    const isAfterScheduledTime = matchDate < now;
-    
-    // Rule 2: Match must not be finished (no team has won 2 sets yet)
+    // Consider live strictly when VIS status is RUNNING and nobody has won yet
     const team1Sets = match.result?.team1Sets || 0;
     const team2Sets = match.result?.team2Sets || 0;
     const matchNotFinished = team1Sets < 2 && team2Sets < 2;
-    
-    // Rule 3: Check if match status indicates it's running
-    const statusIsRunning = match.status === MatchStatus.RUNNING || match.status === MatchStatus.IN_PROGRESS;
-    
-    // Rule 4: For matches without explicit status, assume live if started within reasonable timeframe (2 hours)
-    const timeSinceStart = now.getTime() - matchDate.getTime();
-    const withinReasonableTimeframe = timeSinceStart <= 2 * 60 * 60 * 1000; // 2 hours
-    
-    // Match is live if:
-    // - Time has passed AND match not finished AND (status indicates running OR within reasonable timeframe)
-    return isAfterScheduledTime && matchNotFinished && (statusIsRunning || withinReasonableTimeframe);
+    return match.status === MatchStatus.RUNNING && matchNotFinished;
   };
 
   // Get status display text and color
@@ -700,25 +882,21 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   };
 
-  // Render individual match card
+  // Render individual match card using unified component
   const renderMatch = (match: BeachMatchCore) => {
-    const statusDisplay = getStatusDisplay(match.status, match.scheduledDateTime);
-    
-    
-    // Extract proper round display data using transformer service
-    const roundData = MatchDataTransformer.getRoundDisplayData(match as any);
-    
     // Merge live scores with match result for live matches
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
-      const liveScore = getLiveScore(match.matchNumber);
+      // Support VIS match numbers like "M001"/"W012" by stripping non-digits
+      const rawCode = (match as any).visNo || (match as any).matchCode || '';
+      const numericCode = String(rawCode).replace(/\D/g, '');
+      const matchNo = parseInt(numericCode || '', 10);
+      const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
       if (liveScore && liveScore.sets && liveScore.sets.length > 0) {
         // Create enhanced result from live score data
         const liveResult = {
-          team1Sets: liveScore.sets.filter((set: any, index: number) => 
-            index % 2 === 0 && set.pointsTeamA > set.pointsTeamB).length,
-          team2Sets: liveScore.sets.filter((set: any, index: number) => 
-            index % 2 === 0 && set.pointsTeamA < set.pointsTeamB).length,
+          team1Sets: liveScore.sets.filter((set: any) => set.pointsTeamA > set.pointsTeamB).length,
+          team2Sets: liveScore.sets.filter((set: any) => set.pointsTeamB > set.pointsTeamA).length,
           winner: undefined, // Live matches don't have a winner yet
           setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
         };
@@ -729,11 +907,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         };
       }
     }
-    
+
     return (
       <View 
-        key={match.id} 
-        style={styles.matchCard} 
+        key={match.id}
         nativeID={`match-${match.id}`}
         onLayout={(event) => {
           if (onMatchLayout) {
@@ -741,254 +918,34 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           }
         }}
       >
-        <View style={styles.matchHeader}>
-          <View style={styles.leftBadgeContainer}>
-            {match.tournamentGender && (
-              <View style={[
-                styles.genderBadge,
-                match.tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
-              ]}>
-                <Text style={[
-                  styles.genderBadgeText,
-                  match.tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
-                ]}>{match.tournamentGender}</Text>
-              </View>
-            )}
-          </View>
-          
-          <View style={styles.timeCourtContainer}>
-            <View style={styles.timeContainer}>
-              {isMatchLive(match) && (
-                <View style={styles.liveDot} />
-              )}
-              <Text style={styles.matchTime}>{match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}</Text>
-            </View>
-            <Text style={styles.courtText}>
-              {match.court?.courtNumber ? (
-                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-              ) : 'TBD'}
-            </Text>
-          </View>
-          
-          <View style={styles.rightBadgeContainer}>
-            <View style={[styles.statusBadge, { backgroundColor: '#6B7280' }]}>
-              <RoundPhaseDisplay
-                round={roundData.round}
-                phase={roundData.phase}
-                emphasis="medium"
-                color="textPrimary"
-                style={styles.statusText}
-              />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.flagsAndResultRow}>
-          <FlagImage
-            federationCode={match.team1?.countryCode}
-            teamName={match.team1?.teamName}
-            size="medium"
-            style={styles.leftFlag}
-          />
-          
-          <View style={styles.centerResultContainer}>
-            {matchWithResult.result ? (
-              <View style={styles.resultContainerWithSets}>
-                <View style={styles.resultContainer}>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 1 && styles.winnerScore
-                  ]}>{matchWithResult.result.team1Sets}</Text>
-                  <Text style={styles.scoreSeparator}>-</Text>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 2 && styles.winnerScore
-                  ]}>{matchWithResult.result.team2Sets}</Text>
-                  {(() => {
-                    const totalDuration = getMatchDuration(match);
-                    return totalDuration ? (
-                      <Text style={styles.durationText}>{totalDuration}</Text>
-                    ) : null;
-                  })()}
-                </View>
-                {(() => {
-                  // Show set scores for ANY number of complete sets (even 1 set = 2 scores)
-                  const hasSetScores = matchWithResult.result.setScores && matchWithResult.result.setScores.length >= 2;
-                  
-                  
-                  
-                  
-                  return hasSetScores;
-                })() && (
-                  <View style={styles.setScoresContainer}>
-                    {(() => {
-                      const setScores = matchWithResult.result.setScores;
-                      const sets = [];
-                      
-                      // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
-                      for (let i = 0; i < setScores.length; i += 2) {
-                        if (i + 1 < setScores.length) {
-                          const team1Score = setScores[i];
-                          const team2Score = setScores[i + 1];
-                          const setNumber = Math.floor(i / 2) + 1;
-                          const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                          
-                          // Check if this set is completed
-                          // A set is completed if:
-                          // 1. Match is finished, OR
-                          // 2. One team has winning score with 2+ point lead (21+ for sets 1&2, 15+ for set 3), OR  
-                          // 3. This is not the last set in the array (meaning next set has started)
-                          const isMatchFinished = match.status === MatchStatus.FINISHED;
-                          const isThirdSet = setNumber === 3;
-                          const minWinScore = isThirdSet ? 15 : 21;
-                          const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
-                                                  (team2Score >= minWinScore && team2Score - team1Score >= 2);
-                          const isNotLastSet = setNumber < Math.floor(setScores.length / 2);
-                          const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
-                          
-                          sets.push(
-                            <View key={setNumber} style={styles.individualSet}>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 1 && isSetComplete && styles.winningSetScore
-                              ]}>{team1Score}</Text>
-                              <Text style={styles.setScoreSeparator}>-</Text>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 2 && isSetComplete && styles.winningSetScore
-                              ]}>{team2Score}</Text>
-                            </View>
-                          );
-                        }
-                      }
-                      
-                      return sets;
-                    })()}
-                  </View>
-                )}
-              </View>
-            ) : (
-              <Text style={styles.vsText}>vs</Text>
-            )}
-          </View>
-          
-          <FlagImage
-            federationCode={match.team2?.countryCode}
-            teamName={match.team2?.teamName}
-            size="medium"
-            style={styles.rightFlag}
-          />
-        </View>
-
-        <View style={styles.teamsContainer}>
-          <View style={styles.teamsRow}>
-            <View style={styles.teamSection}>
-              {match.team1?.teamName ? (
-                <Text style={[
-                  styles.teamName,
-                  styles.leftTeamName,
-                  matchWithResult.result?.winner === 1 && styles.winnerTeam
-                ]} numberOfLines={2}>
-                  {match.team1.teamName}
-                  {match.team1?.ranking && <Text style={styles.rankingText}> (#{match.team1.ranking})</Text>}
-                </Text>
-              ) : (
-                <View style={styles.playersContainer}>
-                  {match.team1?.player1Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.leftTeamName,
-                      matchWithResult.result?.winner === 1 && styles.winnerTeam
-                    ]}>
-                      {(match.team1.player1Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team1?.player2Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.leftTeamName,
-                      matchWithResult.result?.winner === 1 && styles.winnerTeam
-                    ]}>
-                      {(match.team1.player2Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team1?.ranking && (
-                    <Text style={[styles.rankingText, styles.leftTeamName]}>
-                      (#{match.team1.ranking})
-                    </Text>
-                  )}
-                </View>
-              )}
-              <Text style={[styles.countryCode, styles.leftCountryCode]}>
-                {match.team1?.countryCode || ''}
-              </Text>
-            </View>
-            
-            <View style={styles.teamSection}>
-              {match.team2?.teamName ? (
-                <Text style={[
-                  styles.teamName,
-                  styles.rightTeamName,
-                  matchWithResult.result?.winner === 2 && styles.winnerTeam
-                ]} numberOfLines={2}>
-                  {match.team2.teamName}
-                  {match.team2?.ranking && <Text style={styles.rankingText}> (#{match.team2.ranking})</Text>}
-                </Text>
-              ) : (
-                <View style={styles.playersContainer}>
-                  {match.team2?.player1Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.rightTeamName,
-                      matchWithResult.result?.winner === 2 && styles.winnerTeam
-                    ]}>
-                      {(match.team2.player1Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team2?.player2Name && (
-                    <Text style={[
-                      styles.playerName,
-                      styles.rightTeamName,
-                      matchWithResult.result?.winner === 2 && styles.winnerTeam
-                    ]}>
-                      {(match.team2.player2Name || '').split(' ').pop() || ''}
-                    </Text>
-                  )}
-                  {match.team2?.ranking && (
-                    <Text style={[styles.rankingText, styles.rightTeamName]}>
-                      (#{match.team2.ranking})
-                    </Text>
-                  )}
-                </View>
-              )}
-              <Text style={[styles.countryCode, styles.rightCountryCode]}>
-                {match.team2?.countryCode || ''}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {match.refereeAssignments && match.refereeAssignments.length > 0 && (
-          <View style={styles.refereesContainer}>
-            {match.refereeAssignments.map((referee, index) => (
-              <View key={index} style={styles.refereeRow}>
-                <View style={styles.refereeContentRow}>
-                  <Text style={styles.refereePosition}>{index === 0 ? '1°' : '2°'}</Text>
-                  <Text style={styles.refereeName}>{referee.refereeName}</Text>
-                  <FlagImage
-                    federationCode={referee.federationCode}
-                    teamName={referee.refereeName}
-                    size="medium"
-                    style={styles.refereeFlag}
-                  />
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        <MatchCard
+          match={matchWithResult}
+          showStatusBadge={true}
+          showReferee={true}
+          showDuration={true}
+          compact={false}
+          variant={isMatchLive(match) ? 'live' : 'default'}
+        />
       </View>
     );
   };
+
+
+
+
+  // Error state
+  // If hook errors, gracefully fall back to propMatches instead of blocking the UI
+  // Only show error screen if there are no provided matches to render
+  if (error && shouldUseHook && (!propMatches || propMatches.length === 0)) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => forceRefresh()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -1317,6 +1274,23 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#6B7280',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#DC2626',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   filtersContainer: {
     backgroundColor: '#F9FAFB',

@@ -1,6 +1,6 @@
 import { BeachMatch } from '../types/match';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
 import NetworkStateManager, { ConnectionStrategy, NetworkState, ConnectionQuality } from './NetworkStateManager';
 
@@ -36,7 +36,10 @@ export class RealtimeFallbackService {
     maxRetries: 3,
     retryDelayMs: 1000,
     exponentialBackoff: true,
-    enableLogging: true
+    enableLogging: true,
+    headers: {
+      'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+    }
   }, DEFAULT_RETRY_CONFIG);
   
   // Enhanced polling configuration with network awareness

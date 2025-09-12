@@ -4,6 +4,7 @@ export interface RefereeFromDB {
   FederationCode?: string;
   Level?: string;
   isSelected?: boolean;
+  RefereeId?: string; // NoReferee from VIS API
 }
 
 export interface RefereeProfile {
@@ -22,6 +23,7 @@ export interface RefereeAssignment {
   date: string;
   time: string;
   court: string;
+  RefereeId?: string; // NoReferee from VIS API for filtering
 }
 
 export interface RefereeMatchFilter {

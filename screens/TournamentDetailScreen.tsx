@@ -9,12 +9,13 @@ import {
   Alert,
   RefreshControl,
   Switch,
+  Platform,
 } from 'react-native';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { Icon } from '../components/Icons/MaterialCommunityIcons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
-import { BeachMatchCore } from '../types/match-v2';
+import { BeachMatchCore, MatchStatus } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
@@ -24,12 +25,15 @@ import { VisResponseParser } from '../services/parsing/VisResponseParser';
 // DataTransformationService no longer needed - using BeachMatchCore directly
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import { useLiveScores } from '../hooks/useLiveScores';
+import { useTournaments } from '../hooks/useTournaments';
+import { featureFlags } from '../hooks/compatibility/FeatureFlags';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
 import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
+import { TournamentCard } from '../components/entities/Tournament';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Separate component for expanded filters to prevent hooks issues
@@ -294,6 +298,29 @@ const TournamentDetailScreenContent: React.FC = () => {
   
   // Track match positions for precise scrolling
   const matchPositions = useRef<{ [matchId: string]: number }>({});
+
+  // Debug: log current matches with minimal safe details
+  const handleDebugLogMatches = React.useCallback(() => {
+    try {
+      const total = matches?.length ?? 0;
+      console.log('[TournamentDetail] Matches count:', total);
+      if (!matches || total === 0) {
+        return;
+      }
+      const sample = matches.slice(0, 20).map((m) => ({
+        id: (m as any)?.matchId ?? (m as any)?.No ?? (m as any)?.code ?? null,
+        court: (m as any)?.court?.courtNumber ?? (m as any)?.Court ?? null,
+        status: (m as any)?.status ?? (m as any)?.Status ?? null,
+        noReferee1: (m as any)?.NoReferee1 ?? (m as any)?.noReferee1 ?? null,
+        noReferee2: (m as any)?.NoReferee2 ?? (m as any)?.noReferee2 ?? null,
+        referee1Name: (m as any)?.Referee1Name ?? (m as any)?.referee1Name ?? null,
+        referee2Name: (m as any)?.Referee2Name ?? (m as any)?.referee2Name ?? null,
+      }));
+      console.log('[TournamentDetail] Matches sample (up to 20):', sample);
+    } catch (e) {
+      console.warn('handleDebugLogMatches error:', e);
+    }
+  }, [matches]);
   
   
   // Handle match layout measurement
@@ -310,6 +337,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     
     // Auto-scroll logic disabled - will work on it later
   };
+
   
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -324,6 +352,97 @@ const TournamentDetailScreenContent: React.FC = () => {
       return {} as TournamentCore;
     }
   }, [tournamentData]);
+
+  // Define getTournamentStatus early to avoid temporal dead zone issues
+  const getTournamentStatus = React.useCallback(() => {
+    // Use the same logic as TournamentSelectionScreen for consistency
+    const startDate = tournament.dates?.startDate;
+    const endDate = tournament.dates?.endDate;
+    
+    if (!startDate) {
+      return 'SCHEDULED';
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const startDateOnly = startDate.split('T')[0];
+    
+    if (today < startDateOnly) {
+      return 'SCHEDULED';
+    }
+    
+    if (endDate) {
+      const endDateOnly = endDate.split('T')[0];
+      
+      if (today > endDateOnly) {
+        return 'COMPLETED';
+      }
+      if (today >= startDateOnly && today <= endDateOnly) {
+        return 'LIVE NOW';
+      }
+    } else {
+      // Only start date available - consider live for reasonable duration
+      const start = new Date(startDate);
+      const weekAfter = new Date(start);
+      weekAfter.setDate(start.getDate() + 7);
+      
+      const now = new Date();
+      if (now >= start && now <= weekAfter) {
+        return 'LIVE NOW';
+      }
+      if (now > weekAfter) {
+        return 'COMPLETED';
+      }
+    }
+    
+    return 'SCHEDULED';
+  }, [tournament.dates?.startDate, tournament.dates?.endDate]);
+
+  // Hybrid tournament data management - use hook for enhanced caching and real-time updates
+  // Only use tournament hook if feature flag is enabled
+  // Avoid Supabase function calls on web (CORS); rely on provided tournament data
+  const shouldUseTournamentHook = Platform.OS !== 'web' && featureFlags.shouldUseNewHook('TournamentDetailScreen', 'tournaments');
+  
+  const {
+    data: hookTournaments = [],
+    isLoading: tournamentHookLoading,
+    error: tournamentHookError,
+    forceRefresh: refreshTournamentData
+  } = useTournaments(
+    (tournament?.visNo && shouldUseTournamentHook) ? {
+      tournamentCode: tournament.visNo,
+      includeDetails: true
+    } : undefined,
+    {
+      enableRealTimeUpdates: getTournamentStatus() !== 'COMPLETED',
+      cacheStrategy: getTournamentStatus() === 'COMPLETED' ? 'historical' : 'live',
+      enablePerformanceMonitoring: true
+    }
+  );
+
+  // Track tournament hook errors for migration safety
+  useEffect(() => {
+    if (shouldUseTournamentHook && tournamentHookError) {
+      featureFlags.recordError('TournamentDetailScreen', tournamentHookError.message || 'Unknown tournament hook error');
+    }
+  }, [shouldUseTournamentHook, tournamentHookError]);
+
+  // Get enhanced tournament data from hook if available, fallback to props
+  const enhancedTournament = React.useMemo(() => {
+    if (hookTournaments.length > 0) {
+      const hookTournament = hookTournaments.find(t => t.visNo === tournament?.visNo);
+      if (hookTournament) {
+        // Merge hook data with existing tournament data
+        return {
+          ...tournament,
+          ...hookTournament,
+          // Preserve complex data from original parsing
+          beachTournaments: (tournament as any).beachTournaments,
+          tournamentNo: (tournament as any).tournamentNo,
+        };
+      }
+    }
+    return tournament;
+  }, [tournament, hookTournaments]);
 
   // Check if this tournament is default on mount
   useEffect(() => {
@@ -374,7 +493,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Error toggling default tournament:', error);
       Alert.alert('Error', 'Could not update default tournament setting');
     }
   };
@@ -390,13 +508,20 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Get match numbers for live score polling
   const matchNumbers = React.useMemo(() => {
     if (!matches) return [];
+    const toNumericMatchNo = (m: any): number | null => {
+      const raw = m?.visNo || m?.matchCode || '';
+      const digits = String(raw).replace(/\D/g, '');
+      const n = parseInt(digits || '', 10);
+      return Number.isFinite(n) ? n : null;
+    };
     return matches
       .filter(match => {
         // Only poll for matches that are likely to have live scores
         const status = match.status;
-        return status === 'InProgress' || status === 'Scheduled';
+        return status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED;
       })
-      .map(match => match.matchNumber);
+      .map(m => toNumericMatchNo(m))
+      .filter((v): v is number => v !== null);
   }, [matches]);
 
   // Live scores hook with automatic lifecycle management
@@ -639,50 +764,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     return 'Dates TBD';
   };
 
-  const getTournamentStatus = () => {
-    // Use the same logic as TournamentSelectionScreen for consistency
-    const startDate = detailedTournament?.dates?.startDate || tournament.dates?.startDate;
-    const endDate = detailedTournament?.dates?.endDate || tournament.dates?.endDate;
-    
-    
-    if (!startDate) {
-      return 'SCHEDULED';
-    }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const startDateOnly = startDate.split('T')[0];
-    
-    
-    if (today < startDateOnly) {
-      return 'SCHEDULED';
-    }
-    
-    if (endDate) {
-      const endDateOnly = endDate.split('T')[0];
-      
-      if (today > endDateOnly) {
-        return 'COMPLETED';
-      }
-      if (today >= startDateOnly && today <= endDateOnly) {
-        return 'LIVE NOW';
-      }
-    } else {
-      // Only start date available - consider live for reasonable duration
-      const start = new Date(startDate);
-      const weekAfter = new Date(start);
-      weekAfter.setDate(start.getDate() + 7);
-      
-      const now = new Date();
-      if (now >= start && now <= weekAfter) {
-        return 'LIVE NOW';
-      }
-      if (now > weekAfter) {
-        return 'COMPLETED';
-      }
-    }
-    
-    return 'SCHEDULED';
-  };
 
 
   const getStatusColor = () => {
@@ -1000,6 +1081,7 @@ const TournamentDetailScreenContent: React.FC = () => {
               return dateA.getTime() - dateB.getTime();
             });
             
+            
             setMatches(sortedMatches);
             setMatchesLoading(false);
           } catch (parseError) {
@@ -1035,7 +1117,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         refreshLiveScores();
       }
     } catch (error) {
-      console.error('Error refreshing tournament data:', error);
     } finally {
       setRefreshing(false);
     }
@@ -1162,35 +1243,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                 </View>
               </View>
               
-              <View style={styles.titleRow}>
-                <FlagImage
-                  federationCode={tournament.countryCode || tournament.country}
-                  teamName={tournament.country}
-                  size="medium"
-                  style={styles.tournamentFlag}
-                />
-                <Text style={styles.tournamentName}>
-                  {tournament.title || tournament.name}
-                </Text>
-              </View>
-              
-              <View style={styles.dateRow}>
-                <Icon name="calendar-outline" size={16} color="#6B7280" style={styles.dateIcon} />
-                <Text style={styles.tournamentDate}>{getDateRange()}</Text>
-              </View>
-
-              {canBeDefault && (
-                <View style={styles.defaultSwitchRow}>
-                  <Text style={styles.defaultSwitchLabel}>Set as Default</Text>
-                  <Switch
-                    value={isDefault}
-                    onValueChange={handleDefaultToggle}
-                    trackColor={{ false: '#D1D5DB', true: colors.primary }}
-                    thumbColor={isDefault ? '#FFFFFF' : '#9CA3AF'}
-                    style={styles.defaultSwitch}
-                  />
-                </View>
-              )}
+              {/* Use unified TournamentCard component */}
+              <TournamentCard
+                tournament={tournament}
+                onPress={() => {}} // No action needed since we're already on the detail screen
+                showDefaultToggle={canBeDefault}
+                showStatusBadge={true}
+                compact={false}
+              />
 
               {/* Tab system removed - showing matches directly */}
             </View>
@@ -1225,6 +1285,14 @@ const TournamentDetailScreenContent: React.FC = () => {
                     }}
                   >
                     <Text style={styles.resetFiltersText}>Reset Filters</Text>
+                  </TouchableOpacity>
+                  
+                  {/* DEBUG BUTTON - Temporary for logging match objects */}
+                  <TouchableOpacity 
+                    style={styles.debugButton}
+                    onPress={handleDebugLogMatches}
+                  >
+                    <Text style={styles.debugButtonText}>🐛 Log Matches</Text>
                   </TouchableOpacity>
                 </View>
                 
@@ -1346,6 +1414,19 @@ const TournamentDetailScreenContent: React.FC = () => {
                   showAllDays={true}
                   liveScores={liveScores}
                   getLiveScore={getLiveScore}
+                  // Hybrid hook features - provide tournament code for enhanced caching and real-time updates
+                  tournamentCode={enhancedTournament?.visNo}
+                  enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
+                  enableLiveScores={getTournamentStatus() === 'LIVE'}
+                  matchFilters={{
+                    // Use the tournament numbers from the existing complex loading logic
+                    tournamentCode: enhancedTournament?.visNo,
+                    // Add date range if available from enhanced tournament data
+                    dateRange: enhancedTournament?.dates ? {
+                      startDate: enhancedTournament.dates.startDate,
+                      endDate: enhancedTournament.dates.endDate
+                    } : undefined
+                  }}
                 />
               </View>
             )}
@@ -1825,32 +1906,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginHorizontal: 2,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  tournamentFlag: {
-    marginRight: 8,
-  },
-  tournamentName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1B365D',
-    flex: 1,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateIcon: {
-    marginRight: 8,
-  },
-  tournamentDate: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
+  // Removed unused tournament header styles - now using TournamentCard component
   liveBadgeStyle: {
     backgroundColor: '#FFFFFF', // White background
     flexDirection: 'row',
@@ -1984,20 +2040,7 @@ const styles = StyleSheet.create({
   whistleIcon: {
     fontSize: 24,
   },
-  defaultSwitchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  defaultSwitchLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  defaultSwitch: {
-    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-  },
+  // Removed unused default switch styles - now handled by TournamentCard component
 
   // Save button styles for filters panel
   saveButtonContainer: {
@@ -2018,6 +2061,22 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // DEBUG BUTTON STYLES - Temporary for development
+  debugButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#8B5CF6', // Purple background for debug
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+  },
+  
+  debugButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 

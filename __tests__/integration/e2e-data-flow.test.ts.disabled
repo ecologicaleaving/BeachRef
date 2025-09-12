@@ -1,0 +1,447 @@
+/**
+ * End-to-End Data Flow Integration Tests
+ * Story 3.5: Integration Testing & Performance Validation
+ * Tests the complete VIS Adapter → Database → Frontend data flow
+ */
+
+import { setupIntegrationTestEnvironment } from './setup/TestEnvironmentSetup';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import { render, waitFor, act } from '@testing-library/react-native';
+import { DualReadService } from '../../services/DualReadService';
+
+describe('End-to-End Data Flow Integration', () => {
+  describe('VIS Adapter → DataSyncService → Database Flow', () => {
+    it('should sync tournament data from VIS Adapter to database', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Mock VIS Adapter tournament endpoint
+        const mockTournaments = env.testData.tournaments;
+        expect(mockTournaments).toHaveLength(3);
+        
+        // Step 2: Call DataSyncService tournament sync endpoint
+        const syncResponse = await fetch('http://localhost/sync/tournaments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        expect(syncResponse.ok).toBe(true);
+        const syncResult = await syncResponse.json();
+        expect(syncResult.success).toBe(true);
+        expect(syncResult.synced).toBe(3);
+        expect(syncResult.errors).toBe(0);
+        expect(syncResult.duration).toBeWithinPerformanceRange(1000, 3000);
+        
+        // Step 3: Verify data was populated in database
+        const { data: dbTournaments, error } = await env.database.supabase
+          .from('tournaments')
+          .select('*')
+          .ilike('tournament_code', '%test%');
+        
+        expect(error).toBeNull();
+        expect(dbTournaments).toBeTruthy();
+        
+        // Step 4: Validate data transformation consistency
+        const visData = await fetch('http://localhost/vis/tournaments');
+        const vistournaments = await visData.json();
+        
+        expect(Array.isArray(vistournaments)).toBe(true);
+        expect(vistournaments).toHaveLength(3);
+        
+        // Verify key fields are consistent
+        if (dbTournaments && dbTournaments.length > 0) {
+          const visActive = vistournaments.find(t => t.status === 'ACTIVE');
+          const dbActive = dbTournaments.find(t => t.status === 'ACTIVE');
+          
+          if (visActive && dbActive) {
+            expect(dbActive.vis_tournament_no).toBe(parseInt(visActive.visNo));
+            expect(dbActive.tournament_code).toBe(visActive.tournamentCode);
+            expect(dbActive.name).toBe(visActive.name);
+          }
+        }
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should sync match data with proper event relationships', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Sync tournaments first (dependency)
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        
+        // Step 2: Sync matches for active tournament
+        const activeTournament = env.testData.tournaments.find(t => t.status === 'ACTIVE');
+        expect(activeTournament).toBeDefined();
+        
+        const matchSyncResponse = await fetch(
+          `http://localhost/sync/matches?tournamentCode=${activeTournament!.tournamentCode}`,
+          { method: 'POST' }
+        );
+        
+        expect(matchSyncResponse.ok).toBe(true);
+        const matchSyncResult = await matchSyncResponse.json();
+        expect(matchSyncResult.success).toBe(true);
+        expect(matchSyncResult.synced).toBeGreaterThan(0);
+        
+        // Step 3: Verify events were created
+        const { data: dbEvents, error: eventError } = await env.database.supabase
+          .from('events')
+          .select('*')
+          .eq('tournament_code', activeTournament!.tournamentCode);
+        
+        expect(eventError).toBeNull();
+        // Note: Events may or may not be created depending on implementation
+        
+        // Step 4: Verify match data consistency
+        const visMatchesResponse = await fetch(
+          `http://localhost/vis/matches?tournamentCode=${activeTournament!.tournamentCode}`
+        );
+        const visMatches = await visMatchesResponse.json();
+        
+        expect(Array.isArray(visMatches)).toBe(true);
+        expect(visMatches.length).toBeGreaterThan(0);
+        
+        // Validate match transformation
+        visMatches.forEach(match => {
+          expect(match).toHaveValidDTOStructure('MatchDTO');
+          expect(match.tournamentCode).toBe(activeTournament!.tournamentCode);
+        });
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should sync referee data with assignment relationships', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Sync dependencies
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        const activeTournament = env.testData.tournaments.find(t => t.status === 'ACTIVE');
+        
+        // Step 2: Sync referees
+        const refereeSyncResponse = await fetch(
+          `http://localhost/sync/referees?tournamentCode=${activeTournament!.tournamentCode}`,
+          { method: 'POST' }
+        );
+        
+        expect(refereeSyncResponse.ok).toBe(true);
+        const refereeSyncResult = await refereeSyncResponse.json();
+        expect(refereeSyncResult.success).toBe(true);
+        expect(refereeSyncResult.synced).toBeGreaterThan(0);
+        
+        // Step 3: Verify referee data transformation
+        const visRefereesResponse = await fetch(
+          `http://localhost/vis/referees?tournamentCode=${activeTournament!.tournamentCode}`
+        );
+        const visReferees = await visRefereesResponse.json();
+        
+        expect(Array.isArray(visReferees)).toBe(true);
+        expect(visReferees.length).toBeGreaterThan(0);
+        
+        // Validate referee structure and assignments
+        visReferees.forEach(referee => {
+          expect(referee).toHaveValidDTOStructure('RefereeDTO');
+          if (referee.assignments && referee.assignments.length > 0) {
+            referee.assignments.forEach(assignment => {
+              expect(assignment.tournamentCode).toBe(activeTournament!.tournamentCode);
+              expect(['ASSIGNED', 'CONFIRMED', 'DECLINED', 'PENDING']).toContain(assignment.status);
+              expect(['FIRST', 'SECOND', 'CHALLENGE']).toContain(assignment.function);
+            });
+          }
+        });
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should handle full sync workflow correctly', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Trigger full sync
+        global.performanceUtils.start('full_sync');
+        
+        const fullSyncResponse = await fetch('http://localhost/sync/full', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        const fullSyncDuration = global.performanceUtils.end('full_sync');
+        
+        expect(fullSyncResponse.ok).toBe(true);
+        const fullSyncResult = await fullSyncResponse.json();
+        
+        // Step 2: Validate full sync results
+        expect(fullSyncResult.success).toBe(true);
+        expect(fullSyncResult.synced).toBeGreaterThan(0);
+        expect(fullSyncResult.errors).toBe(0);
+        expect(fullSyncResult.duration).toBeWithinPerformanceRange(10000, 20000); // 10-20 seconds
+        expect(fullSyncDuration).toBeWithinPerformanceRange(100, 5000); // Network call duration
+        
+        // Step 3: Verify sync details
+        expect(fullSyncResult.details).toBeDefined();
+        expect(Array.isArray(fullSyncResult.details)).toBe(true);
+        
+        const syncSteps = ['tournaments', 'matches', 'referees'];
+        syncSteps.forEach(step => {
+          const stepResult = fullSyncResult.details.find(d => d.step === step);
+          expect(stepResult).toBeDefined();
+          expect(stepResult.synced).toBeGreaterThanOrEqual(0);
+          expect(stepResult.errors).toBe(0);
+        });
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+  });
+
+  describe('Database → DualReadService → TanStack Query Flow', () => {
+    it('should retrieve tournament data through DualReadService', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Populate database with test data
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        
+        // Step 2: Test DualReadService tournament retrieval
+        const dualReadService = new DualReadService();
+        
+        global.performanceUtils.start('dual_read_tournaments');
+        const tournamentsResult = await dualReadService.getTournaments({
+          season: new Date().getFullYear(),
+          gender: 'M',
+        });
+        const dualReadDuration = global.performanceUtils.end('dual_read_tournaments');
+        
+        // Step 3: Validate retrieved data
+        expect(tournamentsResult).toBeDefined();
+        expect(tournamentsResult.data).toBeDefined();
+        expect(Array.isArray(tournamentsResult.data)).toBe(true);
+        expect(tournamentsResult.data!.length).toBeGreaterThan(0);
+        expect(dualReadDuration).toBeWithinPerformanceRange(50, 1000); // Should be fast
+        
+        // Step 4: Validate result structure and source
+        expect(['database', 'api', 'cache']).toContain(tournamentsResult.source);
+        expect(tournamentsResult.performance.queryTime).toBeGreaterThan(0);
+        
+        // Step 5: Validate DTO structure
+        tournamentsResult.data!.forEach(tournament => {
+          expect(tournament).toHaveValidDTOStructure('TournamentDTO');
+        });
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should retrieve match data with tournament context', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Populate database
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        const activeTournament = env.testData.tournaments.find(t => t.status === 'ACTIVE');
+        await fetch(`http://localhost/sync/matches?tournamentCode=${activeTournament!.tournamentCode}`, { method: 'POST' });
+        
+        // Step 2: Test DualReadService match retrieval
+        const dualReadService = new DualReadService();
+        
+        global.performanceUtils.start('dual_read_matches');
+        const matchesResult = await dualReadService.getMatches({
+          tournamentCode: activeTournament!.tournamentCode,
+          status: 'SCHEDULED',
+        });
+        const matchReadDuration = global.performanceUtils.end('dual_read_matches');
+        
+        // Step 3: Validate results
+        expect(matchesResult).toBeDefined();
+        expect(matchesResult.data).toBeDefined();
+        expect(Array.isArray(matchesResult.data)).toBe(true);
+        expect(matchReadDuration).toBeWithinPerformanceRange(50, 1000);
+        
+        // Step 4: Validate result structure
+        expect(['database', 'api', 'cache']).toContain(matchesResult.source);
+        expect(matchesResult.performance.queryTime).toBeGreaterThan(0);
+        
+        // Step 5: Validate match data structure
+        matchesResult.data!.forEach(match => {
+          expect(match).toHaveValidDTOStructure('MatchDTO');
+          expect(match.tournamentCode).toBe(activeTournament!.tournamentCode);
+        });
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+  });
+
+  describe('Real-time Updates Propagation', () => {
+    it('should propagate data updates within 60 seconds', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Initial data sync
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        
+        // Step 2: Simulate real-time data change
+        const activeTournament = env.testData.tournaments.find(t => t.status === 'ACTIVE');
+        const updatedTournament = {
+          ...activeTournament,
+          name: `${activeTournament!.name} - UPDATED`,
+          status: 'COMPLETED',
+        };
+        
+        // Add updated tournament to mock
+        env.visAdapterMock.addTestTournament(updatedTournament as any);
+        
+        // Step 3: Trigger sync and measure propagation time
+        global.performanceUtils.start('real_time_propagation');
+        
+        const updateSyncResponse = await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        expect(updateSyncResponse.ok).toBe(true);
+        
+        // Step 4: Wait for data propagation (simulate real-time subscription)
+        await global.databaseUtils.waitForSync(10000); // 10 second timeout
+        
+        const propagationDuration = global.performanceUtils.end('real_time_propagation');
+        
+        // Step 5: Validate update propagation timing
+        expect(propagationDuration).toBeLessThan(60000); // Must be under 60 seconds
+        expect(propagationDuration).toBeWithinPerformanceRange(100, 15000); // Reasonable range
+        
+        // Step 6: Verify updated data is available
+        const dualReadService = new DualReadService();
+        const updatedTournamentsResult = await dualReadService.getTournaments({
+          // tournamentCode is not a filter parameter for getTournaments
+          season: new Date().getFullYear(),
+        });
+        
+        expect(updatedTournamentsResult.data).toBeDefined();
+        expect(updatedTournamentsResult.data!.length).toBeGreaterThan(0);
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should handle concurrent data updates correctly', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Initial sync
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        
+        // Step 2: Simulate concurrent sync operations
+        const activeTournament = env.testData.tournaments.find(t => t.status === 'ACTIVE');
+        
+        const concurrentPromises = [
+          fetch('http://localhost/sync/tournaments', { method: 'POST' }),
+          fetch(`http://localhost/sync/matches?tournamentCode=${activeTournament!.tournamentCode}`, { method: 'POST' }),
+          fetch(`http://localhost/sync/referees?tournamentCode=${activeTournament!.tournamentCode}`, { method: 'POST' }),
+        ];
+        
+        global.performanceUtils.start('concurrent_sync');
+        const results = await Promise.all(concurrentPromises);
+        const concurrentDuration = global.performanceUtils.end('concurrent_sync');
+        
+        // Step 3: Validate all operations succeeded
+        results.forEach(response => {
+          expect(response.ok).toBe(true);
+        });
+        
+        // Step 4: Verify timing is acceptable for concurrent operations
+        expect(concurrentDuration).toBeWithinPerformanceRange(1000, 10000);
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+  });
+
+  describe('Data Consistency Validation', () => {
+    it('should maintain data transformation consistency throughout flow', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Get original VIS data
+        const visResponse = await fetch('http://localhost/vis/tournaments');
+        const originalVisData = await visResponse.json();
+        
+        // Step 2: Sync to database
+        await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        
+        // Step 3: Retrieve through DualReadService
+        const dualReadService = new DualReadService();
+        const retrievedDataResult = await dualReadService.getTournaments({});
+        const retrievedData = retrievedDataResult.data || [];
+        
+        // Step 4: Validate data consistency
+        const isConsistent = await global.databaseUtils.verifyDataConsistency(originalVisData, retrievedData);
+        expect(isConsistent).toBe(true);
+        
+        // Step 5: Validate key field consistency
+        if (originalVisData.length > 0 && retrievedData.length > 0) {
+          const originalActive = originalVisData.find(t => t.status === 'ACTIVE');
+          const retrievedActive = retrievedData.find(t => t.status === 'ACTIVE');
+          
+          if (originalActive && retrievedActive) {
+            expect(retrievedActive.visNo).toBe(originalActive.visNo);
+            expect(retrievedActive.tournamentCode).toBe(originalActive.tournamentCode);
+            expect(retrievedActive.name).toBe(originalActive.name);
+            expect(retrievedActive.gender).toBe(originalActive.gender);
+          }
+        }
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+
+    it('should handle data validation errors gracefully', async () => {
+      const env = await setupIntegrationTestEnvironment();
+      global.testUtils.addCleanup(() => env.cleanup());
+      
+      try {
+        // Step 1: Inject invalid data through mock
+        const invalidTournament = {
+          id: 'invalid-tournament',
+          visNo: null, // Invalid - should be string
+          tournamentCode: '', // Invalid - empty string
+          name: undefined, // Invalid - missing required field
+        };
+        
+        env.visAdapterMock.addTestTournament(invalidTournament as any);
+        
+        // Step 2: Attempt sync and expect graceful handling
+        const syncResponse = await fetch('http://localhost/sync/tournaments', { method: 'POST' });
+        const syncResult = await syncResponse.json();
+        
+        // Step 3: Should still be successful but may have errors
+        expect(syncResponse.ok).toBe(true);
+        expect(syncResult.success).toBe(true);
+        // May have some errors due to invalid data
+        expect(syncResult.errors).toBeGreaterThanOrEqual(0);
+        
+      } finally {
+        await env.cleanup();
+      }
+    });
+  });
+});

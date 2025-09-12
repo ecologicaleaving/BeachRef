@@ -6,8 +6,81 @@
 
 import { VisApiClient } from './api/VisApiClient';
 import { LocalStorageManager } from './LocalStorageManager';
-import { CacheService } from './CacheService';
+import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { VisApiEndpoint, GetBeachMatchListRequest, GetEventRefereeListRequest } from '../types/api-v2';
+
+// Compatibility helpers to avoid reliance on class static methods when bundlers inline/hoist differently
+function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 'second'): any[] {
+  const matches: any[] = [];
+  try {
+    const matchRegex = /<BeachMatch[^>]*\/?>/g;
+    const matchEntries = [...xmlData.matchAll(matchRegex)];
+    for (const [matchEntry] of matchEntries) {
+      const match: any = { refereeRole };
+      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name'];
+      for (const attr of attributes) {
+        const regex = new RegExp(`${attr}="([^"]*)"`);
+        const mr = matchEntry.match(regex);
+        if (mr) match[attr] = mr[1];
+      }
+      const tg = (match.TournamentGender || '').toString().trim().toUpperCase();
+      const tournamentGender = tg.startsWith('W') || tg.startsWith('F') ? 'W' : (tg.startsWith('M') ? 'M' : '');
+      const gender = tournamentGender === 'W' ? 'women' : (tournamentGender === 'M' ? 'men' : '');
+      matches.push({
+        matchId: match.No || match.Code || `${match.NoEvent}_${match.LocalDateTime}`,
+        refereeRole,
+        gender,
+        tournamentGender,
+        NoReferee1: match.NoReferee1,
+        NoReferee2: match.NoReferee2,
+        noReferee1: match.NoReferee1,
+        noReferee2: match.NoReferee2,
+        Referee1Name: match.Referee1Name,
+        Referee2Name: match.Referee2Name,
+        referee1Name: match.Referee1Name,
+        referee2Name: match.Referee2Name,
+        rawMatch: match,
+      });
+    }
+  } catch {}
+  return matches;
+}
+
+function deduplicateMatchesByIdCompat(matches: any[]): any[] {
+  const seen = new Set<string>();
+  const unique: any[] = [];
+  for (const m of matches) {
+    const id = m?.matchId || m?.rawMatch?.No || '';
+    if (id && !seen.has(id)) { seen.add(id); unique.push(m); }
+  }
+  return unique;
+}
+
+function calculateStatsFromParsedMatchesCompat(matches: any[]): RefereeStats {
+  const stats: RefereeStats = {
+    totalMatches: matches.length,
+    matchesAsFirst: 0,
+    matchesAsSecond: 0,
+    menMatches: 0,
+    womenMatches: 0,
+  };
+  for (const m of matches) {
+    if (m?.refereeRole === 'first') stats.matchesAsFirst++;
+    else if (m?.refereeRole === 'second') stats.matchesAsSecond++;
+    // Prefer raw VIS flag if present (1 = women, 0 = men)
+    const raw = (m?.rawMatch?.TournamentGender ?? '').toString().trim();
+    if (raw === '1') stats.womenMatches++;
+    else if (raw === '0') stats.menMatches++;
+    else {
+      const tg = (m?.tournamentGender ?? '').toString().toUpperCase();
+      if (tg === 'W') stats.womenMatches++;
+      else if (tg === 'M') stats.menMatches++;
+      else if ((m?.gender || '').toString().toLowerCase() === 'women') stats.womenMatches++;
+      else stats.menMatches++;
+    }
+  }
+  return stats;
+}
 
 export interface RefereeStats {
   totalMatches: number;
@@ -68,10 +141,51 @@ export class RefereeStatsService {
         retryDelayMs: 1000,
         enableLogging: true,
         exponentialBackoff: true,
-        headers: {}
+        headers: {
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+        }
       });
     }
     return RefereeStatsService.visApiClient;
+  }
+
+  /**
+   * Resolve referee full name from event roster given NoReferee and NoEvent
+   */
+  private static async resolveRefereeNameFromEvent(
+    tournamentNo: string,
+    refereeNo: string
+  ): Promise<{ firstName: string; lastName: string } | null> {
+    try {
+      const xml = `<Requests>
+  <Request Type="GetEventRefereeList" Fields="NoReferee FirstName LastName FederationCode Role Status">
+    <Filter NoEvent="${tournamentNo}"/>
+  </Request>
+</Requests>`;
+      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/xml',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
+        },
+        body: new URLSearchParams({ Request: xml })
+      });
+      if (!response.ok) return null;
+      const xmlResponse = await response.text();
+      const entries = xmlResponse.match(/<EventReferee[^>]*>/g) || [];
+      for (const entry of entries) {
+        const no = entry.match(/NoReferee="([^"]*)"/)?.[1] || '';
+        if (no && no.toString().trim() === refereeNo.toString().trim()) {
+          const firstName = entry.match(/FirstName="([^"]*)"/)?.[1] || '';
+          const lastName = entry.match(/LastName="([^"]*)"/)?.[1] || '';
+          return { firstName, lastName };
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -108,7 +222,7 @@ export class RefereeStatsService {
       
       // Merge and deduplicate
       const allMatches = [...firstRefMatches, ...secondRefMatches];
-      const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
+      const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
       
       if (uniqueMatches.length === 0) {
         return RefereeStatsService.generateNoDataSeasonStats(season);
@@ -116,7 +230,7 @@ export class RefereeStatsService {
       
       
       // Calculate statistics from VIS matches
-      const matchStats = RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
+      const matchStats = calculateStatsFromParsedMatchesCompat(uniqueMatches);
       
       const seasonStats: SeasonStats = {
         ...matchStats,
@@ -130,7 +244,7 @@ export class RefereeStatsService {
       
       return seasonStats;
     } catch (error) {
-      console.error('❌ Error fetching season stats:', error);
+      console.error('Ã¢ÂÅ’ Error fetching season stats:', error);
       return RefereeStatsService.generateNoDataSeasonStats(season);
     }
   }
@@ -157,7 +271,7 @@ export class RefereeStatsService {
       
       // Merge and deduplicate
       const allMatches = [...firstRefMatches, ...secondRefMatches];
-      const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
+      const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
       
       if (uniqueMatches.length === 0) {
         return null;
@@ -165,9 +279,9 @@ export class RefereeStatsService {
       
       
       // Calculate statistics
-      return RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
+      return calculateStatsFromParsedMatchesCompat(uniqueMatches);
     } catch (error) {
-      console.error('❌ Error fetching current tournament stats:', error);
+      console.error('Ã¢ÂÅ’ Error fetching current tournament stats:', error);
       return null;
     }
   }
@@ -202,7 +316,7 @@ export class RefereeStatsService {
       
       // Merge and deduplicate
       const allMatches = [...firstRefMatches, ...secondRefMatches];
-      const uniqueMatches = RefereeStatsService.deduplicateMatchesById(allMatches);
+      const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
       
       if (uniqueMatches.length === 0) {
         return RefereeStatsService.generateNoDataCareerStats();
@@ -210,7 +324,7 @@ export class RefereeStatsService {
       
       
       // Calculate statistics from VIS matches
-      const matchStats = RefereeStatsService.calculateStatsFromParsedMatches(uniqueMatches);
+      const matchStats = calculateStatsFromParsedMatchesCompat(uniqueMatches);
 
       // Calculate years active based on actual data
       const currentYear = new Date().getFullYear();
@@ -232,7 +346,7 @@ export class RefereeStatsService {
       
       return careerStats;
     } catch (error) {
-      console.error('❌ Error fetching career stats:', error);
+      console.error('Ã¢ÂÅ’ Error fetching career stats:', error);
       return RefereeStatsService.generateNoDataCareerStats();
     }
   }
@@ -269,7 +383,7 @@ export class RefereeStatsService {
       }
       return seasonTournaments;
     } catch (error) {
-      console.error('❌ Error fetching tournaments for season:', error);
+      console.error('Ã¢ÂÅ’ Error fetching tournaments for season:', error);
       return [];
     }
   }
@@ -319,7 +433,7 @@ export class RefereeStatsService {
         } else {
         }
       } catch (error) {
-        console.error(`❌ Error processing tournament ${tournament.visNo}:`, error);
+        console.error(`Ã¢ÂÅ’ Error processing tournament ${tournament.visNo}:`, error);
         continue;
       }
     }
@@ -371,6 +485,7 @@ export class RefereeStatsService {
         const matches = ref1HasBoth || ref2HasBoth;
         
         return matches;
+        return matches;
       } else {
         // Fallback for single name
         const ref1Match = referee1.includes(searchId);
@@ -409,7 +524,7 @@ export class RefereeStatsService {
       };
     });
     
-    return filteredMatches;
+    return matches;
   }
 
   /**
@@ -634,6 +749,32 @@ export class RefereeStatsService {
   }
 
   /**
+   * Resolve referee name to NoReferee ID using any available tournament
+   */
+  private static async resolveRefereeIdFromAnyTournament(refereeId: string): Promise<string | null> {
+    try {
+      // First, check if refereeId is already a valid 6-digit NoReferee ID
+      if (/^\d{6}$/.test(refereeId)) {
+        return refereeId;
+      }
+      
+      // Get tournaments to use for referee ID resolution
+      const tournamentsResult = await CacheService.getTournaments();
+      if (!tournamentsResult.success || !tournamentsResult.data || tournamentsResult.data.length === 0) {
+        return null;
+      }
+      
+      const tournaments = tournamentsResult.data;
+      
+      // Try to resolve using the first available tournament
+      return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0].visNo);
+    } catch (error) {
+      console.error('❌ Error resolving referee ID from tournaments:', error);
+      return null;
+    }
+  }
+
+  /**
    * Resolve referee name to NoReferee ID using GetEventRefereeList for specific tournament
    */
   private static async resolveRefereeIdFromTournament(refereeId: string, tournamentNo: string): Promise<string | null> {
@@ -658,12 +799,14 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-
+      // Resolve refereeId against event roster
+      
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -671,19 +814,53 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/); 
+        // Try direct attribute match first
+        const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/);
         const resolvedNoReferee = refereeNoMatch?.[1];
-        
         if (resolvedNoReferee) {
           return resolvedNoReferee;
-        } else {
-          return null;
         }
+
+        // Fallback: query all referees for the event and match by name client-side
+        const fallbackXml = `<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Status Role">
+    <Filter NoEvent="${tournamentNo}"/>
+  </Request>
+</Requests>`;
+
+        const fallbackResp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+          method: "POST",
+          headers: {
+            "Accept": "application/xml",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
+          },
+          body: new URLSearchParams({ Request: fallbackXml })
+        });
+
+        if (fallbackResp.ok) {
+          const fallbackXmlText = await fallbackResp.text();
+          // Find EventReferee entries and match by first/last name
+          const entries = fallbackXmlText.match(/<EventReferee[^>]*>/g) || [];
+          const targetFirst = firstName.toLowerCase();
+          const targetLast = lastName.toLowerCase();
+          for (const entry of entries) {
+            const f = (entry.match(/FirstName="([^"]*)"/)?.[1] || '').toLowerCase();
+            const l = (entry.match(/LastName="([^"]*)"/)?.[1] || '').toLowerCase();
+            if (f === targetFirst && l === targetLast) {
+              const no = entry.match(/NoReferee="([^"]*)"/)?.[1];
+              if (no) return no;
+            }
+          }
+        }
+
+        return null;
       } else {
         return null;
       }
     } catch (error) {
-      console.error('❌ Error resolving referee ID:', error);
+      console.error('Ã¢ÂÅ’ Error resolving referee ID:', error);
       return null;
     }
   }
@@ -697,22 +874,39 @@ export class RefereeStatsService {
     tournamentNo: string
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        
+        return [];
+      }
+      // Log scope (tournament query)
+      
+
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2">
     <Filter NoEvent="${tournamentNo}" ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
 
+      
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
@@ -720,145 +914,66 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
+        // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
+        try {
+          for (const m of matches) {
+            const raw = (m?.rawMatch?.TournamentGender ?? '').toString().trim();
+            if (raw === '1') { (m as any).tournamentGender = 'W'; (m as any).gender = 'women'; }
+            else if (raw === '0') { (m as any).tournamentGender = 'M'; (m as any).gender = 'men'; }
+          }
+        } catch {}
+        // Sample log removed per request
+        // Minimal audit: matchId and tournamentGender only
+        try {
+          const audit = (matches || []).map((m: any) => ({
+            matchId: (m.rawMatch?.No || m.matchId || '').toString(),
+            tournamentGenderRaw: (m?.rawMatch?.TournamentGender ?? '').toString(),
+            tournamentGender: (m?.tournamentGender ?? '').toString(),
+          }));
+          
+        } catch {}
+        // Defensive role filter using VIS canonical names (NoReferee1/NoReferee2) with fallback to camelCase
+        let filteredMatches = matches.filter((m: any) => {
+          const first = (m.NoReferee1 ?? m.noReferee1 ?? (m.rawMatch?.NoReferee1 ?? '')).toString().trim();
+          const second = (m.NoReferee2 ?? m.noReferee2 ?? (m.rawMatch?.NoReferee2 ?? '')).toString().trim();
+          const target = refereeNo.toString().trim();
+          return role === 'first' ? first === target : second === target;
+        });
+
+        // If no ID-based matches found, try name-based fallback
+        if (filteredMatches.length === 0) {
+          try {
+            const refName = await RefereeStatsService.resolveRefereeNameFromEvent(tournamentNo, refereeNo);
+            if (refName) {
+              const { firstName, lastName } = refName;
+              const full = `${firstName} ${lastName}`.trim().toLowerCase();
+              const rev = `${lastName} ${firstName}`.trim().toLowerCase();
+              const nameMatches = matches.filter((m: any) => {
+                const r1 = (m.Referee1Name ?? m.referee1Name ?? (m.rawMatch?.Referee1Name ?? '')).toString().trim().toLowerCase();
+                const r2 = (m.Referee2Name ?? m.referee2Name ?? (m.rawMatch?.Referee2Name ?? '')).toString().trim().toLowerCase();
+                return role === 'first' ? (r1 === full || r1 === rev) : (r2 === full || r2 === rev);
+              });
+              if (nameMatches.length > 0) {
+                filteredMatches = nameMatches;
+              }
+            }
+          } catch {}
+        }
+
+        // Removed VIS role filter summary per request
+        return filteredMatches;
       } else {
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying tournament matches for ${role} referee:`, error);
+      console.error(`Error querying tournament matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }
 
   /**
-   * Parse matches from VIS XML response
-   */
-  private static parseMatchesFromVISXML(xmlData: string, refereeRole: 'first' | 'second'): any[] {
-    const matches: any[] = [];
-    
-    try {
-      
-      // Extract BeachMatch elements
-      const matchRegex = /<BeachMatch[^>]*\/?>/g;
-      const matchEntries = [...xmlData.matchAll(matchRegex)];
-      
-      
-      for (const [matchEntry] of matchEntries) {
-        const match: any = { refereeRole };
-        
-        // Extract all attributes
-        const attributes = ['No', 'Code', 'NoEvent', 'LocalDateTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2'];
-        
-        for (const attr of attributes) {
-          const regex = new RegExp(`${attr}="([^"]*)"`); 
-          const match_result = matchEntry.match(regex);
-          if (match_result) {
-            match[attr] = match_result[1];
-          }
-        }
-        
-        // Determine gender from RoundCode (common pattern contains gender info)
-        const roundCode = match.RoundCode || '';
-        const gender = roundCode.toLowerCase().includes('women') || roundCode.toLowerCase().includes('w') ? 'women' : 'men';
-        
-        const parsedMatch = {
-          matchId: match.No || match.Code || `${match.NoEvent}_${match.LocalDateTime}`,
-          refereeRole,
-          gender: gender as 'men' | 'women',
-          noReferee1: match.NoReferee1,
-          noReferee2: match.NoReferee2,
-          rawMatch: match
-        };
-        
-        matches.push(parsedMatch);
-      }
-      
-      return matches;
-    } catch (error) {
-      console.error('❌ Error parsing matches from XML:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Deduplicate matches by match ID (for dual-role queries)
-   */
-  private static deduplicateMatchesById(matches: any[]): any[] {
-    const seen = new Set<string>();
-    const unique: any[] = [];
-    
-    
-    for (const match of matches) {
-      const matchId = match.matchId;
-      if (matchId && !seen.has(matchId)) {
-        seen.add(matchId);
-        unique.push(match);
-      } else {
-      }
-    }
-    
-    return unique;
-  }
-
-  /**
-   * Calculate statistics from parsed VIS matches
-   */
-  private static calculateStatsFromParsedMatches(matches: any[]): RefereeStats {
-    const stats: RefereeStats = {
-      totalMatches: matches.length,
-      matchesAsFirst: 0,
-      matchesAsSecond: 0,
-      menMatches: 0,
-      womenMatches: 0
-    };
-
-
-    for (const match of matches) {
-      // Determine referee role based on which NoReferee field matches
-      if (match.refereeRole === 'first') {
-        stats.matchesAsFirst++;
-      } else if (match.refereeRole === 'second') {
-        stats.matchesAsSecond++;
-      }
-      
-      if (match.gender === 'women') {
-        stats.womenMatches++;
-      } else {
-        stats.menMatches++;
-      }
-      
-    }
-
-    return stats;
-  }
-
-  /**
-   * Resolve referee name to NoReferee ID using any available tournament
-   */
-  private static async resolveRefereeIdFromAnyTournament(refereeId: string): Promise<string | null> {
-    try {
-      // First, check if refereeId is already a valid 6-digit NoReferee ID
-      if (/^\d{6}$/.test(refereeId)) {
-        return refereeId;
-      }
-      
-      // Get tournaments to use for referee ID resolution
-      const tournamentsResult = await CacheService.getTournaments();
-      if (!tournamentsResult.success || !tournamentsResult.data || tournamentsResult.data.length === 0) {
-        return null;
-      }
-      
-      const tournaments = tournamentsResult.data;
-      
-      return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0].visNo);
-    } catch (error) {
-      console.error('❌ Error resolving referee ID from tournaments:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Query season matches for specific referee role using Season + NoReferee filters
+   * Query season matches for specific referee role using tournament approach with season filter
    */
   private static async querySeasonMatchesWithNoReferee(
     refereeNo: string,
@@ -866,75 +981,171 @@ export class RefereeStatsService {
     season: string
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        return [];
+      }
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
+      // Use tournament approach but with proper beach volleyball season date range
+      // Beach volleyball season typically runs from March to February of next year
+      const seasonStartDate = `${season}-03-01`;
+      const seasonEndDate = `${parseInt(season) + 1}-02-28`;
+      
+      // Since VIS API ignores date filters, get all matches and filter client-side
       const xml = `<Requests>
+  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code Season LocalDateTime CountryName City TournamentName RoundCode Phase Status NoReferee1 NoReferee2">
-    <Filter Season="${season}" ${refereeField}="${refereeNo}"/>
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
+    <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
 
+      console.log(`🏐 Season query for ${refereeNo} (${role}): ${seasonStartDate} to ${seasonEndDate}`);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
       
       if (response.ok) {
         const xmlResponse = await response.text();
+        const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
+        console.log(`🏐 Season query returned ${matches.length} total matches for ${refereeNo} (${role})`);
         
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        // Client-side date filtering since VIS API ignores date filters
+        const seasonStart = new Date(seasonStartDate);
+        const seasonEnd = new Date(seasonEndDate);
+        const filteredMatches = matches.filter(match => {
+          const matchDate = new Date(match.LocalDateTime || match.date || '');
+          return matchDate >= seasonStart && matchDate <= seasonEnd;
+        });
+        
+        console.log(`🏐 After client-side filtering: ${filteredMatches.length} matches for ${season} season (${seasonStartDate} to ${seasonEndDate})`);
+        if (filteredMatches.length > 0) {
+          console.log('Sample filtered season match dates:', filteredMatches.slice(0, 3).map(m => m.LocalDateTime || m.date));
+        }
+        
+        // Replace matches with filtered matches for subsequent processing
+        matches.length = 0;
+        matches.push(...filteredMatches);
+        // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
+        try {
+          for (const m of matches) {
+            const raw = (m?.rawMatch?.TournamentGender ?? '').toString().trim();
+            if (raw === '1') { (m as any).tournamentGender = 'W'; (m as any).gender = 'women'; }
+            else if (raw === '0') { (m as any).tournamentGender = 'M'; (m as any).gender = 'men'; }
+          }
+        } catch {}
+
+        // Apply the same defensive filtering as tournament queries
+        let roleFilteredMatches = matches.filter((m: any) => {
+          const first = (m.NoReferee1 ?? m.noReferee1 ?? (m.rawMatch?.NoReferee1 ?? '')).toString().trim();
+          const second = (m.NoReferee2 ?? m.noReferee2 ?? (m.rawMatch?.NoReferee2 ?? '')).toString().trim();
+          const target = refereeNo.toString().trim();
+          return role === 'first' ? first === target : second === target;
+        });
+
+        return roleFilteredMatches;
       } else {
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying season matches for ${role} referee:`, error);
+      console.error(`Error querying season matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }
 
   /**
-   * Query career matches for specific referee role using NoReferee filter only (no date filters)
+   * Query career matches for specific referee role using tournament approach with extended date range
    */
   private static async queryCareerMatchesWithNoReferee(
     refereeNo: string,
     role: 'first' | 'second'
   ): Promise<any[]> {
     try {
+      // Critical validation: Do not query VIS API with invalid referee IDs
+      // This prevents returning ALL matches (185) when referee resolution fails
+      if (!refereeNo || refereeNo.trim() === '' || refereeNo === 'null' || refereeNo === 'undefined') {
+        return [];
+      }
+
+      // Additional validation: Ensure referee ID is a valid format (6-digit number)
+      if (!/^\d{6}$/.test(refereeNo)) {
+        return [];
+      }
+
       const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
       
+      // Use tournament approach but with extended date range for career (last 10 years)  
+      const currentYear = 2024; // Fixed to 2024 for current season
+      const careerStartDate = `${currentYear - 10}-01-01`;
+      const careerEndDate = `${currentYear}-12-31`;
+      
       const xml = `<Requests>
+  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code Season LocalDateTime CountryName City TournamentName RoundCode Phase Status NoReferee1 NoReferee2">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
 
+      console.log(`🏐 Career query for ${refereeNo} (${role}): ${careerStartDate} to ${careerEndDate}`);
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
         headers: {
           "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
         },
         body: new URLSearchParams({ Request: xml })
       });
       
       if (response.ok) {
         const xmlResponse = await response.text();
-        
-        return RefereeStatsService.parseMatchesFromVISXML(xmlResponse, role);
+        const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
+        console.log(`🏐 Career query returned ${matches.length} matches for ${refereeNo} (${role})`);
+        if (matches.length > 0) {
+          console.log('Sample career match dates:', matches.slice(0, 3).map(m => m.date || m.LocalDateTime));
+        }
+        // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
+        try {
+          for (const m of matches) {
+            const raw = (m?.rawMatch?.TournamentGender ?? '').toString().trim();
+            if (raw === '1') { (m as any).tournamentGender = 'W'; (m as any).gender = 'women'; }
+            else if (raw === '0') { (m as any).tournamentGender = 'M'; (m as any).gender = 'men'; }
+          }
+        } catch {}
+
+        // Apply the same defensive filtering as tournament queries
+        let roleFilteredMatches = matches.filter((m: any) => {
+          const first = (m.NoReferee1 ?? m.noReferee1 ?? (m.rawMatch?.NoReferee1 ?? '')).toString().trim();
+          const second = (m.NoReferee2 ?? m.noReferee2 ?? (m.rawMatch?.NoReferee2 ?? '')).toString().trim();
+          const target = refereeNo.toString().trim();
+          return role === 'first' ? first === target : second === target;
+        });
+
+        return roleFilteredMatches;
       } else {
         return [];
       }
     } catch (error) {
-      console.error(`❌ Error querying career matches for ${role} referee:`, error);
+      console.error(`Error querying career matches for ${role} referee ${refereeNo}:`, error);
       return [];
     }
   }
 }
+
+

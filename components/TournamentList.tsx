@@ -11,8 +11,7 @@ import { H1Text, H2Text, BodyText, CaptionText } from './Typography';
 import { TournamentCore } from '../types/tournament-v2';
 import { TournamentType } from '../types/tournament-v2';
 import { testSupabaseConnection } from '../services/supabase';
-import { CacheService } from '../services/CacheService';
-import { CacheResult } from '../types/cache';
+import { useTournaments } from '../hooks/useTournaments';
 import { NetworkStatus, OfflineBanner, OfflineBadge } from './offline';
 import { DataFreshness } from './DataFreshness';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
@@ -130,17 +129,36 @@ const TournamentItem: React.FC<TournamentItemProps> = ({
 };
 
 const TournamentList: React.FC = () => {
-  const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<TournamentType>('BPT');
   const [selectedTournament, setSelectedTournament] = useState<TournamentCore | null>(null);
   const [supabaseConnected, setSupabaseConnected] = useState<boolean | null>(null);
-  const [cacheResult, setCacheResult] = useState<CacheResult<TournamentCore[]> | null>(null);
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const [showStatusLegend, setShowStatusLegend] = useState(false);
   
+  // Use simplified tournaments hook - replaces manual loading logic
+  const {
+    data: tournaments = [],
+    isLoading: loading,
+    error: hookError,
+    refetch: refetchTournaments,
+    dataUpdatedAt,
+    isStale
+  } = useTournaments({
+    status: 'ACTIVE', // currentlyActive equivalent
+    season: 2025 // Only this year's tournaments for performance
+  });
+  
+  // Convert hook error to string format for compatibility
+  const error = hookError?.message || null;
+  
   const { isConnected, isOffline } = useNetworkStatus();
+  // Create mock cache result for compatibility with existing UI components
+  const cacheResult = tournaments.length > 0 ? {
+    data: tournaments,
+    source: isStale ? 'cache' as const : 'fresh' as const,
+    timestamp: dataUpdatedAt,
+    cached: true
+  } : null;
   const isOfflineData = useIsOfflineData(cacheResult);
   const freshnessInfo = useDataFreshness(cacheResult);
   const { forceSyncNow } = useAutoSync({ currentlyActive: true, tournamentType: selectedType });
@@ -163,64 +181,29 @@ const TournamentList: React.FC = () => {
     }
   }, []);
 
-  const loadTournaments = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Initialize cache service
-      CacheService.initialize();
-      
-      // Use offline-first strategy when network is unavailable
-      let result: CacheResult<Tournament[]>;
-      if (isOffline) {
-        // console.log('Network offline, using offline-first strategy');
-        result = await CacheService.getTournamentsOffline({ 
-          currentlyActive: true, 
-          tournamentType: selectedType,
-          year: 2025  // Only this year's tournaments for performance
-        });
-      } else {
-        result = await CacheService.getTournaments({ 
-          currentlyActive: true, 
-          tournamentType: selectedType,
-          year: 2025  // Only this year's tournaments for performance
-        });
-      }
-      
-      setTournaments(result.data);
-      setCacheResult(result);
-      
-      // Show offline banner if data is from offline sources
-      if (result.source === 'offline' || result.source === 'localStorage') {
-        setShowOfflineBanner(true);
-      }
-      
-      // Hide offline banner if we got fresh data from API/Supabase
-      if (result.source === 'api' || result.source === 'supabase') {
-        setShowOfflineBanner(false);
-      }
-      
-      // console.log(`Loaded ${result.data.length} tournaments from ${result.source}`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-      
-      // Show different error message for offline vs online
+  // Handle offline banner based on data freshness
+  useEffect(() => {
+    if (cacheResult) {
+      const isOfflineSource = cacheResult.source === 'cache' || isStale;
+      setShowOfflineBanner(isOfflineSource && isOffline);
+    }
+  }, [cacheResult, isStale, isOffline]);
+
+  // Check Supabase connection on mount
+  useEffect(() => {
+    checkSupabaseConnection();
+  }, [checkSupabaseConnection]);
+
+  // Handle errors from the hook
+  useEffect(() => {
+    if (error) {
       if (isOffline) {
         Alert.alert('Offline', 'No cached tournament data available. Connect to the internet to load tournaments.');
       } else {
-        Alert.alert('Error', 'Failed to load tournaments');
+        Alert.alert('Error', 'Failed to load tournaments: ' + error);
       }
-    } finally {
-      setLoading(false);
     }
-  }, [selectedType, isOffline]);
-
-  useEffect(() => {
-    loadTournaments();
-    checkSupabaseConnection();
-  }, [selectedType, isOffline, loadTournaments, checkSupabaseConnection]);
+  }, [error, isOffline]);
 
   const renderTournament = ({ item }: { item: Tournament }) => {
     // Use tournament with status updates if available
@@ -296,7 +279,7 @@ const TournamentList: React.FC = () => {
         </BodyText>
         <TouchableOpacity 
           style={styles.retryButton} 
-          onPress={loadTournaments}
+          onPress={() => refetchTournaments()}
           accessibilityLabel="Retry loading tournaments"
         >
           <View style={styles.retryButtonContent}>

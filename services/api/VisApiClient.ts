@@ -399,11 +399,6 @@ export class VisApiClient implements IVisApiClient {
 
       const xmlRequest = this.buildGetEventOfficialListXml(optimizedRequest);
       
-      // Log the exact XML request being sent to debug 400 errors
-      console.log('🔍 GetEventOfficialList XML Request:');
-      console.log('EventNo:', optimizedRequest.eventNo);
-      console.log('Fields:', optimizedRequest.fields);
-      console.log('XML Request:', xmlRequest);
       
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_OFFICIAL_LIST, xmlRequest);
       
@@ -432,11 +427,6 @@ export class VisApiClient implements IVisApiClient {
 
       const xmlRequest = this.buildGetEventRefereeListXml(optimizedRequest);
       
-      // Log the exact XML request being sent to debug 400 errors
-      console.log('🔍 GetEventRefereeList XML Request:');
-      console.log('EventNo:', optimizedRequest.eventNo);
-      console.log('Fields:', optimizedRequest.fields);
-      console.log('XML Request:', xmlRequest);
       
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_REFEREE_LIST, xmlRequest);
       
@@ -947,14 +937,22 @@ export class VisApiClient implements IVisApiClient {
       filterAttribs.push(`EndDate="${this.escapeXmlAttribute(request.endDate)}"`);
     }
     
+    // Add referee filtering - NoReferee1 = RefereeId, NoReferee2 = RefereeId
+    if (request.NoReferee1) {
+      filterAttribs.push(`NoReferee1="${this.escapeXmlAttribute(request.NoReferee1)}"`);
+    }
+    if (request.NoReferee2) {
+      filterAttribs.push(`NoReferee2="${this.escapeXmlAttribute(request.NoReferee2)}"`);
+    }
+    
     const includeResults = request.includeResults !== false;
     const includeReferees = request.includeReferees !== false;
     
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Include all federation code fields for flag display, plus match results
-    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode';
+    // Include all federation code fields for flag display, plus match results, referee IDs, and position fields
+    const fields = 'No NoInTournament LocalDate LocalTime Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">

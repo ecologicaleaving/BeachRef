@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../../services/NetworkStateManager';
 import { useNetworkState } from '../../hooks/useNetworkState';

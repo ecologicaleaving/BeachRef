@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { EventReferee, RefereeOfficial, getOfficialDisplayName, isActiveOfficial } from '../../../types/referee-v2';
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
@@ -39,6 +40,24 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
   variant = 'default',
   assignmentCount = 0,
 }) => {
+  const router = useRouter();
+  
+  // Handle referee card press to navigate to profile
+  const handleRefereePress = () => {
+    // If custom onPress is provided, use it
+    if (onPress) {
+      onPress(referee);
+      return;
+    }
+    
+    // Otherwise, navigate to referee profile
+    router.push({
+      pathname: '/referee-profile',
+      params: {
+        refereeData: JSON.stringify(referee)
+      }
+    });
+  };
   
   // Get referee analytics data if statistics should be shown
   const { data: analyticsData, isLoading: analyticsLoading } = useRefereeAnalytics(
@@ -49,6 +68,7 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
       enablePerformanceMonitoring: true 
     }
   );
+
   
   // Determine referee status for badge
   const statusForBadge = (() => {
@@ -172,7 +192,18 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
       );
     }
     
-    const refereeStats = analyticsData.data[0]; // First referee from the data
+    // Find the specific referee stats or use first if only one
+    const refereeStats = analyticsData.data.find(stats => stats.referee_id === referee.id) || analyticsData.data[0];
+    
+    // Validate that the data is for the correct referee
+    if (!refereeStats || (refereeStats.referee_id !== referee.id && analyticsData.data.length > 1)) {
+      console.warn('RefereeCard: Analytics data mismatch for referee:', referee.id, 'Got data for:', refereeStats?.referee_id);
+      return (
+        <View style={styles.statisticsContainer}>
+          <Text style={styles.statisticsEmpty}>Statistics unavailable</Text>
+        </View>
+      );
+    }
     
     return (
       <View style={styles.statisticsContainer}>
@@ -237,16 +268,17 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
         variant === 'analytics' && styles.cardAnalytics,
         !isActiveOfficial(referee) && styles.cardInactive,
       ]} 
-      onPress={() => onPress?.(referee)}
+      onPress={handleRefereePress}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
+        <FlagImage 
+          countryCode={referee.federationCode} 
+          style={[styles.flagLeft, compact && styles.flagLeftCompact]} 
+        />
+        
         <View style={styles.refereeInfo}>
           <View style={styles.basicInfo}>
-            <FlagImage 
-              countryCode={referee.federationCode} 
-              style={[styles.flag, compact && styles.flagCompact]} 
-            />
             <View style={styles.nameContainer}>
               <Text style={[styles.refereeName, compact && styles.refereeNameCompact]}>
                 {getOfficialDisplayName(referee)}
@@ -259,6 +291,20 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
         </View>
         
         <View style={styles.headerRight}>
+          {/* Always show basic role totals */}
+          {analyticsData?.data?.length > 0 && (
+            <View style={styles.roleTotals}>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{(analyticsData.data.find(stats => stats.referee_id === referee.id) || analyticsData.data[0])?.first_referee_count || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R1</Text>
+              </View>
+              <Text style={styles.roleTotalSeparator}>•</Text>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{(analyticsData.data.find(stats => stats.referee_id === referee.id) || analyticsData.data[0])?.second_referee_count || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R2</Text>
+              </View>
+            </View>
+          )}
           {getGenderDisplay()}
           {getRoleDisplay()}
           {showStatusBadge && (
@@ -338,9 +384,19 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  flagLeft: {
+    width: 32,
+    height: 24,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  flagLeftCompact: {
+    width: 24,
+    height: 18,
+    marginRight: 8,
   },
   refereeInfo: {
     flex: 1,
@@ -582,5 +638,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 4,
     fontStyle: 'italic',
+  },
+  
+  // Role totals always visible styles
+  roleTotals: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleTotal: {
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  roleTotalCount: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    lineHeight: 14,
+  },
+  roleTotalLabel: {
+    fontSize: 8,
+    color: '#9CA3AF',
+    fontWeight: '500',
+    lineHeight: 10,
+  },
+  roleTotalSeparator: {
+    fontSize: 10,
+    color: '#D1D5DB',
+    paddingHorizontal: 2,
   },
 });

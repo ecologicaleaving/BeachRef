@@ -298,6 +298,29 @@ const TournamentDetailScreenContent: React.FC = () => {
   
   // Track match positions for precise scrolling
   const matchPositions = useRef<{ [matchId: string]: number }>({});
+
+  // Debug: log current matches with minimal safe details
+  const handleDebugLogMatches = React.useCallback(() => {
+    try {
+      const total = matches?.length ?? 0;
+      console.log('[TournamentDetail] Matches count:', total);
+      if (!matches || total === 0) {
+        return;
+      }
+      const sample = matches.slice(0, 20).map((m) => ({
+        id: (m as any)?.matchId ?? (m as any)?.No ?? (m as any)?.code ?? null,
+        court: (m as any)?.court?.courtNumber ?? (m as any)?.Court ?? null,
+        status: (m as any)?.status ?? (m as any)?.Status ?? null,
+        noReferee1: (m as any)?.NoReferee1 ?? (m as any)?.noReferee1 ?? null,
+        noReferee2: (m as any)?.NoReferee2 ?? (m as any)?.noReferee2 ?? null,
+        referee1Name: (m as any)?.Referee1Name ?? (m as any)?.referee1Name ?? null,
+        referee2Name: (m as any)?.Referee2Name ?? (m as any)?.referee2Name ?? null,
+      }));
+      console.log('[TournamentDetail] Matches sample (up to 20):', sample);
+    } catch (e) {
+      console.warn('handleDebugLogMatches error:', e);
+    }
+  }, [matches]);
   
   
   // Handle match layout measurement
@@ -315,81 +338,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     // Auto-scroll logic disabled - will work on it later
   };
 
-  // DEBUG: Log match objects on demand
-  const handleDebugLogMatches = () => {
-    console.log('🐛 DEBUG: Manual match logging triggered');
-    console.log('📊 Current matches state:', matches);
-    
-    if (matches && matches.length > 0) {
-      console.log(`📈 Total matches loaded: ${matches.length}`);
-      
-      // Log first match in detail
-      console.log('🔍 FIRST MATCH OBJECT:');
-      console.log(JSON.stringify(matches[0], null, 2));
-      
-      // Log specific fields we're looking for
-      const firstMatch = matches[0];
-      console.log('📋 KEY FIELDS FROM FIRST MATCH:');
-      console.log('- matchCode:', firstMatch.matchCode);
-      console.log('- noInTournament:', (firstMatch as any).noInTournament);
-      console.log('- round:', firstMatch.round);
-      console.log('- roundName:', firstMatch.roundName);
-      console.log('- roundPhase:', firstMatch.roundPhase);
-      console.log('- teamAPositionInMainDraw:', (firstMatch as any).teamAPositionInMainDraw);
-      console.log('- teamBPositionInMainDraw:', (firstMatch as any).teamBPositionInMainDraw);
-      console.log('- visNo:', firstMatch.visNo);
-      console.log('- id:', firstMatch.id);
-      console.log('- scheduledDateTime:', firstMatch.scheduledDateTime);
-      console.log('- status:', firstMatch.status);
-      console.log('- court:', firstMatch.court);
-      console.log('- team1:', firstMatch.team1);
-      console.log('- team2:', firstMatch.team2);
-      console.log('- result:', firstMatch.result);
-      
-      // Check for duration fields (might be in different places)
-      console.log('⏱️ DURATION FIELDS:');
-      console.log('- DurationSet1:', (firstMatch as any).DurationSet1);
-      console.log('- DurationSet2:', (firstMatch as any).DurationSet2);
-      console.log('- DurationSet3:', (firstMatch as any).DurationSet3);
-      console.log('- result.duration:', firstMatch.result?.duration);
-      
-      // Check if we have any duration data at all
-      const hasDurationData = (firstMatch as any).DurationSet1 || (firstMatch as any).DurationSet2 || (firstMatch as any).DurationSet3;
-      console.log('- Has any duration data:', hasDurationData);
-      if (!hasDurationData) {
-        console.log('🚨 No duration data found! The VIS API might not be returning DurationSet fields.');
-      }
-      
-      // Log all available fields
-      console.log('🗂️ ALL FIELDS IN MATCH OBJECT:');
-      console.log(Object.keys(firstMatch).sort());
-      
-      // Log a few more matches for comparison
-      if (matches.length > 1) {
-        console.log('🔍 SECOND MATCH FOR COMPARISON:');
-        const secondMatch = matches[1];
-        console.log('- matchCode:', secondMatch.matchCode);
-        console.log('- round:', secondMatch.round);
-        console.log('- roundName:', secondMatch.roundName);
-        console.log('- status:', secondMatch.status);
-      }
-      
-      if (matches.length > 2) {
-        console.log('🔍 THIRD MATCH FOR COMPARISON:');
-        const thirdMatch = matches[2];
-        console.log('- matchCode:', thirdMatch.matchCode);
-        console.log('- round:', thirdMatch.round);
-        console.log('- roundName:', thirdMatch.roundName);
-        console.log('- status:', thirdMatch.status);
-      }
-      
-    } else {
-      console.log('❌ No matches loaded yet or matches is null/empty');
-      console.log('- matches is null:', matches === null);
-      console.log('- matches length:', matches?.length);
-      console.log('- matchesLoading:', matchesLoading);
-    }
-  };
   
   const router = useRouter();
   const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
@@ -545,7 +493,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Error toggling default tournament:', error);
       Alert.alert('Error', 'Could not update default tournament setting');
     }
   };
@@ -1134,42 +1081,10 @@ const TournamentDetailScreenContent: React.FC = () => {
               return dateA.getTime() - dateB.getTime();
             });
             
-            // Log match objects for inspection
-            console.log('🏐 MATCH OBJECTS LOADED:');
-            console.log(`📊 Total matches: ${sortedMatches.length}`);
-            
-            if (sortedMatches.length > 0) {
-              console.log('🔍 Sample match object (first match):');
-              console.log(JSON.stringify(sortedMatches[0], null, 2));
-              
-              // Log specific fields we're interested in
-              const firstMatch = sortedMatches[0];
-              console.log('📋 Key fields in match object:');
-              console.log('- matchCode/NoInTournament:', firstMatch.matchCode);
-              console.log('- round:', firstMatch.round);
-              console.log('- roundName:', firstMatch.roundName);
-              console.log('- DurationSet1:', (firstMatch as any).DurationSet1);
-              console.log('- DurationSet2:', (firstMatch as any).DurationSet2);
-              console.log('- DurationSet3:', (firstMatch as any).DurationSet3);
-              
-              // Log a few more matches to see variety
-              if (sortedMatches.length > 1) {
-                console.log('🔍 Second match for comparison:');
-                const secondMatch = sortedMatches[1];
-                console.log('- matchCode:', secondMatch.matchCode);
-                console.log('- round:', secondMatch.round);
-                console.log('- roundName:', secondMatch.roundName);
-              }
-              
-              // Log all available fields from the first match
-              console.log('🗂️ All fields in match object:');
-              console.log(Object.keys(sortedMatches[0]).sort());
-            }
             
             setMatches(sortedMatches);
             setMatchesLoading(false);
           } catch (parseError) {
-            console.error('❌ Error parsing matches:', parseError);
             setMatches([]);
             setMatchesLoading(false);
           }
@@ -1202,7 +1117,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         refreshLiveScores();
       }
     } catch (error) {
-      console.error('Error refreshing tournament data:', error);
     } finally {
       setRefreshing(false);
     }

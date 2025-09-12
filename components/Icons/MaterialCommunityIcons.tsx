@@ -12,7 +12,24 @@ import { colors } from '../../theme/tokens';
 export const Icon: React.FC<{ name: string; size?: number; color?: string; style?: any }> = ({ name, size = 24, color = '#000', style }) => {
   if (Platform.OS === 'web') {
     // Minimal, font-free fallback for web dev to avoid 6000ms font timeouts
-    const fallback = name?.toLowerCase().includes('volleyball') ? '🏐' : '⬤';
+    let fallback = '⬤';
+    if (name?.toLowerCase().includes('volleyball')) {
+      fallback = '🏐';
+    } else if (name?.toLowerCase().includes('menu')) {
+      fallback = '☰';
+    } else if (name?.toLowerCase().includes('close')) {
+      fallback = '✕';
+    } else if (name?.toLowerCase().includes('information')) {
+      fallback = 'ℹ';
+    } else if (name?.toLowerCase().includes('account')) {
+      fallback = '👥';
+    } else if (name?.toLowerCase().includes('whistle')) {
+      fallback = '🔔';
+    } else if (name?.toLowerCase().includes('tournament')) {
+      fallback = '🏆';
+    } else if (name?.toLowerCase().includes('arrow-left')) {
+      fallback = '←';
+    }
     return (
       <Text aria-label={name} style={[{ fontSize: size, color }, style]}>
         {fallback}

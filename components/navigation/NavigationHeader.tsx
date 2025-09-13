@@ -44,7 +44,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   titleColor = '#FFFFFF',
   showStatusBar = true,
   onStatusPress,
-  showLogo = true,
+  showLogo = false,
   onRefresh,
   showRefreshButton = true,
   showBurgerMenu = true,
@@ -123,6 +123,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
+          {showBurgerMenu && (
+            <BurgerButton 
+              onPress={() => setSideMenuVisible(true)}
+              color={titleColor}
+            />
+          )}
           {showLogo && (
             <TouchableOpacity 
               onPress={handleLogoPress}
@@ -158,16 +164,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           )}
         </View>
         
-        <View style={styles.centerSection}>
-          <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitle && (
-            <Text style={[styles.subtitle, { color: titleColor }]} numberOfLines={1}>
-              {subtitle}
+        {title && (
+          <View style={styles.centerSection}>
+            <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
+              {title}
             </Text>
-          )}
-        </View>
+            {subtitle && (
+              <Text style={[styles.subtitle, { color: titleColor }]} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            )}
+          </View>
+        )}
         
         <View style={styles.rightSection}>
           {showRefreshButton && (
@@ -180,12 +188,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             </TouchableOpacity>
           )}
           {rightComponent}
-          {showBurgerMenu && (
-            <BurgerButton 
-              onPress={() => setSideMenuVisible(true)}
-              color={titleColor}
-            />
-          )}
         </View>
       </View>
       

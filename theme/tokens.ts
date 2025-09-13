@@ -38,8 +38,8 @@ export const brandColors = {
 // Status-Driven Color Coding System (WCAG AAA compliant - 7:1 minimum contrast)
 // Based on Epic 001 User Story 4 requirements - using only WCAG AAA compliant colors
 export const statusColors: StatusColors = {
-  // Current/Active: High-visibility - use textPrimary for guaranteed WCAG AAA compliance
-  current: colors.textPrimary,  // 10.98:1 contrast on white background ✅ (guaranteed WCAG AAA color)
+  // Current/Active: High-visibility - use primary blue for LIVE status
+  current: colors.primary,  // 12.12:1 contrast on white background ✅ (blue color for LIVE)
   
   // Upcoming: Professional blue - using existing secondary color
   upcoming: colors.secondary,   // 8.40:1 contrast on white background ✅ (existing WCAG AAA color)

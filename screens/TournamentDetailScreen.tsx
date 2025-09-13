@@ -299,28 +299,6 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Track match positions for precise scrolling
   const matchPositions = useRef<{ [matchId: string]: number }>({});
 
-  // Debug: log current matches with minimal safe details
-  const handleDebugLogMatches = React.useCallback(() => {
-    try {
-      const total = matches?.length ?? 0;
-      console.log('[TournamentDetail] Matches count:', total);
-      if (!matches || total === 0) {
-        return;
-      }
-      const sample = matches.slice(0, 20).map((m) => ({
-        id: (m as any)?.matchId ?? (m as any)?.No ?? (m as any)?.code ?? null,
-        court: (m as any)?.court?.courtNumber ?? (m as any)?.Court ?? null,
-        status: (m as any)?.status ?? (m as any)?.Status ?? null,
-        noReferee1: (m as any)?.NoReferee1 ?? (m as any)?.noReferee1 ?? null,
-        noReferee2: (m as any)?.NoReferee2 ?? (m as any)?.noReferee2 ?? null,
-        referee1Name: (m as any)?.Referee1Name ?? (m as any)?.referee1Name ?? null,
-        referee2Name: (m as any)?.Referee2Name ?? (m as any)?.referee2Name ?? null,
-      }));
-      console.log('[TournamentDetail] Matches sample (up to 20):', sample);
-    } catch (e) {
-      console.warn('handleDebugLogMatches error:', e);
-    }
-  }, [matches]);
   
   
   // Handle match layout measurement
@@ -1169,7 +1147,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       <NavigationHeader 
         title={tournament.name || 'Tournament Details'} 
         showBackButton={false}
-        showHomeButton={true}
+        showHomeButton={false}
         showRefreshButton={false}
         showStatusBar={false}
         showLogo={false}
@@ -1195,66 +1173,19 @@ const TournamentDetailScreenContent: React.FC = () => {
       >
         {/* Index 0: Tournament Card - will scroll up and disappear */}
         {detailsLoading ? (
-          <View style={styles.tournamentCard}>
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FF6B35" />
-              <Text style={styles.loadingText}>Loading tournament details...</Text>
-            </View>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B35" />
+            <Text style={styles.loadingText}>Loading tournament details...</Text>
           </View>
         ) : (
-            <View style={styles.tournamentCard}>
-              <View style={styles.tournamentCardHeader}>
-                <View style={styles.tournamentHeaderLeft}>
-                  {tournament.gender && (
-                    <View style={styles.genderBadgesContainer}>
-                      {tournament.gender === 'M' ? (
-                        <View style={styles.genderBadge}>
-                          <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
-                        </View>
-                      ) : tournament.gender === 'W' ? (
-                        <View style={styles.genderBadge}>
-                          <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
-                        </View>
-                      ) : (
-                        <>
-                          <View style={styles.genderBadge}>
-                            <Text style={[styles.genderSymbol, styles.menSymbol]}>M</Text>
-                          </View>
-                          <Text style={styles.plusSymbol}>+</Text>
-                          <View style={styles.genderBadge}>
-                            <Text style={[styles.genderSymbol, styles.womenSymbol]}>W</Text>
-                          </View>
-                        </>
-                      )}
-                    </View>
-                  )}
-                </View>
-                <View style={styles.tournamentHeaderRight}>
-                  {getTournamentStatus() === 'LIVE NOW' ? (
-                    <View style={[styles.statusBadge, styles.liveBadgeStyle]}>
-                      <View style={styles.liveIndicatorPulse} />
-                      <Text style={[styles.statusText, styles.liveStatusText]}>LIVE</Text>
-                    </View>
-                  ) : (
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-                      <Text style={styles.statusText}>{getTournamentStatus().toUpperCase()}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              
-              {/* Use unified TournamentCard component */}
-              <TournamentCard
-                tournament={tournament}
-                onPress={() => {}} // No action needed since we're already on the detail screen
-                showDefaultToggle={canBeDefault}
-                showStatusBadge={true}
-                compact={false}
-              />
-
-              {/* Tab system removed - showing matches directly */}
-            </View>
-
+          /* Use unified TournamentCard component without extra wrappers */
+          <TournamentCard
+            tournament={tournament}
+            onPress={() => {}} // No action needed since we're already on the detail screen
+            showDefaultToggle={canBeDefault}
+            showStatusBadge={true}
+            compact={false}
+          />
         )}
 
         {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls */}
@@ -1287,13 +1218,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                     <Text style={styles.resetFiltersText}>Reset Filters</Text>
                   </TouchableOpacity>
                   
-                  {/* DEBUG BUTTON - Temporary for logging match objects */}
-                  <TouchableOpacity 
-                    style={styles.debugButton}
-                    onPress={handleDebugLogMatches}
-                  >
-                    <Text style={styles.debugButtonText}>🐛 Log Matches</Text>
-                  </TouchableOpacity>
                 </View>
                 
                 {/* Expanded Filter Options */}
@@ -1869,64 +1793,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  genderBadgesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  tournamentHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  genderBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  genderSymbol: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  menSymbol: {
-    color: '#374151',
-  },
-  womenSymbol: {
-    color: '#374151',
-  },
-  mixedSymbol: {
-    color: '#8B5CF6', // Purple for mixed
-  },
-  plusSymbol: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#6B7280',
-    marginHorizontal: 2,
-  },
   // Removed unused tournament header styles - now using TournamentCard component
-  liveBadgeStyle: {
-    backgroundColor: '#FFFFFF', // White background
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  liveIndicatorPulse: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF4444',
-    marginRight: 8,
-  },
-  liveStatusText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-    color: '#0F4C75', // Blue text
-  },
 
 
   // Live Scores Container Styles

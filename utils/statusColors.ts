@@ -61,6 +61,19 @@ export const getStatusColorWithText = (status: TournamentStatus): {
   textColor: string;
   contrastRatio: number;
 } => {
+  // Special case for current (LIVE) status: white background with blue text
+  if (status === 'current') {
+    const backgroundColor = '#FFFFFF';
+    const textColor = statusColors.current; // Blue color
+    const contrastRatio = calculateContrast(textColor, backgroundColor).ratio;
+    
+    return {
+      backgroundColor,
+      textColor,
+      contrastRatio,
+    };
+  }
+  
   const backgroundColor = getStatusColor(status);
   
   // Calculate contrast with white and dark text to determine best option
@@ -159,7 +172,7 @@ export const generateStatusColorCSSVars = (): Record<string, string> => {
 // Status color themes for different contexts
 export const statusColorThemes = {
   badge: {
-    current: { bg: statusColors.current, text: '#FFFFFF' },
+    current: { bg: '#FFFFFF', text: statusColors.current }, // White background, blue text for LIVE
     upcoming: { bg: statusColors.upcoming, text: '#FFFFFF' },
     completed: { bg: statusColors.completed, text: '#FFFFFF' },
     cancelled: { bg: statusColors.cancelled, text: '#FFFFFF' },

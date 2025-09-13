@@ -28,7 +28,7 @@ export interface StatusBadgeProps {
 }
 
 const STATUS_LABELS: Record<TournamentStatus, string> = {
-  current: 'Current',
+  current: 'LIVE',
   upcoming: 'Upcoming',
   completed: 'Completed',
   cancelled: 'Cancelled',
@@ -36,7 +36,7 @@ const STATUS_LABELS: Record<TournamentStatus, string> = {
 };
 
 const STATUS_ICONS: Record<TournamentStatus, string> = {
-  current: '●', // Solid circle for current
+  current: '🔴', // Red dot for LIVE
   upcoming: '○', // Empty circle for upcoming
   completed: '✓', // Checkmark for completed
   cancelled: '✕', // X for cancelled

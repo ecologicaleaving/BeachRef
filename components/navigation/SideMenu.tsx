@@ -34,32 +34,26 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, title, onPress, disabled = fa
     activeOpacity={disabled ? 1 : 0.7}
     disabled={disabled}
   >
-    <Icon 
-      name={icon} 
-      size={24} 
-      color={disabled ? colors.textSecondary : colors.primary} 
-      style={styles.menuIcon} 
-    />
     <Text style={[styles.menuText, disabled && styles.menuTextDisabled]}>{title}</Text>
   </TouchableOpacity>
 );
 
 export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentContext = 'default', tournamentName }) => {
   const router = useRouter();
-  const slideAnim = React.useRef(new Animated.Value(280)).current;
+  const slideAnim = React.useRef(new Animated.Value(-280)).current;
 
   useEffect(() => {
     if (isVisible) {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     } else {
       Animated.timing(slideAnim, {
-        toValue: 280,
+        toValue: -280,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     }
   }, [isVisible, slideAnim]);
@@ -71,6 +65,12 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
 
   // Default menu items (shown when not in tournament context)
   const defaultMenuItems = [
+    {
+      icon: 'home',
+      title: 'Home',
+      route: '/',
+      disabled: false,
+    },
     {
       icon: 'tournament',
       title: 'All Tournaments',
@@ -86,14 +86,14 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
     {
       icon: 'whistle',
       title: 'All Referees',
-      route: '/referee-dashboard',
+      route: '/all-referees',
       disabled: false,
     },
     {
       icon: 'cog',
       title: 'Settings',
       route: '/referee-settings',
-      disabled: false,
+      disabled: true,
     },
   ];
 
@@ -166,7 +166,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
           </SafeAreaView>
         </Animated.View>
         
-        {/* Close button positioned in top-left corner like the burger button */}
+        {/* Close button positioned in top-right corner for left-side menu */}
         <SafeAreaView style={styles.closeButtonContainer}>
           <TouchableOpacity
             style={styles.closeButton}
@@ -190,15 +190,15 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     position: 'absolute',
-    left: 0,
+    left: 280,
     top: 0,
-    right: 280,
+    right: 0,
     bottom: 0,
     backgroundColor: 'transparent',
   },
   menuContainer: {
     position: 'absolute',
-    right: 0,
+    left: 0,
     top: 0,
     bottom: 0,
     width: 280,
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
   closeButtonContainer: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    left: 0,
     zIndex: 1000,
   },
   closeButton: {
     padding: 8,
     marginTop: 12,
-    marginRight: 16,
+    marginLeft: 16,
     minHeight: 44,
     minWidth: 44,
     justifyContent: 'center',

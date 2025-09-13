@@ -81,6 +81,20 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   
   const tournamentStatus = mapStatusToTournamentStatus(tournamentStatusText);
 
+  // Format gender badge text
+  const getGenderBadgeText = (gender: string) => {
+    switch (gender) {
+      case 'M':
+        return 'M';
+      case 'W':
+        return 'W';
+      case 'MIXED':
+        return 'M + W';
+      default:
+        return gender;
+    }
+  };
+
   // Handle default tournament toggle
   const handleToggleDefault = async (value: boolean) => {
     try {
@@ -200,14 +214,23 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
           </View>
         </View>
         
-        {showStatusBadge && (
-          <StatusBadge
-            status={tournamentStatus}
-            size="small"
-            variant="solid"
-            style={styles.statusBadge}
-          />
-        )}
+        <View style={styles.badges}>
+          {tournament.gender && (
+            <View style={styles.genderBadge}>
+              <Text style={styles.genderBadgeText}>
+                {getGenderBadgeText(tournament.gender)}
+              </Text>
+            </View>
+          )}
+          {showStatusBadge && (
+            <StatusBadge
+              status={tournamentStatus}
+              size="small"
+              variant="solid"
+              style={styles.statusBadge}
+            />
+          )}
+        </View>
       </View>
 
       <Text style={[styles.tournamentName, compact && styles.tournamentNameCompact]}>
@@ -296,8 +319,26 @@ const styles = StyleSheet.create({
   countryNameCompact: {
     fontSize: 15,
   },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  genderBadge: {
+    backgroundColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  genderBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#374151',
+  },
   statusBadge: {
-    marginLeft: 12,
+    marginLeft: 0,
   },
   tournamentName: {
     fontSize: 18,

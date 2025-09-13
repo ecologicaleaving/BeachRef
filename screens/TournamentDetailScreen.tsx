@@ -422,7 +422,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     return tournament;
   }, [tournament, hookTournaments]);
 
-  // Check if this tournament is default on mount
+  // Check if this tournament is default on mount and set up listener
   useEffect(() => {
     const checkDefaultStatus = async () => {
       if (tournament.visNo) {
@@ -431,6 +431,15 @@ const TournamentDetailScreenContent: React.FC = () => {
       }
     };
     checkDefaultStatus();
+
+    // Set up listener for default tournament changes
+    const removeListener = DefaultTournamentService.addListener((defaultTournament) => {
+      if (tournament.visNo) {
+        setIsDefault(defaultTournament?.visNo === tournament.visNo);
+      }
+    });
+
+    return removeListener;
   }, [tournament.visNo]);
 
   // Check if tournament can be set as default (only LIVE tournaments)
@@ -1192,8 +1201,8 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <NavigationHeader 
-        title={tournament.name || 'Tournament Details'} 
+      <NavigationHeader
+        title="Tournament"
         showBackButton={false}
         showHomeButton={false}
         showRefreshButton={false}

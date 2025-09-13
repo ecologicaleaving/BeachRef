@@ -2,6 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DEFAULT_TOURNAMENT_KEY = 'default_tournament';
 
+// Event listener system for default tournament changes
+type DefaultTournamentListener = (tournament: DefaultTournament | null) => void;
+let listeners: DefaultTournamentListener[] = [];
+
 export interface DefaultTournament {
   visNo: string;
   name: string;
@@ -11,6 +15,29 @@ export interface DefaultTournament {
 }
 
 export class DefaultTournamentService {
+  /**
+   * Add listener for default tournament changes
+   */
+  static addListener(listener: DefaultTournamentListener): () => void {
+    listeners.push(listener);
+    // Return cleanup function
+    return () => {
+      listeners = listeners.filter(l => l !== listener);
+    };
+  }
+
+  /**
+   * Notify all listeners of default tournament change
+   */
+  private static notifyListeners(tournament: DefaultTournament | null): void {
+    listeners.forEach(listener => {
+      try {
+        listener(tournament);
+      } catch (error) {
+        console.error('Error in default tournament listener:', error);
+      }
+    });
+  }
   /**
    * Set a tournament as default (clears any existing default)
    * Only allows LIVE tournaments to be set as default
@@ -39,6 +66,7 @@ export class DefaultTournamentService {
     };
 
     await AsyncStorage.setItem(DEFAULT_TOURNAMENT_KEY, JSON.stringify(defaultTournament));
+    this.notifyListeners(defaultTournament);
     return { success: true };
   }
 
@@ -74,6 +102,7 @@ export class DefaultTournamentService {
    */
   static async clearDefaultTournament(): Promise<void> {
     await AsyncStorage.removeItem(DEFAULT_TOURNAMENT_KEY);
+    this.notifyListeners(null);
   }
 
   /**

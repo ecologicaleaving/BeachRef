@@ -11,6 +11,7 @@ import {
   ScrollView,
   Easing,
   Dimensions,
+  Switch,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { BlurView } from 'expo-blur';
@@ -109,7 +110,7 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
   return (
     <View style={styles.tournamentItem}>
       <TouchableOpacity
-        style={[styles.tournamentHeader, {
+        style={[styles.favoriteTournamentHeader, {
           backgroundColor: isPressed ? 'rgba(25, 118, 210, 0.08)' : 'transparent'
         }]}
         onPress={onToggleExpand}
@@ -181,6 +182,7 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
   const [expandedTournaments, setExpandedTournaments] = useState<Set<string>>(new Set());
   const [favoritesExpanded, setFavoritesExpanded] = useState(true);
   const [defaultExpanded, setDefaultExpanded] = useState(true);
+  const [defaultSubmenuExpanded, setDefaultSubmenuExpanded] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -216,7 +218,7 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     }
   }, [isVisible, slideAnim, backdropOpacity]);
 
-  // Load default tournament
+  // Load default tournament and set up listener
   useEffect(() => {
     const loadDefaultTournament = async () => {
       try {
@@ -234,6 +236,13 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     if (isVisible) {
       loadDefaultTournament();
     }
+
+    // Set up listener for default tournament changes
+    const removeListener = DefaultTournamentService.addListener((tournament) => {
+      setDefaultTournament(tournament);
+    });
+
+    return removeListener;
   }, [isVisible]);
 
   const handleMenuItemPress = (route: string) => {
@@ -260,6 +269,23 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
 
   const handleToggleFavorite = async (tournament: TournamentCore) => {
     await toggleFavorite(tournament);
+  };
+
+  const handleToggleDefaultTournament = async (value: boolean) => {
+    try {
+      if (!value && defaultTournament) {
+        // Turning off - clear the default tournament
+        await DefaultTournamentService.clearDefaultTournament();
+        setDefaultTournament(null);
+      } else if (value && !defaultTournament) {
+        // Turning on - but we can't set a default from the sidebar alone
+        // This should only be handled by the TournamentCard component
+        // So we'll just return without doing anything for now
+        console.log('Cannot set default tournament from sidebar - use tournament detail screen');
+      }
+    } catch (error) {
+      console.error('Error toggling default tournament:', error);
+    }
   };
 
   const handleGestureEvent = Animated.event(
@@ -344,23 +370,48 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                         <Text style={styles.loadingText}>Loading default...</Text>
                       ) : defaultTournament ? (
                         <View style={styles.defaultTournamentItem}>
-                          <TouchableOpacity
-                            style={styles.defaultTournamentButton}
-                            onPress={() => {
-                              onClose();
-                              router.push('/tournament-detail');
-                            }}
-                            activeOpacity={1}
-                          >
-                            <View style={styles.defaultTournamentInfo}>
-                              <Text style={styles.defaultTournamentName} numberOfLines={2}>
-                                {defaultTournament.name}
-                              </Text>
-                              <Text style={styles.defaultTournamentMeta} numberOfLines={1}>
-                                Set as default
-                              </Text>
+                          <View style={styles.tournamentHeader}>
+                            <TouchableOpacity
+                              style={styles.defaultTournamentMainButton}
+                              onPress={() => setDefaultSubmenuExpanded(!defaultSubmenuExpanded)}
+                              activeOpacity={1}
+                            >
+                              <View style={styles.defaultTournamentInfo}>
+                                <Text style={styles.defaultTournamentName} numberOfLines={2}>
+                                  {defaultTournament.name}
+                                </Text>
+                                <Text style={styles.defaultTournamentMeta} numberOfLines={1}>
+                                  Default tournament
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+
+                            <View style={styles.defaultToggleContainer}>
+                              <Switch
+                                value={!!defaultTournament}
+                                onValueChange={handleToggleDefaultTournament}
+                                trackColor={{ false: '#767577', true: colors.primary }}
+                                thumbColor={colors.background}
+                                style={styles.defaultSwitch}
+                              />
                             </View>
-                          </TouchableOpacity>
+                          </View>
+
+                          {/* Default Tournament Submenus */}
+                          {defaultSubmenuExpanded && (
+                            <View style={styles.defaultSubMenuContainer}>
+                              {SUBMENU_ITEMS.map((item, index) => (
+                                <TouchableOpacity
+                                  key={item.key}
+                                  style={styles.defaultSubMenuItem}
+                                  onPress={() => handleSubMenuPress(item.route)}
+                                  activeOpacity={1}
+                                >
+                                  <Text style={styles.defaultSubMenuText}>{item.label}</Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          )}
                         </View>
                       ) : (
                         <View style={styles.emptyDefault}>
@@ -553,15 +604,22 @@ const styles = StyleSheet.create({
   },
   defaultTournamentItem: {
     marginBottom: 4,
-  },
-  defaultTournamentButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
     borderRadius: 8,
     marginHorizontal: 8,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  tournamentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  defaultTournamentMainButton: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   defaultTournamentInfo: {
     flex: 1,
@@ -575,6 +633,33 @@ const styles = StyleSheet.create({
   defaultTournamentMeta: {
     fontSize: 12,
     color: '#B8860B',
+    fontWeight: '500',
+  },
+  defaultToggleContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  defaultSwitch: {
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+  },
+  defaultSubMenuContainer: {
+    paddingLeft: 16,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 215, 0, 0.2)',
+    paddingTop: 8,
+  },
+  defaultSubMenuItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginHorizontal: 4,
+    marginVertical: 1,
+    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+  },
+  defaultSubMenuText: {
+    fontSize: 14,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   emptyDefault: {
@@ -616,7 +701,7 @@ const styles = StyleSheet.create({
   tournamentItem: {
     marginBottom: 4,
   },
-  tournamentHeader: {
+  favoriteTournamentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -624,7 +709,6 @@ const styles = StyleSheet.create({
     minHeight: 52,
     borderRadius: 8,
     marginHorizontal: 8,
-    transition: 'all 150ms ease-out',
   },
   tournamentInfo: {
     flex: 1,

@@ -18,14 +18,19 @@ import {
 
 export class ErrorLogger {
   private static instance: ErrorLogger | null = null;
-  private supabase: SupabaseClient
+  private supabase: SupabaseClient | null = null;
 
   private constructor() {
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
     // Use anonymous key for client-side logging, service key only available server-side
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-    
-    this.supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+    // Only create Supabase client if environment variables are available
+    if (supabaseUrl && supabaseKey) {
+      this.supabase = createClient(supabaseUrl, supabaseKey);
+    } else {
+      console.warn('ErrorLogger: Supabase credentials not available, error logging will be disabled');
+    }
   }
 
   /**
@@ -73,6 +78,13 @@ export class ErrorLogger {
       error_message: errorMessage,
       error_context: errorContext,
       recovery_suggestion: recoverySuggestion
+    }
+
+    // If Supabase is not available, log to console only
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Supabase not available, logging to console only');
+      console.error('Error:', errorLog);
+      return 'console-logged';
     }
 
     try {
@@ -231,13 +243,20 @@ export class ErrorLogger {
     // Use a different table or console for database errors to avoid recursion
     // console.error('Database error logged:', errorLog)
     
+    // If Supabase is not available, log to console only
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Database error logged to console only');
+      console.error('Database Error:', errorLog);
+      return 'db_error_console_only';
+    }
+
     try {
       const { data } = await this.supabase
         .from('sync_error_log')
         .insert([errorLog])
         .select('id')
         .single()
-      
+
       return data?.id || 'db_error_logged'
     } catch {
       return 'db_error_console_only'
@@ -429,10 +448,15 @@ export class ErrorLogger {
   }
 
   private async updateEntityErrorCount(entityType: string): Promise<void> {
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Cannot update entity error count, Supabase not available');
+      return;
+    }
+
     try {
       await this.supabase
         .from('sync_status')
-        .update({ 
+        .update({
           error_count: this.supabase.rpc('increment', { column: 'error_count' }),
           updated_at: new Date().toISOString()
         })
@@ -446,6 +470,11 @@ export class ErrorLogger {
    * Resolve an error after it has been fixed
    */
   async resolveError(errorId: string, resolutionNotes: string): Promise<boolean> {
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Cannot resolve error, Supabase not available');
+      return false;
+    }
+
     try {
       const { error } = await this.supabase
         .from('sync_error_log')
@@ -477,6 +506,12 @@ export class ErrorLogger {
   }> {
     const timeWindow = params.time_window_hours || 24
     const cutoffTime = new Date(Date.now() - timeWindow * 60 * 60 * 1000).toISOString()
+
+    // If Supabase is not available, return empty statistics
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Cannot get error statistics, Supabase not available');
+      return this.getEmptyStatistics();
+    }
 
     try {
       let query = this.supabase

@@ -108,18 +108,6 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     refereeAssignments: beachMatchCore.refereeAssignments,
   };
 
-  console.log('Transform Debug:', {
-    matchId: dto.id,
-    originalDTO: dto,
-    hasReferee1Name: !!(dto as any).Referee1Name,
-    hasReferee2Name: !!(dto as any).Referee2Name,
-    hasPointsTeamASet1: !!(dto as any).PointsTeamASet1,
-    hasPointsTeamBSet1: !!(dto as any).PointsTeamBSet1,
-    hasDuration: !!(dto as any).Duration,
-    hasDurationSet1: !!(dto as any).DurationSet1,
-    resultSetScores: result?.setScores,
-    preservedFields: Object.keys(preservedMatch)
-  });
 
   return preservedMatch;
 };
@@ -610,40 +598,63 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
       const now = new Date();
-      
+
       // Phase 2: Priority logic - start from current time context
       const aIsRunning = a.status === MatchStatus.RUNNING;
       const bIsRunning = b.status === MatchStatus.RUNNING;
       const aIsFuture = dateA.getTime() >= now.getTime();
       const bIsFuture = dateB.getTime() >= now.getTime();
-      
+
       // Priority 1: Currently running matches always first
       if (aIsRunning && !bIsRunning) return -1;
       if (!aIsRunning && bIsRunning) return 1;
-      
+
       // Priority 2: In timeline mode, keep simple chronological order
       // Skip complex proximity logic when showing all days
       if (!aIsRunning && !bIsRunning && !enableTimelineView && !showAllDays) {
         // Calculate distance from current time for both matches
         const aDistance = Math.abs(dateA.getTime() - now.getTime());
         const bDistance = Math.abs(dateB.getTime() - now.getTime());
-        
+
         // If one is very close to current time (within 30 minutes), prioritize it
         const closeTimeWindow = 30 * 60 * 1000; // 30 minutes
         const aIsClose = aDistance <= closeTimeWindow;
         const bIsClose = bDistance <= closeTimeWindow;
-        
+
         if (aIsClose && !bIsClose) return -1;
         if (!aIsClose && bIsClose) return 1;
-        
+
         // If both are close or both are far, continue to normal sorting
       }
-      
-      // Phase 1: Standard chronological sorting for the rest
-      if (sortOrder === 'desc') {
-        return dateB.getTime() - dateA.getTime(); // Descending (newest first)
+
+      // Dynamic sorting: Current day ascending, past days descending
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of today
+
+      const matchDateA = new Date(a.scheduledDateTime);
+      matchDateA.setHours(0, 0, 0, 0);
+      const matchDateB = new Date(b.scheduledDateTime);
+      matchDateB.setHours(0, 0, 0, 0);
+
+      const aIsToday = matchDateA.getTime() === today.getTime();
+      const bIsToday = matchDateB.getTime() === today.getTime();
+      const aIsPast = matchDateA.getTime() < today.getTime();
+      const bIsPast = matchDateB.getTime() < today.getTime();
+
+      // If both matches are on the same day type, apply appropriate sorting
+      if ((aIsToday && bIsToday) || (!aIsPast && !bIsPast && !aIsToday && !bIsToday)) {
+        // Current day or future days: ascending (earliest first)
+        return dateA.getTime() - dateB.getTime();
+      } else if (aIsPast && bIsPast) {
+        // Past days: descending (most recent first)
+        return dateB.getTime() - dateA.getTime();
       } else {
-        return dateA.getTime() - dateB.getTime(); // Ascending (earliest first)
+        // Mixed day types: use standard sort order
+        if (sortOrder === 'desc') {
+          return dateB.getTime() - dateA.getTime();
+        } else {
+          return dateA.getTime() - dateB.getTime();
+        }
       }
     });
 
@@ -754,37 +765,61 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     const allDates = Object.keys(groups).sort();
     
-    // Sort dates and return as array of [date, matches] pairs
+    // Sort dates and return as array of [date, matches] pairs with dynamic sorting
     const result = Object.entries(groups).sort((a, b) => {
       const dateA = new Date(a[0]);
       const dateB = new Date(b[0]);
-      
-      if (sortOrder === 'desc') {
-        return dateB.getTime() - dateA.getTime(); // Newest first
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Always prioritize today's date first
+      const aIsToday = dateA.getTime() === today.getTime();
+      const bIsToday = dateB.getTime() === today.getTime();
+
+      if (aIsToday && !bIsToday) return -1;
+      if (!aIsToday && bIsToday) return 1;
+
+      // For past dates vs future dates, separate logic
+      const aIsPast = dateA.getTime() < today.getTime();
+      const bIsPast = dateB.getTime() < today.getTime();
+
+      if (aIsPast && !bIsPast) {
+        // Past date vs future date: past dates go after today (descending order)
+        return 1;
+      }
+      if (!aIsPast && bIsPast) {
+        // Future date vs past date: future dates go after today (ascending order)
+        return -1;
+      }
+
+      // Same category dates: apply specific sorting
+      if (aIsPast && bIsPast) {
+        // Past dates: descending (most recent first)
+        return dateB.getTime() - dateA.getTime();
       } else {
-        return dateA.getTime() - dateB.getTime(); // Oldest first
+        // Future dates: ascending (earliest first)
+        return dateA.getTime() - dateB.getTime();
       }
     });
     
     return result;
-  }, [filteredMatches, sortOrder]);
+  }, [filteredMatches]);
 
   // Initialize expanded dates - only most recent date is expanded by default
   useEffect(() => {
     if (groupedMatches.length > 0) {
       const allDates = groupedMatches.map(([date]) => date);
-      // With descending order, the first date is the most recent
-      const mostRecentDate = sortOrder === 'desc' ? allDates[0] : allDates[allDates.length - 1];
-      
-      
+      // With dynamic sorting, today's date (first item) should be expanded
+      const mostRecentDate = allDates[0]; // First date is always the most relevant (today or most recent)
+
       const initialExpanded: {[key: string]: boolean} = {};
       allDates.forEach(date => {
         initialExpanded[date] = date === mostRecentDate; // Only most recent is expanded
       });
-      
+
       setExpandedDates(initialExpanded);
     }
-  }, [groupedMatches, sortOrder]);
+  }, [groupedMatches]);
 
   // Auto-scroll to first live match
   const scrollToFirstLiveMatch = useCallback(() => {
@@ -803,7 +838,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             y: Math.max(0, yPosition - 100), // Offset for header
             animated: true
           });
-        }, 300);
+        }, 500);
       }
     }
   }, [filteredMatches]);

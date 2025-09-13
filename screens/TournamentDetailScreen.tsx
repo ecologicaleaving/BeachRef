@@ -502,6 +502,15 @@ const TournamentDetailScreenContent: React.FC = () => {
       .filter((v): v is number => v !== null);
   }, [matches]);
 
+  // Helper function to get numeric match identifier for live scores
+  // Uses the same logic as polling service for consistency
+  const getMatchNumberForLiveScore = React.useCallback((match: BeachMatchCore): number | null => {
+    const raw = match?.visNo || match?.matchCode || '';
+    const digits = String(raw).replace(/\D/g, '');
+    const n = parseInt(digits || '', 10);
+    return Number.isFinite(n) ? n : null;
+  }, []);
+
   // Live scores hook with automatic lifecycle management
   const {
     liveScores,
@@ -1007,14 +1016,53 @@ const TournamentDetailScreenContent: React.FC = () => {
           
           if (matchResponse.success && matchResponse.xmlData) {
             const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no);
-            
-            // Add gender information to each match
-            const matchesWithGender = matchesCore.map(match => ({
-              ...match,
-              tournamentGender: beachTournament.gender === '0' ? 'M' : 'W',
-              tournamentNo: beachTournament.no
-            }));
-            
+
+            // Add gender information to each match and preserve legacy fields from XML
+            const matchesWithGender = matchesCore.map(match => {
+              // Extract legacy fields from XML for MatchCard compatibility
+              const matchXmlMatch = matchResponse.xmlData.match(new RegExp(`<BeachMatch[^>]*No="${match.visNo}"[^>]*>.*?</BeachMatch>`, 's')) ||
+                                   matchResponse.xmlData.match(new RegExp(`<BeachMatch[^>]*No="${match.visNo}"[^>]*/>`, 's'));
+
+              let legacyFields = {};
+              if (matchXmlMatch) {
+                const xmlString = matchXmlMatch[0];
+                // Helper function to extract XML attributes
+                const extractXmlAttribute = (xml: string, attribute: string): string | null => {
+                  const regex = new RegExp(`${attribute}="([^"]*)"`, 'i');
+                  const match = xml.match(regex);
+                  return match ? match[1] : null;
+                };
+
+                // Extract legacy score fields that MatchCard expects
+                legacyFields = {
+                  PointsTeamASet1: extractXmlAttribute(xmlString, 'PointsTeamASet1'),
+                  PointsTeamBSet1: extractXmlAttribute(xmlString, 'PointsTeamBSet1'),
+                  PointsTeamASet2: extractXmlAttribute(xmlString, 'PointsTeamASet2'),
+                  PointsTeamBSet2: extractXmlAttribute(xmlString, 'PointsTeamBSet2'),
+                  PointsTeamASet3: extractXmlAttribute(xmlString, 'PointsTeamASet3'),
+                  PointsTeamBSet3: extractXmlAttribute(xmlString, 'PointsTeamBSet3'),
+                  MatchPointsA: extractXmlAttribute(xmlString, 'MatchPointsA'),
+                  MatchPointsB: extractXmlAttribute(xmlString, 'MatchPointsB'),
+                  Duration: extractXmlAttribute(xmlString, 'Duration'),
+                  DurationSet1: extractXmlAttribute(xmlString, 'DurationSet1'),
+                  DurationSet2: extractXmlAttribute(xmlString, 'DurationSet2'),
+                  DurationSet3: extractXmlAttribute(xmlString, 'DurationSet3'),
+                  Referee1Name: extractXmlAttribute(xmlString, 'Referee1Name'),
+                  Referee2Name: extractXmlAttribute(xmlString, 'Referee2Name'),
+                };
+              }
+
+              const finalMatch = {
+                ...match,
+                ...legacyFields, // Preserve legacy fields for MatchCard compatibility
+                tournamentGender: beachTournament.gender === '0' ? 'M' : 'W',
+                tournamentNo: beachTournament.no
+              };
+
+
+              return finalMatch;
+            });
+
             allMatches = allMatches.concat(matchesWithGender);
           } else {
           }
@@ -1265,42 +1313,18 @@ const TournamentDetailScreenContent: React.FC = () => {
                         return (status === 'InProgress' || status === 'Scheduled');
                       })
                       .map(match => {
-                        const liveScore = getLiveScore(match.matchNumber);
-                        const liveScoreState = liveScores[match.matchNumber];
+                        const matchNumber = getMatchNumberForLiveScore(match);
+                        const liveScore = matchNumber ? getLiveScore(matchNumber) : null;
+                        const liveScoreState = matchNumber ? liveScores[matchNumber] : null;
                         
                         return (
                           <LiveScoreCard
-                            key={match.matchNumber}
-                            matchNo={match.matchNumber}
+                            key={match.id}
+                            matchNo={matchNumber || 0}
                             beachLive={liveScore || undefined}
                             loading={liveScoreState?.isLoading || false}
                             error={liveScoreState?.error || undefined}
-                            fallbackMatch={{
-                              no: match.matchNumber,
-                              status: match.status as any,
-                              teamA: {
-                                name: match.teamA.name,
-                                federationCode: match.teamA.countryCode,
-                                players: []
-                              },
-                              teamB: {
-                                name: match.teamB.name,
-                                federationCode: match.teamB.countryCode,
-                                players: []
-                              },
-                              court: {
-                                no: parseInt(match.court.courtNumber) || 1,
-                                name: match.court.courtName || `Court ${match.court.courtNumber}`,
-                                surface: 'Sand'
-                              },
-                              scheduledDateTime: match.scheduledDateTime,
-                              sets: match.sets?.map(set => ({
-                                no: set.setNumber,
-                                pointsTeamA: set.scoreTeamA,
-                                pointsTeamB: set.scoreTeamB,
-                                status: set.status
-                              })) || []
-                            } as any}
+                            fallbackMatch={match as any}
                             onRefresh={refreshLiveScores}
                             style={styles.liveScoreCard}
                           />

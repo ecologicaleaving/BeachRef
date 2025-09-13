@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
 import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
 import { MatchList, MatchCard } from '../entities/Match';
@@ -270,7 +270,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 }) => {
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
-  
+
+  // ScrollView ref for auto-scroll functionality (moved to top)
+  const scrollViewRef = useRef<ScrollView>(null);
+  const matchLayoutsRef = useRef<Record<string, number>>({});
+
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
   // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
   const shouldUseHook = !!tournamentCode && Platform.OS !== 'web' && featureFlags.shouldUseNewHook('MatchListV2', 'matches');
@@ -782,6 +786,39 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [groupedMatches, sortOrder]);
 
+  // Auto-scroll to first live match
+  const scrollToFirstLiveMatch = useCallback(() => {
+    const liveMatches = filteredMatches.filter(match =>
+      match.status === 'InProgress' || match.status === MatchStatus.RUNNING || isMatchLive(match)
+    );
+
+    if (liveMatches.length > 0 && scrollViewRef.current) {
+      const firstLiveMatchId = liveMatches[0].id;
+      const yPosition = matchLayoutsRef.current[firstLiveMatchId];
+
+      if (yPosition !== undefined) {
+        // Add small delay to ensure layout is complete
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: Math.max(0, yPosition - 100), // Offset for header
+            animated: true
+          });
+        }, 300);
+      }
+    }
+  }, [filteredMatches]);
+
+  // Auto-scroll effect - trigger when matches change and live matches exist
+  useEffect(() => {
+    const hasLiveMatches = filteredMatches.some(match =>
+      match.status === 'InProgress' || match.status === MatchStatus.RUNNING || isMatchLive(match)
+    );
+
+    if (hasLiveMatches && filteredMatches.length > 0) {
+      scrollToFirstLiveMatch();
+    }
+  }, [filteredMatches, scrollToFirstLiveMatch]);
+
   // Format time from ISO string
   const formatTime = (isoDateTime: string): string => {
     const date = new Date(isoDateTime);
@@ -913,8 +950,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         key={match.id}
         nativeID={`match-${match.id}`}
         onLayout={(event) => {
+          // Track position for auto-scroll functionality
+          const yPosition = event.nativeEvent.layout.y;
+          matchLayoutsRef.current[match.id] = yPosition;
+
+          // Call external onMatchLayout if provided
           if (onMatchLayout) {
-            onMatchLayout(match.id, event.nativeEvent.layout.y);
+            onMatchLayout(match.id, yPosition);
           }
         }}
       >
@@ -957,7 +999,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      ref={scrollViewRef}
+      style={styles.container}
+      showsVerticalScrollIndicator={true}
+      nestedScrollEnabled={true}
+    >
 
       {/* Only show filter toggle if any filters are enabled */}
       {(showGenderFilter || showCourtFilter || showRefereeFilter || showStatsInFilter) && (
@@ -1203,7 +1250,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

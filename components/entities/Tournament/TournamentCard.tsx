@@ -199,35 +199,26 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
-        <View style={styles.countryInfo}>
-          <FlagImage 
-            countryCode={tournament.countryCode || ''} 
-            style={styles.flag} 
+        <View style={styles.countryInfoRow}>
+          <FlagImage
+            countryCode={tournament.countryCode || ''}
+            style={styles.flag}
           />
           <View style={styles.locationInfo}>
             <Text style={[styles.countryName, compact && styles.countryNameCompact]}>
-              {tournament.countryName || 
-               getThreeLetterCountryCode(tournament.countryCode) || 
-               tournament.countryCode || 
+              {tournament.countryName ||
+               getThreeLetterCountryCode(tournament.countryCode) ||
+               tournament.countryCode ||
                'Country TBD'}
             </Text>
           </View>
-        </View>
-        
-        <View style={styles.badges}>
-          {tournament.gender && (
-            <View style={styles.genderBadge}>
-              <Text style={styles.genderBadgeText}>
-                {getGenderBadgeText(tournament.gender)}
-              </Text>
-            </View>
-          )}
+
           {showStatusBadge && (
             <StatusBadge
               status={tournamentStatus}
-              size="small"
+              size={tournamentStatus === 'current' ? 'large' : 'small'}
               variant="solid"
-              style={styles.statusBadge}
+              style={styles.statusBadgeInline}
             />
           )}
         </View>
@@ -237,9 +228,19 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
         {tournament.name || `Tournament ${tournament.visNo}`}
       </Text>
       
-      <Text style={[styles.dateRange, compact && styles.dateRangeCompact]}>
-        {getDateRange()}
-      </Text>
+      <View style={styles.bottomSection}>
+        <Text style={[styles.dateRange, compact && styles.dateRangeCompact]}>
+          {getDateRange()}
+        </Text>
+
+        {tournament.gender && (
+          <View style={styles.genderBadgeBottomRight}>
+            <Text style={styles.genderBadgeText}>
+              {getGenderBadgeText(tournament.gender)}
+            </Text>
+          </View>
+        )}
+      </View>
 
       {/* Temporarily hidden: Default tournament functionality */}
       {false && showDefaultToggle && canBeDefault && (
@@ -292,15 +293,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF9F0',
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  countryInfo: {
+  countryInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    justifyContent: 'space-between',
   },
   flag: {
     width: 40,
@@ -319,12 +317,15 @@ const styles = StyleSheet.create({
   countryNameCompact: {
     fontSize: 15,
   },
-  badges: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  statusBadgeInline: {
+    marginLeft: 8,
   },
-  genderBadge: {
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  genderBadgeBottomRight: {
     backgroundColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 8,
@@ -336,9 +337,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#374151',
-  },
-  statusBadge: {
-    marginLeft: 0,
   },
   tournamentName: {
     fontSize: 18,

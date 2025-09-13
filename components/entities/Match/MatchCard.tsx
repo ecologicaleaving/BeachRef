@@ -460,6 +460,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     } else {
                       // Fallback to legacy BeachMatch format
                       const rawMatch = match as any;
+
                       
                       // Set 1
                       if (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) {
@@ -772,14 +773,14 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.success,
-    marginRight: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#DC2626', // Red color
+    marginRight: 6,
   },
   matchTime: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#1B365D',
     textAlign: 'center',

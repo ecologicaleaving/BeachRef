@@ -36,7 +36,7 @@ const STATUS_LABELS: Record<TournamentStatus, string> = {
 };
 
 const STATUS_ICONS: Record<TournamentStatus, string> = {
-  current: '🔴', // Red dot for LIVE
+  current: '●', // Large red dot for LIVE
   upcoming: '○', // Empty circle for upcoming
   completed: '✓', // Checkmark for completed
   cancelled: '✕', // X for cancelled
@@ -59,7 +59,7 @@ const SIZE_CONFIG = {
   large: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    fontSize: 16,
+    fontSize: 20, // Bigger text for large badges
     borderRadius: 8,
   },
 } as const;
@@ -140,9 +140,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = React.memo(({
 
   return (
     <View style={badgeStyles}>
-      <Text style={textStyles}>
-        {showIcon && `${displayIcon} `}{displayLabel}
-      </Text>
+      {showIcon && status === 'current' && size === 'large' ? (
+        <View style={styles.liveContainer}>
+          <Text style={styles.liveIcon}>{displayIcon}</Text>
+          <Text style={textStyles}>{displayLabel}</Text>
+        </View>
+      ) : (
+        <Text style={textStyles}>
+          {showIcon && `${displayIcon} `}{displayLabel}
+        </Text>
+      )}
     </View>
   );
 });
@@ -160,6 +167,17 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: '600',
     textAlign: 'center',
+  },
+  liveContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6, // Space between dot and text
+  },
+  liveIcon: {
+    fontSize: 40, // Even bigger font size for LIVE dot
+    color: '#DC2626', // Red color for the dot
+    lineHeight: 40, // Match line height for proper alignment
   },
 });
 

@@ -349,10 +349,7 @@ const getStyles = (): StyleSheet.NamedStyles<any> => {
       padding: designTokens.spacing.large,
       marginHorizontal: designTokens.spacing.medium,
       marginVertical: designTokens.spacing.small,
-      shadowColor: designTokens.colors.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
+      boxShadow: `0px 2px 4px rgba(0, 0, 0, 0.1)`,
       elevation: 3,
     },
     header: {

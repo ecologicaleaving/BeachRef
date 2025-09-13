@@ -457,15 +457,12 @@ const getStyles = (): StyleSheet.NamedStyles<any> => {
       borderRadius: designTokens.spacing.borderRadius,
       marginHorizontal: designTokens.spacing.medium,
       minHeight: 44, // Touch target compliance
-      shadowColor: designTokens.colors.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2,
+      boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.1)`,
       elevation: 2,
     },
     sectionHeaderNonCollapsible: {
       backgroundColor: 'transparent',
-      shadowOpacity: 0,
+      boxShadow: 'none',
       elevation: 0,
     },
     sectionHeaderContent: {

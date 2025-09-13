@@ -202,6 +202,18 @@ export class VisApiClient implements IVisApiClient {
       const xmlRequest = this.buildGetEventListXml(optimizedRequest);
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_LIST, xmlRequest);
       
+      // Log response for debugging
+      if (response.success && response.xmlData) {
+        console.log('GetEventList response received, length:', response.xmlData.length);
+        console.log('Response preview:', response.xmlData.substring(0, 200));
+        
+        // Count Event elements
+        const eventCount = (response.xmlData.match(/<Event[^>]*>/g) || []).length;
+        console.log('Found', eventCount, 'Event elements');
+      } else {
+        console.log('GetEventList failed:', response.error);
+      }
+      
       this.updateMonitor(VisApiEndpoint.GET_EVENT_LIST, true, Date.now() - startTime);
       return response;
       
@@ -761,6 +773,9 @@ export class VisApiClient implements IVisApiClient {
       
       return responseText;
       
+    } catch (error) {
+      throw error;
+      
     } finally {
       clearTimeout(timeout);
     }
@@ -838,6 +853,9 @@ export class VisApiClient implements IVisApiClient {
     if (request.status) {
       filterAttribs.push(`Status="${this.escapeXmlAttribute(request.status)}"`);
     }
+    if (request.tournamentType) {
+      filterAttribs.push(`Type="${this.escapeXmlAttribute(request.tournamentType)}"`);
+    }
     
     // Always filter for beach volleyball tournaments
     filterAttribs.push('HasBeachTournament="True"');
@@ -852,7 +870,8 @@ export class VisApiClient implements IVisApiClient {
     
     const xmlRequest = `<Request Type="GetEventList" Fields="${this.escapeXmlAttribute(fields)}">${filterElement}</Request>`;
     
-    // XML request built successfully
+    // Log the built XML request for debugging
+    console.log('GetEventList XML request:', xmlRequest);
     
     return xmlRequest;
   }

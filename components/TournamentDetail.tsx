@@ -607,16 +607,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     return 'Location TBA'; // Simplified for now - would need location service integration
   };
 
-  const getTournamentType = (): string => {
-    // TournamentCore has structured tournamentType field
-    const typeLabels = {
-      'FIVB': 'FIVB World Tour',
-      'BPT': 'Beach Pro Tour',
-      'CEV': 'CEV European Tour',
-      'LOCAL': 'Local Tournament'
-    };
-    return typeLabels[currentTournament.tournamentType] || 'Tournament';
-  };
 
 
   const getDateRange = () => {
@@ -1186,9 +1176,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
           <Text style={styles.tournamentTitle}>
             {currentTournament.name || `Tournament ${currentTournament.visNo}`}
           </Text>
-          <View style={styles.typeContainer}>
-            <Text style={styles.tournamentType}>{getTournamentType()}</Text>
-          </View>
         </View>
 
 
@@ -1346,17 +1333,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     lineHeight: 30,
   },
-  typeContainer: {
-    backgroundColor: '#0066cc',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  tournamentType: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   infoCards: {
     marginBottom: 20,
   },
@@ -1367,13 +1343,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
     elevation: 5,
   },
   cardIconContainer: {
@@ -1492,13 +1462,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e7eb',
     paddingTop: 0,
     paddingBottom: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
     elevation: 8,
     zIndex: 1000,
   },
@@ -1536,13 +1500,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
     elevation: 5,
     position: 'relative',
   },
@@ -1801,13 +1759,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 2,
     maxHeight: 200,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
     elevation: 5,
     zIndex: 1001,
   },
@@ -1861,13 +1813,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     paddingVertical: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    boxShadow: '0px 4px 4.65px rgba(0, 0, 0, 0.3)',
     elevation: 1001,
     zIndex: 1001,
   },
@@ -1936,13 +1882,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
+    boxShadow: '0px 1px 2.22px rgba(0, 0, 0, 0.22)',
     elevation: 3,
   },
   realtimeIndicator: {
@@ -2029,10 +1969,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
     elevation: 2,
   },
   rankingPosition: {

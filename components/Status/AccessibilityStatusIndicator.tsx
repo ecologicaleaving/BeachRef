@@ -361,10 +361,7 @@ const styles = StyleSheet.create({
   
   // High contrast mode
   highContrast: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.8)',
     elevation: 8,
   },
   

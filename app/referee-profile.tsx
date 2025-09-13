@@ -7,6 +7,8 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
+  Image,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EventReferee, RefereeOfficial, getOfficialDisplayName } from '../types/referee-v2';
@@ -30,6 +32,7 @@ const RefereeProfileScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'assignments'>('overview');
+  const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
   // Load referee from params
   useEffect(() => {
@@ -46,6 +49,38 @@ const RefereeProfileScreen: React.FC = () => {
       router.back();
     }
   }, [refereeData, router]);
+
+  // Try to fetch portrait image URL via VIS Images API
+  useEffect(() => {
+    const fetchPortrait = async () => {
+      try {
+        if (!referee) return;
+        const id = (referee as any).id || (referee as any).RefereeId || (referee as any).noOfficial;
+        if (!id) return;
+        const appId = '2a9523517c52420da73d927c6d6bab23';
+        const xml = `<Requests><Request Type="GetImageList" Fields="No"><Filter DataType="61" DataNo="${id}" ImageType="15"/></Request></Requests>`;
+        const resp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-FIVB-App-ID': appId,
+            'Accept': 'application/xml'
+          },
+          body: new URLSearchParams({ Request: xml }) as any
+        });
+        if (!resp.ok) return;
+        const txt = await resp.text();
+        const m = txt.match(/<Image[^>]*\sNo="(\d+)"/);
+        if (m && m[1]) {
+          const url = `https://www.fivb.org/Vis2009/Images/GetImage.asmx?No=${m[1]}&MaxSize=300`;
+          setPortraitUrl(url);
+        }
+      } catch (e) {
+        // Swallow errors; portrait is optional
+      }
+    };
+    fetchPortrait();
+  }, [referee]);
 
   // Get referee analytics
   const { 
@@ -159,6 +194,44 @@ const RefereeProfileScreen: React.FC = () => {
               />
             </View>
           </View>
+
+          {/* Portrait / ID Card actions */}
+          {portraitUrl ? (
+            <View style={styles.portraitWrapper}>
+              <Image source={{ uri: portraitUrl }} style={styles.portrait} resizeMode="cover" />
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.idCardButton}
+              onPress={async () => {
+                try {
+                  const id = (referee as any).id || (referee as any).RefereeId || (referee as any).noOfficial;
+                  if (!id) return;
+                  const appId = '2a9523517c52420da73d927c6d6bab23';
+                  // Try Volley first, then Beach
+                  const tryTypes = ['Volley', 'Beach'];
+                  for (const vt of tryTypes) {
+                    const xml = `<Requests><Request Type="GetRefereeIdCard" No="${id}" VolleyType="${vt}"/></Requests>`;
+                    const resp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-FIVB-App-ID': appId, 'Accept': 'application/xml' },
+                      body: new URLSearchParams({ Request: xml }) as any
+                    });
+                    if (!resp.ok) continue;
+                    const txt = await resp.text();
+                    const m = txt.match(/Token="([^"]+)"/);
+                    if (m && m[1]) {
+                      const url = `https://www.fivb.org/Vis2009/Documents/GetDocument.asmx?Token=${m[1]}`;
+                      await Linking.openURL(url);
+                      break;
+                    }
+                  }
+                } catch {}
+              }}
+            >
+              <Text style={styles.idCardButtonText}>View ID Card</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Quick Stats Row */}
           {refereeStats && (
@@ -331,10 +404,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     elevation: 3,
   },
   refereeHeader: {
@@ -389,6 +459,28 @@ const styles = StyleSheet.create({
   statusBadge: {
     marginBottom: 8,
   },
+  portraitWrapper: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  portrait: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#E5E7EB',
+  },
+  idCardButton: {
+    marginTop: 12,
+    alignSelf: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  idCardButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
   quickStatsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -427,10 +519,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 8,
     padding: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
     elevation: 1,
   },
   tab: {
@@ -461,10 +550,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
     elevation: 1,
   },
   sectionTitle: {

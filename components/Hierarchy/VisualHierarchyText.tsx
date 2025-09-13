@@ -181,9 +181,7 @@ const styles = StyleSheet.create({
   urgentEmphasis: {
     fontWeight: 'bold',
     color: designTokens.colors.error,
-    textShadowColor: designTokens.colors.background,
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadow: `0px 1px 1px ${designTokens.colors.background}`,
   },
 
   // Scan Optimization
@@ -194,9 +192,7 @@ const styles = StyleSheet.create({
 
   // Outdoor Optimization
   outdoorOptimized: {
-    textShadowColor: 'rgba(255, 255, 255, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadow: '0px 1px 2px rgba(255, 255, 255, 0.5)',
   },
 
   // Special Components
@@ -211,9 +207,7 @@ const styles = StyleSheet.create({
 
   urgentCourt: {
     color: designTokens.colors.error,
-    textShadowColor: designTokens.colors.background,
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 3,
+    textShadow: `0px 2px 3px ${designTokens.colors.background}`,
   },
 
   screenTitle: {

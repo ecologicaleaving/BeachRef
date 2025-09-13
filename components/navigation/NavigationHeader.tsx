@@ -11,7 +11,7 @@ import { Icon } from '../Icons/MaterialCommunityIcons';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import WhistleLogo from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
-import { SideMenu } from './SideMenu';
+import { GmailStyleSideMenu } from './GmailStyleSideMenu';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
 
 interface NavigationHeaderProps {
@@ -191,11 +191,10 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </View>
       </View>
       
-      <SideMenu 
-        isVisible={sideMenuVisible} 
+      <GmailStyleSideMenu
+        isVisible={sideMenuVisible}
         onClose={() => setSideMenuVisible(false)}
-        currentContext={isTournamentContext ? 'tournament' : 'default'}
-        tournamentName={tournamentName}
+        currentTournament={defaultTournament}
       />
     </SafeAreaView>
   );

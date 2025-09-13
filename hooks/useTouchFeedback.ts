@@ -64,7 +64,7 @@ const DEFAULT_TOUCH_FEEDBACK_OPTIONS: Required<UseTouchFeedbackOptions> = {
   visualDuration: 150,
   audioType: 'tap',
   audioVolume: 0.5,
-  useNativeDriver: true,
+  useNativeDriver: false,
   enablePerformanceTracking: false,
   onHapticFeedback: () => {},
   onVisualFeedback: () => {},

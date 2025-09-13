@@ -249,6 +249,17 @@ export class RoundPhaseFormatter {
   private static createFallbackInfo(round: string): RoundPhaseInfo {
     const trimmed = round.trim();
     
+    // Handle "Classification" specifically - abbreviate to "Class."
+    if (/^classification$/i.test(trimmed)) {
+      return {
+        displayName: 'Class.',
+        originalValue: round,
+        emphasis: 'medium',
+        isFinals: false,
+        accessibilityLabel: 'Classification match'
+      };
+    }
+
     // Handle "TBD" (To Be Determined) specifically
     if (/^tbd$/i.test(trimmed)) {
       return {

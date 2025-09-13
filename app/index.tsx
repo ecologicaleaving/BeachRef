@@ -19,10 +19,11 @@ export default function Index() {
     const checkDefaultTournamentAndRedirect = async () => {
       try {
         const defaultTournament = await DefaultTournamentService.getDefaultTournament();
-        
+
         if (defaultTournament) {
           console.log('Default tournament found:', defaultTournament.name);
-          router.replace('/tournament-detail');
+          // Redirect to tournament detail with the default tournament's visNo as parameter
+          router.replace(`/tournament-detail?visNo=${defaultTournament.visNo}`);
         } else {
           console.log('No default tournament found, redirecting to tournament selection...');
           router.replace('/tournament-selection');
@@ -32,10 +33,10 @@ export default function Index() {
         router.replace('/tournament-selection');
       }
     };
-    
+
     // Small delay to show loading screen briefly
-    const timer = setTimeout(checkDefaultTournamentAndRedirect, 500);
-    
+    const timer = setTimeout(checkDefaultTournamentAndRedirect, 800);
+
     return () => clearTimeout(timer);
   }, [router]);
 

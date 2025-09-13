@@ -67,10 +67,16 @@ export class AnalyticsService {
   private config: AnalyticsServiceConfig;
 
   private constructor(config: AnalyticsServiceConfig = {}) {
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
-    
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn('[AnalyticsService] Supabase credentials not available, analytics will be disabled');
+      // Create a mock supabase client that doesn't actually connect
+      this.supabase = null as any;
+    } else {
+      this.supabase = createClient(supabaseUrl, supabaseKey);
+    }
     this.errorLogger = ErrorLogger.getInstance();
     
     this.config = {
@@ -102,6 +108,11 @@ export class AnalyticsService {
     endDate: string,
     refereeIds?: string[]
   ): Promise<AnalyticsAggregation[]> {
+    if (!this.supabase) {
+      console.warn('[AnalyticsService] Supabase not available, returning empty analytics');
+      return [];
+    }
+
     const startTime = performance.now();
     let recordsProcessed = 0;
     let errorsEncountered = 0;

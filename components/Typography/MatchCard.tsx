@@ -1,15 +1,19 @@
 /**
  * MatchCard Component - Typography Hierarchy Implementation
  * Referee-optimized match card with clear information scanning patterns
+ * Enhanced with live score animations (Story 002)
  */
 
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Title, Heading, Subheading, EnhancedBodyText, EnhancedCaption } from './Text';
 import { colors, spacing } from '../../theme/tokens';
 import { getStatusColor } from '../../utils/colors';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from './RoundPhaseDisplay';
+import { LiveIndicator } from '../Status/LiveIndicator';
+import { useScoreChangeAnimation, useStatusChangeAnimation, useCourtChangeAnimation, useReducedMotion, withReducedMotionCheck } from '../../utils/statusAnimations';
 
 export interface MatchInfo {
   matchId: string;
@@ -21,9 +25,19 @@ export interface MatchInfo {
   date: string;
   court: string;
   round: string;
+  phase?: string;
   status: 'scheduled' | 'live' | 'completed' | 'cancelled';
   refereeRole?: 'referee1' | 'referee2';
   priority?: 'critical' | 'high' | 'medium' | 'low';
+  // Live score properties
+  teamAScore?: number | string;
+  teamBScore?: number | string;
+  isLive?: boolean;
+  liveData?: {
+    duration?: string;
+    lastUpdate?: string;
+    points?: number;
+  };
 }
 
 export interface MatchCardProps {
@@ -36,6 +50,7 @@ export interface MatchCardProps {
 /**
  * MatchCard with hierarchical typography for referee scanning
  * Information Hierarchy: Match ID > Teams > Time/Status > Court/Round
+ * Enhanced with live score animations and visual indicators
  */
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
@@ -47,29 +62,51 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     onPress?.(match);
   };
 
+  // Determine if match is live
+  const isLive = match.isLive || match.status === 'live';
+
+  // Animation hooks
+  const reducedMotionEnabled = useReducedMotion();
+  const teamAScoreAnimation = useScoreChangeAnimation(match.teamAScore, isLive);
+  const teamBScoreAnimation = useScoreChangeAnimation(match.teamBScore, isLive);
+  const statusAnimation = useStatusChangeAnimation(match.status);
+  const courtAnimation = useCourtChangeAnimation(match.court);
+
   const getVariantStyles = () => {
-    switch (variant) {
-      case 'current':
-        return {
-          container: styles.currentContainer,
-          emphasis: 'critical' as const,
-        };
-      case 'completed':
-        return {
-          container: styles.completedContainer,
-          emphasis: 'low' as const,
-        };
-      case 'upcoming':
-      default:
-        return {
-          container: styles.upcomingContainer,
-          emphasis: 'medium' as const,
-        };
+    const baseVariant = (() => {
+      switch (variant) {
+        case 'current':
+          return {
+            container: styles.currentContainer,
+            emphasis: 'critical' as const,
+          };
+        case 'completed':
+          return {
+            container: styles.completedContainer,
+            emphasis: 'low' as const,
+          };
+        case 'upcoming':
+        default:
+          return {
+            container: styles.upcomingContainer,
+            emphasis: 'medium' as const,
+          };
+      }
+    })();
+
+    // Enhance with live styling if match is live
+    if (isLive) {
+      return {
+        container: [baseVariant.container, styles.liveContainer],
+        emphasis: 'critical' as const,
+      };
     }
+
+    return baseVariant;
   };
 
   const { container, emphasis } = getVariantStyles();
-  
+
   // Extract proper round display data from match
   const roundData = {
     round: match.round || 'TBD',
@@ -90,30 +127,44 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     >
       {/* PRIMARY LEVEL: Match ID - Largest, most prominent */}
       <View style={styles.matchIdSection}>
-        <Title 
-          level={2} 
-          critical={variant === 'current'}
+        <Title
+          level={2}
+          critical={variant === 'current' || isLive}
           color="textPrimary"
           style={styles.matchId}
         >
           {match.matchId}
         </Title>
-        
-        {/* Status indicator with urgent caption for live matches */}
-        <EnhancedCaption
-          urgent={match.status === 'live'}
-          emphasis={match.status === 'live' ? 'critical' : emphasis}
-          color={match.status === 'live' ? 'success' : 'textSecondary'}
-          style={styles.statusText}
-        >
-          {match.status.toUpperCase()}
-        </EnhancedCaption>
+
+        {/* Live indicator and status with animations */}
+        <View style={styles.statusRow}>
+          {isLive && (
+            <LiveIndicator
+              isLive={isLive}
+              size="medium"
+              style={styles.liveIndicator}
+              testID={`${testID}-live-indicator`}
+            />
+          )}
+          <Animated.View
+            style={withReducedMotionCheck(statusAnimation, reducedMotionEnabled.value)}
+          >
+            <EnhancedCaption
+              urgent={isLive}
+              emphasis={isLive ? 'critical' : emphasis}
+              color={isLive ? 'success' : 'textSecondary'}
+              style={styles.statusText}
+            >
+              {match.status.toUpperCase()}
+            </EnhancedCaption>
+          </Animated.View>
+        </View>
       </View>
 
-      {/* SECONDARY LEVEL: Team Names - Clear hierarchy with vs separator */}
+      {/* SECONDARY LEVEL: Team Names with Live Scores - Clear hierarchy with vs separator */}
       <View style={styles.teamsSection}>
         <View style={styles.teamContainer}>
-          <Heading 
+          <Heading
             emphasis={emphasis}
             hierarchy="secondary"
             color="textPrimary"
@@ -127,18 +178,32 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             size="medium"
             style={styles.flagImage}
           />
+          {/* Animated Team A Score */}
+          {match.teamAScore !== undefined && (
+            <Animated.View
+              style={withReducedMotionCheck(teamAScoreAnimation, reducedMotionEnabled.value)}
+            >
+              <EnhancedBodyText
+                emphasis={isLive ? 'critical' : 'medium'}
+                color={isLive ? 'success' : 'textPrimary'}
+                style={[styles.scoreText, isLive && styles.liveScoreText]}
+              >
+                {match.teamAScore}
+              </EnhancedBodyText>
+            </Animated.View>
+          )}
         </View>
-        
-        <EnhancedBodyText 
+
+        <EnhancedBodyText
           emphasis="low"
           color="textSecondary"
           style={styles.vsText}
         >
           vs
         </EnhancedBodyText>
-        
+
         <View style={styles.teamContainer}>
-          <Heading 
+          <Heading
             emphasis={emphasis}
             hierarchy="secondary"
             color="textPrimary"
@@ -152,6 +217,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             size="medium"
             style={styles.flagImage}
           />
+          {/* Animated Team B Score */}
+          {match.teamBScore !== undefined && (
+            <Animated.View
+              style={withReducedMotionCheck(teamBScoreAnimation, reducedMotionEnabled.value)}
+            >
+              <EnhancedBodyText
+                emphasis={isLive ? 'critical' : 'medium'}
+                color={isLive ? 'success' : 'textPrimary'}
+                style={[styles.scoreText, isLive && styles.liveScoreText]}
+              >
+                {match.teamBScore}
+              </EnhancedBodyText>
+            </Animated.View>
+          )}
         </View>
       </View>
 
@@ -174,13 +253,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </View>
 
         <View style={styles.venueInfo}>
-          <Subheading 
-            emphasis="high"
-            color="textPrimary"
-            style={styles.courtText}
+          <Animated.View
+            style={withReducedMotionCheck(courtAnimation, reducedMotionEnabled.value)}
           >
-            C{match.court}
-          </Subheading>
+            <Subheading
+              emphasis="high"
+              color="textPrimary"
+              style={styles.courtText}
+            >
+              C{match.court}
+            </Subheading>
+          </Animated.View>
           <RoundPhaseDisplay
             round={roundData.round}
             phase={roundData.phase}
@@ -213,8 +296,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginVertical: spacing.sm,
     marginHorizontal: spacing.md,
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
-    elevation: 8,
+    // Use both boxShadow for web and elevation for mobile
+    ...(typeof window !== 'undefined'
+      ? { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)' }
+      : { elevation: 8 }),
     borderWidth: 2,
     borderColor: '#E5E7EB',
     minHeight: 160, // Adequate touch target size
@@ -237,6 +322,21 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
     opacity: 0.9,
   },
+  liveContainer: {
+    borderColor: colors.success,
+    borderWidth: 3,
+    backgroundColor: '#F0FDF4', // Very light green background
+    // Enhanced glow effect for live matches
+    ...(typeof window !== 'undefined'
+      ? { boxShadow: `0px 0px 16px rgba(34, 197, 94, 0.3)` }
+      : {
+          shadowColor: colors.success,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 12,
+        }),
+  },
   matchIdSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -246,8 +346,28 @@ const styles = StyleSheet.create({
   matchId: {
     flex: 1,
   },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  liveIndicator: {
+    marginRight: spacing.xs,
+  },
   statusText: {
     marginLeft: spacing.sm,
+  },
+  scoreText: {
+    marginLeft: spacing.sm,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  liveScoreText: {
+    color: colors.success,
+    fontWeight: '700',
+    textShadowColor: colors.success,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
   },
   teamsSection: {
     flexDirection: 'row',

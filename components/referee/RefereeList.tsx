@@ -48,14 +48,6 @@ export const RefereeList: React.FC<RefereeListProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.pageHeader}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>Select Referee</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
@@ -126,13 +118,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#1B365D',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(27, 54, 93, 0.08)',
     elevation: 3,
     borderWidth: 1,
     borderColor: '#E5E7EB',

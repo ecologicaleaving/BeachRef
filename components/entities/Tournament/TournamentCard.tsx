@@ -98,12 +98,19 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   // Handle default tournament toggle
   const handleToggleDefault = async (value: boolean) => {
     try {
-      if (value) {
-        await DefaultTournamentService.setDefaultTournament(tournament.visNo);
+      const result = await DefaultTournamentService.toggleDefaultTournament(
+        tournament.visNo,
+        tournament.name || `Tournament ${tournament.visNo}`,
+        tournament.dates?.startDate,
+        tournament.dates?.endDate
+      );
+
+      if (result.success) {
+        setIsDefault(result.isDefault);
       } else {
-        await DefaultTournamentService.clearDefaultTournament();
+        console.warn('Could not toggle default tournament:', result.reason);
+        // Optionally show user feedback here
       }
-      setIsDefault(value);
     } catch (error) {
       console.error('Error toggling default tournament:', error);
     }
@@ -192,8 +199,8 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       style={[
         styles.card,
         compact && styles.cardCompact,
-        // Temporarily hidden: Default card styling
-        // isDefault && styles.cardDefault
+        // Default card styling
+        isDefault && styles.cardDefault
       ]} 
       onPress={onPress}
       activeOpacity={0.7}
@@ -242,8 +249,8 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
         )}
       </View>
 
-      {/* Temporarily hidden: Default tournament functionality */}
-      {false && showDefaultToggle && canBeDefault && (
+      {/* Default tournament functionality */}
+      {showDefaultToggle && canBeDefault && (
         <View style={styles.defaultToggle}>
           <Text style={styles.defaultToggleLabel}>Set as Default</Text>
           <Switch
@@ -256,7 +263,7 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
         </View>
       )}
 
-      {false && isDefault && (
+      {isDefault && (
         <View style={styles.defaultIndicator}>
           <Text style={styles.defaultIndicatorText}>★ Default Tournament</Text>
         </View>

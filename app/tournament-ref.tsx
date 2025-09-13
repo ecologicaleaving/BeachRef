@@ -206,6 +206,29 @@ const RefereeCard = ({
               <Text style={styles.roleTotalLabel}>R2</Text>
             </View>
           </View>
+          <TouchableOpacity
+            style={styles.profileButton}
+            activeOpacity={0.8}
+            onPress={() => {
+              try {
+                const payload: any = {
+                  id: (referee?.RefereeId || '').toString(),
+                  firstName: referee?.firstName || '',
+                  lastName: referee?.lastName || '',
+                  federationCode: referee?.federationCode || '',
+                  gender: referee?.gender || '',
+                  status: 'Active',
+                  role: 'Referee',
+                  type: 'International'
+                };
+                router.push({ pathname: '/referee-profile', params: { refereeData: JSON.stringify(payload) } });
+              } catch (e) {
+                console.error('Failed to navigate to referee profile', e);
+              }
+            }}
+          >
+            <Text style={styles.profileButtonText}>Profile</Text>
+          </TouchableOpacity>
           <Text style={styles.expandIcon}>
             {expanded ? '▼' : '▶'}
           </Text>
@@ -1038,10 +1061,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     elevation: 3,
   },
   cardHeader: {
@@ -1078,6 +1098,17 @@ const styles = StyleSheet.create({
   expandIcon: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  profileButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+  },
+  profileButtonText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: '600',
   },
   statsPanel: {
     marginTop: 16,

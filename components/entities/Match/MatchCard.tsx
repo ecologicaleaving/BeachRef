@@ -5,12 +5,15 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+// Removed Animated imports to fix render issues
 import { useRouter } from 'expo-router';
 import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
+import { LiveIndicator } from '../../Status/LiveIndicator';
 import { colors } from '../../../theme/tokens';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
+// Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
   match: BeachMatchCore;
@@ -32,7 +35,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   variant = 'default',
 }) => {
   const router = useRouter();
-  
+
+  // Determine if match is live
+  const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
+
+  // Get live scores from match result
+  const team1Score = match.result?.team1Sets || 0;
+  const team2Score = match.result?.team2Sets || 0;
+
   // Navigate to referee profile
   const handleRefereePress = (refereeName: string, federationCode?: string) => {
     // Create a mock referee object for navigation
@@ -296,401 +306,315 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   
 
   return (
-    <TouchableOpacity 
-      style={[
-        styles.matchCard,
-        variant === 'live' && styles.liveCard,
-      ]} 
-      onPress={() => onPress?.(match)}
-      activeOpacity={0.7}
-    >
-      {/* Match Header - Compact horizontal layout */}
-      <View style={styles.matchHeader}>
-        <View style={styles.leftBadgeContainer}>
-          {(match as any).tournamentGender && (
-            <View style={[
-              styles.genderBadge,
-              (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
-            ]}>
-              <Text style={[
-                styles.genderBadgeText,
-                (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+    <View>
+      <TouchableOpacity
+        style={[
+          styles.matchCard,
+          variant === 'live' && styles.liveCard,
+        ]}
+        onPress={() => onPress?.(match)}
+        activeOpacity={0.7}
+      >
+        {/* Match Header - with gender badge and time/court */}
+        <View style={styles.matchHeader}>
+          <View style={styles.leftBadgeContainer}>
+            {(match as any).tournamentGender && (
+              <View style={[
+                styles.genderBadge,
+                (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
               ]}>
-                {(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
+                <Text style={[
+                  styles.genderBadgeText,
+                  (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                ]}>
+                  {(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.timeCourtContainer}>
+            <View style={styles.timeContainer}>
+              {isMatchLive(match) && (
+                <View style={styles.liveDot} />
+              )}
+              <Text style={styles.matchTime}>
+                {match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}
               </Text>
             </View>
-          )}
-        </View>
-        
-        <View style={styles.timeCourtContainer}>
-          <View style={styles.timeContainer}>
-            {isMatchLive(match) && (
-              <View style={styles.liveDot} />
-            )}
-            <Text style={styles.matchTime}>
-              {match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}
+            <Text style={styles.courtText}>
+              {match.court?.courtNumber ? (
+                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+              ) : 'TBD'}
             </Text>
           </View>
-          <Text style={styles.courtText}>
-            {match.court?.courtNumber ? (
-              match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-            ) : 'TBD'}
-          </Text>
-        </View>
-        
-        <View style={styles.rightBadgeContainer}>
-          <View style={styles.statusBadge}>
-            <RoundPhaseDisplay
-              round={roundData.round}
-              phase={roundData.phase}
-              emphasis="medium"
-              color="textPrimary"
-              style={styles.statusText}
-            />
+
+          <View style={styles.rightBadgeContainer}>
+            {roundData && (
+              <RoundPhaseDisplay
+                round={roundData.round}
+                phase={roundData.phase}
+                style={styles.roundBadge}
+              />
+            )}
           </View>
         </View>
-      </View>
 
-      {/* Flags and Result Row */}
-      <View style={styles.flagsAndResultRow}>
-        <View style={styles.leftFlagContainer}>
-          <FlagImage
-            countryCode={match.team1?.countryCode}
-            size="large"
-            style={styles.leftFlag}
-          />
-          <Text style={[styles.countryCode, styles.leftCountryCode]}>
-            {match.team1?.countryCode || ''}
-          </Text>
-        </View>
-        
-        <View style={styles.centerResultContainer}>
-          {matchWithResult.result ? (
-            <View style={styles.resultContainerWithSets}>
-              {/* Main score and duration row */}
-              <View style={styles.scoreAndDurationRow}>
-                <View style={styles.resultContainer}>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 1 && styles.winnerScore
-                  ]}>
-                    {matchWithResult.result.team1Sets}
-                  </Text>
-                  <Text style={styles.scoreSeparator}>-</Text>
-                  <Text style={[
-                    styles.resultScore,
-                    matchWithResult.result.winner === 2 && styles.winnerScore
-                  ]}>
-                    {matchWithResult.result.team2Sets}
-                  </Text>
-                </View>
-                
-                {/* Duration Display - moved to the right of the score */}
-                {(() => {
-                  const totalDuration = getMatchDuration(match);
-                  return totalDuration ? (
-                    <Text style={styles.durationText}>({totalDuration})</Text>
-                  ) : null;
-                })()}
-              </View>
-              
-              {/* Set Scores Display - check multiple sources */}
-              {(() => {
-                // First check if we have setScores in result
-                if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
-                  return true;
-                }
-                
-                // Check legacy BeachMatch format for individual set score fields
-                const rawMatch = match as any;
-                const hasLegacySetScores = (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) ||
-                                          (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) ||
-                                          (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3);
-                
-                return hasLegacySetScores;
-              })() && (
-                <View style={styles.setScoresContainer}>
+        <View style={styles.flagsAndResultRow}>
+          <View style={styles.leftFlagContainer}>
+            <FlagImage
+              countryCode={match.team1?.countryCode}
+              size="large"
+              style={styles.leftFlag}
+            />
+            <Text style={[styles.countryCode, styles.leftCountryCode]}>
+              {match.team1?.countryCode || ''}
+            </Text>
+          </View>
+
+          <View style={styles.centerResultContainer}>
+            {matchWithResult.result ? (
+              <View style={styles.resultContainerWithSets}>
+                <View style={styles.scoreAndDurationRow}>
+                  <View style={styles.resultContainer}>
+                    <View>
+                      <Text style={[
+                        styles.resultScore,
+                        matchWithResult.result.winner === 1 && styles.winnerScore,
+                        isLive && styles.liveScore
+                      ]}>
+                        {matchWithResult.result.team1Sets}
+                      </Text>
+                    </View>
+                    <Text style={styles.scoreSeparator}>-</Text>
+                    <View>
+                      <Text style={[
+                        styles.resultScore,
+                        matchWithResult.result.winner === 2 && styles.winnerScore,
+                        isLive && styles.liveScore
+                      ]}>
+                        {matchWithResult.result.team2Sets}
+                      </Text>
+                    </View>
+                  </View>
+
                   {(() => {
-                    const sets = [];
-                    
-                    // Try to use result.setScores first
-                    if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
-                      const setScores = matchWithResult.result.setScores;
-                      
-                      // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
-                      const totalSets = Math.floor(setScores.length / 2);
-                      for (let i = 0; i < setScores.length; i += 2) {
-                        if (i + 1 < setScores.length) {
-                          const team1Score = setScores[i];
-                          const team2Score = setScores[i + 1];
-                          const setNumber = Math.floor(i / 2) + 1;
-                          const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                          
-                          // Check if this set is completed
-                          const isMatchFinished = match.status === MatchStatus.FINISHED;
-                          const isThirdSet = setNumber === 3;
-                          const minWinScore = isThirdSet ? 15 : 21;
-                          const hasWinningScore = (team1Score >= minWinScore && team1Score - team2Score >= 2) || 
-                                                  (team2Score >= minWinScore && team2Score - team1Score >= 2);
-                          const isNotLastSet = setNumber < totalSets;
-                          const isSetComplete = isMatchFinished || hasWinningScore || isNotLastSet;
-                          const isActiveSet = match.status === MatchStatus.RUNNING && setNumber === totalSets && !isSetComplete;
-                          
+                    const totalDuration = getMatchDuration(match);
+                    return totalDuration ? (
+                      <Text style={styles.durationText}>({totalDuration})</Text>
+                    ) : null;
+                  })()}
+                </View>
+
+                {/* Set Scores Display - check multiple sources */}
+                {(() => {
+                  // First check if we have setScores in result
+                  if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                    return true;
+                  }
+
+                  // Check legacy BeachMatch format for individual set score fields
+                  const rawMatch = match as any;
+                  const hasLegacySetScores = (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) ||
+                                            (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) ||
+                                            (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3);
+
+                  return hasLegacySetScores;
+                })() && (
+                  <View style={styles.setScoresContainer}>
+                    {(() => {
+                      const sets = [];
+
+                      // Try to use result.setScores first
+                      if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                        const setScores = matchWithResult.result.setScores;
+
+                        // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
+                        const totalSets = Math.floor(setScores.length / 2);
+                        for (let i = 0; i < setScores.length; i += 2) {
+                          if (i + 1 < setScores.length) {
+                            const team1Score = setScores[i];
+                            const team2Score = setScores[i + 1];
+                            const setNumber = Math.floor(i / 2) + 1;
+                            const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+
+                            sets.push(
+                              <View key={setNumber} style={styles.individualSet}>
+                                <Text style={[styles.setScore]}>
+                                  {team1Score}
+                                </Text>
+                                <Text style={styles.setScoreSeparator}>-</Text>
+                                <Text style={[styles.setScore]}>
+                                  {team2Score}
+                                </Text>
+                              </View>
+                            );
+                          }
+                        }
+                      } else {
+                        // Fallback to legacy BeachMatch format - simplified
+                        const rawMatch = match as any;
+
+                        // Set 1
+                        if (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) {
+                          const team1Score = parseInt(rawMatch.PointsTeamASet1);
+                          const team2Score = parseInt(rawMatch.PointsTeamBSet1);
+
                           sets.push(
-                            <View key={setNumber} style={styles.individualSet}>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 1 && isSetComplete && styles.winningSetScore,
-                                isActiveSet && styles.activeSetScore
-                              ]}>
-                                {team1Score}
-                              </Text>
+                            <View key={1} style={styles.individualSet}>
+                              <Text style={styles.setScore}>{team1Score}</Text>
                               <Text style={styles.setScoreSeparator}>-</Text>
-                              <Text style={[
-                                styles.setScore,
-                                isWinningSet === 2 && isSetComplete && styles.winningSetScore,
-                                isActiveSet && styles.activeSetScore
-                              ]}>
-                                {team2Score}
-                              </Text>
+                              <Text style={styles.setScore}>{team2Score}</Text>
                             </View>
                           );
                         }
                       }
-                    } else {
-                      // Fallback to legacy BeachMatch format
-                      const rawMatch = match as any;
 
-                      
-                      // Set 1
-                      if (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) {
-                        const team1Score = parseInt(rawMatch.PointsTeamASet1);
-                        const team2Score = parseInt(rawMatch.PointsTeamBSet1);
-                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                        
-                        sets.push(
-                          <View key={1} style={styles.individualSet}>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 1 && styles.winningSetScore
-                            ]}>
-                              {team1Score}
-                            </Text>
-                            <Text style={styles.setScoreSeparator}>-</Text>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 2 && styles.winningSetScore
-                            ]}>
-                              {team2Score}
-                            </Text>
-                          </View>
-                        );
-                      }
-                      
-                      // Set 2
-                      if (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) {
-                        const team1Score = parseInt(rawMatch.PointsTeamASet2);
-                        const team2Score = parseInt(rawMatch.PointsTeamBSet2);
-                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                        
-                        sets.push(
-                          <View key={2} style={styles.individualSet}>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 1 && styles.winningSetScore
-                            ]}>
-                              {team1Score}
-                            </Text>
-                            <Text style={styles.setScoreSeparator}>-</Text>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 2 && styles.winningSetScore
-                            ]}>
-                              {team2Score}
-                            </Text>
-                          </View>
-                        );
-                      }
-                      
-                      // Set 3
-                      if (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3) {
-                        const team1Score = parseInt(rawMatch.PointsTeamASet3);
-                        const team2Score = parseInt(rawMatch.PointsTeamBSet3);
-                        const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
-                        
-                        sets.push(
-                          <View key={3} style={styles.individualSet}>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 1 && styles.winningSetScore
-                            ]}>
-                              {team1Score}
-                            </Text>
-                            <Text style={styles.setScoreSeparator}>-</Text>
-                            <Text style={[
-                              styles.setScore,
-                              isWinningSet === 2 && styles.winningSetScore
-                            ]}>
-                              {team2Score}
-                            </Text>
-                          </View>
-                        );
-                      }
-                    }
-                    
-                    return sets;
-                  })()}
-                </View>
-              )}
+                      return sets;
+                    })()}
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.vsText}>vs</Text>
+            )}
+          </View>
+
+          <View style={styles.rightFlagContainer}>
+            <FlagImage
+              countryCode={match.team2?.countryCode}
+              size="large"
+              style={styles.rightFlag}
+            />
+            <Text style={[styles.countryCode, styles.rightCountryCode]}>
+              {match.team2?.countryCode || ''}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.teamsContainer}>
+          <View style={styles.teamsRow}>
+            <View style={styles.teamSection}>
+              <Text style={[styles.teamName, styles.leftTeamName]} numberOfLines={2}>
+                {match.team1?.teamName || 'Team A'}
+                {(match as any).teamAPositionInMainDraw && ` (${(match as any).teamAPositionInMainDraw})`}
+              </Text>
             </View>
-          ) : (
-            <Text style={styles.vsText}>vs</Text>
-          )}
-        </View>
-        
-        <View style={styles.rightFlagContainer}>
-          <FlagImage
-            countryCode={match.team2?.countryCode}
-            size="large"
-            style={styles.rightFlag}
-          />
-          <Text style={[styles.countryCode, styles.rightCountryCode]}>
-            {match.team2?.countryCode || ''}
-          </Text>
-        </View>
-      </View>
 
-      {/* Teams Container */}
-      <View style={styles.teamsContainer}>
-        <View style={styles.teamsRow}>
-          <View style={styles.teamSection}>
-            <Text style={[
-              styles.teamName,
-              styles.leftTeamName,
-              matchWithResult.result?.winner === 1 && styles.winnerTeam
-            ]} numberOfLines={2}>
-              {match.team1?.teamName || 'Team A'}
-              {(match as any).teamAPositionInMainDraw && ` (${(match as any).teamAPositionInMainDraw})`}
-            </Text>
-          </View>
-          
-          <View style={styles.teamSection}>
-            <Text style={[
-              styles.teamName,
-              styles.rightTeamName,
-              matchWithResult.result?.winner === 2 && styles.winnerTeam
-            ]} numberOfLines={2}>
-              {match.team2?.teamName || 'Team B'}
-              {(match as any).teamBPositionInMainDraw && ` (${(match as any).teamBPositionInMainDraw})`}
-            </Text>
+            <View style={styles.teamSection}>
+              <Text style={[styles.teamName, styles.rightTeamName]} numberOfLines={2}>
+                {match.team2?.teamName || 'Team B'}
+                {(match as any).teamBPositionInMainDraw && ` (${(match as any).teamBPositionInMainDraw})`}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Referees Section - support both new and legacy data formats */}
-      {(() => {
-        const rawMatch = match as any;
-        const hasRefereeAssignments = match.refereeAssignments && match.refereeAssignments.length > 0;
-        const hasLegacyReferees = rawMatch.Referee1Name || rawMatch.Referee2Name;
-        
-        return hasRefereeAssignments || hasLegacyReferees;
-      })() && (
-        <View style={styles.refereesContainer}>
-          {(() => {
-            const refereeRows = [];
-            const rawMatch = match as any;
-            
-            // Try to use new format refereeAssignments first
-            if (match.refereeAssignments && match.refereeAssignments.length > 0) {
-              match.refereeAssignments.forEach((referee, index) => {
-                // Determine referee position based on function or index
-                let position = '';
-                if (referee.function?.includes('1st') || referee.function?.includes('Referee 1')) {
-                  position = '1°';
-                } else if (referee.function?.includes('2nd') || referee.function?.includes('Referee 2')) {
-                  position = '2°';
-                } else if (referee.function?.includes('Challenge') || referee.function?.includes('CR')) {
-                  position = 'CR';
-                } else {
-                  // Fallback to index-based
-                  position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
+        {/* Referees Section - Original version with text node fix */}
+        {(() => {
+          const rawMatch = match as any;
+          const hasRefereeAssignments = match.refereeAssignments && match.refereeAssignments.length > 0;
+          const hasLegacyReferees = rawMatch.Referee1Name || rawMatch.Referee2Name;
+
+          return hasRefereeAssignments || hasLegacyReferees;
+        })() ? (
+          <View style={styles.refereesContainer}>
+            {(() => {
+              const refereeRows = [];
+              const rawMatch = match as any;
+
+              // Try to use new format refereeAssignments first
+              if (match.refereeAssignments && match.refereeAssignments.length > 0) {
+                match.refereeAssignments.forEach((referee, index) => {
+                  // Determine referee position based on function or index
+                  let position = '';
+                  if (referee.function?.includes('1st') || referee.function?.includes('Referee 1')) {
+                    position = '1°';
+                  } else if (referee.function?.includes('2nd') || referee.function?.includes('Referee 2')) {
+                    position = '2°';
+                  } else if (referee.function?.includes('Challenge') || referee.function?.includes('CR')) {
+                    position = 'CR';
+                  } else {
+                    // Fallback to index-based
+                    position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
+                  }
+
+                  refereeRows.push(
+                    <View key={`assignment-${index}`} style={styles.refereeRow}>
+                      <View style={styles.refereeContentRow}>
+                        <Text style={styles.refereePosition}>{position}</Text>
+                        <TouchableOpacity onPress={() => handleRefereePress(referee.refereeName, referee.federationCode)}>
+                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{referee.refereeName}</Text>
+                        </TouchableOpacity>
+                        <FlagImage
+                          countryCode={referee.federationCode}
+                          style={styles.refereeFlag}
+                        />
+                      </View>
+                    </View>
+                  );
+                });
+              } else {
+                // Fallback to legacy BeachMatch format
+                if (rawMatch.Referee1Name) {
+                  refereeRows.push(
+                    <View key="referee1" style={styles.refereeRow}>
+                      <View style={styles.refereeContentRow}>
+                        <Text style={styles.refereePosition}>1°</Text>
+                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee1Name, rawMatch.Referee1FederationCode)}>
+                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee1Name}</Text>
+                        </TouchableOpacity>
+                        <FlagImage
+                          countryCode={rawMatch.Referee1FederationCode}
+                          style={styles.refereeFlag}
+                        />
+                      </View>
+                    </View>
+                  );
                 }
 
-                refereeRows.push(
-                  <View key={`assignment-${index}`} style={styles.refereeRow}>
-                    <View style={styles.refereeContentRow}>
-                      <Text style={styles.refereePosition}>{position}</Text>
-                      <TouchableOpacity onPress={() => handleRefereePress(referee.refereeName, referee.federationCode)}>
-                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{referee.refereeName}</Text>
-                      </TouchableOpacity>
-                      <FlagImage
-                        countryCode={referee.federationCode}
-                        style={styles.refereeFlag}
-                      />
+                if (rawMatch.Referee2Name) {
+                  refereeRows.push(
+                    <View key="referee2" style={styles.refereeRow}>
+                      <View style={styles.refereeContentRow}>
+                        <Text style={styles.refereePosition}>2°</Text>
+                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee2Name, rawMatch.Referee2FederationCode)}>
+                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee2Name}</Text>
+                        </TouchableOpacity>
+                        <FlagImage
+                          countryCode={rawMatch.Referee2FederationCode}
+                          style={styles.refereeFlag}
+                        />
+                      </View>
                     </View>
-                  </View>
-                );
-              });
-            } else {
-              // Fallback to legacy BeachMatch format
-              if (rawMatch.Referee1Name) {
-                refereeRows.push(
-                  <View key="referee1" style={styles.refereeRow}>
-                    <View style={styles.refereeContentRow}>
-                      <Text style={styles.refereePosition}>1°</Text>
-                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee1Name, rawMatch.Referee1FederationCode)}>
-                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee1Name}</Text>
-                      </TouchableOpacity>
-                      <FlagImage
-                        countryCode={rawMatch.Referee1FederationCode}
-                        style={styles.refereeFlag}
-                      />
+                  );
+                }
+
+                // Check for challenge referee in legacy format
+                if (rawMatch.ChallengeRefereeName) {
+                  refereeRows.push(
+                    <View key="challenge-referee" style={styles.refereeRow}>
+                      <View style={styles.refereeContentRow}>
+                        <Text style={styles.refereePosition}>CR</Text>
+                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.ChallengeRefereeName, rawMatch.ChallengeRefereeFederationCode)}>
+                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.ChallengeRefereeName}</Text>
+                        </TouchableOpacity>
+                        <FlagImage
+                          countryCode={rawMatch.ChallengeRefereeFederationCode}
+                          style={styles.refereeFlag}
+                        />
+                      </View>
                     </View>
-                  </View>
-                );
+                  );
+                }
               }
-              
-              if (rawMatch.Referee2Name) {
-                refereeRows.push(
-                  <View key="referee2" style={styles.refereeRow}>
-                    <View style={styles.refereeContentRow}>
-                      <Text style={styles.refereePosition}>2°</Text>
-                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee2Name, rawMatch.Referee2FederationCode)}>
-                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee2Name}</Text>
-                      </TouchableOpacity>
-                      <FlagImage
-                        countryCode={rawMatch.Referee2FederationCode}
-                        style={styles.refereeFlag}
-                      />
-                    </View>
-                  </View>
-                );
-              }
-              
-              // Check for challenge referee in legacy format
-              if (rawMatch.ChallengeRefereeName) {
-                refereeRows.push(
-                  <View key="challenge-referee" style={styles.refereeRow}>
-                    <View style={styles.refereeContentRow}>
-                      <Text style={styles.refereePosition}>CR</Text>
-                      <TouchableOpacity onPress={() => handleRefereePress(rawMatch.ChallengeRefereeName, rawMatch.ChallengeRefereeFederationCode)}>
-                        <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.ChallengeRefereeName}</Text>
-                      </TouchableOpacity>
-                      <FlagImage
-                        countryCode={rawMatch.ChallengeRefereeFederationCode}
-                        style={styles.refereeFlag}
-                      />
-                    </View>
-                  </View>
-                );
-              }
-            }
-            
-            return refereeRows;
-          })()}
-        </View>
-      )}
-    </TouchableOpacity>
+
+              return refereeRows;
+            })()}
+          </View>
+        ) : null}
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -978,5 +902,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
     textAlign: 'center',
+  },
+  // Live Score Animation Styles (Story 002)
+  liveIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+  },
+  liveScore: {
+    color: colors.success,
+    fontWeight: '700',
+    textShadowColor: colors.success,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
+  },
+  roundBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

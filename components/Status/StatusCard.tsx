@@ -58,10 +58,7 @@ export const StatusCard: React.FC<StatusCardProps> = React.memo(({
         return {
           ...baseStyle,
           elevation: 4,
-          shadowColor: colors.textPrimary,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          boxShadow: '0px 2px 4px rgba(51, 51, 51, 0.1)',
         };
       case 'minimal':
         return {

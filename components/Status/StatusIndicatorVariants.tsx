@@ -89,10 +89,7 @@ export const ProminentStatusDisplay = React.memo<ProminentStatusDisplayProps>(({
           backgroundColor: `${statusColor}20`,
           borderColor: statusColor,
           borderWidth: 3,
-          shadowColor: statusColor,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
+          boxShadow: `0px 4px 8px ${statusColor}4D`,
           elevation: 8,
         };
       case 'high':
@@ -101,10 +98,7 @@ export const ProminentStatusDisplay = React.memo<ProminentStatusDisplayProps>(({
           backgroundColor: `${statusColor}15`,
           borderColor: statusColor,
           borderWidth: 2,
-          shadowColor: statusColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
+          boxShadow: `0px 2px 4px ${statusColor}33`,
           elevation: 4,
         };
       case 'normal':

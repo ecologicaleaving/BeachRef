@@ -262,6 +262,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // ScrollView ref for auto-scroll functionality (moved to top)
   const scrollViewRef = useRef<ScrollView>(null);
   const matchLayoutsRef = useRef<Record<string, number>>({});
+  const pendingAutoscrollRef = useRef<boolean>(false);
 
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
   // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
@@ -823,35 +824,74 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Auto-scroll to first live match
   const scrollToFirstLiveMatch = useCallback(() => {
-    const liveMatches = filteredMatches.filter(match =>
-      match.status === 'InProgress' || match.status === MatchStatus.RUNNING || isMatchLive(match)
-    );
+    const liveMatches = filteredMatches.filter(match => isMatchLive(match));
 
     if (liveMatches.length > 0 && scrollViewRef.current) {
       const firstLiveMatchId = liveMatches[0].id;
       const yPosition = matchLayoutsRef.current[firstLiveMatchId];
 
+      if (__DEV__) {
+        console.log('[MatchListV2] Autoscroll attempt:', {
+          liveMatchesCount: liveMatches.length,
+          firstLiveMatchId,
+          yPosition,
+          allPositions: Object.keys(matchLayoutsRef.current).length,
+          totalMatches: filteredMatches.length
+        });
+      }
+
       if (yPosition !== undefined) {
-        // Add small delay to ensure layout is complete
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            y: Math.max(0, yPosition - 100), // Offset for header
-            animated: true
-          });
-        }, 500);
+        if (__DEV__) {
+          console.log('[MatchListV2] Scrolling to position:', yPosition - 100);
+        }
+
+        pendingAutoscrollRef.current = false;
+        scrollViewRef.current.scrollTo({
+          y: Math.max(0, yPosition - 100), // Offset for header
+          animated: true
+        });
+      } else {
+        // Position not available yet, mark as pending
+        pendingAutoscrollRef.current = true;
+        if (__DEV__) {
+          console.log('[MatchListV2] Position not available yet, marked as pending');
+        }
       }
     }
   }, [filteredMatches]);
 
+  // Trigger pending autoscroll when position becomes available
+  const triggerPendingAutoscroll = useCallback(() => {
+    if (pendingAutoscrollRef.current) {
+      if (__DEV__) {
+        console.log('[MatchListV2] Triggering pending autoscroll');
+      }
+      setTimeout(() => scrollToFirstLiveMatch(), 100);
+    }
+  }, [scrollToFirstLiveMatch]);
+
   // Auto-scroll effect - trigger when matches change and live matches exist
   useEffect(() => {
-    const hasLiveMatches = filteredMatches.some(match =>
-      match.status === 'InProgress' || match.status === MatchStatus.RUNNING || isMatchLive(match)
-    );
+    const hasLiveMatches = filteredMatches.some(match => isMatchLive(match));
+
+    if (__DEV__) {
+      console.log('[MatchListV2] Autoscroll effect check:', {
+        hasLiveMatches,
+        totalMatches: filteredMatches.length,
+        liveMatchesCount: filteredMatches.filter(match => isMatchLive(match)).length
+      });
+    }
 
     if (hasLiveMatches && filteredMatches.length > 0) {
-      scrollToFirstLiveMatch();
+      if (__DEV__) {
+        console.log('[MatchListV2] Live matches detected, triggering autoscroll');
+      }
+      // Reset pending flag and trigger autoscroll
+      pendingAutoscrollRef.current = false;
+      // Add delay to allow initial render to complete
+      setTimeout(() => scrollToFirstLiveMatch(), 300);
     }
+
   }, [filteredMatches, scrollToFirstLiveMatch]);
 
   // Format time from ISO string
@@ -912,13 +952,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }));
   };
 
-  // Check if match is currently live (beach volleyball rules)
+  // Check if match is currently live - matches MatchCard red dot logic exactly
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    // Consider live strictly when VIS status is RUNNING and nobody has won yet
-    const team1Sets = match.result?.team1Sets || 0;
-    const team2Sets = match.result?.team2Sets || 0;
-    const matchNotFinished = team1Sets < 2 && team2Sets < 2;
-    return match.status === MatchStatus.RUNNING && matchNotFinished;
+    const isLive = match.status === MatchStatus.RUNNING;
+
+    if (__DEV__ && isLive) {
+      console.log(`[MatchListV2] Live match found: ${match.id} (status=${match.status})`);
+    }
+
+    return isLive;
   };
 
   // Get status display text and color
@@ -960,7 +1002,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
       // Support VIS match numbers like "M001"/"W012" by stripping non-digits
-      const rawCode = (match as any).visNo || (match as any).matchCode || '';
+      // Use consistent field access pattern with updated isMatchLive logic
+      const rawCode = match?.visNo || match?.matchCode || '';
       const numericCode = String(rawCode).replace(/\D/g, '');
       const matchNo = parseInt(numericCode || '', 10);
       const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
@@ -988,6 +1031,23 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           // Track position for auto-scroll functionality
           const yPosition = event.nativeEvent.layout.y;
           matchLayoutsRef.current[match.id] = yPosition;
+
+          if (__DEV__) {
+            console.log(`[MatchListV2] Match ${match.id} layout: y=${yPosition}, isLive=${isMatchLive(match)}`);
+          }
+
+          // Check if this is a live match and trigger pending autoscroll
+          if (isMatchLive(match)) {
+            const liveMatches = filteredMatches.filter(m => isMatchLive(m));
+            const isFirstLiveMatch = liveMatches.length > 0 && liveMatches[0].id === match.id;
+
+            if (isFirstLiveMatch) {
+              if (__DEV__) {
+                console.log('[MatchListV2] First live match layout ready, triggering pending autoscroll');
+              }
+              triggerPendingAutoscroll();
+            }
+          }
 
           // Call external onMatchLayout if provided
           if (onMatchLayout) {

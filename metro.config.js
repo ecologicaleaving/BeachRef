@@ -6,9 +6,27 @@ const config = getDefaultConfig(__dirname);
 // Temporarily enable package exports to fix TanStack Query import issues
 config.resolver.unstable_enablePackageExports = true;
 
+// Configure transform options to handle modern JS syntax
+config.transformer.getTransformOptions = async (entryPoints, options, getDependenciesOf) => {
+  const isWeb = options.platform === 'web';
+
+  return {
+    transform: {
+      experimentalImportSupport: false,
+      inlineRequires: !isWeb,
+      // Enable require.context for Expo Router
+      unstable_allowRequireContext: true,
+    },
+    // Ensure web builds use appropriate transforms
+    ...(isWeb && {
+      unstable_transformProfile: 'hermes-stable'
+    })
+  };
+};
+
 // Production optimizations
 if (process.env.NODE_ENV === 'production') {
-  // Enable minification
+  // Enable minification with safer settings for private class fields
   config.transformer.minifierConfig = {
     mangle: {
       keep_fnames: true,
@@ -27,7 +45,11 @@ if (process.env.NODE_ENV === 'production') {
 
   // Asset optimization
   config.transformer.assetRegistryPath = 'react-native/Libraries/Image/AssetRegistry';
-  
+
+  // Disable Hermes completely for web platform compatibility
+  config.transformer.hermesParser = false;
+  config.transformer.unstable_allowRequireContext = true;
+
   // Cache settings disabled due to Node.js 22 compatibility issues
   // config.cacheStores = [
   //   {

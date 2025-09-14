@@ -671,10 +671,11 @@ function AllRefereesScreenContent() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavigationHeader 
+      <NavigationHeader
         title=""
         showBackButton={true}
         onBackPress={handleBack}
+        showStatusBar={false}
       />
       
       <Container style={styles.content}>

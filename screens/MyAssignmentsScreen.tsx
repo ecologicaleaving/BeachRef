@@ -143,6 +143,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
           onRefresh={() => {
             refreshAssignments();
           }}
+          showStatusBar={false}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={designTokens.colors.accent} />
@@ -164,6 +165,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
           onRefresh={() => {
             refreshAssignments();
           }}
+          showStatusBar={false}
         />
         <ScrollView
           contentContainerStyle={styles.errorContainer}
@@ -186,7 +188,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
       <NavigationHeader
         title="My Assignments"
         showBackButton={true}
-        showStatusBar={true}
+        showStatusBar={false}
         showRefreshButton={false}
         onRefresh={() => {
           refreshAssignments();

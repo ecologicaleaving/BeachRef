@@ -62,43 +62,55 @@ const TournamentSelectionScreen: React.FC = () => {
       }
       setError(null);
       
-      // DIRECT API CALL - Bypass broken cache system
-      const { VisApiClient } = await import('../services/api/VisApiClient');
-      const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
-      const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
-        timeoutMs: 10000,
-        maxRetries: 1,
-        retryDelayMs: 1000,
-        exponentialBackoff: false,
-        enableLogging: true
-      };
-      
-      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-      
-      const response = await visApi.getEventList({
-        tournamentType: 'BPT',
-        maxResults: 50
-      });
-      
-      if (response.success && response.xmlData) {
-        // Parse manually
-        const visTournaments = parseXMLDirectly(response.xmlData);
+      try {
+        // Try VIS API first with shorter timeout
+        const { VisApiClient } = await import('../services/api/VisApiClient');
+        const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
-        // Use VIS tournaments
-        const finalTournaments = visTournaments;
+        const config = {
+          baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+          timeoutMs: 5000, // Reduced timeout
+          maxRetries: 1,
+          retryDelayMs: 500,
+          exponentialBackoff: false,
+          enableLogging: true
+        };
 
-        // Show tournaments immediately with EventNo fallback
-        setTournaments(finalTournaments);
-        
-        // No need for dynamic categories - showing all tournaments
-        
-        // Enhance tournaments with real tournament numbers in background
-        enhanceTournamentsInBackground(finalTournaments, visApi);
-      } else {
-        // No tournaments available from API
-        setTournaments([]);
+        const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+
+        console.log('[TournamentSelection] Attempting VIS API call...');
+        const response = await visApi.getEventList({
+          tournamentType: 'BPT',
+          maxResults: 50
+        });
+
+        if (response.success && response.xmlData) {
+          console.log('[TournamentSelection] VIS API success, parsing tournaments...');
+          // Parse manually
+          const visTournaments = parseXMLDirectly(response.xmlData);
+
+          // Use VIS tournaments
+          const finalTournaments = visTournaments;
+
+          // Show tournaments immediately with EventNo fallback
+          setTournaments(finalTournaments);
+
+          // Enhance tournaments with real tournament numbers in background
+          enhanceTournamentsInBackground(finalTournaments, visApi);
+        } else {
+          console.log('[TournamentSelection] VIS API returned no data, using fallback...');
+          throw new Error('VIS API returned no data');
+        }
+      } catch (apiError) {
+        console.log('[TournamentSelection] VIS API failed, using fallback tournaments:', apiError);
+
+        // Load fallback tournaments when VIS API is down
+        const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
+        const fallbackTournaments = await FallbackTournamentService.getTournaments();
+        setTournaments(fallbackTournaments);
+
+        // Show user that we're using cached/fallback data
+        console.log('[TournamentSelection] Loaded', fallbackTournaments.length, 'fallback tournaments');
       }
       
     } catch (err) {
@@ -343,16 +355,33 @@ const TournamentSelectionScreen: React.FC = () => {
             
             // No need for dynamic categories - showing all tournaments
           } catch (parseError) {
-            // No tournaments available due to parsing error
-            setTournaments([]);
+            console.log('[TournamentSelection] Parse error, using fallback:', parseError);
+
+            // Load fallback tournaments when parsing fails
+            const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
+            const fallbackTournaments = await FallbackTournamentService.getTournaments();
+            setTournaments(fallbackTournaments);
           }
         } else {
-          // No tournaments available from API
-          setTournaments([]);
+          console.log('[TournamentSelection] No API data, using fallback...');
+
+          // Load fallback tournaments when API returns no data
+          const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
+          const fallbackTournaments = await FallbackTournamentService.getTournaments();
+          setTournaments(fallbackTournaments);
         }
         
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'An error occurred');
+        console.log('[TournamentSelection] Main catch block, using fallback:', error);
+
+        // Final fallback if everything else fails
+        try {
+          const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
+          const fallbackTournaments = await FallbackTournamentService.getTournaments();
+          setTournaments(fallbackTournaments);
+        } catch (fallbackError) {
+          setError('Unable to load tournaments. Please check your internet connection.');
+        }
       } finally {
         setInitialLoading(false);
         setTournamentLoading(false);
@@ -512,22 +541,36 @@ const TournamentSelectionScreen: React.FC = () => {
     }
   };
 
-  // Get tournament status based on dates
+  // Get tournament status based on dates - using date-only comparison to match utils/statusColors.ts
   const getTournamentStatus = (tournament: TournamentCore): 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED' => {
     if (!tournament.dates?.startDate || !tournament.dates?.endDate) return 'SCHEDULED';
-    
+
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const start = new Date(tournament.dates.startDate);
     const end = new Date(tournament.dates.endDate);
-    
-    // Calculate tournament status based on dates
-    
-    // If start date is after today = SCHEDULED
-    if (start > now) return 'SCHEDULED';
-    // If start less than today and end after today = LIVE NOW  
-    if (start <= now && end >= now) return 'LIVE NOW';
-    // If end is less than today = COMPLETED
-    return 'COMPLETED';
+
+    // Set start and end to date-only for consistent comparison
+    const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    // Tournament is currently active (same logic as utils/statusColors.ts)
+    if (startDateOnly <= today && today <= endDateOnly) {
+      return 'LIVE NOW';
+    }
+
+    // Tournament has ended
+    if (today > endDateOnly) {
+      return 'COMPLETED';
+    }
+
+    // Tournament is upcoming
+    if (today < startDateOnly) {
+      return 'SCHEDULED';
+    }
+
+    // Fallback
+    return 'SCHEDULED';
   };
 
   // Get LIVE tournaments (currently active)
@@ -930,10 +973,10 @@ const TournamentSelectionScreen: React.FC = () => {
 
   return (
     <Pressable onPress={() => setShowDropdown(false)} style={styles.container}>
-        <NavigationHeader 
-          title="Tournaments" 
-          showStatusBar={false} 
-          showRefreshButton={false}
+        <NavigationHeader
+          title="Tournament Selection"
+          showBackButton={false}
+          showStatusBar={false}
         />
         
         <ScrollView 

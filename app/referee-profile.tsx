@@ -149,6 +149,7 @@ const RefereeProfileScreen: React.FC = () => {
         title="Referee Profile"
         onBackPress={handleBack}
         showBackButton={true}
+        showStatusBar={false}
       />
       
       <ScrollView

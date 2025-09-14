@@ -267,10 +267,10 @@ const RefereeDashboardScreenContent: React.FC = () => {
         <NavigationHeader
           title="Referee Dashboard"
           showBackButton={false}
-          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
-            }}
+          }}
+          showStatusBar={false}
         />
         <View style={styles.loadingContainer}>
           <Text>Loading tournament...</Text>
@@ -286,10 +286,10 @@ const RefereeDashboardScreenContent: React.FC = () => {
         <NavigationHeader
           title="Referee Dashboard"
           showBackButton={false}
-          showRefreshButton={false}
           onRefresh={() => {
             refreshAssignments();
-            }}
+          }}
+          showStatusBar={false}
         />
         <View style={styles.loadingContainer}>
           <Text>No tournament selected</Text>
@@ -304,12 +304,11 @@ const RefereeDashboardScreenContent: React.FC = () => {
       <NavigationHeader
         title="Referee Dashboard"
         showBackButton={false}
-        showStatusBar={true}
         onStatusPress={handleStatusPress}
-        showRefreshButton={false}
         onRefresh={() => {
           refreshAssignments();
         }}
+        showStatusBar={false}
         rightComponent={
           <View style={styles.headerRightSection}>
             {/* Status Badge Indicators */}

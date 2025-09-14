@@ -458,7 +458,7 @@ const MatchResultsScreenContent: React.FC = () => {
         <NavigationHeader
           title="Match Results"
           showBackButton={true}
-          showStatusBar={true}
+          showStatusBar={false}
           onStatusPress={handleStatusPress}
         />
         {renderLoadingState()}

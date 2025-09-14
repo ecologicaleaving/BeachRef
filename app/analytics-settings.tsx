@@ -15,6 +15,7 @@ export default function AnalyticsSettingsScreen() {
         title="Analytics Settings"
         showBackButton={true}
         rightComponent={null}
+        showStatusBar={false}
       />
       
       <AnalyticsSettings showAdvanced={true} />

@@ -1325,6 +1325,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         showBackButton={true}
         onBackPress={() => router.back()}
         onHomePress={() => router.push('/')}
+        showStatusBar={false}
       />
 
       {/* Tournament Info - Scrollable */}
@@ -1352,16 +1353,24 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         ) : (
           <View>
-            {/* Tournament Info label - only show in schedule tab */}
-            {activeTab === 'schedule' && (
-              <Text style={styles.tournamentInfoLabel}>Tournament Info</Text>
-            )}
+            {/* Professional Tournament Info Panel */}
+            <View style={styles.tournamentInfoContainer}>
+              <View style={styles.tournamentInfoHeader}>
+                <View style={styles.tournamentInfoHeaderLeft}>
+                  <View style={styles.tournamentInfoIcon}>
+                    <Icon name="info" size={16} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.tournamentInfoTitle}>Tournament Information</Text>
+                </View>
+              </View>
+              <View style={styles.tournamentInfoDivider} />
+            </View>
             {/* Use unified TournamentCard component without extra wrappers */}
             <TournamentCard
               tournament={detailedTournament || tournament}
               onPress={() => {}} // No action needed since we're already on the detail screen
               showDefaultToggle={canBeDefault}
-              showStatusBadge={true}
+              showStatusBadge={false}
               compact={false}
             />
           </View>
@@ -1610,6 +1619,82 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
     marginBottom: 8,
+  },
+
+  // Professional Tournament Info Panel Styles
+  tournamentInfoContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+
+  tournamentInfoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F8F9FA',
+  },
+
+  tournamentInfoHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  tournamentInfoIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#FF6B35',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+
+
+  tournamentInfoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1B365D',
+    letterSpacing: 0.3,
+  },
+
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10B981',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  liveIndicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+    marginRight: 6,
+  },
+
+  liveIndicatorText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+
+  tournamentInfoDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
   },
   debugText: {
     fontSize: 12,

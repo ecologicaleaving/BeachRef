@@ -24,6 +24,7 @@ export default function AnalyticsDashboardScreen() {
         title="Analytics Dashboard"
         showBackButton={true}
         rightComponent={null}
+        showStatusBar={false}
       />
       
       <AnalyticsDashboard

@@ -14,11 +14,13 @@ import {
 import { Icon } from '../components/Icons/FeatherIcons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
+import { shadowPresets } from '../theme/shadows';
 import { TournamentCore } from '../types/tournament-v2';
 import { BeachMatchCore, MatchStatus } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
+import { FallbackTournamentService } from '../services/FallbackTournamentService';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -956,8 +958,19 @@ const TournamentDetailScreenContent: React.FC = () => {
 
     setDetailsLoading(true);
     try {
+      // Dynamic import for VisApiClient
+      const { VisApiClient } = await import('../services/api/VisApiClient');
+      const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
+
+      const config = {
+        baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || '',
+        timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
+      };
+
+      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+
       // Get tournament details from API
-      const details = await VisApiClient.getBeachTournamentDetails(tournament.visNo);
+      const details = await visApi.getBeachTournamentDetails(tournament.visNo);
 
       if (details) {
         // SELECTIVE MERGE: Only merge safe display fields, preserve core tournament data
@@ -1251,9 +1264,27 @@ const TournamentDetailScreenContent: React.FC = () => {
       setDetailsLoading(true);
 
       try {
-        // Use the tournament selection service to get complete tournament data
-        const { TournamentStorageService } = await import('../services/TournamentStorageService');
-        const tournaments = await TournamentStorageService.getAllTournaments();
+        // First try to get tournaments from API
+        let tournaments: TournamentCore[] = [];
+
+        try {
+          const { VisApiClient } = await import('../services/api/VisApiClient');
+          const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
+
+          const config = {
+            baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || '',
+            timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
+          };
+
+          const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+          const apiResponse = await visApi.getTournaments();
+          tournaments = apiResponse.tournaments || [];
+
+        } catch (apiError) {
+          console.log('VIS API failed, using fallback tournaments:', apiError);
+          // Fallback to sample tournaments
+          tournaments = await FallbackTournamentService.getTournaments();
+        }
 
         // Find the tournament with matching visNo
         const fullTournament = tournaments.find(t => t.visNo === visNo);
@@ -1263,9 +1294,8 @@ const TournamentDetailScreenContent: React.FC = () => {
           setCompleteTournamentData(fullTournament);
           setIsMinimalTournament(false);
         } else {
-          console.log('Tournament not found in storage, will use API fallback');
-          // If not found in storage, we'll keep the minimal data
-          // The existing loadTournamentDisplayData will enhance it
+          console.log('Tournament not found in API/fallback, will use existing minimal data');
+          // If not found, we'll keep the minimal data
         }
       } catch (error) {
         console.error('Error loading complete tournament data:', error);
@@ -1628,10 +1658,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
     overflow: 'hidden',
   },
@@ -1712,10 +1739,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     padding: 16,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
   compactCardHeader: {
@@ -1790,13 +1814,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B365D',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1B365D',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
   
@@ -1818,10 +1836,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E7EB',
     zIndex: 10,
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
   },
   
   // Date Navigator Section
@@ -1946,10 +1961,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
   tabHeaders: {
@@ -1986,10 +1998,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
     minHeight: 150,
   },
@@ -2007,10 +2016,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
 
@@ -2043,10 +2049,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     padding: 16,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
   tournamentCardHeader: {
@@ -2121,13 +2124,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     marginTop: 2,
     maxHeight: 200,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 5,
     zIndex: 1001,
   },
@@ -2204,10 +2201,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...shadowPresets.small,
     elevation: 3,
   },
   emptyStateTitle: {

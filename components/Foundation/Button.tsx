@@ -13,6 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { colors, spacing } from '../../theme/tokens';
+import { shadowPresets } from '../../theme/shadows';
 import { getColor, getTextColor } from '../../utils/colors';
 import { Text } from '../Typography';
 
@@ -239,14 +240,7 @@ const styles = StyleSheet.create({
     // Minimum touch target for accessibility
     minHeight: 44,
     // Shadow for depth and visibility
-    shadowColor: colors.textPrimary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3, // Android shadow
+    ...shadowPresets.small,
   },
   small: {
     paddingHorizontal: spacing.sm,
@@ -285,13 +279,6 @@ const styles = StyleSheet.create({
     bottom: spacing.lg,
     right: spacing.lg,
     // Enhanced shadow for floating appearance
-    shadowColor: colors.textPrimary,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8, // Android shadow
+    ...shadowPresets.large,
   },
 });

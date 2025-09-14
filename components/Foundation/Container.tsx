@@ -6,6 +6,7 @@
 import React from 'react';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { colors, spacing } from '../../theme/tokens';
+import { shadowPresets } from '../../theme/shadows';
 import { getColor, getTextColor } from '../../utils/colors';
 
 export type ContainerColor = keyof typeof colors;
@@ -186,14 +187,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 8,
     // Subtle shadow for elevation
-    shadowColor: colors.textPrimary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // Android shadow
+    ...shadowPresets.small,
     // Ensure proper contrast for accessibility
     borderWidth: 1,
     borderColor: colors.textSecondary + '20', // 20% opacity
@@ -201,14 +195,7 @@ const styles = StyleSheet.create({
   surface: {
     borderRadius: 4,
     // Minimal elevation
-    shadowColor: colors.textPrimary,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1, // Android shadow
+    ...shadowPresets.subtle,
   },
   statusContainer: {
     borderRadius: 6,

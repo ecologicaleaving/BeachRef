@@ -9,6 +9,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Title, Heading, Subheading, EnhancedBodyText, EnhancedCaption } from './Text';
 import { colors, spacing } from '../../theme/tokens';
+import { createTextShadow } from '../../theme/shadows';
 import { getStatusColor } from '../../utils/colors';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from './RoundPhaseDisplay';
@@ -365,9 +366,11 @@ const styles = StyleSheet.create({
   liveScoreText: {
     color: colors.success,
     fontWeight: '700',
-    textShadowColor: colors.success,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
+    ...createTextShadow({
+      textShadowColor: colors.success,
+      textShadowOffset: { width: 0, height: 0 },
+      textShadowRadius: 2,
+    }),
   },
   teamsSection: {
     flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
 import { useRouter, usePathname } from 'expo-router';
 import { useAssignmentStatus } from '../../hooks/useAssignmentStatus';
 import { designTokens } from '../../theme/tokens';
+import { shadowPresets } from '../../theme/shadows';
 
 export type TabRoute = 'details' | 'monitor' | 'analytics';
 
@@ -171,14 +172,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
     paddingBottom: 8,
     paddingTop: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 10,
+    ...shadowPresets.medium,
   },
   tabButton: {
     flex: 1,
@@ -190,11 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: designTokens.brandColors.primaryLight, // Use design token for consistency
     borderRadius: 12,
     marginHorizontal: 8,
-    shadowColor: designTokens.colors.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadowPresets.small,
   },
   tabIcon: {
     fontSize: 20,
@@ -234,11 +224,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
+    ...shadowPresets.small,
   },
   
   badgeText: {
@@ -266,11 +252,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 1,
-    elevation: 2,
+    ...shadowPresets.subtle,
   },
 });
 

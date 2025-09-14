@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 // Removed Animated imports to fix render issues
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../../Status/LiveIndicator';
 import { colors } from '../../../theme/tokens';
+import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 // Simplified for now - animations disabled to fix render issues
 
@@ -619,14 +621,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginVertical: 4,
     marginHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...shadowPresets.card,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -905,9 +900,11 @@ const styles = StyleSheet.create({
   liveScore: {
     color: colors.success,
     fontWeight: '700',
-    textShadowColor: colors.success,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
+    ...createTextShadow({
+      textShadowColor: colors.success,
+      textShadowOffset: { width: 0, height: 0 },
+      textShadowRadius: 2,
+    }),
   },
   roundBadge: {
     paddingVertical: 2,

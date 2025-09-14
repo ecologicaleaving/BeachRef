@@ -8,6 +8,7 @@
 
 import { StyleSheet } from 'react-native';
 import { colors, spacing, typography } from '../../theme/tokens';
+import { createTextShadow } from '../../theme/shadows';
 
 /**
  * Common animation configurations for live score components
@@ -299,9 +300,11 @@ export const liveScoreTypography = StyleSheet.create({
     fontWeight: 'bold',
     color: liveScoreColors.critical.text,
     // React Native Web compatible text shadow
-    textShadowColor: liveScoreColors.critical.primary + '40',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    ...createTextShadow({
+      textShadowColor: liveScoreColors.critical.primary + '40',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    }),
   },
   
   statusLabelWarning: {
@@ -309,9 +312,11 @@ export const liveScoreTypography = StyleSheet.create({
     fontWeight: 'bold',
     color: liveScoreColors.warning.text,
     // React Native Web compatible text shadow
-    textShadowColor: liveScoreColors.warning.primary + '40',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    ...createTextShadow({
+      textShadowColor: liveScoreColors.warning.primary + '40',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
+    }),
   },
   
   statusLabelNormal: {

@@ -8,10 +8,10 @@ import {
   Modal,
   Pressable,
   Animated,
+  Switch,
   ScrollView,
   Easing,
   Dimensions,
-  Switch,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { BlurView } from 'expo-blur';
@@ -21,6 +21,7 @@ import { useFavoriteTournaments } from '../../hooks/useFavoriteTournaments';
 import { Icon } from '../Icons/MaterialCommunityIcons';
 import { colors } from '../../theme/tokens';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
+import { TournamentStorageService } from '../../services/TournamentStorageService';
 
 interface SubMenuItem {
   key: 'schedule' | 'ranking' | 'entryList' | 'officials';
@@ -33,7 +34,7 @@ interface TournamentMenuItemProps {
   tournament: TournamentCore;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  onSubMenuPress: (route: string) => void;
+  onSubMenuPress: (route: string, tournament: TournamentCore) => void;
   onToggleFavorite: () => void;
 }
 
@@ -51,10 +52,9 @@ const SUBMENU_ITEMS: SubMenuItem[] = [
 ];
 
 const MAIN_MENU_ITEMS = [
-  { icon: 'tournament', title: 'All Tournaments', route: '/tournament-selection' },
-  { icon: 'account-group', title: 'All Players', route: '/players' },
-  { icon: 'whistle', title: 'All Referees', route: '/all-referees' },
-  { icon: 'cog', title: 'Settings', route: '/settings' },
+  { icon: 'tournament', title: 'All Tournaments', route: '/tournament-selection', enabled: true },
+  { icon: 'whistle', title: 'All Referees', route: '/all-referees', enabled: false },
+  { icon: 'cog', title: 'Settings', route: '/settings', enabled: false },
 ];
 
 const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
@@ -67,6 +67,20 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
   const expandAnimation = React.useRef(new Animated.Value(0)).current;
   const pressAnimation = React.useRef(new Animated.Value(1)).current;
   const [isPressed, setIsPressed] = useState(false);
+  const [isDefault, setIsDefault] = useState(false);
+
+  // Check if this tournament is default
+  useEffect(() => {
+    const checkDefaultStatus = async () => {
+      try {
+        const defaultStatus = await DefaultTournamentService.isDefaultTournament(tournament.visNo);
+        setIsDefault(defaultStatus);
+      } catch (error) {
+        setIsDefault(false);
+      }
+    };
+    checkDefaultStatus();
+  }, [tournament.visNo]);
 
   useEffect(() => {
     Animated.timing(expandAnimation, {
@@ -150,7 +164,7 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
                   backgroundColor: 'transparent'
                 }
               ]}
-              onPress={() => onSubMenuPress(item.route)}
+              onPress={() => onSubMenuPress(item.route, tournament)}
               activeOpacity={1}
             >
               <Text style={styles.subMenuText}>{item.label}</Text>
@@ -176,8 +190,9 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
   const { favoriteTournaments, toggleFavorite, isLoading } = useFavoriteTournaments();
   const gestureRef = useRef(null);
 
-  const [defaultTournament, setDefaultTournament] = useState<any>(null);
+  const [defaultTournament, setDefaultTournament] = useState<TournamentCore | null>(null);
   const [isLoadingDefault, setIsLoadingDefault] = useState(true);
+  const [defaultTournamentExpanded, setDefaultTournamentExpanded] = useState(true); // Always expanded
 
   const [expandedTournaments, setExpandedTournaments] = useState<Set<string>>(new Set());
   const [favoritesExpanded, setFavoritesExpanded] = useState(true);
@@ -262,9 +277,18 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     });
   };
 
-  const handleSubMenuPress = (route: string) => {
+  const handleSubMenuPress = (route: string, tournament: TournamentCore) => {
     onClose();
-    router.push(route as any);
+
+    // Encode tournament data as JSON and append to route
+    const tournamentData = encodeURIComponent(JSON.stringify(tournament));
+
+    // Check if route already has parameters
+    const separator = route.includes('?') ? '&' : '?';
+    const fullRoute = `${route}${separator}tournamentData=${tournamentData}`;
+
+    console.log('Sidebar navigation: Passing full tournament data to', route);
+    router.push(fullRoute as any);
   };
 
   const handleToggleFavorite = async (tournament: TournamentCore) => {
@@ -276,13 +300,10 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
       if (!value && defaultTournament) {
         // Turning off - clear the default tournament
         await DefaultTournamentService.clearDefaultTournament();
-        setDefaultTournament(null);
-      } else if (value && !defaultTournament) {
-        // Turning on - but we can't set a default from the sidebar alone
-        // This should only be handled by the TournamentCard component
-        // So we'll just return without doing anything for now
-        console.log('Cannot set default tournament from sidebar - use tournament detail screen');
+        // Don't manually set state - let the listener handle it for consistency
       }
+      // Note: Setting a default from sidebar is not allowed - must be done from tournament card
+      // The switch should only appear when there's already a default tournament to turn off
     } catch (error) {
       console.error('Error toggling default tournament:', error);
     }
@@ -346,121 +367,118 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
               {/* Header */}
               <View style={styles.header}>
                 <Text style={styles.headerTitle}>BeachRef</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={onClose}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
               </View>
 
-              {/* Default Tournament Section */}
-              {(defaultTournament || isLoadingDefault) && (
+
+              {/* Favorites Section - Only show if there are favorites */}
+              {favoriteTournaments.length > 0 && (
                 <View style={styles.section}>
                   <TouchableOpacity
                     style={styles.sectionHeader}
-                    onPress={() => setDefaultExpanded(!defaultExpanded)}
+                    onPress={() => setFavoritesExpanded(!favoritesExpanded)}
                     activeOpacity={1}
                   >
-                    <Text style={styles.sectionTitle}>Default Tournament</Text>
-                    {defaultTournament && (
-                      <View style={styles.defaultBadge}>
-                        <Text style={styles.defaultBadgeText}>★</Text>
-                      </View>
-                    )}
+                    <Text style={styles.sectionTitle}>Favorites</Text>
+                    <View style={styles.favoriteBadge}>
+                      <Text style={styles.favoriteBadgeText}>{favoriteTournaments.length}</Text>
+                    </View>
                   </TouchableOpacity>
 
-                  {defaultExpanded && (
-                    <View style={styles.defaultContainer}>
-                      {isLoadingDefault ? (
-                        <Text style={styles.loadingText}>Loading default...</Text>
-                      ) : defaultTournament ? (
-                        <View style={styles.defaultTournamentItem}>
-                          <View style={styles.tournamentHeader}>
-                            <TouchableOpacity
-                              style={styles.defaultTournamentMainButton}
-                              onPress={() => setDefaultSubmenuExpanded(!defaultSubmenuExpanded)}
-                              activeOpacity={1}
-                            >
-                              <View style={styles.defaultTournamentInfo}>
-                                <Text style={styles.defaultTournamentName} numberOfLines={2}>
-                                  {defaultTournament.name}
-                                </Text>
-                                <Text style={styles.defaultTournamentMeta} numberOfLines={1}>
-                                  Default tournament
-                                </Text>
-                              </View>
-                            </TouchableOpacity>
-
-                            <View style={styles.defaultToggleContainer}>
-                              <Switch
-                                value={!!defaultTournament}
-                                onValueChange={handleToggleDefaultTournament}
-                                trackColor={{ false: '#767577', true: colors.primary }}
-                                thumbColor={colors.background}
-                                style={styles.defaultSwitch}
-                              />
-                            </View>
-                          </View>
-
-                          {/* Default Tournament Submenus */}
-                          {defaultSubmenuExpanded && (
-                            <View style={styles.defaultSubMenuContainer}>
-                              {SUBMENU_ITEMS.map((item, index) => (
-                                <TouchableOpacity
-                                  key={item.key}
-                                  style={styles.defaultSubMenuItem}
-                                  onPress={() => handleSubMenuPress(item.route)}
-                                  activeOpacity={1}
-                                >
-                                  <Text style={styles.defaultSubMenuText}>{item.label}</Text>
-                                </TouchableOpacity>
-                              ))}
-                            </View>
-                          )}
-                        </View>
+                  {favoritesExpanded && (
+                    <View style={styles.favoritesContainer}>
+                      {isLoading ? (
+                        <Text style={styles.loadingText}>Loading favorites...</Text>
                       ) : (
-                        <View style={styles.emptyDefault}>
-                          <Text style={styles.emptyText}>No default tournament set</Text>
-                          <Text style={styles.emptySubtext}>Set a LIVE tournament as default from the tournament list</Text>
-                        </View>
+                        favoriteTournaments.map((tournament) => (
+                          <TournamentMenuItem
+                            key={tournament.id}
+                            tournament={tournament}
+                            isExpanded={expandedTournaments.has(tournament.id)}
+                            onToggleExpand={() => handleTournamentToggle(tournament.id)}
+                            onSubMenuPress={handleSubMenuPress}
+                            onToggleFavorite={() => handleToggleFavorite(tournament)}
+                          />
+                        ))
                       )}
                     </View>
                   )}
                 </View>
               )}
 
-              {/* Favorites Section */}
-              <View style={styles.section}>
-                <TouchableOpacity
-                  style={styles.sectionHeader}
-                  onPress={() => setFavoritesExpanded(!favoritesExpanded)}
-                  activeOpacity={1}
-                >
-                  <Text style={styles.sectionTitle}>Favorites</Text>
-                  <View style={styles.favoriteBadge}>
-                    <Text style={styles.favoriteBadgeText}>{favoriteTournaments.length}</Text>
-                  </View>
-                </TouchableOpacity>
+              {/* Default Tournament - Show without section title */}
+              {defaultTournament && (
+                <>
+                  <View style={styles.separator} />
+                  <View style={styles.section}>
+                    <View style={styles.defaultTournamentMenuItem}>
+                      <Icon name="star" size={16} color="#FFD700" style={styles.starIcon} />
+                      <Text style={styles.defaultTournamentMenuText} numberOfLines={1}>
+                        {defaultTournament.name}
+                      </Text>
+                      <Switch
+                        value={!!defaultTournament}
+                        onValueChange={handleToggleDefaultTournament}
+                        trackColor={{ false: '#767577', true: '#FFD700' }}
+                        thumbColor={!!defaultTournament ? '#FFFFFF' : '#f4f3f4'}
+                        style={styles.defaultSwitchInline}
+                      />
+                    </View>
 
-                {favoritesExpanded && (
-                  <View style={styles.favoritesContainer}>
-                    {isLoading ? (
-                      <Text style={styles.loadingText}>Loading favorites...</Text>
-                    ) : favoriteTournaments.length === 0 ? (
-                      <View style={styles.emptyFavorites}>
-                        <Text style={styles.emptyText}>No favorite tournaments yet</Text>
-                        <Text style={styles.emptySubtext}>Tap the star on any tournament to add it here</Text>
+                    <View style={styles.defaultSubMenuContainer}>
+                        <TouchableOpacity
+                          style={styles.defaultSubMenuItem}
+                          onPress={async () => {
+                            try {
+                              // Default tournament is now a complete TournamentCore object
+                              const tournamentToPass = defaultTournament;
+                              console.log('Sidebar: Using default tournament (now TournamentCore) for visNo:', defaultTournament.visNo);
+
+                              console.log('Sidebar: Final tournament to pass:', tournamentToPass.name, 'has tournamentType:', tournamentToPass.tournamentType || 'undefined');
+                              console.log('Sidebar: Complete tournament object being passed:', JSON.stringify(tournamentToPass, null, 2));
+                              handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(tournamentToPass))}&tab=schedule`);
+                            } catch (error) {
+                              console.error('Error preparing tournament data:', error);
+                              // Fallback to default tournament data (still TournamentCore)
+                              handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(defaultTournament))}&tab=schedule`);
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.defaultSubMenuText}>Schedule & Results</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.defaultSubMenuItem}
+                          onPress={async () => {
+                            try {
+                              // Default tournament is now a complete TournamentCore object
+                              const tournamentToPass = defaultTournament;
+                              console.log('Sidebar: Using default tournament (now TournamentCore) for Officials - visNo:', defaultTournament.visNo);
+
+                              console.log('Sidebar: Final tournament to pass to Officials:', tournamentToPass.name, 'has tournamentType:', tournamentToPass.tournamentType || 'undefined');
+                              console.log('Sidebar: Complete tournament object being passed to Officials:', JSON.stringify(tournamentToPass, null, 2));
+                              handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(tournamentToPass))}&tab=officials`);
+                            } catch (error) {
+                              console.error('Error preparing tournament data:', error);
+                              // Fallback to default tournament data (still TournamentCore)
+                              handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(defaultTournament))}&tab=officials`);
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.defaultSubMenuText}>Officials</Text>
+                        </TouchableOpacity>
                       </View>
-                    ) : (
-                      favoriteTournaments.map((tournament) => (
-                        <TournamentMenuItem
-                          key={tournament.id}
-                          tournament={tournament}
-                          isExpanded={expandedTournaments.has(tournament.id)}
-                          onToggleExpand={() => handleTournamentToggle(tournament.id)}
-                          onSubMenuPress={handleSubMenuPress}
-                          onToggleFavorite={() => handleToggleFavorite(tournament)}
-                        />
-                      ))
-                    )}
                   </View>
-                )}
-              </View>
+                </>
+              )}
 
               {/* Main Menu Section */}
               <View style={styles.separator} />
@@ -471,13 +489,16 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                     return (
                       <TouchableOpacity
                         key={index}
-                        style={styles.mainMenuItem}
-                        onPress={() => handleMenuItemPress(item.route)}
-                        activeOpacity={0.7}
+                        style={[styles.mainMenuItem, !item.enabled && styles.mainMenuItemDisabled]}
+                        onPress={item.enabled ? () => handleMenuItemPress(item.route) : undefined}
+                        activeOpacity={item.enabled ? 0.7 : 1}
+                        disabled={!item.enabled}
                         accessibilityLabel={item.title}
                         accessibilityRole="button"
                       >
-                        <Text style={styles.mainMenuText}>{item.title}</Text>
+                        <Text style={[styles.mainMenuText, !item.enabled && styles.mainMenuTextDisabled]}>
+                          {item.title}
+                        </Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -556,13 +577,13 @@ const styles = StyleSheet.create({
 
   // Section Styles
   section: {
-    paddingTop: 16,
+    paddingTop: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   sectionTitle: {
     fontSize: 16,
@@ -604,11 +625,8 @@ const styles = StyleSheet.create({
   },
   defaultTournamentItem: {
     marginBottom: 4,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
     borderRadius: 8,
     marginHorizontal: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
   },
   tournamentHeader: {
     flexDirection: 'row',
@@ -655,7 +673,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginHorizontal: 4,
     marginVertical: 1,
-    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+    marginLeft: 24, // Move submenu items to the right for differentiation
   },
   defaultSubMenuText: {
     fontSize: 14,
@@ -746,11 +764,56 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 
+  // Default Tournament Menu Item
+  defaultTournamentMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    minHeight: 52,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    marginVertical: 2,
+  },
+  defaultTournamentMenuText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginLeft: 8,
+    flex: 1,
+  },
+  starIcon: {
+    marginRight: 4,
+  },
+  subMenuIcon: {
+    marginRight: 12,
+  },
+  defaultSwitchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 8,
+    marginHorizontal: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 215, 0, 0.2)',
+  },
+  defaultSwitchLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  defaultSwitchInline: {
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+    marginHorizontal: 8,
+  },
+
   // Main Menu Styles
   separator: {
     height: 1,
     backgroundColor: colors.secondary,
-    marginVertical: 8,
+    marginVertical: 4,
     marginHorizontal: 20,
     opacity: 0.3,
   },
@@ -771,6 +834,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: colors.textPrimary,
+  },
+  mainMenuItemDisabled: {
+    opacity: 0.5,
+  },
+  mainMenuTextDisabled: {
+    color: colors.textSecondary,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 

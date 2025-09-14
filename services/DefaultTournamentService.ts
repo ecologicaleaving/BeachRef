@@ -1,18 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TournamentCore } from '../types/tournament-v2';
 
 const DEFAULT_TOURNAMENT_KEY = 'default_tournament';
 
 // Event listener system for default tournament changes
-type DefaultTournamentListener = (tournament: DefaultTournament | null) => void;
+type DefaultTournamentListener = (tournament: TournamentCore | null) => void;
 let listeners: DefaultTournamentListener[] = [];
-
-export interface DefaultTournament {
-  visNo: string;
-  name: string;
-  setAt: string; // ISO timestamp
-  startDate?: string; // Tournament start date
-  endDate?: string; // Tournament end date
-}
 
 export class DefaultTournamentService {
   /**
@@ -29,7 +22,7 @@ export class DefaultTournamentService {
   /**
    * Notify all listeners of default tournament change
    */
-  private static notifyListeners(tournament: DefaultTournament | null): void {
+  private static notifyListeners(tournament: TournamentCore | null): void {
     listeners.forEach(listener => {
       try {
         listener(tournament);
@@ -42,28 +35,23 @@ export class DefaultTournamentService {
    * Set a tournament as default (clears any existing default)
    * Only allows LIVE tournaments to be set as default
    */
-  static async setDefaultTournament(
-    visNo: string, 
-    name: string, 
-    startDate?: string, 
-    endDate?: string
-  ): Promise<{ success: boolean; reason?: string }> {
-    // Check if tournament is LIVE
+  static async setDefaultTournament(tournament: TournamentCore): Promise<{ success: boolean; reason?: string }> {
+    // Check if tournament is LIVE using structured dates
+    const startDate = tournament.dates?.startDate;
+    const endDate = tournament.dates?.endDate;
     const status = this.getTournamentStatus(startDate, endDate);
     if (status !== 'LIVE NOW') {
-      return { 
-        success: false, 
-        reason: `Only LIVE tournaments can be set as default. This tournament is ${status}.` 
+      return {
+        success: false,
+        reason: `Only LIVE tournaments can be set as default. This tournament is ${status}.`
       };
     }
 
-    const defaultTournament: DefaultTournament = {
-      visNo,
-      name,
-      setAt: new Date().toISOString(),
-      startDate,
-      endDate
-    };
+    // Add setAt timestamp to tournament for tracking when it was set as default
+    const defaultTournament = {
+      ...tournament,
+      setAt: new Date().toISOString()
+    } as TournamentCore & { setAt: string };
 
     await AsyncStorage.setItem(DEFAULT_TOURNAMENT_KEY, JSON.stringify(defaultTournament));
     this.notifyListeners(defaultTournament);
@@ -74,22 +62,25 @@ export class DefaultTournamentService {
    * Get the current default tournament
    * Automatically clears if tournament has finished
    */
-  static async getDefaultTournament(): Promise<DefaultTournament | null> {
+  static async getDefaultTournament(): Promise<TournamentCore | null> {
     try {
       const stored = await AsyncStorage.getItem(DEFAULT_TOURNAMENT_KEY);
+      console.log('DefaultTournamentService: getDefaultTournament - stored value:', stored ? 'found' : 'null');
       if (!stored) return null;
 
-      const defaultTournament = JSON.parse(stored) as DefaultTournament;
-      
+      const defaultTournament = JSON.parse(stored) as TournamentCore & { setAt: string };
+      console.log('DefaultTournamentService: getDefaultTournament - parsed:', defaultTournament.name, 'visNo:', defaultTournament.visNo);
+
       // Check if tournament has finished and auto-clear if so
-      if (defaultTournament.startDate || defaultTournament.endDate) {
-        const status = this.getTournamentStatus(defaultTournament.startDate, defaultTournament.endDate);
+      if (defaultTournament.dates?.startDate || defaultTournament.dates?.endDate) {
+        const status = this.getTournamentStatus(defaultTournament.dates.startDate, defaultTournament.dates.endDate);
         if (status === 'COMPLETED') {
+          console.log('DefaultTournamentService: Tournament has finished, auto-clearing...');
           await this.clearDefaultTournament();
           return null;
         }
       }
-      
+
       return defaultTournament;
     } catch (error) {
       console.error('Error loading default tournament:', error);
@@ -101,8 +92,11 @@ export class DefaultTournamentService {
    * Clear the default tournament
    */
   static async clearDefaultTournament(): Promise<void> {
+    console.log('DefaultTournamentService: Clearing default tournament...');
     await AsyncStorage.removeItem(DEFAULT_TOURNAMENT_KEY);
+    console.log('DefaultTournamentService: Default tournament cleared from storage');
     this.notifyListeners(null);
+    console.log('DefaultTournamentService: Notified', listeners.length, 'listeners of clearing');
   }
 
   /**
@@ -118,23 +112,18 @@ export class DefaultTournamentService {
    * If it's already default, remove it. If not, make it default.
    * Returns result object with success status and reason
    */
-  static async toggleDefaultTournament(
-    visNo: string, 
-    name: string, 
-    startDate?: string, 
-    endDate?: string
-  ): Promise<{ success: boolean; isDefault: boolean; reason?: string }> {
-    const isCurrentlyDefault = await this.isDefaultTournament(visNo);
-    
+  static async toggleDefaultTournament(tournament: TournamentCore): Promise<{ success: boolean; isDefault: boolean; reason?: string }> {
+    const isCurrentlyDefault = await this.isDefaultTournament(tournament.visNo);
+
     if (isCurrentlyDefault) {
       await this.clearDefaultTournament();
       return { success: true, isDefault: false }; // No longer default
     } else {
-      const result = await this.setDefaultTournament(visNo, name, startDate, endDate);
-      return { 
-        success: result.success, 
-        isDefault: result.success, 
-        reason: result.reason 
+      const result = await this.setDefaultTournament(tournament);
+      return {
+        success: result.success,
+        isDefault: result.success,
+        reason: result.reason
       }; // Now default if successful
     }
   }

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Switch,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { TournamentCore } from '../../../types/tournament-v2';
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
@@ -33,8 +34,9 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   compact = false
 }) => {
   const [isDefault, setIsDefault] = useState(false);
+  const router = useRouter();
 
-  // Check if this tournament is default on mount
+  // Check if this tournament is default on mount and listen for changes
   useEffect(() => {
     if (showDefaultToggle) {
       const checkDefaultStatus = async () => {
@@ -42,6 +44,15 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
         setIsDefault(defaultStatus);
       };
       checkDefaultStatus();
+
+      // Listen for default tournament changes
+      const removeListener = DefaultTournamentService.addListener((defaultTournament) => {
+        // Update state based on whether this tournament is the new default
+        setIsDefault(defaultTournament?.visNo === tournament.visNo);
+      });
+
+      // Cleanup listener on unmount
+      return removeListener;
     }
   }, [tournament.visNo, showDefaultToggle]);
 
@@ -98,19 +109,18 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   // Handle default tournament toggle
   const handleToggleDefault = async (value: boolean) => {
     try {
-      const result = await DefaultTournamentService.toggleDefaultTournament(
-        tournament.visNo,
-        tournament.name || `Tournament ${tournament.visNo}`,
-        tournament.dates?.startDate,
-        tournament.dates?.endDate
-      );
+      const result = await DefaultTournamentService.toggleDefaultTournament(tournament);
 
       if (result.success) {
-        setIsDefault(result.isDefault);
+        // If tournament was deselected as default, redirect to home
+        if (!result.isDefault) {
+          router.push('/');
+        }
       } else {
         console.warn('Could not toggle default tournament:', result.reason);
         // Optionally show user feedback here
       }
+      // Don't manually set state - let the listener handle it for consistency
     } catch (error) {
       console.error('Error toggling default tournament:', error);
     }
@@ -252,7 +262,7 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       {/* Default tournament functionality */}
       {showDefaultToggle && canBeDefault && (
         <View style={styles.defaultToggle}>
-          <Text style={styles.defaultToggleLabel}>Set as Default</Text>
+          <Text style={styles.defaultToggleLabel}>Default</Text>
           <Switch
             value={isDefault}
             onValueChange={handleToggleDefault}
@@ -265,7 +275,7 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
       {isDefault && (
         <View style={styles.defaultIndicator}>
-          <Text style={styles.defaultIndicatorText}>★ Default Tournament</Text>
+          <Text style={styles.defaultIndicatorText}>★</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -295,9 +305,8 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   cardDefault: {
-    borderColor: colors.accent,
-    borderWidth: 2,
-    backgroundColor: '#FFF9F0',
+    borderLeftColor: colors.accent,
+    borderLeftWidth: 4,
   },
   cardHeader: {
     marginBottom: 12,
@@ -382,12 +391,12 @@ const styles = StyleSheet.create({
     transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
   defaultIndicator: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: 12,
+    right: 12,
   },
   defaultIndicatorText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 16,
     color: colors.accent,
   },
 });

@@ -7,7 +7,8 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Icon, BackIcon, HomeIcon, RefreshIcon } from '../Icons/FeatherIcons';
+import { Icon } from '../Icons/FeatherIcons';
+import { Feather } from '@expo/vector-icons';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import WhistleLogo from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
@@ -17,9 +18,7 @@ import { DefaultTournamentService } from '../../services/DefaultTournamentServic
 interface NavigationHeaderProps {
   title: string;
   subtitle?: string;
-  showBackButton?: boolean;
   showHomeButton?: boolean;
-  onBackPress?: () => void;
   onHomePress?: () => void;
   rightComponent?: React.ReactNode;
   backgroundColor?: string;
@@ -27,17 +26,13 @@ interface NavigationHeaderProps {
   showStatusBar?: boolean;
   onStatusPress?: () => void;
   showLogo?: boolean;
-  onRefresh?: () => void;
-  showRefreshButton?: boolean;
   showBurgerMenu?: boolean;
 }
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   title,
   subtitle,
-  showBackButton = false,
-  showHomeButton = false,
-  onBackPress,
+  showHomeButton = true,
   onHomePress,
   rightComponent,
   backgroundColor = '#1B365D',
@@ -45,8 +40,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showStatusBar = true,
   onStatusPress,
   showLogo = false,
-  onRefresh,
-  showRefreshButton = true,
   showBurgerMenu = true,
 }) => {
   const router = useRouter();
@@ -75,19 +68,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   const isTournamentContext = defaultTournament !== null;
   const tournamentName = defaultTournament?.name || defaultTournament?.title;
 
-  const handleBackPress = () => {
-    if (onBackPress) {
-      onBackPress();
-    } else {
-      // Check if we can go back before calling router.back()
-      if (router.canGoBack()) {
-        router.back();
-      } else {
-        // No previous screen - could navigate to home or show a message
-      }
-    }
-  };
-
   const handleLogoPress = () => {
     router.push('/tournament-selection');
   };
@@ -96,19 +76,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
     if (onHomePress) {
       onHomePress();
     } else {
-      router.push('/');
-    }
-  };
-
-  const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      // Default refresh action - force reload current route
-      if (router.canGoBack()) {
-        const currentRoute = router.segments;
-        router.replace(router.pathname as any);
-      }
+      router.push('/tournament-selection');
     }
   };
 
@@ -124,42 +92,18 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
           {showBurgerMenu && (
-            <BurgerButton 
+            <BurgerButton
               onPress={() => setSideMenuVisible(true)}
               color={titleColor}
             />
           )}
           {showLogo && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleLogoPress}
               activeOpacity={0.8}
               style={styles.logoButton}
             >
               <WhistleLogo size={32} style={styles.logoImage} />
-            </TouchableOpacity>
-          )}
-          {showBackButton && (
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-              activeOpacity={0.7}
-            >
-              <BackIcon size={20} color={titleColor} style={{ marginRight: 4 }} />
-              <Text style={[styles.backButtonText, { color: titleColor }]}>
-                Back
-              </Text>
-            </TouchableOpacity>
-          )}
-          {showHomeButton && (
-            <TouchableOpacity
-              style={styles.homeButton}
-              onPress={handleHomePress}
-              activeOpacity={0.7}
-            >
-              <HomeIcon size={20} color={titleColor} style={{ marginRight: 4 }} />
-              <Text style={[styles.homeButtonText, { color: titleColor }]}>
-                Home
-              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -178,13 +122,13 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         )}
         
         <View style={styles.rightSection}>
-          {showRefreshButton && (
+          {showHomeButton && (
             <TouchableOpacity
-              style={styles.refreshButton}
-              onPress={handleRefresh}
+              style={styles.homeButton}
+              onPress={handleHomePress}
               activeOpacity={0.7}
             >
-              <RefreshIcon size={20} color={titleColor} />
+              <Feather name="home" size={20} color={titleColor} />
             </TouchableOpacity>
           )}
           {rightComponent}
@@ -229,24 +173,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  backButton: {
-    padding: 8,
-    minHeight: 44,
-    justifyContent: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
   homeButton: {
     padding: 8,
     minHeight: 44,
+    minWidth: 44,
     justifyContent: 'center',
-    flexDirection: 'row',
     alignItems: 'center',
+    marginLeft: 8,
   },
   homeButtonText: {
     fontSize: 16,
@@ -274,20 +207,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.8,
     marginTop: 2,
-  },
-  refreshButton: {
-    padding: 8,
-    minHeight: 44,
-    minWidth: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginLeft: 8,
-  },
-  refreshButtonText: {
-    fontSize: 18,
-    color: '#FFFFFF',
   },
 });
 

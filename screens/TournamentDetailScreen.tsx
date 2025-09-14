@@ -285,9 +285,23 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
   const [refereesLoading, setRefereesLoading] = useState(false);
+
+  // State to track if we need to load complete tournament data
+  const [isMinimalTournament, setIsMinimalTournament] = useState(false);
+  const [completeTournamentData, setCompleteTournamentData] = useState<TournamentCore | null>(null);
   
+  const router = useRouter();
+  const { tournamentData, tab, visNo } = useLocalSearchParams<{ tournamentData?: string; tab?: string; visNo?: string }>();
+
   // Tab state for bottom menu
-  const [activeTab, setActiveTab] = useState<'schedule' | 'players' | 'officials'>('schedule');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'officials'>('schedule');
+
+  // Set active tab based on URL parameter
+  useEffect(() => {
+    if (tab === 'schedule' || tab === 'officials') {
+      setActiveTab(tab);
+    }
+  }, [tab]);
 
   // Filter states for external control of MatchListV2 - preserved during refresh
   // Date filtering disabled - showing all days in timeline
@@ -297,44 +311,78 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [refereeFilter, setRefereeFilter] = useState<string>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
-  
+
   // Ref for auto-scrolling to relevant matches
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   // Track match positions for precise scrolling
   const matchPositions = useRef<{ [matchId: string]: number }>({});
 
-  
-  
+
+
   // Handle match layout measurement
   const handleMatchLayout = (matchId: string, y: number) => {
     matchPositions.current[matchId] = y;
   };
-  
+
   // Handle auto-scroll when matches are ready - DISABLED per user request
   const handleMatchesReady = (matches: BeachMatchCore[], targetIndex: number) => {
     // Just clear loading
     setTimeout(() => {
       setMatchesLoading(false);
     }, 1000);
-    
+
     // Auto-scroll logic disabled - will work on it later
   };
 
-  
-  const router = useRouter();
-  const { tournamentData } = useLocalSearchParams<{ tournamentData: string }>();
-
   const tournament: TournamentCore = React.useMemo(() => {
     try {
-      const parsed = JSON.parse(tournamentData || '{}') as TournamentCore;
-      const merged = (parsed as any)._mergedTournaments;
-      
-      return parsed;
+      if (completeTournamentData) {
+        // Use loaded complete tournament data if available
+        console.log('Using loaded complete tournament data:', completeTournamentData.name);
+        return completeTournamentData;
+      } else if (tournamentData) {
+        // Normal case: full tournament data passed as JSON
+        const parsed = JSON.parse(tournamentData) as TournamentCore;
+        console.log('Received tournament data in TournamentDetailScreen:', JSON.stringify(parsed, null, 2));
+        console.log('Tournament visNo:', parsed.visNo, 'Name:', parsed.name);
+        return parsed;
+      } else if (visNo) {
+        // Fallback case: only visNo provided - create minimal tournament object
+        const minimalTournament: TournamentCore = {
+          visNo: visNo,
+          name: `Loading Tournament ${visNo}...`,
+          title: `Loading Tournament ${visNo}...`,
+          dates: {},
+          // Add other required fields as needed
+        } as TournamentCore;
+        console.log('Using minimal tournament from visNo:', visNo);
+        // Mark that we need to load complete data
+        if (!isMinimalTournament) {
+          setIsMinimalTournament(true);
+        }
+        return minimalTournament;
+      } else {
+        console.log('No tournament data or visNo provided');
+        return {} as TournamentCore;
+      }
     } catch (error) {
+      console.error('Error parsing tournament data:', error);
+      if (visNo) {
+        // Fallback to minimal tournament
+        if (!isMinimalTournament) {
+          setIsMinimalTournament(true);
+        }
+        return {
+          visNo: visNo,
+          name: `Loading Tournament ${visNo}...`,
+          title: `Loading Tournament ${visNo}...`,
+          dates: {},
+        } as TournamentCore;
+      }
       return {} as TournamentCore;
     }
-  }, [tournamentData]);
+  }, [tournamentData, visNo, completeTournamentData, isMinimalTournament]);
 
   // Define getTournamentStatus early to avoid temporal dead zone issues
   const getTournamentStatus = React.useCallback(() => {
@@ -459,22 +507,20 @@ const TournamentDetailScreenContent: React.FC = () => {
     if (!tournament.visNo) return;
     
     try {
-      const result = await DefaultTournamentService.toggleDefaultTournament(
-        tournament.visNo, 
-        tournament.title || tournament.name || `Tournament ${tournament.visNo}`,
-        tournament.dates?.startDate,
-        tournament.dates?.endDate
-      );
+      const result = await DefaultTournamentService.toggleDefaultTournament(tournament);
       
       if (result.success) {
         setIsDefault(result.isDefault);
-        
+
         if (result.isDefault) {
           Alert.alert(
-            'Default Set', 
+            'Default Set',
             'This tournament is now your default. The homepage will redirect here.',
             [{ text: 'OK' }]
           );
+        } else {
+          // Tournament was deselected as default - redirect to home
+          router.push('/');
         }
       } else {
         // Show error message for why it couldn't be set as default
@@ -782,8 +828,34 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
 
-  const handleGoBack = () => {
-    router.back();
+  const handleGoBack = async () => {
+    try {
+      // STEP 1: Always clear default tournament first (if this tournament is set as default)
+      const tournamentVisNo = tournament.visNo || visNo;
+      console.log('handleGoBack: Using tournament visNo:', tournamentVisNo);
+
+      if (tournamentVisNo) {
+        const isDefault = await DefaultTournamentService.isDefaultTournament(tournamentVisNo);
+        if (isDefault) {
+          console.log('Tournament not found but is set as default. Clearing default tournament.');
+          await DefaultTournamentService.clearDefaultTournament();
+          console.log('Default tournament cleared successfully.');
+
+          // STEP 2: Add small delay to ensure state updates propagate
+          // This prevents race condition where home still sees old default tournament
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      // STEP 3: After ensuring default is cleared, redirect to home
+      // This ensures proper routing logic and prevents getting stuck
+      console.log('Redirecting to home...');
+      router.replace('/');
+    } catch (error) {
+      console.error('Error handling tournament not found:', error);
+      // Fallback: always redirect to home even if there's an error
+      router.replace('/');
+    }
   };
 
   // Load referees using dual system: GetEventRefereeList for LIVE/SCHEDULED, matches for COMPLETED
@@ -878,26 +950,34 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
 
-  // Load detailed tournament information and parse ALL available data
-  const loadTournamentDetails = async () => {
+  // Load enhanced tournament data for display purposes only
+  const loadTournamentDisplayData = async () => {
     if (!tournament.visNo) return;
-    
+
     setDetailsLoading(true);
     try {
-      // Get enhanced tournament details from GetEventList API
+      // Get tournament details from API
       const details = await VisApiClient.getBeachTournamentDetails(tournament.visNo);
-      
+
       if (details) {
-        
-        // Merge the detailed data with the basic tournament data
-        setDetailedTournament({
-          ...tournament,
-          ...details
-        });
+        // SELECTIVE MERGE: Only merge safe display fields, preserve core tournament data
+        const enhancedTournament = {
+          ...tournament, // Keep original tournament data as base
+          // Only add missing display fields from API response
+          countryCode: details.countryCode || tournament.countryCode,
+          countryName: details.countryName || tournament.countryName,
+          country: details.country || tournament.country,
+          city: details.city || tournament.city,
+          location: details.location || tournament.location,
+        };
+
+        setDetailedTournament(enhancedTournament);
       } else {
+        // No API data available - use basic tournament
         setDetailedTournament(tournament);
       }
     } catch (error) {
+      console.warn('Tournament display data load failed:', error);
       // Fallback to basic tournament data
       setDetailedTournament(tournament);
     } finally {
@@ -1145,9 +1225,9 @@ const TournamentDetailScreenContent: React.FC = () => {
     setRefreshing(true);
     
     try {
-      // Refresh tournament details, matches, and referee list while preserving filters
+      // Refresh tournament display data, matches, and referee list while preserving filters
       await Promise.all([
-        loadTournamentDetails(),
+        loadTournamentDisplayData(),
         loadMatches(),
         loadRefereeList()
       ]);
@@ -1162,19 +1242,51 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   }, [refreshLiveScores]);
 
-  
+  // Load complete tournament data when we have minimal tournament from visNo only
+  useEffect(() => {
+    const loadCompleteDataFromAPI = async () => {
+      if (!isMinimalTournament || !visNo || completeTournamentData) return;
+
+      console.log('Loading complete tournament data from API for visNo:', visNo);
+      setDetailsLoading(true);
+
+      try {
+        // Use the tournament selection service to get complete tournament data
+        const { TournamentStorageService } = await import('../services/TournamentStorageService');
+        const tournaments = await TournamentStorageService.getAllTournaments();
+
+        // Find the tournament with matching visNo
+        const fullTournament = tournaments.find(t => t.visNo === visNo);
+
+        if (fullTournament) {
+          console.log('Found complete tournament data:', fullTournament.name);
+          setCompleteTournamentData(fullTournament);
+          setIsMinimalTournament(false);
+        } else {
+          console.log('Tournament not found in storage, will use API fallback');
+          // If not found in storage, we'll keep the minimal data
+          // The existing loadTournamentDisplayData will enhance it
+        }
+      } catch (error) {
+        console.error('Error loading complete tournament data:', error);
+      } finally {
+        setDetailsLoading(false);
+      }
+    };
+
+    loadCompleteDataFromAPI();
+  }, [isMinimalTournament, visNo, completeTournamentData]);
 
   useEffect(() => {
     if (tournament.visNo) {
-      // TEMPORARILY DISABLED - loadTournamentDetails() restituisce dati sbagliati (Locarno instead of Baden)
-      // loadTournamentDetails();
+      // Load tournament display data (country, location info for TournamentCard)
+      loadTournamentDisplayData();
       loadMatches();
-      
-      
+
       // Load referee list using dual system (GetEventRefereeList for LIVE/SCHEDULED, matches for COMPLETED)
       loadRefereeList();
     }
-    
+
     // Clear expired caches on first load
     TournamentStorageService.clearExpiredTournamentCaches().catch(() => {
       // Silent fail for cache cleanup
@@ -1197,8 +1309,9 @@ const TournamentDetailScreenContent: React.FC = () => {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Tournament data not found</Text>
+        <Text style={styles.errorSubText}>This tournament may no longer be available or the link is incorrect.</Text>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <Text style={styles.backButtonText}>Return to Home</Text>
         </TouchableOpacity>
       </View>
     );
@@ -1207,12 +1320,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   return (
     <View style={styles.container}>
       <NavigationHeader
-        title="Tournament"
-        showBackButton={false}
-        showHomeButton={false}
-        showRefreshButton={false}
-        showStatusBar={false}
-        showLogo={false}
+        title={activeTab === 'schedule' ? 'Schedule & Results' : 'Officials'}
+        subtitle={tournament?.name}
+        showBackButton={true}
+        onBackPress={() => router.back()}
         onHomePress={() => router.push('/')}
       />
 
@@ -1240,14 +1351,20 @@ const TournamentDetailScreenContent: React.FC = () => {
             <Text style={styles.loadingText}>Loading tournament details...</Text>
           </View>
         ) : (
-          /* Use unified TournamentCard component without extra wrappers */
-          <TournamentCard
-            tournament={tournament}
-            onPress={() => {}} // No action needed since we're already on the detail screen
-            showDefaultToggle={canBeDefault}
-            showStatusBadge={true}
-            compact={false}
-          />
+          <View>
+            {/* Tournament Info label - only show in schedule tab */}
+            {activeTab === 'schedule' && (
+              <Text style={styles.tournamentInfoLabel}>Tournament Info</Text>
+            )}
+            {/* Use unified TournamentCard component without extra wrappers */}
+            <TournamentCard
+              tournament={detailedTournament || tournament}
+              onPress={() => {}} // No action needed since we're already on the detail screen
+              showDefaultToggle={canBeDefault}
+              showStatusBadge={true}
+              compact={false}
+            />
+          </View>
         )}
 
         {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls - Only show for schedule tab */}
@@ -1395,21 +1512,6 @@ const TournamentDetailScreenContent: React.FC = () => {
               </View>
             )}
 
-            {/* Players Tab Content */}
-            {activeTab === 'players' && (
-              <View style={[styles.tabContent, styles.tabContentSpacing]}>
-                <View style={styles.emptyStateContainer}>
-                  <Text style={styles.emptyStateTitle}>Players & Teams</Text>
-                  <Text style={styles.emptyStateMessage}>
-                    Player and team information will be available here.
-                  </Text>
-                  <Text style={styles.emptyStateSubtext}>
-                    Coming soon...
-                  </Text>
-                </View>
-              </View>
-            )}
-
             {/* Officials Tab Content */}
             {activeTab === 'officials' && (
               <View style={[styles.tabContent, styles.tabContentSpacing]}>
@@ -1461,8 +1563,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#1B365D',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     fontWeight: 'bold',
+  },
+  errorSubText: {
+    fontSize: 16,
+    color: '#445566',
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 16,
   },
   backButton: {
     backgroundColor: '#FF6B35',
@@ -1493,6 +1602,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  tournamentInfoLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1B365D',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#FF0000',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: '#FFEEEE',
+    padding: 4,
   },
   
   // Tournament Summary Card - Compact version
@@ -1624,15 +1749,14 @@ const styles = StyleSheet.create({
   // Filter Controls Section
   filterControlsSection: {
     paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingVertical: 4,
   },
-  
+
   // Filter Toggle Container
   filterToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
   },
   
   filterToggleButton: {

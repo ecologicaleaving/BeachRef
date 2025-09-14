@@ -143,22 +143,9 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
     }
   };
 
-  // Handle no current assignment
+  // Handle no current assignment - hide the entire status bar
   if (!currentAssignmentStatus) {
-    return (
-      <View style={[styles.container, styles.noAssignmentContainer]}>
-        <View style={styles.statusIndicator}>
-          <Text style={[styles.statusText, { color: designTokens.colors.textSecondary }]}>
-            No Active Assignment
-          </Text>
-          {!isOnline && (
-            <Text style={[styles.syncText, { color: designTokens.colors.textSecondary }]}>
-              Offline
-            </Text>
-          )}
-        </View>
-      </View>
-    );
+    return null;
   }
 
   const statusColors = getStatusColors(currentAssignmentStatus.status, currentUrgency);
@@ -254,10 +241,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   
-  noAssignmentContainer: {
-    backgroundColor: designTokens.brandColors.primaryLight,
-    borderColor: designTokens.colors.textSecondary,
-  },
   
   touchableContainer: {
     flex: 1,

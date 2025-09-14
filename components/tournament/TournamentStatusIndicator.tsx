@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { TournamentStatusEventType } from '../../services/TournamentStatusSubscriptionService';
-import { Tournament } from '../../types/tournament';
+import { TournamentCore } from '../../types/tournament-v2';
 
 /**
  * Tournament status indicator props
  */
 interface TournamentStatusIndicatorProps {
-  tournament: Tournament;
+  tournament: TournamentCore;
   isRecentlyChanged?: boolean;
   subscriptionActive?: boolean;
   lastEventType?: TournamentStatusEventType;
@@ -159,7 +159,7 @@ const TournamentStatusIndicator: React.FC<TournamentStatusIndicatorProps> = ({
   onIndicatorPress,
   style
 }) => {
-  const statusInfo = getStatusIndicator(tournament.Status, isRecentlyChanged);
+  const statusInfo = getStatusIndicator(tournament.status, isRecentlyChanged);
   const eventInfo = getEventTypeIndicator(lastEventType);
 
   const IndicatorContent = (
@@ -215,11 +215,11 @@ const TournamentStatusIndicator: React.FC<TournamentStatusIndicatorProps> = ({
  * Compact version for list items
  */
 export const CompactTournamentStatusIndicator: React.FC<{
-  tournament: Tournament;
+  tournament: TournamentCore;
   isRecentlyChanged?: boolean;
   subscriptionActive?: boolean;
 }> = ({ tournament, isRecentlyChanged, subscriptionActive }) => {
-  const statusInfo = getStatusIndicator(tournament.Status, isRecentlyChanged);
+  const statusInfo = getStatusIndicator(tournament.status, isRecentlyChanged);
 
   return (
     <View style={styles.compactContainer}>

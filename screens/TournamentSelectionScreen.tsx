@@ -20,6 +20,7 @@ import { colors } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { TournamentCard } from '../components/entities/Tournament';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
+import { FallbackTournamentService } from '../services/FallbackTournamentService';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Removed local TournamentCard component - using unified component from entities/Tournament
@@ -105,7 +106,6 @@ const TournamentSelectionScreen: React.FC = () => {
         console.log('[TournamentSelection] VIS API failed, using fallback tournaments:', apiError);
 
         // Load fallback tournaments when VIS API is down
-        const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
         const fallbackTournaments = await FallbackTournamentService.getTournaments();
         setTournaments(fallbackTournaments);
 
@@ -358,7 +358,6 @@ const TournamentSelectionScreen: React.FC = () => {
             console.log('[TournamentSelection] Parse error, using fallback:', parseError);
 
             // Load fallback tournaments when parsing fails
-            const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
             const fallbackTournaments = await FallbackTournamentService.getTournaments();
             setTournaments(fallbackTournaments);
           }
@@ -366,7 +365,6 @@ const TournamentSelectionScreen: React.FC = () => {
           console.log('[TournamentSelection] No API data, using fallback...');
 
           // Load fallback tournaments when API returns no data
-          const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
           const fallbackTournaments = await FallbackTournamentService.getTournaments();
           setTournaments(fallbackTournaments);
         }
@@ -376,7 +374,6 @@ const TournamentSelectionScreen: React.FC = () => {
 
         // Final fallback if everything else fails
         try {
-          const { FallbackTournamentService } = await import('../services/FallbackTournamentService');
           const fallbackTournaments = await FallbackTournamentService.getTournaments();
           setTournaments(fallbackTournaments);
         } catch (fallbackError) {

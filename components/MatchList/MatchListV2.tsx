@@ -548,8 +548,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
     
     return matchesToFilter.filter(match => {
-      // DATE FILTERING COMPLETELY DISABLED - using timeline mode
-      // All date filtering logic removed to isolate selectedDate error
+      // Hide matches without scheduledDateTime (no date and time)
+      if (!match.scheduledDateTime || match.scheduledDateTime.trim() === '') {
+        return false;
+      }
+
+      const matchDate = new Date(match.scheduledDateTime);
+      if (isNaN(matchDate.getTime())) {
+        return false; // Hide matches with invalid date
+      }
 
       // Gender filter - FIXED: Use actual gender detection logic
       if (effectiveGenderFilter !== 'All') {
@@ -598,65 +605,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }).sort((a, b) => {
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
-      const now = new Date();
-
-      // Phase 2: Priority logic - start from current time context
-      const aIsRunning = a.status === MatchStatus.RUNNING;
-      const bIsRunning = b.status === MatchStatus.RUNNING;
-      const aIsFuture = dateA.getTime() >= now.getTime();
-      const bIsFuture = dateB.getTime() >= now.getTime();
 
       // Priority 1: Currently running matches always first
+      const aIsRunning = a.status === MatchStatus.RUNNING;
+      const bIsRunning = b.status === MatchStatus.RUNNING;
+
       if (aIsRunning && !bIsRunning) return -1;
       if (!aIsRunning && bIsRunning) return 1;
 
-      // Priority 2: In timeline mode, keep simple chronological order
-      // Skip complex proximity logic when showing all days
-      if (!aIsRunning && !bIsRunning && !enableTimelineView && !showAllDays) {
-        // Calculate distance from current time for both matches
-        const aDistance = Math.abs(dateA.getTime() - now.getTime());
-        const bDistance = Math.abs(dateB.getTime() - now.getTime());
-
-        // If one is very close to current time (within 30 minutes), prioritize it
-        const closeTimeWindow = 30 * 60 * 1000; // 30 minutes
-        const aIsClose = aDistance <= closeTimeWindow;
-        const bIsClose = bDistance <= closeTimeWindow;
-
-        if (aIsClose && !bIsClose) return -1;
-        if (!aIsClose && bIsClose) return 1;
-
-        // If both are close or both are far, continue to normal sorting
-      }
-
-      // Dynamic sorting: Current day ascending, past days descending
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Start of today
-
-      const matchDateA = new Date(a.scheduledDateTime);
-      matchDateA.setHours(0, 0, 0, 0);
-      const matchDateB = new Date(b.scheduledDateTime);
-      matchDateB.setHours(0, 0, 0, 0);
-
-      const aIsToday = matchDateA.getTime() === today.getTime();
-      const bIsToday = matchDateB.getTime() === today.getTime();
-      const aIsPast = matchDateA.getTime() < today.getTime();
-      const bIsPast = matchDateB.getTime() < today.getTime();
-
-      // If both matches are on the same day type, apply appropriate sorting
-      if ((aIsToday && bIsToday) || (!aIsPast && !bIsPast && !aIsToday && !bIsToday)) {
-        // Current day or future days: ascending (earliest first)
-        return dateA.getTime() - dateB.getTime();
-      } else if (aIsPast && bIsPast) {
-        // Past days: descending (most recent first)
-        return dateB.getTime() - dateA.getTime();
-      } else {
-        // Mixed day types: use standard sort order
-        if (sortOrder === 'desc') {
-          return dateB.getTime() - dateA.getTime();
-        } else {
-          return dateA.getTime() - dateB.getTime();
-        }
-      }
+      // Priority 2: Always sort dates in descending order (newest first)
+      return dateB.getTime() - dateA.getTime();
     });
 
     // Final result logging will happen in UI render
@@ -766,41 +724,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     
     const allDates = Object.keys(groups).sort();
     
-    // Sort dates and return as array of [date, matches] pairs with dynamic sorting
+    // Sort dates in descending order (newest first)
     const result = Object.entries(groups).sort((a, b) => {
       const dateA = new Date(a[0]);
       const dateB = new Date(b[0]);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
 
-      // Always prioritize today's date first
-      const aIsToday = dateA.getTime() === today.getTime();
-      const bIsToday = dateB.getTime() === today.getTime();
-
-      if (aIsToday && !bIsToday) return -1;
-      if (!aIsToday && bIsToday) return 1;
-
-      // For past dates vs future dates, separate logic
-      const aIsPast = dateA.getTime() < today.getTime();
-      const bIsPast = dateB.getTime() < today.getTime();
-
-      if (aIsPast && !bIsPast) {
-        // Past date vs future date: past dates go after today (descending order)
-        return 1;
-      }
-      if (!aIsPast && bIsPast) {
-        // Future date vs past date: future dates go after today (ascending order)
-        return -1;
-      }
-
-      // Same category dates: apply specific sorting
-      if (aIsPast && bIsPast) {
-        // Past dates: descending (most recent first)
-        return dateB.getTime() - dateA.getTime();
-      } else {
-        // Future dates: ascending (earliest first)
-        return dateA.getTime() - dateB.getTime();
-      }
+      // Always sort dates in descending order (newest first)
+      return dateB.getTime() - dateA.getTime();
     });
     
     return result;
@@ -1885,7 +1815,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 8,
-    paddingVertical: 4,
     borderRadius: 12,
     overflow: 'hidden',
   },

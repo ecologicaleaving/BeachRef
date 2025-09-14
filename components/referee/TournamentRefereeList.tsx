@@ -1,0 +1,652 @@
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Text } from '../Typography/Text';
+import { colors } from '../../theme/tokens';
+import { RefereeStatsService, SeasonStats, CareerStats } from '../../services/RefereeStatsService';
+import { FlagImage } from '../FlagImage';
+
+interface Referee {
+  RefereeId: string; // 6-digit NoReferee from VIS API
+  firstName: string;
+  lastName: string;
+  federationCode: string;
+  gender: string;
+  level?: string;
+}
+
+interface TournamentInfo {
+  visNo: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+type StatsTab = 'Current' | 'Season' | 'Career';
+
+interface TournamentRefereeListProps {
+  tournamentNo: string;
+  tournamentName?: string;
+  tournamentData?: string;
+  matchData?: string;
+  showHeader?: boolean;
+  headerTitle?: string;
+  onRefresh?: () => void;
+}
+
+const RefereeCard = ({
+  referee,
+  tournamentNo,
+  expanded,
+  onToggle,
+  tournamentInfo
+}: {
+  referee: Referee;
+  tournamentNo: string;
+  expanded: boolean;
+  onToggle: () => void;
+  tournamentInfo: TournamentInfo | null;
+}) => {
+  const router = useRouter();
+
+  const handleRefereePress = () => {
+    router.push({
+      pathname: '/referee-profile',
+      params: {
+        refereeData: JSON.stringify({
+          RefereeId: referee.RefereeId,
+          firstName: referee.firstName,
+          lastName: referee.lastName,
+          federationCode: referee.federationCode,
+          gender: referee.gender,
+          level: referee.level
+        })
+      }
+    });
+  };
+
+  const [activeTab, setActiveTab] = useState<StatsTab>('Current');
+  const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
+  const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
+  const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Load current stats immediately on mount for R1/R2 totals display
+  useEffect(() => {
+    if (referee?.RefereeId && !currentStats) {
+      loadCurrentStats();
+    }
+  }, [referee?.RefereeId]);
+
+  // Load stats when card is expanded or tab changes
+  useEffect(() => {
+    if (expanded && referee?.RefereeId) {
+      loadRefereeStats();
+    }
+  }, [expanded, referee?.RefereeId, activeTab]);
+
+  const loadCurrentStats = async () => {
+    if (!referee?.RefereeId || !tournamentNo) return;
+
+    try {
+      const current = await RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
+      setCurrentStats(current);
+    } catch (error) {
+      console.error('Error loading current stats for collapsed card:', error);
+    }
+  };
+
+  const loadRefereeStats = async () => {
+    if (!referee?.RefereeId || !tournamentNo) {
+      console.log('Missing referee ID or tournament number:', { refereeId: referee?.RefereeId, tournamentNo });
+      return;
+    }
+
+    console.log(`Loading ${activeTab} stats for referee ${referee.RefereeId}`);
+    setStatsLoading(true);
+
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
+
+      switch (activeTab) {
+        case 'Current':
+          const currentPromise = RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
+          const current = await Promise.race([currentPromise, timeout]);
+          console.log('Current stats loaded:', current);
+          setCurrentStats(current);
+          break;
+        case 'Season':
+          // Use current calendar year for season stats, not tournament year
+          const currentYear = new Date().getFullYear();
+          const seasonYear = currentYear.toString();
+          console.log('Loading season stats for year:', seasonYear, '(current year)');
+          const seasonPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
+          const season = await Promise.race([seasonPromise, timeout]);
+          console.log('Season stats loaded:', season);
+          setSeasonStats(season);
+          break;
+        case 'Career':
+          console.log('Loading career stats');
+          const careerPromise = RefereeStatsService.getCareerStats(referee.RefereeId);
+          const career = await Promise.race([careerPromise, timeout]);
+          console.log('Career stats loaded:', career);
+          setCareerStats(career);
+          break;
+      }
+    } catch (error) {
+      console.error(`Error loading ${activeTab} stats for referee ${referee.RefereeId}:`, error);
+      // Set empty stats on error to prevent indefinite loading
+      switch (activeTab) {
+        case 'Season':
+          setSeasonStats(null);
+          break;
+        case 'Career':
+          setCareerStats(null);
+          break;
+      }
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const renderStatsContent = () => {
+    if (statsLoading) {
+      return (
+        <View style={styles.statsLoading}>
+          <Text style={styles.loadingText}>Loading stats...</Text>
+        </View>
+      );
+    }
+
+    const stats = activeTab === 'Current' ? currentStats :
+                 activeTab === 'Season' ? seasonStats : careerStats;
+
+    if (!stats) {
+      return (
+        <View style={styles.statsEmpty}>
+          <Text style={styles.emptyText}>No {activeTab.toLowerCase()} data available</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.statsGrid}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.totalMatches}</Text>
+          <Text style={styles.statLabel}>TOT</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
+          <Text style={styles.statLabel}>R1</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
+          <Text style={styles.statLabel}>R2</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.menMatches}</Text>
+          <Text style={styles.statLabel}>M</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.womenMatches}</Text>
+          <Text style={styles.statLabel}>W</Text>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={handleRefereePress} activeOpacity={0.7}>
+      <View style={styles.cardHeader}>
+        {referee?.federationCode && (
+          <View style={styles.flagSection}>
+            <FlagImage federationCode={referee.federationCode} size="medium" style={styles.flagLeft} />
+            <Text style={styles.countryCode}>{referee.federationCode}</Text>
+          </View>
+        )}
+        <View style={styles.refereeMainInfo}>
+          <Text style={styles.refereeName}>
+            {referee?.firstName || 'Unknown'}
+          </Text>
+          <Text style={styles.refereeLastName}>
+            {referee?.lastName || 'Referee'}
+          </Text>
+        </View>
+        <View style={styles.cardHeaderRight}>
+          {/* Always show basic R1/R2 totals */}
+          <View style={styles.roleTotals}>
+            <View style={styles.roleTotal}>
+              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
+              <Text style={styles.roleTotalLabel}>R1</Text>
+            </View>
+            <Text style={styles.roleTotalSeparator}>•</Text>
+            <View style={styles.roleTotal}>
+              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
+              <Text style={styles.roleTotalLabel}>R2</Text>
+            </View>
+          </View>
+          <View style={styles.cardActions}>
+            <View style={styles.profileButton}>
+              <Text style={styles.profileButtonText}>Profile</Text>
+            </View>
+            <View style={styles.expandToggle}>
+              <Text
+                style={styles.expandIcon}
+                onPress={onToggle}
+              >
+                {expanded ? '▼' : '▶'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {expanded && (
+        <View style={styles.statsPanel}>
+          <View style={styles.tabBar}>
+            {(['Current', 'Season', 'Career'] as StatsTab[]).map((tab) => (
+              <View
+                key={tab}
+                style={[styles.tab, activeTab === tab && styles.activeTab]}
+                onTouchEnd={() => setActiveTab(tab)}
+              >
+                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                  {tab}
+                </Text>
+              </View>
+            ))}
+          </View>
+          {renderStatsContent()}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
+  tournamentNo,
+  tournamentName,
+  tournamentData,
+  matchData,
+  showHeader = true,
+  headerTitle,
+  onRefresh
+}) => {
+  // Parse tournament data to determine status-based logic
+  const tournament: TournamentInfo | null = React.useMemo(() => {
+    if (tournamentData) {
+      try {
+        return JSON.parse(tournamentData) as TournamentInfo;
+      } catch (error) {
+        console.error('Error parsing tournament data:', error);
+      }
+    }
+    return null;
+  }, [tournamentData]);
+
+  const [referees, setReferees] = useState<Referee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
+
+  const loadReferees = async () => {
+    if (!tournamentNo) return;
+
+    setLoading(true);
+    try {
+      // Roster-first approach for all statuses
+      const rosterOk = await loadRefereesFromAPI();
+      if (!rosterOk) {
+        await loadRefereesFromMatchList();
+      }
+    } catch (error) {
+      console.error('Error loading referees:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRefereesFromAPI = async (): Promise<boolean> => {
+    try {
+      const xml = `<Requests>
+  <Request Type="GetEventRefereeList"
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+    <Filter NoEvent="${tournamentNo}"/>
+  </Request>
+</Requests>`;
+
+      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
+        method: "POST",
+        headers: {
+          "Accept": "application/xml",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ Request: xml })
+      });
+
+      if (response.ok) {
+        const xmlResponse = await response.text();
+        const parsedReferees = parseRefereeXML(xmlResponse);
+        if (parsedReferees.length > 0) {
+          const normalized = parsedReferees.map(r => ({
+            ...r,
+            RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
+          })).filter(r => r.firstName?.trim() || r.lastName?.trim());
+          setReferees(normalized);
+          console.log(`[RosterInit] referees=${normalized.length} withIDs=${normalized.filter(r=>/^\d{6}$/.test(r.RefereeId||'')).length}`);
+          return normalized.length > 0;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error in loadRefereesFromAPI:', error);
+      return false;
+    }
+  };
+
+  const loadRefereesFromMatchList = async (): Promise<void> => {
+    // Simplified version - can be expanded later if needed
+    console.log('Loading referees from match list (fallback)');
+  };
+
+  const parseRefereeXML = (xmlString: string): Referee[] => {
+    const referees: Referee[] = [];
+    const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
+
+    if (refereeMatches) {
+      refereeMatches.forEach(match => {
+        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
+        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
+        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
+        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
+        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
+        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
+
+        // Only add referee if they have at least a name
+        if (firstName.trim() || lastName.trim()) {
+          referees.push({
+            RefereeId: noReferee,
+            firstName,
+            lastName,
+            federationCode,
+            gender,
+            level
+          });
+        }
+      });
+    }
+
+    return referees;
+  };
+
+  useEffect(() => {
+    loadReferees();
+  }, [tournamentNo]);
+
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    }
+    loadReferees();
+  };
+
+  return (
+    <View style={styles.container}>
+      {showHeader && (
+        <View style={styles.panelHeader}>
+          <Text style={styles.panelHeaderText}>
+            {headerTitle || `Referees - ${tournamentName || 'Tournament'}`}
+          </Text>
+        </View>
+      )}
+
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={handleRefresh} />
+        }
+      >
+        {referees.length === 0 && !loading ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No referees found for this tournament</Text>
+          </View>
+        ) : (
+          <View style={styles.refereeList}>
+            {referees.map((referee, index) => (
+              <RefereeCard
+                key={referee.RefereeId || index}
+                referee={referee}
+                tournamentNo={tournamentNo || ''}
+                expanded={expandedRefereeId === referee.RefereeId}
+                onToggle={() => setExpandedRefereeId(
+                  expandedRefereeId === referee.RefereeId ? null : referee.RefereeId
+                )}
+                tournamentInfo={tournament}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  panelHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9fa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  panelHeaderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  refereeList: {
+    gap: 12,
+  },
+  card: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  refereeMainInfo: {
+    flex: 1,
+  },
+  refereeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  refereeLastName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+    marginTop: 2,
+  },
+  flagSection: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  flagLeft: {
+    width: 32,
+    height: 24,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  countryCode: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  roleTotals: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleTotal: {
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  roleTotalCount: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    lineHeight: 14,
+  },
+  roleTotalLabel: {
+    fontSize: 8,
+    color: '#9CA3AF',
+    fontWeight: '500',
+    lineHeight: 10,
+  },
+  roleTotalSeparator: {
+    fontSize: 10,
+    color: '#D1D5DB',
+    paddingHorizontal: 2,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  profileButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+  },
+  profileButtonText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  expandToggle: {
+    paddingHorizontal: 4,
+  },
+  expandIcon: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  // Stats panel styles
+  statsPanel: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  activeTab: {
+    backgroundColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 14,
+    color: colors.text,
+  },
+  activeTabText: {
+    color: colors.background,
+    fontWeight: '600',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  statsLoading: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  statsEmpty: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+});
+
+export default TournamentRefereeList;

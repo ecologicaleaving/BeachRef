@@ -543,9 +543,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>{position}</Text>
-                        <TouchableOpacity onPress={() => handleRefereePress(referee.refereeName, referee.federationCode)}>
-                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{referee.refereeName}</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.refereeName}>{referee.refereeName}</Text>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
@@ -561,9 +559,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>1°</Text>
-                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee1Name, rawMatch.Referee1FederationCode)}>
-                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee1Name}</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.refereeName}>{rawMatch.Referee1Name}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
@@ -578,9 +574,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>2°</Text>
-                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.Referee2Name, rawMatch.Referee2FederationCode)}>
-                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.Referee2Name}</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.refereeName}>{rawMatch.Referee2Name}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
@@ -596,9 +590,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="challenge-referee" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>CR</Text>
-                        <TouchableOpacity onPress={() => handleRefereePress(rawMatch.ChallengeRefereeName, rawMatch.ChallengeRefereeFederationCode)}>
-                          <Text style={[styles.refereeName, styles.refereeNameClickable]}>{rawMatch.ChallengeRefereeName}</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.refereeName}>{rawMatch.ChallengeRefereeName}</Text>
                         <FlagImage
                           countryCode={rawMatch.ChallengeRefereeFederationCode}
                           style={styles.refereeFlag}

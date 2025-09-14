@@ -11,7 +11,7 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-import { Icon } from '../components/Icons/MaterialCommunityIcons';
+import { Icon } from '../components/Icons/FeatherIcons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { TournamentCore } from '../types/tournament-v2';
@@ -29,11 +29,13 @@ import { useTournaments } from '../hooks/useTournaments';
 import { featureFlags } from '../hooks/compatibility/FeatureFlags';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
 import NavigationHeader from '../components/navigation/NavigationHeader';
+import { TournamentBottomMenu } from '../components/navigation/TournamentBottomMenu';
 import { MatchListV2 } from '../components/MatchList/MatchListV2';
 import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
 import { TournamentCard } from '../components/entities/Tournament';
+import { TournamentRefereeList } from '../components/referee/TournamentRefereeList';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Separate component for expanded filters to prevent hooks issues
@@ -284,6 +286,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
   const [refereesLoading, setRefereesLoading] = useState(false);
   
+  // Tab state for bottom menu
+  const [activeTab, setActiveTab] = useState<'schedule' | 'players' | 'officials'>('schedule');
+
   // Filter states for external control of MatchListV2 - preserved during refresh
   // Date filtering disabled - showing all days in timeline
   const [courtFilter, setCourtFilter] = useState<string>('All');
@@ -1245,71 +1250,73 @@ const TournamentDetailScreenContent: React.FC = () => {
           />
         )}
 
-        {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls */}
-        <View style={styles.stickyFiltersWrapper}>
-          {!detailsLoading ? (
-            <View>
-              
-              {/* Filter Controls Section */}
-              <View style={styles.filterControlsSection}>
-                <View style={styles.filterToggleContainer}>
-                  <TouchableOpacity 
-                    style={styles.filterToggleButton}
-                    onPress={() => setShowFilters(!showFilters)}
-                  >
-                    <Text style={styles.filterToggleText}>
-                      {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.resetFiltersButton}
-                    onPress={() => {
-                      setCourtFilter('All');
-                      setGenderFilter('All');
-                      setStatusFilter('All');
-                      setRefereeFilter('All');
-                      setShowRefereeDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.resetFiltersText}>Reset Filters</Text>
-                  </TouchableOpacity>
-                  
+        {/* Index 1: STICKY FILTERS SECTION - Date Navigator + Filter Controls - Only show for schedule tab */}
+        {activeTab === 'schedule' && (
+          <View style={styles.stickyFiltersWrapper}>
+            {!detailsLoading ? (
+              <View>
+
+                {/* Filter Controls Section */}
+                <View style={styles.filterControlsSection}>
+                  <View style={styles.filterToggleContainer}>
+                    <TouchableOpacity
+                      style={styles.filterToggleButton}
+                      onPress={() => setShowFilters(!showFilters)}
+                    >
+                      <Text style={styles.filterToggleText}>
+                        {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.resetFiltersButton}
+                      onPress={() => {
+                        setCourtFilter('All');
+                        setGenderFilter('All');
+                        setStatusFilter('All');
+                        setRefereeFilter('All');
+                        setShowRefereeDropdown(false);
+                      }}
+                    >
+                      <Text style={styles.resetFiltersText}>Reset Filters</Text>
+                    </TouchableOpacity>
+
+                  </View>
+
+                  {/* Expanded Filter Options */}
+                  {showFilters && matches && matches.length > 0 && (
+                    <ExpandedFiltersView
+                      matches={matches}
+                      genderFilter={genderFilter}
+                      setGenderFilter={setGenderFilter}
+                      courtFilter={courtFilter}
+                      setCourtFilter={setCourtFilter}
+                      refereeFilter={refereeFilter}
+                      setRefereeFilter={setRefereeFilter}
+                      showRefereeDropdown={showRefereeDropdown}
+                      setShowRefereeDropdown={setShowRefereeDropdown}
+                      setShowFilters={setShowFilters}
+                      refereeNamesFromAPI={refereeNamesFromAPI}
+                      getTournamentStatus={getTournamentStatus}
+                    />
+                  )}
                 </View>
-                
-                {/* Expanded Filter Options */}
-                {showFilters && matches && matches.length > 0 && (
-                  <ExpandedFiltersView
-                    matches={matches}
-                    genderFilter={genderFilter}
-                    setGenderFilter={setGenderFilter}
-                    courtFilter={courtFilter}
-                    setCourtFilter={setCourtFilter}
-                    refereeFilter={refereeFilter}
-                    setRefereeFilter={setRefereeFilter}
-                    showRefereeDropdown={showRefereeDropdown}
-                    setShowRefereeDropdown={setShowRefereeDropdown}
-                    setShowFilters={setShowFilters}
-                    refereeNamesFromAPI={refereeNamesFromAPI}
-                    getTournamentStatus={getTournamentStatus}
-                  />
-                )}
               </View>
-            </View>
-          ) : (
-            <View style={styles.filtersPlaceholder}>
-              <Text style={styles.filtersPlaceholderText}>
-                {detailsLoading ? 'Loading filters...' : 'Select Schedule tab to see filters'}
-              </Text>
-            </View>
-          )}
-        </View>
+            ) : (
+              <View style={styles.filtersPlaceholder}>
+                <Text style={styles.filtersPlaceholderText}>
+                  {detailsLoading ? 'Loading filters...' : 'Loading tournament data...'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Content Section - Only show when not loading */}
         {!detailsLoading && (
           <View>
-            {/* Show matches directly - no tab system */}
-            {(
+            {/* Schedule Tab Content */}
+            {activeTab === 'schedule' && (
               <View style={[styles.tabContent, styles.tabContentSpacing]}>
                 {/* Live Score Cards for InProgress/Scheduled matches */}
                 {matches && matches.length > 0 && (
@@ -1325,7 +1332,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                         const matchNumber = getMatchNumberForLiveScore(match);
                         const liveScore = matchNumber ? getLiveScore(matchNumber) : null;
                         const liveScoreState = matchNumber ? liveScores[matchNumber] : null;
-                        
+
                         return (
                           <LiveScoreCard
                             key={match.id}
@@ -1341,7 +1348,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                       })}
                   </View>
                 )}
-                
+
                 <MatchListV2
                   matches={matches || []}
                   loading={matchesLoading || matches === null}
@@ -1387,36 +1394,53 @@ const TournamentDetailScreenContent: React.FC = () => {
                 />
               </View>
             )}
-            {/* Ranking system removed - only showing matches */}
+
+            {/* Players Tab Content */}
+            {activeTab === 'players' && (
+              <View style={[styles.tabContent, styles.tabContentSpacing]}>
+                <View style={styles.emptyStateContainer}>
+                  <Text style={styles.emptyStateTitle}>Players & Teams</Text>
+                  <Text style={styles.emptyStateMessage}>
+                    Player and team information will be available here.
+                  </Text>
+                  <Text style={styles.emptyStateSubtext}>
+                    Coming soon...
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Officials Tab Content */}
+            {activeTab === 'officials' && (
+              <View style={[styles.tabContent, styles.tabContentSpacing]}>
+                <TournamentRefereeList
+                  tournamentNo={tournament.visNo}
+                  tournamentName={tournament.name || tournament.title}
+                  tournamentData={JSON.stringify({
+                    visNo: tournament.visNo,
+                    name: tournament.name || tournament.title,
+                    startDate: tournament.dates?.startDate,
+                    endDate: tournament.dates?.endDate,
+                    status: tournament.status
+                  })}
+                  matchData={matches ? JSON.stringify(matches.slice(0, 100)) : undefined}
+                  showHeader={false}
+                  onRefresh={onRefresh}
+                />
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
       
-      {/* Floating Whistle Button */}
-      <TouchableOpacity
-        style={styles.whistleButton}
-        onPress={() => router.push({
-          pathname: '/tournament-ref',
-          params: { 
-            tournamentNo: tournament.visNo,
-            tournamentName: tournament.name || tournament.title,
-            tournamentData: JSON.stringify({
-              visNo: tournament.visNo,
-              name: tournament.name || tournament.title,
-              startDate: tournament.dates.startDate,
-              endDate: tournament.dates.endDate,
-              status: tournament.status
-            }),
-            // Pass already-loaded match data to avoid duplicate API calls
-            matchData: (() => {
-              return matches ? JSON.stringify(matches.slice(0, 100)) : undefined; // Limit to 100 matches to avoid URL size issues
-            })()
-          }
-        })}
-        activeOpacity={0.8}
-      >
-        <Icon name="volleyball" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
+      {/* Tournament Bottom Menu */}
+      <TournamentBottomMenu
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          // Switch between all tabs locally
+          setActiveTab(tab);
+        }}
+      />
     </View>
   );
 };
@@ -1920,26 +1944,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Floating Whistle Button Styles
-  whistleButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  whistleIcon: {
-    fontSize: 24,
-  },
   // Removed unused default switch styles - now handled by TournamentCard component
 
   // Save button styles for filters panel
@@ -1978,6 +1982,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+
+  // Empty state styles for players tab
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 40,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  emptyStateMessage: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 
 });

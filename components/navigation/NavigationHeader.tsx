@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Icon } from '../Icons/MaterialCommunityIcons';
+import { Icon, BackIcon, HomeIcon, RefreshIcon } from '../Icons/FeatherIcons';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import WhistleLogo from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
@@ -144,7 +144,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleBackPress}
               activeOpacity={0.7}
             >
-              <Icon name="arrow-left" size={20} color={titleColor} style={{ marginRight: 4 }} />
+              <BackIcon size={20} color={titleColor} style={{ marginRight: 4 }} />
               <Text style={[styles.backButtonText, { color: titleColor }]}>
                 Back
               </Text>
@@ -156,7 +156,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleHomePress}
               activeOpacity={0.7}
             >
-              <Icon name="home-outline" size={20} color={titleColor} style={{ marginRight: 4 }} />
+              <HomeIcon size={20} color={titleColor} style={{ marginRight: 4 }} />
               <Text style={[styles.homeButtonText, { color: titleColor }]}>
                 Home
               </Text>
@@ -184,7 +184,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleRefresh}
               activeOpacity={0.7}
             >
-              <Icon name="refresh" size={20} color={titleColor} />
+              <RefreshIcon size={20} color={titleColor} />
             </TouchableOpacity>
           )}
           {rightComponent}

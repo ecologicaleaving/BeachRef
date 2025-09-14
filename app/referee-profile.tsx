@@ -16,9 +16,8 @@ import { FlagImage } from '../components/FlagImage';
 import { StatusBadge } from '../components/Status';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { RefereeAnalyticsDashboard } from '../components/RefereeAnalytics/RefereeAnalyticsDashboard';
-import { RefereePerformanceWidget } from '../components/RefereeAnalytics/RefereePerformanceWidget';
 import { useRefereeAnalytics } from '../hooks/useRefereeAnalytics';
-import { colors, designTokens } from '../theme/tokens';
+import { colors } from '../theme/tokens';
 import { ActionIcons } from '../components/Icons/IconLibrary';
 
 /**
@@ -75,7 +74,7 @@ const RefereeProfileScreen: React.FC = () => {
           const url = `https://www.fivb.org/Vis2009/Images/GetImage.asmx?No=${m[1]}&MaxSize=300`;
           setPortraitUrl(url);
         }
-      } catch (e) {
+      } catch {
         // Swallow errors; portrait is optional
       }
     };
@@ -83,10 +82,8 @@ const RefereeProfileScreen: React.FC = () => {
   }, [referee]);
 
   // Get referee analytics
-  const { 
-    data: analyticsData, 
-    isLoading: analyticsLoading, 
-    error: analyticsError,
+  const {
+    data: analyticsData,
     refetch: refetchAnalytics
   } = useRefereeAnalytics(
     referee ? { refereeIds: [referee.id] } : undefined,

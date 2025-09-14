@@ -7,10 +7,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Icon } from '../Icons/FeatherIcons';
 import { Feather } from '@expo/vector-icons';
 import { GlobalStatusBar } from './GlobalStatusBar';
-import WhistleLogo from '../WhistleLogo';
+import { WhistleLogo } from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
 import { GmailStyleSideMenu } from './GmailStyleSideMenu';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
@@ -45,7 +44,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   const router = useRouter();
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
   const [defaultTournament, setDefaultTournament] = useState<any>(null);
-  const [isLoadingDefaultTournament, setIsLoadingDefaultTournament] = useState(true);
 
   // Check if there's a default tournament set
   useEffect(() => {
@@ -56,8 +54,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       } catch (error) {
         console.warn('Error checking default tournament:', error);
         setDefaultTournament(null);
-      } finally {
-        setIsLoadingDefaultTournament(false);
       }
     };
 
@@ -65,8 +61,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   }, []);
 
   // Show contextual menu only when a default tournament is set
-  const isTournamentContext = defaultTournament !== null;
-  const tournamentName = defaultTournament?.name || defaultTournament?.title;
 
   const handleLogoPress = () => {
     router.push('/tournament-selection');

@@ -6,6 +6,11 @@ const config = getDefaultConfig(__dirname);
 // Temporarily enable package exports to fix TanStack Query import issues
 config.resolver.unstable_enablePackageExports = true;
 
+// Alias fbjs to React 19 compatible replacement
+config.resolver.alias = {
+  'fbjs': require.resolve('./fbjs-replacement'),
+};
+
 // Configure transform options to handle modern JS syntax
 config.transformer.getTransformOptions = async (entryPoints, options, getDependenciesOf) => {
   const isWeb = options.platform === 'web';

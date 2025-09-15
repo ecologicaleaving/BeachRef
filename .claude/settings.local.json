@@ -95,7 +95,13 @@
       "Bash(Stop-Process -Force)",
       "Bash(start http://localhost:8081)",
       "Bash(del NUL)",
-      "Bash(npx expo export:*)"
+      "Bash(npx expo export:*)",
+      "Bash(start \"http://localhost:8097\")",
+      "Bash(npx expo r:*)",
+      "Bash(rm:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx --yes @expo/cli@latest start --web --clear)",
+      "Bash(npx --yes @expo/cli@latest start --web)"
     ],
     "deny": [],
     "ask": [],

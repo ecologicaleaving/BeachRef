@@ -4,8 +4,29 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EventEmitter } from 'events';
 import { Alert, Vibration } from 'react-native';
+
+// Simple EventEmitter implementation for React Native compatibility
+class EventEmitter {
+  private events: { [key: string]: Function[] } = {};
+
+  on(event: string, listener: Function): void {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
+
+  off(event: string, listener: Function): void {
+    if (!this.events[event]) return;
+    this.events[event] = this.events[event].filter(l => l !== listener);
+  }
+
+  emit(event: string, ...args: any[]): void {
+    if (!this.events[event]) return;
+    this.events[event].forEach(listener => listener(...args));
+  }
+}
 
 // Assignment Status Types (from Dev Notes)
 export type AssignmentStatus = 

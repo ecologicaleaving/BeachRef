@@ -1,0 +1,10 @@
+{
+  "name": "fbjs-replacement",
+  "version": "1.0.0",
+  "description": "React 19 compatible fbjs replacement",
+  "main": "index.js",
+  "dependencies": {
+    "tiny-invariant": "^1.3.3",
+    "tiny-warning": "^1.0.3"
+  }
+}

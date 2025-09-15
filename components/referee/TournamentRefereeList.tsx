@@ -3,7 +3,7 @@ import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from '
 import { useRouter } from 'expo-router';
 import { Text } from '../Typography/Text';
 import { colors } from '../../theme/tokens';
-import { RefereeStatsService, SeasonStats, CareerStats } from '../../services/RefereeStatsService';
+import { RefereeStatsService, SeasonStats, CareerStats, RefereeMatch } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
 
 interface Referee {
@@ -23,7 +23,7 @@ interface TournamentInfo {
   status: string;
 }
 
-type StatsTab = 'Current' | 'Season' | 'Career';
+type StatsTab = 'Tournament Stats';
 
 interface TournamentRefereeListProps {
   tournamentNo: string;
@@ -51,6 +51,11 @@ const RefereeCard = ({
   const router = useRouter();
 
   const handleRefereePress = () => {
+    // Open stats panel instead of navigating to profile
+    onToggle();
+  };
+
+  const handleProfilePress = () => {
     router.push({
       pathname: '/referee-profile',
       params: {
@@ -66,10 +71,11 @@ const RefereeCard = ({
     });
   };
 
-  const [activeTab, setActiveTab] = useState<StatsTab>('Current');
+  const [activeTab, setActiveTab] = useState<StatsTab>('Tournament Stats');
   const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
   const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
   const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
+  const [recentMatches, setRecentMatches] = useState<RefereeMatch[] | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
   // Load current stats immediately on mount for R1/R2 totals display
@@ -111,42 +117,30 @@ const RefereeCard = ({
         setTimeout(() => reject(new Error('Request timeout')), 30000)
       );
 
-      switch (activeTab) {
-        case 'Current':
-          const currentPromise = RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
-          const current = await Promise.race([currentPromise, timeout]);
-          console.log('Current stats loaded:', current);
-          setCurrentStats(current);
-          break;
-        case 'Season':
-          // Use current calendar year for season stats, not tournament year
-          const currentYear = new Date().getFullYear();
-          const seasonYear = currentYear.toString();
-          console.log('Loading season stats for year:', seasonYear, '(current year)');
-          const seasonPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
-          const season = await Promise.race([seasonPromise, timeout]);
-          console.log('Season stats loaded:', season);
-          setSeasonStats(season);
-          break;
-        case 'Career':
-          console.log('Loading career stats');
-          const careerPromise = RefereeStatsService.getCareerStats(referee.RefereeId);
-          const career = await Promise.race([careerPromise, timeout]);
-          console.log('Career stats loaded:', career);
-          setCareerStats(career);
-          break;
+      // Load tournament stats first (essential)
+      try {
+        const current = await Promise.race([RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo), timeout]);
+        console.log('Tournament stats loaded:', current);
+        setCurrentStats(current);
+      } catch (statsError) {
+        console.error('Error loading tournament stats:', statsError);
+        setCurrentStats(null);
+      }
+
+      // Load recent matches separately (optional)
+      try {
+        const matches = await Promise.race([RefereeStatsService.getRefereeRecentMatches(referee.RefereeId, tournamentNo), timeout]);
+        console.log('Recent matches loaded:', matches);
+        setRecentMatches(matches);
+      } catch (matchesError) {
+        console.error('Error loading recent matches:', matchesError);
+        setRecentMatches(null);
       }
     } catch (error) {
       console.error(`Error loading ${activeTab} stats for referee ${referee.RefereeId}:`, error);
       // Set empty stats on error to prevent indefinite loading
-      switch (activeTab) {
-        case 'Season':
-          setSeasonStats(null);
-          break;
-        case 'Career':
-          setCareerStats(null);
-          break;
-      }
+      setCurrentStats(null);
+      setRecentMatches(null);
     } finally {
       setStatsLoading(false);
     }
@@ -161,38 +155,135 @@ const RefereeCard = ({
       );
     }
 
-    const stats = activeTab === 'Current' ? currentStats :
-                 activeTab === 'Season' ? seasonStats : careerStats;
+    const stats = currentStats;
 
     if (!stats) {
       return (
         <View style={styles.statsEmpty}>
-          <Text style={styles.emptyText}>No {activeTab.toLowerCase()} data available</Text>
+          <Text style={styles.emptyText}>No tournament data available</Text>
         </View>
       );
     }
 
     return (
-      <View style={styles.statsGrid}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.totalMatches}</Text>
-          <Text style={styles.statLabel}>TOT</Text>
+      <View style={styles.statsContent}>
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.totalMatches}</Text>
+            <Text style={styles.statLabel}>TOT</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
+            <Text style={styles.statLabel}>R1</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
+            <Text style={styles.statLabel}>R2</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.menMatches}</Text>
+            <Text style={styles.statLabel}>M</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{stats.womenMatches}</Text>
+            <Text style={styles.statLabel}>W</Text>
+          </View>
         </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.matchesAsFirst}</Text>
-          <Text style={styles.statLabel}>R1</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.matchesAsSecond}</Text>
-          <Text style={styles.statLabel}>R2</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.menMatches}</Text>
-          <Text style={styles.statLabel}>M</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.womenMatches}</Text>
-          <Text style={styles.statLabel}>W</Text>
+
+        {/* Recent Matches Section */}
+        <View style={styles.recentMatchesSection}>
+          <Text style={styles.sectionTitle}>Last 3 Matches</Text>
+          {recentMatches && recentMatches.length > 0 ? (
+            <View style={styles.matchesList}>
+              {recentMatches.map((match, index) => (
+                <View key={match.matchId || index} style={styles.compactMatchCard}>
+                  {/* Match Header - Court, Time, Status */}
+                  <View style={styles.matchHeader}>
+                    <View style={styles.matchTimeInfo}>
+                      <Text style={styles.matchCourt}>Court {match.court}</Text>
+                      <Text style={styles.matchTime}>
+                        {match.dateTime !== 'Unknown' ?
+                          new Date(match.dateTime).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit'
+                          }) + ' ' +
+                          new Date(match.dateTime).toLocaleTimeString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          })
+                          : 'TBD'
+                        }
+                      </Text>
+                    </View>
+                    <Text style={[styles.matchStatus,
+                      match.status === 'Finished' ? styles.statusFinished :
+                      match.status === 'Live' ? styles.statusLive : styles.statusScheduled
+                    ]}>
+                      {match.status}
+                    </Text>
+                  </View>
+
+                  {/* Teams Section */}
+                  <View style={styles.teamsSection}>
+                    <View style={styles.teamRow}>
+                      <FlagImage
+                        countryCode={match.teams.team1.countryCode}
+                        style={styles.teamFlag}
+                      />
+                      <Text style={styles.teamName} numberOfLines={1}>
+                        {match.teams.team1.name}
+                      </Text>
+                    </View>
+                    <Text style={styles.vsText}>vs</Text>
+                    <View style={styles.teamRow}>
+                      <FlagImage
+                        countryCode={match.teams.team2.countryCode}
+                        style={styles.teamFlag}
+                      />
+                      <Text style={styles.teamName} numberOfLines={1}>
+                        {match.teams.team2.name}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Referee Information */}
+                  <View style={styles.refereeSection}>
+                    <Text style={styles.refereeSectionTitle}>Referees:</Text>
+                    <View style={styles.refereeInfo}>
+                      <View style={styles.refereeItem}>
+                        <Text style={styles.refereeRole}>R1:</Text>
+                        <Text style={[styles.refereeName,
+                          match.refereeRole === 'first' ? styles.currentReferee : null
+                        ]}>
+                          {match.referees.referee1.name}
+                        </Text>
+                      </View>
+                      <View style={styles.refereeItem}>
+                        <Text style={styles.refereeRole}>R2:</Text>
+                        <Text style={[styles.refereeName,
+                          match.refereeRole === 'second' ? styles.currentReferee : null
+                        ]}>
+                          {match.referees.referee2.name}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Round and Gender Info */}
+                  <View style={styles.matchFooter}>
+                    <Text style={styles.matchRound}>{match.round}</Text>
+                    <Text style={styles.matchGender}>{match.gender}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.noMatchesContainer}>
+              <Text style={styles.noMatchesText}>No recent matches found</Text>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -229,9 +320,6 @@ const RefereeCard = ({
             </View>
           </View>
           <View style={styles.cardActions}>
-            <View style={styles.profileButton}>
-              <Text style={styles.profileButtonText}>Profile</Text>
-            </View>
             <View style={styles.expandToggle}>
               <Text
                 style={styles.expandIcon}
@@ -246,18 +334,17 @@ const RefereeCard = ({
 
       {expanded && (
         <View style={styles.statsPanel}>
-          <View style={styles.tabBar}>
-            {(['Current', 'Season', 'Career'] as StatsTab[]).map((tab) => (
-              <View
-                key={tab}
-                style={[styles.tab, activeTab === tab && styles.activeTab]}
-                onTouchEnd={() => setActiveTab(tab)}
-              >
-                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-                  {tab}
+          <View style={styles.statsHeader}>
+            <View style={styles.tabBar}>
+              <View style={[styles.tab, styles.activeTab]}>
+                <Text style={[styles.tabText, styles.activeTabText]}>
+                  Tournament Stats
                 </Text>
               </View>
-            ))}
+            </View>
+            <TouchableOpacity style={styles.profileButtonExpanded} onPress={handleProfilePress}>
+              <Text style={styles.profileButtonExpandedText}>Profile</Text>
+            </TouchableOpacity>
           </View>
           {renderStatsContent()}
         </View>
@@ -579,9 +666,27 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
+  statsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   tabBar: {
     flexDirection: 'row',
-    marginBottom: 16,
+    flex: 1,
+    marginRight: 12,
+  },
+  profileButtonExpanded: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+  },
+  profileButtonExpandedText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: '600',
   },
   tab: {
     flex: 1,
@@ -646,6 +751,210 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
+  },
+  // New styles for enhanced tournament stats
+  statsContent: {
+    paddingTop: 8,
+  },
+  recentMatchesSection: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  matchesList: {
+    gap: 12,
+  },
+  // Compact Match Card Styles
+  compactMatchCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  matchHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  matchTimeInfo: {
+    flex: 1,
+  },
+  matchTime: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  teamsSection: {
+    marginBottom: 10,
+    paddingVertical: 8,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+  },
+  teamRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 3,
+  },
+  teamFlag: {
+    width: 20,
+    height: 15,
+    borderRadius: 2,
+    marginRight: 8,
+  },
+  teamName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+    flex: 1,
+  },
+  vsText: {
+    fontSize: 10,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginVertical: 2,
+    fontWeight: '500',
+  },
+  refereeSection: {
+    marginBottom: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 6,
+  },
+  refereeSectionTitle: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  refereeInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  refereeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  refereeRole: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    marginRight: 4,
+    minWidth: 20,
+  },
+  refereeName: {
+    fontSize: 11,
+    color: '#374151',
+    fontWeight: '500',
+    flex: 1,
+  },
+  currentReferee: {
+    color: '#1E40AF',
+    fontWeight: '600',
+  },
+  matchFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  matchInfo: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  matchCourt: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 2,
+  },
+  matchRound: {
+    fontSize: 11,
+    color: '#6B7280',
+  },
+  matchDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 12,
+  },
+  matchRole: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    minWidth: 24,
+    textAlign: 'center',
+  },
+  roleR1: {
+    backgroundColor: '#DBEAFE',
+    color: '#1E40AF',
+  },
+  roleR2: {
+    backgroundColor: '#FCE7F3',
+    color: '#BE185D',
+  },
+  matchGender: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: '#F3F4F6',
+    color: '#374151',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  matchStatus: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    textAlign: 'center',
+    minWidth: 60,
+  },
+  statusFinished: {
+    backgroundColor: '#D1FAE5',
+    color: '#065F46',
+  },
+  statusLive: {
+    backgroundColor: '#FEE2E2',
+    color: '#991B1B',
+  },
+  statusScheduled: {
+    backgroundColor: '#E0E7FF',
+    color: '#3730A3',
+  },
+  noMatchesContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  noMatchesText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
   },
 });
 

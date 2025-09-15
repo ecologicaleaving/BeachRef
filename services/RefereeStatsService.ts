@@ -109,6 +109,38 @@ export interface CareerStats extends RefereeStats {
   seasonsActive: string[];
 }
 
+export interface RefereeMatch {
+  matchId: string;
+  court: string;
+  round: string;
+  status: string;
+  dateTime: string;
+  refereeRole: 'first' | 'second';
+  gender: 'M' | 'W';
+  referees: {
+    referee1: {
+      id: string;
+      name: string;
+    };
+    referee2: {
+      id: string;
+      name: string;
+    };
+  };
+  teams: {
+    team1: {
+      name: string;
+      countryCode: string;
+      players?: string[];
+    };
+    team2: {
+      name: string;
+      countryCode: string;
+      players?: string[];
+    };
+  };
+}
+
 interface TournamentRefereeData {
   tournamentVisNo: string;
   tournamentName: string;
@@ -282,6 +314,100 @@ export class RefereeStatsService {
       return calculateStatsFromParsedMatchesCompat(uniqueMatches);
     } catch (error) {
       console.error('Ã¢ÂÅ’ Error fetching current tournament stats:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get last 3 matches for a referee in a tournament using real VIS API data
+   */
+  static async getRefereeRecentMatches(refereeId: string, tournamentNo: string): Promise<RefereeMatch[] | null> {
+    try {
+      // Get all matches for the tournament using existing CacheService
+      const matchesResult = await CacheService.getMatches(tournamentNo);
+      if (!matchesResult || !matchesResult.matches || matchesResult.matches.length === 0) {
+        console.log('No matches found for tournament:', tournamentNo);
+        return null;
+      }
+
+      // Filter matches where this referee is assigned
+      const refereeMatches = matchesResult.matches.filter(match => {
+        const isReferee1 = match.refereeAssignments?.some(ref =>
+          (ref.refereeId === refereeId || ref.refereeName.includes(refereeId)) &&
+          ref.function === 'First Referee'
+        );
+        const isReferee2 = match.refereeAssignments?.some(ref =>
+          (ref.refereeId === refereeId || ref.refereeName.includes(refereeId)) &&
+          ref.function === 'Second Referee'
+        );
+        return isReferee1 || isReferee2;
+      });
+
+      console.log('Referee matches found:', refereeMatches.length);
+      console.log('Sample match:', refereeMatches[0]);
+
+      if (refereeMatches.length === 0) {
+        return null;
+      }
+
+      // Sort by scheduled date time and get last 3
+      const sortedMatches = refereeMatches
+        .sort((a, b) => {
+          const dateA = new Date(a.scheduledDateTime).getTime();
+          const dateB = new Date(b.scheduledDateTime).getTime();
+          return dateB - dateA; // Most recent first
+        })
+        .slice(0, 3)
+        .map(match => {
+          // Determine referee role for this referee
+          const isFirstRef = match.refereeAssignments?.some(ref =>
+            (ref.refereeId === refereeId || ref.refereeName.includes(refereeId)) &&
+            ref.function === 'First Referee'
+          );
+
+          return {
+            matchId: match.id,
+            court: match.court?.courtNumber || 'TBD',
+            round: match.round || match.roundPhase || 'Pool',
+            status: match.status || 'Scheduled',
+            dateTime: match.scheduledDateTime,
+            refereeRole: isFirstRef ? 'first' : 'second' as 'first' | 'second',
+            gender: match.tournamentId.includes('_W') ? 'W' : 'M' as 'M' | 'W',
+            referees: {
+              referee1: {
+                id: match.refereeAssignments?.find(ref => ref.function === 'First Referee')?.refereeId || '',
+                name: match.refereeAssignments?.find(ref => ref.function === 'First Referee')?.refereeName || 'TBD'
+              },
+              referee2: {
+                id: match.refereeAssignments?.find(ref => ref.function === 'Second Referee')?.refereeId || '',
+                name: match.refereeAssignments?.find(ref => ref.function === 'Second Referee')?.refereeName || 'TBD'
+              }
+            },
+            teams: {
+              team1: {
+                name: match.team1?.teamName || 'Team 1',
+                countryCode: match.team1?.countryCode || 'XX',
+                players: [
+                  match.team1?.player1Name || '',
+                  match.team1?.player2Name || ''
+                ].filter(Boolean)
+              },
+              team2: {
+                name: match.team2?.teamName || 'Team 2',
+                countryCode: match.team2?.countryCode || 'XX',
+                players: [
+                  match.team2?.player1Name || '',
+                  match.team2?.player2Name || ''
+                ].filter(Boolean)
+              }
+            }
+          };
+        });
+
+      console.log('Processed matches:', sortedMatches.length);
+      return sortedMatches;
+    } catch (error) {
+      console.error('Error fetching referee recent matches:', error);
       return null;
     }
   }

@@ -4,12 +4,13 @@
  */
 
 import React from 'react';
-import { Text, Platform } from 'react-native';
+import { Text, Platform, ViewStyle } from 'react-native';
 import { MaterialCommunityIcons as MCIcons } from '@expo/vector-icons';
 import { colors } from '../../theme/tokens';
+import { IconProps as BaseIconProps } from '../../types/props';
 
 // Platform-aware Icon wrapper to avoid web font timeouts
-export const Icon: React.FC<{ name: string; size?: number; color?: string; style?: any }> = ({ name, size = 24, color = '#000', style }) => {
+export const Icon: React.FC<{ name: string; size?: number; color?: string; style?: ViewStyle }> = ({ name, size = 24, color = '#000', style }) => {
   if (Platform.OS === 'web') {
     // Minimal, font-free fallback for web dev to avoid 6000ms font timeouts
     let fallback = '⬤';
@@ -61,10 +62,9 @@ export const IconColors = {
 } as const;
 
 // Predefined icon components for common use cases
-interface IconProps {
+interface IconProps extends Omit<BaseIconProps, 'name'> {
   size?: keyof typeof IconSizes | number;
   color?: keyof typeof IconColors | string;
-  style?: any;
 }
 
 // Navigation icons

@@ -41,21 +41,17 @@ export class TournamentCodeResolver {
    * Resolve tournament_code using layered strategy.
    */
   async resolve(input: TournamentContextInput): Promise<string | null> {
-    console.log('🧩 Resolver[tournament_code] • input', {
-      hasExplicit: !!(input.tournamentCode && input.tournamentCode.trim()),
-      hasMatchData: !!input.matchDataJson,
-      visNo: input.visNo || null,
-    });
+    // Resolving tournament code
     // 1) Explicit code wins
     if (input.tournamentCode && input.tournamentCode.trim()) {
-      console.log('🧩 Resolver[tournament_code] • explicit', input.tournamentCode.trim());
+      // Using explicit tournament code
       return input.tournamentCode.trim();
     }
 
     // 2) Extract from match data if provided
     const codeFromMatches = this.extractFromMatches(input.matchDataJson);
     if (codeFromMatches) {
-      console.log('🧩 Resolver[tournament_code] • from matches', codeFromMatches);
+      // Extracted tournament code from matches
       return codeFromMatches;
     }
 
@@ -65,13 +61,13 @@ export class TournamentCodeResolver {
 
     if (this.cache.has(visNo)) {
       const cached = this.cache.get(visNo)!;
-      console.log('🧩 Resolver[tournament_code] • from cache', { visNo, cached });
+      // Retrieved tournament code from cache
       return cached;
     }
 
     const code = await this.lookupInSupabase(visNo);
     if (code) this.cache.set(visNo, code);
-    console.log('🧩 Resolver[tournament_code] • from supabase', { visNo, code: code || null });
+    // Retrieved tournament code from database
     return code;
   }
 

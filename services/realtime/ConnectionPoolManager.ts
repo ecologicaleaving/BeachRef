@@ -262,10 +262,10 @@ export class ConnectionPoolManager {
 
   private handleAppStateChange(nextAppState: string): void {
     if (nextAppState === 'background') {
-      console.log('App went to background - preparing connections for background mode');
+      // App went to background
       this.setConnectionState(ConnectionState.DISCONNECTED);
     } else if (nextAppState === 'active') {
-      console.log('App became active - resuming connections');
+      // App became active
       // Connection resumption will be handled by the orchestrator
     }
   }

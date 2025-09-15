@@ -152,26 +152,7 @@ export class NewAnalyticsService {
         'Content-Type': 'application/json',
         'x-client-info': 'vistest-mobile/1.0',
       } as const;
-      console.log('📝 analytics-request', {
-        method: 'GET',
-        host,
-        path: pathWithQuery,
-        headers: requestHeaders,
-        params: {
-          startDate: queryUrl.searchParams.get('startDate'),
-          endDate: queryUrl.searchParams.get('endDate'),
-          refereeIds: queryUrl.searchParams.get('refereeIds'),
-          tournamentCode: queryUrl.searchParams.get('tournamentCode'),
-          federationCode: queryUrl.searchParams.get('federationCode'),
-        },
-        // Raw HTTP preview
-        raw:
-`GET ${pathWithQuery} HTTP/1.1\n`+
-`Host: ${host}\n`+
-`Authorization: Bearer ${maskedToken}\n`+
-`Content-Type: application/json\n`+
-`x-client-info: vistest-mobile/1.0\n`,
-      });
+      // Analytics request being sent
 
       const response = await fetch(fullUrl, {
         method: 'GET',
@@ -189,8 +170,7 @@ export class NewAnalyticsService {
       }
 
       const raw = await response.text();
-      // Log raw (truncate to avoid huge logs)
-      console.log('📥 analytics-query raw', raw.slice(0, 2000));
+      // Process raw analytics response
 
       let parsed: any;
       try {
@@ -201,10 +181,7 @@ export class NewAnalyticsService {
       }
 
       const results: AnalyticsQueryResponse[] = parsed?.data ?? parsed?.results ?? [];
-      console.log('📊 analytics-query parsed', {
-        count: Array.isArray(results) ? results.length : 'n/a',
-        meta: parsed?.meta || null,
-      });
+      // Analytics query parsed successfully
 
       return Array.isArray(results) ? results : [];
     } catch (error) {
@@ -223,13 +200,13 @@ export class NewAnalyticsService {
    * Query analytics using legacy service (fallback)
    */
   private async queryLegacyAnalytics(params: AnalyticsQueryParams): Promise<AnalyticsQueryResponse[]> {
-    console.log('🧮 legacy analytics params', params);
+    // Legacy analytics parameters processed
     const legacyResults = await this.legacyService.aggregateRefereeAnalytics(
       params.startDate,
       params.endDate,
       params.refereeIds
     );
-    console.log('🧮 legacy analytics result count', legacyResults?.length || 0);
+    // Legacy analytics results retrieved
 
     // Transform legacy results to new interface format
     return legacyResults.map(result => ({

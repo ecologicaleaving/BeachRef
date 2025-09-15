@@ -46,12 +46,7 @@ export class RefereeIdResolver {
    */
   async resolve(identity: RefereeIdentity): Promise<string | null> {
     if (!this.supabase) return null;
-    console.log('🧭 Resolver[referee_id] • input', {
-      visRefereeNo: identity.visRefereeNo || null,
-      firstName: identity.firstName || null,
-      lastName: identity.lastName || null,
-      federationCode: identity.federationCode || null,
-    });
+    // Resolving referee ID from identity
 
     // 1) By vis_referee_no if present
     const vis = identity.visRefereeNo?.trim();
@@ -68,7 +63,7 @@ export class RefereeIdResolver {
         if (!error && data?.id) {
           const idStr = String(data.id);
           this.cacheByVis.set(vis, idStr);
-          console.log('🧭 Resolver[referee_id] • by vis_referee_no', { vis, id: idStr });
+          // Resolved referee ID by VIS referee number
           return idStr;
         }
       } catch {}
@@ -97,7 +92,7 @@ export class RefereeIdResolver {
         if (!error && data && data.length > 0) {
           const idStr = String(data[0].id);
           this.cacheByNameFed.set(key, idStr);
-          console.log('🧭 Resolver[referee_id] • by name+fed', { key, id: idStr });
+          // Resolved referee ID by name and federation
           return idStr;
         }
       } catch {}

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
 import { ConnectionState } from '../services/RealtimePerformanceMonitor';
+import { BaseComponentProps } from '../types/props';
 
-interface ManualRefreshButtonProps {
+interface ManualRefreshButtonProps extends BaseComponentProps {
   onRefresh: () => void;
   connectionState: ConnectionState;
   lastUpdated?: Date | null;
-  disabled?: boolean;
   showLastUpdated?: boolean;
   enableDiagnostics?: boolean;
   tournamentId?: string;
@@ -17,14 +17,20 @@ const ManualRefreshButton: React.FC<ManualRefreshButtonProps> = ({
   connectionState,
   lastUpdated,
   disabled = false,
+  loading = false,
   showLastUpdated = true,
   enableDiagnostics = false,
   tournamentId,
+  style,
+  accessibilityLabel,
+  accessibilityHint,
+  testID,
+  ...restProps
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
-    if (disabled || isRefreshing) return;
+    if (disabled || isRefreshing || loading) return;
 
     setIsRefreshing(true);
     try {
@@ -79,7 +85,7 @@ const ManualRefreshButton: React.FC<ManualRefreshButtonProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]} testID={testID}>
       {shouldShowRefreshButton() && (
         <TouchableOpacity
           style={[
@@ -88,7 +94,10 @@ const ManualRefreshButton: React.FC<ManualRefreshButtonProps> = ({
             connectionState === ConnectionState.ERROR && styles.errorButton,
           ]}
           onPress={handleRefresh}
-          disabled={disabled || isRefreshing}
+          disabled={disabled || isRefreshing || loading}
+          accessibilityLabel={accessibilityLabel || `Refresh data - ${getRefreshButtonText()}`}
+          accessibilityHint={accessibilityHint || "Manually refresh tournament data"}
+          accessibilityRole="button"
         >
           {isRefreshing ? (
             <ActivityIndicator size="small" color="#FFFFFF" style={styles.spinner} />
@@ -130,7 +139,7 @@ export const CompactRefreshButton: React.FC<{
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
-    if (disabled || isRefreshing) return;
+    if (disabled || isRefreshing || loading) return;
 
     setIsRefreshing(true);
     try {

@@ -520,7 +520,7 @@ export class VisResponseParser {
           
           duration = totalPlayingTime + breakTimeMinutes;
           
-          console.log(`⏱️ Duration calculation: ${totalPlayingTime}min playing + ${breakTimeMinutes}min breaks = ${duration}min total`);
+          // Duration calculation: ${totalPlayingTime}min playing + ${breakTimeMinutes}min breaks = ${duration}min total
         }
       } catch (error) {
         console.warn('Error calculating duration from set times:', error);

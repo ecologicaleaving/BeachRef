@@ -1007,7 +1007,7 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`🏐 Season query for ${refereeNo} (${role}): ${seasonStartDate} to ${seasonEndDate}`);
+      // Querying season stats
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -1022,7 +1022,7 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
-        console.log(`🏐 Season query returned ${matches.length} total matches for ${refereeNo} (${role})`);
+        // Season query returned results
         
         // Client-side date filtering since VIS API ignores date filters
         const seasonStart = new Date(seasonStartDate);
@@ -1032,9 +1032,9 @@ export class RefereeStatsService {
           return matchDate >= seasonStart && matchDate <= seasonEnd;
         });
         
-        console.log(`🏐 After client-side filtering: ${filteredMatches.length} matches for ${season} season (${seasonStartDate} to ${seasonEndDate})`);
+        // Filtered matches for season
         if (filteredMatches.length > 0) {
-          console.log('Sample filtered season match dates:', filteredMatches.slice(0, 3).map(m => m.LocalDateTime || m.date));
+          // Sample season match dates filtered
         }
         
         // Replace matches with filtered matches for subsequent processing
@@ -1101,7 +1101,7 @@ export class RefereeStatsService {
   </Request>
 </Requests>`;
 
-      console.log(`🏐 Career query for ${refereeNo} (${role}): ${careerStartDate} to ${careerEndDate}`);
+      // Querying career stats
 
       const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
         method: "POST",
@@ -1116,9 +1116,9 @@ export class RefereeStatsService {
       if (response.ok) {
         const xmlResponse = await response.text();
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
-        console.log(`🏐 Career query returned ${matches.length} matches for ${refereeNo} (${role})`);
+        // Career query returned results
         if (matches.length > 0) {
-          console.log('Sample career match dates:', matches.slice(0, 3).map(m => m.date || m.LocalDateTime));
+          // Sample career match dates
         }
         // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
         try {

@@ -79,14 +79,14 @@ const TournamentSelectionScreen: React.FC = () => {
 
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
-        console.log('[TournamentSelection] Attempting VIS API call...');
+        // Attempting VIS API call
         const response = await visApi.getEventList({
           tournamentType: 'BPT',
           maxResults: 50
         });
 
         if (response.success && response.xmlData) {
-          console.log('[TournamentSelection] VIS API success, parsing tournaments...');
+          // VIS API success, parsing tournaments
           // Parse manually
           const visTournaments = parseXMLDirectly(response.xmlData);
 
@@ -99,18 +99,18 @@ const TournamentSelectionScreen: React.FC = () => {
           // Enhance tournaments with real tournament numbers in background
           enhanceTournamentsInBackground(finalTournaments, visApi);
         } else {
-          console.log('[TournamentSelection] VIS API returned no data, using fallback...');
+          // VIS API returned no data, using fallback
           throw new Error('VIS API returned no data');
         }
       } catch (apiError) {
-        console.log('[TournamentSelection] VIS API failed, using fallback tournaments:', apiError);
+        // VIS API failed, using fallback tournaments
 
         // Load fallback tournaments when VIS API is down
         const fallbackTournaments = await FallbackTournamentService.getTournaments();
         setTournaments(fallbackTournaments);
 
         // Show user that we're using cached/fallback data
-        console.log('[TournamentSelection] Loaded', fallbackTournaments.length, 'fallback tournaments');
+        // Loaded fallback tournaments
       }
       
     } catch (err) {
@@ -227,20 +227,19 @@ const TournamentSelectionScreen: React.FC = () => {
   const parseXMLDirectly = (xmlData: string): TournamentCore[] => {
     const tournaments: TournamentCore[] = [];
 
-    console.log('[TournamentSelection] Parsing XML data, length:', xmlData.length);
-    console.log('[TournamentSelection] XML preview:', xmlData.substring(0, 500));
+    // Parsing XML data
 
     try {
       // Fix regex: VIS XML uses self-closing Event tags like <Event ... />
       const eventRegex = /<Event[^>]*\/>/gs;
       const eventMatches = xmlData.match(eventRegex) || [];
-      console.log('[TournamentSelection] Found Event matches:', eventMatches.length);
+      // Found Event matches
 
       if (eventMatches.length === 0) {
         // Try alternative regex patterns
         const alternativeRegex = /<Event[^>]*>/gs;
         const alternativeMatches = xmlData.match(alternativeRegex) || [];
-        console.log('[TournamentSelection] Alternative Event matches:', alternativeMatches.length);
+        // Alternative Event matches
       }
       
       eventMatches.forEach((eventMatch, index) => {
@@ -311,7 +310,7 @@ const TournamentSelectionScreen: React.FC = () => {
     // Load tournaments directly from API - inline to avoid dependency issues
     const runDirectApiCall = async () => {
       try {
-        console.log('🚀 TournamentSelectionScreen: Starting tournament load...');
+        // Starting tournament load
         setInitialLoading(true);
         setError(null);
         
@@ -331,17 +330,13 @@ const TournamentSelectionScreen: React.FC = () => {
         
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
         
-        console.log('TournamentSelection: Making API call with tournamentType: BPT...');
+        // Making API call with tournamentType: BPT
         const response = await visApi.getEventList({
           tournamentType: 'BPT',
           maxResults: 50
         });
         
-        console.log('TournamentSelection: API response received:', {
-          success: response.success,
-          hasData: !!response.xmlData,
-          dataLength: response.xmlData?.length || 0
-        });
+        // API response received
         
         if (response.success && response.xmlData) {
           try {
@@ -355,14 +350,14 @@ const TournamentSelectionScreen: React.FC = () => {
             
             // No need for dynamic categories - showing all tournaments
           } catch (parseError) {
-            console.log('[TournamentSelection] Parse error, using fallback:', parseError);
+            // Parse error, using fallback
 
             // Load fallback tournaments when parsing fails
             const fallbackTournaments = await FallbackTournamentService.getTournaments();
             setTournaments(fallbackTournaments);
           }
         } else {
-          console.log('[TournamentSelection] No API data, using fallback...');
+          // No API data, using fallback
 
           // Load fallback tournaments when API returns no data
           const fallbackTournaments = await FallbackTournamentService.getTournaments();
@@ -370,7 +365,7 @@ const TournamentSelectionScreen: React.FC = () => {
         }
         
       } catch (error) {
-        console.log('[TournamentSelection] Main catch block, using fallback:', error);
+        // Main catch block, using fallback
 
         // Final fallback if everything else fails
         try {
@@ -577,7 +572,7 @@ const TournamentSelectionScreen: React.FC = () => {
 
   // Group tournaments by season and month hierarchy
   const groupedTournaments = React.useMemo(() => {
-    console.log('[TournamentSelection] Grouping tournaments, total count:', tournaments.length);
+    // Grouping tournaments
     const seasonGroups: { [seasonKey: string]: { [monthKey: string]: TournamentCore[] } } = {};
     
     // Filter tournaments

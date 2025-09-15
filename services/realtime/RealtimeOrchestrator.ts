@@ -79,7 +79,7 @@ export class RealtimeOrchestrator {
   initialize(): void {
     if (this.isInitialized) return;
 
-    console.log('Initializing Realtime Orchestrator...');
+    // Initializing Realtime Orchestrator
 
     // Initialize sub-services
     this.connectionManager.initialize();
@@ -260,7 +260,7 @@ export class RealtimeOrchestrator {
    * Cleanup all resources
    */
   async cleanup(): Promise<void> {
-    console.log('Cleaning up Realtime Orchestrator...');
+    // Cleaning up Realtime Orchestrator
 
     await this.subscriptionManager.cleanup();
     this.connectionManager.cleanup();
@@ -284,7 +284,7 @@ export class RealtimeOrchestrator {
     liveMatchesOnly: boolean,
     onUpdate?: SubscriptionEventHandler
   ): Promise<string> {
-    console.log(`Activating fallback polling for tournament ${tournamentNo}`);
+    // Activating fallback polling
 
     const success = await RealtimeFallbackService.startPollingFallback(
       tournamentNo,
@@ -311,7 +311,7 @@ export class RealtimeOrchestrator {
 
     if (this.config.enableFallback) {
       // The fallback activation will be handled per-subscription basis
-      console.log('Fallback services are available for affected subscriptions');
+      // Fallback services available
     }
   }
 
@@ -341,7 +341,7 @@ export class RealtimeOrchestrator {
 
   private async handleFallbackUpdate(tournamentNo: string, matches: BeachMatch[]): Promise<void> {
     try {
-      console.log(`Fallback update received for tournament ${tournamentNo}: ${matches.length} matches`);
+      // Fallback update received
 
       if (this.config.cacheInvalidationEnabled) {
         await this.invalidateMatchCache(tournamentNo);

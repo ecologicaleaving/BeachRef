@@ -65,17 +65,14 @@ export class DefaultTournamentService {
   static async getDefaultTournament(): Promise<TournamentCore | null> {
     try {
       const stored = await AsyncStorage.getItem(DEFAULT_TOURNAMENT_KEY);
-      console.log('DefaultTournamentService: getDefaultTournament - stored value:', stored ? 'found' : 'null');
       if (!stored) return null;
 
       const defaultTournament = JSON.parse(stored) as TournamentCore & { setAt: string };
-      console.log('DefaultTournamentService: getDefaultTournament - parsed:', defaultTournament.name, 'visNo:', defaultTournament.visNo);
 
       // Check if tournament has finished and auto-clear if so
       if (defaultTournament.dates?.startDate || defaultTournament.dates?.endDate) {
         const status = this.getTournamentStatus(defaultTournament.dates.startDate, defaultTournament.dates.endDate);
         if (status === 'COMPLETED') {
-          console.log('DefaultTournamentService: Tournament has finished, auto-clearing...');
           await this.clearDefaultTournament();
           return null;
         }
@@ -92,11 +89,8 @@ export class DefaultTournamentService {
    * Clear the default tournament
    */
   static async clearDefaultTournament(): Promise<void> {
-    console.log('DefaultTournamentService: Clearing default tournament...');
     await AsyncStorage.removeItem(DEFAULT_TOURNAMENT_KEY);
-    console.log('DefaultTournamentService: Default tournament cleared from storage');
     this.notifyListeners(null);
-    console.log('DefaultTournamentService: Notified', listeners.length, 'listeners of clearing');
   }
 
   /**

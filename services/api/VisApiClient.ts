@@ -202,17 +202,7 @@ export class VisApiClient implements IVisApiClient {
       const xmlRequest = this.buildGetEventListXml(optimizedRequest);
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT_LIST, xmlRequest);
       
-      // Log response for debugging
-      if (response.success && response.xmlData) {
-        console.log('GetEventList response received, length:', response.xmlData.length);
-        console.log('Response preview:', response.xmlData.substring(0, 200));
-        
-        // Count Event elements
-        const eventCount = (response.xmlData.match(/<Event[^>]*>/g) || []).length;
-        console.log('Found', eventCount, 'Event elements');
-      } else {
-        console.log('GetEventList failed:', response.error);
-      }
+      // Response validation and processing
       
       this.updateMonitor(VisApiEndpoint.GET_EVENT_LIST, true, Date.now() - startTime);
       return response;
@@ -612,8 +602,7 @@ export class VisApiClient implements IVisApiClient {
       return batchResponse;
       
     } catch (error) {
-      // If batch request completely fails, fallback to individual requests
-      console.warn('Batch request failed, falling back to individual requests:', error);
+      // Batch request failed, using individual request fallback
       return this.fallbackToIndividualRequests(batchItems);
     }
   }
@@ -707,8 +696,7 @@ export class VisApiClient implements IVisApiClient {
       try {
         const response = await this.makeHttpRequest(xmlRequest);
         
-        // Request successful
-
+          // Request successful
         return {
           success: true,
           xmlData: response,
@@ -720,7 +708,7 @@ export class VisApiClient implements IVisApiClient {
       } catch (error) {
         lastError = error as Error;
         
-        // Log errors in non-production environments only
+        // Track error for retry logic
         
         // Don't retry on last attempt
         if (attempt < this.retryConfig.maxAttempts) {
@@ -870,8 +858,7 @@ export class VisApiClient implements IVisApiClient {
     
     const xmlRequest = `<Request Type="GetEventList" Fields="${this.escapeXmlAttribute(fields)}">${filterElement}</Request>`;
     
-    // Log the built XML request for debugging
-    console.log('GetEventList XML request:', xmlRequest);
+    // Built XML request for GetEventList
     
     return xmlRequest;
   }

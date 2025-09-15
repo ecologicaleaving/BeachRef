@@ -192,14 +192,38 @@ export const ActionIcons = {
   )),
   
   Search: React.memo((props: CommonIconProps) => (
-    <Icon 
-      category="action" 
-      name="search" 
+    <Icon
+      category="action"
+      name="search"
       theme="default"
       colorKey="secondary"
       isInteractive={true}
       accessibilityLabel="Search"
-      {...props} 
+      {...props}
+    />
+  )),
+
+  Close: React.memo((props: CommonIconProps) => (
+    <Icon
+      category="action"
+      name="close"
+      theme="default"
+      colorKey="secondary"
+      isInteractive={true}
+      accessibilityLabel="Close"
+      {...props}
+    />
+  )),
+
+  Profile: React.memo((props: CommonIconProps) => (
+    <Icon
+      category="action"
+      name="profile"
+      theme="default"
+      colorKey="primary"
+      isInteractive={true}
+      accessibilityLabel="View Profile"
+      {...props}
     />
   )),
 };

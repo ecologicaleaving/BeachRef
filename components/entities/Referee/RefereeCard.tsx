@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { colors } from '../../../theme/tokens';
 import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';
+import { RefereeStatsModal } from './RefereeStatsModal';
 
 export interface RefereeCardProps {
   referee: EventReferee | RefereeOfficial;
@@ -41,22 +42,18 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
   assignmentCount = 0,
 }) => {
   const router = useRouter();
-  
-  // Handle referee card press to navigate to profile
+  const [statsModalVisible, setStatsModalVisible] = useState(false);
+
+  // Handle referee card press to show stats modal
   const handleRefereePress = () => {
     // If custom onPress is provided, use it
     if (onPress) {
       onPress(referee);
       return;
     }
-    
-    // Otherwise, navigate to referee profile
-    router.push({
-      pathname: '/referee-profile',
-      params: {
-        refereeData: JSON.stringify(referee)
-      }
-    });
+
+    // Otherwise, show stats modal
+    setStatsModalVisible(true);
   };
   
   // Get referee analytics data if statistics should be shown
@@ -343,6 +340,13 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
           {getAssignmentDisplay()}
         </View>
       </View>
+
+      {/* Stats Modal */}
+      <RefereeStatsModal
+        referee={referee}
+        visible={statsModalVisible}
+        onClose={() => setStatsModalVisible(false)}
+      />
     </TouchableOpacity>
   );
 };

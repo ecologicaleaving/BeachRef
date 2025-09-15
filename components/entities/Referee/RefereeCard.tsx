@@ -24,6 +24,7 @@ export interface RefereeCardProps {
   compact?: boolean;
   variant?: 'default' | 'assignment' | 'selection' | 'analytics';
   assignmentCount?: number;
+  disableStatsModal?: boolean; // When true, uses onPress or navigation instead of stats modal
 }
 
 /**
@@ -40,19 +41,31 @@ export const RefereeCard: React.FC<RefereeCardProps> = ({
   compact = false,
   variant = 'default',
   assignmentCount = 0,
+  disableStatsModal = false,
 }) => {
   const router = useRouter();
   const [statsModalVisible, setStatsModalVisible] = useState(false);
 
   // Handle referee card press to show stats modal
   const handleRefereePress = () => {
-    // If custom onPress is provided, use it
-    if (onPress) {
-      onPress(referee);
+    // If stats modal is disabled, use custom onPress or navigate to profile
+    if (disableStatsModal) {
+      if (onPress) {
+        onPress(referee);
+        return;
+      }
+
+      // Navigate to referee profile
+      router.push({
+        pathname: '/referee-profile',
+        params: {
+          refereeData: JSON.stringify(referee)
+        }
+      });
       return;
     }
 
-    // Otherwise, show stats modal
+    // Default behavior: show stats modal
     setStatsModalVisible(true);
   };
   

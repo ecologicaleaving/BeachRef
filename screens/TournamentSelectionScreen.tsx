@@ -877,7 +877,7 @@ const TournamentSelectionScreen: React.FC = () => {
         <TournamentCard
           tournament={item}
           onPress={() => handleTournamentPress(item)}
-          showDefaultToggle={true}
+          showDefaultToggle={false}
           showStatusBadge={true}
           compact={false}
         />
@@ -1016,40 +1016,48 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  // Render LIVE tournaments section (without header)
+  // Render LIVE tournaments section with header and styled container
   const renderLiveTournaments = () => {
     if (liveTournaments.length === 0) return null;
 
     return (
-      <View style={styles.liveTournamentsSection}>
-        {liveTournaments.length === 1 ? (
-          <TournamentCard 
-            tournament={liveTournaments[0]}
-            onPress={() => handleTournamentPress(liveTournaments[0])}
-            showDefaultToggle={true}
-            showStatusBadge={true}
-            compact={false}
-          />
-        ) : (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.liveCarouselContainer}
-            style={styles.liveCarousel}
-          >
-            {liveTournaments.map((tournament, index) => (
-              <View key={tournament.id} style={styles.liveCarouselItem}>
-                <TournamentCard 
-                  tournament={tournament}
-                  onPress={() => handleTournamentPress(tournament)}
-                  showDefaultToggle={true}
-                  showStatusBadge={true}
-                  compact={true}
-                />
-              </View>
-            ))}
-          </ScrollView>
-        )}
+      <View style={styles.liveTournamentsWrapper}>
+        {/* Live Tournaments Section Header */}
+        <View style={[styles.sectionHeader, styles.liveSectionHeader]}>
+          <View style={styles.liveIndicator} />
+          <Text style={styles.liveSectionTitle}>Live Tournaments</Text>
+        </View>
+
+        <View style={styles.liveTournamentsSection}>
+          {liveTournaments.length === 1 ? (
+            <TournamentCard
+              tournament={liveTournaments[0]}
+              onPress={() => handleTournamentPress(liveTournaments[0])}
+              showDefaultToggle={false}
+              showStatusBadge={true}
+              compact={false}
+            />
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.liveCarouselContainer}
+              style={styles.liveCarousel}
+            >
+              {liveTournaments.map((tournament, index) => (
+                <View key={tournament.id} style={styles.liveCarouselItem}>
+                  <TournamentCard
+                    tournament={tournament}
+                    onPress={() => handleTournamentPress(tournament)}
+                    showDefaultToggle={false}
+                    showStatusBadge={true}
+                    compact={true}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
       </View>
     );
   };
@@ -1123,9 +1131,6 @@ const TournamentSelectionScreen: React.FC = () => {
         showStatusBar={false}
       />
 
-      {/* Live tournaments carousel - outside of SectionList */}
-      {renderLiveTournaments()}
-
       {/* Loading overlay */}
       {tournamentLoading && (
         <View
@@ -1148,12 +1153,34 @@ const TournamentSelectionScreen: React.FC = () => {
         </View>
       ) : (
         <SectionList
-          sections={tournamentSections}
+          sections={[
+            // Add sticky "All Tournaments" header as first section
+            {
+              id: 'all-tournaments-header',
+              title: 'All Tournaments',
+              type: 'header' as any,
+              data: [],
+              expanded: true,
+              tournamentCount: 0
+            },
+            ...tournamentSections
+          ]}
           keyExtractor={(item, index) => item.visNo || item.id || `tournament-${index}`}
           renderItem={renderTournament}
-          renderSectionHeader={renderSectionHeader}
+          renderSectionHeader={(info) => {
+            if (info.section.id === 'all-tournaments-header') {
+              return (
+                <View style={[styles.sectionHeader, styles.allTournamentsSectionHeaderSticky]}>
+                  <Icon name="format-list-bulleted" size={20} color="#1B365D" />
+                  <Text style={styles.allTournamentsSectionTitle}>All Tournaments</Text>
+                </View>
+              );
+            }
+            return renderSectionHeader(info);
+          }}
+          ListHeaderComponent={renderLiveTournaments}
           showsVerticalScrollIndicator={false}
-          stickySectionHeadersEnabled={false}
+          stickySectionHeadersEnabled={true}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -1324,12 +1351,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
-  // Legacy live indicator for backward compatibility
+  // Live indicator red dot
   liveIndicator: {
-    backgroundColor: colors.success,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#DC2626',
   },
   liveText: {
     color: '#FFFFFF',
@@ -1600,7 +1627,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    marginTop: 20,
+    marginTop: 20, // Restore original margin
     marginBottom: 0,
     borderBottomWidth: 2,
     borderBottomColor: '#1976D2',
@@ -1613,7 +1640,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 10, // Highest z-index for season headers
+    zIndex: 10,
   },
   expandedSeasonHeader: {
     backgroundColor: '#BBDEFB',
@@ -1639,7 +1667,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginTop: 8,
+    marginTop: 8, // Restore original margin
     marginBottom: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -1652,7 +1680,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 2, // Lowest z-index for month headers
+    zIndex: 2,
   },
   expandedMonthHeader: {
     backgroundColor: '#EFF6FF',
@@ -1694,11 +1723,62 @@ const styles = StyleSheet.create({
   tournamentCardWrapper: {
     // Pressable wrapper for tournament cards
   },
+  // LIVE tournaments wrapper with background and shadow
+  liveTournamentsWrapper: {
+    backgroundColor: '#F0F8FF',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    paddingVertical: 8,
+    shadowColor: '#1F2937',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  // Section Headers
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  liveSectionHeader: {
+    backgroundColor: 'transparent',
+  },
+  allTournamentsSectionHeader: {
+    backgroundColor: 'transparent',
+    marginTop: 8,
+  },
+  allTournamentsSectionHeaderSticky: {
+    backgroundColor: '#FAFBFC',
+    borderBottomWidth: 0,
+    shadowColor: '#1F2937',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 5, // Lower than season headers
+    zIndex: 5,
+  },
+  // Section Titles
+  liveSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#DC2626',
+    letterSpacing: 0.5,
+  },
+  allTournamentsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1B365D',
+    letterSpacing: 0.5,
+  },
   // LIVE tournaments section styles
   liveTournamentsSection: {
-    paddingHorizontal: 24,
-    marginTop: 16,
-    marginBottom: 16,
+    paddingHorizontal: 8,
+    marginTop: 4,
+    marginBottom: 4,
   },
   liveCarousel: {
     marginHorizontal: -12, // Offset the padding to allow edge-to-edge scrolling

@@ -1574,6 +1574,11 @@ const TournamentDetailScreenContent: React.FC = () => {
             {/* Officials Tab Content */}
             {activeTab === 'officials' && (
               <View style={[styles.tabContent, styles.tabContentSpacing]}>
+                {/* Referees List Title */}
+                <View style={styles.refereesListTitleContainer}>
+                  <Text style={styles.refereesListTitle}>Referees List</Text>
+                </View>
+
                 <TournamentRefereeList
                   tournamentNo={tournament.visNo}
                   tournamentName={tournament.name || tournament.title}
@@ -2183,6 +2188,19 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+
+  // Referees List Title Styles
+  refereesListTitleContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  refereesListTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1B365D',
+    letterSpacing: 0.5,
   },
 
 });

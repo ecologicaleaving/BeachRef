@@ -270,10 +270,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
           };
         }
-        // Other finals are Bronze Medal matches
-        else {
+        // Check if it's specifically a Bronze Medal match
+        else if (roundName.toLowerCase().includes('bronze') ||
+                 roundName.toLowerCase().includes('third place') ||
+                 roundName.toLowerCase().includes('3rd place')) {
           return {
             round: 'BRONZE',
+            phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
+          };
+        }
+        // Other finals (regular finals, semifinals, etc.) use the name as-is
+        else {
+          return {
+            round: roundName,
             phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
           };
         }

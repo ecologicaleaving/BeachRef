@@ -770,13 +770,19 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const renderTournament = ({ item }: { item: TournamentCore }) => {
     return (
-      <TournamentCard 
-        tournament={item} 
+      <TouchableOpacity
         onPress={() => handleTournamentPress(item)}
-        showDefaultToggle={true}
-        showStatusBadge={true}
-        compact={false}
-      />
+        activeOpacity={0.7}
+        style={styles.tournamentCardWrapper}
+      >
+        <TournamentCard
+          tournament={item}
+          onPress={() => {}} // Empty onPress since TouchableOpacity handles it
+          showDefaultToggle={true}
+          showStatusBadge={true}
+          compact={false}
+        />
+      </TouchableOpacity>
     );
   };
 
@@ -1083,6 +1089,8 @@ const TournamentSelectionScreen: React.FC = () => {
                                         showsVerticalScrollIndicator={false}
                                         scrollEnabled={false}
                                         nestedScrollEnabled={false}
+                                        removeClippedSubviews={false}
+                                        disableIntervalMomentum={true}
                                       />
                                     </View>
                                   )}
@@ -1615,6 +1623,9 @@ const styles = StyleSheet.create({
   },
   tournamentsContainer: {
     marginBottom: 8,
+  },
+  tournamentCardWrapper: {
+    // Wrapper to handle touch without interfering with scroll
   },
   // LIVE tournaments section styles
   liveTournamentsSection: {

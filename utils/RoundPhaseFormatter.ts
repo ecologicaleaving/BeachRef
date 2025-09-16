@@ -208,7 +208,7 @@ export class RoundPhaseFormatter {
         
       default:
         return {
-          displayName: `Round ${roundNumber}`,
+          displayName: `R.${roundNumber}`,
           originalValue: round,
           emphasis: 'medium',
           isFinals: false,
@@ -249,10 +249,10 @@ export class RoundPhaseFormatter {
   private static createFallbackInfo(round: string): RoundPhaseInfo {
     const trimmed = round.trim();
     
-    // Handle "Classification" specifically - abbreviate to "Class."
+    // Handle "Classification" specifically - abbreviate to "Cl."
     if (/^classification$/i.test(trimmed)) {
       return {
-        displayName: 'Class.',
+        displayName: 'Cl.',
         originalValue: round,
         emphasis: 'medium',
         isFinals: false,
@@ -283,9 +283,9 @@ export class RoundPhaseFormatter {
     }
     
     
-    // For numeric rounds > 4 that aren't standard elimination rounds, add "Round " prefix
+    // For numeric rounds > 4 that aren't standard elimination rounds, add "R." prefix
     const isHigherNumeric = /^\d+$/.test(trimmed) && parseInt(trimmed) > 4;
-    const displayName = isHigherNumeric ? `Round ${round}` : round;
+    const displayName = isHigherNumeric ? `R.${round}` : round;
     const accessibilityLabel = isHigherNumeric ? `Round ${round} match` : `Round ${round}`;
     
     return {

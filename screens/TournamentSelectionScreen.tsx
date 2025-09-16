@@ -733,20 +733,50 @@ const TournamentSelectionScreen: React.FC = () => {
     }
   }, [tournaments.length, hierarchyInitialized]);
   
-  // Toggle season expansion
+  // Toggle season expansion (accordion - close others)
   const toggleSeasonExpansion = (seasonKey: string) => {
-    setExpandedSeasons(prev => ({
-      ...prev,
-      [seasonKey]: !prev[seasonKey]
-    }));
+    setExpandedSeasons(prev => {
+      const isCurrentlyExpanded = prev[seasonKey];
+      if (isCurrentlyExpanded) {
+        // If closing current season, just close it
+        return {
+          ...prev,
+          [seasonKey]: false
+        };
+      } else {
+        // If opening, close all others and open this one
+        const newState: {[key: string]: boolean} = {};
+        Object.keys(prev).forEach(key => {
+          newState[key] = false;
+        });
+        newState[seasonKey] = true;
+        return newState;
+      }
+    });
+    // Also close all months when switching seasons
+    setExpandedMonths({});
   };
-  
-  // Toggle month expansion within a season
+
+  // Toggle month expansion within a season (accordion - close others)
   const toggleMonthExpansion = (monthKey: string) => {
-    setExpandedMonths(prev => ({
-      ...prev,
-      [monthKey]: !prev[monthKey]
-    }));
+    setExpandedMonths(prev => {
+      const isCurrentlyExpanded = prev[monthKey];
+      if (isCurrentlyExpanded) {
+        // If closing current month, just close it
+        return {
+          ...prev,
+          [monthKey]: false
+        };
+      } else {
+        // If opening, close all others and open this one
+        const newState: {[key: string]: boolean} = {};
+        Object.keys(prev).forEach(key => {
+          newState[key] = false;
+        });
+        newState[monthKey] = true;
+        return newState;
+      }
+    });
   };
 
   // Get tournaments filtered by status for display in specific sections

@@ -846,12 +846,26 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     setShowRefereeDropdown(false);
   };
 
-  // Toggle date panel expansion
+  // Toggle date panel expansion (accordion - close others)
   const toggleDateExpansion = (date: string) => {
-    setExpandedDates(prev => ({
-      ...prev,
-      [date]: !prev[date]
-    }));
+    setExpandedDates(prev => {
+      const isCurrentlyExpanded = prev[date];
+      if (isCurrentlyExpanded) {
+        // If closing current date, just close it
+        return {
+          ...prev,
+          [date]: false
+        };
+      } else {
+        // If opening, close all others and open this one
+        const newState: {[key: string]: boolean} = {};
+        Object.keys(prev).forEach(key => {
+          newState[key] = false;
+        });
+        newState[date] = true;
+        return newState;
+      }
+    });
   };
 
   // Check if match is currently live - matches MatchCard red dot logic exactly

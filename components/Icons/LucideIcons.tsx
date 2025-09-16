@@ -27,6 +27,14 @@ export const Trophy: React.FC<IconProps> = ({ size = 24, color = '#1B365D', styl
   <Text style={[{ fontSize: size, color }, style]}>🏆</Text>
 );
 
+export const GoldMedal: React.FC<IconProps> = ({ size = 24, color = '#FFD700', style }) => (
+  <Text style={[{ fontSize: size, color }, style]}>🥇</Text>
+);
+
+export const BronzeMedal: React.FC<IconProps> = ({ size = 24, color = '#CD7F32', style }) => (
+  <Text style={[{ fontSize: size, color }, style]}>🥉</Text>
+);
+
 export const MapPin: React.FC<IconProps> = ({ size = 24, color = '#1B365D', style }) => (
   <Text style={[{ fontSize: size, color }, style]}>📍</Text>
 );
@@ -66,6 +74,8 @@ export const Icon: React.FC<{ name: string } & IconProps> = ({ name, size, color
     clock: Clock,
     users: Users,
     trophy: Trophy,
+    'gold-medal': GoldMedal,
+    'bronze-medal': BronzeMedal,
     'map-pin': MapPin,
     activity: Activity,
     'check-circle': CheckCircle,
@@ -89,6 +99,8 @@ export default {
   Clock,
   Users,
   Trophy,
+  GoldMedal,
+  BronzeMedal,
   MapPin,
   Activity,
   CheckCircle,

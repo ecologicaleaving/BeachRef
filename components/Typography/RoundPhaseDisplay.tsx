@@ -5,12 +5,13 @@
  */
 
 import React from 'react';
-import { TextStyle } from 'react-native';
+import { View, TextStyle } from 'react-native';
 import { EnhancedCaption } from './Text';
-import { 
-  RoundPhaseFormatter, 
-  TournamentContext, 
-  EmphasisLevel 
+import { GoldMedal, BronzeMedal } from '../Icons/LucideIcons';
+import {
+  RoundPhaseFormatter,
+  TournamentContext,
+  EmphasisLevel
 } from '../../utils/RoundPhaseFormatter';
 
 /**
@@ -67,7 +68,21 @@ export const RoundPhaseDisplay: React.FC<RoundPhaseDisplayProps> = ({
   
   // Use provided emphasis or calculated emphasis
   const finalEmphasis = emphasisOverride || roundInfo.emphasis;
-  
+
+  // Check if we should show medal icons only (no text)
+  const showGoldMedal = roundInfo.displayName.toLowerCase().includes('gold') ||
+                        roundInfo.displayName.toLowerCase() === 'final';
+  const showBronzeMedal = roundInfo.displayName.toLowerCase().includes('bronze');
+
+  if (showGoldMedal || showBronzeMedal) {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {showGoldMedal && <GoldMedal size={16} />}
+        {showBronzeMedal && <BronzeMedal size={16} />}
+      </View>
+    );
+  }
+
   return (
     <EnhancedCaption
       emphasis={finalEmphasis}

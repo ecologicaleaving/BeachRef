@@ -414,15 +414,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               {isMatchLive(match) && (
                 <View style={styles.liveDot} />
               )}
+              <Text style={styles.courtText}>
+                {match.court?.courtNumber ? (
+                  match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+                ) : 'TBD'}
+              </Text>
               <Text style={styles.matchTime}>
                 {match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}
               </Text>
             </View>
-            <Text style={styles.courtText}>
-              {match.court?.courtNumber ? (
-                match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-              ) : 'TBD'}
-            </Text>
           </View>
 
           <View style={styles.rightBadgeContainer}>
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   genderBadgeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#374151',
   },
@@ -782,10 +782,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   courtText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#374151',
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: '600',
+    marginRight: 8,
   },
   statusBadge: {
     backgroundColor: '#6B7280',

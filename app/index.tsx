@@ -8,6 +8,7 @@ import {
 import { useRouter } from 'expo-router';
 import { WhistleLogo } from '../components/WhistleLogo';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
+import { createShadow } from '../theme/shadows';
 
 // Window dimensions available but not currently used
 // const { width } = Dimensions.get('window');
@@ -122,14 +123,13 @@ const styles = StyleSheet.create({
   logo: {
     marginBottom: 12,
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 6,
+    ...createShadow({
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.25,
+      shadowRadius: 5,
+      elevation: 6,
+    }),
   },
   featuresContainer: {
     flexDirection: 'row',
@@ -163,15 +163,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
-    shadowColor: '#FF6B35',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
     minWidth: 160,
+    ...createShadow({
+      shadowColor: '#FF6B35',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 8,
+    }),
   },
   startButtonText: {
     color: '#FFFFFF',

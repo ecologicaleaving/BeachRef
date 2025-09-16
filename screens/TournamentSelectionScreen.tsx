@@ -873,24 +873,15 @@ const TournamentSelectionScreen: React.FC = () => {
   // SectionList render functions
   const renderTournament = ({ item }: { item: TournamentCore }) => {
     return (
-      <Pressable
-        onPress={() => handleTournamentPress(item)}
-        style={styles.tournamentCardWrapper}
-        // Fix 1: Ensure proper gesture handling for production
-        hitSlop={8}
-        pressRetentionOffset={{ top: 4, bottom: 4, left: 4, right: 4 }}
-        android_ripple={{ borderless: false }}
-        // Ensure it receives click/tap events on web/mobile
-        pointerEvents="auto"
-      >
+      <View style={styles.tournamentCardWrapper}>
         <TournamentCard
           tournament={item}
-          onPress={() => {}} // Empty onPress since Pressable handles it
+          onPress={() => handleTournamentPress(item)}
           showDefaultToggle={true}
           showStatusBadge={true}
           compact={false}
         />
-      </Pressable>
+      </View>
     );
   };
 

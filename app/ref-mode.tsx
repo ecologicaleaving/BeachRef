@@ -11,6 +11,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { BottomTabNavigation } from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
+import { createShadow } from '../theme/shadows';
 // import { designTokens } from '../theme/tokens';
 
 interface Official {
@@ -617,11 +618,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...createShadow({
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    }),
   },
   sectionTitle: {
     fontSize: 18,

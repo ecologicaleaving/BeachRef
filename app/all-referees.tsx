@@ -14,6 +14,7 @@ import { Text } from '../components/Typography/Text';
 import { FlagImage } from '../components/FlagImage';
 import { colors } from '../theme/tokens';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
+import { createShadow } from '../theme/shadows';
 // import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus'; // Not needed for All Referees
 
 interface Referee {
@@ -825,12 +826,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     marginBottom: 12,
+    ...createShadow({
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    }),
   },
   cardHeader: {
     flexDirection: 'row',

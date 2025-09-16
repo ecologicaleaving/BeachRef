@@ -34,6 +34,11 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   compact = false
 }) => {
   const [isDefault, setIsDefault] = useState(false);
+
+  // Log state changes
+  useEffect(() => {
+    console.log(`🔄 STATE: isDefault changed to: ${isDefault} for tournament ${tournament.name}`);
+  }, [isDefault]);
   const router = useRouter();
 
   // Check if this tournament is default on mount and listen for changes
@@ -47,14 +52,29 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
       // Listen for default tournament changes
       const removeListener = DefaultTournamentService.addListener((defaultTournament) => {
-        // Update state based on whether this tournament is the new default
-        setIsDefault(defaultTournament?.visNo === tournament.visNo);
+        const isThisDefault = defaultTournament?.visNo === tournament.visNo;
+        console.log(`🔄 STEP 5: Listener triggered. New default:`, defaultTournament?.visNo, `This tournament (${tournament.visNo}) is default:`, isThisDefault);
+        setIsDefault(isThisDefault);
+        console.log(`🔄 STEP 6: Local state updated to:`, isThisDefault);
       });
 
       // Cleanup listener on unmount
       return removeListener;
     }
   }, [tournament.visNo, showDefaultToggle]);
+
+  // Also check default status when component becomes visible (e.g., when navigating back)
+  useEffect(() => {
+    if (showDefaultToggle) {
+      const recheckDefaultStatus = async () => {
+        const defaultStatus = await DefaultTournamentService.isDefaultTournament(tournament.visNo);
+        if (defaultStatus !== isDefault) {
+          setIsDefault(defaultStatus);
+        }
+      };
+      recheckDefaultStatus();
+    }
+  }, [showDefaultToggle]); // Trigger when component re-renders
 
   // Format date display
   const formatDate = (dateStr?: string, includeYear = true) => {
@@ -70,12 +90,41 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
     }
   };
 
-  // Get tournament status and colors
-  const tournamentStatusText = DefaultTournamentService.getTournamentStatus(
-    tournament.dates?.startDate, 
-    tournament.dates?.endDate
-  );
+  // Get tournament status and colors - using same logic as TournamentSelectionScreen
+  const getTournamentStatus = (tournament: TournamentCore): 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED' => {
+    if (!tournament.dates?.startDate || !tournament.dates?.endDate) return 'SCHEDULED';
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(tournament.dates.startDate);
+    const end = new Date(tournament.dates.endDate);
+
+    // Set start and end to date-only for consistent comparison
+    const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    // Tournament is currently active (same logic as TournamentSelectionScreen)
+    if (startDateOnly <= today && today <= endDateOnly) {
+      return 'LIVE NOW';
+    }
+
+    // Tournament has ended
+    if (today > endDateOnly) {
+      return 'COMPLETED';
+    }
+
+    // Tournament is upcoming
+    if (today < startDateOnly) {
+      return 'SCHEDULED';
+    }
+
+    // Fallback
+    return 'SCHEDULED';
+  };
+
+  const tournamentStatusText = getTournamentStatus(tournament);
   const canBeDefault = tournamentStatusText === 'LIVE NOW';
+
   
   // Map status text to TournamentStatus type for StatusBadge
   const mapStatusToTournamentStatus = (status: string): 'current' | 'upcoming' | 'completed' | 'cancelled' | 'emergency' => {
@@ -132,19 +181,30 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
   // Handle default tournament toggle
   const handleToggleDefault = async (value: boolean) => {
+    console.log(`🔄 STEP 1: Switch clicked for ${tournament.name}, setting to: ${value}`);
     try {
-      const result = await DefaultTournamentService.toggleDefaultTournament(tournament);
-
-      if (result.success) {
-        // If tournament was deselected as default, redirect to home
-        if (!result.isDefault) {
-          router.push('/');
+      if (value) {
+        // Setting as default
+        console.log(`🔄 STEP 2: Calling setDefaultTournament for ${tournament.name}`);
+        try {
+          const result = await DefaultTournamentService.setDefaultTournament(tournament);
+          console.log(`🔄 STEP 3: setDefaultTournament result:`, result);
+          if (result.success) {
+            console.log(`🔄 STEP 4: Setting local state isDefault to true`);
+            setIsDefault(true);
+          } else {
+            console.log(`🔄 STEP 4 FAILED: Could not set default tournament:`, result.reason);
+          }
+        } catch (serviceError) {
+          console.log(`🔄 STEP 3 ERROR: Service call failed:`, serviceError);
         }
       } else {
-        console.warn('Could not toggle default tournament:', result.reason);
-        // Optionally show user feedback here
+        // Removing as default
+        console.log(`🔄 STEP 2: Calling clearDefaultTournament`);
+        await DefaultTournamentService.clearDefaultTournament();
+        console.log(`🔄 STEP 3: Setting local state isDefault to false`);
+        setIsDefault(false);
       }
-      // Don't manually set state - let the listener handle it for consistency
     } catch (error) {
       console.error('Error toggling default tournament:', error);
     }
@@ -261,17 +321,24 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
           {showStatusBadge && (
             <View style={[
               styles.customStatusBadge,
-              { backgroundColor: statusColorScheme.backgroundColor },
+              tournamentStatus === 'current'
+                ? styles.liveBadge
+                : { backgroundColor: statusColorScheme.backgroundColor },
               tournamentStatus === 'current' && styles.statusBadgeLarge
             ]}>
-              <Text style={[
-                styles.customStatusBadgeText,
-                { color: statusColorScheme.textColor },
-                tournamentStatus === 'current' && styles.statusBadgeTextLarge
-              ]}>
-                {tournamentStatus === 'current' && '● '}
-                {tournamentStatusText}
-              </Text>
+              {tournamentStatus === 'current' ? (
+                <View style={styles.liveBadgeContent}>
+                  <View style={styles.liveRedCircle} />
+                  <Text style={styles.liveText}>LIVE</Text>
+                </View>
+              ) : (
+                <Text style={[
+                  styles.customStatusBadgeText,
+                  { color: statusColorScheme.textColor }
+                ]}>
+                  {tournamentStatusText}
+                </Text>
+              )}
             </View>
           )}
         </View>
@@ -296,12 +363,19 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       </View>
 
       {/* Default tournament functionality */}
-      {showDefaultToggle && canBeDefault && (
+      {(() => {
+        const shouldShow = showDefaultToggle && canBeDefault;
+        console.log(`🔄 STEP 7: Render check - showDefaultToggle: ${showDefaultToggle}, canBeDefault: ${canBeDefault}, shouldShow: ${shouldShow}, isDefault: ${isDefault}`);
+        return shouldShow;
+      })() && (
         <View style={styles.defaultToggle}>
           <Text style={styles.defaultToggleLabel}>Default</Text>
           <Switch
             value={isDefault}
-            onValueChange={handleToggleDefault}
+            onValueChange={(newValue) => {
+              console.log(`🔄 SWITCH: Switch clicked! Current isDefault: ${isDefault}, New value: ${newValue}`);
+              handleToggleDefault(newValue);
+            }}
             trackColor={{ false: '#767577', true: colors.accent }}
             thumbColor={isDefault ? '#fff' : '#f4f3f4'}
             style={styles.switch}
@@ -404,6 +478,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
+  },
+  liveBadge: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  liveBadgeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  liveRedCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#DC2626',
+  },
+  liveText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563EB',
   },
   customStatusBadgeText: {
     fontSize: 12,

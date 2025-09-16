@@ -124,42 +124,38 @@ export class DefaultTournamentService {
 
   /**
    * Get tournament status based on dates
+   * Using same logic as TournamentCard to ensure consistency
    */
   static getTournamentStatus(startDate?: string, endDate?: string): string {
-    if (!startDate) {
+    if (!startDate || !endDate) {
       return 'SCHEDULED';
     }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const startDateOnly = startDate.split('T')[0];
-    
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Set start and end to date-only for consistent comparison
+    const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    // Tournament is currently active (same logic as TournamentCard)
+    if (startDateOnly <= today && today <= endDateOnly) {
+      return 'LIVE NOW';
+    }
+
+    // Tournament has ended
+    if (today > endDateOnly) {
+      return 'COMPLETED';
+    }
+
+    // Tournament is upcoming
     if (today < startDateOnly) {
       return 'SCHEDULED';
     }
-    
-    if (endDate) {
-      const endDateOnly = endDate.split('T')[0];
-      if (today > endDateOnly) {
-        return 'COMPLETED';
-      }
-      if (today >= startDateOnly && today <= endDateOnly) {
-        return 'LIVE NOW';
-      }
-    } else {
-      // Only start date available - consider live for reasonable duration
-      const start = new Date(startDate);
-      const weekAfter = new Date(start);
-      weekAfter.setDate(start.getDate() + 7);
-      
-      const now = new Date();
-      if (now >= start && now <= weekAfter) {
-        return 'LIVE NOW';
-      }
-      if (now > weekAfter) {
-        return 'COMPLETED';
-      }
-    }
-    
+
+    // Fallback
     return 'SCHEDULED';
   }
 }

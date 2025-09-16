@@ -1418,7 +1418,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             <TournamentCard
               tournament={detailedTournament || tournament}
               onPress={() => {}} // No action needed since we're already on the detail screen
-              showDefaultToggle={canBeDefault}
+              showDefaultToggle={true}
               showStatusBadge={true}
               compact={false}
             />

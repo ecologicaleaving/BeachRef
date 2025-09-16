@@ -591,6 +591,13 @@ const TournamentSelectionScreen: React.FC = () => {
     return years;
   };
 
+  // Format month header for collapsible sections
+  const formatMonthHeader = (monthKey: string): string => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-US', { month: 'long' });
+  };
+
   // Generate sections for SectionList (seasons and months)
   const tournamentSections = React.useMemo(() => {
     const sections: TournamentSection[] = [];
@@ -1057,13 +1064,6 @@ const TournamentSelectionScreen: React.FC = () => {
         </View>
       </View>
     );
-  };
-
-  // Format month header for collapsible sections
-  const formatMonthHeader = (monthKey: string): string => {
-    const [year, month] = monthKey.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'long' });
   };
 
   if (initialLoading) {

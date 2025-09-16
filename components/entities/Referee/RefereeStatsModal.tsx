@@ -105,10 +105,6 @@ export const RefereeStatsModal: React.FC<RefereeStatsModalProps> = ({
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Referee Statistics</Text>
           </View>
-          <TouchableOpacity onPress={handleViewProfile} style={styles.profileButton}>
-            <ActionIcons.Profile style={styles.profileIcon} />
-            <Text style={styles.profileButtonText}>Profile</Text>
-          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -228,6 +224,12 @@ export const RefereeStatsModal: React.FC<RefereeStatsModalProps> = ({
                         </Text>
                       )}
                     </View>
+
+                    {/* Profile Button positioned under recent matches */}
+                    <TouchableOpacity onPress={handleViewProfile} style={styles.profileButtonBottom}>
+                      <ActionIcons.Profile style={styles.profileIcon} />
+                      <Text style={styles.profileButtonText}>View Full Profile</Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </>
@@ -267,7 +269,6 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 60,
@@ -294,14 +295,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1B365D',
   },
-  profileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
   profileIcon: {
     fontSize: 16,
     color: '#FFFFFF',
@@ -311,6 +304,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  profileButtonBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    justifyContent: 'center',
+  },
+  profileButtonStandalone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,

@@ -5,6 +5,7 @@ import { Text } from '../Typography/Text';
 import { colors } from '../../theme/tokens';
 import { RefereeStatsService, RefereeStats, SeasonStats, CareerStats, RefereeMatch, EnhancedTournamentStats } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
+import { MatchRefereeCard } from './MatchRefereeCard';
 
 interface Referee {
   RefereeId: string; // 6-digit NoReferee from VIS API
@@ -189,92 +190,16 @@ const RefereeCard = ({
           </View>
         </View>
 
-        {/* Recent Matches Section */}
+        {/* Recent Matches Section - Compact Design */}
         <View style={styles.recentMatchesSection}>
           <Text style={styles.sectionTitle}>Last 3 Matches</Text>
           {recentMatches && recentMatches.length > 0 ? (
-            <View style={styles.matchesList}>
+            <View style={styles.compactMatchesList}>
               {recentMatches.map((match, index) => (
-                <View key={match.matchId || index} style={styles.compactMatchCard}>
-                  {/* Match Header - Court, Time, Status */}
-                  <View style={styles.matchHeader}>
-                    <View style={styles.matchTimeInfo}>
-                      <Text style={styles.matchCourt}>Court {match.court}</Text>
-                      <Text style={styles.matchTime}>
-                        {match.dateTime !== 'Unknown' ?
-                          new Date(match.dateTime).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: '2-digit'
-                          }) + ' ' +
-                          new Date(match.dateTime).toLocaleTimeString('en-GB', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                          })
-                          : 'TBD'
-                        }
-                      </Text>
-                    </View>
-                    <Text style={[styles.matchStatus,
-                      match.status === 'Finished' ? styles.statusFinished :
-                      match.status === 'Live' ? styles.statusLive : styles.statusScheduled
-                    ]}>
-                      {match.status}
-                    </Text>
-                  </View>
-
-                  {/* Teams Section */}
-                  <View style={styles.teamsSection}>
-                    <View style={styles.teamRow}>
-                      <FlagImage
-                        countryCode={match.teams.team1.countryCode}
-                        style={styles.teamFlag}
-                      />
-                      <Text style={styles.teamName} numberOfLines={1}>
-                        {match.teams.team1.name}
-                      </Text>
-                    </View>
-                    <Text style={styles.vsText}>vs</Text>
-                    <View style={styles.teamRow}>
-                      <FlagImage
-                        countryCode={match.teams.team2.countryCode}
-                        style={styles.teamFlag}
-                      />
-                      <Text style={styles.teamName} numberOfLines={1}>
-                        {match.teams.team2.name}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Referee Information */}
-                  <View style={styles.refereeSection}>
-                    <Text style={styles.refereeSectionTitle}>Referees:</Text>
-                    <View style={styles.refereeInfo}>
-                      <View style={styles.refereeItem}>
-                        <Text style={styles.refereeRole}>R1:</Text>
-                        <Text style={[styles.refereeName,
-                          match.refereeRole === 'first' ? styles.currentReferee : null
-                        ]}>
-                          {match.referees.referee1.name}
-                        </Text>
-                      </View>
-                      <View style={styles.refereeItem}>
-                        <Text style={styles.refereeRole}>R2:</Text>
-                        <Text style={[styles.refereeName,
-                          match.refereeRole === 'second' ? styles.currentReferee : null
-                        ]}>
-                          {match.referees.referee2.name}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Round and Gender Info */}
-                  <View style={styles.matchFooter}>
-                    <Text style={styles.matchRound}>{match.round}</Text>
-                    <Text style={styles.matchGender}>{match.gender}</Text>
-                  </View>
-                </View>
+                <MatchRefereeCard
+                  key={match.matchId || index}
+                  match={match}
+                />
               ))}
             </View>
           ) : (
@@ -282,6 +207,11 @@ const RefereeCard = ({
               <Text style={styles.noMatchesText}>No recent matches found</Text>
             </View>
           )}
+
+          {/* Profile Button positioned under recent matches */}
+          <TouchableOpacity style={styles.profileButtonBottom} onPress={handleProfilePress}>
+            <Text style={styles.profileButtonBottomText}>Profile</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -340,9 +270,6 @@ const RefereeCard = ({
                 </Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.profileButtonExpanded} onPress={handleProfilePress}>
-              <Text style={styles.profileButtonExpandedText}>Profile</Text>
-            </TouchableOpacity>
           </View>
           {renderStatsContent()}
         </View>
@@ -686,6 +613,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  profileButtonBottom: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  profileButtonBottomText: {
+    color: colors.background,
+    fontSize: 14,
+    fontWeight: '600',
+  },
   tab: {
     flex: 1,
     paddingVertical: 8,
@@ -768,6 +708,9 @@ const styles = StyleSheet.create({
   },
   matchesList: {
     gap: 12,
+  },
+  compactMatchesList: {
+    gap: 6,
   },
   // Compact Match Card Styles
   compactMatchCard: {

@@ -495,8 +495,10 @@ export class RefereeStatsService {
             countryCode: match.rawMatch?.TeamBFederationCode || 'XX',
             players: []
           }
-        }
-      };
+        },
+        // Pass through raw match data for results display
+        rawMatch: match.rawMatch
+      } as RefereeMatch & { rawMatch: any };
     });
   }
 

@@ -17,7 +17,7 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
     const matchEntries = [...xmlData.matchAll(matchRegex)];
     for (const [matchEntry] of matchEntries) {
       const match: any = { refereeRole };
-      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode', 'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2', 'PointsTeamASet3', 'PointsTeamBSet3', 'Referee1FederationCode', 'Referee2FederationCode'];
+      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'LocalDate', 'LocalTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode', 'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2', 'PointsTeamASet3', 'PointsTeamBSet3', 'Referee1FederationCode', 'Referee2FederationCode'];
       for (const attr of attributes) {
         const regex = new RegExp(`${attr}="([^"]*)"`);
         const mr = matchEntry.match(regex);
@@ -31,6 +31,10 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
         refereeRole,
         gender,
         tournamentGender,
+        LocalDate: match.LocalDate,
+        LocalTime: match.LocalTime,
+        localDate: match.LocalDate,
+        localTime: match.LocalTime,
         NoReferee1: match.NoReferee1,
         NoReferee2: match.NoReferee2,
         noReferee1: match.NoReferee1,
@@ -344,13 +348,16 @@ export class RefereeStatsService {
       // Calculate statistics
       const stats = calculateStatsFromParsedMatchesCompat(uniqueMatches);
 
-      // Convert matches to RefereeMatch format and get 3 most recent
-      const recentMatches = RefereeStatsService.convertToRecentMatches(uniqueMatches, refereeId)
-        .sort((a, b) => {
-          const dateA = new Date(a.dateTime).getTime();
-          const dateB = new Date(b.dateTime).getTime();
-          return dateB - dateA; // Most recent first
-        })
+      // Sort matches using enhanced date fields for better accuracy
+      const sortedMatches = uniqueMatches.sort((a, b) => {
+        // Use LocalDate + LocalTime for more accurate sorting if available
+        const dateTimeA = RefereeStatsService.getMatchDateTime(a);
+        const dateTimeB = RefereeStatsService.getMatchDateTime(b);
+        return dateTimeB - dateTimeA; // Most recent first
+      });
+
+      // Convert matches to RefereeMatch format and take 3 most recent
+      const recentMatches = RefereeStatsService.convertToRecentMatches(sortedMatches, refereeId)
         .slice(0, 3); // Take only 3 most recent
 
       console.log(`✅ Enhanced stats calculated - Stats:`, stats, 'Recent matches:', recentMatches.length);
@@ -366,6 +373,78 @@ export class RefereeStatsService {
   }
 
   /**
+   * Get match date/time as timestamp for reliable sorting
+   * Uses LocalDate + LocalTime if available, falls back to LocalDateTime
+   */
+  private static getMatchDateTime(match: any): number {
+    try {
+      // Prefer LocalDate + LocalTime combination for accuracy
+      const localDate = match.rawMatch?.LocalDate || match.LocalDate;
+      const localTime = match.rawMatch?.LocalTime || match.LocalTime;
+
+      if (localDate && localTime) {
+        // Combine date and time - handle different formats
+        const dateTimeString = `${localDate}T${localTime}`;
+        const dateTime = new Date(dateTimeString);
+        if (!isNaN(dateTime.getTime())) {
+          return dateTime.getTime();
+        }
+      }
+
+      // Fallback to LocalDateTime
+      const localDateTime = match.rawMatch?.LocalDateTime || match.LocalDateTime;
+      if (localDateTime) {
+        const dateTime = new Date(localDateTime);
+        if (!isNaN(dateTime.getTime())) {
+          return dateTime.getTime();
+        }
+      }
+
+      // Final fallback - use current time (will sort to top, but at least won't crash)
+      console.warn('Could not parse match date/time, using current time for sorting:', match.matchId);
+      return new Date().getTime();
+    } catch (error) {
+      console.warn('Error parsing match date/time:', error, match.matchId);
+      return new Date().getTime();
+    }
+  }
+
+  /**
+   * Get match date/time as ISO string for RefereeMatch format
+   */
+  private static getMatchDateTimeAsISO(match: any): string {
+    try {
+      // Prefer LocalDate + LocalTime combination for accuracy
+      const localDate = match.rawMatch?.LocalDate || match.LocalDate;
+      const localTime = match.rawMatch?.LocalTime || match.LocalTime;
+
+      if (localDate && localTime) {
+        // Combine date and time - handle different formats
+        const dateTimeString = `${localDate}T${localTime}`;
+        const dateTime = new Date(dateTimeString);
+        if (!isNaN(dateTime.getTime())) {
+          return dateTime.toISOString();
+        }
+      }
+
+      // Fallback to LocalDateTime
+      const localDateTime = match.rawMatch?.LocalDateTime || match.LocalDateTime;
+      if (localDateTime) {
+        const dateTime = new Date(localDateTime);
+        if (!isNaN(dateTime.getTime())) {
+          return dateTime.toISOString();
+        }
+      }
+
+      // Final fallback - use current time
+      return new Date().toISOString();
+    } catch (error) {
+      console.warn('Error parsing match date/time for ISO conversion:', error, match.matchId);
+      return new Date().toISOString();
+    }
+  }
+
+  /**
    * Convert raw VIS match data to RefereeMatch format for UI display
    */
   private static convertToRecentMatches(matches: any[], refereeId: string): RefereeMatch[] {
@@ -373,8 +452,8 @@ export class RefereeStatsService {
       // Determine which role this referee played in the match
       const refereeRole = match.refereeRole || 'first';
 
-      // Extract match date/time
-      const dateTime = match.rawMatch?.LocalDateTime || new Date().toISOString();
+      // Extract match date/time using enhanced logic
+      const dateTime = RefereeStatsService.getMatchDateTimeAsISO(match);
 
       // Determine match status
       let status: 'Scheduled' | 'Live' | 'Finished' = 'Scheduled';
@@ -1065,7 +1144,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter NoEvent="${tournamentNo}" ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1173,7 +1252,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1267,7 +1346,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;

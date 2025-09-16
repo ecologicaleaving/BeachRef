@@ -311,28 +311,112 @@ export class RefereeStatsService {
   }
 
   /**
-   * Get enhanced tournament statistics (simplified - recent matches functionality removed)
+   * Get enhanced tournament statistics including stats and recent matches
    */
   static async getEnhancedTournamentStats(refereeId: string, tournamentNo: string): Promise<EnhancedTournamentStats | null> {
     try {
       console.log('🔄 Getting enhanced tournament stats for referee:', refereeId, 'tournament:', tournamentNo);
 
-      // Get stats using the original VIS API approach
-      const stats = await RefereeStatsService.getCurrentTournamentStats(refereeId, tournamentNo);
-      if (stats) {
-        console.log('✅ Stats loaded successfully:', stats);
-        return {
-          stats,
-          recentMatches: [] // Recent matches implementation removed - will be rebuilt
-        };
+      // First resolve referee to NoReferee ID
+      const refereeNo = await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournamentNo);
+      if (!refereeNo) {
+        console.log('❌ Could not resolve referee ID');
+        return null;
       }
 
-      console.log('❌ Failed to load stats');
-      return null;
+      // Get matches from both referee roles
+      const [firstRefMatches, secondRefMatches] = await Promise.all([
+        RefereeStatsService.queryTournamentMatchesWithNoReferee(refereeNo, 'first', tournamentNo),
+        RefereeStatsService.queryTournamentMatchesWithNoReferee(refereeNo, 'second', tournamentNo)
+      ]);
+
+      // Merge and deduplicate matches
+      const allMatches = [...firstRefMatches, ...secondRefMatches];
+      const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
+
+      if (uniqueMatches.length === 0) {
+        console.log('❌ No matches found for referee');
+        return null;
+      }
+
+      console.log(`✅ Found ${uniqueMatches.length} matches for referee`);
+
+      // Calculate statistics
+      const stats = calculateStatsFromParsedMatchesCompat(uniqueMatches);
+
+      // Convert matches to RefereeMatch format and get 3 most recent
+      const recentMatches = RefereeStatsService.convertToRecentMatches(uniqueMatches, refereeId)
+        .sort((a, b) => {
+          const dateA = new Date(a.dateTime).getTime();
+          const dateB = new Date(b.dateTime).getTime();
+          return dateB - dateA; // Most recent first
+        })
+        .slice(0, 3); // Take only 3 most recent
+
+      console.log(`✅ Enhanced stats calculated - Stats:`, stats, 'Recent matches:', recentMatches.length);
+
+      return {
+        stats,
+        recentMatches
+      };
     } catch (error) {
       console.error('❌ Error fetching enhanced tournament stats:', error);
       return null;
     }
+  }
+
+  /**
+   * Convert raw VIS match data to RefereeMatch format for UI display
+   */
+  private static convertToRecentMatches(matches: any[], refereeId: string): RefereeMatch[] {
+    return matches.map(match => {
+      // Determine which role this referee played in the match
+      const refereeRole = match.refereeRole || 'first';
+
+      // Extract match date/time
+      const dateTime = match.rawMatch?.LocalDateTime || new Date().toISOString();
+
+      // Determine match status
+      let status: 'Scheduled' | 'Live' | 'Finished' = 'Scheduled';
+      const rawStatus = (match.rawMatch?.Status || '').toLowerCase();
+      if (rawStatus.includes('finished') || rawStatus.includes('completed')) {
+        status = 'Finished';
+      } else if (rawStatus.includes('running') || rawStatus.includes('live')) {
+        status = 'Live';
+      }
+
+      return {
+        matchId: match.matchId || match.rawMatch?.No || 'unknown',
+        court: match.rawMatch?.Court || 'TBD',
+        round: match.rawMatch?.RoundCode || match.rawMatch?.Phase || 'Pool',
+        status,
+        dateTime,
+        refereeRole: refereeRole as 'first' | 'second',
+        gender: match.gender === 'women' ? 'W' : 'M' as 'M' | 'W',
+        referees: {
+          referee1: {
+            id: match.rawMatch?.NoReferee1 || '',
+            name: match.rawMatch?.Referee1Name || 'TBD'
+          },
+          referee2: {
+            id: match.rawMatch?.NoReferee2 || '',
+            name: match.rawMatch?.Referee2Name || 'TBD'
+          }
+        },
+        teams: {
+          team1: {
+            name: match.rawMatch?.TeamAName || 'Team A',
+            countryCode: match.rawMatch?.TeamAFederationCode || 'XX',
+            players: [] // VIS API doesn't provide individual player names in this format
+          },
+          team2: {
+            name: match.rawMatch?.TeamBName || 'Team B',
+            countryCode: match.rawMatch?.TeamBFederationCode || 'XX',
+            players: []
+          }
+        }
+      };
+    });
   }
 
   /**

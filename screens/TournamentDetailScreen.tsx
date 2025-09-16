@@ -341,13 +341,12 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       if (completeTournamentData) {
         // Use loaded complete tournament data if available
-        console.log('Using loaded complete tournament data:', completeTournamentData.name);
+        // Using loaded complete tournament data
         return completeTournamentData;
       } else if (tournamentData) {
         // Normal case: full tournament data passed as JSON
         const parsed = JSON.parse(tournamentData) as TournamentCore;
-        console.log('Received tournament data in TournamentDetailScreen:', JSON.stringify(parsed, null, 2));
-        console.log('Tournament visNo:', parsed.visNo, 'Name:', parsed.name);
+        // Received tournament data in TournamentDetailScreen
         return parsed;
       } else if (visNo) {
         // Fallback case: only visNo provided - create minimal tournament object
@@ -358,14 +357,14 @@ const TournamentDetailScreenContent: React.FC = () => {
           dates: {},
           // Add other required fields as needed
         } as TournamentCore;
-        console.log('Using minimal tournament from visNo:', visNo);
+        // Using minimal tournament from visNo
         // Mark that we need to load complete data
         if (!isMinimalTournament) {
           setIsMinimalTournament(true);
         }
         return minimalTournament;
       } else {
-        console.log('No tournament data or visNo provided');
+        // No tournament data or visNo provided
         return {} as TournamentCore;
       }
     } catch (error) {
@@ -834,14 +833,14 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       // STEP 1: Always clear default tournament first (if this tournament is set as default)
       const tournamentVisNo = tournament.visNo || visNo;
-      console.log('handleGoBack: Using tournament visNo:', tournamentVisNo);
+      // handleGoBack: Using tournament visNo
 
       if (tournamentVisNo) {
         const isDefault = await DefaultTournamentService.isDefaultTournament(tournamentVisNo);
         if (isDefault) {
-          console.log('Tournament not found but is set as default. Clearing default tournament.');
+          // Tournament not found but is set as default. Clearing default tournament.
           await DefaultTournamentService.clearDefaultTournament();
-          console.log('Default tournament cleared successfully.');
+          // Default tournament cleared successfully.
 
           // STEP 2: Add small delay to ensure state updates propagate
           // This prevents race condition where home still sees old default tournament
@@ -851,7 +850,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       // STEP 3: After ensuring default is cleared, redirect to home
       // This ensures proper routing logic and prevents getting stuck
-      console.log('Redirecting to home...');
+      // Redirecting to home...
       router.replace('/');
     } catch (error) {
       console.error('Error handling tournament not found:', error);
@@ -1260,7 +1259,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     const loadCompleteDataFromAPI = async () => {
       if (!isMinimalTournament || !visNo || completeTournamentData) return;
 
-      console.log('Loading complete tournament data from API for visNo:', visNo);
+      // Loading complete tournament data from API
       setDetailsLoading(true);
 
       try {
@@ -1281,7 +1280,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           tournaments = apiResponse.tournaments || [];
 
         } catch (apiError) {
-          console.log('VIS API failed, using fallback tournaments:', apiError);
+          // VIS API failed, using fallback tournaments
           // Fallback to sample tournaments
           tournaments = await FallbackTournamentService.getTournaments();
         }
@@ -1290,11 +1289,11 @@ const TournamentDetailScreenContent: React.FC = () => {
         const fullTournament = tournaments.find(t => t.visNo === visNo);
 
         if (fullTournament) {
-          console.log('Found complete tournament data:', fullTournament.name);
+          // Found complete tournament data
           setCompleteTournamentData(fullTournament);
           setIsMinimalTournament(false);
         } else {
-          console.log('Tournament not found in API/fallback, will use existing minimal data');
+          // Tournament not found in API/fallback, will use existing minimal data
           // If not found, we'll keep the minimal data
         }
       } catch (error) {
@@ -1388,7 +1387,7 @@ const TournamentDetailScreenContent: React.FC = () => {
               tournament={detailedTournament || tournament}
               onPress={() => {}} // No action needed since we're already on the detail screen
               showDefaultToggle={canBeDefault}
-              showStatusBadge={false}
+              showStatusBadge={true}
               compact={false}
             />
           </View>

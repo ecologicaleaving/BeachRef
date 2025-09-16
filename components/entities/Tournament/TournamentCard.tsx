@@ -92,6 +92,30 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   
   const tournamentStatus = mapStatusToTournamentStatus(tournamentStatusText);
 
+  // Get status-specific color coordination
+  const getStatusColorScheme = (status: string) => {
+    switch (status) {
+      case 'current':
+        return {
+          backgroundColor: '#DC2626', // Red for LIVE
+          textColor: '#FFFFFF'
+        };
+      case 'completed':
+        return {
+          backgroundColor: '#16A34A', // Green for COMPLETED
+          textColor: '#FFFFFF'
+        };
+      case 'upcoming':
+      default:
+        return {
+          backgroundColor: '#2563EB', // Blue for UPCOMING
+          textColor: '#FFFFFF'
+        };
+    }
+  };
+
+  const statusColorScheme = getStatusColorScheme(tournamentStatus);
+
   // Format gender badge text
   const getGenderBadgeText = (gender: string) => {
     switch (gender) {
@@ -215,8 +239,9 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Tournament accent strip */}
-      <View style={styles.tournamentAccentStrip} />
+      {/* Tournament accent strip with distinct status colors */}
+      <View style={[styles.tournamentAccentStrip, { backgroundColor: statusColorScheme.backgroundColor }]} />
+      <View style={[styles.accentOverlay, { backgroundColor: statusColorScheme.backgroundColor }]} />
 
       <View style={styles.cardHeader}>
         <View style={styles.countryInfoRow}>
@@ -234,12 +259,20 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
           </View>
 
           {showStatusBadge && (
-            <StatusBadge
-              status={tournamentStatus}
-              size={tournamentStatus === 'current' ? 'large' : 'small'}
-              variant="solid"
-              style={styles.statusBadgeInline}
-            />
+            <View style={[
+              styles.customStatusBadge,
+              { backgroundColor: statusColorScheme.backgroundColor },
+              tournamentStatus === 'current' && styles.statusBadgeLarge
+            ]}>
+              <Text style={[
+                styles.customStatusBadgeText,
+                { color: statusColorScheme.textColor },
+                tournamentStatus === 'current' && styles.statusBadgeTextLarge
+              ]}>
+                {tournamentStatus === 'current' && '● '}
+                {tournamentStatusText}
+              </Text>
+            </View>
           )}
         </View>
       </View>
@@ -287,21 +320,20 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8FAFC', // Slightly off-white background to distinguish from match cards
+    backgroundColor: '#FAFBFC', // Elegant off-white with subtle blue tint
     borderRadius: 20, // More rounded corners than match cards (20 vs 8)
     padding: 24, // More padding than match cards
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginVertical: 12, // Slightly more vertical spacing
     shadowColor: '#1F2937',
     shadowOffset: {
       width: 0,
-      height: 4, // Stronger shadow than match cards
+      height: 6, // Enhanced shadow for tournament cards
     },
-    shadowOpacity: 0.15, // More prominent shadow
-    shadowRadius: 12, // Larger shadow radius
-    elevation: 6, // Higher elevation on Android
-    borderWidth: 2, // Thicker border than match cards
-    borderColor: '#1B365D', // Dark blue border to distinguish from match cards
+    shadowOpacity: 0.12, // Softer shadow than before
+    shadowRadius: 16, // Larger shadow radius for depth
+    elevation: 8, // Higher elevation on Android
+    // Removed the heavy border completely
   },
   cardCompact: {
     padding: 16,
@@ -316,10 +348,21 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 4,
-    backgroundColor: '#1B365D', // Dark blue accent strip
+    height: 6, // Elegant thickness
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    // backgroundColor will be set dynamically based on tournament status
+  },
+  accentOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    opacity: 0.6, // Subtle overlay for depth
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    // backgroundColor will be set dynamically based on tournament status
   },
   cardHeader: {
     marginBottom: 12,
@@ -348,6 +391,27 @@ const styles = StyleSheet.create({
   },
   statusBadgeInline: {
     marginLeft: 8,
+  },
+  customStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  statusBadgeLarge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  customStatusBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  statusBadgeTextLarge: {
+    fontSize: 14,
   },
   bottomSection: {
     flexDirection: 'row',

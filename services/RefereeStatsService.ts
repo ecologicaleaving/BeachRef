@@ -143,7 +143,7 @@ export interface RefereeMatch {
 
 export interface EnhancedTournamentStats {
   stats: RefereeStats;
-  recentMatches: RefereeMatch[];
+  recentMatches: RefereeMatch[]; // Keep interface for UI compatibility
 }
 
 interface TournamentRefereeData {
@@ -287,198 +287,24 @@ export class RefereeStatsService {
   }
 
   /**
-   * Get enhanced tournament statistics including stats and recent matches using unified data fetching
+   * Get enhanced tournament statistics (simplified - recent matches functionality removed)
    */
   static async getEnhancedTournamentStats(refereeId: string, tournamentNo: string): Promise<EnhancedTournamentStats | null> {
     try {
       console.log('🔄 Getting enhanced tournament stats for referee:', refereeId, 'tournament:', tournamentNo);
 
-      // Try to get matches from the cache service first
-      const matchesResult = await CacheService.getMatches(tournamentNo);
-      if (!matchesResult || !matchesResult.data || matchesResult.data.length === 0) {
-        console.log('No matches found in cache, trying fallback VIS API approach for stats');
-
-        // Fallback to original VIS API approach for stats only
-        const fallbackStats = await RefereeStatsService.getCurrentTournamentStats(refereeId, tournamentNo);
-        if (fallbackStats) {
-          console.log('✅ Fallback stats loaded successfully:', fallbackStats);
-          return {
-            stats: fallbackStats,
-            recentMatches: [] // No recent matches available, but we have stats
-          };
-        }
-
-        console.log('❌ Both cache and fallback approaches failed');
-        return null;
-      }
-
-      console.log('📊 Total matches in tournament:', matchesResult.data.length);
-      console.log('🔍 Sample match data:', JSON.stringify(matchesResult.data[0], null, 2));
-      console.log('🔍 Data source:', matchesResult.source);
-
-      // Since database matches don't have refereeAssignments, query directly from match_referees table
-      let refereeMatches = [];
-
-      if (matchesResult.source === 'database') {
-        console.log('🔍 Database matches detected, querying match_referees table directly');
-
-        try {
-          // Import Supabase client directly
-          const { supabase } = await import('./supabase');
-
-          // Query match_referees table to find matches where this referee is assigned
-          const { data: refereeAssignments, error } = await supabase
-            .from('match_referees')
-            .select(`
-              match_id,
-              role,
-              matches (
-                id,
-                vis_match_no,
-                tournament_code,
-                utc_datetime,
-                court,
-                status,
-                round_name,
-                team_a_name,
-                team_b_name
-              )
-            `)
-            .eq('matches.tournament_code', tournamentNo)
-            .eq('referee_id', refereeId);
-
-          if (error) {
-            console.warn('❌ Error querying match_referees:', error);
-            // Fall back to empty matches since we can't find referee assignments
-            refereeMatches = [];
-          } else {
-            console.log('✅ Found referee assignments from database:', refereeAssignments?.length || 0);
-
-            // Transform database results to match our expected format
-            refereeMatches = (refereeAssignments || []).map(assignment => ({
-              id: assignment.matches.id,
-              visNo: assignment.matches.vis_match_no?.toString() || '',
-              tournamentCode: assignment.matches.tournament_code,
-              court: { courtNumber: assignment.matches.court || '' },
-              round: assignment.matches.round_name || '',
-              status: assignment.matches.status || 'SCHEDULED',
-              scheduledDateTime: assignment.matches.utc_datetime || new Date().toISOString(),
-              teams: {
-                teamA: { name: assignment.matches.team_a_name || 'Team A' },
-                teamB: { name: assignment.matches.team_b_name || 'Team B' }
-              },
-              refereeAssignments: [{
-                refereeId: refereeId,
-                role: assignment.role
-              }]
-            }));
-          }
-        } catch (dbError) {
-          console.warn('❌ Error accessing database for referee assignments:', dbError);
-          refereeMatches = [];
-        }
-      } else {
-        // Cache service data, use existing logic for API data
-        refereeMatches = matchesResult.data.filter(match => {
-          if (match.refereeAssignments && match.refereeAssignments.length > 0) {
-            return match.refereeAssignments.some(assignment =>
-              assignment.refereeId === refereeId ||
-              assignment.refereeName?.toLowerCase().includes(refereeId.toLowerCase())
-            );
-          }
-          return false;
-        });
-      }
-
-      console.log('🏐 Referee matches found:', refereeMatches.length);
-
-      if (refereeMatches.length === 0) {
-        return null;
-      }
-
-      // Calculate stats from matches
-      const stats: RefereeStats = {
-        totalMatches: refereeMatches.length,
-        matchesAsFirst: 0,
-        matchesAsSecond: 0,
-        menMatches: 0,
-        womenMatches: 0
-      };
-
-      // Process matches for both stats and recent matches
-      const processedMatches: RefereeMatch[] = refereeMatches.map(match => {
-        // Find this referee's assignment in the match
-        const refereeAssignment = match.refereeAssignments?.find(assignment =>
-          assignment.refereeId === refereeId ||
-          assignment.refereeName?.toLowerCase().includes(refereeId.toLowerCase())
-        );
-
-        // Determine referee role
-        const refereeRole = refereeAssignment?.role?.toLowerCase() === 'first' ? 'first' : 'second';
-
-        // Update stats
-        if (refereeRole === 'first') {
-          stats.matchesAsFirst++;
-        } else {
-          stats.matchesAsSecond++;
-        }
-
-        // Determine gender from tournament code
-        const isWomen = match.tournamentCode?.includes('W') || match.round?.toLowerCase().includes('women');
-        if (isWomen) {
-          stats.womenMatches++;
-        } else {
-          stats.menMatches++;
-        }
-
+      // Get stats using the original VIS API approach
+      const stats = await RefereeStatsService.getCurrentTournamentStats(refereeId, tournamentNo);
+      if (stats) {
+        console.log('✅ Stats loaded successfully:', stats);
         return {
-          matchId: match.visNo || match.id || 'unknown',
-          court: match.court?.courtNumber || match.court?.courtName || 'TBD',
-          round: match.round || 'Pool',
-          status: match.status || 'SCHEDULED',
-          dateTime: match.scheduledDateTime || new Date().toISOString(),
-          refereeRole: refereeRole as 'first' | 'second',
-          gender: isWomen ? 'W' : 'M' as 'M' | 'W',
-          referees: {
-            referee1: {
-              id: match.refereeAssignments?.[0]?.refereeId || '',
-              name: match.refereeAssignments?.[0]?.refereeName || 'TBD'
-            },
-            referee2: {
-              id: match.refereeAssignments?.[1]?.refereeId || '',
-              name: match.refereeAssignments?.[1]?.refereeName || 'TBD'
-            }
-          },
-          teams: {
-            team1: {
-              name: match.teams?.teamA?.name || 'Team 1',
-              countryCode: match.teams?.teamA?.countryCode || 'XX',
-              players: match.teams?.teamA?.players || []
-            },
-            team2: {
-              name: match.teams?.teamB?.name || 'Team 2',
-              countryCode: match.teams?.teamB?.countryCode || 'XX',
-              players: match.teams?.teamB?.players || []
-            }
-          }
+          stats,
+          recentMatches: [] // Recent matches implementation removed - will be rebuilt
         };
-      });
+      }
 
-      // Sort by scheduled date time and get last 3 for recent matches
-      const recentMatches = processedMatches
-        .sort((a, b) => {
-          const dateA = new Date(a.dateTime).getTime();
-          const dateB = new Date(b.dateTime).getTime();
-          return dateB - dateA; // Most recent first
-        })
-        .slice(0, 3);
-
-      console.log('✅ Enhanced stats calculated - Stats:', stats, 'Recent matches:', recentMatches.length);
-
-      return {
-        stats,
-        recentMatches
-      };
+      console.log('❌ Failed to load stats');
+      return null;
     } catch (error) {
       console.error('❌ Error fetching enhanced tournament stats:', error);
       return null;

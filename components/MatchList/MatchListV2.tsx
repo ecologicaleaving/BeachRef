@@ -760,20 +760,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const firstLiveMatchId = liveMatches[0].id;
       const yPosition = matchLayoutsRef.current[firstLiveMatchId];
 
-      if (__DEV__) {
-        console.log('[MatchListV2] Autoscroll attempt:', {
-          liveMatchesCount: liveMatches.length,
-          firstLiveMatchId,
-          yPosition,
-          allPositions: Object.keys(matchLayoutsRef.current).length,
-          totalMatches: filteredMatches.length
-        });
-      }
 
       if (yPosition !== undefined) {
-        if (__DEV__) {
-          console.log('[MatchListV2] Scrolling to position:', yPosition - 100);
-        }
 
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
@@ -783,9 +771,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       } else {
         // Position not available yet, mark as pending
         pendingAutoscrollRef.current = true;
-        if (__DEV__) {
-          console.log('[MatchListV2] Position not available yet, marked as pending');
-        }
       }
     }
   }, [filteredMatches]);
@@ -793,9 +778,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Trigger pending autoscroll when position becomes available
   const triggerPendingAutoscroll = useCallback(() => {
     if (pendingAutoscrollRef.current) {
-      if (__DEV__) {
-        console.log('[MatchListV2] Triggering pending autoscroll');
-      }
       setTimeout(() => scrollToFirstLiveMatch(), 100);
     }
   }, [scrollToFirstLiveMatch]);
@@ -804,18 +786,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     const hasLiveMatches = filteredMatches.some(match => isMatchLive(match));
 
-    if (__DEV__) {
-      console.log('[MatchListV2] Autoscroll effect check:', {
-        hasLiveMatches,
-        totalMatches: filteredMatches.length,
-        liveMatchesCount: filteredMatches.filter(match => isMatchLive(match)).length
-      });
-    }
 
     if (hasLiveMatches && filteredMatches.length > 0) {
-      if (__DEV__) {
-        console.log('[MatchListV2] Live matches detected, triggering autoscroll');
-      }
       // Reset pending flag and trigger autoscroll
       pendingAutoscrollRef.current = false;
       // Add delay to allow initial render to complete
@@ -885,11 +857,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Check if match is currently live - matches MatchCard red dot logic exactly
   const isMatchLive = (match: BeachMatchCore): boolean => {
     const isLive = match.status === MatchStatus.RUNNING;
-
-    if (__DEV__ && isLive) {
-      console.log(`[MatchListV2] Live match found: ${match.id} (status=${match.status})`);
-    }
-
     return isLive;
   };
 
@@ -962,9 +929,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           const yPosition = event.nativeEvent.layout.y;
           matchLayoutsRef.current[match.id] = yPosition;
 
-          if (__DEV__) {
-            console.log(`[MatchListV2] Match ${match.id} layout: y=${yPosition}, isLive=${isMatchLive(match)}`);
-          }
 
           // Check if this is a live match and trigger pending autoscroll
           if (isMatchLive(match)) {
@@ -972,9 +936,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             const isFirstLiveMatch = liveMatches.length > 0 && liveMatches[0].id === match.id;
 
             if (isFirstLiveMatch) {
-              if (__DEV__) {
-                console.log('[MatchListV2] First live match layout ready, triggering pending autoscroll');
-              }
               triggerPendingAutoscroll();
             }
           }

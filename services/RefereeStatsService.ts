@@ -17,7 +17,7 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
     const matchEntries = [...xmlData.matchAll(matchRegex)];
     for (const [matchEntry] of matchEntries) {
       const match: any = { refereeRole };
-      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name'];
+      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode', 'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2', 'PointsTeamASet3', 'PointsTeamBSet3', 'Referee1FederationCode', 'Referee2FederationCode'];
       for (const attr of attributes) {
         const regex = new RegExp(`${attr}="([^"]*)"`);
         const mr = matchEntry.match(regex);
@@ -39,6 +39,30 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
         Referee2Name: match.Referee2Name,
         referee1Name: match.Referee1Name,
         referee2Name: match.Referee2Name,
+        TeamAName: match.TeamAName,
+        TeamBName: match.TeamBName,
+        teamAName: match.TeamAName,
+        teamBName: match.TeamBName,
+        TeamAFederationCode: match.TeamAFederationCode,
+        TeamBFederationCode: match.TeamBFederationCode,
+        teamAFederationCode: match.TeamAFederationCode,
+        teamBFederationCode: match.TeamBFederationCode,
+        PointsTeamASet1: match.PointsTeamASet1,
+        PointsTeamBSet1: match.PointsTeamBSet1,
+        PointsTeamASet2: match.PointsTeamASet2,
+        PointsTeamBSet2: match.PointsTeamBSet2,
+        PointsTeamASet3: match.PointsTeamASet3,
+        PointsTeamBSet3: match.PointsTeamBSet3,
+        pointsTeamASet1: match.PointsTeamASet1,
+        pointsTeamBSet1: match.PointsTeamBSet1,
+        pointsTeamASet2: match.PointsTeamASet2,
+        pointsTeamBSet2: match.PointsTeamBSet2,
+        pointsTeamASet3: match.PointsTeamASet3,
+        pointsTeamBSet3: match.PointsTeamBSet3,
+        Referee1FederationCode: match.Referee1FederationCode,
+        Referee2FederationCode: match.Referee2FederationCode,
+        referee1FederationCode: match.Referee1FederationCode,
+        referee2FederationCode: match.Referee2FederationCode,
         rawMatch: match,
       });
     }
@@ -957,7 +981,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter NoEvent="${tournamentNo}" ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1065,7 +1089,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1159,7 +1183,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name">
+           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;

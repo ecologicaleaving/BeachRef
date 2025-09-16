@@ -17,7 +17,7 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
     const matchEntries = [...xmlData.matchAll(matchRegex)];
     for (const [matchEntry] of matchEntries) {
       const match: any = { refereeRole };
-      const attributes = ['No', 'Code', 'NoEvent', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'LocalDate', 'LocalTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode', 'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2', 'PointsTeamASet3', 'PointsTeamBSet3', 'Referee1FederationCode', 'Referee2FederationCode'];
+      const attributes = ['No', 'Code', 'NoEvent', 'NoInTournament', 'TournamentName', 'TournamentGender', 'LocalDateTime', 'LocalDate', 'LocalTime', 'Court', 'RoundCode', 'Phase', 'Status', 'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode', 'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2', 'PointsTeamASet3', 'PointsTeamBSet3', 'Referee1FederationCode', 'Referee2FederationCode'];
       for (const attr of attributes) {
         const regex = new RegExp(`${attr}="([^"]*)"`);
         const mr = matchEntry.match(regex);
@@ -31,6 +31,8 @@ function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 's
         refereeRole,
         gender,
         tournamentGender,
+        NoInTournament: match.NoInTournament,
+        noInTournament: match.NoInTournament,
         LocalDate: match.LocalDate,
         LocalTime: match.LocalTime,
         localDate: match.LocalDate,
@@ -1144,7 +1146,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter NoEvent="${tournamentNo}" ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1252,7 +1254,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;
@@ -1346,7 +1348,7 @@ export class RefereeStatsService {
       const xml = `<Requests>
   <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
   <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
+           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
     <Filter ${refereeField}="${refereeNo}"/>
   </Request>
 </Requests>`;

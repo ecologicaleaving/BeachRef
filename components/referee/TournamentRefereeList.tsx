@@ -3,7 +3,7 @@ import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from '
 import { useRouter } from 'expo-router';
 import { Text } from '../Typography/Text';
 import { colors } from '../../theme/tokens';
-import { RefereeStatsService, SeasonStats, CareerStats, RefereeMatch } from '../../services/RefereeStatsService';
+import { RefereeStatsService, RefereeStats, SeasonStats, CareerStats, RefereeMatch, EnhancedTournamentStats } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
 
 interface Referee {
@@ -72,7 +72,7 @@ const RefereeCard = ({
   };
 
   const [activeTab, setActiveTab] = useState<StatsTab>('Tournament Stats');
-  const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
+  const [currentStats, setCurrentStats] = useState<RefereeStats | null>(null);
   const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
   const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
   const [recentMatches, setRecentMatches] = useState<RefereeMatch[] | null>(null);
@@ -117,23 +117,21 @@ const RefereeCard = ({
         setTimeout(() => reject(new Error('Request timeout')), 30000)
       );
 
-      // Load tournament stats first (essential)
+      // Use the unified enhanced stats method (single API call)
       try {
-        const current = await Promise.race([RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo), timeout]);
-        console.log('Tournament stats loaded:', current);
-        setCurrentStats(current);
-      } catch (statsError) {
-        console.error('Error loading tournament stats:', statsError);
-        setCurrentStats(null);
-      }
+        const enhancedStats = await Promise.race([RefereeStatsService.getEnhancedTournamentStats(referee.RefereeId, tournamentNo), timeout]);
+        console.log('Enhanced stats loaded:', enhancedStats);
 
-      // Load recent matches separately (optional)
-      try {
-        const matches = await Promise.race([RefereeStatsService.getRefereeRecentMatches(referee.RefereeId, tournamentNo), timeout]);
-        console.log('Recent matches loaded:', matches);
-        setRecentMatches(matches);
-      } catch (matchesError) {
-        console.error('Error loading recent matches:', matchesError);
+        if (enhancedStats) {
+          setCurrentStats(enhancedStats.stats);
+          setRecentMatches(enhancedStats.recentMatches);
+        } else {
+          setCurrentStats(null);
+          setRecentMatches(null);
+        }
+      } catch (enhancedError) {
+        console.error('Error loading enhanced stats:', enhancedError);
+        setCurrentStats(null);
         setRecentMatches(null);
       }
     } catch (error) {

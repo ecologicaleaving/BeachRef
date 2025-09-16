@@ -205,16 +205,19 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   };
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
         styles.card,
         compact && styles.cardCompact,
         // Default card styling
         isDefault && styles.cardDefault
-      ]} 
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
+      {/* Tournament accent strip */}
+      <View style={styles.tournamentAccentStrip} />
+
       <View style={styles.cardHeader}>
         <View style={styles.countryInfoRow}>
           <FlagImage
@@ -284,21 +287,21 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: '#F8FAFC', // Slightly off-white background to distinguish from match cards
+    borderRadius: 20, // More rounded corners than match cards (20 vs 8)
+    padding: 24, // More padding than match cards
     marginHorizontal: 16,
     marginVertical: 8,
-    shadowColor: '#000',
+    shadowColor: '#1F2937',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4, // Stronger shadow than match cards
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    shadowOpacity: 0.15, // More prominent shadow
+    shadowRadius: 12, // Larger shadow radius
+    elevation: 6, // Higher elevation on Android
+    borderWidth: 2, // Thicker border than match cards
+    borderColor: '#1B365D', // Dark blue border to distinguish from match cards
   },
   cardCompact: {
     padding: 16,
@@ -307,6 +310,16 @@ const styles = StyleSheet.create({
   cardDefault: {
     borderLeftColor: colors.accent,
     borderLeftWidth: 4,
+  },
+  tournamentAccentStrip: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: '#1B365D', // Dark blue accent strip
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   cardHeader: {
     marginBottom: 12,

@@ -220,29 +220,6 @@ const RefereeCard = ({
               <Text style={styles.roleTotalLabel}>R2</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.profileButton}
-            activeOpacity={0.8}
-            onPress={() => {
-              try {
-                const payload: any = {
-                  id: (referee?.RefereeId || '').toString(),
-                  firstName: referee?.firstName || '',
-                  lastName: referee?.lastName || '',
-                  federationCode: referee?.federationCode || '',
-                  gender: referee?.gender || '',
-                  status: 'Active',
-                  role: 'Referee',
-                  type: 'International'
-                };
-                router.push({ pathname: '/referee-profile', params: { refereeData: JSON.stringify(payload) } });
-              } catch (e) {
-                console.error('Failed to navigate to referee profile', e);
-              }
-            }}
-          >
-            <Text style={styles.profileButtonText}>Profile</Text>
-          </TouchableOpacity>
           <Text style={styles.expandIcon}>
             {expanded ? '▼' : '▶'}
           </Text>
@@ -267,6 +244,33 @@ const RefereeCard = ({
           {renderStatsContent()}
         </View>
       )}
+
+      {/* Profile button at bottom */}
+      <View style={styles.profileButtonContainer}>
+        <TouchableOpacity
+          style={styles.profileButtonBottom}
+          activeOpacity={0.8}
+          onPress={() => {
+            try {
+              const payload: any = {
+                id: (referee?.RefereeId || '').toString(),
+                firstName: referee?.firstName || '',
+                lastName: referee?.lastName || '',
+                federationCode: referee?.federationCode || '',
+                gender: referee?.gender || '',
+                status: 'Active',
+                role: 'Referee',
+                type: 'International'
+              };
+              router.push({ pathname: '/referee-profile', params: { refereeData: JSON.stringify(payload) } });
+            } catch (e) {
+              console.error('Failed to navigate to referee profile', e);
+            }
+          }}
+        >
+          <Text style={styles.profileButtonText}>View Profile</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -971,5 +975,19 @@ const styles = StyleSheet.create({
   statsEmpty: {
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  profileButtonContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  profileButtonBottom: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

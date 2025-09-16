@@ -53,7 +53,7 @@ export class ErrorLogger {
     context?: Record<string, any>
     recovery_suggestion?: string
   }): Promise<string> {
-    const errorMessage = typeof params.error === 'string' ? params.error : params.error.message
+    const errorMessage = typeof params.error === 'string' ? params.error : (params.error?.message || params.error?.toString() || 'Unknown error')
     const errorStack = typeof params.error === 'object' && params.error.stack ? params.error.stack : undefined
 
     // Classify error type and severity

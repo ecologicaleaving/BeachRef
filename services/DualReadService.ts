@@ -366,9 +366,10 @@ export class DualReadService {
             };
           }
         } catch (dbError) {
-          await this.errorLogger.logError(dbError as Error, {
-            context: 'DualReadService.getMatches.database',
-            severity: 'medium'
+          await this.errorLogger.logError({
+            entity_type: 'matches',
+            error: dbError as Error,
+            context: { service: 'DualReadService.getMatches.database', severity: 'medium' }
           });
           
           this.updatePerformanceMetrics('matches', 'db', Date.now() - startTime, false);
@@ -408,9 +409,10 @@ export class DualReadService {
             performance
           };
         } catch (apiError) {
-          await this.errorLogger.logError(apiError as Error, {
-            context: 'DualReadService.getMatches.api',
-            severity: 'high'
+          await this.errorLogger.logError({
+            entity_type: 'matches',
+            error: apiError as Error,
+            context: { service: 'DualReadService.getMatches.api', severity: 'high' }
           });
           
           this.updatePerformanceMetrics('matches', 'api', Date.now() - startTime, false);
@@ -440,9 +442,10 @@ export class DualReadService {
       };
 
     } catch (error) {
-      await this.errorLogger.logError(error as Error, {
-        context: 'DualReadService.getMatches',
-        severity: 'high'
+      await this.errorLogger.logError({
+        entity_type: 'matches',
+        error: error as Error,
+        context: { service: 'DualReadService.getMatches', severity: 'high' }
       });
 
       return {
@@ -763,32 +766,60 @@ export class DualReadService {
    * Get matches from database
    */
   private async getMatchesFromDB(filters?: any): Promise<MatchDTO[]> {
-    let query = this.supabase.from('matches').select(`
-      *,
-      events!inner(tournament_code, vis_event_no)
-    `);
+    try {
+      // First, test if the table exists by doing a simple count query
+      const { count, error: countError } = await this.supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true });
 
-    if (filters?.tournamentCode) {
-      query = query.eq('tournament_code', filters.tournamentCode);
-    }
-    if (filters?.eventNo) {
-      query = query.eq('events.vis_event_no', filters.eventNo);
-    }
-    if (filters?.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters?.date) {
-      query = query.gte('utc_datetime', `${filters.date}T00:00:00Z`)
-                  .lt('utc_datetime', `${filters.date}T23:59:59Z`);
-    }
+      if (countError) {
+        console.log('🔍 Table check error:', countError.message);
+        // Table might not exist, throw specific error
+        throw new Error(`Table 'matches' does not exist or is inaccessible: ${countError.message}`);
+      }
 
-    const { data, error } = await query;
+      console.log(`✅ Table 'matches' exists with ${count} rows`);
 
-    if (error) {
-      throw new Error(`Database query failed: ${error.message}`);
+      let query = this.supabase.from('matches').select('*');
+
+      if (filters?.tournamentCode) {
+        console.log('🔍 Filtering database by tournament_code:', filters.tournamentCode);
+        // Use existing schema field tournament_code (not tournament_no)
+        query = query.eq('tournament_code', filters.tournamentCode);
+      }
+      if (filters?.eventNo) {
+        query = query.eq('event_id', filters.eventNo);
+      }
+      if (filters?.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters?.date) {
+        query = query.gte('utc_datetime', `${filters.date}T00:00:00Z`)
+                    .lt('utc_datetime', `${filters.date}T23:59:59Z`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Database query failed: ${error.message}`);
+      }
+
+      console.log('🔍 Database query result:', {
+        rowCount: data?.length || 0,
+        hasData: !!data,
+        firstRow: data?.[0] ? {
+          id: data[0].id,
+          tournament_code: data[0].tournament_code,
+          vis_match_no: data[0].vis_match_no,
+          status: data[0].status
+        } : null
+      });
+
+      return data ? data.map(this.transformMatchFromDB) : [];
+    } catch (error) {
+      console.error('❌ Error in getMatchesFromDB:', error);
+      throw error;
     }
-
-    return data ? data.map(this.transformMatchFromDB) : [];
   }
 
   /**

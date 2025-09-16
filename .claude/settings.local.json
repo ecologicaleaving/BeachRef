@@ -101,7 +101,11 @@
       "Bash(rm:*)",
       "Bash(npm ls:*)",
       "Bash(npx --yes @expo/cli@latest start --web --clear)",
-      "Bash(npx --yes @expo/cli@latest start --web)"
+      "Bash(npx --yes @expo/cli@latest start --web)",
+      "Bash(start \"http://localhost:8081\")",
+      "Bash(start \"http://localhost:8084\")",
+      "Bash(npx --yes @expo/cli@latest start --web --port 8098)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": [],

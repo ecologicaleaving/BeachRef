@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../Typography/Text';
 import { FlagImage } from '../FlagImage';
-import { colors } from '../../theme/tokens';
+import { colors, brandColors, statusColors } from '../../theme/tokens';
 import { RefereeMatch } from '../../services/RefereeStatsService';
 
 interface MatchRefereeCardProps {
@@ -100,7 +100,7 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
     return match.round; // Use original phase name, will make smaller in styling
   };
 
-  // Get status styling
+  // Get FIVB-branded status styling
   const getStatusStyle = () => {
     const rawMatch = (match as any).rawMatch;
     const status = match.status.toLowerCase();
@@ -112,12 +112,27 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
     );
 
     if (status.includes('finished') || status.includes('completed') || status.includes('final') || hasSetScores) {
-      return { backgroundColor: '#D1FAE5', color: '#065F46', text: 'FINISHED' };
+      return {
+        backgroundColor: brandColors.accentLight,
+        color: colors.success,
+        text: 'FINISHED',
+        borderColor: colors.success
+      };
     }
     if (status.includes('running') || status.includes('live') || status.includes('playing')) {
-      return { backgroundColor: '#FEE2E2', color: '#991B1B', text: 'LIVE' };
+      return {
+        backgroundColor: brandColors.secondaryLight,
+        color: statusColors.current,
+        text: 'LIVE',
+        borderColor: statusColors.current
+      };
     }
-    return { backgroundColor: '#E0E7FF', color: '#3730A3', text: 'SCHEDULED' };
+    return {
+      backgroundColor: brandColors.primaryLight,
+      color: colors.textSecondary,
+      text: 'SCHEDULED',
+      borderColor: colors.secondary
+    };
   };
 
   // Format time compactly
@@ -165,7 +180,13 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
           <View style={styles.phaseSection}>
             <Text style={styles.phaseText}>{phaseName}</Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
+          <View style={[
+            styles.statusBadge,
+            {
+              backgroundColor: statusStyle.backgroundColor,
+              borderColor: statusStyle.borderColor
+            }
+          ]}>
             <Text style={[styles.statusText, { color: statusStyle.color }]}>
               {statusStyle.text}
             </Text>
@@ -253,19 +274,19 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 6,
+    backgroundColor: brandColors.primaryLight,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    minHeight: 90, // Taller for team rows + referee rows
+    borderColor: colors.secondary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    minHeight: 95,
   },
 
   topRow: {
@@ -292,20 +313,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Phase Section - Smaller text
+  // Phase Section - FIVB branded styling
   phaseSection: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: brandColors.secondaryLight,
+    borderRadius: 6,
     minWidth: 60,
     alignItems: 'center',
+    borderWidth: 0.5,
+    borderColor: colors.secondary,
   },
 
   phaseText: {
     fontSize: 9,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textPrimary,
     textAlign: 'center',
   },
 
@@ -332,36 +355,43 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textPrimary,
     flex: 1,
     textAlign: 'right',
   },
 
-  // Results Section - Float left
+  // Results Section - FIVB branded with accent background
   resultsSection: {
     flexDirection: 'column',
     alignItems: 'flex-start',
+    backgroundColor: brandColors.accentLight,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: colors.accent,
+    minWidth: 80,
   },
 
   resultsText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#059669',
+    color: colors.success,
     textAlign: 'center',
   },
 
-  // Set Result Styles (bigger)
+  // Set Result Styles - FIVB success color
   setResultText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#059669',
+    color: colors.success,
     textAlign: 'left',
   },
 
   setScoresText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.textPrimary,
     textAlign: 'left',
   },
 
@@ -375,7 +405,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textSecondary,
     textAlign: 'left',
   },
 
@@ -447,7 +477,7 @@ const styles = StyleSheet.create({
 
   timeText: {
     fontSize: 10,
-    color: '#374151',
+    color: colors.textSecondary,
   },
 
   separator: {
@@ -456,11 +486,12 @@ const styles = StyleSheet.create({
   },
 
   statusBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 4,
-    minWidth: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    minWidth: 24,
     alignItems: 'center',
+    borderWidth: 1,
   },
 
   statusText: {
@@ -471,21 +502,25 @@ const styles = StyleSheet.create({
   refereeRole: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.textSecondary,
   },
 
   currentReferee: {
-    color: '#1E40AF',
+    color: colors.primary,
     fontWeight: '700',
   },
 
-  // Referee Section - Above main content
+  // Referee Section - FIVB professional styling
   refereeSection: {
-    marginBottom: 8,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-    gap: 3,
+    marginBottom: 10,
+    paddingBottom: 8,
+    paddingHorizontal: 6,
+    paddingTop: 4,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: colors.secondary,
+    gap: 4,
   },
 
   refereeRow: {
@@ -514,7 +549,7 @@ const styles = StyleSheet.create({
   refereeLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.background,
     textAlign: 'center',
   },
 
@@ -534,7 +569,7 @@ const styles = StyleSheet.create({
   refereeName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textPrimary,
     flex: 1,
   },
 

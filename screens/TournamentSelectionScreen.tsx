@@ -2,13 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  SectionList,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
   Alert,
   RefreshControl,
-  ScrollView,
   Dimensions,
   Pressable,
   Switch,
@@ -25,6 +24,19 @@ import { FallbackTournamentService } from '../services/FallbackTournamentService
 
 // Removed local TournamentCard component - using unified component from entities/Tournament
 
+// Section types for SectionList
+interface TournamentSection {
+  id: string;
+  title: string;
+  type: 'season' | 'month';
+  year?: number;
+  month?: number;
+  seasonKey?: string;
+  monthKey?: string;
+  data: TournamentCore[];
+  expanded: boolean;
+  tournamentCount: number;
+}
 
 const TournamentSelectionScreen: React.FC = () => {
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
@@ -570,29 +582,39 @@ const TournamentSelectionScreen: React.FC = () => {
     return getTournamentStatus(tournament) === 'LIVE NOW';
   });
 
-  // Group tournaments by season and month hierarchy
-  const groupedTournaments = React.useMemo(() => {
-    // Grouping tournaments
-    const seasonGroups: { [seasonKey: string]: { [monthKey: string]: TournamentCore[] } } = {};
-    
+  // Get season years sorted (recent first)
+  const getSeasonYears = (): number[] => {
+    const years: number[] = [];
+    for (let year = 2026; year >= 2001; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
+  // Generate sections for SectionList (seasons and months)
+  const tournamentSections = React.useMemo(() => {
+    const sections: TournamentSection[] = [];
+
     // Filter tournaments
     const baseFilteredTournaments = tournaments.filter(tournament => {
       if (!tournament.name || !tournament.dates?.startDate) {
         return false;
       }
-      
+
       const startDate = new Date(tournament.dates.startDate);
       const year = startDate.getFullYear();
-      
+
       // Only include tournaments from 2001 to 2026
       if (year < 2001 || year > 2026) {
         return false;
       }
-      
+
       return true;
     });
-    
+
     // Group by season (year) and then by month
+    const seasonGroups: { [seasonKey: string]: { [monthKey: string]: TournamentCore[] } } = {};
+
     baseFilteredTournaments.forEach(tournament => {
       if (tournament.dates?.startDate) {
         const tournamentDate = new Date(tournament.dates.startDate);
@@ -600,19 +622,19 @@ const TournamentSelectionScreen: React.FC = () => {
         const month = tournamentDate.getMonth();
         const seasonKey = getSeasonKey(year);
         const monthKey = getMonthKey(year, month);
-        
+
         if (!seasonGroups[seasonKey]) {
           seasonGroups[seasonKey] = {};
         }
-        
+
         if (!seasonGroups[seasonKey][monthKey]) {
           seasonGroups[seasonKey][monthKey] = [];
         }
-        
+
         seasonGroups[seasonKey][monthKey].push(tournament);
       }
     });
-    
+
     // Sort tournaments within each month by end date descending (most recent first)
     Object.keys(seasonGroups).forEach(seasonKey => {
       Object.keys(seasonGroups[seasonKey]).forEach(monthKey => {
@@ -623,35 +645,86 @@ const TournamentSelectionScreen: React.FC = () => {
         });
       });
     });
-    
-    return seasonGroups;
-  }, [tournaments]);
+
+    // Convert grouped data to sections array
+    const years = getSeasonYears();
+
+    years.forEach(year => {
+      const seasonKey = getSeasonKey(year);
+      const seasonData = seasonGroups[seasonKey];
+      const isSeasonExpanded = expandedSeasons[seasonKey] || false;
+
+      if (!seasonData) return;
+
+      const totalSeasonTournaments = Object.values(seasonData).reduce(
+        (sum, monthTournaments) => sum + monthTournaments.length, 0
+      );
+
+      // Add season header section
+      sections.push({
+        id: seasonKey,
+        title: `Season ${year}`,
+        type: 'season',
+        year,
+        seasonKey,
+        data: [], // Season headers have no data
+        expanded: isSeasonExpanded,
+        tournamentCount: totalSeasonTournaments,
+      });
+
+      // Add month sections if season is expanded
+      if (isSeasonExpanded) {
+        const monthEntries = Object.entries(seasonData)
+          .sort(([a], [b]) => b.localeCompare(a)); // Recent months first
+
+        monthEntries.forEach(([monthKey, monthTournaments]) => {
+          const isMonthExpanded = expandedMonths[monthKey] || false;
+          const [year, month] = monthKey.split('-');
+          const monthNumber = parseInt(month) - 1; // Convert to 0-based month
+
+          sections.push({
+            id: monthKey,
+            title: formatMonthHeader(monthKey),
+            type: 'month',
+            year: parseInt(year),
+            month: monthNumber,
+            monthKey,
+            data: isMonthExpanded ? monthTournaments : [], // Only include data if expanded
+            expanded: isMonthExpanded,
+            tournamentCount: monthTournaments.length,
+          });
+        });
+      }
+    });
+
+    return sections;
+  }, [tournaments, expandedSeasons, expandedMonths]);
   
   // Initialize expanded seasons and months - 2025 season open, current month open
   useEffect(() => {
-    if (Object.keys(groupedTournaments).length > 0 && !hierarchyInitialized) {
+    if (tournaments.length > 0 && !hierarchyInitialized) {
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth();
       const currentSeasonKey = getSeasonKey(2025); // Always expand 2025
       const currentMonthKey = getMonthKey(currentYear, currentMonth);
-      
+
       // Initialize seasons - only 2025 expanded
       const initialSeasons: {[key: string]: boolean} = {};
       for (let year = 2001; year <= 2026; year++) {
         initialSeasons[getSeasonKey(year)] = year === 2025;
       }
-      
+
       // Initialize months - only current month expanded if in 2025
       const initialMonths: {[key: string]: boolean} = {};
       if (currentYear === 2025) {
         initialMonths[currentMonthKey] = true;
       }
-      
+
       setExpandedSeasons(initialSeasons);
       setExpandedMonths(initialMonths);
       setHierarchyInitialized(true);
     }
-  }, [Object.keys(groupedTournaments).length, hierarchyInitialized]);
+  }, [tournaments.length, hierarchyInitialized]);
   
   // Toggle season expansion
   const toggleSeasonExpansion = (seasonKey: string) => {
@@ -667,15 +740,6 @@ const TournamentSelectionScreen: React.FC = () => {
       ...prev,
       [monthKey]: !prev[monthKey]
     }));
-  };
-  
-  // Get season years sorted (recent first)
-  const getSeasonYears = (): number[] => {
-    const years: number[] = [];
-    for (let year = 2026; year >= 2001; year--) {
-      years.push(year);
-    }
-    return years;
   };
 
   // Get tournaments filtered by status for display in specific sections
@@ -768,22 +832,76 @@ const TournamentSelectionScreen: React.FC = () => {
     return categories;
   };
 
+  // SectionList render functions
   const renderTournament = ({ item }: { item: TournamentCore }) => {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => handleTournamentPress(item)}
-        activeOpacity={0.7}
         style={styles.tournamentCardWrapper}
       >
         <TournamentCard
           tournament={item}
-          onPress={() => {}} // Empty onPress since TouchableOpacity handles it
+          onPress={() => {}} // Empty onPress since Pressable handles it
           showDefaultToggle={true}
           showStatusBadge={true}
           compact={false}
         />
-      </TouchableOpacity>
+      </Pressable>
     );
+  };
+
+  const renderSectionHeader = ({ section }: { section: TournamentSection }) => {
+    if (section.type === 'season') {
+      return (
+        <Pressable
+          style={[
+            styles.seasonHeader,
+            section.expanded && styles.expandedSeasonHeader
+          ]}
+          onPress={() => toggleSeasonExpansion(section.seasonKey!)}
+        >
+          <View style={styles.seasonHeaderContent}>
+            <Text style={styles.seasonHeaderText}>
+              {section.title}
+            </Text>
+            <Text style={styles.tournamentCountText}>
+              {section.tournamentCount} {section.tournamentCount === 1 ? 'tournament' : 'tournaments'}
+            </Text>
+          </View>
+
+          <Text style={styles.expandIndicator}>
+            {section.expanded ? '▼' : '▶'}
+          </Text>
+        </Pressable>
+      );
+    }
+
+    if (section.type === 'month') {
+      return (
+        <Pressable
+          style={[
+            styles.monthHeader,
+            section.expanded && styles.expandedMonthHeader
+          ]}
+          onPress={() => toggleMonthExpansion(section.monthKey!)}
+        >
+          <View style={styles.monthHeaderContent}>
+            <Text style={styles.monthHeaderText}>
+              {section.title}
+            </Text>
+            <Text style={styles.tournamentCountText}>
+              {section.tournamentCount} {section.tournamentCount === 1 ? 'tournament' : 'tournaments'}
+            </Text>
+          </View>
+
+          <Text style={styles.expandIndicator}>
+            {section.expanded ? '▼' : '▶'}
+          </Text>
+        </Pressable>
+      );
+    }
+
+    return null;
   };
 
   // Get categories with counts and filter out empty ones
@@ -970,143 +1088,57 @@ const TournamentSelectionScreen: React.FC = () => {
   }
 
   return (
-    <Pressable onPress={() => setShowDropdown(false)} style={styles.container}>
-        <NavigationHeader
-          title="Tournament Selection"
-          showBackButton={false}
-          showStatusBar={false}
-        />
-        
-        <ScrollView 
-          style={styles.scrollContainer}
-          stickyHeaderIndices={[1]} // Make the second element (filters) sticky
-          showsVerticalScrollIndicator={false}
+    <View style={styles.container}>
+      <NavigationHeader
+        title="Tournament Selection"
+        showBackButton={false}
+        showStatusBar={false}
+      />
+
+      {/* Live tournaments carousel - outside of SectionList */}
+      {renderLiveTournaments()}
+
+      {/* Loading overlay */}
+      {tournamentLoading && (
+        <View
+          style={styles.tournamentLoadingOverlay}
+          accessibilityLabel="Loading tournaments"
+          accessibilityLiveRegion="polite"
         >
-          {/* Carousel Section - will disappear when scrolling */}
-          {renderLiveTournaments()}
-          
-          {/* No filters - just seasons and months hierarchy */}
-        
-          {/* Tournament List Section */}
-          <View style={styles.tournamentsSection}>
-            {tournamentLoading && (
-              <View 
-                style={styles.tournamentLoadingOverlay}
-                accessibilityLabel="Loading tournaments"
-                accessibilityLiveRegion="polite"
-              >
-                <ActivityIndicator size="small" color="#FF6B35" />
-              </View>
-            )}
-          
-            {Object.keys(groupedTournaments).length === 0 && !initialLoading && !tournamentLoading ? (
-              <View style={styles.emptyState}>
-                <Icon name="clock-outline" size={48} color="#9CA3AF" />
-                <Text style={styles.emptyText}>No tournaments found</Text>
-                <Text style={styles.emptySubtext}>
-                  No tournaments available
-                </Text>
-              </View>
-            ) : (
-              <ScrollView 
-                style={styles.seasonsList}
-                showsVerticalScrollIndicator={false}
-              >
-                {getSeasonYears().map(year => {
-                  const seasonKey = getSeasonKey(year);
-                  const seasonData = groupedTournaments[seasonKey];
-                  const isSeasonExpanded = expandedSeasons[seasonKey] || false;
-                  
-                  if (!seasonData) return null;
-                  
-                  const totalTournaments = Object.values(seasonData).reduce((sum, monthTournaments) => sum + monthTournaments.length, 0);
-                  
-                  return (
-                    <View key={seasonKey}>
-                      {/* Season Header */}
-                      <TouchableOpacity 
-                        style={[
-                          styles.seasonHeader,
-                          isSeasonExpanded && styles.expandedSeasonHeader
-                        ]}
-                        onPress={() => toggleSeasonExpansion(seasonKey)}
-                        activeOpacity={0.7}
-                      >
-                        <View style={styles.seasonHeaderContent}>
-                          <Text style={styles.seasonHeaderText}>
-                            Season {year}
-                          </Text>
-                          <Text style={styles.tournamentCountText}>
-                            {totalTournaments} {totalTournaments === 1 ? 'tournament' : 'tournaments'}
-                          </Text>
-                        </View>
-                        
-                        <Text style={styles.expandIndicator}>
-                          {isSeasonExpanded ? '▼' : '▶'}
-                        </Text>
-                      </TouchableOpacity>
-                      
-                      {/* Season Content - Months */}
-                      {isSeasonExpanded && (
-                        <View style={styles.seasonContent}>
-                          {Object.entries(seasonData)
-                            .sort(([a], [b]) => b.localeCompare(a)) // Recent months first
-                            .map(([monthKey, monthTournaments]) => {
-                              const isMonthExpanded = expandedMonths[monthKey] || false;
-                              
-                              return (
-                                <View key={monthKey}>
-                                  {/* Month Header */}
-                                  <TouchableOpacity 
-                                    style={[
-                                      styles.monthHeader,
-                                      isMonthExpanded && styles.expandedMonthHeader
-                                    ]}
-                                    onPress={() => toggleMonthExpansion(monthKey)}
-                                    activeOpacity={0.7}
-                                  >
-                                    <View style={styles.monthHeaderContent}>
-                                      <Text style={styles.monthHeaderText}>
-                                        {formatMonthHeader(monthKey)}
-                                      </Text>
-                                      <Text style={styles.tournamentCountText}>
-                                        {monthTournaments.length} {monthTournaments.length === 1 ? 'tournament' : 'tournaments'}
-                                      </Text>
-                                    </View>
-                                    
-                                    <Text style={styles.expandIndicator}>
-                                      {isMonthExpanded ? '▼' : '▶'}
-                                    </Text>
-                                  </TouchableOpacity>
-                                  
-                                  {/* Month Content - Tournaments */}
-                                  {isMonthExpanded && (
-                                    <View style={styles.tournamentsContainer}>
-                                      <FlatList
-                                        data={monthTournaments}
-                                        keyExtractor={(item) => item.visNo || item.id}
-                                        renderItem={renderTournament}
-                                        showsVerticalScrollIndicator={false}
-                                        scrollEnabled={false}
-                                        nestedScrollEnabled={false}
-                                        removeClippedSubviews={false}
-                                        disableIntervalMomentum={true}
-                                      />
-                                    </View>
-                                  )}
-                                </View>
-                              );
-                            })}
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            )}
-          </View>
-        </ScrollView>
-    </Pressable>
+          <ActivityIndicator size="small" color="#FF6B35" />
+        </View>
+      )}
+
+      {/* Main SectionList */}
+      {tournamentSections.length === 0 && !initialLoading && !tournamentLoading ? (
+        <View style={styles.emptyState}>
+          <Icon name="clock-outline" size={48} color="#9CA3AF" />
+          <Text style={styles.emptyText}>No tournaments found</Text>
+          <Text style={styles.emptySubtext}>
+            No tournaments available
+          </Text>
+        </View>
+      ) : (
+        <SectionList
+          sections={tournamentSections}
+          keyExtractor={(item, index) => item.visNo || item.id || `tournament-${index}`}
+          renderItem={renderTournament}
+          renderSectionHeader={renderSectionHeader}
+          showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#FF6B35']}
+              tintColor="#FF6B35"
+            />
+          }
+          style={styles.sectionList}
+          contentContainerStyle={styles.sectionListContent}
+        />
+      )}
+    </View>
   );
 };
 
@@ -1115,8 +1147,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  scrollContainer: {
+  sectionList: {
     flex: 1,
+  },
+  sectionListContent: {
+    paddingBottom: 32,
   },
   stickyFilters: {
     backgroundColor: '#FFFFFF',
@@ -1625,7 +1660,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tournamentCardWrapper: {
-    // Wrapper to handle touch without interfering with scroll
+    // Pressable wrapper for tournament cards
   },
   // LIVE tournaments section styles
   liveTournamentsSection: {

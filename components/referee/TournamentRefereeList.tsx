@@ -208,10 +208,10 @@ const RefereeCard = ({
             </View>
           )}
 
-          {/* Profile Button positioned under recent matches */}
-          <TouchableOpacity style={styles.profileButtonBottom} onPress={handleProfilePress}>
+          {/* Profile Button positioned under recent matches - TEMPORARILY DISABLED */}
+          {/* <TouchableOpacity style={styles.profileButtonBottom} onPress={handleProfilePress}>
             <Text style={styles.profileButtonBottomText}>Profile</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );

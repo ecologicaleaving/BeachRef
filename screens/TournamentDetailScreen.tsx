@@ -53,6 +53,7 @@ const ExpandedFiltersView: React.FC<{
   setShowRefereeDropdown: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
   refereeNamesFromAPI: string[];
+  refereeDataFromAPI: {name: string, federationCode: string}[];
   getTournamentStatus: () => string;
 }> = ({
   matches,
@@ -66,6 +67,7 @@ const ExpandedFiltersView: React.FC<{
   setShowRefereeDropdown,
   setShowFilters,
   refereeNamesFromAPI,
+  refereeDataFromAPI,
   getTournamentStatus
 }) => {
   // Memoize court numbers to prevent recalculation on every render
@@ -101,11 +103,11 @@ const ExpandedFiltersView: React.FC<{
   // Combined referee names using dual system
   const refereeNames = React.useMemo(() => {
     const tournamentStatus = getTournamentStatus();
-    
+
     // For COMPLETED tournaments, always try to use match-extracted referees first
     // But also try API referees as fallback
     if (tournamentStatus === 'COMPLETED') {
-      
+
       if (refereeNamesFromMatches.length > 0) {
         return refereeNamesFromMatches;
       } else if (refereeNamesFromAPI.length > 0) {
@@ -118,6 +120,11 @@ const ExpandedFiltersView: React.FC<{
       return refereeNamesFromAPI;
     }
   }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
+
+  // Get federation code for a referee name
+  const getRefereeData = React.useCallback((refereeName: string) => {
+    return refereeDataFromAPI.find(ref => ref.name === refereeName);
+  }, [refereeDataFromAPI]);
 
   return (
     <View style={styles.expandedFilters}>
@@ -184,7 +191,7 @@ const ExpandedFiltersView: React.FC<{
       </View>
 
       {/* Referee Filter */}
-      <View style={styles.filterGroup}>
+      <View style={[styles.filterGroup, styles.refereeFilterGroup]}>
         <Text style={styles.filterLabel}>Referee:</Text>
         <View style={styles.dropdownContainer}>
           <TouchableOpacity
@@ -229,26 +236,38 @@ const ExpandedFiltersView: React.FC<{
                   </Text>
                 </TouchableOpacity>
                 {(() => {
-                  return refereeNames.map((referee) => (
-                    <TouchableOpacity
-                      key={referee}
-                      style={[
-                        styles.dropdownItem,
-                        refereeFilter === referee && styles.dropdownItemActive
-                      ]}
-                      onPress={() => {
-                        setRefereeFilter(referee);
-                        setShowRefereeDropdown(false);
-                      }}
-                    >
-                      <Text style={[
-                        styles.dropdownItemText,
-                        refereeFilter === referee && styles.dropdownItemTextActive
-                      ]} numberOfLines={2}>
-                        {referee}
-                      </Text>
-                    </TouchableOpacity>
-                  ));
+                  return refereeNames.map((referee) => {
+                    const refereeData = getRefereeData(referee);
+                    return (
+                      <TouchableOpacity
+                        key={referee}
+                        style={[
+                          styles.dropdownItem,
+                          refereeFilter === referee && styles.dropdownItemActive
+                        ]}
+                        onPress={() => {
+                          setRefereeFilter(referee);
+                          setShowRefereeDropdown(false);
+                        }}
+                      >
+                        <View style={styles.dropdownItemContent}>
+                          {refereeData?.federationCode && (
+                            <FlagImage
+                              countryCode={refereeData.federationCode}
+                              size="small"
+                              style={styles.dropdownFlag}
+                            />
+                          )}
+                          <Text style={[
+                            styles.dropdownItemText,
+                            refereeFilter === referee && styles.dropdownItemTextActive
+                          ]} numberOfLines={2}>
+                            {referee}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  });
                 })()}
               </ScrollView>
             </View>
@@ -286,6 +305,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
+  const [refereeDataFromAPI, setRefereeDataFromAPI] = useState<{name: string, federationCode: string}[]>([]);
   const [refereesLoading, setRefereesLoading] = useState(false);
 
   // State to track if we need to load complete tournament data
@@ -907,18 +927,29 @@ const TournamentDetailScreenContent: React.FC = () => {
         
         // Parse and store referee data
         const referees = parseRefereeXML(xmlResponse);
-        const refereeNames = referees
-          .filter(ref => ref.firstName.trim() || ref.lastName.trim())
+        const validReferees = referees.filter(ref => ref.firstName.trim() || ref.lastName.trim());
+
+        const refereeNames = validReferees
           .map(ref => `${ref.firstName} ${ref.lastName}`.trim())
           .sort();
-        
+
+        const refereeData = validReferees
+          .map(ref => ({
+            name: `${ref.firstName} ${ref.lastName}`.trim(),
+            federationCode: ref.federationCode || ''
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
         setRefereeNamesFromAPI(refereeNames);
+        setRefereeDataFromAPI(refereeData);
       } else {
         setRefereeNamesFromAPI([]);
+        setRefereeDataFromAPI([]);
       }
     } catch (error) {
       console.error('🏐 Error in loadRefereesFromAPI:', error);
       setRefereeNamesFromAPI([]);
+      setRefereeDataFromAPI([]);
     }
   };
 
@@ -1358,9 +1389,10 @@ const TournamentDetailScreenContent: React.FC = () => {
       />
 
       {/* Tournament Info - Scrollable */}
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        style={styles.scrollView} 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         stickyHeaderIndices={[1]} // Make the filters section sticky (always index 1)
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -1440,6 +1472,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                       setShowRefereeDropdown={setShowRefereeDropdown}
                       setShowFilters={setShowFilters}
                       refereeNamesFromAPI={refereeNamesFromAPI}
+                      refereeDataFromAPI={refereeDataFromAPI}
                       getTournamentStatus={getTournamentStatus}
                     />
                   )}
@@ -1615,6 +1648,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 80, // Add space for bottom menu (menu height + safe area)
   },
   tabContentSpacing: {
     paddingBottom: 20, // Bottom padding for content
@@ -1802,6 +1838,11 @@ const styles = StyleSheet.create({
   filterGroup: {
     marginBottom: 12,
   },
+
+  refereeFilterGroup: {
+    zIndex: 9998,
+    position: 'relative',
+  },
   
   filterLabel: {
     fontSize: 14,
@@ -1983,7 +2024,8 @@ const styles = StyleSheet.create({
   // Dropdown styles for referee filter
   dropdownContainer: {
     position: 'relative',
-    zIndex: 1000,
+    zIndex: 99999,
+    elevation: 20,
   },
   dropdownButton: {
     backgroundColor: '#FFFFFF',
@@ -2031,8 +2073,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
     maxHeight: 200,
     ...shadowPresets.small,
-    elevation: 5,
-    zIndex: 1001,
+    elevation: 25,
+    zIndex: 100000,
   },
   dropdownScrollView: {
     maxHeight: 200,
@@ -2042,6 +2084,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
+  },
+  dropdownItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dropdownFlag: {
+    width: 16,
+    height: 12,
+    borderRadius: 2,
   },
   dropdownItemActive: {
     backgroundColor: '#EFF6FF',
@@ -2065,6 +2117,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: '#FFFFFF',
+    zIndex: 1,
+    position: 'relative',
   },
   saveButton: {
     backgroundColor: colors.primary,

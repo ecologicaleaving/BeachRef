@@ -71,14 +71,46 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   const formatTime = (dateTimeString: string): string => {
     try {
       const date = new Date(dateTimeString);
-      return date.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: false 
+        hour12: false
       });
     } catch {
       return 'TBD';
     }
+  };
+
+  // Get round prefix for gender badge (Q for qualification/rounds 1&2)
+  const getRoundPrefix = (match: BeachMatchCore): string => {
+    const rawMatch = (match as any);
+    const roundPhase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
+    const round = match.round || rawMatch.Round;
+    const roundName = match.roundName || rawMatch.RoundName;
+
+    // Check for qualification matches (VIS API standard)
+    if (roundPhase === '1') return 'Q';
+
+    // Check for qualification keywords
+    const qualificationKeywords = /qualification|qual/i;
+    if (round && qualificationKeywords.test(round)) return 'Q';
+    if (roundName && qualificationKeywords.test(roundName)) return 'Q';
+
+    // Check for Round 1 and Round 2 - both get Q prefix
+    if (round) {
+      const roundStr = round.toString().toLowerCase();
+      if (roundStr === '1' || roundStr === 'round 1' || roundStr === 'r1') return 'Q';
+      if (roundStr === '2' || roundStr === 'round 2' || roundStr === 'r2') return 'Q';
+    }
+
+    if (roundName) {
+      const roundNameStr = roundName.toString().toLowerCase();
+      if (roundNameStr.includes('round 1') || roundNameStr === 'r1') return 'Q';
+      if (roundNameStr.includes('round 2') || roundNameStr === 'r2') return 'Q';
+    }
+
+    // Default: no prefix
+    return '';
   };
 
   // Check if match is live
@@ -201,50 +233,68 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return null;
   };
 
+  // Check if this is a qualification match
+  const isQualificationMatch = (match: BeachMatchCore): boolean => {
+    const rawMatch = match as any;
+    const roundPhase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
+    const round = match.round || rawMatch.Round;
+    const roundName = match.roundName || rawMatch.RoundName;
+
+    // Check RoundPhase "1" (VIS API standard for qualification)
+    if (roundPhase === '1') return true;
+
+    // Check round/roundName content for qualification keywords
+    const qualificationKeywords = /qualification|qual/i;
+    if (round && qualificationKeywords.test(round)) return true;
+    if (roundName && qualificationKeywords.test(roundName)) return true;
+
+    return false;
+  };
+
   // Extract round data - prioritize roundName attribute
   const getRoundDisplayData = () => {
     const rawMatch = match as any;
-    
+
     // First priority: use the roundName attribute directly
     if (match.roundName && match.roundName.trim()) {
       const roundName = match.roundName.trim();
-      
+
       // Special handling for finals
       if (roundName.toLowerCase().includes('final')) {
         // Check if it's the First Place final (Gold Medal)
-        if (roundName.toLowerCase().includes('first place') || 
+        if (roundName.toLowerCase().includes('first place') ||
             roundName.toLowerCase().includes('1st place') ||
             roundName.toLowerCase().includes('gold')) {
-          return { 
+          return {
             round: 'GOLD',
             phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
           };
         }
         // Other finals are Bronze Medal matches
         else {
-          return { 
+          return {
             round: 'BRONZE',
             phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
           };
         }
       }
-      
+
       // For non-final rounds, use the roundName as-is
-      return { 
+      return {
         round: roundName,
         phase: rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase
       };
     }
-    
-    // Fallback: check other possible sources for round information  
+
+    // Fallback: check other possible sources for round information
     const round = match.round || rawMatch.Round || rawMatch.RoundDisplayText;
     const phase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
-    
+
     // Check for medal matches first (gold/bronze)
     if (round && (round.toLowerCase().includes('gold') || round.toLowerCase().includes('bronze'))) {
-      return { 
-        round: round.toLowerCase().includes('gold') ? 'Gold' : 'Bronze', 
-        phase: 'Medal' 
+      return {
+        round: round.toLowerCase().includes('gold') ? 'Gold' : 'Bronze',
+        phase: 'Medal'
       };
     }
     
@@ -303,9 +353,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   };
   
   const roundData = getRoundDisplayData();
+  const isQualification = isQualificationMatch(match);
 
   const matchWithResult = match; // Use match as-is for now
-  
+
 
   return (
     <View>
@@ -313,23 +364,37 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         style={[
           styles.matchCard,
           variant === 'live' && styles.liveCard,
+          isQualification && styles.qualificationCard,
         ]}
         onPress={() => onPress?.(match)}
         activeOpacity={0.7}
       >
+        {/* Top band for women's matches */}
+        {(match as any).tournamentGender === 'W' && (
+          <View style={styles.womenTopBand} />
+        )}
+
         {/* Match Header - with gender badge and time/court */}
         <View style={styles.matchHeader}>
           <View style={styles.leftBadgeContainer}>
+            {isQualification && (
+              <View style={styles.qualificationBadge}>
+                <Text style={styles.qualificationBadgeText}>
+                  QUAL
+                </Text>
+              </View>
+            )}
             {(match as any).tournamentGender && (
               <View style={[
                 styles.genderBadge,
-                (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
+                (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge,
+                isQualification && styles.qualificationGenderBadge
               ]}>
                 <Text style={[
                   styles.genderBadgeText,
                   (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
                 ]}>
-                  {(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
+                  {getRoundPrefix(match)}{(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
                 </Text>
               </View>
             )}
@@ -624,6 +689,17 @@ const styles = StyleSheet.create({
     ...shadowPresets.card,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  womenTopBand: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: '#000000',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   liveCard: {
     borderColor: colors.success,
@@ -913,5 +989,27 @@ const styles = StyleSheet.create({
     minWidth: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Qualification match styles
+  qualificationCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B', // Amber/orange for qualification
+    backgroundColor: '#FFFBEB', // Very light amber background
+  },
+  qualificationBadge: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  qualificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  qualificationGenderBadge: {
+    borderColor: '#F59E0B',
+    borderWidth: 1,
   },
 });

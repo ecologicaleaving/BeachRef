@@ -11,6 +11,7 @@ import {
   Dimensions,
   Pressable,
   Switch,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Icon } from '../components/Icons/MaterialCommunityIcons';
@@ -875,6 +876,12 @@ const TournamentSelectionScreen: React.FC = () => {
       <Pressable
         onPress={() => handleTournamentPress(item)}
         style={styles.tournamentCardWrapper}
+        // Fix 1: Ensure proper gesture handling for production
+        hitSlop={8}
+        pressRetentionOffset={{ top: 4, bottom: 4, left: 4, right: 4 }}
+        android_ripple={{ borderless: false }}
+        // Ensure it receives click/tap events on web/mobile
+        pointerEvents="auto"
       >
         <TournamentCard
           tournament={item}
@@ -1179,6 +1186,10 @@ const styles = StyleSheet.create({
   },
   sectionList: {
     flex: 1,
+    // Web-specific: ensure proper touch handling
+    ...(Platform.OS === 'web' && {
+      touchAction: 'auto',
+    }),
   },
   sectionListContent: {
     paddingBottom: 32,

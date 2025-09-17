@@ -22,6 +22,7 @@ import { Icon } from '../Icons/MaterialCommunityIcons';
 import { colors } from '../../theme/tokens';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
 import { TournamentStorageService } from '../../services/TournamentStorageService';
+import { TimezoneToggle } from './TimezoneToggle';
 
 interface SubMenuItem {
   key: 'schedule' | 'ranking' | 'entryList' | 'officials';
@@ -376,6 +377,13 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                 </TouchableOpacity>
               </View>
 
+              {/* Timezone Toggle */}
+              <TimezoneToggle
+                tournamentTimezone={currentTournament?.timezone}
+                onTimezonePreferenceChange={(useLocalTime) => {
+                  console.log('Timezone preference changed to:', useLocalTime ? 'local' : 'user');
+                }}
+              />
 
               {/* Favorites Section - Only show if there are favorites */}
               {favoriteTournaments.length > 0 && (

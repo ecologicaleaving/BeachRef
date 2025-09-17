@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Calendar, Users } from 'lucide-react-native';
 import { shadowPresets } from '../../theme/shadows';
 
 interface TournamentBottomMenuProps {
@@ -11,7 +11,7 @@ interface TournamentBottomMenuProps {
 
 interface MenuItemConfig {
   key: string;
-  iconName: keyof typeof Feather.glyphMap;
+  IconComponent: React.ComponentType<any>;
   route?: string;
 }
 
@@ -25,12 +25,12 @@ export const TournamentBottomMenu: React.FC<TournamentBottomMenuProps> = ({
   const menuItems: MenuItemConfig[] = [
     {
       key: 'schedule',
-      iconName: 'calendar',
+      IconComponent: Calendar,
       route: '/tournament-detail'
     },
     {
       key: 'officials',
-      iconName: 'users',
+      IconComponent: Users,
       route: '/tournament-ref'
     }
   ];
@@ -64,6 +64,7 @@ export const TournamentBottomMenu: React.FC<TournamentBottomMenuProps> = ({
     <View style={styles.container}>
       {menuItems.map((item) => {
         const active = isActive(item);
+        const { IconComponent } = item;
         return (
           <TouchableOpacity
             key={item.key}
@@ -71,8 +72,7 @@ export const TournamentBottomMenu: React.FC<TournamentBottomMenuProps> = ({
             onPress={() => handlePress(item)}
             activeOpacity={0.7}
           >
-            <Feather
-              name={item.iconName}
+            <IconComponent
               size={20}
               color={active ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)'}
             />

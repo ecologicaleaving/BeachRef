@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Home } from 'lucide-react-native';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import { WhistleLogo } from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
@@ -122,7 +122,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               onPress={handleHomePress}
               activeOpacity={0.7}
             >
-              <Feather name="home" size={20} color={titleColor} />
+              <Home size={20} color={titleColor} />
             </TouchableOpacity>
           )}
           {rightComponent}

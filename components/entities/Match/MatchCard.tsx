@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { LiveIndicator } from '../../Status/LiveIndicator';
 import { colors } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
+import { formatTimeWithTimezoneSync, getCurrentTimezonePreference, subscribeToTimezonePreferenceChanges } from '../../../utils/dateFormatters';
 // Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
@@ -25,6 +26,7 @@ export interface MatchCardProps {
   showDuration?: boolean;
   compact?: boolean;
   variant?: 'default' | 'referee' | 'live';
+  tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
 }
 
 /**
@@ -35,8 +37,35 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   match,
   onPress,
   variant = 'default',
+  tournamentTimezone,
 }) => {
   const router = useRouter();
+  const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
+
+  // Load timezone preference on component mount and subscribe to changes
+  useEffect(() => {
+    const loadTimezonePreference = async () => {
+      try {
+        const preference = await getCurrentTimezonePreference();
+        setTimezonePreference(preference);
+      } catch (error) {
+        console.warn('Failed to load timezone preference in MatchCard:', error);
+        // Keep default 'user' preference
+      }
+    };
+
+    // Load initial preference
+    loadTimezonePreference();
+
+    // Subscribe to timezone preference changes for immediate updates
+    const unsubscribe = subscribeToTimezonePreferenceChanges((newPreference) => {
+      setTimezonePreference(newPreference);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
@@ -67,17 +96,43 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     });
   };
   
-  // Format time display
+  // Format time display with timezone awareness
   const formatTime = (dateTimeString: string): string => {
     try {
-      const date = new Date(dateTimeString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-    } catch {
+      // Check if we have UTC timestamp available (from Phase 2 VIS API enhancement)
+      const utcStart = (match as any).utc_start;
+      if (utcStart) {
+        // Use timezone-aware formatter with UTC timestamp
+        return formatTimeWithTimezoneSync(utcStart, {
+          tournamentTimezone: tournamentTimezone || 'UTC',
+          cachedPreference: timezonePreference,
+          showTimezoneIndicator: true,
+        });
+      }
+
+      // Fallback: try to use the provided dateTimeString with timezone awareness
+      if (dateTimeString) {
+        return formatTimeWithTimezoneSync(dateTimeString, {
+          tournamentTimezone: tournamentTimezone || 'UTC',
+          cachedPreference: timezonePreference,
+          showTimezoneIndicator: true,
+        });
+      }
+
       return 'TBD';
+    } catch (error) {
+      console.warn('Error formatting time in MatchCard:', error);
+      // Ultimate fallback to legacy formatter
+      try {
+        const date = new Date(dateTimeString);
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+      } catch {
+        return 'TBD';
+      }
     }
   };
 

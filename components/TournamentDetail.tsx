@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { Text, H2Text, BodyText, CaptionText } from './Typography';
 import { BeachMatch } from '../types/match';
-import { TournamentCore, GenderType as CoreGenderType } from '../types/tournament-v2';
+import { TournamentCore, GenderType as CoreGenderType , TournamentType, GenderType } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
-import { TournamentType, GenderType } from '../types/tournament-v2';
+
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';
 import { useTournamentRepository, useMatchRepository } from '../hooks/useRepositorySelection';

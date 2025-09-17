@@ -223,6 +223,7 @@ interface MatchListV2Props {
   enableTimelineView?: boolean; // Enhanced: Enable complete tournament timeline mode
   liveScores?: { [matchNumber: string]: any }; // External live scores data
   getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
+  tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -255,6 +256,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   enableTimelineView = false,
   liveScores,
   getLiveScore,
+  tournamentTimezone,
 }) => {
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
@@ -967,6 +969,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           showDuration={true}
           compact={false}
           variant={isMatchLive(match) ? 'live' : 'default'}
+          tournamentTimezone={tournamentTimezone}
         />
       </View>
     );

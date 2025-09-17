@@ -106,18 +106,18 @@ export const MatchStatusIndicators: React.FC<MatchStatusIndicatorsProps> = React
   }, [ballInPlay, ballInPlayAnim]);
 
   // Helper function to get status indicators
-  const getStatusIndicators = (): Array<{
+  const getStatusIndicators = (): {
     type: 'match-point' | 'set-point' | 'ball-in-play';
     text: string;
     priority: 'critical' | 'high' | 'medium';
     teamInfo?: string;
-  }> => {
-    const indicators: Array<{
+  }[] => {
+    const indicators: {
       type: 'match-point' | 'set-point' | 'ball-in-play';
       text: string;
       priority: 'critical' | 'high' | 'medium';
       teamInfo?: string;
-    }> = [];
+    }[] = [];
 
     // Match points (highest priority)
     if (matchPoints.teamA && matchPoints.teamB) {

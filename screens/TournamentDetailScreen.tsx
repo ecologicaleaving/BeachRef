@@ -1558,7 +1558,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                   tournamentCode={enhancedTournament?.visNo}
                   enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
                   enableLiveScores={getTournamentStatus() === 'LIVE'}
-                  tournamentTimezone={tournament?.timezone}
+                  tournamentTimezone={tournament?.DefaultTimeZone}
                   matchFilters={{
                     // Use the tournament numbers from the existing complex loading logic
                     tournamentCode: enhancedTournament?.visNo,

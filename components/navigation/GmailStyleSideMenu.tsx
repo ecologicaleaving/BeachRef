@@ -379,7 +379,7 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
 
               {/* Timezone Toggle */}
               <TimezoneToggle
-                tournamentTimezone={currentTournament?.timezone}
+                tournamentTimezone={currentTournament?.DefaultTimeZone}
                 onTimezonePreferenceChange={(useLocalTime) => {
                   console.log('Timezone preference changed to:', useLocalTime ? 'local' : 'user');
                 }}

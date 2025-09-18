@@ -91,6 +91,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }, [team1Score, team2Score, setScoresString, match.status, (match as any)?.rawStatus]);
 
+  // Reset score age when component re-renders due to live score refresh (every 5 seconds)
+  useEffect(() => {
+    if (isMatchLive(match)) {
+      setLastScoreUpdate(new Date());
+      setScoreAge(0);
+    }
+  }, [match]);
+
   // Score age counter for LIVE matches (updates every second)
   useEffect(() => {
     if (!isMatchLive(match)) return;

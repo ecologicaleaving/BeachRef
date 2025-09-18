@@ -197,21 +197,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   // Check if match is live
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    if (!match.scheduledDateTime) return false;
-    const matchDate = new Date(match.scheduledDateTime);
-    const now = new Date();
-    const isAfterScheduledTime = matchDate < now;
-    
-    const team1Sets = match.result?.team1Sets || 0;
-    const team2Sets = match.result?.team2Sets || 0;
-    const matchNotFinished = team1Sets < 2 && team2Sets < 2;
-    
-    const statusIsRunning = match.status === MatchStatus.RUNNING;
-    
-    const timeSinceStart = now.getTime() - matchDate.getTime();
-    const withinReasonableTimeframe = timeSinceStart <= 2 * 60 * 60 * 1000; // 2 hours
-    
-    return isAfterScheduledTime && matchNotFinished && (statusIsRunning || withinReasonableTimeframe);
+    // Don't consider matches with placeholder teams as live
+    if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
+      return false;
+    }
+
+    // Use VIS API Status field (most reliable, timezone-independent)
+    // The VIS API provides accurate real-time status regardless of timezone
+    return match.status === MatchStatus.RUNNING;
   };
 
   // Get match duration (from master branch logic) - check multiple sources

@@ -569,14 +569,16 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   ],
   [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
     'MatchNo', 'Court', 'DateTime', 'Status', 'Team1', 'Team2',
-    'Result', 'Round', 'Phase', 'Referees'
+    'Result', 'Round', 'Phase', 'Referees', 'TournamentGender',
+    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FederationCode'
   ],
   [VisApiEndpoint.GET_BEACH_MATCH]: [
     'No', 'NoInTournament', 'LocalDate', 'LocalTime', 'Status', 'Court',
     'TeamA', 'TeamB', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode',
     'MatchPointsA', 'MatchPointsB', 'RoundName', 'Round', 'RoundPhase',
-    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FederationCode',
-    'Sets', 'SetScores', 'Statistics', 'Duration'
+    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FedereeCode',
+    'Sets', 'SetScores', 'Statistics', 'Duration', 'TournamentGender',
+    'StartTime', 'EndTime'
   ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Name', 'Teams', 'Matches', 'Status'

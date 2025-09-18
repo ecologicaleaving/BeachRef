@@ -20,6 +20,7 @@ interface TournamentContext {
   timezone?: string;
   tournamentId?: string;
   location?: string;
+  gender?: 'M' | 'W' | 'MIXED';
 }
 
 /**
@@ -197,6 +198,9 @@ const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext)
   const preservedMatch = {
     ...beachMatchCore,
     ...(dto as any), // Spread all original DTO fields to preserve legacy data
+
+    // Inject tournament context data for filtering
+    tournamentGender: tournamentContext?.gender || (dto as any).tournamentGender,
     
     // Ensure core fields override any conflicts from DTO
     id: beachMatchCore.id,
@@ -334,6 +338,7 @@ interface MatchListV2Props {
   liveScores?: { [matchNumber: string]: any }; // External live scores data
   getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
+  tournamentGender?: 'M' | 'W' | 'MIXED'; // Tournament gender for match context injection
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -367,6 +372,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   liveScores,
   getLiveScore,
   tournamentTimezone,
+  tournamentGender,
 }) => {
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
@@ -410,12 +416,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Transform hook data to component format
   const hookMatches = useMemo(() => {
-    if (rawMatches.length > 0) {
-      console.log('⚽ MATCH:', rawMatches[0]);
-    }
-
-    return shouldUseHook ? rawMatches.map(dto => transformMatchDTO(dto, { timezone: tournamentTimezone })) : [];
-  }, [rawMatches, shouldUseHook, tournamentTimezone]);
+    return shouldUseHook ? rawMatches.map(dto => transformMatchDTO(dto, { timezone: tournamentTimezone, gender: tournamentGender })) : [];
+  }, [rawMatches, shouldUseHook, tournamentTimezone, tournamentGender]);
 
   // Use either prop matches or hook matches
   const activeMatches = propMatches || hookMatches;
@@ -427,7 +429,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   
   // State for collapsible date panels
   const [expandedDates, setExpandedDates] = useState<{[key: string]: boolean}>({});
-  
+
+  // State for TBD matches panel
+  const [tbdPanelExpanded, setTbdPanelExpanded] = useState<boolean>(false);
+
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
   const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
@@ -643,58 +648,73 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
     activeMatches.forEach(match => {
+      // Extract from structured referee assignments (existing logic)
       match.refereeAssignments?.forEach(referee => {
         if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
+
+      // Extract from VIS API referee names (enhanced functionality)
+      const matchAny = match as any;
+      if (matchAny.Referee1Name) refereeNames.add(matchAny.Referee1Name);
+      if (matchAny.Referee2Name) refereeNames.add(matchAny.Referee2Name);
     });
     return Array.from(refereeNames).sort();
   }, [activeMatches]);
 
   // Filter matches based on current filters
-  const filteredMatches = React.useMemo(() => {
+  const { filteredMatches, tbdMatches } = React.useMemo(() => {
     // ALWAYS use enhanced matches if available, even if empty
     const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : activeMatches;
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
-    
-    
+
+    const validMatches: typeof matchesToFilter = [];
+    const tbdMatches: typeof matchesToFilter = [];
+
     // Show date range of input matches
     if (matchesToFilter.length > 0) {
       const dates = matchesToFilter.map(m => m.scheduledDateTime.split('T')[0]).sort();
       const uniqueDates = [...new Set(dates)];
     }
-    
-    return matchesToFilter.filter(match => {
-      // Hide matches without scheduledDateTime (no date and time)
-      if (!match.scheduledDateTime || match.scheduledDateTime.trim() === '') {
-        return false;
+
+    matchesToFilter.forEach(match => {
+      // Check if this is a TBD match (missing data)
+      const hasNoScheduledTime = !match.scheduledDateTime || match.scheduledDateTime.trim() === '';
+      const hasInvalidDate = match.scheduledDateTime && isNaN(new Date(match.scheduledDateTime).getTime());
+      const hasNoTeams = match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD';
+
+      const isTBDMatch = hasNoScheduledTime || hasInvalidDate || hasNoTeams;
+
+      if (isTBDMatch) {
+        tbdMatches.push(match);
+        return; // Don't process further filters for TBD matches
       }
 
+      // For valid matches, apply normal filtering
       const matchDate = new Date(match.scheduledDateTime);
-      if (isNaN(matchDate.getTime())) {
-        return false; // Hide matches with invalid date
-      }
 
-      // Gender filter - FIXED: Use actual gender detection logic
+      // Gender filter - IMPLEMENTED: Use tournament gender from tournament context
       if (effectiveGenderFilter !== 'All') {
-        // TODO: Implement proper gender detection based on tournament data or team data
-        // For now, disable gender filtering to show all matches
-        // if (!match.tournamentGender || match.tournamentGender !== effectiveGenderFilter) {
-        //   return false;
-        // }
+        const matchGender = (match as any).tournamentGender;
+        if (!matchGender || matchGender !== effectiveGenderFilter) {
+          return; // Skip this match
+        }
       }
 
       // Court filter
       if (effectiveCourtFilter !== 'All') {
         const matchCourtNumber = match.court?.courtNumber;
         if (!matchCourtNumber || String(matchCourtNumber) !== String(effectiveCourtFilter)) {
-          return false;
+          return; // Skip this match
         }
       }
 
-      // Referee filter
+      // Referee filter - Enhanced to check both structured assignments and VIS API names
       if (effectiveRefereeFilter !== 'All') {
-        const hasReferee = match.refereeAssignments?.some(ref => ref.refereeName === effectiveRefereeFilter);
-        if (!hasReferee) return false;
+        const hasStructuredReferee = match.refereeAssignments?.some(ref => ref.refereeName === effectiveRefereeFilter);
+        const matchAny = match as any;
+        const hasVISReferee = matchAny.Referee1Name === effectiveRefereeFilter || matchAny.Referee2Name === effectiveRefereeFilter;
+
+        if (!hasStructuredReferee && !hasVISReferee) return; // Skip this match
       }
 
       // Status filter
@@ -705,20 +725,24 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           'Completed': [MatchStatus.COMPLETED]
         };
         if (!statusMapping[statusFilter]?.includes(match.status)) {
-          return false;
+          return; // Skip this match
         }
       }
 
       // Selected referee filter (from props)
       if (selectedReferee) {
-        const hasSelectedReferee = match.refereeAssignments?.some(ref => 
+        const hasSelectedReferee = match.refereeAssignments?.some(ref =>
           ref.refereeName === selectedReferee.Name
         );
-        if (!hasSelectedReferee) return false;
+        if (!hasSelectedReferee) return; // Skip this match
       }
 
-      return true;
-    }).sort((a, b) => {
+      // If we reach here, this is a valid match
+      validMatches.push(match);
+    });
+
+    // Sort valid matches
+    const sortedValidMatches = validMatches.sort((a, b) => {
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
 
@@ -732,6 +756,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Priority 2: Always sort dates in descending order (newest first)
       return dateB.getTime() - dateA.getTime();
     });
+
+    return { filteredMatches: sortedValidMatches, tbdMatches };
 
     // Final result logging will happen in UI render
   }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
@@ -757,8 +783,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       // Priority 1: Currently running match (check both status and time-based logic)
       const isStatusRunning = match.status === MatchStatus.RUNNING;
-      const isLikelyLive = matchTime.getTime() <= now.getTime() && 
-                          (now.getTime() - matchTime.getTime()) <= 2 * 60 * 60 * 1000; // Within 2 hours of start time
+      const isLikelyLive = matchTime.getTime() <= now.getTime() &&
+                          (now.getTime() - matchTime.getTime()) <= 75 * 60 * 1000; // Within 75 minutes of start time
       
       if (isStatusRunning || isLikelyLive) {
         targetMatchIndex = i;
@@ -816,30 +842,29 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   }, [filteredMatches, onMatchesReady]);
 
 
-  // Group matches by date
+  // Group filtered matches by date (excludes TBD matches which are handled separately)
   const groupedMatches = React.useMemo(() => {
     const groups: { [date: string]: typeof filteredMatches } = {};
-    
-    
+
     filteredMatches.forEach((match, index) => {
       const date = new Date(match.scheduledDateTime);
       if (isNaN(date.getTime())) {
         return;
       }
-      
+
       const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
       groups[dateKey].push(match);
-      
+
       // Debug first few matches
       if (index < 5) {
       }
     });
-    
+
     const allDates = Object.keys(groups).sort();
-    
+
     // Sort dates in descending order (newest first)
     const result = Object.entries(groups).sort((a, b) => {
       const dateA = new Date(a[0]);
@@ -848,20 +873,24 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Always sort dates in descending order (newest first)
       return dateB.getTime() - dateA.getTime();
     });
-    
+
     return result;
   }, [filteredMatches]);
 
-  // Initialize expanded dates - only most recent date is expanded by default
+  // Initialize expanded dates - expand today's panel if it exists
   useEffect(() => {
     if (groupedMatches.length > 0) {
       const allDates = groupedMatches.map(([date]) => date);
-      // With dynamic sorting, today's date (first item) should be expanded
-      const mostRecentDate = allDates[0]; // First date is always the most relevant (today or most recent)
+      const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
 
       const initialExpanded: {[key: string]: boolean} = {};
+
+      // Check if today exists in the panels
+      const todayExists = allDates.includes(today);
+
       allDates.forEach(date => {
-        initialExpanded[date] = date === mostRecentDate; // Only most recent is expanded
+        // If today exists, expand today's panel. Otherwise, expand the first panel
+        initialExpanded[date] = todayExists ? (date === today) : (date === allDates[0]);
       });
 
       setExpandedDates(initialExpanded);
@@ -984,10 +1013,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Check if match is currently live - matches MatchCard red dot logic exactly
+  // Check if match is currently live - using VIS API Status field
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    const isLive = match.status === MatchStatus.RUNNING;
-    return isLive;
+    // Don't consider matches with placeholder teams as live
+    if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
+      return false;
+    }
+
+    // Primary method: Use VIS API Status field (most reliable)
+    // The VIS API provides accurate real-time status regardless of timezone
+    return match.status === MatchStatus.RUNNING;
   };
 
   // Get status display text and color
@@ -1314,13 +1349,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           <>
             {groupedMatches.map(([date, matches], groupIndex) => {
               const isExpanded = expandedDates[date] || false;
-              
+
               return (
                 <View key={`${date}-${groupIndex}`}>
                   {/* Clickable Date Header Tab */}
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[
-                      styles.dateHeader, 
+                      styles.dateHeader,
                       (enableTimelineView || showAllDays) && styles.timelineDateHeader,
                       isExpanded && styles.expandedDateHeader
                     ]}
@@ -1341,7 +1376,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                         </Text>
                       )}
                     </View>
-                    
+
                     {/* Collapse/Expand Indicator */}
                     <Text style={[
                       styles.expandIndicator,
@@ -1350,7 +1385,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                       {isExpanded ? '▼' : '▶'}
                     </Text>
                   </TouchableOpacity>
-                  
+
                   {/* Collapsible Matches Container */}
                   {isExpanded && (
                     <View style={styles.matchesContainer}>
@@ -1364,6 +1399,46 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 </View>
               );
             })}
+
+            {/* TBD Matches Panel - Shows matches with missing data */}
+            {tbdMatches.length > 0 && (
+              <View key="tbd-matches-panel">
+                {/* TBD Panel Header */}
+                <TouchableOpacity
+                  style={[
+                    styles.tbdHeader,
+                    tbdPanelExpanded && styles.tbdHeaderExpanded
+                  ]}
+                  onPress={() => setTbdPanelExpanded(!tbdPanelExpanded)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.dateHeaderContent}>
+                    <Text style={styles.tbdHeaderText}>
+                      Matches TBD
+                    </Text>
+                    <Text style={styles.matchCountText}>
+                      {tbdMatches.length} {tbdMatches.length === 1 ? 'match' : 'matches'}
+                    </Text>
+                  </View>
+
+                  {/* Collapse/Expand Indicator */}
+                  <Text style={styles.tbdExpandIndicator}>
+                    {tbdPanelExpanded ? '▼' : '▶'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Collapsible TBD Matches Container */}
+                {tbdPanelExpanded && (
+                  <View style={styles.matchesContainer}>
+                    {tbdMatches.map((match, index) => (
+                      <React.Fragment key={`tbd-${match.id}-${index}`}>
+                        {renderMatch(match)}
+                      </React.Fragment>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
           </>
         )}
       </View>
@@ -2027,5 +2102,47 @@ const styles = StyleSheet.create({
   dropdownItemTextActive: {
     color: '#3B82F6',
     fontWeight: '600',
+  },
+
+  // TBD Panel Styles
+  tbdHeader: {
+    backgroundColor: '#FEF3C7', // Light amber background
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 24, // Extra spacing from regular date panels
+    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F59E0B', // Amber border
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B', // Amber left accent
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tbdHeaderExpanded: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+    shadowOpacity: 0.15,
+  },
+  tbdHeaderText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#92400E', // Dark amber text
+    letterSpacing: 0.5,
+  },
+  tbdExpandIndicator: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F59E0B', // Amber color
+    marginLeft: 8,
+    minWidth: 20,
+    textAlign: 'center',
   },
 });

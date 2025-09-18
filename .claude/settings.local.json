@@ -115,7 +115,8 @@
       "Bash(del test-timezone-fix.js)",
       "Bash(start \"http://localhost:8082\")",
       "Bash(start \"http://localhost:8083\")",
-      "Bash(del test-timezone-field.js)"
+      "Bash(del test-timezone-field.js)",
+      "Bash(del test-match-parsing.js)"
     ],
     "deny": [],
     "ask": [],

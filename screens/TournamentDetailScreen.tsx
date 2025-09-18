@@ -1590,15 +1590,9 @@ const TournamentDetailScreenContent: React.FC = () => {
                     };
 
                     const timezone = enhancedTournament?.DefaultTimeZone;
-                    console.log('🏆 TOURNAMENT:', enhancedTournament);
-                    console.log('🔍 TOURNAMENT KEYS:', Object.keys(enhancedTournament || {}));
-                    console.log('🕐 TIMEZONE SEARCH:', {
-                      DefaultTimeZone: enhancedTournament?.DefaultTimeZone,
-                      timezone: (tournament as any)?.timezone,
-                      finalTimezone: timezone
-                    });
                     return timezone;
                   })()}
+                  tournamentGender={enhancedTournament?.gender}
                   matchFilters={{
                     // Use the tournament numbers from the existing complex loading logic
                     tournamentCode: enhancedTournament?.visNo,

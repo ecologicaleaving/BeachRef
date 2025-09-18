@@ -348,10 +348,21 @@ export class VisResponseParser {
 
     const team1 = this.parseMatchTeam(matchXml, 'A'); // VIS API uses TeamAName, TeamBName
     const team2 = this.parseMatchTeam(matchXml, 'B');
-    
-    if (!team1 || !team2) {
-      return null;
-    }
+
+    // Create placeholder teams if missing but match has valid scheduled time
+    const finalTeam1 = team1 || {
+      teamNumber: 1 as const,
+      teamName: 'TBD',
+      player1Name: 'TBD',
+      player2Name: 'TBD'
+    };
+
+    const finalTeam2 = team2 || {
+      teamNumber: 2 as const,
+      teamName: 'TBD',
+      player1Name: 'TBD',
+      player2Name: 'TBD'
+    };
 
     const id = generateMatchId(tournamentId, courtNumber, scheduledDateTime, matchCode);
     
@@ -380,8 +391,8 @@ export class VisResponseParser {
       scheduledDateTime,
       actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),
       actualEndTime: this.extractXmlAttribute(matchXml, 'EndTime'),
-      team1,
-      team2,
+      team1: finalTeam1,
+      team2: finalTeam2,
       result,
       refereeAssignments,
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
@@ -403,7 +414,14 @@ export class VisResponseParser {
       localDate: localDate,
       localTime: localTime,
       localTimeOffset: localTimeOffset,
-      timezone: timezone
+      timezone: timezone,
+      // Add tournament gender for filter functionality
+      tournamentGender: this.extractXmlAttribute(matchXml, 'TournamentGender'),
+      // Add referee names for enhanced filter functionality
+      Referee1Name: this.extractXmlAttribute(matchXml, 'Referee1Name'),
+      Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
+      Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
+      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode')
     } as any;
   }
 

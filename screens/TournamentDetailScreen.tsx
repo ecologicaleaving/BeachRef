@@ -375,15 +375,15 @@ const TournamentDetailScreenContent: React.FC = () => {
       return status === 'RUNNING';
     }
 
-    // Check for numeric VIS status codes (3-11 = in sets = LIVE)
+    // Check for numeric VIS status codes (3-8 = LIVE matches per user requirement)
     if (typeof status === 'number') {
-      return status >= 3 && status <= 11;
+      return status >= 3 && status <= 8;
     }
 
     // Fallback: check raw VIS status field if available
     const rawStatus = match?.rawStatus || match?.visStatus;
     if (typeof rawStatus === 'number') {
-      return rawStatus >= 3 && rawStatus <= 11;
+      return rawStatus >= 3 && rawStatus <= 8;
     }
 
     return false;

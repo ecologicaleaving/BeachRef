@@ -15,7 +15,7 @@ import { LiveIndicator } from '../../Status/LiveIndicator';
 import { colors } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
-import { formatTimeWithTimezoneSync, getCurrentTimezonePreference, subscribeToTimezonePreferenceChanges } from '../../../utils/dateFormatters';
+import { formatTimeWithTimezoneSync } from '../../../utils/dateFormatters';
 // Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
@@ -40,32 +40,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   tournamentTimezone,
 }) => {
   const router = useRouter();
-  const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
-
-  // Load timezone preference on component mount and subscribe to changes
-  useEffect(() => {
-    const loadTimezonePreference = async () => {
-      try {
-        const preference = await getCurrentTimezonePreference();
-        setTimezonePreference(preference);
-      } catch (error) {
-        console.warn('Failed to load timezone preference in MatchCard:', error);
-        // Keep default 'user' preference
-      }
-    };
-
-    // Load initial preference
-    loadTimezonePreference();
-
-    // Subscribe to timezone preference changes for immediate updates
-    const unsubscribe = subscribeToTimezonePreferenceChanges((newPreference) => {
-      setTimezonePreference(newPreference);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
 
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
@@ -102,11 +76,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       // Check if we have UTC timestamp available (from Phase 2 VIS API enhancement)
       const utcStart = (match as any).utc_start;
       if (utcStart) {
-        // Use timezone-aware formatter with UTC timestamp
+        // Use timezone-aware formatter with UTC timestamp - always show local tournament time
         return formatTimeWithTimezoneSync(utcStart, {
           tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: timezonePreference,
-          showTimezoneIndicator: true,
+          cachedPreference: 'local',
+          showTimezoneIndicator: false,
         });
       }
 
@@ -114,8 +88,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       if (dateTimeString) {
         return formatTimeWithTimezoneSync(dateTimeString, {
           tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: timezonePreference,
-          showTimezoneIndicator: true,
+          cachedPreference: 'local',
+          showTimezoneIndicator: false,
         });
       }
 

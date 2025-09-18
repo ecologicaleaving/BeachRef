@@ -807,7 +807,22 @@ const TournamentDetailScreenContent: React.FC = () => {
   useEffect(() => {
     console.log('🔍 LIVE POLLING: matchNumbers being polled:', matchNumbers.slice(0, 10));
     console.log('🔍 LIVE POLLING: Total matches being polled:', matchNumbers.length);
+    console.log('🔍 LIVE POLLING: Looking for match numbers 499612 and 499613 in list:', matchNumbers.includes(499612), matchNumbers.includes(499613));
   }, [matchNumbers]);
+
+  // Force a debug log every few seconds to check current state
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔍 DEBUG STATE: Current matchNumbers length:', matchNumbers.length, 'First 5:', matchNumbers.slice(0, 5));
+      console.log('🔍 DEBUG STATE: getLiveScore available:', typeof getLiveScore === 'function');
+      if (typeof getLiveScore === 'function') {
+        console.log('🔍 DEBUG STATE: Test getLiveScore(499612):', getLiveScore(499612));
+        console.log('🔍 DEBUG STATE: Test getLiveScore(499613):', getLiveScore(499613));
+      }
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [matchNumbers, getLiveScore]);
 
 
 

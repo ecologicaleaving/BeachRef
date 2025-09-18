@@ -339,6 +339,7 @@ interface MatchListV2Props {
   getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
   tournamentGender?: 'M' | 'W' | 'MIXED'; // Tournament gender for match context injection
+  externalScrollRef?: React.RefObject<ScrollView>; // External ScrollView ref for autoscroll (from parent container)
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -377,10 +378,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
 
-  // ScrollView ref for auto-scroll functionality (moved to top)
+  // ScrollView ref for auto-scroll functionality (DISABLED - handled by external container)
   const scrollViewRef = useRef<ScrollView>(null);
   const matchLayoutsRef = useRef<Record<string, number>>({});
   const pendingAutoscrollRef = useRef<boolean>(false);
+
+  // AUTOSCROLL DISABLED: Let external container handle autoscroll
+  const AUTOSCROLL_ENABLED = false;
 
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
   // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
@@ -897,25 +901,76 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [groupedMatches]);
 
-  // Auto-scroll to first live match
+  // Auto-scroll with priority: 1) LIVE matches, 2) Today's first match (last in Today panel)
   const scrollToFirstLiveMatch = useCallback(() => {
+    if (!AUTOSCROLL_ENABLED) {
+      console.log('🚫 AUTOSCROLL: Disabled in MatchListV2 - handled by external container');
+      return;
+    }
+    console.log('🔍 AUTOSCROLL: Starting autoscroll function');
+    console.log('🔍 AUTOSCROLL: ScrollView ref exists:', !!scrollViewRef.current);
+    console.log('🔍 AUTOSCROLL: Filtered matches count:', filteredMatches.length);
+    console.log('🔍 AUTOSCROLL: Match layouts available:', Object.keys(matchLayoutsRef.current).length);
+
+    let targetMatchId: string | null = null;
+    let scrollReason = '';
+
+    // Priority 1: First LIVE match
     const liveMatches = filteredMatches.filter(match => isMatchLive(match));
+    console.log('🔍 AUTOSCROLL: Live matches found:', liveMatches.length);
 
-    if (liveMatches.length > 0 && scrollViewRef.current) {
-      const firstLiveMatchId = liveMatches[0].id;
-      const yPosition = matchLayoutsRef.current[firstLiveMatchId];
+    if (liveMatches.length > 0) {
+      targetMatchId = liveMatches[0].id;
+      scrollReason = 'LIVE match';
+      console.log('🎯 AUTOSCROLL: Target = LIVE match:', targetMatchId);
+    } else {
+      // Priority 2: First match of today (chronologically first, appears last in "Today" panel)
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      console.log('🔍 AUTOSCROLL: Looking for today matches:', todayStr);
 
+      const todayMatches = filteredMatches.filter(match => {
+        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        return matchDate === todayStr;
+      });
+
+      console.log('🔍 AUTOSCROLL: Today matches found:', todayMatches.length);
+      todayMatches.forEach(match => console.log('   - Today match:', match.id, new Date(match.scheduledDateTime).toLocaleTimeString()));
+
+      // Sort today's matches chronologically and get the first one
+      if (todayMatches.length > 0) {
+        const sortedTodayMatches = todayMatches.sort((a, b) => {
+          return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
+        });
+        targetMatchId = sortedTodayMatches[0].id;
+        scrollReason = 'Today first match';
+        console.log('🎯 AUTOSCROLL: Target = Today first match:', targetMatchId, new Date(sortedTodayMatches[0].scheduledDateTime).toLocaleTimeString());
+      }
+    }
+
+    // Scroll to target match if found
+    if (targetMatchId && scrollViewRef.current) {
+      const yPosition = matchLayoutsRef.current[targetMatchId];
+      console.log('🔍 AUTOSCROLL: Target Y position:', yPosition, 'for', scrollReason);
 
       if (yPosition !== undefined) {
-
+        console.log('✅ AUTOSCROLL: Scrolling to', scrollReason, 'at Y:', yPosition - 100);
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
           y: Math.max(0, yPosition - 100), // Offset for header
           animated: true
         });
       } else {
+        console.log('⏳ AUTOSCROLL: Position not available yet, marking as pending for', scrollReason);
         // Position not available yet, mark as pending
         pendingAutoscrollRef.current = true;
+      }
+    } else {
+      if (!targetMatchId) {
+        console.log('❌ AUTOSCROLL: No target match found (no LIVE or today matches)');
+      }
+      if (!scrollViewRef.current) {
+        console.log('❌ AUTOSCROLL: ScrollView ref not available');
       }
     }
   }, [filteredMatches]);
@@ -923,20 +978,41 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Trigger pending autoscroll when position becomes available
   const triggerPendingAutoscroll = useCallback(() => {
     if (pendingAutoscrollRef.current) {
+      console.log('🔄 AUTOSCROLL: Triggering pending autoscroll...');
       setTimeout(() => scrollToFirstLiveMatch(), 100);
     }
   }, [scrollToFirstLiveMatch]);
 
-  // Auto-scroll effect - trigger when matches change and live matches exist
+  // Auto-scroll effect - trigger when matches change and live matches OR today's matches exist
   useEffect(() => {
+    if (!AUTOSCROLL_ENABLED) {
+      console.log('🚫 AUTOSCROLL EFFECT: Disabled in MatchListV2 - handled by external container');
+      return;
+    }
+    console.log('🚀 AUTOSCROLL EFFECT: Matches changed, checking conditions...');
     const hasLiveMatches = filteredMatches.some(match => isMatchLive(match));
 
+    // Check if there are matches for today
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const hasTodayMatches = filteredMatches.some(match => {
+      const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+      return matchDate === todayStr;
+    });
 
-    if (hasLiveMatches && filteredMatches.length > 0) {
+    console.log('🚀 AUTOSCROLL EFFECT: Has LIVE matches:', hasLiveMatches);
+    console.log('🚀 AUTOSCROLL EFFECT: Has today matches:', hasTodayMatches);
+    console.log('🚀 AUTOSCROLL EFFECT: Total filtered matches:', filteredMatches.length);
+
+    // Trigger autoscroll if we have LIVE matches OR today's matches
+    if ((hasLiveMatches || hasTodayMatches) && filteredMatches.length > 0) {
+      console.log('✅ AUTOSCROLL EFFECT: Conditions met, triggering autoscroll in 300ms...');
       // Reset pending flag and trigger autoscroll
       pendingAutoscrollRef.current = false;
       // Add delay to allow initial render to complete
       setTimeout(() => scrollToFirstLiveMatch(), 300);
+    } else {
+      console.log('❌ AUTOSCROLL EFFECT: Conditions not met, no autoscroll');
     }
 
   }, [filteredMatches, scrollToFirstLiveMatch]);
@@ -1094,15 +1170,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           const yPosition = event.nativeEvent.layout.y;
           matchLayoutsRef.current[match.id] = yPosition;
 
+          const isLive = isMatchLive(match);
+          const matchTime = new Date(match.scheduledDateTime).toLocaleTimeString();
+          const isToday = new Date(match.scheduledDateTime).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
 
-          // Check if this is a live match and trigger pending autoscroll
-          if (isMatchLive(match)) {
-            const liveMatches = filteredMatches.filter(m => isMatchLive(m));
-            const isFirstLiveMatch = liveMatches.length > 0 && liveMatches[0].id === match.id;
+          console.log(`📍 LAYOUT: Match ${match.id} rendered at Y=${yPosition} | ${isLive ? '🔴LIVE' : '⚪'} | ${isToday ? '📅TODAY' : '📆'} | ${matchTime}`);
 
-            if (isFirstLiveMatch) {
-              triggerPendingAutoscroll();
-            }
+          // AUTOSCROLL DISABLED: Let external container handle autoscroll
+          if (!AUTOSCROLL_ENABLED) {
+            console.log('🚫 LAYOUT AUTOSCROLL: Disabled in MatchListV2 - handled by external container');
           }
 
           // Call external onMatchLayout if provided

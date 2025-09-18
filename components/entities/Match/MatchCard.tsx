@@ -76,6 +76,42 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   const team1Score = match.result?.team1Sets || 0;
   const team2Score = match.result?.team2Sets || 0;
 
+  // Track score age for LIVE matches
+  const [scoreAge, setScoreAge] = useState<number>(0);
+  const [lastScoreUpdate, setLastScoreUpdate] = useState<Date>(new Date());
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
+  // Update score timestamp when scores change for LIVE matches
+  useEffect(() => {
+    if (isMatchLive(match)) {
+      setLastScoreUpdate(new Date());
+      setScoreAge(0);
+    }
+  }, [team1Score, team2Score, match.status]);
+
+  // Timer to update current time every 5 seconds for LIVE matches
+  useEffect(() => {
+    if (!isMatchLive(match)) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
+      setScoreAge(ageInSeconds);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [lastScoreUpdate, match.status]);
+
+  // Format score age for display
+  const formatScoreAge = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h`;
+  };
+
   // Navigate to referee profile
   const handleRefereePress = (refereeName: string, federationCode?: string) => {
     // Create a mock referee object for navigation
@@ -623,6 +659,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       </Text>
                     </View>
                   </View>
+
+                  {/* Score age indicator for LIVE matches */}
+                  {isMatchLive(match) && (
+                    <Text style={{
+                      fontSize: 10,
+                      color: '#999',
+                      fontFamily: 'monospace',
+                      marginLeft: 8,
+                      alignSelf: 'center'
+                    }}>
+                      {formatScoreAge(scoreAge)}
+                    </Text>
+                  )}
 
                   {(() => {
                     const totalDuration = getMatchDuration(match);

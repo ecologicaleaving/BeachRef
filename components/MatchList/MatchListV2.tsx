@@ -628,6 +628,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     const interval = setInterval(() => {
       // Force re-render to pick up fresh live score data
+      console.log(`⏰ LIVE SCORE TIMER: Refreshing live scores for LIVE matches`);
       setLiveScoreRefresh(prev => prev + 1);
     }, 5000);
 
@@ -1165,6 +1166,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const renderMatch = useCallback((match: BeachMatchCore) => {
     // Merge live scores with match result for live matches
     // This function re-executes when liveScoreRefresh changes, forcing fresh getLiveScore() calls
+    if (isMatchLive(match)) {
+      console.log(`🔄 RENDER MATCH: Re-rendering LIVE match ${match.id} (refresh: ${liveScoreRefresh})`);
+    }
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
       // Support VIS match numbers like "M001"/"W012" by stripping non-digits

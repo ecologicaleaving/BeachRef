@@ -759,19 +759,18 @@ const TournamentDetailScreenContent: React.FC = () => {
         // Only poll for matches that are likely to have live scores
         const status = match.status;
         const rawStatus = match.rawStatus || match.status;
+        const shouldInclude =
+          status === MatchStatus.RUNNING ||
+          status === MatchStatus.SCHEDULED ||
+          (typeof rawStatus === 'number' && rawStatus >= 1 && rawStatus <= 8) ||
+          isMatchLive(match, matches);
 
-        // Include RUNNING and SCHEDULED string statuses
-        if (status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED) {
-          return true;
+        // Debug: Log filtering decisions for first few matches and specific LIVE matches
+        if (matches.indexOf(match) < 5 || match.id.includes('8243_courtcc_1758182400000_7') || match.id.includes('8243_court2_1758182400000_8')) {
+          console.log(`🔍 POLLING FILTER: Match ${match.id} - status: ${status} (${typeof status}), rawStatus: ${rawStatus} (${typeof rawStatus}), included: ${shouldInclude}`);
         }
 
-        // Include numeric status codes 1-8 (scheduled + all LIVE variations)
-        if (typeof rawStatus === 'number') {
-          return rawStatus >= 1 && rawStatus <= 8;
-        }
-
-        // Include any match that our enhanced logic considers LIVE
-        return isMatchLive(match, matches);
+        return shouldInclude;
       })
       .map(m => toNumericMatchNo(m))
       .filter((v): v is number => v !== null);

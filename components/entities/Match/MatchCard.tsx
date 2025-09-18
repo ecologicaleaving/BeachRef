@@ -714,20 +714,74 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
                         // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
                         const totalSets = Math.floor(setScores.length / 2);
+
+                        // Determine current set for live matches
+                        const getCurrentSetNumber = (): number => {
+                          if (!isMatchLive(match)) return -1;
+
+                          // Check VIS status for current set indication
+                          const rawStatus = (match as any)?.rawStatus;
+                          if (typeof rawStatus === 'number') {
+                            // VIS status codes: 3=InSet1, 4=Set1Finished, 5=InSet2, 6=Set2Finished, 7=InSet3, 8=Set3Finished
+                            if (rawStatus === 3) return 1; // Currently in set 1
+                            if (rawStatus === 5) return 2; // Currently in set 2
+                            if (rawStatus === 7) return 3; // Currently in set 3
+                          }
+
+                          // Fallback: determine based on set completion
+                          // Find the last incomplete set (where both teams have scores but neither has won definitively)
+                          for (let i = 0; i < setScores.length; i += 2) {
+                            if (i + 1 < setScores.length) {
+                              const team1Score = setScores[i];
+                              const team2Score = setScores[i + 1];
+                              const setNum = Math.floor(i / 2) + 1;
+
+                              // If both teams have scores and the set isn't decisively won (e.g., 21+ vs <19), this might be current
+                              if (team1Score > 0 || team2Score > 0) {
+                                const maxScore = Math.max(team1Score, team2Score);
+                                const minScore = Math.min(team1Score, team2Score);
+
+                                // Current set if: scores are close OR match is explicitly in this set
+                                if (maxScore < 21 || (maxScore >= 21 && Math.abs(team1Score - team2Score) < 2)) {
+                                  return setNum;
+                                }
+                              }
+                            }
+                          }
+
+                          // Default to last set with scores
+                          return totalSets > 0 ? totalSets : 1;
+                        };
+
+                        const currentSetNumber = getCurrentSetNumber();
+
                         for (let i = 0; i < setScores.length; i += 2) {
                           if (i + 1 < setScores.length) {
                             const team1Score = setScores[i];
                             const team2Score = setScores[i + 1];
                             const setNumber = Math.floor(i / 2) + 1;
                             const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
+                            const isCurrentSet = isMatchLive(match) && setNumber === currentSetNumber;
 
                             sets.push(
-                              <View key={setNumber} style={styles.individualSet}>
-                                <Text style={[styles.setScore]}>
+                              <View key={setNumber} style={[
+                                styles.individualSet,
+                                isCurrentSet && styles.currentSet
+                              ]}>
+                                <Text style={[
+                                  styles.setScore,
+                                  isCurrentSet && styles.currentSetScore
+                                ]}>
                                   {team1Score}
                                 </Text>
-                                <Text style={styles.setScoreSeparator}>-</Text>
-                                <Text style={[styles.setScore]}>
+                                <Text style={[
+                                  styles.setScoreSeparator,
+                                  isCurrentSet && styles.currentSetSeparator
+                                ]}>-</Text>
+                                <Text style={[
+                                  styles.setScore,
+                                  isCurrentSet && styles.currentSetScore
+                                ]}>
                                   {team2Score}
                                 </Text>
                               </View>
@@ -738,16 +792,100 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                         // Fallback to legacy BeachMatch format - simplified
                         const rawMatch = match as any;
 
+                        // Determine current set for legacy format
+                        const getCurrentSetNumberLegacy = (): number => {
+                          if (!isMatchLive(match)) return -1;
+
+                          const rawStatus = (match as any)?.rawStatus;
+                          if (typeof rawStatus === 'number') {
+                            if (rawStatus === 3) return 1; // Currently in set 1
+                            if (rawStatus === 5) return 2; // Currently in set 2
+                            if (rawStatus === 7) return 3; // Currently in set 3
+                          }
+
+                          // Default to set 1 for legacy format if live
+                          return 1;
+                        };
+
+                        const currentSetNumber = getCurrentSetNumberLegacy();
+
                         // Set 1
                         if (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) {
                           const team1Score = parseInt(rawMatch.PointsTeamASet1);
                           const team2Score = parseInt(rawMatch.PointsTeamBSet1);
+                          const isCurrentSet = isMatchLive(match) && currentSetNumber === 1;
 
                           sets.push(
-                            <View key={1} style={styles.individualSet}>
-                              <Text style={styles.setScore}>{team1Score}</Text>
-                              <Text style={styles.setScoreSeparator}>-</Text>
-                              <Text style={styles.setScore}>{team2Score}</Text>
+                            <View key={1} style={[
+                              styles.individualSet,
+                              isCurrentSet && styles.currentSet
+                            ]}>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team1Score}</Text>
+                              <Text style={[
+                                styles.setScoreSeparator,
+                                isCurrentSet && styles.currentSetSeparator
+                              ]}>-</Text>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team2Score}</Text>
+                            </View>
+                          );
+                        }
+
+                        // Set 2
+                        if (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) {
+                          const team1Score = parseInt(rawMatch.PointsTeamASet2);
+                          const team2Score = parseInt(rawMatch.PointsTeamBSet2);
+                          const isCurrentSet = isMatchLive(match) && currentSetNumber === 2;
+
+                          sets.push(
+                            <View key={2} style={[
+                              styles.individualSet,
+                              isCurrentSet && styles.currentSet
+                            ]}>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team1Score}</Text>
+                              <Text style={[
+                                styles.setScoreSeparator,
+                                isCurrentSet && styles.currentSetSeparator
+                              ]}>-</Text>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team2Score}</Text>
+                            </View>
+                          );
+                        }
+
+                        // Set 3
+                        if (rawMatch.PointsTeamASet3 && rawMatch.PointsTeamBSet3) {
+                          const team1Score = parseInt(rawMatch.PointsTeamASet3);
+                          const team2Score = parseInt(rawMatch.PointsTeamBSet3);
+                          const isCurrentSet = isMatchLive(match) && currentSetNumber === 3;
+
+                          sets.push(
+                            <View key={3} style={[
+                              styles.individualSet,
+                              isCurrentSet && styles.currentSet
+                            ]}>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team1Score}</Text>
+                              <Text style={[
+                                styles.setScoreSeparator,
+                                isCurrentSet && styles.currentSetSeparator
+                              ]}>-</Text>
+                              <Text style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}>{team2Score}</Text>
                             </View>
                           );
                         }
@@ -1181,16 +1319,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
+  currentSet: {
+    backgroundColor: '#10B981', // Green background for current set in live matches
+    borderWidth: 2,
+    borderColor: '#059669',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    transform: [{ scale: 1.2 }], // Make it 20% bigger
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   setScore: {
     fontSize: 11,
     fontWeight: '600',
     color: '#374151',
+  },
+  currentSetScore: {
+    fontSize: 16, // Bigger font for current set
+    fontWeight: '800', // Bolder weight
+    color: '#FFFFFF', // White text on green background
   },
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
     color: '#6B7280',
     marginHorizontal: 3,
+  },
+  currentSetSeparator: {
+    fontSize: 14, // Bigger separator for current set
+    fontWeight: '700',
+    color: '#FFFFFF', // White separator on green background
+    marginHorizontal: 4,
   },
   activeSetScore: {
     color: '#111827',

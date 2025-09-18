@@ -150,7 +150,7 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Team A position/seed in main draw bracket */
   readonly teamAPositionInMainDraw?: string;
-  
+
   /** Team B position/seed in main draw bracket */
   readonly teamBPositionInMainDraw?: string;
 

@@ -87,7 +87,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       setLastScoreUpdate(new Date());
       setScoreAge(0);
     }
-  }, [team1Score, team2Score, match.status]);
+  }, [team1Score, team2Score, match.result?.setScores, match.status, (match as any)?.rawStatus]);
 
   // Timer to update current time every 5 seconds for LIVE matches
   useEffect(() => {
@@ -101,7 +101,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [lastScoreUpdate, match.status]);
+  }, [lastScoreUpdate, match.status, (match as any)?.rawStatus]);
 
   // Format score age for display
   const formatScoreAge = (seconds: number): string => {
@@ -238,8 +238,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       return false;
     }
 
-    // Use VIS API Status field (most reliable, timezone-independent)
-    // The VIS API provides accurate real-time status regardless of timezone
+    // Check for raw VIS numeric status codes 3-8 (LIVE matches)
+    const rawStatus = (match as any)?.rawStatus;
+    if (typeof rawStatus === 'number') {
+      return rawStatus >= 3 && rawStatus <= 8;
+    }
+
+    // Fallback to mapped status
     return match.status === MatchStatus.RUNNING;
   };
 

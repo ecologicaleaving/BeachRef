@@ -440,6 +440,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
   const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
+
+  // State for live score refresh
+  const [liveScoreRefresh, setLiveScoreRefresh] = useState<number>(0);
   
   
 
@@ -617,6 +620,19 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       setEnhancedMatches([]);
     }
   }, [activeMatches, setScoreService]);
+
+  // Timer to refresh live scores every 5 seconds for LIVE matches
+  useEffect(() => {
+    const hasLiveMatches = activeMatches.some(match => isMatchLive(match));
+    if (!hasLiveMatches || !getLiveScore) return;
+
+    const interval = setInterval(() => {
+      // Force re-render to pick up fresh live score data
+      setLiveScoreRefresh(prev => prev + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeMatches, getLiveScore]);
 
   // Reset filters when tournament changes (matches change)
   React.useEffect(() => {
@@ -1146,8 +1162,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   };
 
   // Render individual match card using unified component
-  const renderMatch = (match: BeachMatchCore) => {
+  const renderMatch = useCallback((match: BeachMatchCore) => {
     // Merge live scores with match result for live matches
+    // This function re-executes when liveScoreRefresh changes, forcing fresh getLiveScore() calls
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
       // Support VIS match numbers like "M001"/"W012" by stripping non-digits
@@ -1209,7 +1226,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         />
       </View>
     );
-  };
+  }, [getLiveScore, liveScoreRefresh, onMatchLayout, tournamentTimezone]);
 
 
 

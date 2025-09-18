@@ -79,7 +79,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Track score age for LIVE matches
   const [scoreAge, setScoreAge] = useState<number>(0);
   const [lastScoreUpdate, setLastScoreUpdate] = useState<Date>(new Date());
-  const [forceRender, setForceRender] = useState<number>(0);
 
   // Convert setScores array to string for proper dependency tracking
   const setScoresString = match.result?.setScores ? JSON.stringify(match.result.setScores) : '';
@@ -92,24 +91,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }, [team1Score, team2Score, setScoresString, match.status, (match as any)?.rawStatus]);
 
-  // Combined timer: 5-second re-render + 1-second score age update for LIVE matches
+  // Score age counter for LIVE matches (updates every second)
   useEffect(() => {
     if (!isMatchLive(match)) return;
 
-    let secondCounter = 0;
     const interval = setInterval(() => {
       const now = new Date();
       const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
       setScoreAge(ageInSeconds);
-
-      secondCounter++;
-      // Force re-render every 5 seconds to pick up new live score data
-      if (secondCounter >= 5) {
-        setForceRender(prev => prev + 1);
-        setLastScoreUpdate(new Date()); // Reset score age to 0 when we get fresh data
-        setScoreAge(0);
-        secondCounter = 0;
-      }
     }, 1000);
 
     return () => clearInterval(interval);

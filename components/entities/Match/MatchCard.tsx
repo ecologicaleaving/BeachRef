@@ -486,9 +486,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
           <View style={styles.timeCourtContainer}>
             <View style={styles.timeContainer}>
-              {isMatchLive(match) && (
-                <View style={styles.liveDot} />
-              )}
               <Text style={styles.courtText}>
                 {match.court?.courtNumber ? (
                   match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`

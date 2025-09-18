@@ -745,19 +745,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       validMatches.push(match);
     });
 
-    // Sort valid matches
+    // Sort valid matches by date only (no LIVE priority to maintain original order)
     const sortedValidMatches = validMatches.sort((a, b) => {
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
 
-      // Priority 1: Currently running matches always first
-      const aIsRunning = a.status === MatchStatus.RUNNING;
-      const bIsRunning = b.status === MatchStatus.RUNNING;
-
-      if (aIsRunning && !bIsRunning) return -1;
-      if (!aIsRunning && bIsRunning) return 1;
-
-      // Priority 2: Always sort dates in descending order (newest first)
+      // Sort dates in descending order (newest first) - maintain original order
       return dateB.getTime() - dateA.getTime();
     });
 

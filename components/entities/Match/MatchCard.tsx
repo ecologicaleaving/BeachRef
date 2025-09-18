@@ -545,8 +545,30 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       )}
                       {/* Debug: Show parsed status for LIVE match detection debugging */}
                       <Text style={{fontSize: 10, color: '#666', fontFamily: 'monospace'}}>
-                        {typeof match.status === 'string' ? `"${match.status}"` : `#${match.status}`}
-                        {(match as any)?.rawStatus && ` (raw:${(match as any).rawStatus})`}
+                        {(() => {
+                          const rawStatus = (match as any)?.rawStatus;
+                          if (typeof rawStatus === 'number') {
+                            const statusText = {
+                              1: 'Scheduled',
+                              2: 'Ready to Start',
+                              3: 'InSet1',
+                              4: 'Set1Finished',
+                              5: 'InSet2',
+                              6: 'Set2Finished',
+                              7: 'InSet3',
+                              8: 'Set3Finished',
+                              9: 'InSet4',
+                              10: 'Set4Finished',
+                              11: 'InSet5',
+                              12: 'Finished',
+                              13: 'OfficialResult',
+                              14: 'Corrected',
+                              15: 'Closed'
+                            }[rawStatus] || 'Unknown';
+                            return `${statusText} (raw:${rawStatus})`;
+                          }
+                          return typeof match.status === 'string' ? `"${match.status}"` : `#${match.status}`;
+                        })()}
                       </Text>
                     </>
                   );

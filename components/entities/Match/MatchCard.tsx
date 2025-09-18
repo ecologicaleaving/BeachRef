@@ -660,18 +660,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     </View>
                   </View>
 
-                  {/* Score age indicator for LIVE matches */}
-                  {isMatchLive(match) && (
-                    <Text style={{
-                      fontSize: 10,
-                      color: '#999',
-                      fontFamily: 'monospace',
-                      marginLeft: 8,
-                      alignSelf: 'center'
-                    }}>
-                      {formatScoreAge(scoreAge)}
-                    </Text>
-                  )}
 
                   {(() => {
                     const totalDuration = getMatchDuration(match);
@@ -747,6 +735,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
                       return sets;
                     })()}
+
+                    {/* Score age indicator for LIVE matches - positioned next to set scores */}
+                    {isMatchLive(match) && (
+                      <Text style={{
+                        fontSize: 10,
+                        color: '#333',
+                        fontFamily: 'monospace',
+                        marginLeft: 8,
+                        alignSelf: 'center'
+                      }}>
+                        {formatScoreAge(scoreAge)}
+                      </Text>
+                    )}
                   </View>
                 )}
               </View>

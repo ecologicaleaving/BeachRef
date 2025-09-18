@@ -106,6 +106,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       // Force re-render every 5 seconds to pick up new live score data
       if (secondCounter >= 5) {
         setForceRender(prev => prev + 1);
+        setLastScoreUpdate(new Date()); // Reset score age to 0 when we get fresh data
+        setScoreAge(0);
         secondCounter = 0;
       }
     }, 1000);

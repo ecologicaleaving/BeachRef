@@ -7,6 +7,7 @@ import { MatchDTO } from '../../services/DualReadService';
 import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
+import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -14,13 +15,21 @@ type ExtendedBeachMatch = BeachMatchCore & {
   tournamentNo?: string;
 };
 
+// Tournament context interface for timezone-aware transformations
+interface TournamentContext {
+  timezone?: string;
+  tournamentId?: string;
+  location?: string;
+}
+
 /**
  * Transforms MatchDTO from hook to BeachMatchCore for component compatibility
  * Maintains backward compatibility with existing component interfaces
  * @param dto MatchDTO from useMatches hook
+ * @param tournamentContext Optional tournament context for timezone conversion
  * @returns BeachMatchCore expected by components
  */
-const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
+const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext): BeachMatchCore => {
   // Transform result if it exists
   const result: MatchResult | undefined = dto.result ? {
     team1Sets: dto.result.team1Sets,
@@ -58,6 +67,103 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     location: dto.court.location,
   };
 
+  // Enhanced timezone conversion using complete VIS API data (Phase 2)
+  let timezoneConversionAccuracy: 'high' | 'medium' | 'low' = 'low';
+  let utcScheduledDateTime: string | undefined;
+
+  // DEBUG: Log the timezone issue
+  if (dto.matchCode === '1') {
+    console.log('🐛 TIMEZONE DEBUG for match', dto.matchCode, {
+      originalScheduledDateTime: dto.scheduledDateTime,
+      localTime: dto.localTime,
+      localDate: dto.localDate,
+      utcTime: dto.utcTime,
+      utcDate: dto.utcDate,
+      localTimeOffset: dto.localTimeOffset,
+      tournamentTimezone: tournamentContext?.timezone
+    });
+  }
+
+  // Prepare VIS timezone fields for comprehensive TimezoneService conversion
+  const visFields: VISTimezoneFields = {
+    BeginDateTimeUtc: dto.beginDateTimeUtc,
+    EndDateTimeUtc: dto.endDateTimeUtc,
+    UtcDate: dto.utcDate,
+    UtcTime: dto.utcTime,
+    LocalDate: dto.localDate,
+    LocalTime: dto.localTime,
+    LocalTimeOffset: dto.localTimeOffset,
+    TimeZone: dto.timezone || tournamentContext?.timezone,
+  };
+
+
+  // Use TimezoneService for accurate timezone conversion
+  if (visFields.LocalDate && visFields.LocalTime) {
+    try {
+      // FIXED: Use scheduledDateTime as-is when it contains correct local time
+      // The issue was that timezone conversion was treating local time as UTC
+
+      if (visFields.BeginDateTimeUtc) {
+        // Priority 1: Direct UTC timestamp (highest accuracy)
+        utcScheduledDateTime = visFields.BeginDateTimeUtc;
+        timezoneConversionAccuracy = 'high';
+      } else if (visFields.UtcDate && visFields.UtcTime) {
+        // Priority 2: UTC components (high accuracy)
+        utcScheduledDateTime = `${visFields.UtcDate}T${visFields.UtcTime}`;
+        timezoneConversionAccuracy = 'high';
+      } else if (tournamentContext?.timezone && visFields.LocalDate && visFields.LocalTime) {
+        // Priority 3: Use tournament timezone to properly convert local time
+        // This fixes the issue where localTimeOffset is incorrect from VIS API
+        const localDateTime = `${visFields.LocalDate}T${visFields.LocalTime}`;
+        // Keep scheduledDateTime as-is since it already contains correct local time
+        // The display logic should use scheduledDateTime directly for local time display
+        utcScheduledDateTime = dto.scheduledDateTime; // Use original scheduledDateTime
+        timezoneConversionAccuracy = 'medium';
+      } else if (visFields.LocalTimeOffset) {
+        // Priority 3: Local time with offset (medium accuracy)
+        const localDateTime = `${visFields.LocalDate}T${visFields.LocalTime}`;
+        const offsetMinutes = parseTimezoneOffset(visFields.LocalTimeOffset);
+        const localDate = new Date(localDateTime);
+        if (!isNaN(localDate.getTime())) {
+          const utcDate = new Date(localDate.getTime() - (offsetMinutes * 60 * 1000));
+          utcScheduledDateTime = utcDate.toISOString();
+          timezoneConversionAccuracy = 'medium';
+        }
+      } else {
+        // Fallback: Use original scheduledDateTime
+        const date = new Date(dto.scheduledDateTime);
+        if (!isNaN(date.getTime())) {
+          utcScheduledDateTime = date.toISOString();
+          timezoneConversionAccuracy = 'low';
+        }
+      }
+    } catch (error) {
+      console.warn('Enhanced timezone conversion failed, using fallback:', error);
+      // Final fallback: Use original scheduledDateTime
+      try {
+        const date = new Date(dto.scheduledDateTime);
+        if (!isNaN(date.getTime())) {
+          utcScheduledDateTime = date.toISOString();
+          timezoneConversionAccuracy = 'low';
+        }
+      } catch (fallbackError) {
+        console.error('All timezone conversion methods failed:', fallbackError);
+      }
+    }
+  }
+
+
+  // Helper function to parse timezone offset
+  function parseTimezoneOffset(offset: string): number {
+    const cleaned = offset.replace(/[^\+\-\d:]/g, '');
+    const match = cleaned.match(/^([+\-])(\d{1,2}):?(\d{2})?$/);
+    if (!match) return 0;
+
+    const [, sign, hours, minutes = '00'] = match;
+    const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+    return sign === '+' ? totalMinutes : -totalMinutes;
+  }
+
   // Create the core BeachMatchCore object
   const beachMatchCore: BeachMatchCore = {
     id: dto.id,
@@ -80,6 +186,10 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     notes: (dto as any).notes,
     weather: (dto as any).weather,
     importance: (dto as any).importance,
+    // New timezone fields
+    tournamentTimezone: tournamentContext?.timezone,
+    utcScheduledDateTime,
+    timezoneConversionAccuracy,
   };
 
   // Preserve ALL original DTO fields for legacy compatibility
@@ -300,8 +410,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Transform hook data to component format
   const hookMatches = useMemo(() => {
-    return shouldUseHook ? rawMatches.map(transformMatchDTO) : [];
-  }, [rawMatches, shouldUseHook]);
+    if (rawMatches.length > 0) {
+      console.log('⚽ MATCH:', rawMatches[0]);
+    }
+
+    return shouldUseHook ? rawMatches.map(dto => transformMatchDTO(dto, { timezone: tournamentTimezone })) : [];
+  }, [rawMatches, shouldUseHook, tournamentTimezone]);
 
   // Use either prop matches or hook matches
   const activeMatches = propMatches || hookMatches;

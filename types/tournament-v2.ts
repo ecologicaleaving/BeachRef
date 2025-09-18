@@ -113,9 +113,12 @@ export interface TournamentCore extends VisEntity {
   
   /** Country code (ISO 2-letter) */
   readonly countryCode?: string;
-  
+
   /** Venue/location name */
   readonly location?: string;
+
+  /** Tournament default timezone */
+  readonly DefaultTimeZone?: string;
   
   /** Venue name */
   readonly venue?: string;

@@ -503,7 +503,43 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               </Text>
               <View style={styles.timeDisplayContainer}>
                 {(() => {
-                  const timeDisplay = match.scheduledDateTime ? getTimeDisplay(match.scheduledDateTime) : { localTime: 'TBD', userTime: null };
+                  // FIXED: Treat scheduledDateTime as local tournament time, calculate user time
+                  const timeDisplay = match.scheduledDateTime ? (() => {
+                    // Step 1: scheduledDateTime is already correct local tournament time
+                    const localTime = new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    });
+
+                    // Step 2: Calculate user's timezone time if different from tournament timezone
+                    let userTime = null;
+                    if (tournamentTimezone) {
+                      try {
+                        // Create a date as if it's in the tournament timezone
+                        const matchDateTime = match.scheduledDateTime;
+
+                        // If we have UTC components from VIS API, use them for accurate conversion
+                        if ((match as any).utcDate && (match as any).utcTime) {
+                          const utcDateTime = `${(match as any).utcDate}T${(match as any).utcTime}Z`;
+                          const userTimeFormatted = new Date(utcDateTime).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          });
+
+                          // Only show if different from local time
+                          if (userTimeFormatted !== localTime) {
+                            userTime = userTimeFormatted;
+                          }
+                        }
+                      } catch (error) {
+                        console.warn('Error calculating user time:', error);
+                      }
+                    }
+
+                    return { localTime, userTime };
+                  })() : { localTime: 'TBD', userTime: null };
                   return (
                     <>
                       <Text style={styles.matchTime}>

@@ -276,8 +276,18 @@ export class VisResponseParser {
       website: this.extractXmlValue(tournamentXml, 'Website'),
       parentEventNo: this.extractXmlValue(tournamentXml, 'ParentEvent'),
       series: this.extractXmlValue(tournamentXml, 'Series'),
-      category: this.extractXmlValue(tournamentXml, 'Category')
+      category: this.extractXmlValue(tournamentXml, 'Category'),
+      DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone')
     };
+
+    // Debug: Log parsed tournament with DefaultTimeZone
+    console.log('🔄 PARSED TOURNAMENT OBJECT:', {
+      name: name,
+      DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone'),
+      allKeys: Object.keys(result)
+    });
+
+    return result;
   }
 
   /**
@@ -306,6 +316,15 @@ export class VisResponseParser {
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
     const localDate = this.extractXmlAttribute(matchXml, 'LocalDate') || '';
     const localTime = this.extractXmlAttribute(matchXml, 'LocalTime') || '';
+
+    // Extract new timezone fields for enhanced timezone support
+    const beginDateTimeUtc = this.extractXmlAttribute(matchXml, 'BeginDateTimeUtc');
+    const endDateTimeUtc = this.extractXmlAttribute(matchXml, 'EndDateTimeUtc');
+    const utcDate = this.extractXmlAttribute(matchXml, 'UtcDate');
+    const utcTime = this.extractXmlAttribute(matchXml, 'UtcTime');
+    const localTimeOffset = this.extractXmlAttribute(matchXml, 'LocalTimeOffset');
+    const timezone = this.extractXmlAttribute(matchXml, 'TimeZone');
+
     
     // Build scheduledDateTime safely - handle cases where localTime might already include seconds
     let scheduledDateTime: string;
@@ -375,7 +394,16 @@ export class VisResponseParser {
       // Add duration fields for debugging and access
       DurationSet1: durationSet1,
       DurationSet2: durationSet2,
-      DurationSet3: durationSet3
+      DurationSet3: durationSet3,
+      // Add timezone fields for enhanced timezone support
+      beginDateTimeUtc: beginDateTimeUtc,
+      endDateTimeUtc: endDateTimeUtc,
+      utcDate: utcDate,
+      utcTime: utcTime,
+      localDate: localDate,
+      localTime: localTime,
+      localTimeOffset: localTimeOffset,
+      timezone: timezone
     } as any;
   }
 

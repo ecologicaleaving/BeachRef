@@ -101,7 +101,8 @@ export function useTournaments(
             start_main_draw,
             status,
             created_at,
-            updated_at
+            updated_at,
+            default_timezone
           `);
 
         // Apply filters using database indexes for optimal performance
@@ -138,6 +139,7 @@ export function useTournaments(
             status: (row.status || 'UPCOMING') as 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED',
             city: row.city || undefined,
             country: row.country || undefined,
+            DefaultTimeZone: row.default_timezone || undefined,
           }));
 
           const endTime = Date.now();
@@ -147,6 +149,11 @@ export function useTournaments(
             source: 'database',
             performance: { queryTime: endTime - startTime, fallbackUsed }
           });
+
+          console.log('📊 TOURNAMENT SOURCE: Database', tournaments.length, 'tournaments');
+          if (tournaments.length > 0) {
+            console.log('📊 FIRST TOURNAMENT FROM DB:', tournaments[0]);
+          }
 
           return tournaments;
         }
@@ -184,6 +191,11 @@ export function useTournaments(
               source: 'api',
               performance: { queryTime: endTime - startTime, fallbackUsed }
             });
+
+            console.log('📊 TOURNAMENT SOURCE: VIS Adapter API', visResult.data.length, 'tournaments');
+            if (visResult.data.length > 0) {
+              console.log('📊 FIRST TOURNAMENT FROM API:', visResult.data[0]);
+            }
 
             return visResult.data;
           }

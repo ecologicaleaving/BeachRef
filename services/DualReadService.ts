@@ -50,6 +50,7 @@ export interface TournamentDTO {
   country?: string;
   countryCode?: string;
   location?: string;
+  DefaultTimeZone?: string;
 }
 
 export interface RefereeDTO {
@@ -130,6 +131,15 @@ export interface MatchDTO {
     winner?: 1 | 2;
     forfeit?: boolean;
   };
+  // New timezone fields for enhanced timezone support
+  beginDateTimeUtc?: string;
+  endDateTimeUtc?: string;
+  utcDate?: string;
+  utcTime?: string;
+  localDate?: string;
+  localTime?: string;
+  localTimeOffset?: string;
+  timezone?: string;
 }
 
 export interface EventDTO {

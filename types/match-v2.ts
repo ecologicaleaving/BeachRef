@@ -153,6 +153,15 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Team B position/seed in main draw bracket */
   readonly teamBPositionInMainDraw?: string;
+
+  /** Tournament timezone (e.g., 'Europe/Rome', 'America/Sao_Paulo') */
+  readonly tournamentTimezone?: string;
+
+  /** UTC conversion of scheduled time */
+  readonly utcScheduledDateTime?: string;
+
+  /** Reliability of timezone conversion */
+  readonly timezoneConversionAccuracy?: 'high' | 'medium' | 'low';
 }
 
 /**

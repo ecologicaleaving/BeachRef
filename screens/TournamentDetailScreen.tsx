@@ -1247,6 +1247,12 @@ const TournamentDetailScreenContent: React.FC = () => {
             
             
             setMatches(sortedMatches);
+
+            // Debug: Log first match object
+            if (sortedMatches && sortedMatches.length > 0) {
+              console.log('First match object:', sortedMatches[0]);
+            }
+
             setMatchesLoading(false);
           } catch (parseError) {
             setMatches([]);
@@ -1559,7 +1565,40 @@ const TournamentDetailScreenContent: React.FC = () => {
                   tournamentCode={enhancedTournament?.visNo}
                   enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
                   enableLiveScores={getTournamentStatus() === 'LIVE'}
-                  tournamentTimezone={tournament?.DefaultTimeZone}
+                  tournamentTimezone={(() => {
+                    // Map tournament location to timezone like gender field
+                    const getTimezoneForTournament = (tournament: any) => {
+                      // Map based on country code or city
+                      if (tournament?.countryCode === 'BR') {
+                        if (tournament?.name?.includes('João Pessoa')) return 'America/Fortaleza';
+                        if (tournament?.name?.includes('São Paulo')) return 'America/Sao_Paulo';
+                        return 'America/Sao_Paulo'; // Default Brazil timezone
+                      }
+                      if (tournament?.countryCode === 'DE') {
+                        return 'Europe/Berlin'; // Germany
+                      }
+                      if (tournament?.countryCode === 'US') {
+                        return 'America/New_York'; // Default US timezone
+                      }
+                      // Add more mappings as needed
+                      return 'UTC'; // Default fallback
+                    };
+
+                    const enhancedTournament = {
+                      ...tournament,
+                      DefaultTimeZone: getTimezoneForTournament(tournament)
+                    };
+
+                    const timezone = enhancedTournament?.DefaultTimeZone;
+                    console.log('🏆 TOURNAMENT:', enhancedTournament);
+                    console.log('🔍 TOURNAMENT KEYS:', Object.keys(enhancedTournament || {}));
+                    console.log('🕐 TIMEZONE SEARCH:', {
+                      DefaultTimeZone: enhancedTournament?.DefaultTimeZone,
+                      timezone: (tournament as any)?.timezone,
+                      finalTimezone: timezone
+                    });
+                    return timezone;
+                  })()}
                   matchFilters={{
                     // Use the tournament numbers from the existing complex loading logic
                     tournamentCode: enhancedTournament?.visNo,

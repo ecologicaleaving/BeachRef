@@ -225,10 +225,40 @@ export function isBeachMatchCore(obj: any): obj is BeachMatchCore {
  */
 export function mapVisMatchStatus(visStatus?: string): MatchStatus {
   if (!visStatus) return MatchStatus.SCHEDULED;
-  
+
+  // First check if it's a numeric VIS status code
+  const numericStatus = parseInt(visStatus);
+  if (!isNaN(numericStatus)) {
+    // Map VIS numeric status codes according to official documentation
+    switch (numericStatus) {
+      case 1: // Scheduled
+        return MatchStatus.SCHEDULED;
+      case 2: // ReadyToStart
+        return MatchStatus.SCHEDULED;
+      case 3: // InSet1 - LIVE
+      case 5: // InSet2 - LIVE
+      case 7: // InSet3 - LIVE
+      case 9: // InSet4 - LIVE
+      case 11: // InSet5 - LIVE
+        return MatchStatus.RUNNING;
+      case 4: // Set1Finished - Between sets, still running
+      case 6: // Set2Finished - Between sets, still running
+      case 8: // Set3Finished - Between sets, still running
+      case 10: // Set4Finished - Between sets, still running
+        return MatchStatus.RUNNING; // Between sets = still running
+      case 12: // Finished
+      case 13: // OfficialResult
+      case 14: // Corrected
+      case 15: // Closed
+        return MatchStatus.FINISHED;
+      default:
+        // Unknown numeric status, assume scheduled
+        return MatchStatus.SCHEDULED;
+    }
+  }
+
+  // Fallback to string-based mapping for backward compatibility
   const status = visStatus.toLowerCase().trim();
-  
-  // Map VIS status values to our enum
   switch (status) {
     case 'running':
     case 'live':

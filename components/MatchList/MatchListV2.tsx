@@ -1193,7 +1193,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const numericCode = String(rawCode).replace(/\D/g, '');
       const matchNo = parseInt(numericCode || '', 10);
       const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
+      console.log(`📊 LIVE SCORE DATA: Match ${match.id} (${matchNo}) - liveScore:`, liveScore ? `${liveScore.sets?.length || 0} sets` : 'null');
       if (liveScore && liveScore.sets && liveScore.sets.length > 0) {
+        console.log(`📊 SETS DETAIL: Match ${match.id} - sets:`, liveScore.sets.map((set: any) => `${set.pointsTeamA}-${set.pointsTeamB}`).join(', '));
         // Create enhanced result from live score data
         const liveResult = {
           team1Sets: liveScore.sets.filter((set: any) => set.pointsTeamA > set.pointsTeamB).length,
@@ -1201,6 +1203,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           winner: undefined, // Live matches don't have a winner yet
           setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
         };
+        console.log(`📊 LIVE RESULT: Match ${match.id} - setScores:`, liveResult.setScores, `team1Sets: ${liveResult.team1Sets}, team2Sets: ${liveResult.team2Sets}`);
         
         matchWithResult = {
           ...match,

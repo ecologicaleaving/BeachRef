@@ -239,16 +239,11 @@ export function mapVisMatchStatus(visStatus?: string): MatchStatus {
         return MatchStatus.SCHEDULED;
       case 2: // ReadyToStart
         return MatchStatus.SCHEDULED;
-      case 9: // InSet4
-      case 10: // Set4Finished
-      case 11: // InSet5
-        return MatchStatus.RUNNING; // Extended LIVE statuses
-      case 12: // Finished
-      case 13: // OfficialResult
-      case 14: // Corrected
-      case 15: // Closed
-        return MatchStatus.FINISHED;
       default:
+        // Status 9 and above are finished/closed matches
+        if (numericStatus >= 9) {
+          return MatchStatus.FINISHED;
+        }
         // Unknown numeric status, assume scheduled
         return MatchStatus.SCHEDULED;
     }

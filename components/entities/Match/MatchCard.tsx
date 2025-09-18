@@ -586,6 +586,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 {(() => {
                   const rawStatus = (match as any)?.rawStatus;
                   if (typeof rawStatus === 'number') {
+                    if (rawStatus >= 9) {
+                      return 'Closed';
+                    }
                     const statusText = {
                       1: 'Scheduled',
                       2: 'Ready to Start',
@@ -594,14 +597,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       5: 'InSet2',
                       6: 'Set2Finished',
                       7: 'InSet3',
-                      8: 'Set3Finished',
-                      9: 'InSet4',
-                      10: 'Set4Finished',
-                      11: 'InSet5',
-                      12: 'Finished',
-                      13: 'OfficialResult',
-                      14: 'Corrected',
-                      15: 'Closed'
+                      8: 'Set3Finished'
                     }[rawStatus] || 'Unknown';
                     return statusText;
                   }

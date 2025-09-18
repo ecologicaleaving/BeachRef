@@ -126,10 +126,8 @@ export const useCourtManagement = (): UseCourtManagement => {
     
     setLoadingCourts(true);
     try {
-      // console.log(`🏐 DEBUG: Loading courts for tournament ${tournamentNo}...`);
       
       const matches = await visApiClient.fetchMatchesForTournament(tournamentNo);
-      // console.log(`🏐 DEBUG: Found ${matches.length} matches for court analysis`);
       
       // Extract unique courts from matches
       const courts = [...new Set(
@@ -139,10 +137,8 @@ export const useCourtManagement = (): UseCourtManagement => {
           .filter(court => court.trim() !== '')
       )].sort();
       
-      // console.log(`🏐 DEBUG: Available courts:`, courts);
       
       if (courts.length === 0) {
-        // console.log(`🏐 DEBUG: No courts found in match data`);
         Alert.alert('No Courts Found', 'No court information is available for this tournament yet.');
         return;
       }
@@ -213,7 +209,6 @@ export const useCourtManagement = (): UseCourtManagement => {
           if (oppositeCode) {
             const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
             if (oppositeTournament) {
-              // console.log(`🏐 DEBUG: Loading matches from opposite gender tournament ${oppositeTournament.No}`);
               const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeTournament.No);
               const oppositeGender = extractGenderFromCode(oppositeTournament.Code);
               

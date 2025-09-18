@@ -276,8 +276,18 @@ export class VisResponseParser {
       website: this.extractXmlValue(tournamentXml, 'Website'),
       parentEventNo: this.extractXmlValue(tournamentXml, 'ParentEvent'),
       series: this.extractXmlValue(tournamentXml, 'Series'),
-      category: this.extractXmlValue(tournamentXml, 'Category')
+      category: this.extractXmlValue(tournamentXml, 'Category'),
+      DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone')
     };
+
+    // Debug: Log parsed tournament with DefaultTimeZone
+    console.log('🔄 PARSED TOURNAMENT OBJECT:', {
+      name: name,
+      DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone'),
+      allKeys: Object.keys(result)
+    });
+
+    return result;
   }
 
   /**
@@ -301,11 +311,21 @@ export class VisResponseParser {
     }
 
     const statusStr = this.extractXmlAttribute(matchXml, 'Status') || '';
+    const rawStatus = statusStr ? (isNaN(parseInt(statusStr)) ? statusStr : parseInt(statusStr)) : undefined;
     const status = mapVisMatchStatus(statusStr);
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
     const localDate = this.extractXmlAttribute(matchXml, 'LocalDate') || '';
     const localTime = this.extractXmlAttribute(matchXml, 'LocalTime') || '';
+
+    // Extract new timezone fields for enhanced timezone support
+    const beginDateTimeUtc = this.extractXmlAttribute(matchXml, 'BeginDateTimeUtc');
+    const endDateTimeUtc = this.extractXmlAttribute(matchXml, 'EndDateTimeUtc');
+    const utcDate = this.extractXmlAttribute(matchXml, 'UtcDate');
+    const utcTime = this.extractXmlAttribute(matchXml, 'UtcTime');
+    const localTimeOffset = this.extractXmlAttribute(matchXml, 'LocalTimeOffset');
+    const timezone = this.extractXmlAttribute(matchXml, 'TimeZone');
+
     
     // Build scheduledDateTime safely - handle cases where localTime might already include seconds
     let scheduledDateTime: string;
@@ -329,10 +349,21 @@ export class VisResponseParser {
 
     const team1 = this.parseMatchTeam(matchXml, 'A'); // VIS API uses TeamAName, TeamBName
     const team2 = this.parseMatchTeam(matchXml, 'B');
-    
-    if (!team1 || !team2) {
-      return null;
-    }
+
+    // Create placeholder teams if missing but match has valid scheduled time
+    const finalTeam1 = team1 || {
+      teamNumber: 1 as const,
+      teamName: 'TBD',
+      player1Name: 'TBD',
+      player2Name: 'TBD'
+    };
+
+    const finalTeam2 = team2 || {
+      teamNumber: 2 as const,
+      teamName: 'TBD',
+      player1Name: 'TBD',
+      player2Name: 'TBD'
+    };
 
     const id = generateMatchId(tournamentId, courtNumber, scheduledDateTime, matchCode);
     
@@ -357,12 +388,13 @@ export class VisResponseParser {
       roundName: roundName,
       phaseCode: this.extractXmlAttribute(matchXml, 'Phase'),
       status,
+      rawStatus, // Preserve original VIS status (numeric or string)
       court,
       scheduledDateTime,
       actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),
       actualEndTime: this.extractXmlAttribute(matchXml, 'EndTime'),
-      team1,
-      team2,
+      team1: finalTeam1,
+      team2: finalTeam2,
       result,
       refereeAssignments,
       notes: this.extractXmlAttribute(matchXml, 'Notes'),
@@ -375,7 +407,23 @@ export class VisResponseParser {
       // Add duration fields for debugging and access
       DurationSet1: durationSet1,
       DurationSet2: durationSet2,
-      DurationSet3: durationSet3
+      DurationSet3: durationSet3,
+      // Add timezone fields for enhanced timezone support
+      beginDateTimeUtc: beginDateTimeUtc,
+      endDateTimeUtc: endDateTimeUtc,
+      utcDate: utcDate,
+      utcTime: utcTime,
+      localDate: localDate,
+      localTime: localTime,
+      localTimeOffset: localTimeOffset,
+      timezone: timezone,
+      // Add tournament gender for filter functionality
+      tournamentGender: this.extractXmlAttribute(matchXml, 'TournamentGender'),
+      // Add referee names for enhanced filter functionality
+      Referee1Name: this.extractXmlAttribute(matchXml, 'Referee1Name'),
+      Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
+      Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
+      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode')
     } as any;
   }
 

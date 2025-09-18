@@ -111,7 +111,10 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Current match status */
   readonly status: MatchStatus;
-  
+
+  /** Raw VIS API status (preserved for LIVE detection) */
+  readonly rawStatus?: number | string;
+
   /** Court information */
   readonly court: CourtInfo;
   
@@ -150,9 +153,18 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Team A position/seed in main draw bracket */
   readonly teamAPositionInMainDraw?: string;
-  
+
   /** Team B position/seed in main draw bracket */
   readonly teamBPositionInMainDraw?: string;
+
+  /** Tournament timezone (e.g., 'Europe/Rome', 'America/Sao_Paulo') */
+  readonly tournamentTimezone?: string;
+
+  /** UTC conversion of scheduled time */
+  readonly utcScheduledDateTime?: string;
+
+  /** Reliability of timezone conversion */
+  readonly timezoneConversionAccuracy?: 'high' | 'medium' | 'low';
 }
 
 /**
@@ -213,10 +225,32 @@ export function isBeachMatchCore(obj: any): obj is BeachMatchCore {
  */
 export function mapVisMatchStatus(visStatus?: string): MatchStatus {
   if (!visStatus) return MatchStatus.SCHEDULED;
-  
+
+  // First check if it's a numeric VIS status code
+  const numericStatus = parseInt(visStatus);
+  if (!isNaN(numericStatus)) {
+    // Map VIS numeric status codes - statuses 3-8 are LIVE matches
+    if (numericStatus >= 3 && numericStatus <= 8) {
+      return MatchStatus.RUNNING;
+    }
+
+    switch (numericStatus) {
+      case 1: // Scheduled
+        return MatchStatus.SCHEDULED;
+      case 2: // ReadyToStart
+        return MatchStatus.SCHEDULED;
+      default:
+        // Status 9 and above are finished/closed matches
+        if (numericStatus >= 9) {
+          return MatchStatus.FINISHED;
+        }
+        // Unknown numeric status, assume scheduled
+        return MatchStatus.SCHEDULED;
+    }
+  }
+
+  // Fallback to string-based mapping for backward compatibility
   const status = visStatus.toLowerCase().trim();
-  
-  // Map VIS status values to our enum
   switch (status) {
     case 'running':
     case 'live':
@@ -295,4 +329,96 @@ export function determineMatchImportance(round: string, phaseCode?: string): 'LO
   }
   
   return 'MEDIUM';
+}
+
+/**
+ * Checks if a match with status 2 (ReadyToStart) can transition to LIVE
+ * based on court sequence - requires previous match on same court to be finished
+ *
+ * @param match - Match to check (should have status 2)
+ * @param allMatches - All matches to find previous match on same court
+ * @returns True if match can transition to LIVE, false otherwise
+ */
+export function canReadyToStartMatchGoLive(
+  match: BeachMatchCore,
+  allMatches: BeachMatchCore[]
+): boolean {
+  // Only check matches with status 2 (ReadyToStart)
+  const matchStatus = match.rawStatus || match.status;
+  const isReadyToStart = matchStatus === 2 || matchStatus === '2';
+
+  if (!isReadyToStart) {
+    return false;
+  }
+
+  // Don't allow TBD matches to go live
+  if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
+    return false;
+  }
+
+  const currentCourtNumber = match.court.courtNumber;
+  const currentMatchTime = new Date(match.scheduledDateTime);
+
+  // Find all matches on the same court that are scheduled before this match
+  const previousMatchesOnCourt = allMatches
+    .filter(m => m.court.courtNumber === currentCourtNumber)
+    .filter(m => {
+      const matchTime = new Date(m.scheduledDateTime);
+      return matchTime < currentMatchTime;
+    })
+    .sort((a, b) => new Date(b.scheduledDateTime).getTime() - new Date(a.scheduledDateTime).getTime());
+
+  // If there are no previous matches on this court, match can go live
+  if (previousMatchesOnCourt.length === 0) {
+    return true;
+  }
+
+  // Check if the most recent previous match on this court is finished
+  const mostRecentPreviousMatch = previousMatchesOnCourt[0];
+  const previousMatchStatus = mostRecentPreviousMatch.rawStatus || mostRecentPreviousMatch.status;
+
+  // Check if previous match is finished (status 9+ in VIS system)
+  if (typeof previousMatchStatus === 'number') {
+    return previousMatchStatus >= 9;
+  }
+
+  // Check if previous match is finished (string status)
+  if (typeof previousMatchStatus === 'string') {
+    return (
+      mostRecentPreviousMatch.status === MatchStatus.FINISHED ||
+      mostRecentPreviousMatch.status === MatchStatus.CANCELLED ||
+      mostRecentPreviousMatch.status === MatchStatus.INTERRUPTED
+    );
+  }
+
+  // If we can't determine the previous match status, don't allow transition
+  return false;
+}
+
+/**
+ * Enhanced match status mapping that considers court sequencing logic
+ * Maps status 2 to LIVE if previous match on same court is finished
+ *
+ * @param match - Match to get status for
+ * @param allMatches - All matches to check court sequence
+ * @returns Enhanced MatchStatus considering court sequence
+ */
+export function getEnhancedMatchStatus(
+  match: BeachMatchCore,
+  allMatches: BeachMatchCore[]
+): MatchStatus {
+  const baseStatus = match.status;
+  const rawStatus = match.rawStatus || match.status;
+
+  // If match is already running or finished, return as-is
+  if (baseStatus === MatchStatus.RUNNING || baseStatus === MatchStatus.FINISHED) {
+    return baseStatus;
+  }
+
+  // Check if this is a ReadyToStart match that can go live
+  if ((rawStatus === 2 || rawStatus === '2') && canReadyToStartMatchGoLive(match, allMatches)) {
+    return MatchStatus.RUNNING;
+  }
+
+  return baseStatus;
 }

@@ -203,7 +203,7 @@ export const formatTimeWithTimezoneSync = (
     const {
       tournamentTimezone = 'UTC',
       showTimezoneIndicator = true,
-      cachedPreference = 'local'
+      cachedPreference = 'user'
     } = options;
 
     // Parse UTC date
@@ -263,7 +263,7 @@ export const getCurrentTimezonePreference = async (): Promise<'user' | 'local'> 
 
     // Load fresh preference from storage
     const preferences = await TournamentStorageService.getUserPreferences();
-    const preference = preferences?.timezoneDisplayMode === 'user' ? 'user' : 'local';
+    const preference = preferences?.timezoneDisplayMode === 'local' ? 'local' : 'user';
 
     // Update cache
     cachedTimezonePreference = preference;
@@ -272,7 +272,7 @@ export const getCurrentTimezonePreference = async (): Promise<'user' | 'local'> 
     return preference;
   } catch (error) {
     console.warn('Failed to load timezone preference:', error);
-    return 'local'; // Default to local tournament timezone
+    return 'user'; // Default to user timezone
   }
 };
 

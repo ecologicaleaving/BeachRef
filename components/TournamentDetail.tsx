@@ -187,7 +187,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const [selectedGender, setSelectedGender] = useState<string>('');
   
   // Debug filter states
-  // console.log('Filter states:', { selectedCourt, selectedReferee, selectedGender });
   const [courtDropdownOpen, setCourtDropdownOpen] = useState<boolean>(false);
   const [refereeDropdownOpen, setRefereeDropdownOpen] = useState<boolean>(false);
   const [genderDropdownOpen, setGenderDropdownOpen] = useState<boolean>(false);
@@ -403,12 +402,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
     const pointsB = parseInt(match.MatchPointsB || '0');
     const status = match.Status;
     
-    // console.log(`Match ${match.NoInTournament}: PointsA=${pointsA}, PointsB=${pointsB}, Status=${status}, Court=${match.Court}`);
     
     // If we have a status code, use it to determine the match state
     if (status) {
       const statusNum = parseInt(status);
-      // console.log(`Match ${match.NoInTournament} status code: ${statusNum}`);
       // Status codes: 1=Scheduled, 2=Playing, 3=Completed (these are typical FIVB status codes)
       if (statusNum === 2) return 'playing';
       if (statusNum === 3 || statusNum >= 3) return 'completed';
@@ -430,26 +427,18 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
         const oneHourBefore = matchStart - (60 * 60 * 1000); // 1 hour before
         const fourHoursAfter = matchStart + (4 * 60 * 60 * 1000); // 4 hours after
         
-        // console.log(`Match ${match.NoInTournament} time analysis:`);
-        // console.log(`  Match time: ${match.LocalDate}T${match.LocalTime} (${matchDateTime})`);
-        // console.log(`  Current time: ${now}`);
-        // console.log(`  Time window: ${new Date(oneHourBefore)} to ${new Date(fourHoursAfter)}`);
-        // console.log(`  Current in window: ${currentTime >= oneHourBefore && currentTime <= fourHoursAfter}`);
         
         // If current time is within the match window and no score, consider it playing
         if (currentTime >= oneHourBefore && currentTime <= fourHoursAfter) {
-          // console.log(`Match ${match.NoInTournament} considered playing based on time window`);
           return 'playing';
         }
         
         // If match time has passed significantly, it might be completed but without scores recorded
         if (currentTime > fourHoursAfter) {
-          // console.log(`Match ${match.NoInTournament} considered completed (time passed)`);
           return 'completed';
         }
         
         // Otherwise it's scheduled for the future
-        // console.log(`Match ${match.NoInTournament} considered scheduled (future)`);
         return 'scheduled';
       } catch {
         // console.warn(`Date parsing error for match ${match.NoInTournament}`);
@@ -464,9 +453,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
   // Filter matches based on selected filters and active tab
   const filteredMatches = useMemo(() => {
-    // console.log(`=== Filtering matches for ${activeTab} tab ===`);
-    // console.log(`Total matches to filter: ${matchesToFilter.length}`);
-    // console.log(`Selected court: "${selectedCourt}", Selected referee: "${selectedReferee}", Selected gender: "${selectedGender}"`);
     
     const filtered = matchesToFilter.filter(match => {
       let keepMatch = true;
@@ -514,15 +500,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       
       // Log detailed information for each match
       const statusForDisplay = activeTab !== 'info' ? getMatchStatus(match) : 'N/A';
-      // console.log(`Match ${match.NoInTournament} (Court ${match.Court}): Status=${statusForDisplay}, Keep=${keepMatch}${filterReason ? `, Reason: ${filterReason}` : ''}`);
       
       return keepMatch;
     });
 
-    // console.log(`=== Filter Results for ${activeTab} tab ===`);
-    // console.log(`Kept ${filtered.length} matches out of ${matchesToFilter.length}`);
-    // console.log('Courts in filtered matches:', [...new Set(filtered.map(m => m.Court))].sort());
-    // console.log('Courts in all matches:', [...new Set(matchesToFilter.map(m => m.Court))].sort());
     
     // Sort matches based on active tab
     return filtered.sort((a, b) => {

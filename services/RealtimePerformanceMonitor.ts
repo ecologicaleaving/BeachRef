@@ -57,7 +57,6 @@ export class RealtimePerformanceMonitor {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    // console.log('Initializing RealtimePerformanceMonitor');
     
     // Set up app state monitoring for battery optimization
     AppState.addEventListener('change', this.handleAppStateChange.bind(this));
@@ -90,7 +89,6 @@ export class RealtimePerformanceMonitor {
     
     switch (nextAppState) {
       case 'background':
-        // console.log('App backgrounded - enabling battery optimization');
         this.optimizationState.isBackgroundOptimized = true;
         this.optimizationState.lastBackgroundTime = now;
         this.metrics.batteryOptimizationEvents++;
@@ -105,7 +103,6 @@ export class RealtimePerformanceMonitor {
         
       case 'active':
         if (this.optimizationState.isBackgroundOptimized) {
-          // console.log('App foregrounded - restoring normal operation');
           this.optimizationState.isBackgroundOptimized = false;
           this.disableAggressiveBatteryOptimization();
           this.metrics.foregroundReconnections++;
@@ -118,7 +115,6 @@ export class RealtimePerformanceMonitor {
    * Enable aggressive battery optimization measures
    */
   private static enableAggressiveBatteryOptimization(): void {
-    // console.log('Enabling aggressive battery optimization');
     
     // Reduce message processing frequency
     // Pause non-critical subscriptions
@@ -131,7 +127,6 @@ export class RealtimePerformanceMonitor {
    * Disable aggressive battery optimization
    */
   private static disableAggressiveBatteryOptimization(): void {
-    // console.log('Disabling aggressive battery optimization');
     
     // Resume normal message processing
     // Restore all subscriptions
@@ -195,7 +190,6 @@ export class RealtimePerformanceMonitor {
     const now = Date.now();
     const timeSinceLastCheck = now - this.metrics.lastPerformanceCheck;
     
-    // console.log('Performance Monitor Report:', {
     //   connectionSuccessRate: this.getConnectionSuccessRate(),
     //   averageMessageSize: Math.round(this.metrics.averageMessageSize),
     //   messagesPerMinute: Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000),
@@ -210,7 +204,6 @@ export class RealtimePerformanceMonitor {
    * Periodic memory cleanup
    */
   private static memoryCleanupCycle(): void {
-    // console.log('Performing memory cleanup cycle');
     
     // Clean up old message rate limiter data
     const now = Date.now();
@@ -227,7 +220,6 @@ export class RealtimePerformanceMonitor {
     // Force garbage collection if available (development only)
     if (__DEV__ && global.gc) {
       global.gc();
-      // console.log('Forced garbage collection');
     }
   }
 
@@ -329,6 +321,5 @@ export class RealtimePerformanceMonitor {
     this.optimizationState.messageRateLimiter.clear();
     this.isInitialized = false;
     
-    // console.log('RealtimePerformanceMonitor cleaned up');
   }
 }

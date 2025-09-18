@@ -109,7 +109,6 @@ export const RefereeAnalyticsDashboard: React.FC<RefereeAnalyticsDashboardProps>
     try {
       const blob = await exportAnalytics(format);
       // In a real implementation, this would trigger a download
-      console.log(`Exported ${blob.size} bytes as ${format}`);
     } catch (error) {
       await errorLogger.logError({
         entity_type: 'referee_analytics_dashboard',

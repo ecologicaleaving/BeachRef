@@ -55,7 +55,6 @@ export function useSyncManager(): UseSyncManagerResult {
   // Setup sync callback to track successful syncs
   useEffect(() => {
     const unsubscribe = syncManager.addSyncCallback((taskType: string) => {
-      // console.log(`Sync completed for ${taskType}`);
       setLastSyncCallback(new Date());
     });
 
@@ -83,7 +82,6 @@ export function useSyncManager(): UseSyncManagerResult {
   const forceSyncAll = useCallback(async (filters?: FilterOptions) => {
     try {
       await syncManager.forceSyncAll(filters);
-      // console.log('Force sync completed successfully');
     } catch (error) {
       // console.error('Force sync failed:', error);
       throw error;
@@ -135,7 +133,6 @@ export function useAutoSync(
       });
       
       setLastAutoSync(new Date());
-      // console.log('Auto-sync triggered due to network connectivity');
     }
   }, [isConnected, addTournamentSync, addMatchSync, filters, syncMatches, syncStatus.isProcessing]);
 

@@ -138,7 +138,6 @@ export class NetworkStateManager {
       });
 
       this.isInitialized = true;
-      // console.log('NetworkStateManager initialized successfully');
     } catch {
       // console.error('Failed to initialize network monitoring:', _error);
       this.setOfflineState();
@@ -169,7 +168,6 @@ export class NetworkStateManager {
     this.assessConnectionQuality();
     this.notifyListeners();
 
-    // console.log('Network state updated:', {
     //   type: networkState.type,
     //   isConnected: networkState.isConnected,
     //   isInternetReachable: networkState.isInternetReachable
@@ -268,7 +266,6 @@ export class NetworkStateManager {
         this.latencyHistory.shift();
       }
 
-      // console.log('Connection quality assessed:', {
       //   score: qualityScore,
       //   level: this.connectionQuality.level,
       //   strategy: this.connectionQuality.recommendation,
@@ -592,7 +589,6 @@ export class NetworkStateManager {
     this.qualityHistory = [];
     this.latencyHistory = [];
 
-    // console.log('NetworkStateManager cleaned up');
   }
 
   /**

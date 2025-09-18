@@ -34,7 +34,6 @@ export const RefereeAnalyticsWithSync: React.FC<RefereeAnalyticsWithSyncProps> =
   const handleManualSync = async () => {
     try {
       await triggerSync();
-      console.log('✅ Manual sync completed');
     } catch (error) {
       console.error('❌ Manual sync failed:', error);
     }

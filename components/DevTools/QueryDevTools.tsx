@@ -28,7 +28,6 @@ export function QueryDevTools() {
   // TEMPORARY FIX: Disable DevTools completely during migration
   // TODO: Re-enable once QueryClient initialization is stable
   if (true) {
-    console.log('QueryDevTools: Temporarily disabled during migration');
     return null;
   }
 
@@ -74,7 +73,7 @@ export const queryDebugUtils = {
   logQueryState: (queryClient: any, queryKey: any) => {
     if (__DEV__) {
       const query = queryClient.getQueryCache().find(queryKey);
-      console.log(`Query [${JSON.stringify(queryKey)}]:`, {
+      console.log('Query State:', {
         data: query?.state.data,
         status: query?.state.status,
         fetchStatus: query?.state.fetchStatus,
@@ -90,7 +89,6 @@ export const queryDebugUtils = {
   invalidateAll: (queryClient: any) => {
     if (__DEV__) {
       queryClient.invalidateQueries();
-      console.log('All queries invalidated');
     }
   },
 
@@ -100,7 +98,6 @@ export const queryDebugUtils = {
   clearCache: (queryClient: any) => {
     if (__DEV__) {
       queryClient.clear();
-      console.log('Query cache cleared');
     }
   },
 };

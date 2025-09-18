@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
-import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../../types/match-v2';
 import { MatchList, MatchCard } from '../entities/Match';
 import { useMatches, MatchesFilters } from '../../hooks/useMatches';
 import { MatchDTO } from '../../services/DualReadService';
 import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
+import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -14,13 +15,22 @@ type ExtendedBeachMatch = BeachMatchCore & {
   tournamentNo?: string;
 };
 
+// Tournament context interface for timezone-aware transformations
+interface TournamentContext {
+  timezone?: string;
+  tournamentId?: string;
+  location?: string;
+  gender?: 'M' | 'W' | 'MIXED';
+}
+
 /**
  * Transforms MatchDTO from hook to BeachMatchCore for component compatibility
  * Maintains backward compatibility with existing component interfaces
  * @param dto MatchDTO from useMatches hook
+ * @param tournamentContext Optional tournament context for timezone conversion
  * @returns BeachMatchCore expected by components
  */
-const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
+const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext): BeachMatchCore => {
   // Transform result if it exists
   const result: MatchResult | undefined = dto.result ? {
     team1Sets: dto.result.team1Sets,
@@ -58,6 +68,103 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     location: dto.court.location,
   };
 
+  // Enhanced timezone conversion using complete VIS API data (Phase 2)
+  let timezoneConversionAccuracy: 'high' | 'medium' | 'low' = 'low';
+  let utcScheduledDateTime: string | undefined;
+
+  // DEBUG: Log the timezone issue
+  if (dto.matchCode === '1') {
+    console.log('🐛 TIMEZONE DEBUG for match', dto.matchCode, {
+      originalScheduledDateTime: dto.scheduledDateTime,
+      localTime: dto.localTime,
+      localDate: dto.localDate,
+      utcTime: dto.utcTime,
+      utcDate: dto.utcDate,
+      localTimeOffset: dto.localTimeOffset,
+      tournamentTimezone: tournamentContext?.timezone
+    });
+  }
+
+  // Prepare VIS timezone fields for comprehensive TimezoneService conversion
+  const visFields: VISTimezoneFields = {
+    BeginDateTimeUtc: dto.beginDateTimeUtc,
+    EndDateTimeUtc: dto.endDateTimeUtc,
+    UtcDate: dto.utcDate,
+    UtcTime: dto.utcTime,
+    LocalDate: dto.localDate,
+    LocalTime: dto.localTime,
+    LocalTimeOffset: dto.localTimeOffset,
+    TimeZone: dto.timezone || tournamentContext?.timezone,
+  };
+
+
+  // Use TimezoneService for accurate timezone conversion
+  if (visFields.LocalDate && visFields.LocalTime) {
+    try {
+      // FIXED: Use scheduledDateTime as-is when it contains correct local time
+      // The issue was that timezone conversion was treating local time as UTC
+
+      if (visFields.BeginDateTimeUtc) {
+        // Priority 1: Direct UTC timestamp (highest accuracy)
+        utcScheduledDateTime = visFields.BeginDateTimeUtc;
+        timezoneConversionAccuracy = 'high';
+      } else if (visFields.UtcDate && visFields.UtcTime) {
+        // Priority 2: UTC components (high accuracy)
+        utcScheduledDateTime = `${visFields.UtcDate}T${visFields.UtcTime}`;
+        timezoneConversionAccuracy = 'high';
+      } else if (tournamentContext?.timezone && visFields.LocalDate && visFields.LocalTime) {
+        // Priority 3: Use tournament timezone to properly convert local time
+        // This fixes the issue where localTimeOffset is incorrect from VIS API
+        const localDateTime = `${visFields.LocalDate}T${visFields.LocalTime}`;
+        // Keep scheduledDateTime as-is since it already contains correct local time
+        // The display logic should use scheduledDateTime directly for local time display
+        utcScheduledDateTime = dto.scheduledDateTime; // Use original scheduledDateTime
+        timezoneConversionAccuracy = 'medium';
+      } else if (visFields.LocalTimeOffset) {
+        // Priority 3: Local time with offset (medium accuracy)
+        const localDateTime = `${visFields.LocalDate}T${visFields.LocalTime}`;
+        const offsetMinutes = parseTimezoneOffset(visFields.LocalTimeOffset);
+        const localDate = new Date(localDateTime);
+        if (!isNaN(localDate.getTime())) {
+          const utcDate = new Date(localDate.getTime() - (offsetMinutes * 60 * 1000));
+          utcScheduledDateTime = utcDate.toISOString();
+          timezoneConversionAccuracy = 'medium';
+        }
+      } else {
+        // Fallback: Use original scheduledDateTime
+        const date = new Date(dto.scheduledDateTime);
+        if (!isNaN(date.getTime())) {
+          utcScheduledDateTime = date.toISOString();
+          timezoneConversionAccuracy = 'low';
+        }
+      }
+    } catch (error) {
+      console.warn('Enhanced timezone conversion failed, using fallback:', error);
+      // Final fallback: Use original scheduledDateTime
+      try {
+        const date = new Date(dto.scheduledDateTime);
+        if (!isNaN(date.getTime())) {
+          utcScheduledDateTime = date.toISOString();
+          timezoneConversionAccuracy = 'low';
+        }
+      } catch (fallbackError) {
+        console.error('All timezone conversion methods failed:', fallbackError);
+      }
+    }
+  }
+
+
+  // Helper function to parse timezone offset
+  function parseTimezoneOffset(offset: string): number {
+    const cleaned = offset.replace(/[^\+\-\d:]/g, '');
+    const match = cleaned.match(/^([+\-])(\d{1,2}):?(\d{2})?$/);
+    if (!match) return 0;
+
+    const [, sign, hours, minutes = '00'] = match;
+    const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+    return sign === '+' ? totalMinutes : -totalMinutes;
+  }
+
   // Create the core BeachMatchCore object
   const beachMatchCore: BeachMatchCore = {
     id: dto.id,
@@ -80,6 +187,10 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
     notes: (dto as any).notes,
     weather: (dto as any).weather,
     importance: (dto as any).importance,
+    // New timezone fields
+    tournamentTimezone: tournamentContext?.timezone,
+    utcScheduledDateTime,
+    timezoneConversionAccuracy,
   };
 
   // Preserve ALL original DTO fields for legacy compatibility
@@ -87,6 +198,9 @@ const transformMatchDTO = (dto: MatchDTO): BeachMatchCore => {
   const preservedMatch = {
     ...beachMatchCore,
     ...(dto as any), // Spread all original DTO fields to preserve legacy data
+
+    // Inject tournament context data for filtering
+    tournamentGender: tournamentContext?.gender || (dto as any).tournamentGender,
     
     // Ensure core fields override any conflicts from DTO
     id: beachMatchCore.id,
@@ -224,6 +338,8 @@ interface MatchListV2Props {
   liveScores?: { [matchNumber: string]: any }; // External live scores data
   getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
+  tournamentGender?: 'M' | 'W' | 'MIXED'; // Tournament gender for match context injection
+  externalScrollRef?: React.RefObject<ScrollView>; // External ScrollView ref for autoscroll (from parent container)
 }
 
 export const MatchListV2: React.FC<MatchListV2Props> = ({
@@ -257,14 +373,18 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   liveScores,
   getLiveScore,
   tournamentTimezone,
+  tournamentGender,
 }) => {
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
 
-  // ScrollView ref for auto-scroll functionality (moved to top)
+  // ScrollView ref for auto-scroll functionality (DISABLED - handled by external container)
   const scrollViewRef = useRef<ScrollView>(null);
   const matchLayoutsRef = useRef<Record<string, number>>({});
   const pendingAutoscrollRef = useRef<boolean>(false);
+
+  // AUTOSCROLL DISABLED: Let external container handle autoscroll
+  const AUTOSCROLL_ENABLED = false;
 
   // Hook-based data fetching when tournamentCode is provided AND feature flag is enabled
   // Disable hook on web to avoid CORS issues with Supabase functions; rely on provided matches instead
@@ -300,8 +420,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Transform hook data to component format
   const hookMatches = useMemo(() => {
-    return shouldUseHook ? rawMatches.map(transformMatchDTO) : [];
-  }, [rawMatches, shouldUseHook]);
+    return shouldUseHook ? rawMatches.map(dto => transformMatchDTO(dto, { timezone: tournamentTimezone, gender: tournamentGender })) : [];
+  }, [rawMatches, shouldUseHook, tournamentTimezone, tournamentGender]);
 
   // Use either prop matches or hook matches
   const activeMatches = propMatches || hookMatches;
@@ -313,10 +433,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   
   // State for collapsible date panels
   const [expandedDates, setExpandedDates] = useState<{[key: string]: boolean}>({});
-  
+
+  // State for TBD matches panel
+  const [tbdPanelExpanded, setTbdPanelExpanded] = useState<boolean>(false);
+
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
   const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
+
+  // State for live score refresh
+  const [liveScoreRefresh, setLiveScoreRefresh] = useState<number>(0);
   
   
 
@@ -495,6 +621,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
   }, [activeMatches, setScoreService]);
 
+  // Timer to refresh live scores every 5 seconds for LIVE matches
+  useEffect(() => {
+    const hasLiveMatches = activeMatches.some(match => isMatchLive(match));
+    if (!hasLiveMatches || !getLiveScore) return;
+
+    const interval = setInterval(() => {
+      // Force re-render to pick up fresh live score data
+      console.log(`⏰ LIVE SCORE TIMER: Refreshing live scores for LIVE matches`);
+      setLiveScoreRefresh(prev => prev + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeMatches, getLiveScore]);
+
   // Reset filters when tournament changes (matches change)
   React.useEffect(() => {
     // Reset only content filters when matches array changes (indicates tournament change)
@@ -529,58 +669,73 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
     activeMatches.forEach(match => {
+      // Extract from structured referee assignments (existing logic)
       match.refereeAssignments?.forEach(referee => {
         if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
+
+      // Extract from VIS API referee names (enhanced functionality)
+      const matchAny = match as any;
+      if (matchAny.Referee1Name) refereeNames.add(matchAny.Referee1Name);
+      if (matchAny.Referee2Name) refereeNames.add(matchAny.Referee2Name);
     });
     return Array.from(refereeNames).sort();
   }, [activeMatches]);
 
   // Filter matches based on current filters
-  const filteredMatches = React.useMemo(() => {
+  const { filteredMatches, tbdMatches } = React.useMemo(() => {
     // ALWAYS use enhanced matches if available, even if empty
     const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : activeMatches;
     const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
-    
-    
+
+    const validMatches: typeof matchesToFilter = [];
+    const tbdMatches: typeof matchesToFilter = [];
+
     // Show date range of input matches
     if (matchesToFilter.length > 0) {
       const dates = matchesToFilter.map(m => m.scheduledDateTime.split('T')[0]).sort();
       const uniqueDates = [...new Set(dates)];
     }
-    
-    return matchesToFilter.filter(match => {
-      // Hide matches without scheduledDateTime (no date and time)
-      if (!match.scheduledDateTime || match.scheduledDateTime.trim() === '') {
-        return false;
+
+    matchesToFilter.forEach(match => {
+      // Check if this is a TBD match (missing data)
+      const hasNoScheduledTime = !match.scheduledDateTime || match.scheduledDateTime.trim() === '';
+      const hasInvalidDate = match.scheduledDateTime && isNaN(new Date(match.scheduledDateTime).getTime());
+      const hasNoTeams = match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD';
+
+      const isTBDMatch = hasNoScheduledTime || hasInvalidDate || hasNoTeams;
+
+      if (isTBDMatch) {
+        tbdMatches.push(match);
+        return; // Don't process further filters for TBD matches
       }
 
+      // For valid matches, apply normal filtering
       const matchDate = new Date(match.scheduledDateTime);
-      if (isNaN(matchDate.getTime())) {
-        return false; // Hide matches with invalid date
-      }
 
-      // Gender filter - FIXED: Use actual gender detection logic
+      // Gender filter - IMPLEMENTED: Use tournament gender from tournament context
       if (effectiveGenderFilter !== 'All') {
-        // TODO: Implement proper gender detection based on tournament data or team data
-        // For now, disable gender filtering to show all matches
-        // if (!match.tournamentGender || match.tournamentGender !== effectiveGenderFilter) {
-        //   return false;
-        // }
+        const matchGender = (match as any).tournamentGender;
+        if (!matchGender || matchGender !== effectiveGenderFilter) {
+          return; // Skip this match
+        }
       }
 
       // Court filter
       if (effectiveCourtFilter !== 'All') {
         const matchCourtNumber = match.court?.courtNumber;
         if (!matchCourtNumber || String(matchCourtNumber) !== String(effectiveCourtFilter)) {
-          return false;
+          return; // Skip this match
         }
       }
 
-      // Referee filter
+      // Referee filter - Enhanced to check both structured assignments and VIS API names
       if (effectiveRefereeFilter !== 'All') {
-        const hasReferee = match.refereeAssignments?.some(ref => ref.refereeName === effectiveRefereeFilter);
-        if (!hasReferee) return false;
+        const hasStructuredReferee = match.refereeAssignments?.some(ref => ref.refereeName === effectiveRefereeFilter);
+        const matchAny = match as any;
+        const hasVISReferee = matchAny.Referee1Name === effectiveRefereeFilter || matchAny.Referee2Name === effectiveRefereeFilter;
+
+        if (!hasStructuredReferee && !hasVISReferee) return; // Skip this match
       }
 
       // Status filter
@@ -591,33 +746,32 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           'Completed': [MatchStatus.COMPLETED]
         };
         if (!statusMapping[statusFilter]?.includes(match.status)) {
-          return false;
+          return; // Skip this match
         }
       }
 
       // Selected referee filter (from props)
       if (selectedReferee) {
-        const hasSelectedReferee = match.refereeAssignments?.some(ref => 
+        const hasSelectedReferee = match.refereeAssignments?.some(ref =>
           ref.refereeName === selectedReferee.Name
         );
-        if (!hasSelectedReferee) return false;
+        if (!hasSelectedReferee) return; // Skip this match
       }
 
-      return true;
-    }).sort((a, b) => {
+      // If we reach here, this is a valid match
+      validMatches.push(match);
+    });
+
+    // Sort valid matches by date only (no LIVE priority to maintain original order)
+    const sortedValidMatches = validMatches.sort((a, b) => {
       const dateA = new Date(a.scheduledDateTime);
       const dateB = new Date(b.scheduledDateTime);
 
-      // Priority 1: Currently running matches always first
-      const aIsRunning = a.status === MatchStatus.RUNNING;
-      const bIsRunning = b.status === MatchStatus.RUNNING;
-
-      if (aIsRunning && !bIsRunning) return -1;
-      if (!aIsRunning && bIsRunning) return 1;
-
-      // Priority 2: Always sort dates in descending order (newest first)
+      // Sort dates in descending order (newest first) - maintain original order
       return dateB.getTime() - dateA.getTime();
     });
+
+    return { filteredMatches: sortedValidMatches, tbdMatches };
 
     // Final result logging will happen in UI render
   }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
@@ -643,8 +797,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       // Priority 1: Currently running match (check both status and time-based logic)
       const isStatusRunning = match.status === MatchStatus.RUNNING;
-      const isLikelyLive = matchTime.getTime() <= now.getTime() && 
-                          (now.getTime() - matchTime.getTime()) <= 2 * 60 * 60 * 1000; // Within 2 hours of start time
+      const isLikelyLive = matchTime.getTime() <= now.getTime() &&
+                          (now.getTime() - matchTime.getTime()) <= 75 * 60 * 1000; // Within 75 minutes of start time
       
       if (isStatusRunning || isLikelyLive) {
         targetMatchIndex = i;
@@ -702,30 +856,29 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   }, [filteredMatches, onMatchesReady]);
 
 
-  // Group matches by date
+  // Group filtered matches by date (excludes TBD matches which are handled separately)
   const groupedMatches = React.useMemo(() => {
     const groups: { [date: string]: typeof filteredMatches } = {};
-    
-    
+
     filteredMatches.forEach((match, index) => {
       const date = new Date(match.scheduledDateTime);
       if (isNaN(date.getTime())) {
         return;
       }
-      
+
       const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
       groups[dateKey].push(match);
-      
+
       // Debug first few matches
       if (index < 5) {
       }
     });
-    
+
     const allDates = Object.keys(groups).sort();
-    
+
     // Sort dates in descending order (newest first)
     const result = Object.entries(groups).sort((a, b) => {
       const dateA = new Date(a[0]);
@@ -734,45 +887,100 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Always sort dates in descending order (newest first)
       return dateB.getTime() - dateA.getTime();
     });
-    
+
     return result;
   }, [filteredMatches]);
 
-  // Initialize expanded dates - only most recent date is expanded by default
+  // Initialize expanded dates - expand today's panel if it exists
   useEffect(() => {
     if (groupedMatches.length > 0) {
       const allDates = groupedMatches.map(([date]) => date);
-      // With dynamic sorting, today's date (first item) should be expanded
-      const mostRecentDate = allDates[0]; // First date is always the most relevant (today or most recent)
+      const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
 
       const initialExpanded: {[key: string]: boolean} = {};
+
+      // Check if today exists in the panels
+      const todayExists = allDates.includes(today);
+
       allDates.forEach(date => {
-        initialExpanded[date] = date === mostRecentDate; // Only most recent is expanded
+        // If today exists, expand today's panel. Otherwise, expand the first panel
+        initialExpanded[date] = todayExists ? (date === today) : (date === allDates[0]);
       });
 
       setExpandedDates(initialExpanded);
     }
   }, [groupedMatches]);
 
-  // Auto-scroll to first live match
+  // Auto-scroll with priority: 1) LIVE matches, 2) Today's first match (last in Today panel)
   const scrollToFirstLiveMatch = useCallback(() => {
+    if (!AUTOSCROLL_ENABLED) {
+      console.log('🚫 AUTOSCROLL: Disabled in MatchListV2 - handled by external container');
+      return;
+    }
+    console.log('🔍 AUTOSCROLL: Starting autoscroll function');
+    console.log('🔍 AUTOSCROLL: ScrollView ref exists:', !!scrollViewRef.current);
+    console.log('🔍 AUTOSCROLL: Filtered matches count:', filteredMatches.length);
+    console.log('🔍 AUTOSCROLL: Match layouts available:', Object.keys(matchLayoutsRef.current).length);
+
+    let targetMatchId: string | null = null;
+    let scrollReason = '';
+
+    // Priority 1: First LIVE match
     const liveMatches = filteredMatches.filter(match => isMatchLive(match));
+    console.log('🔍 AUTOSCROLL: Live matches found:', liveMatches.length);
 
-    if (liveMatches.length > 0 && scrollViewRef.current) {
-      const firstLiveMatchId = liveMatches[0].id;
-      const yPosition = matchLayoutsRef.current[firstLiveMatchId];
+    if (liveMatches.length > 0) {
+      targetMatchId = liveMatches[0].id;
+      scrollReason = 'LIVE match';
+      console.log('🎯 AUTOSCROLL: Target = LIVE match:', targetMatchId);
+    } else {
+      // Priority 2: First match of today (chronologically first, appears last in "Today" panel)
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      console.log('🔍 AUTOSCROLL: Looking for today matches:', todayStr);
 
+      const todayMatches = filteredMatches.filter(match => {
+        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        return matchDate === todayStr;
+      });
+
+      console.log('🔍 AUTOSCROLL: Today matches found:', todayMatches.length);
+      todayMatches.forEach(match => console.log('   - Today match:', match.id, new Date(match.scheduledDateTime).toLocaleTimeString()));
+
+      // Sort today's matches chronologically and get the first one
+      if (todayMatches.length > 0) {
+        const sortedTodayMatches = todayMatches.sort((a, b) => {
+          return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
+        });
+        targetMatchId = sortedTodayMatches[0].id;
+        scrollReason = 'Today first match';
+        console.log('🎯 AUTOSCROLL: Target = Today first match:', targetMatchId, new Date(sortedTodayMatches[0].scheduledDateTime).toLocaleTimeString());
+      }
+    }
+
+    // Scroll to target match if found
+    if (targetMatchId && scrollViewRef.current) {
+      const yPosition = matchLayoutsRef.current[targetMatchId];
+      console.log('🔍 AUTOSCROLL: Target Y position:', yPosition, 'for', scrollReason);
 
       if (yPosition !== undefined) {
-
+        console.log('✅ AUTOSCROLL: Scrolling to', scrollReason, 'at Y:', yPosition - 100);
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
           y: Math.max(0, yPosition - 100), // Offset for header
           animated: true
         });
       } else {
+        console.log('⏳ AUTOSCROLL: Position not available yet, marking as pending for', scrollReason);
         // Position not available yet, mark as pending
         pendingAutoscrollRef.current = true;
+      }
+    } else {
+      if (!targetMatchId) {
+        console.log('❌ AUTOSCROLL: No target match found (no LIVE or today matches)');
+      }
+      if (!scrollViewRef.current) {
+        console.log('❌ AUTOSCROLL: ScrollView ref not available');
       }
     }
   }, [filteredMatches]);
@@ -780,20 +988,41 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Trigger pending autoscroll when position becomes available
   const triggerPendingAutoscroll = useCallback(() => {
     if (pendingAutoscrollRef.current) {
+      console.log('🔄 AUTOSCROLL: Triggering pending autoscroll...');
       setTimeout(() => scrollToFirstLiveMatch(), 100);
     }
   }, [scrollToFirstLiveMatch]);
 
-  // Auto-scroll effect - trigger when matches change and live matches exist
+  // Auto-scroll effect - trigger when matches change and live matches OR today's matches exist
   useEffect(() => {
+    if (!AUTOSCROLL_ENABLED) {
+      console.log('🚫 AUTOSCROLL EFFECT: Disabled in MatchListV2 - handled by external container');
+      return;
+    }
+    console.log('🚀 AUTOSCROLL EFFECT: Matches changed, checking conditions...');
     const hasLiveMatches = filteredMatches.some(match => isMatchLive(match));
 
+    // Check if there are matches for today
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const hasTodayMatches = filteredMatches.some(match => {
+      const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+      return matchDate === todayStr;
+    });
 
-    if (hasLiveMatches && filteredMatches.length > 0) {
+    console.log('🚀 AUTOSCROLL EFFECT: Has LIVE matches:', hasLiveMatches);
+    console.log('🚀 AUTOSCROLL EFFECT: Has today matches:', hasTodayMatches);
+    console.log('🚀 AUTOSCROLL EFFECT: Total filtered matches:', filteredMatches.length);
+
+    // Trigger autoscroll if we have LIVE matches OR today's matches
+    if ((hasLiveMatches || hasTodayMatches) && filteredMatches.length > 0) {
+      console.log('✅ AUTOSCROLL EFFECT: Conditions met, triggering autoscroll in 300ms...');
       // Reset pending flag and trigger autoscroll
       pendingAutoscrollRef.current = false;
       // Add delay to allow initial render to complete
       setTimeout(() => scrollToFirstLiveMatch(), 300);
+    } else {
+      console.log('❌ AUTOSCROLL EFFECT: Conditions not met, no autoscroll');
     }
 
   }, [filteredMatches, scrollToFirstLiveMatch]);
@@ -870,10 +1099,50 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Check if match is currently live - matches MatchCard red dot logic exactly
+  // Check if match is currently live - using enhanced status with court sequencing logic
   const isMatchLive = (match: BeachMatchCore): boolean => {
-    const isLive = match.status === MatchStatus.RUNNING;
-    return isLive;
+    // Don't consider matches with placeholder teams as live
+    if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
+      return false;
+    }
+
+    // Use enhanced status that considers court sequencing
+    const enhancedStatus = getEnhancedMatchStatus(match, activeMatches);
+
+    // Check enhanced status first
+    if (enhancedStatus === MatchStatus.RUNNING) {
+      return true;
+    }
+
+    // VIS API uses numeric status codes:
+    // 1=Scheduled, 2=ReadyToStart, 3-11=InSet1-InSet5 (LIVE), 12+=Finished/Official
+    const status = match.status;
+
+    // Check for string status first (mapped values)
+    if (typeof status === 'string') {
+      return status === MatchStatus.RUNNING;
+    }
+
+    // Check for numeric VIS status codes (3-8 = LIVE matches per user requirement)
+    if (typeof status === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (status === 2 && canReadyToStartMatchGoLive(match, activeMatches)) {
+        return true;
+      }
+      return status >= 3 && status <= 8;
+    }
+
+    // Fallback: check raw VIS status field if available from match data
+    const rawStatus = (match as any)?.rawStatus || (match as any)?.visStatus;
+    if (typeof rawStatus === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (rawStatus === 2 && canReadyToStartMatchGoLive(match, activeMatches)) {
+        return true;
+      }
+      return rawStatus >= 3 && rawStatus <= 8;
+    }
+
+    return false;
   };
 
   // Get status display text and color
@@ -910,8 +1179,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   };
 
   // Render individual match card using unified component
-  const renderMatch = (match: BeachMatchCore) => {
+  const renderMatch = useCallback((match: BeachMatchCore) => {
     // Merge live scores with match result for live matches
+    // This function re-executes when liveScoreRefresh changes, forcing fresh getLiveScore() calls
+    if (isMatchLive(match)) {
+      console.log(`🔄 RENDER MATCH: Re-rendering LIVE match ${match.id} (refresh: ${liveScoreRefresh})`);
+    }
     let matchWithResult = match;
     if (getLiveScore && isMatchLive(match)) {
       // Support VIS match numbers like "M001"/"W012" by stripping non-digits
@@ -920,7 +1193,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const numericCode = String(rawCode).replace(/\D/g, '');
       const matchNo = parseInt(numericCode || '', 10);
       const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
+      console.log(`📊 LIVE SCORE DATA: Match ${match.id} (${matchNo}) - liveScore:`, liveScore ? `${liveScore.sets?.length || 0} sets` : 'null');
       if (liveScore && liveScore.sets && liveScore.sets.length > 0) {
+        console.log(`📊 SETS DETAIL: Match ${match.id} - sets:`, liveScore.sets.map((set: any) => `${set.pointsTeamA}-${set.pointsTeamB}`).join(', '));
         // Create enhanced result from live score data
         const liveResult = {
           team1Sets: liveScore.sets.filter((set: any) => set.pointsTeamA > set.pointsTeamB).length,
@@ -928,6 +1203,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           winner: undefined, // Live matches don't have a winner yet
           setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
         };
+        console.log(`📊 LIVE RESULT: Match ${match.id} - setScores:`, liveResult.setScores, `team1Sets: ${liveResult.team1Sets}, team2Sets: ${liveResult.team2Sets}`);
         
         matchWithResult = {
           ...match,
@@ -945,15 +1221,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           const yPosition = event.nativeEvent.layout.y;
           matchLayoutsRef.current[match.id] = yPosition;
 
+          const isLive = isMatchLive(match);
+          const matchTime = new Date(match.scheduledDateTime).toLocaleTimeString();
+          const isToday = new Date(match.scheduledDateTime).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
 
-          // Check if this is a live match and trigger pending autoscroll
-          if (isMatchLive(match)) {
-            const liveMatches = filteredMatches.filter(m => isMatchLive(m));
-            const isFirstLiveMatch = liveMatches.length > 0 && liveMatches[0].id === match.id;
+          console.log(`📍 LAYOUT: Match ${match.id} rendered at Y=${yPosition} | ${isLive ? '🔴LIVE' : '⚪'} | ${isToday ? '📅TODAY' : '📆'} | ${matchTime}`);
 
-            if (isFirstLiveMatch) {
-              triggerPendingAutoscroll();
-            }
+          // AUTOSCROLL DISABLED: Let external container handle autoscroll
+          if (!AUTOSCROLL_ENABLED) {
+            console.log('🚫 LAYOUT AUTOSCROLL: Disabled in MatchListV2 - handled by external container');
           }
 
           // Call external onMatchLayout if provided
@@ -970,10 +1246,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           compact={false}
           variant={isMatchLive(match) ? 'live' : 'default'}
           tournamentTimezone={tournamentTimezone}
+          liveScoreRefresh={liveScoreRefresh}
         />
       </View>
     );
-  };
+  }, [getLiveScore, liveScoreRefresh, onMatchLayout, tournamentTimezone]);
 
 
 
@@ -1200,13 +1477,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           <>
             {groupedMatches.map(([date, matches], groupIndex) => {
               const isExpanded = expandedDates[date] || false;
-              
+
               return (
                 <View key={`${date}-${groupIndex}`}>
                   {/* Clickable Date Header Tab */}
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[
-                      styles.dateHeader, 
+                      styles.dateHeader,
                       (enableTimelineView || showAllDays) && styles.timelineDateHeader,
                       isExpanded && styles.expandedDateHeader
                     ]}
@@ -1227,7 +1504,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                         </Text>
                       )}
                     </View>
-                    
+
                     {/* Collapse/Expand Indicator */}
                     <Text style={[
                       styles.expandIndicator,
@@ -1236,7 +1513,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                       {isExpanded ? '▼' : '▶'}
                     </Text>
                   </TouchableOpacity>
-                  
+
                   {/* Collapsible Matches Container */}
                   {isExpanded && (
                     <View style={styles.matchesContainer}>
@@ -1250,6 +1527,46 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                 </View>
               );
             })}
+
+            {/* TBD Matches Panel - Shows matches with missing data */}
+            {tbdMatches.length > 0 && (
+              <View key="tbd-matches-panel">
+                {/* TBD Panel Header */}
+                <TouchableOpacity
+                  style={[
+                    styles.tbdHeader,
+                    tbdPanelExpanded && styles.tbdHeaderExpanded
+                  ]}
+                  onPress={() => setTbdPanelExpanded(!tbdPanelExpanded)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.dateHeaderContent}>
+                    <Text style={styles.tbdHeaderText}>
+                      Matches TBD
+                    </Text>
+                    <Text style={styles.matchCountText}>
+                      {tbdMatches.length} {tbdMatches.length === 1 ? 'match' : 'matches'}
+                    </Text>
+                  </View>
+
+                  {/* Collapse/Expand Indicator */}
+                  <Text style={styles.tbdExpandIndicator}>
+                    {tbdPanelExpanded ? '▼' : '▶'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Collapsible TBD Matches Container */}
+                {tbdPanelExpanded && (
+                  <View style={styles.matchesContainer}>
+                    {tbdMatches.map((match, index) => (
+                      <React.Fragment key={`tbd-${match.id}-${index}`}>
+                        {renderMatch(match)}
+                      </React.Fragment>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
           </>
         )}
       </View>
@@ -1913,5 +2230,47 @@ const styles = StyleSheet.create({
   dropdownItemTextActive: {
     color: '#3B82F6',
     fontWeight: '600',
+  },
+
+  // TBD Panel Styles
+  tbdHeader: {
+    backgroundColor: '#FEF3C7', // Light amber background
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 24, // Extra spacing from regular date panels
+    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F59E0B', // Amber border
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B', // Amber left accent
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tbdHeaderExpanded: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+    shadowOpacity: 0.15,
+  },
+  tbdHeaderText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#92400E', // Dark amber text
+    letterSpacing: 0.5,
+  },
+  tbdExpandIndicator: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F59E0B', // Amber color
+    marginLeft: 8,
+    minWidth: 20,
+    textAlign: 'center',
   },
 });

@@ -118,7 +118,6 @@ export class PerformanceDashboard {
       this.captureSnapshot();
     }, this.config.updateInterval);
 
-    // console.log(`Performance monitoring started with ${this.config.updateInterval}ms interval`);
   }
 
   /**
@@ -128,7 +127,6 @@ export class PerformanceDashboard {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = undefined;
-      // console.log('Performance monitoring stopped');
     }
   }
 

@@ -23,7 +23,6 @@ export class TournamentOperationsService {
    */
   static async findOppositeGenderTournament(tournamentNo: string): Promise<string | null> {
     try {
-      // console.log(`🏐 DEBUG: Looking for opposite gender tournament for ${tournamentNo}...`);
       
       // Get all tournaments from API
       const response = await this.visApiClient.getBeachTournamentList({});
@@ -33,48 +32,39 @@ export class TournamentOperationsService {
       
       // For now, return empty array as we need to parse XML
       const tournaments: any[] = [];
-      // console.log(`🏐 DEBUG: Fetched ${tournaments.length} tournaments from API`);
       
       const currentTournament = tournaments.find(t => t.No === tournamentNo);
       
       if (!currentTournament || !currentTournament.Code) {
-        // console.log(`🏐 DEBUG: Current tournament not found or has no code`);
         return null;
       }
       
       const currentCode = currentTournament.Code;
-      // console.log(`🏐 DEBUG: Current tournament code: ${currentCode}`);
       
       // Try to find opposite gender tournament by transforming the code
       let oppositeCode: string | null = null;
       
       if (currentCode.startsWith('M')) {
         oppositeCode = 'W' + currentCode.substring(1);
-        // console.log(`🏐 DEBUG: Looking for female version: ${oppositeCode}`);
       } else if (currentCode.startsWith('W')) {
         oppositeCode = 'M' + currentCode.substring(1);
-        // console.log(`🏐 DEBUG: Looking for male version: ${oppositeCode}`);
       } else {
         // Try both M and W prefixes for tournaments without gender prefix
         const maleCode = 'M' + currentCode;
         const femaleCode = 'W' + currentCode;
         
-        // console.log(`🏐 DEBUG: Trying both gender versions: ${maleCode} and ${femaleCode}`);
         
         const maleTournament = tournaments.find(t => t.Code === maleCode);
         const femaleTournament = tournaments.find(t => t.Code === femaleCode);
         
         // Return the one that's different from current
         if (maleTournament && maleTournament.No !== tournamentNo) {
-          // console.log(`🏐 DEBUG: Found male version: ${maleTournament.Code} (${maleTournament.No})`);
           return maleTournament.No;
         }
         if (femaleTournament && femaleTournament.No !== tournamentNo) {
-          // console.log(`🏐 DEBUG: Found female version: ${femaleTournament.Code} (${femaleTournament.No})`);
           return femaleTournament.No;
         }
         
-        // console.log(`🏐 DEBUG: No gender variants found for neutral tournament`);
         return null;
       }
       
@@ -82,10 +72,8 @@ export class TournamentOperationsService {
       if (oppositeCode) {
         const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
         if (oppositeTournament) {
-          // console.log(`🏐 DEBUG: Found opposite gender tournament: ${oppositeTournament.Code} (${oppositeTournament.No})`);
           return oppositeTournament.No;
         } else {
-          // console.log(`🏐 DEBUG: No tournament found with code: ${oppositeCode}`);
         }
       }
       

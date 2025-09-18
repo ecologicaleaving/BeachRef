@@ -22,12 +22,10 @@ export default function Index() {
         const defaultTournament = await DefaultTournamentService.getDefaultTournament();
 
         if (defaultTournament) {
-          console.log('Default tournament found:', defaultTournament.name);
           // Redirect to tournament detail with complete tournament data
           const tournamentDataString = encodeURIComponent(JSON.stringify(defaultTournament));
           router.replace(`/tournament-detail?tournamentData=${tournamentDataString}`);
         } else {
-          console.log('No default tournament found, redirecting to tournament selection...');
           router.replace('/tournament-selection');
         }
       } catch (error) {

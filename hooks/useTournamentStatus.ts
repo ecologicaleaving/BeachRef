@@ -68,7 +68,6 @@ export const useTournamentStatus = (
    * Handle tournament status events from subscription
    */
   const handleStatusEvents = useCallback((events: TournamentStatusEvent[]) => {
-    // console.log(`Received ${events.length} tournament status events`);
     
     setStatusEvents(prevEvents => {
       // Keep last 50 events
@@ -146,7 +145,6 @@ export const useTournamentStatus = (
         batchDelay,
       };
 
-      // console.log(`Subscribing to tournament status for ${tournamentNumbers.length} tournaments`);
       
       const success = await TournamentStatusSubscriptionService.subscribeTournamentStatus(
         subscriptionConfig,
@@ -156,7 +154,6 @@ export const useTournamentStatus = (
       if (success) {
         setSubscriptionActive(true);
         subscriptionConfigRef.current = subscriptionConfig;
-        // console.log('Tournament status subscription established successfully');
       } else {
         setSubscriptionActive(false);
         setError('Failed to establish tournament status subscription');
@@ -173,7 +170,6 @@ export const useTournamentStatus = (
    * Cleanup subscriptions
    */
   const cleanupSubscription = useCallback(async () => {
-    // console.log('Cleaning up tournament status subscription');
     
     try {
       // Remove listeners
@@ -203,7 +199,6 @@ export const useTournamentStatus = (
    */
   const refreshTournamentStatus = useCallback(async (tournamentNo: string) => {
     try {
-      // console.log(`Manually refreshing tournament status for ${tournamentNo}`);
       // In a real implementation, this would trigger a fresh data fetch
       // For now, we'll just update the sync status
       await TournamentStatusMonitor.updateSyncStatus(tournamentNo, 'manual_refresh');

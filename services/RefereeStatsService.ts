@@ -321,12 +321,10 @@ export class RefereeStatsService {
    */
   static async getEnhancedTournamentStats(refereeId: string, tournamentNo: string): Promise<EnhancedTournamentStats | null> {
     try {
-      console.log('🔄 Getting enhanced tournament stats for referee:', refereeId, 'tournament:', tournamentNo);
 
       // First resolve referee to NoReferee ID
       const refereeNo = await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournamentNo);
       if (!refereeNo) {
-        console.log('❌ Could not resolve referee ID');
         return null;
       }
 
@@ -341,11 +339,9 @@ export class RefereeStatsService {
       const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
 
       if (uniqueMatches.length === 0) {
-        console.log('❌ No matches found for referee');
         return null;
       }
 
-      console.log(`✅ Found ${uniqueMatches.length} matches for referee`);
 
       // Calculate statistics
       const stats = calculateStatsFromParsedMatchesCompat(uniqueMatches);
@@ -362,7 +358,6 @@ export class RefereeStatsService {
       const recentMatches = RefereeStatsService.convertToRecentMatches(sortedMatches, refereeId)
         .slice(0, 3); // Take only 3 most recent
 
-      console.log(`✅ Enhanced stats calculated - Stats:`, stats, 'Recent matches:', recentMatches.length);
 
       return {
         stats,

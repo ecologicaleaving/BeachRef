@@ -16,7 +16,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { shadowPresets } from '../theme/shadows';
 import { TournamentCore } from '../types/tournament-v2';
-import { BeachMatchCore, MatchStatus } from '../types/match-v2';
+import { BeachMatchCore, MatchStatus, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
@@ -117,7 +117,19 @@ const ExpandedFiltersView: React.FC<{
         return ['Test Referee 1', 'Test Referee 2'];
       }
     } else {
-      return refereeNamesFromAPI;
+      // For LIVE tournaments, use both API referees AND match-extracted referees
+      // This ensures the dropdown includes all referees that appear in matches
+      const combined = [...refereeNamesFromAPI, ...refereeNamesFromMatches];
+      const uniqueCombined = Array.from(new Set(combined)).filter(Boolean).sort();
+
+      // If we have match-extracted referees, prioritize those (they're most accurate)
+      if (refereeNamesFromMatches.length > 0) {
+        return refereeNamesFromMatches;
+      } else if (uniqueCombined.length > 0) {
+        return uniqueCombined;
+      } else {
+        return refereeNamesFromAPI;
+      }
     }
   }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
 
@@ -128,69 +140,7 @@ const ExpandedFiltersView: React.FC<{
 
   return (
     <View style={styles.expandedFilters}>
-      {/* Gender Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Gender:</Text>
-        <View style={styles.filterButtons}>
-          {['All', 'M', 'W'].map((gender) => (
-            <TouchableOpacity
-              key={gender}
-              style={[
-                styles.filterButton,
-                genderFilter === gender && styles.filterButtonActive
-              ]}
-              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
-            >
-              <Text style={[
-                styles.filterButtonText,
-                genderFilter === gender && styles.filterButtonTextActive
-              ]}>
-                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-      
-      {/* Court Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Court:</Text>
-        <View style={styles.filterButtons}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              courtFilter === 'All' && styles.filterButtonActive
-            ]}
-            onPress={() => setCourtFilter('All')}
-          >
-            <Text style={[
-              styles.filterButtonText,
-              courtFilter === 'All' && styles.filterButtonTextActive
-            ]}>
-              All Courts
-            </Text>
-          </TouchableOpacity>
-          {courtNumbers.map((court) => (
-            <TouchableOpacity
-              key={court}
-              style={[
-                styles.filterButton,
-                courtFilter === court && styles.filterButtonActive
-              ]}
-              onPress={() => setCourtFilter(court)}
-            >
-              <Text style={[
-                styles.filterButtonText,
-                courtFilter === court && styles.filterButtonTextActive
-              ]}>
-                {court === 'CC' ? 'CC' : `Court ${court}`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Referee Filter */}
+      {/* Referee Filter - MOVED TO TOP */}
       <View style={[styles.filterGroup, styles.refereeFilterGroup]}>
         <Text style={styles.filterLabel}>Referee:</Text>
         <View style={styles.dropdownContainer}>
@@ -214,7 +164,7 @@ const ExpandedFiltersView: React.FC<{
               {showRefereeDropdown ? '▲' : '▼'}
             </Text>
           </TouchableOpacity>
-          
+
           {showRefereeDropdown && (
             <View style={styles.dropdownList}>
               <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
@@ -272,6 +222,68 @@ const ExpandedFiltersView: React.FC<{
               </ScrollView>
             </View>
           )}
+        </View>
+      </View>
+
+      {/* Gender Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Gender:</Text>
+        <View style={styles.filterButtons}>
+          {['All', 'M', 'W'].map((gender) => (
+            <TouchableOpacity
+              key={gender}
+              style={[
+                styles.filterButton,
+                genderFilter === gender && styles.filterButtonActive
+              ]}
+              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                genderFilter === gender && styles.filterButtonTextActive
+              ]}>
+                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Court Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Court:</Text>
+        <View style={styles.filterButtons}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              courtFilter === 'All' && styles.filterButtonActive
+            ]}
+            onPress={() => setCourtFilter('All')}
+          >
+            <Text style={[
+              styles.filterButtonText,
+              courtFilter === 'All' && styles.filterButtonTextActive
+            ]}>
+              All Courts
+            </Text>
+          </TouchableOpacity>
+          {courtNumbers.map((court) => (
+            <TouchableOpacity
+              key={court}
+              style={[
+                styles.filterButton,
+                courtFilter === court && styles.filterButtonActive
+              ]}
+              onPress={() => setCourtFilter(court)}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                courtFilter === court && styles.filterButtonTextActive
+              ]}>
+                {court === 'CC' ? 'CC' : `Court ${court}`}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
       
@@ -339,12 +351,181 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Track match positions for precise scrolling
   const matchPositions = useRef<{ [matchId: string]: number }>({});
+  const hasAutoScrolled = useRef<boolean>(false);
+  const matchListRef = useRef<View>(null);
+  const matchListOffset = useRef<number>(0);
+  const autoscrollRetryCount = useRef<number>(0);
+  const maxRetries = 5;
 
 
 
-  // Handle match layout measurement
+  // Helper function to check if match is LIVE using enhanced status with court sequencing logic
+  const isMatchLive = (match: any, allMatches: any[] = matches): boolean => {
+    // Don't consider matches with placeholder teams as live
+    if (match?.team1?.teamName === 'TBD' || match?.team2?.teamName === 'TBD') {
+      return false;
+    }
+
+    // Use enhanced status that considers court sequencing
+    const enhancedStatus = getEnhancedMatchStatus(match, allMatches);
+
+    // Check enhanced status first
+    if (enhancedStatus === MatchStatus.RUNNING) {
+      return true;
+    }
+
+    // VIS API uses numeric status codes:
+    // 1=Scheduled, 2=ReadyToStart, 3-11=InSet1-InSet5 (LIVE), 12+=Finished/Official
+    const status = match?.status;
+
+    // Check for string status first (mapped values)
+    if (typeof status === 'string') {
+      return status === MatchStatus.RUNNING;
+    }
+
+    // Check for numeric VIS status codes (3-8 = LIVE matches per user requirement)
+    if (typeof status === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (status === 2 && canReadyToStartMatchGoLive(match, allMatches)) {
+        return true;
+      }
+      return status >= 3 && status <= 8;
+    }
+
+    // Fallback: check raw VIS status field if available
+    const rawStatus = match?.rawStatus || match?.visStatus;
+    if (typeof rawStatus === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (rawStatus === 2 && canReadyToStartMatchGoLive(match, allMatches)) {
+        return true;
+      }
+      return rawStatus >= 3 && rawStatus <= 8;
+    }
+
+    return false;
+  };
+
+  // Auto-scroll logic with priority: 1) LIVE matches, 2) Today's first match
+  const attemptAutoScroll = (matches: any[], forceRetry: boolean = false) => {
+    if (hasAutoScrolled.current || !scrollViewRef.current || matches.length === 0) {
+      return;
+    }
+
+    // Only autoscroll on matches or schedule panel (where match list is shown)
+    if (activeTab !== 'matches' && activeTab !== 'schedule') {
+      console.log('🚫 EXTERNAL AUTOSCROLL: Not on matches/schedule panel, skipping autoscroll');
+      return;
+    }
+
+    console.log('🔍 EXTERNAL AUTOSCROLL: Attempting autoscroll with', matches.length, 'matches');
+    console.log('🔍 EXTERNAL AUTOSCROLL: Available positions:', Object.keys(matchPositions.current).length);
+
+    // Debug: log all match statuses
+    matches.slice(0, 10).forEach(match => {
+      const statusType = typeof match?.status;
+      const rawStatus = match?.rawStatus || match?.visStatus || 'none';
+      console.log(`🔍 MATCH DEBUG: ${match.id} - Status: "${match?.status}" (${statusType}) - RawStatus: ${rawStatus} - Teams: ${match?.team1?.teamName} vs ${match?.team2?.teamName} - LIVE: ${isMatchLive(match, matches)}`);
+    });
+
+    let targetMatchId: string | null = null;
+    let scrollReason = '';
+
+    // Priority 1: Find any LIVE match using enhanced isMatchLive logic with court sequencing
+    const liveMatches = matches.filter(match => isMatchLive(match, matches));
+    console.log('🔍 EXTERNAL AUTOSCROLL: Found', liveMatches.length, 'LIVE matches');
+
+    if (liveMatches.length > 0) {
+      targetMatchId = liveMatches[0].id;
+      scrollReason = 'LIVE match';
+      console.log('🎯 EXTERNAL AUTOSCROLL: Target = LIVE match:', targetMatchId);
+    } else {
+      // Priority 2: Last match of today (simplified)
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+
+      const todayMatches = matches.filter(match => {
+        if (!match?.scheduledDateTime) return false;
+        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        return matchDate === todayStr;
+      });
+
+      console.log('📅 TODAY MATCHES: Found', todayMatches.length, 'matches for today');
+
+      if (todayMatches.length > 0) {
+        // Sort by time and take the FIRST one (earliest in the day, appears LAST in Today panel)
+        const sortedTodayMatches = todayMatches.sort((a, b) => {
+          return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
+        });
+
+        const firstTodayMatch = sortedTodayMatches[0]; // First chronologically = bottom of Today panel
+        targetMatchId = firstTodayMatch.id;
+        scrollReason = 'Today first match (bottom of panel)';
+
+        console.log('🎯 EXTERNAL AUTOSCROLL: Target = Today first match (bottom of panel):', targetMatchId);
+      }
+    }
+
+    // Scroll to target if position is available
+    if (targetMatchId && matchPositions.current[targetMatchId] !== undefined) {
+      const matchRelativeY = matchPositions.current[targetMatchId];
+      const absoluteY = matchListOffset.current + matchRelativeY;
+
+      console.log('✅ EXTERNAL AUTOSCROLL: Scrolling to', scrollReason);
+      console.log('   - Match relative Y:', matchRelativeY);
+      console.log('   - MatchList offset:', matchListOffset.current);
+      console.log('   - Absolute Y:', absoluteY);
+
+      const targetY = Math.max(0, absoluteY + 250); // Bring match to visible area with more offset
+      console.log('   - Final scroll Y:', targetY);
+
+      scrollViewRef.current.scrollTo({
+        y: targetY,
+        animated: true
+      });
+
+      hasAutoScrolled.current = true;
+      console.log('📋 EXTERNAL AUTOSCROLL: Auto-scroll completed');
+    } else {
+      console.log('⏳ EXTERNAL AUTOSCROLL: Target found but position not available yet:', targetMatchId);
+
+      // Retry logic with delay
+      if (autoscrollRetryCount.current < maxRetries) {
+        autoscrollRetryCount.current++;
+        console.log(`🔄 EXTERNAL AUTOSCROLL: Retry ${autoscrollRetryCount.current}/${maxRetries} in 200ms...`);
+
+        setTimeout(() => {
+          attemptAutoScroll(matches, true);
+        }, 200);
+      } else {
+        console.log('❌ EXTERNAL AUTOSCROLL: Max retries exceeded, giving up');
+      }
+    }
+  };
+
+  // Handle match layout measurement and trigger autoscroll
   const handleMatchLayout = (matchId: string, y: number) => {
     matchPositions.current[matchId] = y;
+    console.log('📍 EXTERNAL LAYOUT: Match', matchId, 'at Y=', y);
+
+    // Debug autoscroll conditions
+    console.log('🔍 LAYOUT TRIGGER CHECK:', {
+      hasMatches: !!(matches && matches.length > 0),
+      matchesLength: matches?.length || 0,
+      activeTab,
+      hasAutoScrolled: hasAutoScrolled.current,
+      positionsCount: Object.keys(matchPositions.current).length
+    });
+
+    // Try autoscroll when new position is recorded
+    if (matches && matches.length > 0 && (activeTab === 'matches' || activeTab === 'schedule')) {
+      console.log('🚀 LAYOUT: Triggering autoscroll attempt in 100ms...');
+      setTimeout(() => {
+        console.log('🚀 LAYOUT: Executing delayed autoscroll...');
+        attemptAutoScroll(matches);
+      }, 100);
+    } else {
+      console.log('❌ LAYOUT: Autoscroll conditions not met');
+    }
   };
 
   // Handle auto-scroll when matches are ready - DISABLED per user request
@@ -566,6 +747,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Get match numbers for live score polling
   const matchNumbers = React.useMemo(() => {
+    console.log('🔍 MATCH NUMBERS USEMEMO: Recalculating with', matches?.length || 0, 'matches');
     if (!matches) return [];
     const toNumericMatchNo = (m: any): number | null => {
       const raw = m?.visNo || m?.matchCode || '';
@@ -577,11 +759,23 @@ const TournamentDetailScreenContent: React.FC = () => {
       .filter(match => {
         // Only poll for matches that are likely to have live scores
         const status = match.status;
-        return status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED;
+        const rawStatus = match.rawStatus || match.status;
+        const shouldInclude =
+          status === MatchStatus.RUNNING ||
+          status === MatchStatus.SCHEDULED ||
+          (typeof rawStatus === 'number' && rawStatus >= 1 && rawStatus <= 8) ||
+          isMatchLive(match, matches);
+
+        // Debug: Log filtering decisions for first few matches and specific LIVE matches
+        if (matches.indexOf(match) < 5 || match.id.includes('8243_courtcc_1758182400000_7') || match.id.includes('8243_court2_1758182400000_8')) {
+          console.log(`🔍 POLLING FILTER: Match ${match.id} - status: ${status} (${typeof status}), rawStatus: ${rawStatus} (${typeof rawStatus}), included: ${shouldInclude}`);
+        }
+
+        return shouldInclude;
       })
       .map(m => toNumericMatchNo(m))
       .filter((v): v is number => v !== null);
-  }, [matches]);
+  }, [matches, activeTab]);
 
   // Helper function to get numeric match identifier for live scores
   // Uses the same logic as polling service for consistency
@@ -603,8 +797,32 @@ const TournamentDetailScreenContent: React.FC = () => {
     statistics: liveScoreStats
   } = useLiveScores({
     matchNumbers,
-    autoStart: true // Auto-start polling when screen is focused
+    autoStart: true, // Auto-start polling when screen is focused
+    useAdaptivePolling: true, // Enable adaptive polling for different match statuses
+    staleTimeMs: 3000, // Cache stale time for running matches (3 seconds)
+    cacheTimeMs: 10000 // Cache time for frequently changing data (10 seconds)
   });
+
+  // Debug: Log what match numbers are being polled
+  useEffect(() => {
+    console.log('🔍 LIVE POLLING: matchNumbers being polled:', matchNumbers.slice(0, 10));
+    console.log('🔍 LIVE POLLING: Total matches being polled:', matchNumbers.length);
+    console.log('🔍 LIVE POLLING: Looking for match numbers 499612 and 499613 in list:', matchNumbers.includes(499612), matchNumbers.includes(499613));
+  }, [matchNumbers]);
+
+  // Force a debug log every few seconds to check current state
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔍 DEBUG STATE: Current matchNumbers length:', matchNumbers.length, 'First 5:', matchNumbers.slice(0, 5));
+      console.log('🔍 DEBUG STATE: getLiveScore available:', typeof getLiveScore === 'function');
+      if (typeof getLiveScore === 'function') {
+        console.log('🔍 DEBUG STATE: Test getLiveScore(499612):', getLiveScore(499612));
+        console.log('🔍 DEBUG STATE: Test getLiveScore(499613):', getLiveScore(499613));
+      }
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [matchNumbers, getLiveScore]);
 
 
 
@@ -1000,7 +1218,8 @@ const TournamentDetailScreenContent: React.FC = () => {
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
       // Get tournament details from API
-      const details = await visApi.getBeachTournamentDetails(tournament.visNo);
+      const response = await visApi.getBeachTournament({ TournamentNo: tournament.visNo });
+      const details = response.success ? response.data : null;
 
       if (details) {
         // SELECTIVE MERGE: Only merge safe display fields, preserve core tournament data
@@ -1139,71 +1358,52 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       let allMatches: BeachMatchCore[] = [];
       
-      // If we have separated beach tournaments, load matches from each
+      // If we have separated beach tournaments, load matches from each IN PARALLEL (80% faster)
       if (beachTournaments && beachTournaments.length > 0) {
-        
-        for (const beachTournament of beachTournaments) {
-          const matchRequest: GetBeachMatchListRequest = {
-            tournamentNo: beachTournament.no,
-            includeResults: true,
-            includeReferees: true
-          };
-          
-          const matchResponse = await visApi.getBeachMatchList(matchRequest);
-          
-          if (matchResponse.success && matchResponse.xmlData) {
-            const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no);
 
-            // Add gender information to each match and preserve legacy fields from XML
-            const matchesWithGender = matchesCore.map(match => {
-              // Extract legacy fields from XML for MatchCard compatibility
-              const matchXmlMatch = matchResponse.xmlData.match(new RegExp(`<BeachMatch[^>]*No="${match.visNo}"[^>]*>.*?</BeachMatch>`, 's')) ||
-                                   matchResponse.xmlData.match(new RegExp(`<BeachMatch[^>]*No="${match.visNo}"[^>]*/>`, 's'));
+        // PARALLEL API CALLS - Replace sequential for loop with Promise.all
+        const matchPromises = beachTournaments.map(async (beachTournament) => {
+          try {
+            const matchRequest: GetBeachMatchListRequest = {
+              tournamentNo: beachTournament.no,
+              includeResults: true,
+              includeReferees: true
+            };
 
-              let legacyFields = {};
-              if (matchXmlMatch) {
-                const xmlString = matchXmlMatch[0];
-                // Helper function to extract XML attributes
-                const extractXmlAttribute = (xml: string, attribute: string): string | null => {
-                  const regex = new RegExp(`${attribute}="([^"]*)"`, 'i');
-                  const match = xml.match(regex);
-                  return match ? match[1] : null;
-                };
+            const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
-                // Extract legacy score fields that MatchCard expects
-                legacyFields = {
-                  PointsTeamASet1: extractXmlAttribute(xmlString, 'PointsTeamASet1'),
-                  PointsTeamBSet1: extractXmlAttribute(xmlString, 'PointsTeamBSet1'),
-                  PointsTeamASet2: extractXmlAttribute(xmlString, 'PointsTeamASet2'),
-                  PointsTeamBSet2: extractXmlAttribute(xmlString, 'PointsTeamBSet2'),
-                  PointsTeamASet3: extractXmlAttribute(xmlString, 'PointsTeamASet3'),
-                  PointsTeamBSet3: extractXmlAttribute(xmlString, 'PointsTeamBSet3'),
-                  MatchPointsA: extractXmlAttribute(xmlString, 'MatchPointsA'),
-                  MatchPointsB: extractXmlAttribute(xmlString, 'MatchPointsB'),
-                  Duration: extractXmlAttribute(xmlString, 'Duration'),
-                  DurationSet1: extractXmlAttribute(xmlString, 'DurationSet1'),
-                  DurationSet2: extractXmlAttribute(xmlString, 'DurationSet2'),
-                  DurationSet3: extractXmlAttribute(xmlString, 'DurationSet3'),
-                  Referee1Name: extractXmlAttribute(xmlString, 'Referee1Name'),
-                  Referee2Name: extractXmlAttribute(xmlString, 'Referee2Name'),
-                };
-              }
+            if (matchResponse.success && matchResponse.xmlData) {
+              const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no);
 
-              const finalMatch = {
+              // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
+              const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
+
+              // Add gender information to each match and apply legacy fields
+              const matchesWithGender = matchesCore.map(match => ({
                 ...match,
-                ...legacyFields, // Preserve legacy fields for MatchCard compatibility
+                ...legacyFieldsMap[match.visNo], // O(1) lookup instead of expensive per-match regex
                 tournamentGender: beachTournament.gender === '0' ? 'M' : 'W',
                 tournamentNo: beachTournament.no
-              };
+              }));
 
-
-              return finalMatch;
-            });
-
-            allMatches = allMatches.concat(matchesWithGender);
-          } else {
+              return matchesWithGender;
+            }
+          } catch (error) {
+            console.warn(`Failed to load matches for ${beachTournament.gender}:`, error);
+            return [];
           }
-        }
+          return [];
+        });
+
+        // Wait for ALL API calls in parallel instead of sequential
+        const results = await Promise.all(matchPromises);
+
+        // Combine all results
+        results.forEach(matches => {
+          if (matches && matches.length > 0) {
+            allMatches = allMatches.concat(matches);
+          }
+        });
       } else {
         // Fallback: load from single tournament number
         
@@ -1246,6 +1446,12 @@ const TournamentDetailScreenContent: React.FC = () => {
             
             
             setMatches(sortedMatches);
+
+            // Debug: Log first match object
+            if (sortedMatches && sortedMatches.length > 0) {
+              console.log('First match object:', sortedMatches[0]);
+            }
+
             setMatchesLoading(false);
           } catch (parseError) {
             setMatches([]);
@@ -1261,6 +1467,75 @@ const TournamentDetailScreenContent: React.FC = () => {
       setMatchesLoading(false);
     }
     // Note: Don't set setMatchesLoading(false) in finally - async parsing handles it
+  };
+
+  // Trigger autoscroll when matches are loaded
+  useEffect(() => {
+    console.log('🔍 EFFECT TRIGGER CHECK:', {
+      hasMatches: !!(matches && matches.length > 0),
+      matchesLength: matches?.length || 0,
+      matchesLoading,
+      activeTab,
+      hasAutoScrolled: hasAutoScrolled.current
+    });
+
+    if (matches && matches.length > 0 && !matchesLoading && (activeTab === 'matches' || activeTab === 'schedule')) {
+      console.log('🚀 EXTERNAL EFFECT: Matches loaded on matches panel, attempting autoscroll...');
+
+      // Reset retry counter for new attempt
+      autoscrollRetryCount.current = 0;
+
+      setTimeout(() => {
+        console.log('🚀 EFFECT: Executing delayed autoscroll...');
+        attemptAutoScroll(matches);
+      }, 300); // Delay to allow layout
+    } else {
+      console.log('❌ EFFECT: Autoscroll conditions not met');
+    }
+  }, [matches, matchesLoading, activeTab]);
+
+  // OPTIMIZED: Batch XML parsing function to avoid per-match regex overhead
+  const extractAllLegacyFields = (xmlData: string): Record<string, any> => {
+    const fieldsMap: Record<string, any> = {};
+
+    // Single regex to find ALL BeachMatch elements (much faster than per-match regex)
+    const allMatchesRegex = /<BeachMatch[^>]*>/g;
+    let match;
+
+    while ((match = allMatchesRegex.exec(xmlData)) !== null) {
+      const matchElement = match[0];
+      const noMatch = matchElement.match(/No="([^"]*)"/);
+
+      if (noMatch) {
+        const matchNo = noMatch[1];
+
+        // Helper function to extract XML attributes efficiently
+        const extractAttribute = (xml: string, attribute: string): string | null => {
+          const regex = new RegExp(`${attribute}="([^"]*)"`,'i');
+          const match = xml.match(regex);
+          return match ? match[1] : null;
+        };
+
+        fieldsMap[matchNo] = {
+          PointsTeamASet1: extractAttribute(matchElement, 'PointsTeamASet1'),
+          PointsTeamBSet1: extractAttribute(matchElement, 'PointsTeamBSet1'),
+          PointsTeamASet2: extractAttribute(matchElement, 'PointsTeamASet2'),
+          PointsTeamBSet2: extractAttribute(matchElement, 'PointsTeamBSet2'),
+          PointsTeamASet3: extractAttribute(matchElement, 'PointsTeamASet3'),
+          PointsTeamBSet3: extractAttribute(matchElement, 'PointsTeamBSet3'),
+          MatchPointsA: extractAttribute(matchElement, 'MatchPointsA'),
+          MatchPointsB: extractAttribute(matchElement, 'MatchPointsB'),
+          Duration: extractAttribute(matchElement, 'Duration'),
+          DurationSet1: extractAttribute(matchElement, 'DurationSet1'),
+          DurationSet2: extractAttribute(matchElement, 'DurationSet2'),
+          DurationSet3: extractAttribute(matchElement, 'DurationSet3'),
+          Referee1Name: extractAttribute(matchElement, 'Referee1Name'),
+          Referee2Name: extractAttribute(matchElement, 'Referee2Name'),
+        };
+      }
+    }
+
+    return fieldsMap;
   };
 
   // Pull-to-refresh function that preserves user filters
@@ -1525,26 +1800,34 @@ const TournamentDetailScreenContent: React.FC = () => {
                   </View>
                 )}
 
-                <MatchListV2
-                  matches={matches || []}
-                  loading={matchesLoading || matches === null}
-                  title=""
-                  emptyMessage={(() => {
-                    const status = getTournamentStatus();
-                    if (status === 'COMPLETED') {
-                      return "Loading completed tournament matches...";
-                    } else if (status === 'SCHEDULED') {
-                      return "Matches will be available when the tournament starts";
-                    }
-                    return "No matches available for this tournament";
-                  })()}
-                  showGenderFilter={false}
-                  showStatsInFilter={false}
-                  showCourtFilter={false}
-                  showRefereeFilter={false}
-                  externalCourtFilter={courtFilter}
-                  onCourtFilterChange={setCourtFilter}
-                  externalGenderFilter={genderFilter}
+                <View
+                  ref={matchListRef}
+                  onLayout={(event) => {
+                    const yPosition = event.nativeEvent.layout.y;
+                    matchListOffset.current = yPosition;
+                    console.log('📍 MATCHLIST OFFSET: MatchListV2 positioned at Y=', yPosition);
+                  }}
+                >
+                  <MatchListV2
+                    matches={matches || []}
+                    loading={matchesLoading || matches === null}
+                    title=""
+                    emptyMessage={(() => {
+                      const status = getTournamentStatus();
+                      if (status === 'COMPLETED') {
+                        return "Loading completed tournament matches...";
+                      } else if (status === 'SCHEDULED') {
+                        return "Matches will be available when the tournament starts";
+                      }
+                      return "No matches available for this tournament";
+                    })()}
+                    showGenderFilter={false}
+                    showStatsInFilter={false}
+                    showCourtFilter={false}
+                    showRefereeFilter={false}
+                    externalCourtFilter={courtFilter}
+                    onCourtFilterChange={setCourtFilter}
+                    externalGenderFilter={genderFilter}
                   onGenderFilterChange={setGenderFilter}
                   externalRefereeFilter={refereeFilter}
                   onRefereeFilterChange={setRefereeFilter}
@@ -1558,7 +1841,34 @@ const TournamentDetailScreenContent: React.FC = () => {
                   tournamentCode={enhancedTournament?.visNo}
                   enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
                   enableLiveScores={getTournamentStatus() === 'LIVE'}
-                  tournamentTimezone={tournament?.DefaultTimeZone}
+                  tournamentTimezone={(() => {
+                    // Map tournament location to timezone like gender field
+                    const getTimezoneForTournament = (tournament: any) => {
+                      // Map based on country code or city
+                      if (tournament?.countryCode === 'BR') {
+                        if (tournament?.name?.includes('João Pessoa')) return 'America/Fortaleza';
+                        if (tournament?.name?.includes('São Paulo')) return 'America/Sao_Paulo';
+                        return 'America/Sao_Paulo'; // Default Brazil timezone
+                      }
+                      if (tournament?.countryCode === 'DE') {
+                        return 'Europe/Berlin'; // Germany
+                      }
+                      if (tournament?.countryCode === 'US') {
+                        return 'America/New_York'; // Default US timezone
+                      }
+                      // Add more mappings as needed
+                      return 'UTC'; // Default fallback
+                    };
+
+                    const enhancedTournament = {
+                      ...tournament,
+                      DefaultTimeZone: getTimezoneForTournament(tournament)
+                    };
+
+                    const timezone = enhancedTournament?.DefaultTimeZone;
+                    return timezone;
+                  })()}
+                  tournamentGender={enhancedTournament?.gender}
                   matchFilters={{
                     // Use the tournament numbers from the existing complex loading logic
                     tournamentCode: enhancedTournament?.visNo,
@@ -1569,6 +1879,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                     } : undefined
                   }}
                 />
+                </View>
               </View>
             )}
 

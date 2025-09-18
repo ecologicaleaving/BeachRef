@@ -1,11 +1,12 @@
 // Error logging and classification service
 // Story 2.3: Comprehensive error handling and classification
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { 
-  SyncErrorLog, 
-  ErrorType, 
-  ErrorSeverity, 
+import { SupabaseClient } from '@supabase/supabase-js'
+import { supabase } from './supabase'
+import {
+  SyncErrorLog,
+  ErrorType,
+  ErrorSeverity,
   NetworkErrorContext,
   AuthErrorContext,
   APIErrorContext,
@@ -21,15 +22,11 @@ export class ErrorLogger {
   private supabase: SupabaseClient | null = null;
 
   private constructor() {
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-    // Use anonymous key for client-side logging, service key only available server-side
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+    // Use the shared Supabase client instead of creating a new one
+    this.supabase = supabase;
 
-    // Only create Supabase client if environment variables are available
-    if (supabaseUrl && supabaseKey) {
-      this.supabase = createClient(supabaseUrl, supabaseKey);
-    } else {
-      console.warn('ErrorLogger: Supabase credentials not available, error logging will be disabled');
+    if (!this.supabase) {
+      console.warn('ErrorLogger: Supabase client not available, error logging will be disabled');
     }
   }
 

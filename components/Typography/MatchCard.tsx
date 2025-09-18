@@ -9,7 +9,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Title, Heading, Subheading, EnhancedBodyText, EnhancedCaption } from './Text';
 import { colors, spacing } from '../../theme/tokens';
-import { createTextShadow } from '../../theme/shadows';
+import { createTextShadow, createShadow } from '../../theme/shadows';
 import { getStatusColor } from '../../utils/colors';
 import { FlagImage } from '../FlagImage';
 import { RoundPhaseDisplay } from './RoundPhaseDisplay';
@@ -329,14 +329,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4', // Very light green background
     // Enhanced glow effect for live matches
     ...(typeof window !== 'undefined'
-      ? { boxShadow: `0px 0px 16px rgba(34, 197, 94, 0.3)` }
-      : {
-          shadowColor: colors.success,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 12,
-        }),
+      ? { boxShadow: `0px 0px 8px rgba(34, 197, 94, 0.3)` }
+      : { elevation: 12 }),
   },
   matchIdSection: {
     flexDirection: 'row',

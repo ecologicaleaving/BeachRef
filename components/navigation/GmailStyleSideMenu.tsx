@@ -288,7 +288,6 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     const separator = route.includes('?') ? '&' : '?';
     const fullRoute = `${route}${separator}tournamentData=${tournamentData}`;
 
-    console.log('Sidebar navigation: Passing full tournament data to', route);
     router.push(fullRoute as any);
   };
 
@@ -377,13 +376,13 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Timezone Toggle - Temporarily Hidden */}
-              {/* <TimezoneToggle
+              {/* Timezone Toggle */}
+              <TimezoneToggle
                 tournamentTimezone={currentTournament?.DefaultTimeZone}
                 onTimezonePreferenceChange={(useLocalTime) => {
-                  console.log('Timezone preference changed to:', useLocalTime ? 'local' : 'user');
+                  // Timezone preference change handled by the toggle component
                 }}
-              /> */}
+              />
 
               {/* Favorites Section - Only show if there are favorites */}
               {favoriteTournaments.length > 0 && (
@@ -446,10 +445,6 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                             try {
                               // Default tournament is now a complete TournamentCore object
                               const tournamentToPass = defaultTournament;
-                              console.log('Sidebar: Using default tournament (now TournamentCore) for visNo:', defaultTournament.visNo);
-
-                              console.log('Sidebar: Final tournament to pass:', tournamentToPass.name, 'has tournamentType:', tournamentToPass.tournamentType || 'undefined');
-                              console.log('Sidebar: Complete tournament object being passed:', JSON.stringify(tournamentToPass, null, 2));
                               handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(tournamentToPass))}&tab=schedule`);
                             } catch (error) {
                               console.error('Error preparing tournament data:', error);
@@ -468,10 +463,6 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                             try {
                               // Default tournament is now a complete TournamentCore object
                               const tournamentToPass = defaultTournament;
-                              console.log('Sidebar: Using default tournament (now TournamentCore) for Officials - visNo:', defaultTournament.visNo);
-
-                              console.log('Sidebar: Final tournament to pass to Officials:', tournamentToPass.name, 'has tournamentType:', tournamentToPass.tournamentType || 'undefined');
-                              console.log('Sidebar: Complete tournament object being passed to Officials:', JSON.stringify(tournamentToPass, null, 2));
                               handleMenuItemPress(`/tournament-detail?tournamentData=${encodeURIComponent(JSON.stringify(tournamentToPass))}&tab=officials`);
                             } catch (error) {
                               console.error('Error preparing tournament data:', error);

@@ -45,7 +45,6 @@ export class StatusUpdateService {
       this.websocket = new WebSocket(this.websocketUrl);
       
       this.websocket.onopen = () => {
-        // console.log('StatusUpdateService: WebSocket connected');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.notifyGlobalSubscribers({
@@ -65,7 +64,6 @@ export class StatusUpdateService {
       };
       
       this.websocket.onclose = () => {
-        // console.log('StatusUpdateService: WebSocket disconnected');
         this.isConnected = false;
         this.notifyGlobalSubscribers({
           type: 'connection_changed',
@@ -99,7 +97,6 @@ export class StatusUpdateService {
     const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1);
     
     setTimeout(() => {
-      // console.log(`StatusUpdateService: Reconnecting attempt ${this.reconnectAttempts}`);
       this.initializeWebSocket();
     }, delay);
   }

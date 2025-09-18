@@ -66,14 +66,12 @@ export class RealtimeFallbackService {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    // console.log('Initializing Enhanced RealtimeFallbackService');
     
     // Initialize network state manager
     this.networkStateManager = NetworkStateManager.getInstance();
     
     // Set up circuit breaker monitoring with enhanced recommendations
     this.circuitBreaker.addStateChangeListener((state) => {
-      // console.log(`Fallback service circuit breaker state changed: ${state}`);
       this.handleCircuitBreakerStateChange(state);
     });
 
@@ -111,7 +109,6 @@ export class RealtimeFallbackService {
    * Handle network state changes
    */
   private static handleNetworkStateChange(networkState: NetworkState, connectionQuality: ConnectionQuality): void {
-    // console.log('Network state changed:', {
     //   type: networkState.type,
     //   quality: connectionQuality.score,
     //   level: connectionQuality.level,
@@ -178,7 +175,6 @@ export class RealtimeFallbackService {
   private static switchToMode(newMode: FallbackMode, reason: string): void {
     if (newMode === this.currentMode) return;
 
-    // console.log(`Switching fallback mode: ${this.currentMode} → ${newMode} (${reason})`);
 
     // Record mode change in history
     this.modeHistory.push({
@@ -205,7 +201,6 @@ export class RealtimeFallbackService {
   private static adjustAllPollingIntervals(oldMode: FallbackMode, newMode: FallbackMode): void {
     if (this.pollingIntervals.size === 0) return;
 
-    // console.log(`Adjusting ${this.pollingIntervals.size} polling intervals for mode change: ${oldMode} → ${newMode}`);
 
     // Get new interval for the new mode
     for (const [tournamentNo] of this.pollingIntervals.entries()) {
@@ -230,7 +225,6 @@ export class RealtimeFallbackService {
 
       this.pollingIntervals.set(tournamentNo, intervalId);
       
-      // console.log(`Adjusted polling for ${tournamentNo}: interval → ${newInterval}ms`);
     }
   }
 
@@ -312,7 +306,6 @@ export class RealtimeFallbackService {
       ? this.AGGRESSIVE_POLLING_INTERVAL 
       : this.DEFAULT_POLLING_INTERVAL;
 
-    // console.log(`Starting polling fallback for tournament ${tournamentNo} (interval: ${pollingInterval}ms)`);
 
     try {
       // Perform initial poll
@@ -349,7 +342,6 @@ export class RealtimeFallbackService {
       this.pollingIntervals.delete(tournamentNo);
       this.errorCounts.delete(tournamentNo);
       this.lastPollingAttempts.delete(tournamentNo);
-      // console.log(`Stopped polling fallback for tournament ${tournamentNo}`);
     }
   }
 
@@ -364,7 +356,6 @@ export class RealtimeFallbackService {
     this.lastPollingAttempts.set(tournamentNo, now);
 
     try {
-      // console.log(`Polling for matches in tournament ${tournamentNo}`);
       
       // Force refresh from API (bypass cache for real-time accuracy)
       await CacheService.invalidateMatchCache(tournamentNo);
@@ -376,7 +367,6 @@ export class RealtimeFallbackService {
       // Call the update callback
       onUpdate(matches);
       
-      // console.log(`Successfully polled ${matches.length} matches for tournament ${tournamentNo}`);
 
     } catch (error) {
       // console.error(`Polling failed for tournament ${tournamentNo}:`, error);
@@ -428,7 +418,6 @@ export class RealtimeFallbackService {
     }, newInterval);
 
     this.pollingIntervals.set(tournamentNo, intervalId);
-    // console.log(`Adjusted polling interval for ${tournamentNo} to ${newInterval}ms`);
   }
 
   /**
@@ -527,11 +516,9 @@ export class RealtimeFallbackService {
    * Graceful shutdown of all polling
    */
   static stopAllPolling(): void {
-    // console.log(`Stopping all polling (${this.pollingIntervals.size} active tournaments)`);
     
     for (const [tournamentNo, intervalId] of this.pollingIntervals.entries()) {
       clearInterval(intervalId);
-      // console.log(`Stopped polling for tournament ${tournamentNo}`);
     }
 
     this.pollingIntervals.clear();
@@ -546,7 +533,6 @@ export class RealtimeFallbackService {
     this.stopAllPolling();
     this.circuitBreaker.cleanup();
     this.isInitialized = false;
-    // console.log('RealtimeFallbackService cleaned up');
   }
 
   /**

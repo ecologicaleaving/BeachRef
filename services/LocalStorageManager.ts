@@ -462,7 +462,6 @@ export class LocalStorageManager {
         }
       }
 
-      // console.log(`Storage quota enforced: removed ${removedCount} entries, freed ${freedSize} bytes`);
       return removedCount;
     } catch (error) {
       // console.error('LocalStorageManager.enforceStorageQuota error:', error);

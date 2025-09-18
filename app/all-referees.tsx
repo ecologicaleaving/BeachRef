@@ -77,7 +77,6 @@ const RefereeCard = ({
     try {
       // Use current calendar year for season stats (2025)
       const currentYear = new Date().getFullYear();
-      console.log(`Loading season stats for current year: ${currentYear}`);
       const seasonYear = currentYear.toString();
       const seasonStats = await RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
       setCurrentStats(seasonStats);
@@ -88,11 +87,9 @@ const RefereeCard = ({
 
   const loadRefereeStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) {
-      console.log('Missing referee ID or tournament number:', { refereeId: referee?.RefereeId, tournamentNo });
       return;
     }
     
-    console.log(`Loading ${activeTab} stats for referee ${referee.RefereeId}`);
     setStatsLoading(true);
     
     try {
@@ -104,28 +101,22 @@ const RefereeCard = ({
         case 'Current':
           // Use season stats for Current tab as well (current year season)
           const currentYear = new Date().getFullYear();
-          console.log(`Loading Current tab season stats for year: ${currentYear}`);
           const currentSeasonYear = currentYear.toString();
           const currentPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, currentSeasonYear);
           const current = await Promise.race([currentPromise, timeout]);
-          console.log('Current season stats loaded:', current);
           setCurrentStats(current);
           break;
         case 'Season':
           // Use current calendar year for season stats, not tournament year
           const seasonCurrentYear = new Date().getFullYear();
           const seasonYear = seasonCurrentYear.toString();
-          console.log('Loading season stats for year:', seasonYear, '(current year)');
           const seasonPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
           const season = await Promise.race([seasonPromise, timeout]);
-          console.log('Season stats loaded:', season);
           setSeasonStats(season);
           break;
         case 'Career':
-          console.log('Loading career stats');
           const careerPromise = RefereeStatsService.getCareerStats(referee.RefereeId);
           const career = await Promise.race([careerPromise, timeout]);
-          console.log('Career stats loaded:', career);
           setCareerStats(career);
           break;
       }
@@ -288,12 +279,10 @@ function AllRefereesScreenContent() {
   const loadAllReferees = async () => {
     setLoading(true);
     try {
-      console.log('Loading active referees for current season first...');
       
       // Phase 1: Load only active referees for current season
       const activeRefereesLoaded = await loadActiveSeasonReferees();
       if (!activeRefereesLoaded) {
-        console.log('No active referees found for current season');
         setReferees([]);
       }
       
@@ -312,20 +301,17 @@ function AllRefereesScreenContent() {
 
   const loadActiveSeasonReferees = async (): Promise<boolean> => {
     try {
-      console.log('Getting active referees from current season matches...');
       const currentYear = new Date().getFullYear();
       
       // Get matches from current year to extract active referee IDs
       const activeRefereeIds = await getActiveRefereeIdsFromMatches(currentYear);
       
       if (activeRefereeIds.size > 0) {
-        console.log(`Found ${activeRefereeIds.size} unique active referee IDs from current season matches`);
         
         // Get referee details for active IDs only
         const activeReferees = await getRefereeDetailsByIds(Array.from(activeRefereeIds));
         
         if (activeReferees.length > 0) {
-          console.log(`Loaded details for ${activeReferees.length} active referees`);
           
           // Load stats for active referees to get match counts for sorting
           const refereesWithStats = await Promise.all(
@@ -348,7 +334,6 @@ function AllRefereesScreenContent() {
           // Sort by matches officiated (descending)
           const sortedActiveReferees = refereesWithStats.sort((a, b) => b.totalMatches - a.totalMatches);
           
-          console.log(`Setting ${sortedActiveReferees.length} active referees sorted by matches`);
           setReferees(sortedActiveReferees);
           
           // Load inactive referees in background
@@ -360,7 +345,6 @@ function AllRefereesScreenContent() {
         }
       }
       
-      console.log('No active referees found in current season matches');
       return false;
     } catch (error) {
       console.error('Error loading active season referees:', error);
@@ -370,17 +354,14 @@ function AllRefereesScreenContent() {
 
   const getActiveRefereeIdsFromMatches = async (year: number): Promise<Set<string>> => {
     try {
-      console.log(`Getting active referee IDs from current season tournaments...`);
       
       // First get recent tournaments from current year
       const recentTournaments = await getRecentTournaments(year);
       
       if (recentTournaments.length === 0) {
-        console.log('No recent tournaments found, falling back to simple approach');
         return new Set();
       }
       
-      console.log(`Found ${recentTournaments.length} recent tournaments, getting matches...`);
       
       const refereeIds = new Set<string>();
       
@@ -392,12 +373,10 @@ function AllRefereesScreenContent() {
           const tournamentReferees = await getRefereeIdsFromTournament(tournament.visNo);
           tournamentReferees.forEach(id => refereeIds.add(id));
         } catch (error) {
-          console.log(`Error getting referees from tournament ${tournament.visNo}:`, error);
           continue;
         }
       }
       
-      console.log(`Extracted ${refereeIds.size} unique referee IDs from recent tournaments`);
       return refereeIds;
     } catch (error) {
       console.error('Error getting active referee IDs from matches:', error);
@@ -453,7 +432,6 @@ function AllRefereesScreenContent() {
         // Sort by start date (most recent first)
         tournaments.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
         
-        console.log(`Found ${tournaments.length} tournaments from ${year}`);
         return tournaments;
       }
       
@@ -518,7 +496,6 @@ function AllRefereesScreenContent() {
         refereeIds.includes(referee.RefereeId)
       );
       
-      console.log(`Filtered ${activeReferees.length} referees from ${allReferees.length} total referees`);
       return activeReferees;
     } catch (error) {
       console.error('Error getting referee details by IDs:', error);
@@ -528,7 +505,6 @@ function AllRefereesScreenContent() {
 
   const loadInactiveReferees = async (activeIds: Set<string>) => {
     try {
-      console.log('Loading inactive referees in background...');
       
       // Get all referees and filter out the active ones
       const allReferees = await getAllReferees();
@@ -536,7 +512,6 @@ function AllRefereesScreenContent() {
         !activeIds.has(referee.RefereeId)
       );
       
-      console.log(`Found ${inactiveReferees.length} inactive referees to add incrementally`);
       
       // Add them in batches
       await loadInactiveRefereesBatch(
@@ -584,7 +559,6 @@ function AllRefereesScreenContent() {
   const loadInactiveRefereesBatch = async (inactiveReferees: (Referee & { totalMatches: number; isActive: boolean })[], currentActive: (Referee & { totalMatches: number; isActive?: boolean })[]) => {
     if (inactiveReferees.length === 0) return;
     
-    console.log('Adding inactive referees to the list incrementally...');
     
     // Add inactive referees in small batches to avoid UI blocking
     const batchSize = 10;
@@ -600,7 +574,6 @@ function AllRefereesScreenContent() {
         return combined.sort((a, b) => (b.totalMatches || 0) - (a.totalMatches || 0));
       });
       
-      console.log(`Added batch ${i + 1}/${totalBatches} of inactive referees`);
       
       // Wait between batches to avoid blocking UI
       if (i < totalBatches - 1) {
@@ -608,12 +581,10 @@ function AllRefereesScreenContent() {
       }
     }
     
-    console.log('Finished loading all referees incrementally');
   };
 
   const loadInactiveRefereesIncrementally = () => {
     // This function is a placeholder - actual loading happens in loadActiveSeasonReferees
-    console.log('Incremental loading initiated...');
   };
 
 

@@ -555,28 +555,30 @@ export function isErrorResponse(response: VisApiResponse): response is VisApiErr
 export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = {
   [VisApiEndpoint.GET_EVENT_LIST]: [
     'No', 'Name', 'Code', 'City', 'Country', 'CountryCode',
-    'StartDate', 'EndDate', 'Type', 'Gender', 'Status'
+    'StartDate', 'EndDate', 'Type', 'Gender', 'Status', 'DefaultTimeZone'
   ],
   [VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]: [
-    'No', 'Name', 'CountryCode', 'City', 'StartDate', 'EndDate', 'Gender', 'Level', 'Status'
+    'No', 'Name', 'CountryCode', 'City', 'StartDate', 'EndDate', 'Gender', 'Level', 'Status', 'DefaultTimeZone'
   ],
   [VisApiEndpoint.GET_BEACH_TOURNAMENT]: [
     'Location', 'Venue', 'Address', 'ContactName', 'ContactEmail',
-    'Courts', 'Surface', 'Website'
+    'Courts', 'Surface', 'Website', 'DefaultTimeZone'
   ],
   [VisApiEndpoint.GET_EVENT]: [
     'Officials', 'Referees', 'TechnicalOfficials', 'OfficialFunctions'
   ],
   [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
     'MatchNo', 'Court', 'DateTime', 'Status', 'Team1', 'Team2',
-    'Result', 'Round', 'Phase', 'Referees'
+    'Result', 'Round', 'Phase', 'Referees', 'TournamentGender',
+    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FederationCode'
   ],
   [VisApiEndpoint.GET_BEACH_MATCH]: [
     'No', 'NoInTournament', 'LocalDate', 'LocalTime', 'Status', 'Court',
     'TeamA', 'TeamB', 'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode',
     'MatchPointsA', 'MatchPointsB', 'RoundName', 'Round', 'RoundPhase',
-    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FederationCode',
-    'Sets', 'SetScores', 'Statistics', 'Duration'
+    'Referee1Name', 'Referee2Name', 'Referee1FederationCode', 'Referee2FedereeCode',
+    'Sets', 'SetScores', 'Statistics', 'Duration', 'TournamentGender',
+    'StartTime', 'EndTime'
   ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Name', 'Teams', 'Matches', 'Status'

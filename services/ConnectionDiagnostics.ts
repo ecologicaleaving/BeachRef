@@ -100,7 +100,6 @@ export class ConnectionDiagnostics {
    * Assess overall connection health
    */
   async assessConnectionHealth(): Promise<ConnectionHealth> {
-    // console.log('Starting connection health assessment');
     this.isRunningDiagnostics = true;
 
     try {
@@ -155,7 +154,6 @@ export class ConnectionDiagnostics {
         this.diagnosticHistory.shift();
       }
 
-      // console.log('Connection health assessment completed:', {
       //   overall: health.overall,
       //   score: health.score,
       //   issuesCount: health.issues.length
@@ -508,13 +506,11 @@ export class ConnectionDiagnostics {
    * Reset connection state
    */
   async resetConnection(options: ConnectionResetOptions = {}): Promise<void> {
-    // console.log('Resetting connection state with options:', options);
 
     try {
       // Reset circuit breaker if requested
       if (options.resetCircuitBreaker) {
         // This would reset actual circuit breakers
-        // console.log('Circuit breaker reset requested');
       }
 
       // Clear cache if requested
@@ -523,7 +519,6 @@ export class ConnectionDiagnostics {
           await AsyncStorage.removeItem('network_state_cache');
           await AsyncStorage.removeItem('connection_quality_cache');
           await AsyncStorage.removeItem('app_state_event');
-          // console.log('Connection-related cache cleared');
         } catch (error) {
           // console.error('Failed to clear cache:', error);
         }
@@ -532,13 +527,11 @@ export class ConnectionDiagnostics {
       // Reset fallback service if requested
       if (options.resetFallbackService) {
         RealtimeFallbackService.cleanup();
-        // console.log('Fallback service reset');
       }
 
       // Force reconnect if requested
       if (options.forceReconnect) {
         await this.networkStateManager.forceQualityReassessment();
-        // console.log('Forced network quality reassessment');
       }
 
       // Clear stored state if requested
@@ -551,14 +544,12 @@ export class ConnectionDiagnostics {
           
           if (connectionKeys.length > 0) {
             await AsyncStorage.multiRemove(connectionKeys);
-            // console.log(`Cleared ${connectionKeys.length} stored state keys`);
           }
         } catch (error) {
           // console.error('Failed to clear stored state:', error);
         }
       }
 
-      // console.log('Connection reset completed successfully');
 
     } catch (error) {
       // console.error('Failed to reset connection:', error);
@@ -570,7 +561,6 @@ export class ConnectionDiagnostics {
    * Force connection mode
    */
   forceConnectionMode(mode: ConnectionStrategy): void {
-    // console.log(`Forcing connection mode to: ${mode}`);
     
     // This would typically set the mode on actual connection managers
     // For now, log the request

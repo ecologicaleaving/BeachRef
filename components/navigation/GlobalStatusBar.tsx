@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Vibration } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Vibration, Platform } from 'react-native';
 import { useAssignmentStatus } from '../../hooks/useAssignmentStatus';
 import { designTokens } from '../../theme/tokens';
 
@@ -96,8 +96,8 @@ export const GlobalStatusBar: React.FC<GlobalStatusBarProps> = ({
     if (currentUrgency === 'critical') {
       // Pulse animation for critical urgency
       const pulse = Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.1, duration: 500, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
       ]);
       
       const loop = Animated.loop(pulse);

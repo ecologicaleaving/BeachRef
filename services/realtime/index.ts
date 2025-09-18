@@ -48,7 +48,6 @@ export type { ConnectionStateListener } from './ConnectionPoolManager';
  * await orchestrator.subscribe({
  *   tournamentNo: '123',
  *   liveMatchesOnly: true,
- *   onUpdate: (payload) => console.log('Update:', payload)
  * });
  *
  * STEP 3: Benefits of the new architecture

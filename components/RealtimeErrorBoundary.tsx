@@ -61,7 +61,6 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
     if (!tournamentNo) return;
 
     try {
-      // console.log(`Activating fallback for tournament ${tournamentNo} due to error boundary`);
       
       const success = await RealtimeFallbackService.startPollingFallback(
         tournamentNo,
@@ -81,7 +80,6 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
   };
 
   private handleRetry = () => {
-    // console.log(`Retrying real-time component (attempt ${this.state.retryCount + 1})`);
     
     this.setState({
       hasError: false,
@@ -100,7 +98,6 @@ export class RealtimeErrorBoundary extends Component<Props, State> {
     const { tournamentNo } = this.props;
     if (!tournamentNo) return;
 
-    // console.log(`Forcing fallback mode for tournament ${tournamentNo}`);
     this.activateFallback();
   };
 

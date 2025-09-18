@@ -8,6 +8,7 @@ import { View, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useLiveIndicatorAnimation } from '../../utils/statusAnimations';
 import { colors, spacing } from '../../theme/tokens';
+import { createShadow } from '../../theme/shadows';
 
 export interface LiveIndicatorProps {
   isLive: boolean;
@@ -64,14 +65,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
     // Cross-platform shadow styling
     ...(typeof window !== 'undefined'
-      ? { boxShadow: `0px 0px 8px rgba(34, 197, 94, 0.8)` }
-      : {
-          shadowColor: colors.success,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.8,
-          shadowRadius: 4,
-          elevation: 4,
-        }),
+      ? { boxShadow: `0px 0px 4px rgba(34, 197, 94, 0.8)` }
+      : { elevation: 4 }),
   },
 });
 

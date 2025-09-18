@@ -145,7 +145,6 @@ export class TournamentStatusMonitor {
       // Cache the result
       this.scheduleChangeCache.set(tournamentNo, result);
       
-      // console.log(`Detected ${result.changeCount} schedule changes for tournament ${tournamentNo} (${significantChanges} significant)`);
       
       return result;
       
@@ -210,7 +209,6 @@ export class TournamentStatusMonitor {
     // Cache the progress
     this.tournamentProgressCache.set(tournamentNo, progress);
     
-    // console.log(`Tournament ${tournamentNo} progress: ${completionPercentage}% (${completedMatches}/${totalMatches} matches)`);
     
     return progress;
   }
@@ -256,7 +254,6 @@ export class TournamentStatusMonitor {
         
         this.courtChangeHistory.set(tournamentNo, existing);
         
-        // console.log(`Tracked ${courtChanges.length} court assignment changes for tournament ${tournamentNo}`);
       }
 
       return courtChanges;
@@ -327,7 +324,6 @@ export class TournamentStatusMonitor {
           sync_source: 'tournament_status_monitor'
         });
 
-      // console.log(`Updated sync status for tournament ${tournamentNo}: ${changeType}`);
       
     } catch (error) {
       // console.error(`Error updating sync status for tournament ${tournamentNo}:`, error);
@@ -396,7 +392,6 @@ export class TournamentStatusMonitor {
     this.scheduleChangeCache.clear();
     this.courtChangeHistory.clear();
     this.syncStatusMap.clear();
-    // console.log('Tournament status monitoring data cleared');
   }
 
   // Private helper methods

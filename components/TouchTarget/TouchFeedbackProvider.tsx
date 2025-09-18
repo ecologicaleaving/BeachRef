@@ -246,7 +246,6 @@ export const TouchFeedbackProvider: React.FC<TouchFeedbackProviderProps> = ({
     
     // Audio feedback would require additional implementation with expo-av or similar
     // For now, this is a placeholder
-    // console.log(`TouchFeedbackProvider: Audio feedback triggered - ${soundType || feedbackConfig.audio.soundType}`);
   }, [feedbackConfig.audio]);
   
   const contextValue: TouchFeedbackContextType = {

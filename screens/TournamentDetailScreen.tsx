@@ -16,7 +16,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { shadowPresets } from '../theme/shadows';
 import { TournamentCore } from '../types/tournament-v2';
-import { BeachMatchCore, MatchStatus } from '../types/match-v2';
+import { BeachMatchCore, MatchStatus, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../types/match-v2';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
@@ -359,11 +359,19 @@ const TournamentDetailScreenContent: React.FC = () => {
 
 
 
-  // Helper function to check if match is LIVE using VIS numeric status codes
-  const isMatchLive = (match: any): boolean => {
+  // Helper function to check if match is LIVE using enhanced status with court sequencing logic
+  const isMatchLive = (match: any, allMatches: any[] = matches): boolean => {
     // Don't consider matches with placeholder teams as live
     if (match?.team1?.teamName === 'TBD' || match?.team2?.teamName === 'TBD') {
       return false;
+    }
+
+    // Use enhanced status that considers court sequencing
+    const enhancedStatus = getEnhancedMatchStatus(match, allMatches);
+
+    // Check enhanced status first
+    if (enhancedStatus === MatchStatus.RUNNING) {
+      return true;
     }
 
     // VIS API uses numeric status codes:
@@ -372,17 +380,25 @@ const TournamentDetailScreenContent: React.FC = () => {
 
     // Check for string status first (mapped values)
     if (typeof status === 'string') {
-      return status === 'RUNNING';
+      return status === MatchStatus.RUNNING;
     }
 
     // Check for numeric VIS status codes (3-8 = LIVE matches per user requirement)
     if (typeof status === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (status === 2 && canReadyToStartMatchGoLive(match, allMatches)) {
+        return true;
+      }
       return status >= 3 && status <= 8;
     }
 
     // Fallback: check raw VIS status field if available
     const rawStatus = match?.rawStatus || match?.visStatus;
     if (typeof rawStatus === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (rawStatus === 2 && canReadyToStartMatchGoLive(match, allMatches)) {
+        return true;
+      }
       return rawStatus >= 3 && rawStatus <= 8;
     }
 
@@ -408,14 +424,14 @@ const TournamentDetailScreenContent: React.FC = () => {
     matches.slice(0, 10).forEach(match => {
       const statusType = typeof match?.status;
       const rawStatus = match?.rawStatus || match?.visStatus || 'none';
-      console.log(`🔍 MATCH DEBUG: ${match.id} - Status: "${match?.status}" (${statusType}) - RawStatus: ${rawStatus} - Teams: ${match?.team1?.teamName} vs ${match?.team2?.teamName} - LIVE: ${isMatchLive(match)}`);
+      console.log(`🔍 MATCH DEBUG: ${match.id} - Status: "${match?.status}" (${statusType}) - RawStatus: ${rawStatus} - Teams: ${match?.team1?.teamName} vs ${match?.team2?.teamName} - LIVE: ${isMatchLive(match, matches)}`);
     });
 
     let targetMatchId: string | null = null;
     let scrollReason = '';
 
-    // Priority 1: Find any LIVE match using proper isMatchLive logic
-    const liveMatches = matches.filter(match => isMatchLive(match));
+    // Priority 1: Find any LIVE match using enhanced isMatchLive logic with court sequencing
+    const liveMatches = matches.filter(match => isMatchLive(match, matches));
     console.log('🔍 EXTERNAL AUTOSCROLL: Found', liveMatches.length, 'LIVE matches');
 
     if (liveMatches.length > 0) {

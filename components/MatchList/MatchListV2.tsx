@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
-import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '../../types/match-v2';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../../types/match-v2';
 import { MatchList, MatchCard } from '../entities/Match';
 import { useMatches, MatchesFilters } from '../../hooks/useMatches';
 import { MatchDTO } from '../../services/DualReadService';
@@ -1099,11 +1099,19 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Check if match is currently live - using VIS numeric status codes
+  // Check if match is currently live - using enhanced status with court sequencing logic
   const isMatchLive = (match: BeachMatchCore): boolean => {
     // Don't consider matches with placeholder teams as live
     if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
       return false;
+    }
+
+    // Use enhanced status that considers court sequencing
+    const enhancedStatus = getEnhancedMatchStatus(match, activeMatches);
+
+    // Check enhanced status first
+    if (enhancedStatus === MatchStatus.RUNNING) {
+      return true;
     }
 
     // VIS API uses numeric status codes:
@@ -1117,12 +1125,20 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // Check for numeric VIS status codes (3-8 = LIVE matches per user requirement)
     if (typeof status === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (status === 2 && canReadyToStartMatchGoLive(match, activeMatches)) {
+        return true;
+      }
       return status >= 3 && status <= 8;
     }
 
     // Fallback: check raw VIS status field if available from match data
     const rawStatus = (match as any)?.rawStatus || (match as any)?.visStatus;
     if (typeof rawStatus === 'number') {
+      // Include status 2 if it can transition to live based on court sequence
+      if (rawStatus === 2 && canReadyToStartMatchGoLive(match, activeMatches)) {
+        return true;
+      }
       return rawStatus >= 3 && rawStatus <= 8;
     }
 

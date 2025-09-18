@@ -31,6 +31,7 @@ export interface MatchCardProps {
   compact?: boolean;
   variant?: 'default' | 'referee' | 'live';
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
+  liveScoreRefresh?: number; // For triggering score age reset on live score updates
 }
 
 /**
@@ -42,6 +43,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onPress,
   variant = 'default',
   tournamentTimezone,
+  liveScoreRefresh,
 }) => {
   const router = useRouter();
   const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
@@ -91,14 +93,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }, [team1Score, team2Score, setScoresString, match.status, (match as any)?.rawStatus]);
 
-  // Reset score age when component re-renders due to live score refresh (every 5 seconds)
+  // Reset score age when live score refresh timer triggers (every 5 seconds)
   useEffect(() => {
-    if (isMatchLive(match)) {
-      console.log(`🔄 SCORE AGE RESET: Match ${match.id} - resetting to 0s due to fresh data`);
+    if (isMatchLive(match) && liveScoreRefresh !== undefined && liveScoreRefresh > 0) {
+      console.log(`🔄 SCORE AGE RESET: Match ${match.id} - resetting to 0s due to fresh data (refresh: ${liveScoreRefresh})`);
       setLastScoreUpdate(new Date());
       setScoreAge(0);
     }
-  }, [match]);
+  }, [liveScoreRefresh]);
 
   // Debug: Log when setScores change
   useEffect(() => {

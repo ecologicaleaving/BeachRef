@@ -1227,6 +1227,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           compact={false}
           variant={isMatchLive(match) ? 'live' : 'default'}
           tournamentTimezone={tournamentTimezone}
+          liveScoreRefresh={liveScoreRefresh}
         />
       </View>
     );

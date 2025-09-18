@@ -79,7 +79,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Track score age for LIVE matches
   const [scoreAge, setScoreAge] = useState<number>(0);
   const [lastScoreUpdate, setLastScoreUpdate] = useState<Date>(new Date());
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [forceRender, setForceRender] = useState<number>(0);
+
+  // Convert setScores array to string for proper dependency tracking
+  const setScoresString = match.result?.setScores ? JSON.stringify(match.result.setScores) : '';
 
   // Update score timestamp when scores change for LIVE matches
   useEffect(() => {
@@ -87,18 +90,33 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       setLastScoreUpdate(new Date());
       setScoreAge(0);
     }
-  }, [team1Score, team2Score, match.result?.setScores, match.status, (match as any)?.rawStatus]);
+  }, [team1Score, team2Score, setScoresString, match.status, (match as any)?.rawStatus]);
 
-  // Timer to update current time every 5 seconds for LIVE matches
+  // 5-second timer to force re-render and update score age for LIVE matches
   useEffect(() => {
     if (!isMatchLive(match)) return;
 
     const interval = setInterval(() => {
       const now = new Date();
-      setCurrentTime(now);
       const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
       setScoreAge(ageInSeconds);
+
+      // Force re-render every 5 seconds to pick up new live score data
+      setForceRender(prev => prev + 1);
     }, 5000);
+
+    return () => clearInterval(interval);
+  }, [lastScoreUpdate, match.status, (match as any)?.rawStatus]);
+
+  // 1-second timer for smooth score age counter
+  useEffect(() => {
+    if (!isMatchLive(match)) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
+      setScoreAge(ageInSeconds);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [lastScoreUpdate, match.status, (match as any)?.rawStatus]);

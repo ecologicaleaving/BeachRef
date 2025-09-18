@@ -768,7 +768,10 @@ const TournamentDetailScreenContent: React.FC = () => {
     statistics: liveScoreStats
   } = useLiveScores({
     matchNumbers,
-    autoStart: true // Auto-start polling when screen is focused
+    autoStart: true, // Auto-start polling when screen is focused
+    useAdaptivePolling: true, // Enable adaptive polling for different match statuses
+    staleTimeMs: 3000, // Cache stale time for running matches (3 seconds)
+    cacheTimeMs: 10000 // Cache time for frequently changing data (10 seconds)
   });
 
 

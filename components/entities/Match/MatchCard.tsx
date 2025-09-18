@@ -543,6 +543,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           {timeDisplay.userTime}
                         </Text>
                       )}
+                      {/* Debug: Show parsed status for LIVE match detection debugging */}
+                      <Text style={{fontSize: 10, color: '#666', fontFamily: 'monospace'}}>
+                        {typeof match.status === 'string' ? `"${match.status}"` : `#${match.status}`}
+                        {(match as any)?.rawStatus && ` (raw:${(match as any).rawStatus})`}
+                      </Text>
                     </>
                   );
                 })()}

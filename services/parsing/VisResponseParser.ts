@@ -311,6 +311,7 @@ export class VisResponseParser {
     }
 
     const statusStr = this.extractXmlAttribute(matchXml, 'Status') || '';
+    const rawStatus = statusStr ? (isNaN(parseInt(statusStr)) ? statusStr : parseInt(statusStr)) : undefined;
     const status = mapVisMatchStatus(statusStr);
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
@@ -387,6 +388,7 @@ export class VisResponseParser {
       roundName: roundName,
       phaseCode: this.extractXmlAttribute(matchXml, 'Phase'),
       status,
+      rawStatus, // Preserve original VIS status (numeric or string)
       court,
       scheduledDateTime,
       actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),

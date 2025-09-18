@@ -359,6 +359,36 @@ const TournamentDetailScreenContent: React.FC = () => {
 
 
 
+  // Helper function to check if match is LIVE using VIS numeric status codes
+  const isMatchLive = (match: any): boolean => {
+    // Don't consider matches with placeholder teams as live
+    if (match?.team1?.teamName === 'TBD' || match?.team2?.teamName === 'TBD') {
+      return false;
+    }
+
+    // VIS API uses numeric status codes:
+    // 1=Scheduled, 2=ReadyToStart, 3-11=InSet1-InSet5 (LIVE), 12+=Finished/Official
+    const status = match?.status;
+
+    // Check for string status first (mapped values)
+    if (typeof status === 'string') {
+      return status === 'RUNNING';
+    }
+
+    // Check for numeric VIS status codes (3-11 = in sets = LIVE)
+    if (typeof status === 'number') {
+      return status >= 3 && status <= 11;
+    }
+
+    // Fallback: check raw VIS status field if available
+    const rawStatus = match?.rawStatus || match?.visStatus;
+    if (typeof rawStatus === 'number') {
+      return rawStatus >= 3 && rawStatus <= 11;
+    }
+
+    return false;
+  };
+
   // Auto-scroll logic with priority: 1) LIVE matches, 2) Today's first match
   const attemptAutoScroll = (matches: any[], forceRetry: boolean = false) => {
     if (hasAutoScrolled.current || !scrollViewRef.current || matches.length === 0) {
@@ -374,11 +404,19 @@ const TournamentDetailScreenContent: React.FC = () => {
     console.log('🔍 EXTERNAL AUTOSCROLL: Attempting autoscroll with', matches.length, 'matches');
     console.log('🔍 EXTERNAL AUTOSCROLL: Available positions:', Object.keys(matchPositions.current).length);
 
+    // Debug: log all match statuses
+    matches.slice(0, 10).forEach(match => {
+      const statusType = typeof match?.status;
+      const rawStatus = match?.rawStatus || match?.visStatus || 'none';
+      console.log(`🔍 MATCH DEBUG: ${match.id} - Status: "${match?.status}" (${statusType}) - RawStatus: ${rawStatus} - Teams: ${match?.team1?.teamName} vs ${match?.team2?.teamName} - LIVE: ${isMatchLive(match)}`);
+    });
+
     let targetMatchId: string | null = null;
     let scrollReason = '';
 
-    // Priority 1: Find any LIVE match (simplified - no time checking)
-    const liveMatches = matches.filter(match => match?.status === 'LIVE' || match?.matchStatus === 'LIVE');
+    // Priority 1: Find any LIVE match using proper isMatchLive logic
+    const liveMatches = matches.filter(match => isMatchLive(match));
+    console.log('🔍 EXTERNAL AUTOSCROLL: Found', liveMatches.length, 'LIVE matches');
 
     if (liveMatches.length > 0) {
       targetMatchId = liveMatches[0].id;

@@ -1089,16 +1089,34 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
   };
 
-  // Check if match is currently live - using VIS API Status field
+  // Check if match is currently live - using VIS numeric status codes
   const isMatchLive = (match: BeachMatchCore): boolean => {
     // Don't consider matches with placeholder teams as live
     if (match.team1.teamName === 'TBD' || match.team2.teamName === 'TBD') {
       return false;
     }
 
-    // Primary method: Use VIS API Status field (most reliable)
-    // The VIS API provides accurate real-time status regardless of timezone
-    return match.status === MatchStatus.RUNNING;
+    // VIS API uses numeric status codes:
+    // 1=Scheduled, 2=ReadyToStart, 3-11=InSet1-InSet5 (LIVE), 12+=Finished/Official
+    const status = match.status;
+
+    // Check for string status first (mapped values)
+    if (typeof status === 'string') {
+      return status === MatchStatus.RUNNING;
+    }
+
+    // Check for numeric VIS status codes (3-11 = in sets = LIVE)
+    if (typeof status === 'number') {
+      return status >= 3 && status <= 11;
+    }
+
+    // Fallback: check raw VIS status field if available from match data
+    const rawStatus = (match as any)?.rawStatus || (match as any)?.visStatus;
+    if (typeof rawStatus === 'number') {
+      return rawStatus >= 3 && rawStatus <= 11;
+    }
+
+    return false;
   };
 
   // Get status display text and color

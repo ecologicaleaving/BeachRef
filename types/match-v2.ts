@@ -111,7 +111,10 @@ export interface BeachMatchCore extends VisEntity {
   
   /** Current match status */
   readonly status: MatchStatus;
-  
+
+  /** Raw VIS API status (preserved for LIVE detection) */
+  readonly rawStatus?: number | string;
+
   /** Court information */
   readonly court: CourtInfo;
   

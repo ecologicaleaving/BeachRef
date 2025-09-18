@@ -758,7 +758,20 @@ const TournamentDetailScreenContent: React.FC = () => {
       .filter(match => {
         // Only poll for matches that are likely to have live scores
         const status = match.status;
-        return status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED;
+        const rawStatus = match.rawStatus || match.status;
+
+        // Include RUNNING and SCHEDULED string statuses
+        if (status === MatchStatus.RUNNING || status === MatchStatus.SCHEDULED) {
+          return true;
+        }
+
+        // Include numeric status codes 1-8 (scheduled + all LIVE variations)
+        if (typeof rawStatus === 'number') {
+          return rawStatus >= 1 && rawStatus <= 8;
+        }
+
+        // Include any match that our enhanced logic considers LIVE
+        return isMatchLive(match, matches);
       })
       .map(m => toNumericMatchNo(m))
       .filter((v): v is number => v !== null);
@@ -789,6 +802,12 @@ const TournamentDetailScreenContent: React.FC = () => {
     staleTimeMs: 3000, // Cache stale time for running matches (3 seconds)
     cacheTimeMs: 10000 // Cache time for frequently changing data (10 seconds)
   });
+
+  // Debug: Log what match numbers are being polled
+  useEffect(() => {
+    console.log('🔍 LIVE POLLING: matchNumbers being polled:', matchNumbers.slice(0, 10));
+    console.log('🔍 LIVE POLLING: Total matches being polled:', matchNumbers.length);
+  }, [matchNumbers]);
 
 
 

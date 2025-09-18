@@ -78,7 +78,6 @@ export class AppStateManager {
   private initialize(): void {
     if (AppStateManager.isInitialized) return;
 
-    // console.log('Initializing AppStateManager');
 
     // Set up AppState listener
     this.appStateListener = this.handleAppStateChange.bind(this);
@@ -97,8 +96,6 @@ export class AppStateManager {
   private handleAppStateChange(nextAppState: AppStateStatus): void {
     const newLifecycleState = this.mapAppStateToLifecycle(nextAppState);
     
-    // console.log(`App state changed: ${AppState.currentState} → ${nextAppState}`);
-    // console.log(`Lifecycle state: ${this.currentState} → ${newLifecycleState}`);
 
     this.updateLifecycleState(newLifecycleState, `AppState: ${nextAppState}`);
   }
@@ -147,7 +144,6 @@ export class AppStateManager {
       this.stateHistory.shift();
     }
 
-    // console.log(`Lifecycle state updated: ${previousState} → ${newState} (${reason})`);
 
     // Handle state-specific actions
     this.handleLifecycleTransition(previousState, newState);
@@ -190,7 +186,6 @@ export class AppStateManager {
   private async handleEnterBackground(): Promise<void> {
     this.backgroundStartTime = Date.now();
     
-    // console.log('App entering background - preparing connections for suspension');
 
     // Schedule background sync if enabled
     if (this.suspensionConfig.enableBackgroundSync) {
@@ -205,7 +200,6 @@ export class AppStateManager {
    * Handle returning to foreground state
    */
   private async handleEnterForeground(): Promise<void> {
-    // console.log('App returning to foreground - restoring connections');
 
     // Clear background timers
     this.clearBackgroundTimers();
@@ -223,7 +217,6 @@ export class AppStateManager {
    * Handle inactive state (brief interruptions)
    */
   private handleInactiveState(): void {
-    // console.log('App inactive - maintaining connections but reducing activity');
     
     // Don't suspend immediately for inactive state, but prepare for potential background
     // This handles brief interruptions like incoming calls, notification center, etc.
@@ -238,7 +231,6 @@ export class AppStateManager {
       clearTimeout(this.backgroundTimer);
     }
 
-    // console.log(`Scheduling connection suspension in ${this.suspensionConfig.suspendAfterSeconds} seconds`);
 
     this.backgroundTimer = setTimeout(() => {
       this.suspendConnections();
@@ -268,7 +260,6 @@ export class AppStateManager {
       clearTimeout(this.cleanupTimer);
     }
 
-    // console.log(`Scheduling connection cleanup in ${this.suspensionConfig.cleanupAfterMinutes} minutes`);
 
     this.cleanupTimer = setTimeout(() => {
       this.cleanupIdleConnections();
@@ -279,7 +270,6 @@ export class AppStateManager {
    * Suspend non-critical connections
    */
   private async suspendConnections(): Promise<void> {
-    // console.log('Suspending non-critical connections for background mode');
 
     try {
       // Get all circuit breakers and suspend non-critical ones
@@ -291,7 +281,6 @@ export class AppStateManager {
       RealtimeFallbackService.stopAllPolling();
       suspendedCount++;
 
-      // console.log(`Suspended ${suspendedCount} of ${activeConnections} connections`);
 
       this.updateLifecycleState(AppLifecycleState.BACKGROUND_SUSPENDED, 'Connection suspension completed');
 
@@ -304,7 +293,6 @@ export class AppStateManager {
    * Resume suspended connections
    */
   private async resumeConnections(): Promise<void> {
-    // console.log('Resuming suspended connections for foreground mode');
 
     try {
       let resumedCount = 0;
@@ -318,7 +306,6 @@ export class AppStateManager {
       // Clear suspended connections
       this.suspendedConnections.clear();
 
-      // console.log(`Resumed ${resumedCount} connections`);
 
       // Force network quality reassessment
       await this.networkStateManager.forceQualityReassessment();
@@ -332,7 +319,6 @@ export class AppStateManager {
    * Optimize connections for background usage
    */
   private optimizeForBackground(): void {
-    // console.log('Optimizing connections for background usage');
 
     // Reduce polling frequencies
     // Disable non-essential features
@@ -343,7 +329,6 @@ export class AppStateManager {
    * Optimize connections for foreground usage
    */
   private optimizeForForeground(): void {
-    // console.log('Optimizing connections for foreground usage');
 
     // Restore normal polling frequencies
     // Enable all features
@@ -356,7 +341,6 @@ export class AppStateManager {
   private async performBackgroundSync(): Promise<void> {
     if (!this.suspensionConfig.enableBackgroundSync) return;
 
-    // console.log('Performing background sync for critical data');
 
     try {
       // This would typically sync critical data like live match scores
@@ -371,7 +355,6 @@ export class AppStateManager {
    * Cleanup idle connections after extended background time
    */
   private cleanupIdleConnections(): void {
-    // console.log('Cleaning up idle connections after extended background period');
 
     try {
       // Force cleanup of all resources
@@ -446,7 +429,6 @@ export class AppStateManager {
    */
   addCriticalConnection(connectionId: string): void {
     this.criticalConnections.add(connectionId);
-    // console.log(`Added critical connection: ${connectionId}`);
   }
 
   /**
@@ -454,7 +436,6 @@ export class AppStateManager {
    */
   removeCriticalConnection(connectionId: string): void {
     this.criticalConnections.delete(connectionId);
-    // console.log(`Removed critical connection: ${connectionId}`);
   }
 
   /**
@@ -462,7 +443,6 @@ export class AppStateManager {
    */
   updateSuspensionConfig(config: Partial<ConnectionSuspensionConfig>): void {
     this.suspensionConfig = { ...this.suspensionConfig, ...config };
-    // console.log('Updated suspension configuration:', this.suspensionConfig);
   }
 
   /**
@@ -551,7 +531,6 @@ export class AppStateManager {
    * Cleanup resources
    */
   cleanup(): void {
-    // console.log('Cleaning up AppStateManager');
 
     // Remove app state listener
     if (this.appStateListener) {

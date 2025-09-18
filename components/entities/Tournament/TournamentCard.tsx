@@ -37,7 +37,6 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
   // Log state changes
   useEffect(() => {
-    console.log(`🔄 STATE: isDefault changed to: ${isDefault} for tournament ${tournament.name}`);
   }, [isDefault]);
   const router = useRouter();
 
@@ -53,9 +52,7 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       // Listen for default tournament changes
       const removeListener = DefaultTournamentService.addListener((defaultTournament) => {
         const isThisDefault = defaultTournament?.visNo === tournament.visNo;
-        console.log(`🔄 STEP 5: Listener triggered. New default:`, defaultTournament?.visNo, `This tournament (${tournament.visNo}) is default:`, isThisDefault);
         setIsDefault(isThisDefault);
-        console.log(`🔄 STEP 6: Local state updated to:`, isThisDefault);
       });
 
       // Cleanup listener on unmount
@@ -181,28 +178,20 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
 
   // Handle default tournament toggle
   const handleToggleDefault = async (value: boolean) => {
-    console.log(`🔄 STEP 1: Switch clicked for ${tournament.name}, setting to: ${value}`);
     try {
       if (value) {
         // Setting as default
-        console.log(`🔄 STEP 2: Calling setDefaultTournament for ${tournament.name}`);
         try {
           const result = await DefaultTournamentService.setDefaultTournament(tournament);
-          console.log(`🔄 STEP 3: setDefaultTournament result:`, result);
           if (result.success) {
-            console.log(`🔄 STEP 4: Setting local state isDefault to true`);
             setIsDefault(true);
           } else {
-            console.log(`🔄 STEP 4 FAILED: Could not set default tournament:`, result.reason);
           }
         } catch (serviceError) {
-          console.log(`🔄 STEP 3 ERROR: Service call failed:`, serviceError);
         }
       } else {
         // Removing as default
-        console.log(`🔄 STEP 2: Calling clearDefaultTournament`);
         await DefaultTournamentService.clearDefaultTournament();
-        console.log(`🔄 STEP 3: Setting local state isDefault to false`);
         setIsDefault(false);
       }
     } catch (error) {
@@ -365,7 +354,6 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
       {/* Default tournament functionality */}
       {(() => {
         const shouldShow = showDefaultToggle && canBeDefault;
-        console.log(`🔄 STEP 7: Render check - showDefaultToggle: ${showDefaultToggle}, canBeDefault: ${canBeDefault}, shouldShow: ${shouldShow}, isDefault: ${isDefault}`);
         return shouldShow;
       })() && (
         <View style={styles.defaultToggle}>
@@ -373,7 +361,6 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
           <Switch
             value={isDefault}
             onValueChange={(newValue) => {
-              console.log(`🔄 SWITCH: Switch clicked! Current isDefault: ${isDefault}, New value: ${newValue}`);
               handleToggleDefault(newValue);
             }}
             trackColor={{ false: '#767577', true: colors.accent }}

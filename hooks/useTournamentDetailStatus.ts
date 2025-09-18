@@ -81,7 +81,6 @@ export const useTournamentDetailStatus = (
    * Handle tournament status events from subscription
    */
   const handleStatusEvents = useCallback((events: TournamentStatusEvent[]) => {
-    // console.log(`Received ${events.length} tournament detail status events for tournament ${tournament.No}`);
     
     setStatusEvents(prevEvents => {
       // Keep last 20 events for detail view
@@ -223,7 +222,6 @@ export const useTournamentDetailStatus = (
         batchDelay: 1000, // Faster updates for detail view
       };
 
-      // console.log(`Subscribing to tournament detail status for tournament ${tournament.No}`);
       
       const success = await TournamentStatusSubscriptionService.subscribeTournamentStatus(
         subscriptionConfig,
@@ -232,7 +230,6 @@ export const useTournamentDetailStatus = (
 
       if (success) {
         setSubscriptionActive(true);
-        // console.log('Tournament detail status subscription established successfully');
       } else {
         setSubscriptionActive(false);
         setError('Failed to establish tournament detail status subscription');
@@ -249,7 +246,6 @@ export const useTournamentDetailStatus = (
    * Cleanup subscription
    */
   const cleanupSubscription = useCallback(async () => {
-    // console.log('Cleaning up tournament detail status subscription');
     
     try {
       await TournamentStatusSubscriptionService.cleanup();
@@ -274,7 +270,6 @@ export const useTournamentDetailStatus = (
    */
   const refreshTournamentStatus = useCallback(async () => {
     try {
-      // console.log(`Manually refreshing tournament detail status for ${tournament.No}`);
       
       // Update sync status
       await TournamentStatusMonitor.updateSyncStatus(tournament.No, 'manual_refresh_detail');

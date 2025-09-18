@@ -133,7 +133,6 @@ export class ResourceOptimizationManager {
    * Initialize resource optimization
    */
   private async initialize(): Promise<void> {
-    // console.log('Initializing ResourceOptimizationManager');
 
     try {
       // Load saved configuration
@@ -150,7 +149,6 @@ export class ResourceOptimizationManager {
         this.handleAppStateChange(event.currentState);
       });
 
-      // console.log('ResourceOptimizationManager initialized successfully');
     } catch (error) {
       // console.error('Failed to initialize ResourceOptimizationManager:', error);
     }
@@ -160,7 +158,6 @@ export class ResourceOptimizationManager {
    * Assess device capabilities
    */
   async assessDeviceCapabilities(): Promise<DeviceProfile> {
-    // console.log('Assessing device capabilities');
 
     // In a real implementation, this would use device-specific APIs
     // For now, we'll make reasonable estimates
@@ -191,7 +188,6 @@ export class ResourceOptimizationManager {
     }
 
     this.deviceProfile = profile;
-    // console.log('Device profile assessed:', profile);
     
     return profile;
   }
@@ -367,7 +363,6 @@ export class ResourceOptimizationManager {
   private handleMemoryPressure(): void {
     if (!this.optimizationConfig.enableMemoryOptimization) return;
 
-    // console.log('Handling memory pressure');
     
     // Notify listeners
     this.memoryPressureListeners.forEach(listener => {
@@ -388,7 +383,6 @@ export class ResourceOptimizationManager {
   private handleLowBattery(): void {
     if (!this.optimizationConfig.enableBatteryOptimization) return;
 
-    // console.log('Handling low battery');
     
     // Enable aggressive optimization temporarily
     const wasAggressive = this.optimizationConfig.aggressiveOptimization;
@@ -425,7 +419,6 @@ export class ResourceOptimizationManager {
   private handleThermalThrottling(): void {
     if (!this.optimizationConfig.enableThermalProtection) return;
 
-    // console.log('Handling thermal throttling');
     
     // Reduce connection frequency
     // Suspend non-critical connections
@@ -469,7 +462,6 @@ export class ResourceOptimizationManager {
    * Optimize memory usage
    */
   private optimizeMemoryUsage(): void {
-    // console.log('Optimizing memory usage');
     
     // This would typically:
     // 1. Clear unused caches
@@ -482,7 +474,6 @@ export class ResourceOptimizationManager {
    * Optimize battery usage
    */
   private optimizeBatteryUsage(): void {
-    // console.log('Optimizing battery usage');
     
     // This would typically:
     // 1. Reduce connection frequency
@@ -495,7 +486,6 @@ export class ResourceOptimizationManager {
    * Optimize connection pooling
    */
   optimizeConnectionPooling(): void {
-    // console.log('Optimizing connection pooling');
     
     const metrics = this.currentMetrics;
     if (!metrics) return;
@@ -511,7 +501,6 @@ export class ResourceOptimizationManager {
    * Optimize for background usage
    */
   private optimizeForBackground(): void {
-    // console.log('Applying background optimizations');
     
     if (this.optimizationConfig.aggressiveOptimization) {
       // Aggressive background optimization
@@ -525,7 +514,6 @@ export class ResourceOptimizationManager {
    * Optimize for foreground usage
    */
   private optimizeForForeground(): void {
-    // console.log('Restoring foreground performance');
     
     // Restore normal operation parameters
     // Re-enable suspended features
@@ -606,7 +594,6 @@ export class ResourceOptimizationManager {
    */
   private async applyAutomaticOptimizations(recommendations: OptimizationRecommendation[]): Promise<void> {
     this.isOptimizing = true;
-    // console.log('Applying automatic optimizations');
 
     try {
       const autoApplicable = recommendations.filter(r => r.autoApplicable);
@@ -629,7 +616,6 @@ export class ResourceOptimizationManager {
       }
 
       this.lastOptimizationTime = Date.now();
-      // console.log(`Applied ${autoApplicable.length} automatic optimizations`);
 
     } catch (error) {
       // console.error('Failed to apply automatic optimizations:', error);
@@ -647,7 +633,6 @@ export class ResourceOptimizationManager {
       if (savedConfig) {
         const config = JSON.parse(savedConfig);
         this.optimizationConfig = { ...this.DEFAULT_CONFIG, ...config };
-        // console.log('Loaded optimization configuration');
       }
     } catch (error) {
       // console.error('Failed to load configuration:', error);
@@ -689,7 +674,6 @@ export class ResourceOptimizationManager {
   async updateConfiguration(config: Partial<OptimizationConfig>): Promise<void> {
     this.optimizationConfig = { ...this.optimizationConfig, ...config };
     await this.saveConfiguration();
-    // console.log('Updated optimization configuration:', config);
   }
 
   /**

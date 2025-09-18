@@ -41,12 +41,8 @@ export const createShadow = (config: ShadowConfig): ViewStyle => {
       }, ${shadowOpacity})`,
     } as ViewStyle,
     default: {
-      // Use native shadow properties for iOS/Android
+      // Use only elevation for native platforms to avoid shadow* warnings
       elevation,
-      shadowColor,
-      shadowOffset,
-      shadowOpacity,
-      shadowRadius,
     },
   }) as ViewStyle;
 };
@@ -69,10 +65,8 @@ export const createTextShadow = (config: TextShadowConfig): TextStyle => {
       textShadow: `${textShadowOffset.width}px ${textShadowOffset.height}px ${textShadowRadius}px ${textShadowColor}`,
     } as TextStyle,
     default: {
-      // Use native text shadow properties for iOS/Android
-      textShadowColor,
-      textShadowOffset,
-      textShadowRadius,
+      // For native platforms, disable text shadows to avoid warnings
+      // (Text shadows on mobile can affect performance)
     },
   }) as TextStyle;
 };

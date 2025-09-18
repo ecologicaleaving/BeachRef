@@ -106,11 +106,9 @@ const RefereeCard = ({
 
   const loadRefereeStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) {
-      console.log('Missing referee ID or tournament number:', { refereeId: referee?.RefereeId, tournamentNo });
       return;
     }
 
-    console.log(`Loading ${activeTab} stats for referee ${referee.RefereeId}`);
     setStatsLoading(true);
 
     try {
@@ -121,7 +119,6 @@ const RefereeCard = ({
       // Use the unified enhanced stats method (single API call)
       try {
         const enhancedStats = await Promise.race([RefereeStatsService.getEnhancedTournamentStats(referee.RefereeId, tournamentNo), timeout]);
-        console.log('Enhanced stats loaded:', enhancedStats);
 
         if (enhancedStats) {
           setCurrentStats(enhancedStats.stats);
@@ -347,7 +344,6 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
             RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
           })).filter(r => r.firstName?.trim() || r.lastName?.trim());
           setReferees(normalized);
-          console.log(`[RosterInit] referees=${normalized.length} withIDs=${normalized.filter(r=>/^\d{6}$/.test(r.RefereeId||'')).length}`);
           return normalized.length > 0;
         }
       }
@@ -360,7 +356,6 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
 
   const loadRefereesFromMatchList = async (): Promise<void> => {
     // Simplified version - can be expanded later if needed
-    console.log('Loading referees from match list (fallback)');
   };
 
   const parseRefereeXML = (xmlString: string): Referee[] => {

@@ -773,17 +773,14 @@ export class DualReadService {
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
-        console.log('🔍 Table check error:', countError.message);
         // Table might not exist, throw specific error
         throw new Error(`Table 'matches' does not exist or is inaccessible: ${countError.message}`);
       }
 
-      console.log(`✅ Table 'matches' exists with ${count} rows`);
 
       let query = this.supabase.from('matches').select('*');
 
       if (filters?.tournamentCode) {
-        console.log('🔍 Filtering database by tournament_code:', filters.tournamentCode);
         // Use existing schema field tournament_code (not tournament_no)
         query = query.eq('tournament_code', filters.tournamentCode);
       }
@@ -803,17 +800,6 @@ export class DualReadService {
       if (error) {
         throw new Error(`Database query failed: ${error.message}`);
       }
-
-      console.log('🔍 Database query result:', {
-        rowCount: data?.length || 0,
-        hasData: !!data,
-        firstRow: data?.[0] ? {
-          id: data[0].id,
-          tournament_code: data[0].tournament_code,
-          vis_match_no: data[0].vis_match_no,
-          status: data[0].status
-        } : null
-      });
 
       return data ? data.map(this.transformMatchFromDB) : [];
     } catch (error) {

@@ -242,7 +242,6 @@ export const useTouchFeedback = (
     try {
       // Audio feedback implementation would go here
       // For now, this is a placeholder
-      // console.log(`useTouchFeedback: Audio feedback - ${type} at volume ${config.audioVolume}`);
       
       // Performance tracking
       if (config.enablePerformanceTracking) {
@@ -315,7 +314,6 @@ export const useTouchFeedback = (
   const updateFeedbackConfig = useCallback((newConfig: Partial<TouchFeedbackConfig>) => {
     // This would update the configuration
     // For now, it's a placeholder since we're using immutable options
-    // console.log('useTouchFeedback: Configuration update requested', newConfig);
   }, []);
   
   // Performance metrics getter

@@ -104,8 +104,4 @@ export function generateContrastReport(
   const contrast = calculateContrast(foreground, background);
   const prefix = description ? `${description}: ` : '';
   
-  // console.log(`${prefix}${foreground} on ${background}`);
-  // console.log(`  Contrast Ratio: ${contrast.ratio}:1`);
-  // console.log(`  WCAG AA: ${contrast.wcagAA ? '✅' : '❌'}`);
-  // console.log(`  WCAG AAA: ${contrast.wcagAAA ? '✅' : '❌'}`);
 }

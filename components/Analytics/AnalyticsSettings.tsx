@@ -184,7 +184,6 @@ export function AnalyticsSettings({
         [{ text: 'OK', style: 'default' }]
       );
       
-      console.log('Exported settings:', settingsJson);
     } catch (error) {
       Alert.alert('Error', 'Failed to export settings');
     } finally {

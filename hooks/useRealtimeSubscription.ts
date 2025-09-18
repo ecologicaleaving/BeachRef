@@ -45,7 +45,6 @@ export const useRealtimeSubscription = (tournamentNo: string | null, enabled: bo
       }
 
       try {
-        // console.log(`Setting up real-time subscription for tournament: ${tournamentNo}`);
         const success = await RealtimeSubscriptionService.subscribeTournament(tournamentNo, true);
         
         if (isMounted) {
@@ -65,7 +64,6 @@ export const useRealtimeSubscription = (tournamentNo: string | null, enabled: bo
 
     const unsubscribe = async () => {
       if (tournamentNo) {
-        // console.log(`Cleaning up real-time subscription for tournament: ${tournamentNo}`);
         await RealtimeSubscriptionService.unsubscribeTournament(tournamentNo);
         if (isMounted) {
           setIsSubscribed(false);

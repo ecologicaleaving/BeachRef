@@ -1000,7 +1000,8 @@ const TournamentDetailScreenContent: React.FC = () => {
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
       // Get tournament details from API
-      const details = await visApi.getBeachTournamentDetails(tournament.visNo);
+      const response = await visApi.getBeachTournament({ TournamentNo: tournament.visNo });
+      const details = response.success ? response.data : null;
 
       if (details) {
         // SELECTIVE MERGE: Only merge safe display fields, preserve core tournament data

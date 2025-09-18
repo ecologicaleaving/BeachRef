@@ -11,7 +11,6 @@ const isSupabaseEnabled = supabaseUrl && supabaseAnonKey;
 if (!isSupabaseEnabled) {
   // console.warn('Supabase disabled - missing environment variables. Running in API-only mode.');
 } else {
-  // console.log('Supabase enabled with valid project configuration.');
 }
 
 // Type-safe Supabase client with React Native optimizations

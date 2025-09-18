@@ -131,14 +131,11 @@ const MatchResultsScreenContent: React.FC = () => {
 
   const loadSelectedTournament = async () => {
     try {
-      // console.log('MatchResults: Loading selected tournament...');
       const tournament = await TournamentStorageService.getSelectedTournament();
       if (tournament) {
-        // console.log(`MatchResults: Found tournament ${tournament.No} - ${tournament.Name || tournament.Title}`);
         setSelectedTournament(tournament.No); // Fixed: Use capital N
         await loadMatchResults(true);
       } else {
-        // console.log('MatchResults: No tournament selected');
         setError('No tournament selected. Please select a tournament first.');
         setLoading(false);
       }
@@ -151,7 +148,6 @@ const MatchResultsScreenContent: React.FC = () => {
 
   const loadMatchResults = async (showLoading = true) => {
     if (!selectedTournament) {
-      // console.log('MatchResults: No tournament selected');
       if (showLoading) {
         setLoading(false);
       }
@@ -160,23 +156,18 @@ const MatchResultsScreenContent: React.FC = () => {
 
     try {
       if (showLoading) {
-        // console.log('MatchResults: Setting loading to true');
         setLoading(true);
       }
       setError(null);
 
-      // console.log(`MatchResults: Loading match results for tournament ${selectedTournament}`);
       // Force refresh to ensure updated status processing takes effect
       const results = await MatchResultsService.getMatchResults(selectedTournament, true);
-      // console.log(`MatchResults: Loaded ${results.live.length} live matches, ${results.completed.length} completed matches`);
       
       // Check if we got sample data (for debugging)
       if (results.live.some(match => match.no === 'M001') || results.completed.some(match => match.no === 'M002')) {
-        // console.log('MatchResults: Using sample/fallback data due to network issues');
       }
       
       setMatchResults(results);
-      // console.log('MatchResults: Match results set successfully');
     } catch (error) {
       // console.error('MatchResults: Failed to load match results:', error);
       // console.error('MatchResults: Error details:', error instanceof Error ? error.message : String(error));
@@ -186,7 +177,6 @@ const MatchResultsScreenContent: React.FC = () => {
         setError('Network connection interrupted. Trying again...');
         // Retry once after a short delay
         setTimeout(() => {
-          // console.log('MatchResults: Retrying after network error...');
           loadMatchResults(false);
         }, 2000);
         return; // Don't set loading to false yet, retry is coming
@@ -195,7 +185,6 @@ const MatchResultsScreenContent: React.FC = () => {
       }
     } finally {
       if (showLoading) {
-        // console.log('MatchResults: Setting loading to false');
         setLoading(false);
       }
     }
@@ -255,13 +244,10 @@ const MatchResultsScreenContent: React.FC = () => {
 
   const renderLiveMatchesSection = () => {
     const liveMatches = filterAndSortMatches(matchResults.live || []);
-    // console.log(`MatchResults: renderLiveMatchesSection called with ${liveMatches.length} live matches`);
     if (liveMatches.length === 0) {
-      // console.log('MatchResults: No live matches, returning null');
       return null;
     }
 
-    // console.log('MatchResults: Rendering live matches section');
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -272,7 +258,6 @@ const MatchResultsScreenContent: React.FC = () => {
           </View>
         </View>
         {liveMatches.map((match) => {
-          // console.log(`MatchResults: Rendering live match ${match.no}: ${match.teamAName} vs ${match.teamBName}`);
           const isCurrentAssignment = isCurrentAssignmentMatch(match);
           return (
             <View key={match.no} style={isCurrentAssignment ? styles.currentAssignmentMatch : null}>
@@ -297,18 +282,14 @@ const MatchResultsScreenContent: React.FC = () => {
 
   const renderCompletedMatchesSection = () => {
     const completedMatches = filterAndSortMatches(matchResults.completed || []);
-    // console.log(`MatchResults: renderCompletedMatchesSection called with ${completedMatches.length} completed matches`);
     if (completedMatches.length === 0) {
-      // console.log('MatchResults: No completed matches, returning null');
       return null;
     }
 
-    // console.log('MatchResults: Rendering completed matches section');
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Completed Matches</Text>
         {completedMatches.map((match) => {
-          // console.log(`MatchResults: Rendering completed match ${match.no}: ${match.teamAName} vs ${match.teamBName}`);
           const isCurrentAssignment = isCurrentAssignmentMatch(match);
           return (
             <View key={match.no} style={isCurrentAssignment ? styles.currentAssignmentMatch : null}>
@@ -426,7 +407,6 @@ const MatchResultsScreenContent: React.FC = () => {
   }, [genderFilter, sortOrder]);
 
   // Debug match results structure
-  // console.log('MatchResults: Match results structure:', {
   //   live: matchResults.live,
   //   liveLength: matchResults.live?.length,
   //   completed: matchResults.completed,
@@ -441,7 +421,6 @@ const MatchResultsScreenContent: React.FC = () => {
     (matchResults.scheduled?.length || 0) > 0;
 
   // Debug current state
-  // console.log('MatchResults: Current render state:', {
   //   loading,
   //   refreshing,
   //   selectedTournament,
@@ -544,16 +523,12 @@ const MatchResultsScreenContent: React.FC = () => {
         )}
         
         {(() => {
-          // console.log('MatchResults: Making render decision:', { error, hasAnyMatches });
           
           if (error && !hasAnyMatches) {
-            // console.log('MatchResults: Rendering error state');
             return renderErrorState();
           } else if (!hasAnyMatches) {
-            // console.log('MatchResults: Rendering empty state');
             return renderEmptyState();
           } else {
-            // console.log('MatchResults: Rendering match sections');
             return (
               <>
                 {renderLiveMatchesSection()}

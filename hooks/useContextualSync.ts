@@ -50,7 +50,6 @@ export function useContextualSync(options: ContextualSyncOptions) {
         timestamp: new Date().toISOString()
       };
 
-      console.log('🔄 Triggering contextual sync for:', syncPayload);
 
       // Call the contextual-vis-sync Edge Function with user context
       const { data, error } = await supabase.functions.invoke('contextual-vis-sync', {
@@ -75,7 +74,6 @@ export function useContextualSync(options: ContextualSyncOptions) {
         error: null
       });
 
-      console.log('✅ Contextual sync completed:', data);
       return data;
 
     } catch (error) {
@@ -96,7 +94,6 @@ export function useContextualSync(options: ContextualSyncOptions) {
 
     // Trigger initial sync when context changes
     if (options.tournamentCode || options.refereeId || options.matchId) {
-      console.log('📱 Context changed, triggering auto-sync...');
       triggerSync().catch(console.error);
     }
   }, [options.tournamentCode, options.refereeId, options.matchId, options.enableAutoSync, triggerSync]);
@@ -109,7 +106,6 @@ export function useContextualSync(options: ContextualSyncOptions) {
       const syncIntervalMs = (options.syncInterval || 10) * 60 * 1000; // Default 10 minutes
       
       if (timeSinceLastSync > syncIntervalMs) {
-        console.log('📱 App focused, triggering refresh sync...');
         triggerSync().catch(console.error);
       }
     }

@@ -40,12 +40,10 @@ export class NetworkMonitor {
 
         // Only notify if state changed
         if (wasConnected !== this._isConnected) {
-          // console.log(`Network status changed: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
           this.notifyListeners();
         }
       });
 
-      // console.log(`NetworkMonitor initialized. Initial state: ${this._isConnected ? 'ONLINE' : 'OFFLINE'}`);
     } catch (error) {
       // console.error('Failed to initialize NetworkMonitor:', error);
       // Default to connected on error

@@ -74,7 +74,6 @@ export const useAssignmentPreparation = () => {
         try {
           // In a real implementation, this would sync with API
           await new Promise(resolve => setTimeout(resolve, 100));
-          // console.log('Synced offline item:', item.type, item.timestamp);
         } catch (error) {
           // console.error('Failed to sync item:', error);
         }

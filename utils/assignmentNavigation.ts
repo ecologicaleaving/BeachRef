@@ -87,7 +87,6 @@ export class AssignmentNavigationHelper {
 
     // For now, we'll use a modal approach rather than navigation
     // This would typically open the AssignmentStatusManager modal
-    // console.log('Opening assignment management modal for:', assignment.id);
   }
 
   // Navigate to My Assignments with specific filters

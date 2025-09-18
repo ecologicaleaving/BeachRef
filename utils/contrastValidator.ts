@@ -182,7 +182,6 @@ export function validateContrastOrFail(): void {
     );
   }
   
-  // console.log('✅ WCAG AAA Contrast Validation: All critical combinations passed');
   
   if (report.warnings.length > 0) {
     // console.warn(`⚠️  ${report.warnings.length} combinations meet WCAG AA but not AAA standards`);
@@ -198,14 +197,6 @@ export function checkCombination(
 ): void {
   const result = validateColorCombination(foreground, background);
   
-  // console.log(`\n=== Color Combination Check ===`);
-  // console.log(`Foreground: ${foreground} (${result.foreground})`);
-  // console.log(`Background: ${background} (${result.background})`);
-  // console.log(`Contrast Ratio: ${result.ratio}:1`);
-  // console.log(`WCAG AA (4.5:1): ${result.wcagAA ? '✅' : '❌'}`);
-  // console.log(`WCAG AAA (7:1): ${result.wcagAAA ? '✅' : '❌'}`);
-  // console.log(`Status: ${result.level}`);
-  // console.log(`================================\n`);
 }
 
 /**
@@ -214,17 +205,14 @@ export function checkCombination(
 export function checkMultipleCombinations(
   combinations: Array<{ fg: keyof typeof colors; bg: keyof typeof colors; desc?: string }>
 ): void {
-  // console.log('\n=== Batch Color Combination Check ===\n');
   
   combinations.forEach((combo, index) => {
     const result = validateColorCombination(combo.fg, combo.bg);
     const status = result.wcagAAA ? '✅ AAA' : result.wcagAA ? '⚠️  AA' : '❌ FAIL';
     
-    // console.log(
     //   `${index + 1}. ${combo.desc || `${combo.fg} on ${combo.bg}`}: ` +
     //   `${result.ratio}:1 ${status}`
     // );
   });
   
-  // console.log('\n======================================\n');
 }

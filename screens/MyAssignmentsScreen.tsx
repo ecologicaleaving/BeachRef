@@ -192,7 +192,6 @@ const MyAssignmentsScreenContent: React.FC = () => {
         showRefreshButton={false}
         onRefresh={() => {
           refreshAssignments();
-          // console.log('🏐 Refreshing assignments...');
         }}
         onStatusPress={() => {
           if (currentAssignmentStatus) {

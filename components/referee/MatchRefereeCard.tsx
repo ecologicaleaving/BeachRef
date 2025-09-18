@@ -17,7 +17,6 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
     const rawMatch = (match as any).rawMatch;
     if (!rawMatch) return { setScores: '', setResult: '', totalDuration: '' };
 
-    console.log('Raw match data for results:', rawMatch); // Debug log
 
     const set1A = rawMatch.PointsTeamASet1;
     const set1B = rawMatch.PointsTeamBSet1;
@@ -56,7 +55,6 @@ export const MatchRefereeCard: React.FC<MatchRefereeCardProps> = ({ match, style
     // Calculate total match duration including intervals
     const totalDuration = calculateMatchDuration(rawMatch, totalSets);
 
-    console.log('Formatted results:', { setScores, setResult, totalDuration }); // Debug log
     return { setScores, setResult, totalDuration };
   };
 

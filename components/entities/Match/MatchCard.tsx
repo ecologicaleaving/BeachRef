@@ -98,42 +98,67 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     });
   };
   
-  // Format time display with timezone awareness
-  const formatTime = (dateTimeString: string): string => {
+  // Format time display - returns object with local and user times
+  const getTimeDisplay = (dateTimeString: string): { localTime: string; userTime: string | null } => {
     try {
       // Check if we have UTC timestamp available (from Phase 2 VIS API enhancement)
       const utcStart = (match as any).utc_start;
       if (utcStart) {
-        // Use timezone-aware formatter with UTC timestamp and user preference
-        return formatTimeWithTimezoneSync(utcStart, {
+        // Get local tournament time
+        const localTime = formatTimeWithTimezoneSync(utcStart, {
           tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: timezonePreference,
-          showTimezoneIndicator: true,
+          cachedPreference: 'local',
+          showTimezoneIndicator: false,
         });
+
+        // Get user's timezone time
+        const userTime = formatTimeWithTimezoneSync(utcStart, {
+          tournamentTimezone: tournamentTimezone || 'UTC',
+          cachedPreference: 'user',
+          showTimezoneIndicator: false,
+        });
+
+        // Return both times, userTime is null if same as local
+        return {
+          localTime,
+          userTime: localTime !== userTime ? userTime : null
+        };
       }
 
       // Fallback: try to use the provided dateTimeString with timezone awareness
       if (dateTimeString) {
-        return formatTimeWithTimezoneSync(dateTimeString, {
+        const localTime = formatTimeWithTimezoneSync(dateTimeString, {
           tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: timezonePreference,
-          showTimezoneIndicator: true,
+          cachedPreference: 'local',
+          showTimezoneIndicator: false,
         });
+
+        const userTime = formatTimeWithTimezoneSync(dateTimeString, {
+          tournamentTimezone: tournamentTimezone || 'UTC',
+          cachedPreference: 'user',
+          showTimezoneIndicator: false,
+        });
+
+        return {
+          localTime,
+          userTime: localTime !== userTime ? userTime : null
+        };
       }
 
-      return 'TBD';
+      return { localTime: 'TBD', userTime: null };
     } catch (error) {
       console.warn('Error formatting time in MatchCard:', error);
       // Ultimate fallback to legacy formatter
       try {
         const date = new Date(dateTimeString);
-        return date.toLocaleTimeString('en-US', {
+        const fallbackTime = date.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false
         });
+        return { localTime: fallbackTime, userTime: null };
       } catch {
-        return 'TBD';
+        return { localTime: 'TBD', userTime: null };
       }
     }
   };
@@ -476,9 +501,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
                 ) : 'TBD'}
               </Text>
-              <Text style={styles.matchTime}>
-                {match.scheduledDateTime ? formatTime(match.scheduledDateTime) : 'TBD'}
-              </Text>
+              <View style={styles.timeDisplayContainer}>
+                {(() => {
+                  const timeDisplay = match.scheduledDateTime ? getTimeDisplay(match.scheduledDateTime) : { localTime: 'TBD', userTime: null };
+                  return (
+                    <>
+                      <Text style={styles.matchTime}>
+                        {timeDisplay.localTime}
+                      </Text>
+                      {timeDisplay.userTime && (
+                        <Text style={styles.userTime}>
+                          {timeDisplay.userTime}
+                        </Text>
+                      )}
+                    </>
+                  );
+                })()}
+              </View>
             </View>
           </View>
 
@@ -832,11 +871,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#DC2626', // Red color
     marginRight: 6,
   },
+  timeDisplayContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   matchTime: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1B365D',
     textAlign: 'center',
+  },
+  userTime: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 1,
   },
   courtText: {
     fontSize: 14,

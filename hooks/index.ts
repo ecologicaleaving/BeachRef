@@ -251,7 +251,6 @@ export const HOOK_PERFORMANCE_GUIDELINES = {
  */
 export function trackHookUsage(hookName: string, component: string) {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`Hook usage: ${hookName} in ${component}`);
 
     if (HookMigrationHelper.isLegacyDataHook(hookName) ||
         HookMigrationHelper.isLegacyNetworkHook(hookName)) {

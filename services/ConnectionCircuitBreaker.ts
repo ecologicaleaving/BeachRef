@@ -86,7 +86,6 @@ export class ConnectionCircuitBreaker {
       }
     );
 
-    // console.log(`Circuit breaker initialized for service: ${serviceId}`, {
     //   networkType: this.stats.networkType,
     //   connectionQuality: this.stats.connectionQuality,
     // });
@@ -115,13 +114,11 @@ export class ConnectionCircuitBreaker {
 
     // Reset circuit when network significantly improves
     if (connectionQuality.score > oldQuality + 20 && this.stats.state === CircuitState.OPEN) {
-      // console.log(`Network quality improved significantly for ${this.serviceId}, considering reset`);
       this.resetStats();
     }
 
     // Network type changed - adjust thresholds
     if (oldNetworkType !== networkState.type) {
-      // console.log(`Network type changed for ${this.serviceId}: ${oldNetworkType} -> ${networkState.type}`);
     }
   }
 
@@ -171,7 +168,6 @@ export class ConnectionCircuitBreaker {
         break;
     }
 
-    // console.log(`Circuit breaker success for ${this.serviceId}:`, {
     //   consecutiveSuccesses: this.stats.consecutiveSuccesses,
     //   state: this.stats.state,
     // });
@@ -279,7 +275,6 @@ export class ConnectionCircuitBreaker {
     const oldState = this.stats.state;
     this.stats.state = newState;
 
-    // console.log(`Circuit breaker state change for ${this.serviceId}: ${oldState} -> ${newState}`);
 
     // Notify listeners
     this.stateChangeListeners.forEach(listener => {
@@ -342,7 +337,6 @@ export class ConnectionCircuitBreaker {
       }
     }, adaptiveTimeout);
 
-    // console.log(`Recovery attempt scheduled for ${this.serviceId}`, {
     //   baseTimeout: this.stats.recoveryTimeout,
     //   adaptiveTimeout,
     //   networkType: this.stats.networkType,
@@ -358,7 +352,6 @@ export class ConnectionCircuitBreaker {
       this.stats.recoveryTimeout * 2,
       this.config.maxTimeout
     );
-    // console.log(`Increased recovery timeout for ${this.serviceId} to ${this.stats.recoveryTimeout}ms`);
   }
 
   /**
@@ -366,7 +359,6 @@ export class ConnectionCircuitBreaker {
    */
   private resetRecoveryTimeout(): void {
     this.stats.recoveryTimeout = this.config.recoveryTimeout;
-    // console.log(`Reset recovery timeout for ${this.serviceId} to ${this.stats.recoveryTimeout}ms`);
   }
 
   /**

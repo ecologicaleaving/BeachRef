@@ -76,11 +76,9 @@ const RefereeCard = ({
 
   const loadRefereeStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) {
-      console.log('Missing referee ID or tournament number:', { refereeId: referee?.RefereeId, tournamentNo });
       return;
     }
     
-    console.log(`Loading ${activeTab} stats for referee ${referee.RefereeId}`);
     setStatsLoading(true);
     
     try {
@@ -92,24 +90,19 @@ const RefereeCard = ({
         case 'Current':
           const currentPromise = RefereeStatsService.getCurrentTournamentStats(referee.RefereeId, tournamentNo);
           const current = await Promise.race([currentPromise, timeout]);
-          console.log('Current stats loaded:', current);
           setCurrentStats(current);
           break;
         case 'Season':
           // Use current calendar year for season stats, not tournament year
           const currentYear = new Date().getFullYear();
           const seasonYear = currentYear.toString();
-          console.log('Loading season stats for year:', seasonYear, '(current year)');
           const seasonPromise = RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
           const season = await Promise.race([seasonPromise, timeout]);
-          console.log('Season stats loaded:', season);
           setSeasonStats(season);
           break;
         case 'Career':
-          console.log('Loading career stats');
           const careerPromise = RefereeStatsService.getCareerStats(referee.RefereeId);
           const career = await Promise.race([careerPromise, timeout]);
-          console.log('Career stats loaded:', career);
           setCareerStats(career);
           break;
       }
@@ -340,7 +333,6 @@ function TournamentRefScreenContent() {
             RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
           })).filter(r => r.firstName?.trim() || r.lastName?.trim());
           setReferees(normalized);
-          console.log(`[RosterInit] referees=${normalized.length} withIDs=${normalized.filter(r=>/^\d{6}$/.test(r.RefereeId||'')).length}`);
           return normalized.length > 0;
         }
       }
@@ -676,13 +668,11 @@ function TournamentRefScreenContent() {
           // First try exact match
           if (nameToNoRefereeMap.has(searchName)) {
             foundNoReferee = nameToNoRefereeMap.get(searchName)!;
-            console.log(`✅ Found exact match: "${referee.name}" -> ${foundNoReferee}`);
           } else {
             // Try partial matches (in case names don't match exactly)
             for (const [mapName, noRefereeId] of nameToNoRefereeMap.entries()) {
               if (mapName.includes(firstName.toLowerCase()) && mapName.includes(lastName.toLowerCase())) {
                 foundNoReferee = noRefereeId;
-                console.log(`✅ Found partial match: "${referee.name}" matches "${mapName}" -> ${foundNoReferee}`);
                 break;
               }
             }

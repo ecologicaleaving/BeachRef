@@ -41,7 +41,6 @@ export class TournamentStorageService {
     try {
       const tournamentData = JSON.stringify(tournament);
       await AsyncStorage.setItem(STORAGE_KEYS.SELECTED_TOURNAMENT, tournamentData);
-      // console.log('Tournament saved to storage:', tournament.No);
     } catch (error) {
       // console.error('Failed to save selected tournament:', error);
       throw new Error('Failed to save tournament selection');
@@ -59,7 +58,6 @@ export class TournamentStorageService {
       }
       
       const tournament = JSON.parse(tournamentData) as Tournament;
-      // console.log('Tournament loaded from storage:', tournament.No);
       return tournament;
     } catch (error) {
       // console.error('Failed to load selected tournament:', error);
@@ -73,7 +71,6 @@ export class TournamentStorageService {
   static async clearSelectedTournament(): Promise<void> {
     try {
       await AsyncStorage.removeItem(STORAGE_KEYS.SELECTED_TOURNAMENT);
-      // console.log('Tournament selection cleared from storage');
     } catch (error) {
       // console.error('Failed to clear selected tournament:', error);
       throw new Error('Failed to clear tournament selection');
@@ -100,7 +97,6 @@ export class TournamentStorageService {
     try {
       const preferencesData = JSON.stringify(preferences);
       await AsyncStorage.setItem(STORAGE_KEYS.USER_PREFERENCES, preferencesData);
-      // console.log('User preferences saved');
     } catch (error) {
       // console.error('Failed to save user preferences:', error);
       throw new Error('Failed to save user preferences');
@@ -156,7 +152,6 @@ export class TournamentStorageService {
     try {
       const key = `${STORAGE_KEYS.COURT_PREFERENCES}_${tournamentNo}`;
       await AsyncStorage.setItem(key, court);
-      // console.log(`Court preference saved for tournament ${tournamentNo}: ${court}`);
     } catch (error) {
       // console.error('Failed to save court preference:', error);
       throw new Error('Failed to save court preference');
@@ -436,7 +431,6 @@ export class TournamentStorageService {
         await AsyncStorage.multiRemove(keysToRemove);
       }
       
-      // console.log('All referee data cleared from storage');
     } catch (error) {
       // console.error('Failed to clear all data:', error);
       throw new Error('Failed to clear all data');

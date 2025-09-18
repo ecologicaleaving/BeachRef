@@ -93,7 +93,6 @@ export class RealtimeSubscriptionService {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    // console.log('Initializing Enhanced RealtimeSubscriptionService');
     
     // Initialize performance monitoring
     RealtimePerformanceMonitor.initialize();
@@ -103,7 +102,6 @@ export class RealtimeSubscriptionService {
     
     // Set up app state change monitoring for battery optimization
     this.appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
-      // console.log(`App state changed to: ${nextAppState}`);
       this.handleAppStateChange(nextAppState);
     });
     
@@ -153,7 +151,6 @@ export class RealtimeSubscriptionService {
    */
   private static setConnectionState(state: ConnectionState, error?: string): void {
     if (this.connectionState !== state) {
-      // console.log(`Connection state changed: ${this.connectionState} -> ${state}${error ? ` (${error})` : ''}`);
       this.connectionState = state;
       
       // Notify all listeners
@@ -172,10 +169,8 @@ export class RealtimeSubscriptionService {
    */
   private static handleAppStateChange(nextAppState: string): void {
     if (nextAppState === 'background') {
-      // console.log('App went to background - pausing real-time subscriptions');
       this.pauseAllSubscriptions();
     } else if (nextAppState === 'active') {
-      // console.log('App became active - resuming real-time subscriptions');
       this.resumeAllSubscriptions();
     }
   }
@@ -187,7 +182,6 @@ export class RealtimeSubscriptionService {
     for (const [tournamentNo, subscription] of this.activeSubscriptions) {
       try {
         subscription.unsubscribe();
-        // console.log(`Paused subscription for tournament ${tournamentNo}`);
       } catch (error) {
         // console.error(`Error pausing subscription for tournament ${tournamentNo}:`, error);
       }
@@ -218,7 +212,6 @@ export class RealtimeSubscriptionService {
 
     // Check if we already have a subscription for this tournament
     if (this.activeSubscriptions.has(tournamentNo)) {
-      // console.log(`Real-time subscription already active for tournament ${tournamentNo}`);
       return true;
     }
 
@@ -242,7 +235,6 @@ export class RealtimeSubscriptionService {
 
     const liveMatches = matches.filter(match => this.isLiveMatch(match));
     if (liveMatches.length === 0) {
-      // console.log('No live matches found, skipping real-time subscription');
       return;
     }
 
@@ -282,7 +274,6 @@ export class RealtimeSubscriptionService {
     this.setConnectionState(ConnectionState.CONNECTING);
 
     try {
-      // console.log(`Establishing real-time subscription for tournament ${tournamentNo}${liveMatchesOnly ? ' (live matches only)' : ''}`);
       
       // Build filter for live matches if requested
       const filter = liveMatchesOnly 
@@ -301,7 +292,6 @@ export class RealtimeSubscriptionService {
             filter: filter
           },
           (payload) => {
-            // console.log('Live match update received:', payload);
             
             // Track message for performance monitoring
             const messageSize = JSON.stringify(payload).length;
@@ -311,7 +301,6 @@ export class RealtimeSubscriptionService {
           }
         )
         .subscribe((status) => {
-          // console.log(`Real-time subscription status for tournament ${tournamentNo}:`, status);
           
           if (status === 'SUBSCRIBED') {
             this.setConnectionState(ConnectionState.CONNECTED);
@@ -332,7 +321,6 @@ export class RealtimeSubscriptionService {
         });
 
       this.activeSubscriptions.set(tournamentNo, subscription);
-      // console.log(`Real-time subscription established for tournament ${tournamentNo}`);
       
       return true;
 
@@ -346,7 +334,6 @@ export class RealtimeSubscriptionService {
       // Check if we should use fallback
       const recommendation = circuitBreaker.getRecommendation();
       if (recommendation.fallbackSuggested) {
-        // console.log(`Activating fallback for tournament ${tournamentNo} due to connection failure`);
         return this.activateFallback(tournamentNo, liveMatchesOnly);
       }
       
@@ -377,7 +364,6 @@ export class RealtimeSubscriptionService {
 
     this.setConnectionState(ConnectionState.RECONNECTING);
     
-    // console.log(`Scheduling reconnection for tournament ${tournamentNo} in ${config.retryDelay}ms (attempts remaining: ${config.maxRetries})`);
     
     const timeout = setTimeout(() => {
       this.reconnectTournament(tournamentNo);
@@ -398,7 +384,6 @@ export class RealtimeSubscriptionService {
    * Reconnect to tournament subscription
    */
   private static async reconnectTournament(tournamentNo: string): Promise<void> {
-    // console.log(`Attempting to reconnect tournament ${tournamentNo}`);
     
     // Remove existing subscription if any
     await this.unsubscribeTournament(tournamentNo);
@@ -416,7 +401,6 @@ export class RealtimeSubscriptionService {
   static async unsubscribeTournament(tournamentNo: string): Promise<void> {
     const subscription = this.activeSubscriptions.get(tournamentNo);
     if (!subscription) {
-      // console.log(`No active subscription found for tournament ${tournamentNo}`);
       return;
     }
 
@@ -432,7 +416,6 @@ export class RealtimeSubscriptionService {
       this.activeSubscriptions.delete(tournamentNo);
       this.subscriptionConfigs.delete(tournamentNo);
       
-      // console.log(`Real-time subscription removed for tournament ${tournamentNo}`);
       
       // Update connection state if no more active subscriptions
       if (this.activeSubscriptions.size === 0) {
@@ -447,7 +430,6 @@ export class RealtimeSubscriptionService {
    * Clean up all active subscriptions (call when app is unmounting or pausing)
    */
   static async cleanup(): Promise<void> {
-    // console.log(`Cleaning up ${this.activeSubscriptions.size} active real-time subscriptions`);
     
     // Clear all timeouts
     for (const timeout of this.reconnectTimeouts.values()) {
@@ -486,7 +468,6 @@ export class RealtimeSubscriptionService {
     this.setConnectionState(ConnectionState.DISCONNECTED);
     this.isInitialized = false;
     
-    // console.log('All real-time subscriptions cleaned up');
   }
 
   /**
@@ -529,14 +510,12 @@ export class RealtimeSubscriptionService {
   private static async handleMatchUpdate(payload: any): Promise<void> {
     try {
       const updatedMatch = payload.new;
-      // console.log(`Match update for match ${updatedMatch.no_in_tournament}: Status=${updatedMatch.status}`);
       
       // Clear relevant cache entries to force fresh data on next request
       await this.invalidateMatchCache(updatedMatch.tournament_no);
       
       // Check if match is no longer live - if so, we can remove the subscription
       if (!this.isLiveMatchStatus(updatedMatch.status)) {
-        // console.log(`Match ${updatedMatch.no_in_tournament} is no longer live, checking if tournament subscription should be removed`);
         this.checkTournamentSubscriptionNeeded(updatedMatch.tournament_no);
       }
     } catch (error) {
@@ -550,7 +529,6 @@ export class RealtimeSubscriptionService {
   private static async invalidateMatchCache(tournamentNo: string): Promise<void> {
     try {
       await CacheService.invalidateMatchCache(tournamentNo);
-      // console.log(`Successfully invalidated cache for tournament ${tournamentNo} due to live update`);
     } catch (error) {
       // console.error(`Failed to invalidate cache for tournament ${tournamentNo}:`, error);
     }
@@ -562,7 +540,6 @@ export class RealtimeSubscriptionService {
   private static async checkTournamentSubscriptionNeeded(tournamentNo: string): Promise<void> {
     // This would check if the tournament still has live matches
     // If no live matches remain, we could remove the subscription
-    // console.log(`Checking if tournament ${tournamentNo} still needs real-time subscription`);
   }
 
   /**
@@ -600,7 +577,6 @@ export class RealtimeSubscriptionService {
    * Activate fallback polling for a tournament
    */
   private static async activateFallback(tournamentNo: string, liveMatchesOnly: boolean): Promise<boolean> {
-    // console.log(`Activating fallback polling for tournament ${tournamentNo}`);
     
     const hasLiveMatches = liveMatchesOnly;
     this.fallbackActive.set(tournamentNo, true);
@@ -615,7 +591,6 @@ export class RealtimeSubscriptionService {
     );
     
     if (success) {
-      // console.log(`Fallback polling activated for tournament ${tournamentNo}`);
       this.setConnectionState(ConnectionState.CONNECTED); // Show as connected via fallback
     } else {
       this.fallbackActive.set(tournamentNo, false);
@@ -630,7 +605,6 @@ export class RealtimeSubscriptionService {
    */
   private static deactivateFallback(tournamentNo: string): void {
     if (this.fallbackActive.get(tournamentNo)) {
-      // console.log(`Deactivating fallback polling for tournament ${tournamentNo}`);
       RealtimeFallbackService.stopPollingFallback(tournamentNo);
       this.fallbackActive.set(tournamentNo, false);
     }
@@ -641,7 +615,6 @@ export class RealtimeSubscriptionService {
    */
   private static async handleFallbackUpdate(tournamentNo: string, matches: BeachMatch[]): Promise<void> {
     try {
-      // console.log(`Fallback update received for tournament ${tournamentNo}: ${matches.length} matches`);
       
       // Trigger the same cache invalidation as real-time updates
       await this.invalidateMatchCache(tournamentNo);

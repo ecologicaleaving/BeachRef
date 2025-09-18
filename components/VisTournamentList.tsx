@@ -19,7 +19,6 @@ interface VisTournamentItemProps {
  * Handles the actual fields returned by FIVB VIS API
  */
 export const VisTournamentItem: React.FC<VisTournamentItemProps> = ({ tournament, onPress }) => {
-  // console.log('🏐 VisTournamentItem rendering tournament:', tournament.name || tournament.No);
   
   const formatDate = (dateStr?: string, includeYear = true) => {
     if (!dateStr) return '';
@@ -305,7 +304,6 @@ const VisTournamentList: React.FC<VisTournamentListProps> = ({
   error = null,
   onRetry 
 }) => {
-  // console.log('🏐 VisTournamentList rendering with', tournaments.length, 'tournaments');
 
   if (loading) {
     return (

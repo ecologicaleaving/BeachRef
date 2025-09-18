@@ -112,7 +112,8 @@
       "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/.bmad-core/**)",
       "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/**)",
       "Bash(del debug-timezone.js test-fix.js debug-italian.js)",
-      "Bash(del test-timezone-fix.js)"
+      "Bash(del test-timezone-fix.js)",
+      "Bash(start \"http://localhost:8082\")"
     ],
     "deny": [],
     "ask": [],

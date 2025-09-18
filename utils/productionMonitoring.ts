@@ -268,7 +268,6 @@ ${this.getNextSteps()}
     if (!this.isProduction) {
       console.group('🚀 Production Monitoring Metrics');
       Object.values(this.metrics).forEach(kpi => {
-        // console.log(`${this.getStatusEmoji(kpi.status)} ${kpi.name}: ${kpi.current} ${kpi.unit} (target: ${kpi.target} ${kpi.unit})`);
       });
       console.groupEnd();
     }

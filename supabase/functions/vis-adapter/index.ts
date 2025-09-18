@@ -1,5 +1,7 @@
 import { serve } from 'std/http/server.ts';
 import { VisClient } from './vis-client.ts';
+import { VISApiTimezoneEnhancer, MatchTimeFields, TournamentTimezoneContext } from './timezone-processor.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.54.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +26,13 @@ interface MatchDTO {
   scheduledDateTime: string;
   actualStartTime?: string;
   actualEndTime?: string;
+  // Enhanced timezone fields from Phase 2
+  utcStart?: string;
+  utcEnd?: string;
+  timezone?: string;
+  timezoneOffset?: string;
+  timezoneSource?: 'BeginDateTimeUtc' | 'UtcDateTime' | 'LocalDateTime' | 'fallback';
+  timezoneReliable?: boolean;
   team1: {
     teamNumber: 1;
     teamName: string;
@@ -81,6 +90,9 @@ interface TournamentDTO {
   countryCode?: string;
   location?: string;
   NoEvent?: string; // For referee API calls
+  // Enhanced timezone fields from Phase 2
+  defaultTimeZone?: string;
+  defaultLocalTimeOffset?: string;
 }
 
 // Referee DTO interface compatible with referee dashboard components
@@ -261,13 +273,16 @@ function parseVisTournamentEvent(eventXml: string): TournamentDTO | null {
     countryCode: getValue('CountryCode'),
     location: getValue('Location'),
     NoEvent: getValue('NoEvent'),
+    // Enhanced timezone fields from Phase 2
+    defaultTimeZone: getValue('DefaultTimeZone'),
+    defaultLocalTimeOffset: getValue('DefaultLocalTimeOffset'),
   };
 }
 
 /**
  * Map VIS GetBeachMatchList XML response to MatchDTO array
  */
-function parseVisMatchesXml(xmlResponse: string): MatchDTO[] {
+function parseVisMatchesXml(xmlResponse: string, tournamentDefaults?: TournamentTimezoneContext): MatchDTO[] {
   const matches: MatchDTO[] = [];
   
   try {
@@ -289,7 +304,7 @@ function parseVisMatchesXml(xmlResponse: string): MatchDTO[] {
 
     for (const matchXml of matchMatches) {
       try {
-        const match = parseVisMatchEvent(matchXml);
+        const match = parseVisMatchEvent(matchXml, tournamentDefaults);
         if (match) {
           matches.push(match);
         }
@@ -309,7 +324,7 @@ function parseVisMatchesXml(xmlResponse: string): MatchDTO[] {
 /**
  * Parse individual Match XML element to MatchDTO
  */
-function parseVisMatchEvent(matchXml: string): MatchDTO | null {
+function parseVisMatchEvent(matchXml: string, tournamentDefaults?: TournamentTimezoneContext): MatchDTO | null {
   const getValue = (tagName: string): string | undefined => {
     let regex = XML_TAG_REGEX_CACHE.get(tagName);
     if (!regex) {
@@ -498,6 +513,10 @@ function parseVisMatchEvent(matchXml: string): MatchDTO | null {
     }
   }
 
+  // Process timezone data using the enhanced processor
+  const timezoneEnhancer = new VISApiTimezoneEnhancer();
+  const timezoneResult = timezoneEnhancer.processMatchWithFallback(matchXml, tournamentDefaults);
+
   // Determine match importance
   const roundLower = round.toLowerCase();
   let importance: MatchDTO['importance'] = 'MEDIUM';
@@ -528,6 +547,13 @@ function parseVisMatchEvent(matchXml: string): MatchDTO | null {
     scheduledDateTime: utcDateTime || localDateTime || '',
     actualStartTime: status === 'RUNNING' || status === 'FINISHED' ? utcDateTime : undefined,
     actualEndTime: status === 'FINISHED' ? utcDateTime : undefined,
+    // Enhanced timezone fields from Phase 2
+    utcStart: timezoneResult.utcStart,
+    utcEnd: timezoneResult.utcEnd,
+    timezone: timezoneResult.timezone,
+    timezoneOffset: timezoneResult.offset,
+    timezoneSource: timezoneResult.timezoneSource,
+    timezoneReliable: timezoneResult.isReliable,
     team1: {
       teamNumber: 1,
       teamName: team1Name,
@@ -1112,8 +1138,8 @@ async function handleTournamentsRequest(req: Request, visClient: VisClient | nul
 
       console.log(`Cache miss for ${cacheKey} - fetching from VIS API`);
 
-      // Build VIS API request
-      let fields = 'No Code Name Country Gender Season Type StartDate EndDate';
+      // Build VIS API request with timezone fields
+      let fields = 'No Code Name Country Gender Season Type StartDate EndDate DefaultTimeZone DefaultLocalTimeOffset';
       if (season) {
         fields += ' Title City Location';
       }
@@ -1137,6 +1163,25 @@ async function handleTournamentsRequest(req: Request, visClient: VisClient | nul
 
       if (gender && gender !== 'MIXED') {
         tournaments = tournaments.filter(t => t.gender === gender);
+      }
+
+      // Store tournament timezone metadata to database (background operation)
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (tournaments.some(t => t.defaultTimeZone || t.defaultLocalTimeOffset)) {
+        storeTournamentTimezoneData(tournaments, supabaseUrl, supabaseKey)
+          .then(result => {
+            if (result.success > 0) {
+              console.log(`Background: Stored timezone metadata for ${result.success} tournaments`);
+            }
+            if (result.failed > 0) {
+              console.warn(`Background: Failed to store ${result.failed} tournaments: ${result.errors.join(', ')}`);
+            }
+          })
+          .catch(error => {
+            console.error('Background tournament timezone storage failed:', error);
+          });
       }
 
       // Cache the results
@@ -1294,14 +1339,15 @@ async function handleMatchesRequest(req: Request, visClient: VisClient | null): 
 
       console.log(`Cache miss for ${cacheKey} - fetching from VIS API`);
 
-      // Build VIS API request
-      const fields = 'No Code TournamentCode Court UTCDateTime LocalDateTime Team1 Team2 Sets Result Status Round Phase Referees';
+      // Build VIS API request with timezone fields
+      const fields = 'No Code TournamentCode Court UTCDateTime LocalDateTime BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalTimeOffset TimeZone Team1 Team2 Sets Result Status Round Phase Referees';
       const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}" TournamentCode="${tournamentCode}"${round ? ` Round="${round}"` : ''} />`;
 
       // Call VIS API
       const visResponse = await visClient.makeRequest(xmlRequest);
       
       // Parse VIS response to matches
+      // TODO: Get tournament defaults for timezone processing
       matches = parseVisMatchesXml(visResponse);
 
       // Apply additional filtering if needed
@@ -1310,6 +1356,25 @@ async function handleMatchesRequest(req: Request, visClient: VisClient | null): 
           match.round.toLowerCase().includes(round.toLowerCase()) ||
           match.phaseCode?.toLowerCase().includes(round.toLowerCase())
         );
+      }
+
+      // Store timezone data to database (background operation)
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (matches.some(m => m.utcStart || m.timezone)) {
+        storeMatchTimezoneData(matches, supabaseUrl, supabaseKey)
+          .then(result => {
+            if (result.success > 0) {
+              console.log(`Background: Stored timezone data for ${result.success} matches`);
+            }
+            if (result.failed > 0) {
+              console.warn(`Background: Failed to store ${result.failed} matches: ${result.errors.join(', ')}`);
+            }
+          })
+          .catch(error => {
+            console.error('Background timezone storage failed:', error);
+          });
       }
 
       // Cache the results with dynamic TTL
@@ -1761,6 +1826,162 @@ function invalidateRefereeCacheForAssignments(tournamentCode?: string): void {
   if (keysToInvalidate.length > 0) {
     console.log(`Invalidated ${keysToInvalidate.length} referee cache entries for assignment updates`);
   }
+}
+
+/**
+ * Store timezone-enhanced match data to database
+ * Integrates with Phase 1 database schema for UTC storage
+ */
+async function storeMatchTimezoneData(
+  matches: MatchDTO[],
+  supabaseUrl?: string,
+  supabaseKey?: string
+): Promise<{ success: number; failed: number; errors: string[] }> {
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase credentials not available for timezone data storage');
+    return { success: 0, failed: 0, errors: ['Missing Supabase credentials'] };
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  let success = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (const match of matches) {
+    try {
+      // Only store if we have timezone data
+      if (match.utcStart || match.timezone || match.timezoneOffset) {
+        const updateData: any = {
+          last_synced: new Date().toISOString(),
+        };
+
+        // Add UTC timestamps if available
+        if (match.utcStart) {
+          updateData.utc_start = match.utcStart;
+        }
+        if (match.utcEnd) {
+          updateData.utc_end = match.utcEnd;
+        }
+
+        // Add timezone metadata
+        if (match.timezoneSource) {
+          updateData.timezone_source = match.timezoneSource;
+        }
+        if (match.timezoneReliable !== undefined) {
+          updateData.timezone_accuracy = match.timezoneReliable ?
+            (match.timezoneSource === 'BeginDateTimeUtc' ? 'high' : 'medium') : 'low';
+          updateData.timezone_fallback_used = !match.timezoneReliable;
+        }
+
+        // Update or insert match record using visNo as identifier
+        const { error } = await supabase
+          .from('matches')
+          .upsert(
+            {
+              no: match.visNo, // Use VIS number as primary identifier
+              tournament_no: match.tournamentCode,
+              ...updateData,
+            },
+            {
+              onConflict: 'no', // Update based on match number
+              ignoreDuplicates: false
+            }
+          );
+
+        if (error) {
+          errors.push(`Match ${match.visNo}: ${error.message}`);
+          failed++;
+        } else {
+          success++;
+        }
+      }
+    } catch (error) {
+      errors.push(`Match ${match.visNo}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      failed++;
+    }
+  }
+
+  if (success > 0) {
+    console.log(`Successfully stored timezone data for ${success} matches`);
+  }
+  if (failed > 0) {
+    console.warn(`Failed to store timezone data for ${failed} matches:`, errors);
+  }
+
+  return { success, failed, errors };
+}
+
+/**
+ * Store tournament timezone metadata to database
+ */
+async function storeTournamentTimezoneData(
+  tournaments: TournamentDTO[],
+  supabaseUrl?: string,
+  supabaseKey?: string
+): Promise<{ success: number; failed: number; errors: string[] }> {
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase credentials not available for tournament timezone data storage');
+    return { success: 0, failed: 0, errors: ['Missing Supabase credentials'] };
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  let success = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (const tournament of tournaments) {
+    try {
+      // Only store if we have timezone data
+      if (tournament.defaultTimeZone || tournament.defaultLocalTimeOffset) {
+        const updateData: any = {
+          last_timezone_sync: new Date().toISOString(),
+        };
+
+        // Add timezone metadata
+        if (tournament.defaultTimeZone) {
+          updateData.detected_timezone = tournament.defaultTimeZone;
+          updateData.timezone = tournament.defaultTimeZone; // Also update main timezone field
+        }
+        if (tournament.defaultLocalTimeOffset) {
+          updateData.default_offset = tournament.defaultLocalTimeOffset;
+        }
+
+        // Update tournament record using visNo as identifier
+        const { error } = await supabase
+          .from('tournaments')
+          .upsert(
+            {
+              no: tournament.visNo, // Use VIS number as primary identifier
+              code: tournament.code,
+              ...updateData,
+            },
+            {
+              onConflict: 'no', // Update based on tournament number
+              ignoreDuplicates: false
+            }
+          );
+
+        if (error) {
+          errors.push(`Tournament ${tournament.visNo}: ${error.message}`);
+          failed++;
+        } else {
+          success++;
+        }
+      }
+    } catch (error) {
+      errors.push(`Tournament ${tournament.visNo}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      failed++;
+    }
+  }
+
+  if (success > 0) {
+    console.log(`Successfully stored timezone metadata for ${success} tournaments`);
+  }
+  if (failed > 0) {
+    console.warn(`Failed to store timezone metadata for ${failed} tournaments:`, errors);
+  }
+
+  return { success, failed, errors };
 }
 
 /**

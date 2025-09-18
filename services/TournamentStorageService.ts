@@ -18,6 +18,7 @@ export interface UserPreferences {
   notificationsEnabled: boolean;
   lastAppVersion?: string;
   onboardingCompleted: boolean;
+  timezoneDisplayMode?: 'user' | 'local'; // Phase 3: Timezone preference ('user' = My Time, 'local' = Local Time)
 }
 
 interface CachedTournamentDetails {

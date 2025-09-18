@@ -52,13 +52,13 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = React.memo(({
   const hasLiveData = sets && sets.length > 0;
 
   // Get set data for display
-  const getSetData = (): Array<{
+  const getSetData = (): {
     setNumber: number;
     teamAScore: number;
     teamBScore: number;
     status: BeachSetStatus | 'completed' | 'not-started';
     isActive: boolean;
-  }> => {
+  }[] => {
     if (hasLiveData) {
       // Use live data
       return sets!.map((set, index) => ({
@@ -70,13 +70,13 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = React.memo(({
       }));
     } else if (fallbackMatch) {
       // Use static match data
-      const setData: Array<{
+      const setData: {
         setNumber: number;
         teamAScore: number;
         teamBScore: number;
         status: 'completed' | 'not-started';
         isActive: boolean;
-      }> = [];
+      }[] = [];
 
       // Set 1
       if (fallbackMatch.PointsTeamASet1 || fallbackMatch.PointsTeamBSet1) {

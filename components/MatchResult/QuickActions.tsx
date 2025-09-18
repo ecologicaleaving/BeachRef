@@ -94,13 +94,13 @@ const QuickActions: React.FC<QuickActionsProps> = React.memo(({
     onClose();
   };
 
-  const quickActions: Array<{
+  const quickActions: {
     type: SpecialResult;
     label: string;
     icon: keyof typeof ActionIcons;
     color: string;
     description: string;
-  }> = [
+  }[] = [
     {
       type: 'forfeit',
       label: 'Forfeit',

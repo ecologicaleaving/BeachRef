@@ -405,7 +405,7 @@ function AllRefereesScreenContent() {
     }
   };
 
-  const getRecentTournaments = async (year: number): Promise<Array<{visNo: string, name: string}>> => {
+  const getRecentTournaments = async (year: number): Promise<{visNo: string, name: string}[]> => {
     try {
       // Get tournaments from current year
       const xml = `<Requests>
@@ -426,7 +426,7 @@ function AllRefereesScreenContent() {
 
       if (response.ok) {
         const xmlResponse = await response.text();
-        const tournaments: Array<{visNo: string, name: string, startDate: string}> = [];
+        const tournaments: {visNo: string, name: string, startDate: string}[] = [];
         
         // Parse tournaments from XML
         const eventRegex = /<Event[^>]*>/g;

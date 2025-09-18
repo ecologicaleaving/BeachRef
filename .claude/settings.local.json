@@ -106,7 +106,13 @@
       "Bash(start \"http://localhost:8084\")",
       "Bash(npx --yes @expo/cli@latest start --web --port 8098)",
       "Bash(curl:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(del \"C:\\Users\\KreshOS\\Documents\\00-Progetti\\vistest\\utils\\timezoneUtils.ts\")",
+      "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/.bmad-core/tasks/**)",
+      "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/.bmad-core/**)",
+      "Read(//c/Users/KreshOS/Documents/00-Progetti/VisTest/**)",
+      "Bash(del debug-timezone.js test-fix.js debug-italian.js)",
+      "Bash(del test-timezone-fix.js)"
     ],
     "deny": [],
     "ask": [],

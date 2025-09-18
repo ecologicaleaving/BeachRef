@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { H1Text, H2Text, BodyText, CaptionText } from './Typography';
-import { TournamentCore } from '../types/tournament-v2';
-import { TournamentType } from '../types/tournament-v2';
+import { TournamentCore , TournamentType } from '../types/tournament-v2';
+
 import { testSupabaseConnection } from '../services/supabase';
 import { useTournaments } from '../hooks/useTournaments';
 import { NetworkStatus, OfflineBanner, OfflineBadge } from './offline';

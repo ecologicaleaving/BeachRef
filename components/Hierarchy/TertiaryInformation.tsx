@@ -162,9 +162,9 @@ export const TournamentStatistics: React.FC<StatisticsProps> = ({
 // Administrative Details with Expandable Sections
 interface AdminDetailsProps {
   regulations?: string[];
-  contacts?: Array<{ name: string; role: string; phone?: string; email?: string }>;
-  procedures?: Array<{ title: string; description: string }>;
-  updates?: Array<{ time: string; message: string }>;
+  contacts?: { name: string; role: string; phone?: string; email?: string }[];
+  procedures?: { title: string; description: string }[];
+  updates?: { time: string; message: string }[];
   collapsed?: boolean;
 }
 

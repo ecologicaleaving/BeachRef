@@ -12,6 +12,7 @@ import {
   Pressable,
   Switch,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Icon } from '../components/Icons/MaterialCommunityIcons';

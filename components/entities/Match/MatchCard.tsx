@@ -92,30 +92,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }, [team1Score, team2Score, setScoresString, match.status, (match as any)?.rawStatus]);
 
-  // 5-second timer to force re-render and update score age for LIVE matches
+  // Combined timer: 5-second re-render + 1-second score age update for LIVE matches
   useEffect(() => {
     if (!isMatchLive(match)) return;
 
+    let secondCounter = 0;
     const interval = setInterval(() => {
       const now = new Date();
       const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
       setScoreAge(ageInSeconds);
 
+      secondCounter++;
       // Force re-render every 5 seconds to pick up new live score data
-      setForceRender(prev => prev + 1);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [lastScoreUpdate, match.status, (match as any)?.rawStatus]);
-
-  // 1-second timer for smooth score age counter
-  useEffect(() => {
-    if (!isMatchLive(match)) return;
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const ageInSeconds = Math.floor((now.getTime() - lastScoreUpdate.getTime()) / 1000);
-      setScoreAge(ageInSeconds);
+      if (secondCounter >= 5) {
+        setForceRender(prev => prev + 1);
+        secondCounter = 0;
+      }
     }, 1000);
 
     return () => clearInterval(interval);

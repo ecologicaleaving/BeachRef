@@ -117,7 +117,19 @@ const ExpandedFiltersView: React.FC<{
         return ['Test Referee 1', 'Test Referee 2'];
       }
     } else {
-      return refereeNamesFromAPI;
+      // For LIVE tournaments, use both API referees AND match-extracted referees
+      // This ensures the dropdown includes all referees that appear in matches
+      const combined = [...refereeNamesFromAPI, ...refereeNamesFromMatches];
+      const uniqueCombined = Array.from(new Set(combined)).filter(Boolean).sort();
+
+      // If we have match-extracted referees, prioritize those (they're most accurate)
+      if (refereeNamesFromMatches.length > 0) {
+        return refereeNamesFromMatches;
+      } else if (uniqueCombined.length > 0) {
+        return uniqueCombined;
+      } else {
+        return refereeNamesFromAPI;
+      }
     }
   }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
 
@@ -128,69 +140,7 @@ const ExpandedFiltersView: React.FC<{
 
   return (
     <View style={styles.expandedFilters}>
-      {/* Gender Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Gender:</Text>
-        <View style={styles.filterButtons}>
-          {['All', 'M', 'W'].map((gender) => (
-            <TouchableOpacity
-              key={gender}
-              style={[
-                styles.filterButton,
-                genderFilter === gender && styles.filterButtonActive
-              ]}
-              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
-            >
-              <Text style={[
-                styles.filterButtonText,
-                genderFilter === gender && styles.filterButtonTextActive
-              ]}>
-                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-      
-      {/* Court Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Court:</Text>
-        <View style={styles.filterButtons}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              courtFilter === 'All' && styles.filterButtonActive
-            ]}
-            onPress={() => setCourtFilter('All')}
-          >
-            <Text style={[
-              styles.filterButtonText,
-              courtFilter === 'All' && styles.filterButtonTextActive
-            ]}>
-              All Courts
-            </Text>
-          </TouchableOpacity>
-          {courtNumbers.map((court) => (
-            <TouchableOpacity
-              key={court}
-              style={[
-                styles.filterButton,
-                courtFilter === court && styles.filterButtonActive
-              ]}
-              onPress={() => setCourtFilter(court)}
-            >
-              <Text style={[
-                styles.filterButtonText,
-                courtFilter === court && styles.filterButtonTextActive
-              ]}>
-                {court === 'CC' ? 'CC' : `Court ${court}`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Referee Filter */}
+      {/* Referee Filter - MOVED TO TOP */}
       <View style={[styles.filterGroup, styles.refereeFilterGroup]}>
         <Text style={styles.filterLabel}>Referee:</Text>
         <View style={styles.dropdownContainer}>
@@ -214,7 +164,7 @@ const ExpandedFiltersView: React.FC<{
               {showRefereeDropdown ? '▲' : '▼'}
             </Text>
           </TouchableOpacity>
-          
+
           {showRefereeDropdown && (
             <View style={styles.dropdownList}>
               <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
@@ -272,6 +222,68 @@ const ExpandedFiltersView: React.FC<{
               </ScrollView>
             </View>
           )}
+        </View>
+      </View>
+
+      {/* Gender Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Gender:</Text>
+        <View style={styles.filterButtons}>
+          {['All', 'M', 'W'].map((gender) => (
+            <TouchableOpacity
+              key={gender}
+              style={[
+                styles.filterButton,
+                genderFilter === gender && styles.filterButtonActive
+              ]}
+              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                genderFilter === gender && styles.filterButtonTextActive
+              ]}>
+                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Court Filter */}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Court:</Text>
+        <View style={styles.filterButtons}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              courtFilter === 'All' && styles.filterButtonActive
+            ]}
+            onPress={() => setCourtFilter('All')}
+          >
+            <Text style={[
+              styles.filterButtonText,
+              courtFilter === 'All' && styles.filterButtonTextActive
+            ]}>
+              All Courts
+            </Text>
+          </TouchableOpacity>
+          {courtNumbers.map((court) => (
+            <TouchableOpacity
+              key={court}
+              style={[
+                styles.filterButton,
+                courtFilter === court && styles.filterButtonActive
+              ]}
+              onPress={() => setCourtFilter(court)}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                courtFilter === court && styles.filterButtonTextActive
+              ]}>
+                {court === 'CC' ? 'CC' : `Court ${court}`}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
       

@@ -1320,20 +1320,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   currentSet: {
-    backgroundColor: '#10B981', // Green background for current set in live matches
-    borderWidth: 2,
-    borderColor: '#059669',
+    backgroundColor: '#374151', // Dark gray background for current set in live matches
+    borderWidth: 1,
+    borderColor: '#4B5563',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    transform: [{ scale: 1.2 }], // Make it 20% bigger
-    shadowColor: '#10B981',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 3,
+    transform: [{ scale: 1.1 }], // Make it 10% bigger
   },
   setScore: {
     fontSize: 11,
@@ -1341,9 +1333,9 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   currentSetScore: {
-    fontSize: 16, // Bigger font for current set
-    fontWeight: '800', // Bolder weight
-    color: '#FFFFFF', // White text on green background
+    fontSize: 13, // Slightly bigger font for current set (was 11, now 13 = ~18% increase)
+    fontWeight: '700', // Slightly bolder weight
+    color: '#D1D5DB', // Light gray text on dark gray background
   },
   setScoreSeparator: {
     fontSize: 10,
@@ -1352,9 +1344,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   currentSetSeparator: {
-    fontSize: 14, // Bigger separator for current set
-    fontWeight: '700',
-    color: '#FFFFFF', // White separator on green background
+    fontSize: 12, // Slightly bigger separator for current set (was 10, now 12 = 20% increase)
+    fontWeight: '600',
+    color: '#D1D5DB', // Light gray separator on dark gray background
     marginHorizontal: 4,
   },
   activeSetScore: {

@@ -747,6 +747,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Get match numbers for live score polling
   const matchNumbers = React.useMemo(() => {
+    console.log('🔍 MATCH NUMBERS USEMEMO: Recalculating with', matches?.length || 0, 'matches');
     if (!matches) return [];
     const toNumericMatchNo = (m: any): number | null => {
       const raw = m?.visNo || m?.matchCode || '';
@@ -774,7 +775,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       })
       .map(m => toNumericMatchNo(m))
       .filter((v): v is number => v !== null);
-  }, [matches]);
+  }, [matches, activeTab]);
 
   // Helper function to get numeric match identifier for live scores
   // Uses the same logic as polling service for consistency

@@ -376,13 +376,15 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Timezone Toggle */}
+              {/* Timezone Toggle - Hidden by default, set to local time */}
+              {/*
               <TimezoneToggle
                 tournamentTimezone={currentTournament?.DefaultTimeZone}
                 onTimezonePreferenceChange={(useLocalTime) => {
                   // Timezone preference change handled by the toggle component
                 }}
               />
+              */}
 
               {/* Favorites Section - Only show if there are favorites */}
               {favoriteTournaments.length > 0 && (

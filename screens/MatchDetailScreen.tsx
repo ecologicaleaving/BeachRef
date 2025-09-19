@@ -28,6 +28,27 @@ import { LiveScorePollingService, createLiveScorePollingService } from '../servi
 import { VisApiClient } from '../services/api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import { ConnectionCircuitBreaker } from '../services/ConnectionCircuitBreaker';
+
+function extractNumericIdentifier(...values: Array<unknown>): number | null {
+  for (const value of values) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const raw = String(value).trim();
+    if (!/^\\d+$/.test(raw)) {
+      continue;
+    }
+
+    const parsed = Number.parseInt(raw, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
 const DEFAULT_VIS_BASE_URL = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
 const DEFAULT_VIS_TIMEOUT_MS = 15000;
 const BACK_BUTTON_LABEL = '\u2190 Back';
@@ -189,23 +210,48 @@ export default function MatchDetailScreen() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const matchNumberId = parseInt(matchNo);
-      if (!matchNumberId || isNaN(matchNumberId)) {
-        throw new Error('Invalid match number');
-      }
+      const numericRouteMatch = matchNo?.trim() ?? '';
+      const numericRouteTournament = tournamentNo?.trim() ?? '';
 
-      // Handle legacy matchData parameter for backward compatibility
+      let resolvedMatchNumber: number | null = extractNumericIdentifier(numericRouteMatch);
+      let resolvedTournamentNumber: number | null = extractNumericIdentifier(numericRouteTournament);
+
       if (matchData) {
         try {
-          const parsedMatch = JSON.parse(matchData) as BeachMatchCore;
-          // Convert legacy data to new state structure
+          const parsedMatch = JSON.parse(matchData) as BeachMatchCore & { visNo?: string | number; visMatchId?: string | number; matchNo?: string | number };
           setLegacyData({ legacyMatch: parsedMatch });
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            renderKey: `legacy-${Date.now()}`
-          }));
-          return;
+
+          const matchIdentifier = extractNumericIdentifier(
+            (parsedMatch as any).visNo,
+            (parsedMatch as any).visMatchId,
+            (parsedMatch as any).visMatchNo,
+            (parsedMatch as any).vis_match_no,
+            (parsedMatch as any).matchNo,
+            (parsedMatch as any).match_no,
+            (parsedMatch as any).No,
+            (parsedMatch as any).matchId,
+            (parsedMatch as any).id
+          );
+
+          if (matchIdentifier !== null) {
+            resolvedMatchNumber = matchIdentifier;
+          }
+
+          if (resolvedTournamentNumber === null) {
+            const tournamentIdentifier = extractNumericIdentifier(
+              (parsedMatch as any).tournamentNo,
+              (parsedMatch as any).tournament_no,
+              (parsedMatch as any).tournamentId,
+              (parsedMatch as any).tournament_id,
+              (parsedMatch as any).eventId,
+              (parsedMatch as any).event_id,
+              (parsedMatch as any).NoTournament
+            );
+
+            if (tournamentIdentifier !== null) {
+              resolvedTournamentNumber = tournamentIdentifier;
+            }
+          }
         } catch (parseError) {
           if (__DEV__) {
             console.warn('[MatchDetail] legacy matchData parse failed, falling back to DTO system', parseError);
@@ -213,18 +259,36 @@ export default function MatchDetailScreen() {
         }
       }
 
-      // Load stable match data using BeachMatchService
-      const baseMatch = await beachMatchService.current.getMatch(matchNumberId);
+      if (resolvedMatchNumber === null || Number.isNaN(resolvedMatchNumber)) {
+        throw new Error('Unable to determine match identifier');
+      }
+
+      if (resolvedTournamentNumber !== null && Number.isNaN(resolvedTournamentNumber)) {
+        resolvedTournamentNumber = null;
+      }
 
       if (__DEV__) {
-        console.log('[MatchDetail] base match loaded', matchNumberId, baseMatch?.status);
+        console.log('[MatchDetail] resolved match number', resolvedMatchNumber, {
+          fromRoute: matchNo,
+          hasLegacy: !!matchData,
+          tournament: resolvedTournamentNumber ?? tournamentNo
+        });
+      }
+
+      const baseMatch = await beachMatchService.current.getMatch(resolvedMatchNumber, {
+        matchNo: resolvedMatchNumber,
+        tournamentNo: resolvedTournamentNumber ?? undefined
+      });
+
+      if (__DEV__) {
+        console.log('[MatchDetail] base match loaded', resolvedMatchNumber, baseMatch?.status);
       }
 
       setState(prev => ({
         ...prev,
         baseMatch,
         loading: false,
-        renderKey: `base-${Date.now()}`
+        renderKey: `base-${resolvedMatchNumber}-${Date.now()}`
       }));
 
     } catch (error) {
@@ -233,7 +297,7 @@ export default function MatchDetailScreen() {
       }
       setState(prev => ({
         ...prev,
-        error: `Failed to load match details: ${error.message}`,
+        error: `Failed to load match details: ${error instanceof Error ? error.message : String(error)}`,
         loading: false
       }));
     }
@@ -862,7 +926,7 @@ export default function MatchDetailScreen() {
           subtitle="Loading..."
           showHomeButton={true}
           onHomePress={handleGoBack}
-          showStatusBar={true}
+          showStatusBar={false}
           showLogo={false}
           showBurgerMenu={true}
         />
@@ -884,14 +948,9 @@ export default function MatchDetailScreen() {
           subtitle="Error loading match"
           showHomeButton={true}
           onHomePress={handleGoBack}
-          showStatusBar={true}
+          showStatusBar={false}
           showLogo={false}
           showBurgerMenu={true}
-          rightComponent={
-            <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-              <Text style={styles.refreshButtonText}>Retry</Text>
-            </TouchableOpacity>
-          }
         />
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>{state.error || 'No match data available'}</Text>
@@ -913,14 +972,9 @@ export default function MatchDetailScreen() {
         subtitle={headerInfo.subtitle}
         showHomeButton={true}
         onHomePress={handleGoBack}
-        showStatusBar={true}
+        showStatusBar={false}
         showLogo={false}
         showBurgerMenu={true}
-        rightComponent={
-          <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-            <Text style={styles.refreshButtonText}>Refresh</Text>
-          </TouchableOpacity>
-        }
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -1748,3 +1802,4 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
 });
+

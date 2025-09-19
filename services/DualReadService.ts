@@ -6,6 +6,7 @@ import { SetScoreService } from './SetScoreService';
 // CacheService import removed to prevent circular dependency
 // Note: This was causing a circular dependency with CacheServiceCompatibility
 import { FilterOptions } from '../types/cache';
+import { MatchStatus } from '../types/match-v2';
 
 export type ReadStrategy = 'db_first' | 'api_first' | 'db_only' | 'api_only';
 
@@ -98,6 +99,8 @@ export interface MatchDTO {
   round: string;
   phaseCode?: string;
   status: 'SCHEDULED' | 'RUNNING' | 'FINISHED' | 'INTERRUPTED' | 'CANCELLED' | 'POSTPONED' | 'TBD';
+  rawStatus?: number | string;
+  visStatus?: number | string;
   court: {
     courtNumber: string;
     courtName?: string;
@@ -1148,16 +1151,17 @@ export class DualReadService {
    * Transform match data from API format to basic DTO (fallback without set scores)
    */
   private transformMatchFromAPIBasic(apiMatch: any): MatchDTO {
-    // Extract basic result data if match is finished
+    const rawStatus = this.parseRawStatus(apiMatch?.Status);
+    const status = this.mapAPIStatusToDTO(apiMatch?.Status);
+
     let result = undefined;
-    if (apiMatch.Status && apiMatch.Status.toLowerCase() === 'finished') {
-      // Try to determine winner from PointsTeam fields
+    if (status === MatchStatus.FINISHED) {
       const team1TotalSets = [
         apiMatch.PointsTeamASet1 > apiMatch.PointsTeamBSet1 ? 1 : 0,
         apiMatch.PointsTeamASet2 > apiMatch.PointsTeamBSet2 ? 1 : 0,
         apiMatch.PointsTeamASet3 > apiMatch.PointsTeamBSet3 ? 1 : 0
       ].reduce((sum, setWon) => sum + setWon, 0);
-      
+
       const team2TotalSets = [
         apiMatch.PointsTeamBSet1 > apiMatch.PointsTeamASet1 ? 1 : 0,
         apiMatch.PointsTeamBSet2 > apiMatch.PointsTeamASet2 ? 1 : 0,
@@ -1167,7 +1171,7 @@ export class DualReadService {
       result = {
         team1Sets: team1TotalSets,
         team2Sets: team2TotalSets,
-        setScores: [], // Will be enhanced by SetScoreService if available
+        setScores: [],
         winner: team1TotalSets > team2TotalSets ? 1 : team2TotalSets > team1TotalSets ? 2 : undefined,
         forfeit: false
       };
@@ -1178,7 +1182,9 @@ export class DualReadService {
       visNo: apiMatch.MatchNo?.toString() || '',
       tournamentCode: apiMatch.TournamentNo?.toString() || '',
       matchNo: apiMatch.MatchNo || 0,
-      status: this.mapAPIStatusToDTO(apiMatch.Status) as any,
+      status,
+      rawStatus,
+      visStatus: rawStatus,
       round: apiMatch.Round || '',
       court: {
         courtNumber: apiMatch.Court?.toString() || '1',
@@ -1207,22 +1213,73 @@ export class DualReadService {
   /**
    * Map API status to DTO status format
    */
-  private mapAPIStatusToDTO(apiStatus: string): string {
-    if (!apiStatus) return 'SCHEDULED';
-    
-    const status = apiStatus.toLowerCase();
+  private parseRawStatus(status: unknown): number | string | undefined {
+    if (status === null || status === undefined) {
+      return undefined;
+    }
+
+    if (typeof status === 'number') {
+      return status;
+    }
+
+    const statusString = String(status).trim();
+    if (statusString.length === 0) {
+      return undefined;
+    }
+
+    const numeric = Number(statusString);
+    if (!Number.isNaN(numeric)) {
+      return numeric;
+    }
+
+    return statusString;
+  }
+
+  private mapAPIStatusToDTO(apiStatus: unknown): MatchStatus {
+    if (apiStatus === null || apiStatus === undefined) {
+      return MatchStatus.SCHEDULED;
+    }
+
+    const numeric = Number(apiStatus);
+    if (!Number.isNaN(numeric)) {
+      if (numeric >= 3 && numeric <= 11) {
+        return MatchStatus.RUNNING;
+      }
+      if (numeric >= 12) {
+        return MatchStatus.FINISHED;
+      }
+      if (numeric === 0) {
+        return MatchStatus.TBD;
+      }
+      return MatchStatus.SCHEDULED;
+    }
+
+    const status = String(apiStatus).trim().toLowerCase();
     switch (status) {
       case 'finished':
-        return 'FINISHED';
+      case 'final':
+      case 'completed':
+        return MatchStatus.FINISHED;
       case 'live':
-      case 'playing':
       case 'running':
-        return 'LIVE';
-      case 'scheduled':
-      case 'ready':
-        return 'SCHEDULED';
+      case 'playing':
+      case 'inprogress':
+      case 'in progress':
+        return MatchStatus.RUNNING;
+      case 'interrupted':
+      case 'suspended':
+        return MatchStatus.INTERRUPTED;
+      case 'cancelled':
+      case 'canceled':
+        return MatchStatus.CANCELLED;
+      case 'postponed':
+        return MatchStatus.POSTPONED;
+      case 'tbd':
+      case 'tba':
+      case 'to be determined':
+        return MatchStatus.TBD;
       default:
-        return 'SCHEDULED';
+        return MatchStatus.SCHEDULED;
     }
   }
 
@@ -1384,3 +1441,4 @@ export class DualReadService {
 }
 
 export default DualReadService;
+

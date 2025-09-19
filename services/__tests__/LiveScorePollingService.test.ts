@@ -4,80 +4,12 @@
  * Part of EPIC-001 Live Score Display - Story 1.1
  */
 
+
 import { LiveScorePollingService } from '../live-score/LiveScorePollingService';
 import { IVisApiClient, VisApiResponse, VisApiSuccessResponse } from '../../types/api-v2';
-import { BeachLive } from '../../types/beach-live';
+import { BeachLive, BeachSetStatus } from '../../types/beach-live';
 import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
 
-// Mock dependencies
-const mockVisApiClient: IVisApiClient = {
-  getBeachLive: jest.fn(),
-  getEventList: jest.fn(),
-  getBeachTournament: jest.fn(),
-  getEvent: jest.fn(),
-  getBeachMatchList: jest.fn(),
-  getBeachRound: jest.fn(),
-  testConnection: jest.fn(),
-  getConfig: jest.fn()
-};
-
-const mockCircuitBreaker: ConnectionCircuitBreaker = {
-  canExecute: jest.fn(),
-  onSuccess: jest.fn(),
-  onFailure: jest.fn(),
-  getState: jest.fn()
-} as any;
-
-const mockBeachLive: BeachLive = {
-  version: 1,
-  pollDelay: 5000,
-  isBallInPlay: true,
-  isMatchPointTeamA: false,
-  isMatchPointTeamB: false,
-  isSetPointTeamA: false,
-  isSetPointTeamB: false,
-  noServingTeam: 1,
-  noServingPlayer: 1,
-  noTeamAtLeft: 1,
-  noTeamAtRight: 2,
-  match: {
-    no: 123,
-    noInTournament: 1,
-    status: 'InProgress' as any,
-    dateTime: '2025-08-25T10:00:00Z',
-    court: { no: 1, name: 'Court 1', surface: 'Sand' },
-    round: { no: 1, name: 'Pool A', phase: 'Pool', type: 'Pool' as any }
-  },
-  sets: [
-    { no: 1, pointsTeamA: 15, pointsTeamB: 12, status: 'InProgress' as any }
-  ],
-  teamA: {
-    no: 1,
-    name: 'Team A',
-    federationCode: 'USA',
-    players: [],
-    matchPoints: 0,
-    isServing: true,
-    timeoutsRemaining: 1
-  },
-  teamB: {
-    no: 2,
-    name: 'Team B', 
-    federationCode: 'BRA',
-    players: [],
-    matchPoints: 0,
-    isServing: false,
-    timeoutsRemaining: 1
-  },
-  tournament: {
-    no: 1,
-    name: 'Test Tournament',
-    code: 'TEST2025',
-    city: 'Test City',
-    country: 'Test Country',
-    federation: 'Test Federation'
-  }
-};
 
 describe('LiveScorePollingService', () => {
   let service: LiveScorePollingService;
@@ -318,6 +250,67 @@ describe('LiveScorePollingService', () => {
     });
   });
 
+  describe('BeachLive XML parsing', () => {
+    test('parses self-closing set tags with metadata', () => {
+      const xml = `
+        <BeachLive>
+          <Version>5</Version>
+          <PollDelay>4000</PollDelay>
+          <Match MatchNo="555" Status="Running" DateTime="2025-09-18T10:00:00Z" />
+          <Teams>
+            <Team No="1" Name="Alpha" FederationCode="USA" />
+            <Team No="2" Name="Beta" FederationCode="BRA" />
+          </Teams>
+          <TeamATimeouts>2</TeamATimeouts>
+          <TeamBTimeouts>1</TeamBTimeouts>
+          <Sets>
+            <Set No="1" PointsTeamA="21" PointsTeamB="18" Status="Finished" Duration="780" BeginTimeOffset="120" NbChallengeRequestedTeamA="1" NbChallengeRequestedTeamB="0" NbTimeoutTeamA="1" NbTimeoutTeamB="0" PointsRallyTeamA="13" PointsRallyTeamB="11" />
+            <Set No="2" PointsTeamA="8" PointsTeamB="6" Status="InProgress" NbTimeoutTeamA="0" NbTimeoutTeamB="1" />
+          </Sets>
+        </BeachLive>
+      `;
+
+      const result = (service as any).parseBeachLiveResponse(xml) as BeachLive;
+
+      expect(result.version).toBe(5);
+      expect(result.pollDelay).toBe(4000);
+      expect(result.sets).toHaveLength(2);
+      expect(result.sets[0].pointsTeamA).toBe(21);
+      expect(result.sets[0].status).toBe(BeachSetStatus.FINISHED);
+      expect(result.sets[0].durationSeconds).toBe(780);
+      expect(result.sets[0].beginTimeOffsetSeconds).toBe(120);
+      expect(result.sets[0].nbChallengeRequestedTeamA).toBe(1);
+      expect(result.sets[0].pointsRallyTeamA).toBe(13);
+      expect(result.sets[0].rawAttributes?.PointsTeamA).toBe('21');
+      expect(result.telemetry?.rawSetAttributes?.[1].PointsTeamA).toBe('21');
+      expect(result.teamA.matchPoints).toBe(1);
+      expect(result.teamB.matchPoints).toBe(0);
+    });
+
+    test('falls back to legacy PointsA/PointsB values and counts finished sets only', () => {
+      const xml = `
+        <BeachLive>
+          <Version>2</Version>
+          <PollDelay>3000</PollDelay>
+          <Match MatchNo="777" Status="Live" />
+          <Sets>
+            <Set No="1" PointsA="19" PointsB="21" Status="Finished"></Set>
+            <Set No="2" PointsA="12" PointsB="10"></Set>
+          </Sets>
+        </BeachLive>
+      `;
+
+      const result = (service as any).parseBeachLiveResponse(xml) as BeachLive;
+
+      expect(result.sets).toHaveLength(2);
+      expect(result.sets[0].pointsTeamA).toBe(19);
+      expect(result.sets[0].status).toBe(BeachSetStatus.FINISHED);
+      expect(result.sets[1].status).toBe(BeachSetStatus.NOT_STARTED);
+      expect(result.teamA.matchPoints).toBe(0);
+      expect(result.teamB.matchPoints).toBe(1);
+      expect(result.sets[1].rawAttributes?.PointsA).toBe('12');
+    });
+  });
   describe('Resource Management', () => {
     test('should clean up resources on destroy', () => {
       service.startPolling(123, mockCallback);
@@ -347,3 +340,15 @@ describe('LiveScorePollingService', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+

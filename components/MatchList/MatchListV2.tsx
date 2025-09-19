@@ -176,6 +176,7 @@ const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext)
     round: dto.round,
     phaseCode: dto.phaseCode,
     status: dto.status as MatchStatus,
+    rawStatus: (dto as any).rawStatus ?? (dto as any).visStatus,
     court,
     scheduledDateTime: dto.scheduledDateTime,
     actualStartTime: dto.actualStartTime,
@@ -2274,3 +2275,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

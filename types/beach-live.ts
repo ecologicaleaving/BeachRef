@@ -62,6 +62,14 @@ export interface BeachLive {
   
   /** Match events timeline */
   readonly events?: readonly BeachLiveEvent[];
+
+  /** Telemetry and debugging metadata */
+  readonly telemetry?: BeachLiveTelemetry;
+}
+
+/** Telemetry metadata for BeachLive responses */
+export interface BeachLiveTelemetry {
+  readonly rawSetAttributes?: Record<number, Record<string, string>>;
 }
 
 /**
@@ -114,6 +122,28 @@ export interface BeachLiveSet {
   
   /** Technical timeouts taken */
   readonly technicalTimeouts?: readonly BeachLiveTechnicalTimeout[];
+  /** Set duration in seconds */
+  readonly durationSeconds?: number;
+  /** Offset from match start in seconds */
+  readonly beginTimeOffsetSeconds?: number;
+  /** VIS-reported timeouts for Team A */
+  readonly nbTimeoutTeamA?: number;
+  /** VIS-reported timeouts for Team B */
+  readonly nbTimeoutTeamB?: number;
+  /** VIS challenges requested by Team A */
+  readonly nbChallengeRequestedTeamA?: number;
+  /** VIS challenges requested by Team B */
+  readonly nbChallengeRequestedTeamB?: number;
+  /** VIS challenges used by Team A */
+  readonly nbChallengeUsedTeamA?: number;
+  /** VIS challenges used by Team B */
+  readonly nbChallengeUsedTeamB?: number;
+  /** Rally points credited to Team A */
+  readonly pointsRallyTeamA?: number;
+  /** Rally points credited to Team B */
+  readonly pointsRallyTeamB?: number;
+  /** Raw VIS attribute map for telemetry */
+  readonly rawAttributes?: Record<string, string>;
 }
 
 /**
@@ -472,3 +502,9 @@ export function extractVersion(data: BeachLive | any): number | undefined {
 export function extractPollDelay(data: BeachLive | any): number {
   return isValidBeachLive(data) ? data.pollDelay : 5000; // Default 5 seconds
 }
+
+
+
+
+
+

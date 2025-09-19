@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -510,7 +510,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           variant === 'live' && styles.liveCard,
           isQualification && styles.qualificationCard,
         ]}
-        onPress={() => onPress?.(match)}
+        onPress={() => {
+          // Call the existing onPress if provided
+          onPress?.(match);
+
+          // Navigate to match detail screen with match data
+          router.push({
+            pathname: '/match-detail',
+            params: {
+              matchNo: match.id || match.matchCode || 'unknown',
+              tournamentNo: (match as any).tournamentNo || 'demo',
+              matchData: JSON.stringify(match)
+            }
+          });
+        }}
         activeOpacity={0.7}
       >
         {/* Top band for women's matches */}
@@ -1410,3 +1423,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
+

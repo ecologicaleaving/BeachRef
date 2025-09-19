@@ -855,18 +855,22 @@ export default function MatchDetailScreen() {
         <Card style={styles.teamsCard}>
           <View style={styles.teamsHeader}>
             <Text style={styles.sectionTitle}>
-              {isMatchLive(match) ? 'Live Score' : 'Final Score'}
+              {mergedData.isLive ? 'Live Score' : 'Final Score'}
             </Text>
             {/* Match time info */}
-            {isBeachMatchCore(match) && match.scheduledDateTime && (
+            {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.scheduledDateTime ? (
               <Text style={styles.matchTime}>
-                {new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
+                {new Date(mergedData.data.scheduledDateTime).toLocaleTimeString('en-US', {
                   hour: '2-digit',
                   minute: '2-digit',
                   hour12: false
                 })}
               </Text>
-            )}
+            ) : mergedData.type === 'dto' && mergedData.data.localTime ? (
+              <Text style={styles.matchTime}>
+                {mergedData.data.localTime}
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.teamsContainer}>
@@ -874,25 +878,44 @@ export default function MatchDetailScreen() {
             <View style={styles.teamSection}>
               <View style={styles.teamFlagSection}>
                 <FlagImage
-                  countryCode={isBeachMatchCore(match) ? match.team1.countryCode : 'XXX'}
+                  countryCode={
+                    mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                      ? mergedData.data.team1.countryCode
+                      : mergedData.type === 'dto'
+                      ? mergedData.data.teamA.federation || 'XXX'
+                      : 'XXX'
+                  }
                   size="large"
                   style={styles.teamFlag}
                 />
                 <Text style={styles.countryCode}>
-                  {isBeachMatchCore(match) ? match.team1.countryCode : ''}
+                  {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                    ? mergedData.data.team1.countryCode
+                    : mergedData.type === 'dto'
+                    ? mergedData.data.teamA.federation
+                    : ''}
                 </Text>
               </View>
               <Text style={styles.teamName} numberOfLines={2}>
-                {isBeachMatchCore(match) ? match.team1.teamName : match.teamAName}
-                {isBeachMatchCore(match) && (match as any).teamAPositionInMainDraw && (
-                  <Text style={styles.teamPosition}> (#{(match as any).teamAPositionInMainDraw})</Text>
-                )}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? mergedData.data.team1.teamName
+                  : mergedData.type === 'dto'
+                  ? mergedData.data.teamA.name
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).teamAName
+                  : 'Team A'}
               </Text>
               <Text style={[
                 styles.matchPoints,
-                isBeachMatchCore(match) && match.result?.winner === 1 && styles.winnerPoints
+                mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.result?.winner === 1 && styles.winnerPoints
               ]}>
-                {isBeachMatchCore(match) ? (match.result?.team1Sets || 0) : match.matchPointsA}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? (mergedData.data.result?.team1Sets || 0)
+                  : mergedData.type === 'dto'
+                  ? (mergedData.data.sets?.filter(set => set.a > set.b).length || 0)
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).matchPointsA || 0
+                  : 0}
               </Text>
             </View>
 
@@ -902,25 +925,44 @@ export default function MatchDetailScreen() {
             <View style={styles.teamSection}>
               <View style={styles.teamFlagSection}>
                 <FlagImage
-                  countryCode={isBeachMatchCore(match) ? match.team2.countryCode : 'XXX'}
+                  countryCode={
+                    mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                      ? mergedData.data.team2.countryCode
+                      : mergedData.type === 'dto'
+                      ? mergedData.data.teamB.federation || 'XXX'
+                      : 'XXX'
+                  }
                   size="large"
                   style={styles.teamFlag}
                 />
                 <Text style={styles.countryCode}>
-                  {isBeachMatchCore(match) ? match.team2.countryCode : ''}
+                  {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                    ? mergedData.data.team2.countryCode
+                    : mergedData.type === 'dto'
+                    ? mergedData.data.teamB.federation
+                    : ''}
                 </Text>
               </View>
               <Text style={styles.teamName} numberOfLines={2}>
-                {isBeachMatchCore(match) ? match.team2.teamName : match.teamBName}
-                {isBeachMatchCore(match) && (match as any).teamBPositionInMainDraw && (
-                  <Text style={styles.teamPosition}> (#{(match as any).teamBPositionInMainDraw})</Text>
-                )}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? mergedData.data.team2.teamName
+                  : mergedData.type === 'dto'
+                  ? mergedData.data.teamB.name
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).teamBName
+                  : 'Team B'}
               </Text>
               <Text style={[
                 styles.matchPoints,
-                isBeachMatchCore(match) && match.result?.winner === 2 && styles.winnerPoints
+                mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.result?.winner === 2 && styles.winnerPoints
               ]}>
-                {isBeachMatchCore(match) ? (match.result?.team2Sets || 0) : match.matchPointsB}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? (mergedData.data.result?.team2Sets || 0)
+                  : mergedData.type === 'dto'
+                  ? (mergedData.data.sets?.filter(set => set.b > set.a).length || 0)
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).matchPointsB || 0
+                  : 0}
               </Text>
             </View>
           </View>
@@ -942,9 +984,13 @@ export default function MatchDetailScreen() {
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Date</Text>
               <Text style={styles.infoValue}>
-                {isBeachMatchCore(match) && match.scheduledDateTime ?
-                  new Date(match.scheduledDateTime).toLocaleDateString() :
-                  formatDateLong(match.localDate)}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.scheduledDateTime
+                  ? new Date(mergedData.data.scheduledDateTime).toLocaleDateString()
+                  : mergedData.type === 'dto' && mergedData.data.localDate
+                  ? mergedData.data.localDate
+                  : mergedData.type === 'legacy'
+                  ? formatDateLong((mergedData.data as any).localDate)
+                  : 'N/A'}
               </Text>
             </View>
 
@@ -952,9 +998,13 @@ export default function MatchDetailScreen() {
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Court</Text>
               <Text style={styles.infoValue}>
-                {isBeachMatchCore(match) && match.court ?
-                  (match.court.courtNumber === 'CC' ? 'Center Court' : `Court ${match.court.courtNumber}`) :
-                  match.court}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.court
+                  ? (mergedData.data.court.courtNumber === 'CC' ? 'Center Court' : `Court ${mergedData.data.court.courtNumber}`)
+                  : mergedData.type === 'dto' && mergedData.data.court
+                  ? (mergedData.data.court === 'CC' ? 'Center Court' : `Court ${mergedData.data.court}`)
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).court
+                  : 'N/A'}
               </Text>
             </View>
 
@@ -962,7 +1012,13 @@ export default function MatchDetailScreen() {
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Round</Text>
               <Text style={styles.infoValue}>
-                {isBeachMatchCore(match) ? match.roundName || match.round : match.round}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? mergedData.data.roundName || mergedData.data.round
+                  : mergedData.type === 'dto'
+                  ? mergedData.data.roundName
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).round
+                  : 'N/A'}
               </Text>
             </View>
 
@@ -970,16 +1026,22 @@ export default function MatchDetailScreen() {
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Match Number</Text>
               <Text style={styles.infoValue}>
-                {isBeachMatchCore(match) ? match.matchCode : match.no}
+                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
+                  ? mergedData.data.matchCode
+                  : mergedData.type === 'dto'
+                  ? mergedData.data.no.toString()
+                  : mergedData.type === 'legacy'
+                  ? (mergedData.data as any).no
+                  : 'N/A'}
               </Text>
             </View>
 
             {/* Duration (if finished) */}
-            {isBeachMatchCore(match) && match.result?.duration && (
+            {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.result?.duration && (
               <View style={styles.infoItem}>
                 <Text style={styles.infoLabel}>Duration</Text>
                 <Text style={styles.infoValue}>
-                  {Math.floor(match.result.duration / 60)}h {match.result.duration % 60}m
+                  {Math.floor(mergedData.data.result.duration / 60)}h {mergedData.data.result.duration % 60}m
                 </Text>
               </View>
             )}
@@ -987,11 +1049,12 @@ export default function MatchDetailScreen() {
         </Card>
 
         {/* Referees Section */}
-        {isBeachMatchCore(match) && match.refereeAssignments && match.refereeAssignments.length > 0 && (
+        {((mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.refereeAssignments && mergedData.data.refereeAssignments.length > 0) ||
+          (mergedData.type === 'dto' && mergedData.data.referees)) && (
           <Card style={styles.refereesCard}>
             <Text style={styles.sectionTitle}>Match Officials</Text>
             <View style={styles.refereesGrid}>
-              {match.refereeAssignments.map((referee, index) => (
+              {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.refereeAssignments?.map((referee, index) => (
                 <View key={index} style={styles.refereeItem}>
                   <View style={styles.refereeInfo}>
                     <Text style={styles.refereePosition}>
@@ -1009,39 +1072,95 @@ export default function MatchDetailScreen() {
                   />
                 </View>
               ))}
+              {mergedData.type === 'dto' && mergedData.data.referees && (
+                <>
+                  {mergedData.data.referees.first && (
+                    <View style={styles.refereeItem}>
+                      <View style={styles.refereeInfo}>
+                        <Text style={styles.refereePosition}>1st Referee</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.referees.first.name}</Text>
+                      </View>
+                      <FlagImage
+                        countryCode={mergedData.data.referees.first.federation || 'XXX'}
+                        size="large"
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  )}
+                  {mergedData.data.referees.second && (
+                    <View style={styles.refereeItem}>
+                      <View style={styles.refereeInfo}>
+                        <Text style={styles.refereePosition}>2nd Referee</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.referees.second.name}</Text>
+                      </View>
+                      <FlagImage
+                        countryCode={mergedData.data.referees.second.federation || 'XXX'}
+                        size="large"
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  )}
+                  {mergedData.data.referees.challenge && (
+                    <View style={styles.refereeItem}>
+                      <View style={styles.refereeInfo}>
+                        <Text style={styles.refereePosition}>Challenge Referee</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.referees.challenge.name}</Text>
+                      </View>
+                      <FlagImage
+                        countryCode={mergedData.data.referees.challenge.federation || 'XXX'}
+                        size="large"
+                        style={styles.refereeFlag}
+                      />
+                    </View>
+                  )}
+                </>
+              )}
             </View>
           </Card>
         )}
 
         {/* Set Durations (if available) */}
-        {isBeachMatchCore(match) && ((match as any).DurationSet1 || (match as any).DurationSet2 || (match as any).DurationSet3) && (
+        {((mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && ((mergedData.data as any).DurationSet1 || (mergedData.data as any).DurationSet2 || (mergedData.data as any).DurationSet3)) ||
+          (mergedData.type === 'dto' && mergedData.data.sets?.some(set => set.durationSec))) && (
           <Card style={styles.durationCard}>
             <Text style={styles.sectionTitle}>Set Durations</Text>
             <View style={styles.durationGrid}>
-              {(match as any).DurationSet1 && (
-                <View style={styles.durationItem}>
-                  <Text style={styles.durationLabel}>Set 1</Text>
+              {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && (
+                <>
+                  {(mergedData.data as any).DurationSet1 && (
+                    <View style={styles.durationItem}>
+                      <Text style={styles.durationLabel}>Set 1</Text>
+                      <Text style={styles.durationValue}>
+                        {Math.floor(parseInt((mergedData.data as any).DurationSet1) / 60)}:{(parseInt((mergedData.data as any).DurationSet1) % 60).toString().padStart(2, '0')}
+                      </Text>
+                    </View>
+                  )}
+                  {(mergedData.data as any).DurationSet2 && (
+                    <View style={styles.durationItem}>
+                      <Text style={styles.durationLabel}>Set 2</Text>
+                      <Text style={styles.durationValue}>
+                        {Math.floor(parseInt((mergedData.data as any).DurationSet2) / 60)}:{(parseInt((mergedData.data as any).DurationSet2) % 60).toString().padStart(2, '0')}
+                      </Text>
+                    </View>
+                  )}
+                  {(mergedData.data as any).DurationSet3 && (
+                    <View style={styles.durationItem}>
+                      <Text style={styles.durationLabel}>Set 3</Text>
+                      <Text style={styles.durationValue}>
+                        {Math.floor(parseInt((mergedData.data as any).DurationSet3) / 60)}:{(parseInt((mergedData.data as any).DurationSet3) % 60).toString().padStart(2, '0')}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+              {mergedData.type === 'dto' && mergedData.data.sets?.filter(set => set.durationSec).map((set) => (
+                <View key={set.set} style={styles.durationItem}>
+                  <Text style={styles.durationLabel}>Set {set.set}</Text>
                   <Text style={styles.durationValue}>
-                    {Math.floor(parseInt((match as any).DurationSet1) / 60)}:{(parseInt((match as any).DurationSet1) % 60).toString().padStart(2, '0')}
+                    {Math.floor(set.durationSec! / 60)}:{(set.durationSec! % 60).toString().padStart(2, '0')}
                   </Text>
                 </View>
-              )}
-              {(match as any).DurationSet2 && (
-                <View style={styles.durationItem}>
-                  <Text style={styles.durationLabel}>Set 2</Text>
-                  <Text style={styles.durationValue}>
-                    {Math.floor(parseInt((match as any).DurationSet2) / 60)}:{(parseInt((match as any).DurationSet2) % 60).toString().padStart(2, '0')}
-                  </Text>
-                </View>
-              )}
-              {(match as any).DurationSet3 && (
-                <View style={styles.durationItem}>
-                  <Text style={styles.durationLabel}>Set 3</Text>
-                  <Text style={styles.durationValue}>
-                    {Math.floor(parseInt((match as any).DurationSet3) / 60)}:{(parseInt((match as any).DurationSet3) % 60).toString().padStart(2, '0')}
-                  </Text>
-                </View>
-              )}
+              ))}
             </View>
           </Card>
         )}

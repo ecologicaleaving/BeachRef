@@ -14,17 +14,41 @@ import { MatchResultsService } from '../services/MatchResultsService';
 import { MatchResult } from '../types/MatchResults';
 import { BeachMatchCore, MatchStatus } from '../types/match-v2';
 import { BeachMatchDTO, BeachMatchLiveDTO, isValidBeachMatchDTO, isValidBeachMatchLiveDTO } from '../types/match-details-dto';
-import { BeachLive } from '../types/beach-live';
+import { BeachLive, BeachSetStatus } from '../types/beach-live';
 import { formatTime, formatDateLong, formatTimeWithTimezoneSync } from '../utils/dateFormatters';
 import { FlagImage } from '../components/FlagImage';
 import { RoundPhaseDisplay } from '../components/Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../components/Status/LiveIndicator';
 import { Card } from '../components/Foundation/Container';
+import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors, spacing, typography } from '../theme/tokens';
 import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
 import { LiveScorePollingService, createLiveScorePollingService } from '../services/live-score/LiveScorePollingService';
+import { VisApiClient } from '../services/api/VisApiClient';
+import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import { ConnectionCircuitBreaker } from '../services/ConnectionCircuitBreaker';
+const DEFAULT_VIS_BASE_URL = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
+const DEFAULT_VIS_TIMEOUT_MS = 15000;
+const BACK_BUTTON_LABEL = '\u2190 Back';
+
+function resolveVisApiBaseUrl(): string {
+  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_VIS_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_VIS_API_BASE_URL;
+  }
+  return DEFAULT_VIS_BASE_URL;
+}
+
+function resolveVisApiTimeout(): number {
+  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_TIMEOUT) {
+    const parsed = Number(process.env.EXPO_PUBLIC_API_TIMEOUT);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return DEFAULT_VIS_TIMEOUT_MS;
+}
+
 
 // Interface for the new dual-data state structure
 interface MatchDetailState {
@@ -64,6 +88,10 @@ export default function MatchDetailScreen() {
     matchData?: string; // JSON stringified BeachMatchCore
   }>();
 
+  if (__DEV__) {
+    console.log('[MatchDetail] route params', { matchNo, tournamentNo, hasLegacy: !!matchData });
+  }
+
   // New dual-data state structure
   const [state, setState] = useState<MatchDetailState>({
     baseMatch: null,
@@ -85,33 +113,42 @@ export default function MatchDetailScreen() {
   const beachMatchService = useRef(BeachMatchService.getInstance());
   const pollingService = useRef<LiveScorePollingService | null>(null);
   const pollingCleanup = useRef<(() => void) | null>(null);
+  const visApiClientRef = useRef<VisApiClient | null>(null);
+  const pollingCircuitBreakerRef = useRef<ConnectionCircuitBreaker | null>(null);
+
+  const resolveVisApiClient = useCallback((): VisApiClient => {
+    if (!visApiClientRef.current) {
+      visApiClientRef.current = new VisApiClient(
+        {
+          baseUrl: resolveVisApiBaseUrl(),
+          timeoutMs: resolveVisApiTimeout(),
+          maxRetries: 3,
+          retryDelayMs: 1000,
+          exponentialBackoff: true,
+          enableLogging: false,
+        },
+        DEFAULT_RETRY_CONFIG
+      );
+    }
+    return visApiClientRef.current;
+  }, []);
+
+  const resolvePollingCircuitBreaker = useCallback((): ConnectionCircuitBreaker => {
+    if (!pollingCircuitBreakerRef.current) {
+      pollingCircuitBreakerRef.current = ConnectionCircuitBreaker.getInstance('live-score-polling');
+    }
+    return pollingCircuitBreakerRef.current;
+  }, []);
 
   // Initialize polling service lazily
   const getPollingService = useCallback(() => {
     if (!pollingService.current) {
-      // For now, create a simplified mock implementation since the full service requires complex dependencies
-      // In production, this would use the actual VisApiClient and CircuitBreaker
-      pollingService.current = {
-        startPolling: (matchNo: number, callback: any, options?: any, useAdaptive?: boolean) => {
-          console.log(`Mock: Starting polling for match ${matchNo}`);
-          // Mock callback with sample data after a delay
-          setTimeout(() => {
-            callback({
-              match: { status: 'InSet2' },
-              sets: [{ no: 2, pointsTeamA: 15, pointsTeamB: 12, finished: false }],
-              noServingTeam: 1,
-              teamA: { timeoutsRemaining: 1 },
-              teamB: { timeoutsRemaining: 2 }
-            });
-          }, 1000);
-        },
-        stopPolling: (matchNo: number) => {
-          console.log(`Mock: Stopping polling for match ${matchNo}`);
-        }
-      } as any;
+      const visClient = resolveVisApiClient();
+      const circuitBreaker = resolvePollingCircuitBreaker();
+      pollingService.current = createLiveScorePollingService(visClient, circuitBreaker);
     }
     return pollingService.current;
-  }, []);
+  }, [resolveVisApiClient, resolvePollingCircuitBreaker]);
 
   // Initialize data loading
   useEffect(() => {
@@ -170,12 +207,18 @@ export default function MatchDetailScreen() {
           }));
           return;
         } catch (parseError) {
-          console.warn('Failed to parse legacy matchData, falling back to new DTO system');
+          if (__DEV__) {
+            console.warn('[MatchDetail] legacy matchData parse failed, falling back to DTO system', parseError);
+          }
         }
       }
 
       // Load stable match data using BeachMatchService
       const baseMatch = await beachMatchService.current.getMatch(matchNumberId);
+
+      if (__DEV__) {
+        console.log('[MatchDetail] base match loaded', matchNumberId, baseMatch?.status);
+      }
 
       setState(prev => ({
         ...prev,
@@ -185,7 +228,9 @@ export default function MatchDetailScreen() {
       }));
 
     } catch (error) {
-      console.error('Failed to load match detail:', error);
+      if (__DEV__) {
+        console.warn('[MatchDetail] failed to load match detail', error);
+      }
       setState(prev => ({
         ...prev,
         error: `Failed to load match details: ${error.message}`,
@@ -195,15 +240,54 @@ export default function MatchDetailScreen() {
   };
 
   /**
+   * Update live data with optimization for frequent updates
+   */
+  const updateLiveData = useCallback((liveData: BeachMatchLiveDTO) => {
+    setState(prev => {
+      if (prev.liveData && prev.lastLiveUpdate === liveData.lastUpdate) {
+        const unchanged =
+          prev.liveData.status === liveData.status &&
+          prev.liveData.currentSet === liveData.currentSet &&
+          prev.liveData.points.a === liveData.points.a &&
+          prev.liveData.points.b === liveData.points.b;
+
+        if (unchanged) {
+          return prev;
+        }
+      }
+
+      return {
+        ...prev,
+        liveData,
+        lastLiveUpdate: liveData.lastUpdate ?? prev.lastLiveUpdate,
+        pollingError: null, // Clear any previous polling errors
+        renderKey: `live-${liveData.lastUpdate ?? Date.now()}`
+      };
+    });
+  }, []);
+
+
+  /**
    * Start live polling for matches that need it
    */
-  const startLivePolling = useCallback((matchNo: number) => {
+  const startLivePolling = useCallback((matchNumber: number) => {
+    if (__DEV__) {
+      console.log('[MatchDetail] startLivePolling invoked', matchNumber, {
+        baseStatus: state.baseMatch?.status,
+        isPollingActive: state.isPollingActive,
+      });
+    }
+
     if (state.isPollingActive) {
-      console.log('Polling already active for match', matchNo);
+      if (__DEV__) {
+        console.log('[MatchDetail] polling already active, skipping', matchNumber);
+      }
       return;
     }
 
-    console.log('Starting live polling for match', matchNo);
+    if (__DEV__) {
+      console.log('[MatchDetail] Starting live polling for match', matchNumber);
+    }
 
     const pollingCallback = (liveData: BeachLive, error?: Error) => {
       if (error) {
@@ -211,83 +295,72 @@ export default function MatchDetailScreen() {
         return;
       }
 
+      if (__DEV__) {
+        const matchIdentifier = liveData?.match?.no ?? state.baseMatch?.no ?? matchNumber;
+        console.log('[LiveMatch] VIS BeachLive payload', matchIdentifier, liveData);
+      }
+
       const transformedLiveData = transformBeachLiveToDTO(liveData);
       updateLiveData(transformedLiveData);
     };
 
-    // Start polling with adaptive intervals
     const service = getPollingService();
     service.startPolling(
-      matchNo,
+      matchNumber,
       pollingCallback,
-      [], // No filtering options for match details
-      true // Enable adaptive polling
+      [],
+      true
     );
 
     setState(prev => ({ ...prev, isPollingActive: true }));
 
-    // Store cleanup function
     pollingCleanup.current = () => {
-      console.log('Stopping live polling for match', matchNo);
-      const service = getPollingService();
-      service.stopPolling(matchNo);
+      if (__DEV__) {
+        console.log('[MatchDetail] Stopping live polling for match', matchNumber);
+      }
+      const pollingInstance = getPollingService();
+      pollingInstance.stopPolling(matchNumber);
       setState(prev => ({ ...prev, isPollingActive: false }));
     };
-  }, [state.isPollingActive]);
+  }, [getPollingService, state.baseMatch?.status, state.isPollingActive, updateLiveData]);
 
   /**
    * Transform BeachLive data to BeachMatchLiveDTO
    */
   const transformBeachLiveToDTO = useCallback((beachLive: BeachLive): BeachMatchLiveDTO => {
     const currentSet = getCurrentSetFromBeachLive(beachLive);
+    const closedSets = extractClosedSetsFromBeachLive(beachLive.sets);
+    const events = beachLive.events?.map(event => ({
+      set: event.setNo,
+      rally: event.sequence,
+      ts: event.timestamp,
+      servingTeam: event.teamNo === 1 ? "A" : event.teamNo === 2 ? "B" : null,
+      action: event.type,
+      detail: event.description || null,
+      scoreAfter: parseEventScore(event.scoreAfter)
+    }));
 
     return {
-      status: beachLive.match.status,
+      status: beachLive.match?.status || "Unknown",
       currentSet: currentSet?.no,
       points: {
         a: currentSet?.pointsTeamA ?? null,
         b: currentSet?.pointsTeamB ?? null
       },
-      teamServing: beachLive.noServingTeam === 1 ? "A" :
-                   beachLive.noServingTeam === 2 ? "B" : null,
+      teamServing:
+        beachLive.noServingTeam === 1 ? "A" :
+        beachLive.noServingTeam === 2 ? "B" : null,
       timeouts: {
-        a: beachLive.teamA.timeoutsRemaining || 0,
-        b: beachLive.teamB.timeoutsRemaining || 0
+        a: beachLive.teamA?.timeoutsRemaining ?? 0,
+        b: beachLive.teamB?.timeoutsRemaining ?? 0
       },
-      lastUpdate: new Date().toISOString(),
-      closedSets: extractClosedSetsFromBeachLive(beachLive.sets),
+      lastUpdate: String(beachLive.version ?? Date.now()),
+      closedSets,
       liveFeed: {
-        available: !!beachLive.events,
-        events: beachLive.events?.map(event => ({
-          set: event.setNo,
-          action: event.type,
-          detail: event.description,
-          scoreAfter: parseEventScore(event.scoreAfter),
-          ts: event.timestamp,
-          servingTeam: event.teamNo === 1 ? "A" : event.teamNo === 2 ? "B" : null
-        }))
+        available: Array.isArray(events) && events.length > 0,
+        events
       }
     };
-  }, []);
-
-  /**
-   * Update live data with optimization for frequent updates
-   */
-  const updateLiveData = useCallback((liveData: BeachMatchLiveDTO) => {
-    setState(prev => {
-      // Skip update if data hasn't actually changed
-      if (prev.lastLiveUpdate === liveData.lastUpdate) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        liveData,
-        lastLiveUpdate: liveData.lastUpdate,
-        pollingError: null, // Clear any previous polling errors
-        renderKey: `live-${Date.now()}`
-      };
-    });
   }, []);
 
   /**
@@ -306,31 +379,80 @@ export default function MatchDetailScreen() {
    * Helper functions
    */
   const shouldStartLivePolling = (baseMatch: BeachMatchDTO): boolean => {
-    if (!baseMatch) return false;
+    if (!baseMatch) {
+      return false;
+    }
 
-    // Check if match status indicates live activity
-    const status = baseMatch.status.toLowerCase();
-    return status.includes('inset') ||
-           status.includes('running') ||
-           status === 'ready';
+    if (__DEV__) {
+      console.log('[MatchDetail] evaluating shouldStartLivePolling', { status: baseMatch.status });
+    }
+
+    if (isMatchFinished(baseMatch.status)) {
+      if (__DEV__) {
+        console.log('[MatchDetail] match considered finished, skipping polling', baseMatch.status);
+      }
+      return false;
+    }
+
+    const normalizedStatus = baseMatch.status?.toLowerCase?.() ?? '';
+    if (!normalizedStatus) {
+      return false;
+    }
+
+    if (normalizedStatus.startsWith('status')) {
+      const numeric = Number(normalizedStatus.replace('status', ''));
+      if (!Number.isNaN(numeric)) {
+        return numeric >= 3 && numeric < 9;
+      }
+    }
+
+    return normalizedStatus.includes('inset') ||
+           normalizedStatus.includes('running') ||
+           normalizedStatus.includes('live') ||
+           normalizedStatus.includes('ready') ||
+           normalizedStatus.includes('scheduled');
   };
 
   const isMatchFinished = (status: string): boolean => {
     const lowerStatus = status.toLowerCase();
+
+    if (lowerStatus.startsWith('status')) {
+      const numeric = Number(lowerStatus.replace('status', ''));
+      if (!Number.isNaN(numeric) && numeric >= 9) {
+        return true;
+      }
+    }
+
     return lowerStatus.includes('finished') ||
            lowerStatus.includes('final') ||
-           lowerStatus.includes('closed');
+           lowerStatus.includes('closed') ||
+           lowerStatus.includes('official') ||
+           lowerStatus.includes('cancelled');
   };
 
   const getCurrentSetFromBeachLive = (beachLive: BeachLive) => {
-    return beachLive.sets?.find(set => !set.finished);
+    if (!beachLive.sets || beachLive.sets.length === 0) {
+      return undefined;
+    }
+
+    const inProgress = beachLive.sets.find(set => set.status === BeachSetStatus.IN_PROGRESS);
+    if (inProgress) {
+      return inProgress;
+    }
+
+    const upcoming = beachLive.sets.find(set => set.status === BeachSetStatus.NOT_STARTED);
+    if (upcoming) {
+      return upcoming;
+    }
+
+    return beachLive.sets[beachLive.sets.length - 1];
   };
 
-  const extractClosedSetsFromBeachLive = (sets: any[]): Array<{ set: number; a: number; b: number }> => {
-    if (!sets) return [];
+  const extractClosedSetsFromBeachLive = (sets?: BeachLive['sets']): Array<{ set: number; a: number; b: number }> => {
+    if (!sets || sets.length === 0) return [];
 
     return sets
-      .filter(set => set.finished)
+      .filter(set => set.status === BeachSetStatus.FINISHED)
       .map(set => ({
         set: set.no,
         a: set.pointsTeamA,
@@ -339,16 +461,19 @@ export default function MatchDetailScreen() {
   };
 
   const parseEventScore = (scoreString?: string): { a: number; b: number } | undefined => {
-    if (!scoreString) return undefined;
+    if (!scoreString) {
+      return undefined;
+    }
 
     const match = scoreString.match(/(\d+)[:-](\d+)/);
-    if (match) {
-      return {
-        a: parseInt(match[1]),
-        b: parseInt(match[2])
-      };
+    if (!match) {
+      return undefined;
     }
-    return undefined;
+
+    return {
+      a: parseInt(match[1], 10),
+      b: parseInt(match[2], 10)
+    };
   };
 
   const handleRefresh = () => {
@@ -357,6 +482,39 @@ export default function MatchDetailScreen() {
 
   const handleGoBack = () => {
     router.back();
+  };
+
+  /**
+   * Generate header title and subtitle based on available match data
+   */
+  const getHeaderInfo = () => {
+    const mergedData = getMergedMatchData;
+    if (!mergedData) {
+      return { title: 'Match Details', subtitle: undefined };
+    }
+
+    if (mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)) {
+      const match = mergedData.data;
+      return {
+        title: match.roundName || match.round || 'Match Details',
+        subtitle: `${match.team1.teamName} vs ${match.team2.teamName}`
+      };
+    } else if (mergedData.type === 'dto') {
+      const match = mergedData.data;
+      return {
+        title: match.roundName || 'Match Details',
+        subtitle: `${match.teamA.name || 'Team A'} vs ${match.teamB.name || 'Team B'}`
+      };
+    } else if (mergedData.type === 'legacy') {
+      // MatchResult type
+      const match = mergedData.data as any;
+      return {
+        title: match.round || 'Match Details',
+        subtitle: `${match.teamAName || 'Team A'} vs ${match.teamBName || 'Team B'}`
+      };
+    }
+
+    return { title: 'Match Details', subtitle: undefined };
   };
 
   /**
@@ -699,13 +857,15 @@ export default function MatchDetailScreen() {
   if (state.loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Match Details</Text>
-          <View style={{ width: 60 }} />
-        </View>
+        <NavigationHeader
+          title="Match Details"
+          subtitle="Loading..."
+          showHomeButton={true}
+          onHomePress={handleGoBack}
+          showStatusBar={true}
+          showLogo={false}
+          showBurgerMenu={true}
+        />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#10B981" />
           <Text style={styles.loadingText}>Loading match details...</Text>
@@ -719,15 +879,20 @@ export default function MatchDetailScreen() {
   if (state.error || !mergedData) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Match Details</Text>
-          <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-            <Text style={styles.refreshButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <NavigationHeader
+          title="Match Details"
+          subtitle="Error loading match"
+          showHomeButton={true}
+          onHomePress={handleGoBack}
+          showStatusBar={true}
+          showLogo={false}
+          showBurgerMenu={true}
+          rightComponent={
+            <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+              <Text style={styles.refreshButtonText}>Retry</Text>
+            </TouchableOpacity>
+          }
+        />
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>{state.error || 'No match data available'}</Text>
           <Text style={styles.errorSubtext}>Please try again</Text>
@@ -739,18 +904,24 @@ export default function MatchDetailScreen() {
     );
   }
 
+  const headerInfo = getHeaderInfo();
+
   return (
     <View style={styles.container}>
-      {/* Header - consistent with existing app design */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Match Details</Text>
-        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-          <Text style={styles.refreshButtonText}>Refresh</Text>
-        </TouchableOpacity>
-      </View>
+      <NavigationHeader
+        title={headerInfo.title}
+        subtitle={headerInfo.subtitle}
+        showHomeButton={true}
+        onHomePress={handleGoBack}
+        showStatusBar={true}
+        showLogo={false}
+        showBurgerMenu={true}
+        rightComponent={
+          <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+            <Text style={styles.refreshButtonText}>Refresh</Text>
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Live Indicator for live matches */}
@@ -1174,43 +1345,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 50,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.background,
-    ...shadowPresets.card,
-  },
-  backButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  backButtonText: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  headerTitle: {
-    ...typography.h2,
-    color: colors.textPrimary,
-  },
   refreshButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
     backgroundColor: colors.success,
-    minHeight: 44,
+    minHeight: 32,
     justifyContent: 'center',
+    marginLeft: 8,
   },
   refreshButtonText: {
-    ...typography.body,
+    ...typography.caption,
     fontWeight: '600',
     color: colors.background,
   },

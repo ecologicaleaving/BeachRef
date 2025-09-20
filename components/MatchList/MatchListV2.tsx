@@ -906,6 +906,27 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     const allDates = Object.keys(groups).sort();
 
+    // Sort matches within each group by time
+    Object.keys(groups).forEach(dateKey => {
+      groups[dateKey].sort((a, b) => {
+        const scheduledA = (a as any).scheduled;
+        const scheduledB = (b as any).scheduled;
+
+        if (scheduledA?.epochMs && scheduledB?.epochMs) {
+          // Use pre-calculated epoch timestamps (timezone-safe)
+          const diff = scheduledB.epochMs - scheduledA.epochMs;
+          return sortOrder === 'desc' ? diff : -diff;
+        } else {
+          // For legacy data, use string comparison on time
+          const timeStrA = scheduledA?.dateTimeTournament || a.scheduledDateTime;
+          const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
+
+          const comparison = timeStrB.localeCompare(timeStrA);
+          return sortOrder === 'desc' ? comparison : -comparison;
+        }
+      });
+    });
+
     // Sort dates according to sortOrder
     // Since dateKeys are in YYYY-MM-DD format, string comparison works correctly
     const result = Object.entries(groups).sort((a, b) => {

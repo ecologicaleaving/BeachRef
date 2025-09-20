@@ -39,6 +39,12 @@ import {
 } from '../../types/referee-v2';
 
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import tz from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(tz);
 
 /**
  * Tournament location data from GetBeachTournament
@@ -193,7 +199,7 @@ export class VisResponseParser {
    * Parse GetBeachMatchList response for match data
    * Extract match information with referee assignments
    */
-  static parseBeachMatches(xmlResponse: string, tournamentId: string): BeachMatchCore[] {
+  static parseBeachMatches(xmlResponse: string, tournamentId: string, tournamentTimezone?: string): BeachMatchCore[] {
     try {
       const matches: BeachMatchCore[] = [];
       
@@ -207,7 +213,7 @@ export class VisResponseParser {
 
       for (const matchXml of matchMatches) {
         try {
-          const match = this.parseSingleMatch(matchXml, tournamentId);
+          const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone);
           if (match) {
             matches.push(match);
           }
@@ -293,7 +299,7 @@ export class VisResponseParser {
   /**
    * Parse single match from XML
    */
-  private static parseSingleMatch(matchXml: string, tournamentId: string): BeachMatchCore | null {
+  private static parseSingleMatch(matchXml: string, tournamentId: string, tournamentTimezone?: string): BeachMatchCore | null {
     // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
     const visNo = this.extractXmlAttribute(matchXml, 'No');
     const noInTournament = this.extractXmlAttribute(matchXml, 'NoInTournament');
@@ -326,18 +332,63 @@ export class VisResponseParser {
     const localTimeOffset = this.extractXmlAttribute(matchXml, 'LocalTimeOffset');
     const timezone = this.extractXmlAttribute(matchXml, 'TimeZone');
 
-    
-    // Build scheduledDateTime safely - handle cases where localTime might already include seconds
+    // TIMEZONE-SAFE: Build scheduled date/time following robust approach (prevents 18→17 bug)
+    // Interpret LocalDate+LocalTime in tournament timezone, not as UTC
     let scheduledDateTime: string;
+    let scheduledDateTournament: string;
+    let scheduledTimeTournament: string;
+    let scheduledDateTimeTournament: string;
+    let scheduledEpochMs: number;
+    let scheduledTz: string;
+
     if (localDate && localTime) {
-      // If localTime already has seconds (HH:MM:SS), don't add :00
-      // If it's just HH:MM, add :00
-      const timeWithSeconds = localTime.includes(':') && localTime.split(':').length === 3 
-        ? localTime 
+      // Normalize time format to include seconds
+      const timeWithSeconds = localTime.includes(':') && localTime.split(':').length === 3
+        ? localTime
         : `${localTime}:00`;
-      scheduledDateTime = `${localDate}T${timeWithSeconds}`;
+
+      // Determine tournament timezone - use multiple fallback sources
+      const resolvedTournamentTz = tournamentTimezone ||
+                                   timezone ||
+                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) ||
+                                   'UTC'; // Safe fallback
+
+      try {
+        // SOLUTION: Interpret LocalDate+LocalTime in tournament timezone, not as UTC
+        const dtLocal = dayjs.tz(`${localDate}T${timeWithSeconds}`, resolvedTournamentTz);
+
+        // 1) UTC ISO for global sorting and storage
+        scheduledDateTime = dtLocal.toISOString(); // e.g., "2025-09-18T17:00:00.000Z"
+
+        // 2) Tournament-local representations (immune to browser timezone)
+        scheduledDateTournament = dtLocal.format("YYYY-MM-DD");      // "2025-09-18"
+        scheduledTimeTournament = dtLocal.format("HH:mm:ss");        // "14:00:00"
+        scheduledDateTimeTournament = dtLocal.format("YYYY-MM-DD[T]HH:mm:ss"); // "2025-09-18T14:00:00"
+
+        // 3) Epoch for stable sorting
+        scheduledEpochMs = dtLocal.valueOf();
+
+        // 4) Tournament timezone for reference
+        scheduledTz = resolvedTournamentTz;
+
+      } catch (error) {
+        // Fallback if timezone parsing fails
+        console.warn(`[VisResponseParser] Timezone parsing failed for ${localDate}T${timeWithSeconds} in ${resolvedTournamentTz}:`, error);
+        scheduledDateTime = new Date().toISOString();
+        scheduledDateTournament = localDate;
+        scheduledTimeTournament = timeWithSeconds;
+        scheduledDateTimeTournament = `${localDate}T${timeWithSeconds}`;
+        scheduledEpochMs = Date.now();
+        scheduledTz = 'UTC';
+      }
     } else {
+      // No date/time available
       scheduledDateTime = new Date().toISOString();
+      scheduledDateTournament = new Date().toISOString().split('T')[0];
+      scheduledTimeTournament = '00:00:00';
+      scheduledDateTimeTournament = `${scheduledDateTournament}T${scheduledTimeTournament}`;
+      scheduledEpochMs = Date.now();
+      scheduledTz = tournamentTimezone || 'UTC';
     }
     
     const court: CourtInfo = {
@@ -390,7 +441,16 @@ export class VisResponseParser {
       status,
       rawStatus, // Preserve original VIS status (numeric or string)
       court,
-      scheduledDateTime,
+      scheduledDateTime, // Legacy field for backward compatibility
+      // NEW: Timezone-safe scheduled date/time structure (prevents 18→17 bug)
+      scheduled: {
+        utcISO: scheduledDateTime,                  // UTC timestamp for global sorting
+        tz: scheduledTz,                           // Tournament timezone
+        dateTournament: scheduledDateTournament,    // "2025-09-18" (immune to browser)
+        timeTournament: scheduledTimeTournament,    // "14:00:00" (tournament time)
+        dateTimeTournament: scheduledDateTimeTournament, // "2025-09-18T14:00:00" (tournament)
+        epochMs: scheduledEpochMs                   // Epoch for stable sorting
+      },
       actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),
       actualEndTime: this.extractXmlAttribute(matchXml, 'EndTime'),
       team1: finalTeam1,
@@ -834,5 +894,62 @@ export class VisResponseParser {
       default:
         return OfficialType.TECHNICAL;
     }
+  }
+
+  /**
+   * Parse timezone from LocalTimeOffset format (e.g., "+03:00", "-05:00")
+   * Converts offset to best-guess IANA timezone name
+   */
+  private static parseTimezoneFromOffset(localTimeOffset: string): string | null {
+    if (!localTimeOffset || typeof localTimeOffset !== 'string') {
+      return null;
+    }
+
+    // Clean and validate offset format
+    const cleanOffset = localTimeOffset.trim();
+    const offsetMatch = cleanOffset.match(/^([+-])(\d{1,2}):?(\d{2})$/);
+
+    if (!offsetMatch) {
+      return null;
+    }
+
+    const [, sign, hours, minutes] = offsetMatch;
+    const offsetHours = parseInt(hours, 10);
+    const offsetMinutes = parseInt(minutes, 10);
+
+    // Convert to total offset in hours
+    const totalOffset = (offsetHours + offsetMinutes / 60) * (sign === '+' ? 1 : -1);
+
+    // Map common offsets to IANA timezones (best effort)
+    const offsetToTimezone: Record<number, string> = {
+      '-12': 'Pacific/Wake',
+      '-11': 'Pacific/Midway',
+      '-10': 'Pacific/Honolulu',
+      '-9': 'America/Anchorage',
+      '-8': 'America/Los_Angeles',
+      '-7': 'America/Denver',
+      '-6': 'America/Chicago',
+      '-5': 'America/New_York',
+      '-4': 'America/Halifax',
+      '-3': 'America/Sao_Paulo',  // ← Brazil timezone
+      '-2': 'America/Noronha',
+      '-1': 'Atlantic/Azores',
+      '0': 'UTC',
+      '1': 'Europe/Paris',
+      '2': 'Europe/Rome',        // ← Italy timezone
+      '3': 'Europe/Moscow',
+      '4': 'Asia/Dubai',
+      '5': 'Asia/Karachi',
+      '6': 'Asia/Dhaka',
+      '7': 'Asia/Bangkok',
+      '8': 'Asia/Singapore',
+      '9': 'Asia/Tokyo',
+      '10': 'Australia/Sydney',
+      '11': 'Australia/Lord_Howe',
+      '12': 'Pacific/Fiji'
+    };
+
+    const offsetKey = totalOffset.toString();
+    return offsetToTimezone[offsetKey] || null;
   }
 }

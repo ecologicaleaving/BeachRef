@@ -566,43 +566,35 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               </Text>
               <View style={styles.timeDisplayContainer}>
                 {(() => {
-                  // FIXED: Treat scheduledDateTime as local tournament time, calculate user time
-                  const timeDisplay = match.scheduledDateTime ? (() => {
-                    // Step 1: scheduledDateTime is already correct local tournament time
-                    const localTime = new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false
-                    });
+                  // TIMEZONE-SAFE: Use pre-formatted tournament time (prevents 18→17 bug)
+                  const timeDisplay = (() => {
+                    // Try new timezone-safe structure first
+                    const scheduled = (match as any).scheduled;
+                    if (scheduled) {
+                      // Use pre-calculated tournament time (immune to browser timezone)
+                      const localTime = scheduled.timeTournament; // "14:00:00" format
 
-                    // Step 2: Calculate user's timezone time if different from tournament timezone
-                    let userTime = null;
-                    if (tournamentTimezone) {
-                      try {
-                        // Create a date as if it's in the tournament timezone
-                        const matchDateTime = match.scheduledDateTime;
+                      // Display just HH:MM
+                      const displayTime = localTime.substring(0, 5); // "14:00"
 
-                        // If we have UTC components from VIS API, use them for accurate conversion
-                        if ((match as any).utcDate && (match as any).utcTime) {
-                          const utcDateTime = `${(match as any).utcDate}T${(match as any).utcTime}Z`;
-                          const userTimeFormatted = new Date(utcDateTime).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                          });
-
-                          // Only show if different from local time
-                          if (userTimeFormatted !== localTime) {
-                            userTime = userTimeFormatted;
-                          }
-                        }
-                      } catch (error) {
-                        console.warn('Error calculating user time:', error);
-                      }
+                      // For now, we don't show user time vs tournament time
+                      // (can be added later if needed)
+                      return { localTime: displayTime, userTime: null };
                     }
 
-                    return { localTime, userTime };
-                  })() : { localTime: 'TBD', userTime: null };
+                    // Fallback for backward compatibility - but this is the buggy path
+                    if (match.scheduledDateTime) {
+                      console.warn('[MatchCard] Using fallback scheduledDateTime - timezone bug possible');
+                      const localTime = new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      });
+                      return { localTime, userTime: null };
+                    }
+
+                    return { localTime: 'TBD', userTime: null };
+                  })();
                   return (
                     <>
                       <Text style={styles.matchTime}>

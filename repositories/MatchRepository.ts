@@ -229,7 +229,7 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
       }
 
       // Parse response
-      const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentId);
+      const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentId, undefined);
 
       // Apply additional filters
       let filteredMatches = matches;

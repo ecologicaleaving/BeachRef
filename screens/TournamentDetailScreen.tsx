@@ -1373,7 +1373,8 @@ const TournamentDetailScreenContent: React.FC = () => {
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
             if (matchResponse.success && matchResponse.xmlData) {
-              const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no);
+              // TODO: Pass tournament timezone when available for timezone-safe parsing
+              const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no, undefined);
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
@@ -1425,10 +1426,10 @@ const TournamentDetailScreenContent: React.FC = () => {
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);
           
           if (fallbackResponse.success && fallbackResponse.xmlData) {
-            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo);
+            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, undefined);
           }
         } else if (matchResponse.success && matchResponse.xmlData) {
-          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo);
+          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, undefined);
         }
       }
       

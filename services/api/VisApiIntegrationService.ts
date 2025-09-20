@@ -181,7 +181,7 @@ export class VisApiIntegrationService {
       }
 
       // Parse matches directly to core domain types
-      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo);
+      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo, undefined);
 
       // Create metrics
       const metrics = this.createRequestMetrics(
@@ -257,7 +257,7 @@ export class VisApiIntegrationService {
       }
 
       // Parse initial match list to get match numbers
-      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo);
+      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo, undefined);
       
       const listMetrics = this.createRequestMetrics(
         VisApiEndpoint.GET_BEACH_MATCH_LIST,

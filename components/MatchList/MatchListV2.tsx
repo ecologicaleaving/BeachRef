@@ -775,23 +775,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       if (scheduledA?.epochMs && scheduledB?.epochMs) {
         // Use pre-calculated epoch timestamps (timezone-safe)
-        timeA = scheduledA.epochMs;
-        timeB = scheduledB.epochMs;
-        console.log(`🔧 SORT: Using epochMs - A: ${new Date(timeA).toISOString()} vs B: ${new Date(timeB).toISOString()}`);
+        return scheduledB.epochMs - scheduledA.epochMs; // Descending order
       } else {
-        // Fallback to legacy method (but this is the buggy path)
-        const dateA = new Date(a.scheduledDateTime);
-        const dateB = new Date(b.scheduledDateTime);
-        timeA = dateA.getTime();
-        timeB = dateB.getTime();
-        console.log(`⚠️ SORT: Using legacy - A: ${a.scheduledDateTime} vs B: ${b.scheduledDateTime}`);
-        console.log(`⚠️ SORT: Has scheduled? A: ${!!scheduledA} B: ${!!scheduledB}`);
-        if (scheduledA) console.log(`⚠️ SORT: A scheduled:`, scheduledA);
-        if (scheduledB) console.log(`⚠️ SORT: B scheduled:`, scheduledB);
-      }
+        // For legacy data without scheduled structure, use string comparison
+        // ISO datetime strings (YYYY-MM-DDTHH:mm:ss) sort correctly as strings
+        const timeStrA = scheduledA?.dateTimeTournament || a.scheduledDateTime;
+        const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
 
-      // Sort dates in descending order (newest first) - maintain original order
-      return timeB - timeA;
+        // String comparison works for ISO format (newer dates have higher string values)
+        return timeStrB.localeCompare(timeStrA); // Descending order
+      }
     });
 
     return { filteredMatches: sortedValidMatches, tbdMatches };
@@ -993,8 +986,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           if (scheduledA?.epochMs && scheduledB?.epochMs) {
             return scheduledA.epochMs - scheduledB.epochMs;
           }
-          // Fallback to legacy method
-          return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
+          // Use string comparison for legacy data (works with ISO format)
+          const timeStrA = scheduledA?.dateTimeTournament || a.scheduledDateTime;
+          const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
+          return timeStrA.localeCompare(timeStrB); // Ascending order for autoscroll
         });
         targetMatchId = sortedTodayMatches[0].id;
         scrollReason = 'Today first match';

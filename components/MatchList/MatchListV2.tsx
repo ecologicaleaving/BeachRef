@@ -777,12 +777,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         // Use pre-calculated epoch timestamps (timezone-safe)
         timeA = scheduledA.epochMs;
         timeB = scheduledB.epochMs;
+        console.log(`🔧 SORT: Using epochMs - A: ${new Date(timeA).toISOString()} vs B: ${new Date(timeB).toISOString()}`);
       } else {
         // Fallback to legacy method (but this is the buggy path)
         const dateA = new Date(a.scheduledDateTime);
         const dateB = new Date(b.scheduledDateTime);
         timeA = dateA.getTime();
         timeB = dateB.getTime();
+        console.log(`⚠️ SORT: Using legacy - A: ${a.scheduledDateTime} vs B: ${b.scheduledDateTime}`);
+        console.log(`⚠️ SORT: Has scheduled? A: ${!!scheduledA} B: ${!!scheduledB}`);
+        if (scheduledA) console.log(`⚠️ SORT: A scheduled:`, scheduledA);
+        if (scheduledB) console.log(`⚠️ SORT: B scheduled:`, scheduledB);
       }
 
       // Sort dates in descending order (newest first) - maintain original order

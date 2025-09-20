@@ -36,13 +36,42 @@ function extractNumericIdentifier(...values: Array<unknown>): number | null {
     }
 
     const raw = String(value).trim();
-    if (!/^\\d+$/.test(raw)) {
+
+    // Handle pure numeric strings first
+    if (/^\d+$/.test(raw)) {
+      const parsed = Number.parseInt(raw, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
       continue;
     }
 
-    const parsed = Number.parseInt(raw, 10);
-    if (!Number.isNaN(parsed) && parsed > 0) {
-      return parsed;
+    // Handle legacy composite match IDs like "8243_courtcc_1758366000000_31"
+    // Extract the last numeric part after final underscore (likely the actual match number)
+    const lastNumericMatch = raw.match(/_(\d+)$/);
+    if (lastNumericMatch) {
+      const parsed = Number.parseInt(lastNumericMatch[1], 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+
+    // Extract the first numeric part before underscore (fallback - might be tournament number)
+    const firstNumericMatch = raw.match(/^(\d+)_/);
+    if (firstNumericMatch) {
+      const parsed = Number.parseInt(firstNumericMatch[1], 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+
+    // Extract any numeric sequence from the string as fallback
+    const anyNumericMatch = raw.match(/\d+/);
+    if (anyNumericMatch) {
+      const parsed = Number.parseInt(anyNumericMatch[0], 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
     }
   }
 
@@ -208,6 +237,7 @@ export default function MatchDetailScreen() {
    */
   const loadMatchDetail = async () => {
     try {
+      // Preserve live data during refresh - don't reset it
       setState(prev => ({ ...prev, loading: true, error: null }));
 
       const numericRouteMatch = matchNo?.trim() ?? '';
@@ -232,6 +262,17 @@ export default function MatchDetailScreen() {
             (parsedMatch as any).matchId,
             (parsedMatch as any).id
           );
+
+          if (__DEV__) {
+            console.log('[MatchDetail] legacy match data extraction', {
+              visNo: (parsedMatch as any).visNo,
+              visMatchId: (parsedMatch as any).visMatchId,
+              visMatchNo: (parsedMatch as any).visMatchNo,
+              matchNo: (parsedMatch as any).matchNo,
+              No: (parsedMatch as any).No,
+              extractedMatchIdentifier: matchIdentifier
+            });
+          }
 
           if (matchIdentifier !== null) {
             resolvedMatchNumber = matchIdentifier;
@@ -263,15 +304,16 @@ export default function MatchDetailScreen() {
         throw new Error('Unable to determine match identifier');
       }
 
-      if (resolvedTournamentNumber !== null && Number.isNaN(resolvedTournamentNumber)) {
-        resolvedTournamentNumber = null;
+      if (resolvedTournamentNumber === null || Number.isNaN(resolvedTournamentNumber)) {
+        throw new Error('Unable to determine tournament identifier');
       }
-
       if (__DEV__) {
         console.log('[MatchDetail] resolved match number', resolvedMatchNumber, {
           fromRoute: matchNo,
           hasLegacy: !!matchData,
-          tournament: resolvedTournamentNumber ?? tournamentNo
+          tournament: resolvedTournamentNumber ?? tournamentNo,
+          extractedFromRouteMatch: extractNumericIdentifier(numericRouteMatch),
+          routeMatchRaw: numericRouteMatch
         });
       }
 
@@ -307,6 +349,15 @@ export default function MatchDetailScreen() {
    * Update live data with optimization for frequent updates
    */
   const updateLiveData = useCallback((liveData: BeachMatchLiveDTO) => {
+    if (__DEV__) {
+      console.log('[MatchDetail] updateLiveData called', {
+        newStatus: liveData.status,
+        newCurrentSet: liveData.currentSet,
+        newPoints: liveData.points,
+        lastUpdate: liveData.lastUpdate
+      });
+    }
+
     setState(prev => {
       if (prev.liveData && prev.lastLiveUpdate === liveData.lastUpdate) {
         const unchanged =
@@ -316,8 +367,15 @@ export default function MatchDetailScreen() {
           prev.liveData.points.b === liveData.points.b;
 
         if (unchanged) {
+          if (__DEV__) {
+            console.log('[MatchDetail] updateLiveData - no changes detected, skipping update');
+          }
           return prev;
         }
+      }
+
+      if (__DEV__) {
+        console.log('[MatchDetail] updateLiveData - applying live data update');
       }
 
       return {
@@ -362,9 +420,27 @@ export default function MatchDetailScreen() {
       if (__DEV__) {
         const matchIdentifier = liveData?.match?.no ?? state.baseMatch?.no ?? matchNumber;
         console.log('[LiveMatch] VIS BeachLive payload', matchIdentifier, liveData);
+
+        // Log the sets data specifically
+        console.log('[LiveMatch] Raw sets data from VIS:', liveData?.sets);
+        console.log('[LiveMatch] Team scores from VIS:', {
+          teamA: liveData?.teamA,
+          teamB: liveData?.teamB
+        });
       }
 
       const transformedLiveData = transformBeachLiveToDTO(liveData);
+
+      if (__DEV__) {
+        console.log('[LiveMatch] Transformed live data for UI:', {
+          status: transformedLiveData.status,
+          currentSet: transformedLiveData.currentSet,
+          points: transformedLiveData.points,
+          closedSets: transformedLiveData.closedSets,
+          lastUpdate: transformedLiveData.lastUpdate
+        });
+      }
+
       updateLiveData(transformedLiveData);
     };
 
@@ -392,8 +468,25 @@ export default function MatchDetailScreen() {
    * Transform BeachLive data to BeachMatchLiveDTO
    */
   const transformBeachLiveToDTO = useCallback((beachLive: BeachLive): BeachMatchLiveDTO => {
+    if (__DEV__) {
+      console.log('[LiveMatch] Processing sets for transformation:', beachLive.sets?.map(set => ({
+        no: set.no,
+        status: set.status,
+        pointsTeamA: set.pointsTeamA,
+        pointsTeamB: set.pointsTeamB
+      })));
+    }
+
     const currentSet = getCurrentSetFromBeachLive(beachLive);
     const closedSets = extractClosedSetsFromBeachLive(beachLive.sets);
+
+    if (__DEV__) {
+      console.log('[LiveMatch] Transformation results:', {
+        currentSet: currentSet ? { no: currentSet.no, pointsA: currentSet.pointsTeamA, pointsB: currentSet.pointsTeamB, status: currentSet.status } : null,
+        closedSets,
+        totalSetsInData: beachLive.sets?.length || 0
+      });
+    }
     const events = beachLive.events?.map(event => ({
       set: event.setNo,
       rally: event.sequence,
@@ -541,6 +634,13 @@ export default function MatchDetailScreen() {
   };
 
   const handleRefresh = () => {
+    if (__DEV__) {
+      console.log('[MatchDetail] handleRefresh called', {
+        hasLiveData: !!state.liveData,
+        isPollingActive: state.isPollingActive,
+        baseMatchStatus: state.baseMatch?.status
+      });
+    }
     loadMatchDetail();
   };
 
@@ -585,13 +685,27 @@ export default function MatchDetailScreen() {
    * Merge stable and live data for rendering
    */
   const getMergedMatchData = useMemo(() => {
+    if (__DEV__) {
+      console.log('[MatchDetail] getMergedMatchData calculation', {
+        hasLegacyMatch: !!legacyData.legacyMatch,
+        hasBaseMatch: !!state.baseMatch,
+        hasLiveData: !!state.liveData,
+        liveDataStatus: state.liveData?.status,
+        renderKey: state.renderKey
+      });
+    }
+
     // Legacy support for backward compatibility
     if (legacyData.legacyMatch) {
+      const isLive = !!state.liveData && !isMatchFinished(state.liveData?.status || 'Unknown');
+      if (__DEV__) {
+        console.log('[MatchDetail] using legacy data path', { isLive, hasLiveData: !!state.liveData });
+      }
       return {
         type: 'legacy' as const,
         data: legacyData.legacyMatch,
-        isLive: false, // Legacy data is not live
-        live: null
+        isLive,
+        live: state.liveData
       };
     }
 
@@ -600,7 +714,17 @@ export default function MatchDetailScreen() {
       return null;
     }
 
-    return {
+    const mergedSets = [
+      ...(state.liveData?.closedSets || state.baseMatch.sets || []),
+      ...(state.liveData?.currentSet && state.liveData.points.a !== null ? [{
+        set: state.liveData.currentSet,
+        a: state.liveData.points.a,
+        b: state.liveData.points.b,
+        isLive: true
+      }] : [])
+    ];
+
+    const result = {
       type: 'dto' as const,
       data: {
         // Base data (stable)
@@ -610,19 +734,24 @@ export default function MatchDetailScreen() {
         status: state.liveData?.status || state.baseMatch.status,
 
         // Sets: merge closed sets + current set
-        sets: [
-          ...(state.liveData?.closedSets || state.baseMatch.sets || []),
-          ...(state.liveData?.currentSet && state.liveData.points.a !== null ? [{
-            set: state.liveData.currentSet,
-            a: state.liveData.points.a,
-            b: state.liveData.points.b,
-            isLive: true
-          }] : [])
-        ]
+        sets: mergedSets
       },
       isLive: !!state.liveData && !isMatchFinished(state.liveData.status),
       live: state.liveData
     };
+
+    if (__DEV__) {
+      console.log('[MatchDetail] DTO merged data result:', {
+        isLive: result.isLive,
+        status: result.data.status,
+        sets: result.data.sets,
+        liveCurrentSet: state.liveData?.currentSet,
+        livePoints: state.liveData?.points,
+        baseSets: state.baseMatch.sets
+      });
+    }
+
+    return result;
   }, [state.baseMatch, state.liveData, legacyData.legacyMatch, state.renderKey]);
 
   // Helper function to determine if match is BeachMatchCore type (legacy)
@@ -929,6 +1058,7 @@ export default function MatchDetailScreen() {
           showStatusBar={false}
           showLogo={false}
           showBurgerMenu={true}
+          useBackButton={true}
         />
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#10B981" />
@@ -951,6 +1081,7 @@ export default function MatchDetailScreen() {
           showStatusBar={false}
           showLogo={false}
           showBurgerMenu={true}
+          useBackButton={true}
         />
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>{state.error || 'No match data available'}</Text>
@@ -975,6 +1106,7 @@ export default function MatchDetailScreen() {
         showStatusBar={false}
         showLogo={false}
         showBurgerMenu={true}
+        useBackButton={true}
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>

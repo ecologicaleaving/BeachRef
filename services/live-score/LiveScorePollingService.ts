@@ -475,7 +475,7 @@ export class LiveScorePollingService {
       const courtNoValue = this.extractXmlValue(xmlData, 'CourtNo') || attr('CourtNo');
       const courtNo = this.parseOptionalInt(courtNoValue) ?? 1;
       const courtNameValue = this.extractXmlValue(xmlData, 'CourtName') || attr('CourtName');
-      const courtName = courtNameValue || Court ;
+      const courtName = courtNameValue || `Court ${courtNo}`;
 
       const isBallInPlay = this.parseXmlBoolean(this.extractXmlValue(xmlData, 'BallInPlay') || attr('BallInPlay'));
       const noServingTeam = this.parseOptionalInt(this.extractXmlValue(xmlData, 'ServingTeam') || attr('ServingTeam')) ?? 0;
@@ -558,9 +558,9 @@ export class LiveScorePollingService {
       if (sets.length === 0) {
         const fallbackSets: BeachLiveSet[] = [];
         for (let setIndex = 1; setIndex <= 5; setIndex++) {
-          const pointsAKey = PointsTeamASet;
-          const pointsBKey = PointsTeamBSet;
-          const statusKey = SetStatus;
+          const pointsAKey = `PointsTeamASet${setIndex}`;
+          const pointsBKey = `PointsTeamBSet${setIndex}`;
+          const statusKey = `SetStatus${setIndex}`;
 
           const pointsAValue = this.extractXmlValue(xmlData, pointsAKey) || attr(pointsAKey);
           const pointsBValue = this.extractXmlValue(xmlData, pointsBKey) || attr(pointsBKey);
@@ -783,6 +783,26 @@ export class LiveScorePollingService {
 
     const normalized = value.trim().toLowerCase();
 
+    // Handle numeric status codes from VIS API
+    if (/^\d+$/.test(normalized)) {
+      const statusCode = parseInt(normalized, 10);
+
+      // VIS status codes mapping based on observed behavior:
+      // 0 = Not Started
+      // 1-4 = In Progress (different states within a set)
+      // 5 = Finished (set is complete)
+      // 6+ = Other states (treat as finished for safety)
+
+      if (statusCode === 0) {
+        return BeachSetStatus.NOT_STARTED;
+      } else if (statusCode >= 1 && statusCode <= 4) {
+        return BeachSetStatus.IN_PROGRESS;
+      } else if (statusCode >= 5) {
+        return BeachSetStatus.FINISHED;
+      }
+    }
+
+    // Handle string status values
     if (['inprogress', 'running', 'live', 'playing'].includes(normalized)) {
       return BeachSetStatus.IN_PROGRESS;
     }

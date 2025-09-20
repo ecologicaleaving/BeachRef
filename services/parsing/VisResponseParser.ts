@@ -431,7 +431,8 @@ export class VisResponseParser {
    * Parse tournament dates from XML
    */
   private static parseTournamentDates(tournamentXml: string): TournamentDates {
-    const startDate = this.extractXmlValue(tournamentXml, 'StartDate') || new Date().toISOString();
+    // Use date-only format to prevent timezone interpretation issues
+    const startDate = this.extractXmlValue(tournamentXml, 'StartDate') || new Date().toISOString().split('T')[0];
     const endDate = this.extractXmlValue(tournamentXml, 'EndDate') || startDate;
     
     return {

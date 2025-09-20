@@ -767,11 +767,26 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // Sort valid matches by date only (no LIVE priority to maintain original order)
     const sortedValidMatches = validMatches.sort((a, b) => {
-      const dateA = new Date(a.scheduledDateTime);
-      const dateB = new Date(b.scheduledDateTime);
+      // Use timezone-safe epoch for sorting when available
+      const scheduledA = (a as any).scheduled;
+      const scheduledB = (b as any).scheduled;
+
+      let timeA: number, timeB: number;
+
+      if (scheduledA?.epochMs && scheduledB?.epochMs) {
+        // Use pre-calculated epoch timestamps (timezone-safe)
+        timeA = scheduledA.epochMs;
+        timeB = scheduledB.epochMs;
+      } else {
+        // Fallback to legacy method (but this is the buggy path)
+        const dateA = new Date(a.scheduledDateTime);
+        const dateB = new Date(b.scheduledDateTime);
+        timeA = dateA.getTime();
+        timeB = dateB.getTime();
+      }
 
       // Sort dates in descending order (newest first) - maintain original order
-      return dateB.getTime() - dateA.getTime();
+      return timeB - timeA;
     });
 
     return { filteredMatches: sortedValidMatches, tbdMatches };
@@ -892,12 +907,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const allDates = Object.keys(groups).sort();
 
     // Sort dates in descending order (newest first)
+    // Since dateKeys are in YYYY-MM-DD format, string comparison works correctly
     const result = Object.entries(groups).sort((a, b) => {
-      const dateA = new Date(a[0]);
-      const dateB = new Date(b[0]);
-
-      // Always sort dates in descending order (newest first)
-      return dateB.getTime() - dateA.getTime();
+      // Direct string comparison for YYYY-MM-DD format (newer dates have higher string values)
+      return b[0].localeCompare(a[0]); // Descending order
     });
 
     return result;
@@ -968,6 +981,14 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Sort today's matches chronologically and get the first one
       if (todayMatches.length > 0) {
         const sortedTodayMatches = todayMatches.sort((a, b) => {
+          // Use timezone-safe epoch for sorting when available
+          const scheduledA = (a as any).scheduled;
+          const scheduledB = (b as any).scheduled;
+
+          if (scheduledA?.epochMs && scheduledB?.epochMs) {
+            return scheduledA.epochMs - scheduledB.epochMs;
+          }
+          // Fallback to legacy method
           return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
         });
         targetMatchId = sortedTodayMatches[0].id;

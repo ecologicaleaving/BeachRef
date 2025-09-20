@@ -688,7 +688,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // Show date range of input matches
     if (matchesToFilter.length > 0) {
-      const dates = matchesToFilter.map(m => m.scheduledDateTime.split('T')[0]).sort();
+      const dates = matchesToFilter.map(m => {
+        // Use timezone-safe date from scheduled structure if available
+        const scheduled = (m as any).scheduled;
+        if (scheduled?.dateTournament) {
+          return scheduled.dateTournament;
+        }
+        // Fallback to legacy method (but this is the buggy path)
+        return m.scheduledDateTime.split('T')[0];
+      }).sort();
       const uniqueDates = [...new Set(dates)];
     }
 
@@ -856,12 +864,21 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const groups: { [date: string]: typeof filteredMatches } = {};
 
     filteredMatches.forEach((match, index) => {
-      const date = new Date(match.scheduledDateTime);
-      if (isNaN(date.getTime())) {
-        return;
-      }
+      // Use timezone-safe date from scheduled structure if available
+      const scheduled = (match as any).scheduled;
+      let dateKey: string;
 
-      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      if (scheduled?.dateTournament) {
+        // Use pre-calculated tournament date (immune to browser timezone)
+        dateKey = scheduled.dateTournament; // Already in YYYY-MM-DD format
+      } else {
+        // Fallback to legacy method (but this is the buggy path)
+        const date = new Date(match.scheduledDateTime);
+        if (isNaN(date.getTime())) {
+          return;
+        }
+        dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      }
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -935,6 +952,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // AUTOSCROLL: Looking for today matches
 
       const todayMatches = filteredMatches.filter(match => {
+        // Use timezone-safe date from scheduled structure if available
+        const scheduled = (match as any).scheduled;
+        if (scheduled?.dateTournament) {
+          return scheduled.dateTournament === todayStr;
+        }
+        // Fallback to legacy method (but this is the buggy path)
         const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
         return matchDate === todayStr;
       });
@@ -1001,6 +1024,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     const hasTodayMatches = filteredMatches.some(match => {
+      // Use timezone-safe date from scheduled structure if available
+      const scheduled = (match as any).scheduled;
+      if (scheduled?.dateTournament) {
+        return scheduled.dateTournament === todayStr;
+      }
+      // Fallback to legacy method (but this is the buggy path)
       const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
       return matchDate === todayStr;
     });

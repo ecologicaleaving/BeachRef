@@ -775,7 +775,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       if (scheduledA?.epochMs && scheduledB?.epochMs) {
         // Use pre-calculated epoch timestamps (timezone-safe)
-        return scheduledB.epochMs - scheduledA.epochMs; // Descending order
+        const diff = scheduledB.epochMs - scheduledA.epochMs;
+        return sortOrder === 'desc' ? diff : -diff;
       } else {
         // For legacy data without scheduled structure, use string comparison
         // ISO datetime strings (YYYY-MM-DDTHH:mm:ss) sort correctly as strings
@@ -783,7 +784,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
 
         // String comparison works for ISO format (newer dates have higher string values)
-        return timeStrB.localeCompare(timeStrA); // Descending order
+        const comparison = timeStrB.localeCompare(timeStrA);
+        return sortOrder === 'desc' ? comparison : -comparison;
       }
     });
 
@@ -904,15 +906,16 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     const allDates = Object.keys(groups).sort();
 
-    // Sort dates in descending order (newest first)
+    // Sort dates according to sortOrder
     // Since dateKeys are in YYYY-MM-DD format, string comparison works correctly
     const result = Object.entries(groups).sort((a, b) => {
       // Direct string comparison for YYYY-MM-DD format (newer dates have higher string values)
-      return b[0].localeCompare(a[0]); // Descending order
+      const comparison = b[0].localeCompare(a[0]); // Base descending order
+      return sortOrder === 'desc' ? comparison : -comparison;
     });
 
     return result;
-  }, [filteredMatches]);
+  }, [filteredMatches, sortOrder]);
 
   // Initialize expanded dates - expand today's panel if it exists
   useEffect(() => {

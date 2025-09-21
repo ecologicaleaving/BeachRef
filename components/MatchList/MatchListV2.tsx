@@ -10,6 +10,7 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatTimeWithTimezoneSync } from '../../utils/dateFormatters';
 import { DateTime } from 'luxon';
+import { sortMatchGroups } from '../../utils/matchSorting';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -882,74 +883,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     });
 
-    // Sort matches within each group by time (chronological) and gender (ignoring global sortOrder)
-    Object.keys(groups).forEach(dateKey => {
-      groups[dateKey].sort((a, b) => {
-        // Get time values for comparison - use multiple fallback methods
-        const getTimeValue = (match: any): { epochMs?: number; isoString?: string } => {
-          const scheduled = match.scheduled;
-
-          // Priority 1: Use timezone-safe epoch timestamp if available
-          if (scheduled?.epochMs) {
-            return { epochMs: scheduled.epochMs };
-          }
-
-          // Priority 2: Use timezone-safe datetime string if available
-          if (scheduled?.dateTimeTournament) {
-            return { isoString: scheduled.dateTimeTournament };
-          }
-
-          // Priority 3: Fall back to original scheduledDateTime
-          if (match.scheduledDateTime) {
-            return { isoString: match.scheduledDateTime };
-          }
-
-          return {};
-        };
-
-        const timeA = getTimeValue(a);
-        const timeB = getTimeValue(b);
-
-        // Compare times
-        let timeDiff = 0;
-
-        if (timeA.epochMs && timeB.epochMs) {
-          // Both have epoch timestamps - direct numeric comparison
-          timeDiff = timeA.epochMs - timeB.epochMs;
-        } else if (timeA.isoString && timeB.isoString) {
-          // Both have ISO strings - lexicographic comparison works for ISO format
-          timeDiff = timeA.isoString.localeCompare(timeB.isoString);
-        } else {
-          // Mixed or missing data - try to convert to Date for comparison
-          const dateA = timeA.epochMs ? new Date(timeA.epochMs) : new Date(timeA.isoString || 0);
-          const dateB = timeB.epochMs ? new Date(timeB.epochMs) : new Date(timeB.isoString || 0);
-          timeDiff = dateA.getTime() - dateB.getTime();
-        }
-
-        // FIXED: Within each day panel, always sort matches chronologically by time (earliest first)
-        // The sortOrder should only affect the order of date panels, not the time order within each day
-        if (timeDiff !== 0) {
-          return timeDiff; // Always ascending time order within each day
-        }
-
-        // If times are the same, sort by gender (Men 'M' before Women 'W')
-        const genderA = (a as any).tournamentGender || 'M';
-        const genderB = (b as any).tournamentGender || 'M';
-        return genderA.localeCompare(genderB);
-      });
-    });
-
-    // Sort dates according to sortOrder
-    // Since dateKeys are in YYYY-MM-DD format, string comparison works correctly
-    const result = Object.entries(groups).sort((a, b) => {
-      // Direct string comparison for YYYY-MM-DD format (newer dates have higher string values)
-      const comparison = b[0].localeCompare(a[0]); // Base descending order
-      return sortOrder === 'desc' ? comparison : -comparison;
-    });
-
+    // REFACTOR: Use robust sorting utility to prevent regressions
+    // This replaces complex inline sorting logic with tested, reusable comparators
+    const groupedEntries = Object.entries(groups);
+    const result = sortMatchGroups(groupedEntries, sortOrder, tournamentTimezone);
 
     return result;
-  }, [filteredMatches, sortOrder]);
+  }, [filteredMatches, sortOrder, tournamentTimezone]);
 
   // Initialize expanded dates - expand today's panel if it exists
   useEffect(() => {

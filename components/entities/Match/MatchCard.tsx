@@ -74,16 +74,56 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
 
-  // Get live scores from match result
-  const team1Score = match.result?.team1Sets || 0;
-  const team2Score = match.result?.team2Sets || 0;
+  // Get live scores from match result - support both formats
+  const getTeamScores = () => {
+    // NEW: BeachMatchLiveDTO format
+    const beachMatchDTO = match as any;
+    if (beachMatchDTO.score?.sets) {
+      let team1Wins = 0;
+      let team2Wins = 0;
+
+      for (const setScore of beachMatchDTO.score.sets) {
+        const homeScore = setScore.home || 0;
+        const awayScore = setScore.away || 0;
+
+        // Determine set winner (21+ with 2-point lead, or 15+ in deciding set)
+        if (homeScore >= 21 && homeScore - awayScore >= 2) {
+          team1Wins++;
+        } else if (awayScore >= 21 && awayScore - homeScore >= 2) {
+          team2Wins++;
+        }
+      }
+
+      return { team1Score: team1Wins, team2Score: team2Wins };
+    }
+
+    // LEGACY: Original format
+    return {
+      team1Score: match.result?.team1Sets || 0,
+      team2Score: match.result?.team2Sets || 0
+    };
+  };
+
+  const { team1Score, team2Score } = getTeamScores();
 
   // Track score age for LIVE matches
   const [scoreAge, setScoreAge] = useState<number>(0);
   const [lastScoreUpdate, setLastScoreUpdate] = useState<Date>(new Date());
 
   // Convert setScores array to string for proper dependency tracking
-  const setScoresString = match.result?.setScores ? JSON.stringify(match.result.setScores) : '';
+  // Support both legacy setScores format and new BeachMatchLiveDTO score.sets format
+  const getScoresForTracking = () => {
+    // New BeachMatchLiveDTO format
+    if ((match as any).score?.sets) {
+      return JSON.stringify((match as any).score.sets);
+    }
+    // Legacy format
+    if (match.result?.setScores) {
+      return JSON.stringify(match.result.setScores);
+    }
+    return '';
+  };
+  const setScoresString = getScoresForTracking();
 
   // Update score timestamp when scores change for LIVE matches
   useEffect(() => {
@@ -714,12 +754,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
                 {/* Set Scores Display - check multiple sources */}
                 {(() => {
-                  // First check if we have setScores in result
+                  // NEW: Check for BeachMatchLiveDTO format first
+                  const beachMatchDTO = match as any;
+                  if (beachMatchDTO.score?.sets && beachMatchDTO.score.sets.length > 0) {
+                    return true;
+                  }
+
+                  // LEGACY: Check if we have setScores in result
                   if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
                     return true;
                   }
 
-                  // Check legacy BeachMatch format for individual set score fields
+                  // LEGACY: Check BeachMatch format for individual set score fields
                   const rawMatch = match as any;
                   const hasLegacySetScores = (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) ||
                                             (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) ||
@@ -730,9 +776,81 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View style={styles.setScoresContainer}>
                     {(() => {
                       const sets = [];
+                      const beachMatchDTO = match as any;
 
-                      // Try to use result.setScores first
-                      if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                      // NEW: Try BeachMatchLiveDTO format first (preferred)
+                      if (beachMatchDTO.score?.sets && beachMatchDTO.score.sets.length > 0) {
+                        const scoreSets = beachMatchDTO.score.sets;
+
+                        // Determine current set for live matches
+                        const getCurrentSetNumber = (): number => {
+                          if (!isMatchLive(match)) return -1;
+
+                          // Check status from DTO
+                          const statusState = beachMatchDTO.status?.state;
+                          if (statusState) {
+                            if (statusState === 'InSet1') return 1;
+                            if (statusState === 'InSet2') return 2;
+                            if (statusState === 'InSet3') return 3;
+                            if (statusState === 'InSet4') return 4;
+                            if (statusState === 'InSet5') return 5;
+                          }
+
+                          // Fallback: Find last incomplete set
+                          for (let i = 0; i < scoreSets.length; i++) {
+                            const setScore = scoreSets[i];
+                            const homeScore = setScore.home || 0;
+                            const awayScore = setScore.away || 0;
+                            const maxScore = Math.max(homeScore, awayScore);
+                            const minScore = Math.min(homeScore, awayScore);
+
+                            // Current set if: scores are close OR match is explicitly in this set
+                            if (maxScore < 21 || (maxScore >= 21 && Math.abs(homeScore - awayScore) < 2)) {
+                              return setScore.setNo;
+                            }
+                          }
+
+                          return scoreSets.length > 0 ? scoreSets.length : 1;
+                        };
+
+                        const currentSetNumber = getCurrentSetNumber();
+
+                        for (const setScore of scoreSets) {
+                          const isCurrentSet = isMatchLive(match) && setScore.setNo === currentSetNumber;
+                          const homeScore = setScore.home || 0;
+                          const awayScore = setScore.away || 0;
+
+                          // Skip empty sets unless it's the current live set
+                          if (!isCurrentSet && homeScore === 0 && awayScore === 0) {
+                            continue;
+                          }
+
+                          sets.push(
+                            <View
+                              key={`set-${setScore.setNo}`}
+                              style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}
+                            >
+                              <Text style={[
+                                styles.setScoreText,
+                                isCurrentSet && styles.currentSetScoreText
+                              ]}>
+                                {homeScore}-{awayScore}
+                              </Text>
+                              {isCurrentSet && (
+                                <View style={styles.liveIndicator}>
+                                  <Text style={styles.liveIndicatorText}>●</Text>
+                                </View>
+                              )}
+                            </View>
+                          );
+                        }
+                      }
+
+                      // LEGACY: Try to use result.setScores
+                      else if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
                         const setScores = matchWithResult.result.setScores;
 
                         // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]

@@ -491,6 +491,10 @@ export function isNoChangesResponse(data: any): boolean {
  * @returns Version number or undefined
  */
 export function extractVersion(data: BeachLive | any): number | undefined {
+  // Handle NoChanges response with preserved version
+  if (isNoChangesResponse(data) && data.version !== undefined) {
+    return data.version;
+  }
   return isValidBeachLive(data) ? data.version : undefined;
 }
 

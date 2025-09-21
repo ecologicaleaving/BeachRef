@@ -405,7 +405,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     return false;
   };
 
-  // Auto-scroll logic with priority: 1) LIVE matches, 2) Today's first match
+  // Auto-scroll logic with priority: 1) LIVE matches, 2) Last SCHEDULED match, 3) Stay at top
   const attemptAutoScroll = (matches: any[], forceRetry: boolean = false) => {
     if (hasAutoScrolled.current || !scrollViewRef.current || matches.length === 0) {
       return;
@@ -426,26 +426,40 @@ const TournamentDetailScreenContent: React.FC = () => {
       targetMatchId = liveMatches[0].id;
       scrollReason = 'LIVE match';
     } else {
-      // Priority 2: Last match of today (simplified)
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
-
-      const todayMatches = matches.filter(match => {
+      // Priority 2: Last SCHEDULED match (latest in time)
+      const scheduledMatches = matches.filter(match => {
         if (!match?.scheduledDateTime) return false;
-        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
-        return matchDate === todayStr;
+
+        // Check for SCHEDULED status
+        const status = match?.status;
+        const enhancedStatus = getEnhancedMatchStatus(match, matches);
+
+        // Include scheduled matches (status 1 or 'Scheduled')
+        if (typeof status === 'string') {
+          return status === MatchStatus.SCHEDULED;
+        }
+        if (typeof status === 'number') {
+          return status === 1; // VIS API: 1 = Scheduled
+        }
+        if (enhancedStatus === MatchStatus.SCHEDULED) {
+          return true;
+        }
+
+        return false;
       });
 
-      if (todayMatches.length > 0) {
-        // Sort by time and take the FIRST one (earliest in the day, appears LAST in Today panel)
-        const sortedTodayMatches = todayMatches.sort((a, b) => {
+      if (scheduledMatches.length > 0) {
+        // Sort by time and take the FIRST one (earliest scheduled match = next available)
+        // This appears at the bottom of the UI since matches are ordered chronologically
+        const sortedScheduledMatches = scheduledMatches.sort((a, b) => {
           return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
         });
 
-        const firstTodayMatch = sortedTodayMatches[0]; // First chronologically = bottom of Today panel
-        targetMatchId = firstTodayMatch.id;
-        scrollReason = 'Today first match (bottom of panel)';
+        const firstScheduledMatch = sortedScheduledMatches[0]; // Next available scheduled match
+        targetMatchId = firstScheduledMatch.id;
+        scrollReason = 'First SCHEDULED match (next available)';
       }
+      // Priority 3: If no LIVE or SCHEDULED matches, stay at top (no scroll)
     }
 
     // Scroll to target if position is available

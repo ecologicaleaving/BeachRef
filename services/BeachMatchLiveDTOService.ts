@@ -438,12 +438,22 @@ export class BeachMatchLiveDTOService {
     if (!beachLive) return dto;
 
     const updatedDTO = { ...dto };
+    let hasActualChanges = false;
+
+    // Check for version changes for logging
+    const newVersion = beachLive.version || (beachLive.lastUpdate ? parseInt(beachLive.lastUpdate) : undefined);
+    const currentVersion = dto.audit?.liveVersion;
+    const isNewVersion = newVersion !== undefined && newVersion !== currentVersion;
 
     // Update status using VIS mapping from reference
     if (beachLive.status !== undefined) {
       const numericStatus = typeof beachLive.status === 'number' ? beachLive.status : parseInt(beachLive.status);
       if (!isNaN(numericStatus) && VIS_STATUS_TO_BEACH_MATCH_STATUS[numericStatus]) {
-        updatedDTO.status.state = VIS_STATUS_TO_BEACH_MATCH_STATUS[numericStatus];
+        const newState = VIS_STATUS_TO_BEACH_MATCH_STATUS[numericStatus];
+        if (updatedDTO.status.state !== newState) {
+          updatedDTO.status.state = newState;
+          hasActualChanges = true;
+        }
       }
     }
 
@@ -460,14 +470,28 @@ export class BeachMatchLiveDTOService {
         });
       });
 
-      updatedDTO.score.sets = liveSets;
-
-      if (__DEV__) {
-        console.log(`[BeachMatchLiveDTOService] Updated DTO with live sets:`, {
-          overallStatus,
-          setsCount: liveSets.length,
-          sets: liveSets.map(s => `Set ${s.setNo}: ${s.home}-${s.away}`)
+      // Check if sets actually changed
+      const currentSets = updatedDTO.score.sets || [];
+      const setsChanged = liveSets.length !== currentSets.length ||
+        liveSets.some((newSet, index) => {
+          const currentSet = currentSets[index];
+          return !currentSet ||
+                 newSet.setNo !== currentSet.setNo ||
+                 newSet.home !== currentSet.home ||
+                 newSet.away !== currentSet.away;
         });
+
+      if (setsChanged) {
+        updatedDTO.score.sets = liveSets;
+        hasActualChanges = true;
+
+        if (__DEV__ && isNewVersion) {
+          console.log(`[BeachMatchLiveDTOService] 📊 NEW VERSION ${newVersion}: Updated sets:`, {
+            overallStatus,
+            setsCount: liveSets.length,
+            sets: liveSets.map(s => `Set ${s.setNo}: ${s.home}-${s.away}`)
+          });
+        }
       }
     }
 
@@ -475,9 +499,23 @@ export class BeachMatchLiveDTOService {
     if (!updatedDTO.audit) {
       updatedDTO.audit = {};
     }
-    updatedDTO.audit.liveVersion = beachLive.version || (beachLive.lastUpdate ? parseInt(beachLive.lastUpdate) : undefined);
-    updatedDTO.audit.lastChangeAt = new Date().toISOString();
+
+    // Always update version and poll delay (these are metadata, not content changes)
+    updatedDTO.audit.liveVersion = newVersion;
     updatedDTO.audit.liveRefreshDelaySec = beachLive.pollDelay ? beachLive.pollDelay / 1000 : null;
+
+    // ONLY update lastChangeAt if there were actual content changes
+    if (hasActualChanges) {
+      updatedDTO.audit.lastChangeAt = new Date().toISOString();
+
+      if (__DEV__ && isNewVersion) {
+        console.log(`[BeachMatchLiveDTOService] 🔄 NEW VERSION ${newVersion}: ACTUAL CHANGES detected - updating lastChangeAt`);
+      }
+    } else {
+      if (__DEV__ && isNewVersion) {
+        console.log(`[BeachMatchLiveDTOService] ⚪ NEW VERSION ${newVersion}: No content changes - keeping existing lastChangeAt`);
+      }
+    }
 
     return updatedDTO;
   }

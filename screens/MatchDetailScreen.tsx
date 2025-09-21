@@ -717,7 +717,7 @@ export default function MatchDetailScreen() {
         });
       }
 
-      // NEW: Update DTO with live data instead of legacy transformation
+      // NEW: Update DTO with live data (no legacy fallback)
       if (state.matchDTO) {
         const updatedDTO = dtoService.current.updateDTOWithLiveData(state.matchDTO, liveData);
 
@@ -735,9 +735,9 @@ export default function MatchDetailScreen() {
           renderKey: `dto-live-${updatedDTO.audit?.liveVersion ?? Date.now()}`
         }));
       } else {
-        // FALLBACK: Use legacy transformation for backward compatibility
-        const transformedLiveData = transformBeachLiveToDTO(liveData);
-        updateLiveData(transformedLiveData);
+        if (__DEV__) {
+          console.warn('[MatchDetail] No matchDTO available for live update - skipping');
+        }
       }
     };
 

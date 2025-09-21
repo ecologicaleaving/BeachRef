@@ -4,6 +4,17 @@
 
 // Util: calcola una chiave tempo in ms ovunque possibile
 const toEpochMsSafe = (m: any): number | null => {
+  // DEBUG: Log what fields we actually have
+  if (m.id) {
+    console.log(`🔍 DEBUG ${m.id}:`, {
+      scheduledEpoch: m.scheduledEpoch,
+      scheduledUtc: m.scheduledUtc,
+      scheduledIso: m.scheduledIso,
+      scheduledDateTime: m.scheduledDateTime,
+      parsed: m.scheduledDateTime ? Date.parse(m.scheduledDateTime) : 'NO PARSE'
+    });
+  }
+
   if (typeof m.scheduledEpoch === 'number') return m.scheduledEpoch;
 
   if (m.scheduledUtc) {
@@ -21,7 +32,12 @@ const toEpochMsSafe = (m: any): number | null => {
   // Fallback per scheduledDateTime (nostro campo principale)
   if (m.scheduledDateTime) {
     const t = Date.parse(m.scheduledDateTime);
-    return Number.isFinite(t) ? t : null;
+    if (Number.isFinite(t)) {
+      console.log(`✅ ${m.id}: ${m.scheduledDateTime} → ${t} (${new Date(t).toLocaleTimeString()})`);
+      return t;
+    } else {
+      console.log(`❌ ${m.id}: ${m.scheduledDateTime} → INVALID DATE`);
+    }
   }
 
   return null;

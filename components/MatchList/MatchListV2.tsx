@@ -10,7 +10,7 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatTimeWithTimezoneSync } from '../../utils/dateFormatters';
 import { DateTime } from 'luxon';
-import { compareWithinDay, debugMatchTime } from '../../utils/simpleMatchSort';
+import { compareWithinDay } from '../../utils/simpleMatchSort';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -883,32 +883,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     });
 
-    // ROBUST FIX: Use the senior engineer's approach - try multiple time fields
-    Object.keys(groups).forEach(dateKey => {
-      console.log(`🔍 SORTING DEBUG: Panel ${dateKey} has ${groups[dateKey].length} matches`);
+    // FRIEND'S EXACT SOLUTION: sortOrder influenza SOLO l'ordine dei pannelli data
+    const dayGroups = Object.entries(groups)
+      // ordina i pannelli data secondo sortOrder
+      .sort(([dateA], [dateB]) => {
+        const diff = dateA.localeCompare(dateB);
+        return sortOrder === 'desc' ? -diff : diff;
+      })
+      // ordina SEMPRE i match dentro al gruppo in modo cronologico crescente
+      .map(([dateKey, matches]) => [dateKey, [...matches].sort(compareWithinDay)] as const);
 
-      // Log times before sorting with robust debug
-      groups[dateKey].forEach((match, i) => {
-        console.log(`  Before sort [${i}]: ${debugMatchTime(match)}`);
-      });
-
-      // Use robust comparator that tries multiple time fields
-      groups[dateKey].sort(compareWithinDay);
-
-      // Log times after sorting
-      console.log(`  After sort:`);
-      groups[dateKey].forEach((match, i) => {
-        console.log(`    [${i}]: ${debugMatchTime(match)}`);
-      });
-    });
-
-    // Sort date panels according to sortOrder (this part was working correctly)
-    const result = Object.entries(groups).sort((a, b) => {
-      const comparison = b[0].localeCompare(a[0]); // Base descending order
-      return sortOrder === 'desc' ? comparison : -comparison;
-    });
-
-    return result;
+    return dayGroups;
   }, [filteredMatches, sortOrder, tournamentTimezone]);
 
   // Initialize expanded dates - expand today's panel if it exists

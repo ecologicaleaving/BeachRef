@@ -1,78 +1,44 @@
 /**
- * Super simple, robust match sorting - following senior engineer's approach
+ * EXACT implementation of senior engineer's solution - NO MORE COMPLEXITY!
  */
 
-import { BeachMatchCore } from '../types/match-v2';
+// Util: calcola una chiave tempo in ms ovunque possibile
+const toEpochMsSafe = (m: any): number | null => {
+  if (typeof m.scheduledEpoch === 'number') return m.scheduledEpoch;
 
-// Robust time extraction - tries multiple fields in priority order
-const toEpochMsSafe = (match: any): number | null => {
-  // Priority 1: scheduledEpoch if available
-  if (typeof match.scheduledEpoch === 'number') {
-    return match.scheduledEpoch;
+  if (m.scheduledUtc) {
+    const { y, m: mm, d, hh, mm: min, ss = 0 } = m.scheduledUtc;
+    // Date.UTC: mesi 0-based
+    const utc = Date.UTC(y, mm - 1, d, hh, min, ss, 0);
+    return Number.isFinite(utc) ? utc : null;
   }
 
-  // Priority 2: scheduled.epochMs (enhanced field)
-  if (match.scheduled?.epochMs && typeof match.scheduled.epochMs === 'number') {
-    return match.scheduled.epochMs;
+  if (m.scheduledIso) {
+    const t = Date.parse(m.scheduledIso);
+    return Number.isFinite(t) ? t : null;
   }
 
-  // Priority 3: BeginDateTimeUtc (VIS API field)
-  if (match.BeginDateTimeUtc) {
-    const t = Date.parse(match.BeginDateTimeUtc);
-    if (Number.isFinite(t)) return t;
-  }
-
-  // Priority 4: utcScheduledDateTime
-  if (match.utcScheduledDateTime) {
-    const t = Date.parse(match.utcScheduledDateTime);
-    if (Number.isFinite(t)) return t;
-  }
-
-  // Priority 5: scheduledDateTime
-  if (match.scheduledDateTime) {
-    const t = Date.parse(match.scheduledDateTime);
-    if (Number.isFinite(t)) return t;
-  }
-
-  // Priority 6: LocalTime + LocalDate + LocalTimeOffset
-  if (match.LocalTime && match.LocalDate) {
-    try {
-      const localDateTime = `${match.LocalDate}T${match.LocalTime}`;
-      const t = Date.parse(localDateTime);
-      if (Number.isFinite(t)) return t;
-    } catch (e) {
-      // Ignore
-    }
+  // Fallback per scheduledDateTime (nostro campo principale)
+  if (m.scheduledDateTime) {
+    const t = Date.parse(m.scheduledDateTime);
+    return Number.isFinite(t) ? t : null;
   }
 
   return null;
 };
 
-// Comparator per ordinare i match all'interno di una stessa data
+// Comparator per ordinare i match all'interno di *una stessa data*
 export const compareWithinDay = (a: any, b: any): number => {
   // 1) priorità: tempo (ASC fisso)
   const ta = toEpochMsSafe(a);
   const tb = toEpochMsSafe(b);
+  if (ta !== null && tb !== null && ta !== tb) return ta - tb;
 
-  if (ta !== null && tb !== null && ta !== tb) {
-    return ta - tb; // Crescente (prima i match più presto)
-  }
-
-  // 2) se tempi uguali/assenti: gender secondario (M prima di W)
+  // 2) se tempi uguali/assenti: gender secondario (M prima di W, poi X)
   const rank = (g?: string) => (g === 'M' ? 0 : g === 'W' ? 1 : 2);
-  const genderA = a.tournamentGender || a.gender || 'M';
-  const genderB = b.tournamentGender || b.gender || 'M';
-  const gr = rank(genderA) - rank(genderB);
+  const gr = rank(a.gender) - rank(b.gender);
   if (gr !== 0) return gr;
 
   // 3) tie-breaker stabile su id per evitare shuffle visivo
   return (a.id ?? '').localeCompare(b.id ?? '');
-};
-
-// Debug function per vedere tutti i campi tempo disponibili
-export const debugMatchTime = (match: any): string => {
-  const epoch = toEpochMsSafe(match);
-  const timeStr = epoch ? new Date(epoch).toLocaleTimeString() : 'NO TIME';
-
-  return `${match.id}: ${timeStr} (epoch: ${epoch})`;
 };

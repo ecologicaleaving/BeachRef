@@ -7,39 +7,32 @@ const toEpochMsSafe = (m: any): number | null => {
   // DEBUG: Log what fields we actually have
   if (m.id) {
     console.log(`🔍 DEBUG ${m.id}:`, {
-      scheduledEpoch: m.scheduledEpoch,
-      scheduledUtc: m.scheduledUtc,
-      scheduledIso: m.scheduledIso,
+      'scheduled.epochMs': m.scheduled?.epochMs,
+      'scheduled.utcISO': m.scheduled?.utcISO,
+      'scheduled.dateTimeTournament': m.scheduled?.dateTimeTournament,
       scheduledDateTime: m.scheduledDateTime,
-      parsed: m.scheduledDateTime ? Date.parse(m.scheduledDateTime) : 'NO PARSE'
+      finalChoice: m.scheduled?.epochMs || Date.parse(m.scheduledDateTime)
     });
   }
 
-  if (typeof m.scheduledEpoch === 'number') return m.scheduledEpoch;
-
-  if (m.scheduledUtc) {
-    const { y, m: mm, d, hh, mm: min, ss = 0 } = m.scheduledUtc;
-    // Date.UTC: mesi 0-based
-    const utc = Date.UTC(y, mm - 1, d, hh, min, ss, 0);
-    return Number.isFinite(utc) ? utc : null;
+  // PRIORITY 1: Use the timezone-safe epochMs from VisResponseParser!
+  if (m.scheduled?.epochMs && typeof m.scheduled.epochMs === 'number') {
+    console.log(`✅ ${m.id}: Using scheduled.epochMs = ${m.scheduled.epochMs} (${new Date(m.scheduled.epochMs).toLocaleTimeString()})`);
+    return m.scheduled.epochMs;
   }
 
-  if (m.scheduledIso) {
-    const t = Date.parse(m.scheduledIso);
-    return Number.isFinite(t) ? t : null;
-  }
-
-  // Fallback per scheduledDateTime (nostro campo principale)
+  // PRIORITY 2: Fallback to scheduledDateTime parsing
   if (m.scheduledDateTime) {
     const t = Date.parse(m.scheduledDateTime);
     if (Number.isFinite(t)) {
-      console.log(`✅ ${m.id}: ${m.scheduledDateTime} → ${t} (${new Date(t).toLocaleTimeString()})`);
+      console.log(`⚠️ ${m.id}: Fallback to scheduledDateTime = ${t} (${new Date(t).toLocaleTimeString()})`);
       return t;
     } else {
       console.log(`❌ ${m.id}: ${m.scheduledDateTime} → INVALID DATE`);
     }
   }
 
+  console.log(`❌ ${m.id}: NO VALID TIME FOUND`);
   return null;
 };
 

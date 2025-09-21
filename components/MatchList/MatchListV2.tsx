@@ -10,6 +10,7 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatTimeWithTimezoneSync } from '../../utils/dateFormatters';
 import { DateTime } from 'luxon';
+import { compareWithinDay, debugMatchTime } from '../../utils/simpleMatchSort';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -882,32 +883,22 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     });
 
-    // SIMPLE FIX: Sort matches within each day panel chronologically (earliest first)
+    // ROBUST FIX: Use the senior engineer's approach - try multiple time fields
     Object.keys(groups).forEach(dateKey => {
       console.log(`🔍 SORTING DEBUG: Panel ${dateKey} has ${groups[dateKey].length} matches`);
 
-      // Log times before sorting
+      // Log times before sorting with robust debug
       groups[dateKey].forEach((match, i) => {
-        const time = new Date(match.scheduledDateTime);
-        console.log(`  Before sort [${i}]: ${match.id} at ${time.toLocaleTimeString()} (${match.scheduledDateTime})`);
+        console.log(`  Before sort [${i}]: ${debugMatchTime(match)}`);
       });
 
-      groups[dateKey].sort((a, b) => {
-        // Get time from scheduledDateTime - use direct date comparison
-        const timeA = new Date(a.scheduledDateTime).getTime();
-        const timeB = new Date(b.scheduledDateTime).getTime();
-
-        // ALWAYS sort chronologically within each day (earliest first)
-        const result = timeA - timeB;
-        console.log(`    Comparing ${new Date(a.scheduledDateTime).toLocaleTimeString()} vs ${new Date(b.scheduledDateTime).toLocaleTimeString()} = ${result}`);
-        return result;
-      });
+      // Use robust comparator that tries multiple time fields
+      groups[dateKey].sort(compareWithinDay);
 
       // Log times after sorting
       console.log(`  After sort:`);
       groups[dateKey].forEach((match, i) => {
-        const time = new Date(match.scheduledDateTime);
-        console.log(`    [${i}]: ${match.id} at ${time.toLocaleTimeString()} (${match.scheduledDateTime})`);
+        console.log(`    [${i}]: ${debugMatchTime(match)}`);
       });
     });
 

@@ -765,31 +765,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       validMatches.push(match);
     });
 
-    // Sort valid matches by date only (no LIVE priority to maintain original order)
-    const sortedValidMatches = validMatches.sort((a, b) => {
-      // Use timezone-safe epoch for sorting when available
-      const scheduledA = (a as any).scheduled;
-      const scheduledB = (b as any).scheduled;
-
-      let timeA: number, timeB: number;
-
-      if (scheduledA?.epochMs && scheduledB?.epochMs) {
-        // Use pre-calculated epoch timestamps (timezone-safe)
-        const diff = scheduledB.epochMs - scheduledA.epochMs;
-        return sortOrder === 'desc' ? diff : -diff;
-      } else {
-        // For legacy data without scheduled structure, use string comparison
-        // ISO datetime strings (YYYY-MM-DDTHH:mm:ss) sort correctly as strings
-        const timeStrA = scheduledA?.dateTimeTournament || a.scheduledDateTime;
-        const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
-
-        // String comparison works for ISO format (newer dates have higher string values)
-        const comparison = timeStrB.localeCompare(timeStrA);
-        return sortOrder === 'desc' ? comparison : -comparison;
-      }
-    });
-
-    return { filteredMatches: sortedValidMatches, tbdMatches };
+    // Return valid matches without sorting - sorting will be done in grouping phase
+    return { filteredMatches: validMatches, tbdMatches };
 
     // Final result logging will happen in UI render
   }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
@@ -874,7 +851,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   }, [filteredMatches, onMatchesReady]);
 
 
-  // Group filtered matches by date (excludes TBD matches which are handled separately)
+  // Group filtered matches by date only (both genders together, excludes TBD matches which are handled separately)
   const groupedMatches = React.useMemo(() => {
     const groups: { [date: string]: typeof filteredMatches } = {};
 
@@ -894,6 +871,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         }
         dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       }
+
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -904,26 +882,60 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     });
 
-    const allDates = Object.keys(groups).sort();
-
-    // Sort matches within each group by time
+    // Sort matches within each group by time (chronological) and gender (ignoring global sortOrder)
     Object.keys(groups).forEach(dateKey => {
       groups[dateKey].sort((a, b) => {
-        const scheduledA = (a as any).scheduled;
-        const scheduledB = (b as any).scheduled;
+        // Get time values for comparison - use multiple fallback methods
+        const getTimeValue = (match: any): { epochMs?: number; isoString?: string } => {
+          const scheduled = match.scheduled;
 
-        if (scheduledA?.epochMs && scheduledB?.epochMs) {
-          // Use pre-calculated epoch timestamps (timezone-safe)
-          const diff = scheduledB.epochMs - scheduledA.epochMs;
-          return sortOrder === 'desc' ? diff : -diff;
+          // Priority 1: Use timezone-safe epoch timestamp if available
+          if (scheduled?.epochMs) {
+            return { epochMs: scheduled.epochMs };
+          }
+
+          // Priority 2: Use timezone-safe datetime string if available
+          if (scheduled?.dateTimeTournament) {
+            return { isoString: scheduled.dateTimeTournament };
+          }
+
+          // Priority 3: Fall back to original scheduledDateTime
+          if (match.scheduledDateTime) {
+            return { isoString: match.scheduledDateTime };
+          }
+
+          return {};
+        };
+
+        const timeA = getTimeValue(a);
+        const timeB = getTimeValue(b);
+
+        // Compare times
+        let timeDiff = 0;
+
+        if (timeA.epochMs && timeB.epochMs) {
+          // Both have epoch timestamps - direct numeric comparison
+          timeDiff = timeA.epochMs - timeB.epochMs;
+        } else if (timeA.isoString && timeB.isoString) {
+          // Both have ISO strings - lexicographic comparison works for ISO format
+          timeDiff = timeA.isoString.localeCompare(timeB.isoString);
         } else {
-          // For legacy data, use string comparison on time
-          const timeStrA = scheduledA?.dateTimeTournament || a.scheduledDateTime;
-          const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
-
-          const comparison = timeStrB.localeCompare(timeStrA);
-          return sortOrder === 'desc' ? comparison : -comparison;
+          // Mixed or missing data - try to convert to Date for comparison
+          const dateA = timeA.epochMs ? new Date(timeA.epochMs) : new Date(timeA.isoString || 0);
+          const dateB = timeB.epochMs ? new Date(timeB.epochMs) : new Date(timeB.isoString || 0);
+          timeDiff = dateA.getTime() - dateB.getTime();
         }
+
+        // FIXED: Within each day panel, always sort matches chronologically by time (earliest first)
+        // The sortOrder should only affect the order of date panels, not the time order within each day
+        if (timeDiff !== 0) {
+          return timeDiff; // Always ascending time order within each day
+        }
+
+        // If times are the same, sort by gender (Men 'M' before Women 'W')
+        const genderA = (a as any).tournamentGender || 'M';
+        const genderB = (b as any).tournamentGender || 'M';
+        return genderA.localeCompare(genderB);
       });
     });
 
@@ -934,6 +946,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const comparison = b[0].localeCompare(a[0]); // Base descending order
       return sortOrder === 'desc' ? comparison : -comparison;
     });
+
 
     return result;
   }, [filteredMatches, sortOrder]);
@@ -2138,6 +2151,16 @@ const styles = StyleSheet.create({
   },
   womenBadgeText: {
     color: '#FFFFFF',
+  },
+  // New styles for date-gender separation
+  dateGenderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  womenHeader: {
+    backgroundColor: '#FEF7FF', // Light purple background for women
+    borderLeftColor: '#A855F7', // Purple left border for women
   },
   dateHeader: {
     backgroundColor: '#F9FAFB',

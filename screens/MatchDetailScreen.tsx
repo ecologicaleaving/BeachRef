@@ -13,7 +13,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MatchResultsService } from '../services/MatchResultsService';
 import { MatchResult } from '../types/MatchResults';
 import { BeachMatchCore, MatchStatus } from '../types/match-v2';
-import { BeachMatchDTO, BeachMatchLiveDTO, isValidBeachMatchDTO, isValidBeachMatchLiveDTO } from '../types/match-details-dto';
+import { BeachMatchLiveDTO, isBeachMatchLiveDTO } from '../types/beach-match-live-dto';
 import { BeachLive, BeachSetStatus } from '../types/beach-live';
 import { formatTime, formatDateLong, formatTimeWithTimezoneSync } from '../utils/dateFormatters';
 import { FlagImage } from '../components/FlagImage';
@@ -24,6 +24,7 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors, spacing, typography } from '../theme/tokens';
 import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
+import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
 import { LiveScorePollingService, createLiveScorePollingService } from '../services/live-score/LiveScorePollingService';
 import { VisApiClient } from '../services/api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
@@ -100,12 +101,13 @@ function resolveVisApiTimeout(): number {
 }
 
 
-// Interface for the new dual-data state structure
+// Interface for the new DTO-based state structure
 interface MatchDetailState {
-  // Stable match metadata (loaded once/rarely updated)
-  baseMatch: BeachMatchDTO | null;
+  // Main DTO: Complete match data structure (from reference)
+  matchDTO: BeachMatchLiveDTO | null;
 
-  // Live polling data (updated frequently during live matches)
+  // Legacy support: Keep for backward compatibility
+  baseMatch: BeachMatchDTO | null;
   liveData: BeachMatchLiveDTO | null;
 
   // Component state
@@ -142,8 +144,18 @@ export default function MatchDetailScreen() {
     console.log('[MatchDetail] route params', { matchNo, tournamentNo, hasLegacy: !!matchData });
   }
 
-  // New dual-data state structure
+  // TEMPORARY: Manual trigger for testing - we'll do this properly with useEffect later
+  if (__DEV__ && matchNo && tournamentNo) {
+    console.log('[MatchDetail] MANUAL TRIGGER: Will call loadMatchDetail directly');
+  }
+
+  if (__DEV__) {
+    console.log('[MatchDetail] About to create state...');
+  }
+
+  // New DTO-based state structure
   const [state, setState] = useState<MatchDetailState>({
+    matchDTO: null,
     baseMatch: null,
     liveData: null,
     loading: true,
@@ -154,17 +166,50 @@ export default function MatchDetailScreen() {
     renderKey: `initial-${Date.now()}`
   });
 
+  if (__DEV__) {
+    console.log('[MatchDetail] Main state created');
+  }
+
   // Legacy state for backward compatibility during transition
   const [legacyData, setLegacyData] = useState<LegacyMatchData>({
     legacyMatch: null
   });
 
+  if (__DEV__) {
+    console.log('[MatchDetail] Legacy state created');
+  }
+
   // Service instances
-  const beachMatchService = useRef(BeachMatchService.getInstance());
+  if (__DEV__) {
+    console.log('[MatchDetail] Creating service instances...');
+  }
+
+  let beachMatchService, dtoService;
+  try {
+    beachMatchService = useRef(BeachMatchService.getInstance());
+    if (__DEV__) {
+      console.log('[MatchDetail] BeachMatchService created');
+    }
+
+    dtoService = useRef(BeachMatchLiveDTOService.getInstance());
+    if (__DEV__) {
+      console.log('[MatchDetail] BeachMatchLiveDTOService created');
+    }
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[MatchDetail] Error creating services:', error);
+    }
+    throw error;
+  }
+
   const pollingService = useRef<LiveScorePollingService | null>(null);
   const pollingCleanup = useRef<(() => void) | null>(null);
   const visApiClientRef = useRef<VisApiClient | null>(null);
   const pollingCircuitBreakerRef = useRef<ConnectionCircuitBreaker | null>(null);
+
+  if (__DEV__) {
+    console.log('[MatchDetail] All service instances created successfully');
+  }
 
   const resolveVisApiClient = useCallback((): VisApiClient => {
     if (!visApiClientRef.current) {
@@ -200,138 +245,222 @@ export default function MatchDetailScreen() {
     return pollingService.current;
   }, [resolveVisApiClient, resolvePollingCircuitBreaker]);
 
-  // Initialize data loading
-  useEffect(() => {
-    if (matchNo && tournamentNo) {
-      loadMatchDetail();
-    }
-
-    // Cleanup polling on unmount
-    return () => {
-      if (pollingCleanup.current) {
-        pollingCleanup.current();
-        pollingCleanup.current = null;
-      }
-    };
-  }, [matchNo, tournamentNo]);
-
-  // Monitor base match for live polling initialization
-  useEffect(() => {
-    if (state.baseMatch && shouldStartLivePolling(state.baseMatch)) {
-      startLivePolling(state.baseMatch.no);
-    }
-  }, [state.baseMatch?.no, state.baseMatch?.status]);
-
-  // Stop polling when match ends
-  useEffect(() => {
-    if (state.liveData?.status && isMatchFinished(state.liveData.status)) {
-      if (pollingCleanup.current) {
-        pollingCleanup.current();
-        pollingCleanup.current = null;
-      }
-    }
-  }, [state.liveData?.status]);
-
   /**
-   * Load base match data using BeachMatchService
+   * Load match data using BeachMatchLiveDTO service
    */
-  const loadMatchDetail = async () => {
+  const loadMatchDetail = useCallback(async () => {
+    if (__DEV__) {
+      console.log('[MatchDetail] loadMatchDetail called with:', { matchNo, tournamentNo });
+    }
+
     try {
       // Preserve live data during refresh - don't reset it
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const numericRouteMatch = matchNo?.trim() ?? '';
-      const numericRouteTournament = tournamentNo?.trim() ?? '';
+      // STEP 1: Load baseMatch first if not available
+      if (!state.baseMatch) {
+        if (__DEV__) {
+          console.log('[MatchDetail] baseMatch not available, loading it first...');
+        }
 
-      let resolvedMatchNumber: number | null = extractNumericIdentifier(numericRouteMatch);
-      let resolvedTournamentNumber: number | null = extractNumericIdentifier(numericRouteTournament);
+        const numericRouteMatch = matchNo?.trim() ?? '';
+        const numericRouteTournament = tournamentNo?.trim() ?? '';
 
-      if (matchData) {
-        try {
-          const parsedMatch = JSON.parse(matchData) as BeachMatchCore & { visNo?: string | number; visMatchId?: string | number; matchNo?: string | number };
-          setLegacyData({ legacyMatch: parsedMatch });
-
-          const matchIdentifier = extractNumericIdentifier(
-            (parsedMatch as any).visNo,
-            (parsedMatch as any).visMatchId,
-            (parsedMatch as any).visMatchNo,
-            (parsedMatch as any).vis_match_no,
-            (parsedMatch as any).matchNo,
-            (parsedMatch as any).match_no,
-            (parsedMatch as any).No,
-            (parsedMatch as any).matchId,
-            (parsedMatch as any).id
-          );
-
+        // MatchCard now passes the correct VIS match number directly
+        // Use it directly for GetBeachMatch(no) API call
+        let resolvedMatchNumber: number | null = null;
+        if (/^\d+$/.test(numericRouteMatch)) {
+          resolvedMatchNumber = parseInt(numericRouteMatch, 10);
           if (__DEV__) {
-            console.log('[MatchDetail] legacy match data extraction', {
-              visNo: (parsedMatch as any).visNo,
-              visMatchId: (parsedMatch as any).visMatchId,
-              visMatchNo: (parsedMatch as any).visMatchNo,
-              matchNo: (parsedMatch as any).matchNo,
-              No: (parsedMatch as any).No,
-              extractedMatchIdentifier: matchIdentifier
-            });
+            console.log('[MatchDetail] Using VIS match number directly from route:', resolvedMatchNumber);
           }
-
-          if (matchIdentifier !== null) {
-            resolvedMatchNumber = matchIdentifier;
-          }
-
-          if (resolvedTournamentNumber === null) {
-            const tournamentIdentifier = extractNumericIdentifier(
-              (parsedMatch as any).tournamentNo,
-              (parsedMatch as any).tournament_no,
-              (parsedMatch as any).tournamentId,
-              (parsedMatch as any).tournament_id,
-              (parsedMatch as any).eventId,
-              (parsedMatch as any).event_id,
-              (parsedMatch as any).NoTournament
-            );
-
-            if (tournamentIdentifier !== null) {
-              resolvedTournamentNumber = tournamentIdentifier;
-            }
-          }
-        } catch (parseError) {
+        } else {
+          // Fallback for legacy composite IDs (should not happen with new approach)
+          resolvedMatchNumber = extractNumericIdentifier(numericRouteMatch);
           if (__DEV__) {
-            console.warn('[MatchDetail] legacy matchData parse failed, falling back to DTO system', parseError);
+            console.log('[MatchDetail] Extracted match number from legacy ID:', resolvedMatchNumber);
           }
         }
-      }
 
-      if (resolvedMatchNumber === null || Number.isNaN(resolvedMatchNumber)) {
-        throw new Error('Unable to determine match identifier');
-      }
+        let resolvedTournamentNumber: number | null = null;
+        if (/^\d+$/.test(numericRouteTournament)) {
+          resolvedTournamentNumber = parseInt(numericRouteTournament, 10);
+        } else {
+          resolvedTournamentNumber = extractNumericIdentifier(numericRouteTournament);
+        }
 
-      if (resolvedTournamentNumber === null || Number.isNaN(resolvedTournamentNumber)) {
-        throw new Error('Unable to determine tournament identifier');
-      }
-      if (__DEV__) {
-        console.log('[MatchDetail] resolved match number', resolvedMatchNumber, {
-          fromRoute: matchNo,
-          hasLegacy: !!matchData,
-          tournament: resolvedTournamentNumber ?? tournamentNo,
-          extractedFromRouteMatch: extractNumericIdentifier(numericRouteMatch),
-          routeMatchRaw: numericRouteMatch
+        if (matchData) {
+          try {
+            const parsedMatch = JSON.parse(matchData) as BeachMatchCore & { visNo?: string | number; visMatchId?: string | number; matchNo?: string | number };
+            setLegacyData({ legacyMatch: parsedMatch });
+
+            const matchIdentifier = extractNumericIdentifier(
+              (parsedMatch as any).visNo,
+              (parsedMatch as any).visMatchId,
+              (parsedMatch as any).visMatchNo,
+              (parsedMatch as any).vis_match_no,
+              (parsedMatch as any).matchNo,
+              (parsedMatch as any).match_no,
+              (parsedMatch as any).No,
+              (parsedMatch as any).matchId,
+              (parsedMatch as any).id
+            );
+
+            if (__DEV__) {
+              console.log('[MatchDetail] legacy match data extraction', {
+                visNo: (parsedMatch as any).visNo,
+                visMatchId: (parsedMatch as any).visMatchId,
+                visMatchNo: (parsedMatch as any).visMatchNo,
+                matchNo: (parsedMatch as any).matchNo,
+                No: (parsedMatch as any).No,
+                extractedMatchIdentifier: matchIdentifier
+              });
+            }
+
+            if (matchIdentifier !== null) {
+              resolvedMatchNumber = matchIdentifier;
+            }
+
+            if (resolvedTournamentNumber === null) {
+              const tournamentIdentifier = extractNumericIdentifier(
+                (parsedMatch as any).tournamentNo,
+                (parsedMatch as any).tournament_no,
+                (parsedMatch as any).tournamentId,
+                (parsedMatch as any).tournament_id,
+                (parsedMatch as any).eventId,
+                (parsedMatch as any).event_id,
+                (parsedMatch as any).NoTournament
+              );
+
+              if (tournamentIdentifier !== null) {
+                resolvedTournamentNumber = tournamentIdentifier;
+              }
+            }
+          } catch (parseError) {
+            if (__DEV__) {
+              console.warn('[MatchDetail] legacy matchData parse failed, falling back to DTO system', parseError);
+            }
+          }
+        }
+
+        if (resolvedMatchNumber === null || Number.isNaN(resolvedMatchNumber)) {
+          throw new Error('Unable to determine match identifier');
+        }
+
+        if (resolvedTournamentNumber === null || Number.isNaN(resolvedTournamentNumber)) {
+          throw new Error('Unable to determine tournament identifier');
+        }
+        if (__DEV__) {
+          console.log('[MatchDetail] resolved match number', resolvedMatchNumber, {
+            fromRoute: matchNo,
+            hasLegacy: !!matchData,
+            tournament: resolvedTournamentNumber ?? tournamentNo,
+            extractedFromRouteMatch: extractNumericIdentifier(numericRouteMatch),
+            routeMatchRaw: numericRouteMatch
+          });
+        }
+
+        const baseMatch = await beachMatchService.current.getMatch(resolvedMatchNumber, {
+          matchNo: resolvedMatchNumber,
+          tournamentNo: resolvedTournamentNumber ?? undefined
         });
+
+        if (__DEV__) {
+          console.log('[MatchDetail] base match loaded', {
+            resolvedMatchNumber,
+            baseMatchNo: baseMatch?.no,
+            baseMatchStatus: baseMatch?.status,
+            shouldStartPolling: baseMatch ? shouldStartLivePolling(baseMatch) : false
+          });
+        }
+
+        setState(prev => ({
+          ...prev,
+          baseMatch,
+          loading: false,
+          renderKey: `base-${resolvedMatchNumber}-${Date.now()}`
+        }));
+
+        // Don't continue to DTO creation in this call - let the useEffect handle it
+        return;
       }
 
-      const baseMatch = await beachMatchService.current.getMatch(resolvedMatchNumber, {
-        matchNo: resolvedMatchNumber,
-        tournamentNo: resolvedTournamentNumber ?? undefined
-      });
+      // STEP 2: Create DTO using existing baseMatch
+      const numericMatchNo = matchNo?.trim() ?? '';
+      if (/^\d+$/.test(numericMatchNo)) {
+        const visMatchNumber = parseInt(numericMatchNo, 10);
+        const tournamentNumber = tournamentNo ? parseInt(tournamentNo, 10) : undefined;
 
-      if (__DEV__) {
-        console.log('[MatchDetail] base match loaded', resolvedMatchNumber, baseMatch?.status);
+        if (__DEV__) {
+          console.log('[MatchDetail] Loading DTO for match:', {
+            visMatchNumber,
+            tournamentNumber,
+            hasBaseMatch: !!state.baseMatch
+          });
+        }
+
+        // DETAILED LOGGING: Log data BEFORE calling BeachMatchLiveDTO
+        const dtoParams = {
+          matchNo: visMatchNumber,
+          tournamentNo: tournamentNumber,
+          includeTournamentInfo: true,
+          includeStatistics: false,
+          includeOfficials: true,
+          matchData: state.baseMatch // Pass existing match data to avoid API calls
+        };
+
+        if (__DEV__) {
+          console.log('=== BEFORE BeachMatchLiveDTO CALL ===');
+          console.log('[MatchDetail] Input parameters for buildBeachMatchLiveDTO:', JSON.stringify(dtoParams, null, 2));
+          console.log('[MatchDetail] Parameter types:', {
+            'matchNo type': typeof dtoParams.matchNo,
+            'matchNo value': dtoParams.matchNo,
+            'tournamentNo type': typeof dtoParams.tournamentNo,
+            'tournamentNo value': dtoParams.tournamentNo
+          });
+        }
+
+        const matchDTO = await dtoService.current.buildBeachMatchLiveDTO(dtoParams);
+
+        // DETAILED LOGGING: Log data AFTER calling BeachMatchLiveDTO
+        if (__DEV__) {
+          console.log('=== AFTER BeachMatchLiveDTO CALL ===');
+          console.log('[MatchDetail] Raw DTO result (full object):', JSON.stringify(matchDTO, null, 2));
+          console.log('[MatchDetail] DTO summary:', {
+            matchNo: matchDTO.matchNo,
+            tournamentCode: matchDTO.tournament?.code,
+            tournamentName: matchDTO.tournament?.name,
+            homeTeam: matchDTO.teams?.home?.teamName,
+            awayTeam: matchDTO.teams?.away?.teamName,
+            homePlayer1: matchDTO.teams?.home?.players?.[0]?.name,
+            homePlayer2: matchDTO.teams?.home?.players?.[1]?.name,
+            awayPlayer1: matchDTO.teams?.away?.players?.[0]?.name,
+            awayPlayer2: matchDTO.teams?.away?.players?.[1]?.name,
+            status: matchDTO.status?.state,
+            setsCount: matchDTO.score.sets.length,
+            court: matchDTO.venue?.court
+          });
+        }
+
+        if (__DEV__) {
+          console.log('[MatchDetail] DTO loaded successfully:', {
+            matchNo: matchDTO.matchNo,
+            teams: `${matchDTO.teams?.home?.teamName} vs ${matchDTO.teams?.away?.teamName}`,
+            sets: matchDTO.score.sets.length,
+            status: matchDTO.status.state
+          });
+        }
+
+        // Update state with DTO
+        setState(prev => ({
+          ...prev,
+          matchDTO,
+          loading: false,
+          renderKey: `dto-${matchDTO.matchNo}-${Date.now()}`
+        }));
+
+        return; // DTO creation completed
       }
-
-      setState(prev => ({
-        ...prev,
-        baseMatch,
-        loading: false,
-        renderKey: `base-${resolvedMatchNumber}-${Date.now()}`
-      }));
 
     } catch (error) {
       if (__DEV__) {
@@ -343,7 +472,130 @@ export default function MatchDetailScreen() {
         loading: false
       }));
     }
+  }, [matchNo, tournamentNo, matchData]);
+
+  if (__DEV__) {
+    console.log('[MatchDetail] BEFORE useEffect for loading - component execution reached this point');
+  }
+
+  // Initialize data loading
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('[MatchDetail] useEffect for loading triggered with:', {
+        matchNo,
+        tournamentNo,
+        matchNoType: typeof matchNo,
+        tournamentNoType: typeof tournamentNo,
+        matchNoTruthy: !!matchNo,
+        tournamentNoTruthy: !!tournamentNo,
+        condition: !!(matchNo && tournamentNo),
+        matchNoValue: JSON.stringify(matchNo),
+        tournamentNoValue: JSON.stringify(tournamentNo)
+      });
+    }
+
+    if (matchNo && tournamentNo) {
+      if (__DEV__) {
+        console.log('[MatchDetail] Condition met, calling loadMatchDetail');
+      }
+      loadMatchDetail();
+    } else {
+      if (__DEV__) {
+        console.log('[MatchDetail] Condition NOT met, skipping loadMatchDetail');
+      }
+    }
+
+    // Cleanup polling on unmount
+    return () => {
+      if (pollingCleanup.current) {
+        pollingCleanup.current();
+        pollingCleanup.current = null;
+      }
+    };
+  }, [matchNo, tournamentNo, loadMatchDetail]);
+
+  const handleRefresh = () => {
+    if (__DEV__) {
+      console.log('[MatchDetail] handleRefresh called', {
+        hasLiveData: !!state.liveData,
+        isPollingActive: state.isPollingActive,
+        baseMatchStatus: state.baseMatch?.status
+      });
+    }
+    loadMatchDetail();
   };
+
+  // Load DTO once baseMatch is available
+  useEffect(() => {
+    if (state.baseMatch && !state.matchDTO && !state.loading) {
+      if (__DEV__) {
+        console.log('[MatchDetail] baseMatch loaded, triggering DTO creation:', {
+          baseMatchNo: state.baseMatch.no,
+          teams: `${state.baseMatch.team1?.teamName} vs ${state.baseMatch.team2?.teamName}`
+        });
+      }
+      loadMatchDetail();
+    }
+  }, [state.baseMatch, state.matchDTO, state.loading, loadMatchDetail]);
+
+  // Direct VIS match number polling - bypass baseMatch dependency
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('[MatchDetail] Direct VIS polling check:', {
+        matchNo,
+        resolvedMatchNumber: /^\d+$/.test(matchNo?.trim() ?? '') ? parseInt(matchNo?.trim() ?? '', 10) : null,
+        hasLegacyMatch: !!legacyData.legacyMatch,
+        isPollingActive: state.isPollingActive
+      });
+    }
+
+    // Use VIS match number directly if it's a pure number
+    const numericMatchNo = matchNo?.trim() ?? '';
+    if (/^\d+$/.test(numericMatchNo) && !state.isPollingActive) {
+      const visMatchNumber = parseInt(numericMatchNo, 10);
+
+      if (__DEV__) {
+        console.log('[MatchDetail] Starting direct VIS polling for match:', visMatchNumber);
+      }
+
+      // DISABLED: startLivePolling(visMatchNumber); // Disabled for static data testing
+    }
+  }, [matchNo, state.isPollingActive, legacyData.legacyMatch]);
+
+  // Fallback: Monitor base match for live polling (backward compatibility)
+  useEffect(() => {
+    // Only fallback if direct VIS polling hasn't started and we have legacy composite ID
+    const numericMatchNo = matchNo?.trim() ?? '';
+    const isLegacyCompositeId = !(/^\d+$/.test(numericMatchNo));
+
+    if (__DEV__) {
+      console.log('[MatchDetail] Fallback polling check:', {
+        isLegacyCompositeId,
+        hasBaseMatch: !!state.baseMatch,
+        baseMatchNo: state.baseMatch?.no,
+        shouldPoll: state.baseMatch ? shouldStartLivePolling(state.baseMatch) : false,
+        isPollingActive: state.isPollingActive
+      });
+    }
+
+    if (isLegacyCompositeId && state.baseMatch && shouldStartLivePolling(state.baseMatch) && !state.isPollingActive) {
+      if (__DEV__) {
+        console.log('[MatchDetail] Starting fallback baseMatch polling for:', state.baseMatch.no);
+      }
+      // DISABLED: startLivePolling(state.baseMatch.no); // Disabled for static data testing
+    }
+  }, [matchNo, state.baseMatch?.no, state.baseMatch?.status, state.isPollingActive]);
+
+  // Stop polling when match ends
+  useEffect(() => {
+    if (state.liveData?.status && isMatchFinished(state.liveData.status)) {
+      if (pollingCleanup.current) {
+        pollingCleanup.current();
+        pollingCleanup.current = null;
+      }
+    }
+  }, [state.liveData?.status]);
+
 
   /**
    * Update live data with optimization for frequent updates
@@ -354,11 +606,47 @@ export default function MatchDetailScreen() {
         newStatus: liveData.status,
         newCurrentSet: liveData.currentSet,
         newPoints: liveData.points,
-        lastUpdate: liveData.lastUpdate
+        lastUpdate: liveData.lastUpdate,
+        newClosedSets: liveData.closedSets?.length || 0
       });
     }
 
     setState(prev => {
+      // Version filtering: reject older data
+      if (prev.liveData && prev.lastLiveUpdate) {
+        const currentVersion = parseInt(prev.lastLiveUpdate) || 0;
+        const newVersion = parseInt(liveData.lastUpdate) || 0;
+
+        if (newVersion < currentVersion) {
+          if (__DEV__) {
+            console.log('[MatchDetail] updateLiveData - rejecting older version', {
+              currentVersion,
+              newVersion,
+              reason: 'version_downgrade'
+            });
+          }
+          return prev;
+        }
+
+        // Data quality filtering: reject empty data if we have better data
+        if (newVersion <= currentVersion) {
+          const hasCurrentData = (prev.liveData.closedSets?.length || 0) > 0 || prev.liveData.currentSet;
+          const hasNewData = (liveData.closedSets?.length || 0) > 0 || liveData.currentSet;
+
+          if (hasCurrentData && !hasNewData) {
+            if (__DEV__) {
+              console.log('[MatchDetail] updateLiveData - rejecting empty data', {
+                currentSets: prev.liveData.closedSets?.length || 0,
+                newSets: liveData.closedSets?.length || 0,
+                reason: 'data_quality'
+              });
+            }
+            return prev;
+          }
+        }
+      }
+
+      // Same-version change detection
       if (prev.liveData && prev.lastLiveUpdate === liveData.lastUpdate) {
         const unchanged =
           prev.liveData.status === liveData.status &&
@@ -418,7 +706,7 @@ export default function MatchDetailScreen() {
       }
 
       if (__DEV__) {
-        const matchIdentifier = liveData?.match?.no ?? state.baseMatch?.no ?? matchNumber;
+        const matchIdentifier = liveData?.match?.no ?? state.matchDTO?.matchNo ?? matchNumber;
         console.log('[LiveMatch] VIS BeachLive payload', matchIdentifier, liveData);
 
         // Log the sets data specifically
@@ -429,19 +717,28 @@ export default function MatchDetailScreen() {
         });
       }
 
-      const transformedLiveData = transformBeachLiveToDTO(liveData);
+      // NEW: Update DTO with live data instead of legacy transformation
+      if (state.matchDTO) {
+        const updatedDTO = dtoService.current.updateDTOWithLiveData(state.matchDTO, liveData);
 
-      if (__DEV__) {
-        console.log('[LiveMatch] Transformed live data for UI:', {
-          status: transformedLiveData.status,
-          currentSet: transformedLiveData.currentSet,
-          points: transformedLiveData.points,
-          closedSets: transformedLiveData.closedSets,
-          lastUpdate: transformedLiveData.lastUpdate
-        });
+        if (__DEV__) {
+          console.log('[MatchDetail] Updated DTO with live data:', {
+            status: updatedDTO.status?.state,
+            sets: updatedDTO.score?.sets?.map(s => `Set ${s.setNo}: ${s.home}-${s.away}`),
+            version: updatedDTO.audit?.liveVersion
+          });
+        }
+
+        setState(prev => ({
+          ...prev,
+          matchDTO: updatedDTO,
+          renderKey: `dto-live-${updatedDTO.audit?.liveVersion ?? Date.now()}`
+        }));
+      } else {
+        // FALLBACK: Use legacy transformation for backward compatibility
+        const transformedLiveData = transformBeachLiveToDTO(liveData);
+        updateLiveData(transformedLiveData);
       }
-
-      updateLiveData(transformedLiveData);
     };
 
     const service = getPollingService();
@@ -472,19 +769,28 @@ export default function MatchDetailScreen() {
       console.log('[LiveMatch] Processing sets for transformation:', beachLive.sets?.map(set => ({
         no: set.no,
         status: set.status,
+        statusType: typeof set.status,
         pointsTeamA: set.pointsTeamA,
-        pointsTeamB: set.pointsTeamB
+        pointsTeamB: set.pointsTeamB,
+        isFinished: set.status === BeachSetStatus.FINISHED,
+        isInProgress: set.status === BeachSetStatus.IN_PROGRESS
       })));
     }
 
     const currentSet = getCurrentSetFromBeachLive(beachLive);
-    const closedSets = extractClosedSetsFromBeachLive(beachLive.sets);
+    const closedSets = extractClosedSetsFromBeachLive(beachLive.sets, beachLive.status);
 
     if (__DEV__) {
       console.log('[LiveMatch] Transformation results:', {
-        currentSet: currentSet ? { no: currentSet.no, pointsA: currentSet.pointsTeamA, pointsB: currentSet.pointsTeamB, status: currentSet.status } : null,
+        overallMatchStatus: beachLive.status,
+        currentSet: currentSet ? { no: currentSet.no, pointsA: currentSet.pointsTeamA, pointsB: currentSet.pointsTeamB, derivedStatus: deriveSetStatus(currentSet.no, beachLive.status || '0') } : null,
         closedSets,
-        totalSetsInData: beachLive.sets?.length || 0
+        totalSetsInData: beachLive.sets?.length || 0,
+        statusDerivation: beachLive.sets?.map(set => ({
+          setNo: set.no,
+          points: `${set.pointsTeamA}-${set.pointsTeamB}`,
+          derivedStatus: deriveSetStatus(set.no, beachLive.status || '0')
+        }))
       });
     }
     const events = beachLive.events?.map(event => ({
@@ -570,12 +876,23 @@ export default function MatchDetailScreen() {
            normalizedStatus.includes('scheduled');
   };
 
-  const isMatchFinished = (status: string): boolean => {
-    const lowerStatus = status.toLowerCase();
+  const isMatchFinished = (status: any): boolean => {
+    // Handle both DTO status object and string status
+    const statusStr = typeof status === 'object' && status?.state ? status.state : status;
+    if (typeof statusStr !== 'string') return false;
 
+    const lowerStatus = statusStr.toLowerCase();
+
+    // Check for numeric status codes (VIS uses numeric codes like '9', '10', '13', etc.)
+    const numeric = Number(statusStr);
+    if (!Number.isNaN(numeric) && numeric >= 9) {
+      return true;
+    }
+
+    // Also check legacy format with 'status' prefix
     if (lowerStatus.startsWith('status')) {
-      const numeric = Number(lowerStatus.replace('status', ''));
-      if (!Number.isNaN(numeric) && numeric >= 9) {
+      const legacyNumeric = Number(lowerStatus.replace('status', ''));
+      if (!Number.isNaN(legacyNumeric) && legacyNumeric >= 9) {
         return true;
       }
     }
@@ -587,17 +904,68 @@ export default function MatchDetailScreen() {
            lowerStatus.includes('cancelled');
   };
 
+  // Helper function to derive set status from overall match status and set number
+  // Based on beachMatchLiveDTO.md reference: status 5 = "InSet2" means set 1 finished, set 2 in progress
+  const deriveSetStatus = (setNo: number, overallMatchStatus: string): BeachSetStatus => {
+    const numericStatus = parseInt(overallMatchStatus, 10);
+
+    if (isNaN(numericStatus)) {
+      return BeachSetStatus.NOT_STARTED;
+    }
+
+    // Using VIS_STATUS_TO_BEACH_MATCH_STATUS mapping from reference
+    switch (numericStatus) {
+      case 0: case 1: case 2: // Scheduled, ReadyToStart
+        return BeachSetStatus.NOT_STARTED;
+
+      case 3: // InSet1
+        return setNo === 1 ? BeachSetStatus.IN_PROGRESS : BeachSetStatus.NOT_STARTED;
+
+      case 4: // Set1Finished
+        return setNo === 1 ? BeachSetStatus.FINISHED : BeachSetStatus.NOT_STARTED;
+
+      case 5: // InSet2
+        if (setNo === 1) return BeachSetStatus.FINISHED;
+        if (setNo === 2) return BeachSetStatus.IN_PROGRESS;
+        return BeachSetStatus.NOT_STARTED;
+
+      case 6: // Set2Finished
+        if (setNo === 1 || setNo === 2) return BeachSetStatus.FINISHED;
+        return BeachSetStatus.NOT_STARTED;
+
+      case 7: // InSet3
+        if (setNo === 1 || setNo === 2) return BeachSetStatus.FINISHED;
+        if (setNo === 3) return BeachSetStatus.IN_PROGRESS;
+        return BeachSetStatus.NOT_STARTED;
+
+      case 8: // Set3Finished
+        if (setNo <= 3) return BeachSetStatus.FINISHED;
+        return BeachSetStatus.NOT_STARTED;
+
+      default: // 9+ = Finished, OfficialResult
+        return BeachSetStatus.FINISHED;
+    }
+  };
+
   const getCurrentSetFromBeachLive = (beachLive: BeachLive) => {
     if (!beachLive.sets || beachLive.sets.length === 0) {
       return undefined;
     }
 
-    const inProgress = beachLive.sets.find(set => set.status === BeachSetStatus.IN_PROGRESS);
+    // Use overall match status to derive set statuses (per beachMatchLiveDTO.md reference)
+    const overallStatus = beachLive.status || '0';
+
+    // Find the set that should be in progress based on overall match status
+    const inProgress = beachLive.sets.find(set =>
+      deriveSetStatus(set.no, overallStatus) === BeachSetStatus.IN_PROGRESS
+    );
     if (inProgress) {
       return inProgress;
     }
 
-    const upcoming = beachLive.sets.find(set => set.status === BeachSetStatus.NOT_STARTED);
+    const upcoming = beachLive.sets.find(set =>
+      deriveSetStatus(set.no, overallStatus) === BeachSetStatus.NOT_STARTED
+    );
     if (upcoming) {
       return upcoming;
     }
@@ -605,11 +973,13 @@ export default function MatchDetailScreen() {
     return beachLive.sets[beachLive.sets.length - 1];
   };
 
-  const extractClosedSetsFromBeachLive = (sets?: BeachLive['sets']): Array<{ set: number; a: number; b: number }> => {
+  const extractClosedSetsFromBeachLive = (sets?: BeachLive['sets'], overallStatus?: string): Array<{ set: number; a: number; b: number }> => {
     if (!sets || sets.length === 0) return [];
 
+    const matchStatus = overallStatus || '0';
+
     return sets
-      .filter(set => set.status === BeachSetStatus.FINISHED)
+      .filter(set => deriveSetStatus(set.no, matchStatus) === BeachSetStatus.FINISHED)
       .map(set => ({
         set: set.no,
         a: set.pointsTeamA,
@@ -633,16 +1003,6 @@ export default function MatchDetailScreen() {
     };
   };
 
-  const handleRefresh = () => {
-    if (__DEV__) {
-      console.log('[MatchDetail] handleRefresh called', {
-        hasLiveData: !!state.liveData,
-        isPollingActive: state.isPollingActive,
-        baseMatchStatus: state.baseMatch?.status
-      });
-    }
-    loadMatchDetail();
-  };
 
   const handleGoBack = () => {
     router.back();
@@ -661,13 +1021,13 @@ export default function MatchDetailScreen() {
       const match = mergedData.data;
       return {
         title: match.roundName || match.round || 'Match Details',
-        subtitle: `${match.team1.teamName} vs ${match.team2.teamName}`
+        subtitle: `${match.team1?.teamName || 'Team A'} vs ${match.team2?.teamName || 'Team B'}`
       };
     } else if (mergedData.type === 'dto') {
-      const match = mergedData.data;
+      const dto = mergedData.data;
       return {
-        title: match.roundName || 'Match Details',
-        subtitle: `${match.teamA.name || 'Team A'} vs ${match.teamB.name || 'Team B'}`
+        title: dto.round?.name || dto.round?.phase || 'Match Details',
+        subtitle: `${dto.teams?.home?.teamName || 'Team A'} vs ${dto.teams?.away?.teamName || 'Team B'}`
       };
     } else if (mergedData.type === 'legacy') {
       // MatchResult type
@@ -682,17 +1042,37 @@ export default function MatchDetailScreen() {
   };
 
   /**
-   * Merge stable and live data for rendering
+   * Merge stable and live data for rendering - now supports DTO
    */
   const getMergedMatchData = useMemo(() => {
     if (__DEV__) {
       console.log('[MatchDetail] getMergedMatchData calculation', {
+        hasMatchDTO: !!state.matchDTO,
         hasLegacyMatch: !!legacyData.legacyMatch,
         hasBaseMatch: !!state.baseMatch,
         hasLiveData: !!state.liveData,
+        dtoStatus: state.matchDTO?.status?.state,
         liveDataStatus: state.liveData?.status,
         renderKey: state.renderKey
       });
+    }
+
+    // NEW: Priority 1 - Use DTO if available (preferred approach)
+    if (state.matchDTO) {
+      const isLive = ['InSet1', 'InSet2', 'InSet3', 'InSet4', 'InSet5'].includes(state.matchDTO?.status?.state);
+      if (__DEV__) {
+        console.log('[MatchDetail] using DTO data path', {
+          status: state.matchDTO?.status?.state,
+          isLive,
+          sets: state.matchDTO?.score?.sets?.length
+        });
+      }
+      return {
+        type: 'dto' as const,
+        data: state.matchDTO,
+        isLive,
+        live: null // DTO already includes live data
+      };
     }
 
     // Legacy support for backward compatibility
@@ -701,9 +1081,50 @@ export default function MatchDetailScreen() {
       if (__DEV__) {
         console.log('[MatchDetail] using legacy data path', { isLive, hasLiveData: !!state.liveData });
       }
+
+      // Merge live data into legacy match structure for display
+      let mergedLegacyMatch = legacyData.legacyMatch;
+      if (state.liveData && isLive) {
+        // Update legacy match with live scores
+        const liveData = state.liveData;
+
+        // Create updated setScores array from live data
+        const liveSetScores: number[] = [];
+
+        // Add closed sets
+        if (liveData.closedSets) {
+          liveData.closedSets.forEach(set => {
+            liveSetScores.push(set.a, set.b);
+          });
+        }
+
+        // Add current set if in progress
+        if (liveData.currentSet && liveData.points.a !== null && liveData.points.b !== null) {
+          liveSetScores.push(liveData.points.a, liveData.points.b);
+        }
+
+        // Update the legacy match structure
+        mergedLegacyMatch = {
+          ...legacyData.legacyMatch,
+          status: liveData.status,
+          result: {
+            ...legacyData.legacyMatch.result,
+            setScores: liveSetScores
+          }
+        };
+
+        if (__DEV__) {
+          console.log('[MatchDetail] merged live data into legacy match', {
+            originalSetScores: legacyData.legacyMatch.result?.setScores,
+            newSetScores: liveSetScores,
+            liveStatus: liveData.status
+          });
+        }
+      }
+
       return {
         type: 'legacy' as const,
-        data: legacyData.legacyMatch,
+        data: mergedLegacyMatch,
         isLive,
         live: state.liveData
       };
@@ -752,7 +1173,7 @@ export default function MatchDetailScreen() {
     }
 
     return result;
-  }, [state.baseMatch, state.liveData, legacyData.legacyMatch, state.renderKey]);
+  }, [state.matchDTO, state.baseMatch, state.liveData, legacyData.legacyMatch, state.renderKey]);
 
   // Helper function to determine if match is BeachMatchCore type (legacy)
   const isBeachMatchCore = (match: MatchResult | BeachMatchCore): match is BeachMatchCore => {
@@ -793,6 +1214,11 @@ export default function MatchDetailScreen() {
   const getStatusText = (): string => {
     const mergedData = getMergedMatchData;
     if (!mergedData) return 'UNKNOWN';
+
+    // Debug logging for DTO
+    if (mergedData.type === 'dto' && __DEV__) {
+      console.log('[MatchDetail] Current DTO data:', JSON.stringify(mergedData.data, null, 2));
+    }
 
     if (mergedData.type === 'legacy') {
       const match = mergedData.data;
@@ -845,7 +1271,8 @@ export default function MatchDetailScreen() {
       }
 
       // Map DTO status to display text
-      switch (status.toLowerCase()) {
+      const statusState = typeof status === 'object' && status.state ? status.state : status;
+      switch (statusState.toLowerCase()) {
         case 'scheduled':
           return 'SCHEDULED';
         case 'ready':
@@ -913,7 +1340,15 @@ export default function MatchDetailScreen() {
     let teamAPoints = 0;
     let teamBPoints = 0;
 
-    if (mergedData.type === 'legacy') {
+    // NEW: Handle DTO format (preferred)
+    if (mergedData.type === 'dto') {
+      const dto = mergedData.data;
+      const setData = dto.score?.sets?.find(s => s.setNo === setNumber);
+      if (setData) {
+        teamAPoints = setData.home || 0;
+        teamBPoints = setData.away || 0;
+      }
+    } else if (mergedData.type === 'legacy') {
       const match = mergedData.data;
       if (isBeachMatchCore(match)) {
         // Use setScores array from BeachMatchCore
@@ -1110,6 +1545,27 @@ export default function MatchDetailScreen() {
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* TEST BUTTON - Remove when DTO loading is working */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={{ backgroundColor: '#ff6b6b', padding: 12, margin: 16, borderRadius: 8 }}
+            onPress={() => {
+              console.log('[MatchDetail] TEST BUTTON: Manual DTO trigger');
+              if (matchNo && tournamentNo) {
+                // Clear DTO cache first to force fresh API call
+                dtoService.current.clearMatchCache(parseInt(matchNo, 10));
+                console.log('[MatchDetail] TEST BUTTON: Cleared cache for match', matchNo);
+                console.log('[MatchDetail] TEST BUTTON: Should call loadMatchDetail with', { matchNo, tournamentNo });
+                handleRefresh(); // This will call loadMatchDetail
+              }
+            }}
+          >
+            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+              🔄 TEST: Load Match DTO (matchNo: {matchNo}, tournament: {tournamentNo})
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Live Indicator for live matches */}
         {mergedData.isLive && (
           <View style={styles.liveIndicatorContainer}>
@@ -1132,7 +1588,7 @@ export default function MatchDetailScreen() {
         ]}>
           {/* Top band for women's matches - consistent with MatchCard */}
           {((mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && (mergedData.data as any).tournamentGender === 'W') ||
-            (mergedData.type === 'dto' && mergedData.data.tournamentGender === 'W')) && (
+            (mergedData.type === 'dto' && false)) && (
             <View style={styles.womenTopBand} />
           )}
 
@@ -1144,18 +1600,21 @@ export default function MatchDetailScreen() {
                   <>
                     <View style={[
                       styles.genderBadge,
-                      (mergedData.data as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
+                      false ? styles.menBadge : styles.womenBadge
                     ]}>
                       <Text style={[
                         styles.genderBadgeText,
-                        (mergedData.data as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                        false ? styles.menBadgeText : styles.womenBadgeText
                       ]}>
-                        {(mergedData.data as any).tournamentGender}{(mergedData.data as any).noInTournament || mergedData.data.matchCode}
+                        {(mergedData.data as any).tournamentGender}{(mergedData.data as any).noInTournament || (mergedData.data as any).matchCode}
                       </Text>
                     </View>
-                    {mergedData.data.court && (
+                    {(mergedData.type === 'legacy' ? (mergedData.data as any).court : mergedData.type === 'dto' ? mergedData.data.venue?.court : null) && (
                       <Text style={styles.courtInfo}>
-                        Court {mergedData.data.court.courtNumber === 'CC' ? 'CC' : `C${mergedData.data.court.courtNumber}`}
+                        Court {mergedData.type === 'legacy' ?
+                          ((mergedData.data as any).court?.courtNumber === 'CC' ? 'CC' : `C${(mergedData.data as any).court?.courtNumber}`) :
+                          (mergedData.data.venue?.court === 'CC' ? 'CC' : `C${mergedData.data.venue?.court}`)
+                        }
                       </Text>
                     )}
                   </>
@@ -1163,18 +1622,18 @@ export default function MatchDetailScreen() {
                   <>
                     <View style={[
                       styles.genderBadge,
-                      mergedData.data.tournamentGender === 'M' ? styles.menBadge : styles.womenBadge
+                      false ? styles.menBadge : styles.womenBadge
                     ]}>
                       <Text style={[
                         styles.genderBadgeText,
-                        mergedData.data.tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                        false ? styles.menBadgeText : styles.womenBadgeText
                       ]}>
-                        {mergedData.data.tournamentGender}{mergedData.data.no}
+                        {"M"}{mergedData.data.matchNo}
                       </Text>
                     </View>
-                    {mergedData.data.court && (
+                    {mergedData.data.venue?.court && (
                       <Text style={styles.courtInfo}>
-                        Court {mergedData.data.court === 'CC' ? 'CC' : `C${mergedData.data.court}`}
+                        Court {mergedData.data.venue?.court === 'CC' ? 'CC' : `C${mergedData.data.venue?.court}`}
                       </Text>
                     )}
                   </>
@@ -1197,10 +1656,10 @@ export default function MatchDetailScreen() {
                   phase={(mergedData.data as any).Phase}
                   style={styles.roundBadge}
                 />
-              ) : mergedData.type === 'dto' && mergedData.data.roundName ? (
+              ) : mergedData.type === 'dto' && mergedData.data.round?.name ? (
                 <RoundPhaseDisplay
-                  round={mergedData.data.roundName}
-                  phase={mergedData.data.roundPhase}
+                  round={mergedData.data.round.name}
+                  phase={mergedData.data.round?.phase}
                   style={styles.roundBadge}
                 />
               ) : null}
@@ -1223,9 +1682,9 @@ export default function MatchDetailScreen() {
                   hour12: false
                 })}
               </Text>
-            ) : mergedData.type === 'dto' && mergedData.data.localTime ? (
+            ) : mergedData.type === 'dto' && mergedData.data.schedule?.localTime ? (
               <Text style={styles.matchTime}>
-                {mergedData.data.localTime}
+                {mergedData.data.schedule.localTime}
               </Text>
             ) : null}
           </View>
@@ -1239,7 +1698,7 @@ export default function MatchDetailScreen() {
                     mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                       ? mergedData.data.team1.countryCode
                       : mergedData.type === 'dto'
-                      ? mergedData.data.teamA.federation || 'XXX'
+                      ? mergedData.data.teams?.home?.federationCode || 'XXX'
                       : 'XXX'
                   }
                   size="large"
@@ -1249,7 +1708,7 @@ export default function MatchDetailScreen() {
                   {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                     ? mergedData.data.team1.countryCode
                     : mergedData.type === 'dto'
-                    ? mergedData.data.teamA.federation
+                    ? mergedData.data.teams?.home?.federationCode
                     : ''}
                 </Text>
               </View>
@@ -1257,7 +1716,7 @@ export default function MatchDetailScreen() {
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                   ? mergedData.data.team1.teamName
                   : mergedData.type === 'dto'
-                  ? mergedData.data.teamA.name
+                  ? mergedData.data.teams?.home?.teamName
                   : mergedData.type === 'legacy'
                   ? (mergedData.data as any).teamAName
                   : 'Team A'}
@@ -1286,7 +1745,7 @@ export default function MatchDetailScreen() {
                     mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                       ? mergedData.data.team2.countryCode
                       : mergedData.type === 'dto'
-                      ? mergedData.data.teamB.federation || 'XXX'
+                      ? mergedData.data.teams.away.federationCode || 'XXX'
                       : 'XXX'
                   }
                   size="large"
@@ -1296,7 +1755,7 @@ export default function MatchDetailScreen() {
                   {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                     ? mergedData.data.team2.countryCode
                     : mergedData.type === 'dto'
-                    ? mergedData.data.teamB.federation
+                    ? mergedData.data.teams.away.federationCode
                     : ''}
                 </Text>
               </View>
@@ -1304,7 +1763,7 @@ export default function MatchDetailScreen() {
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                   ? mergedData.data.team2.teamName
                   : mergedData.type === 'dto'
-                  ? mergedData.data.teamB.name
+                  ? mergedData.data.teams.away.teamName
                   : mergedData.type === 'legacy'
                   ? (mergedData.data as any).teamBName
                   : 'Team B'}
@@ -1343,8 +1802,8 @@ export default function MatchDetailScreen() {
               <Text style={styles.infoValue}>
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.scheduledDateTime
                   ? new Date(mergedData.data.scheduledDateTime).toLocaleDateString()
-                  : mergedData.type === 'dto' && mergedData.data.localDate
-                  ? mergedData.data.localDate
+                  : mergedData.type === 'dto' && mergedData.data.schedule?.localDate
+                  ? mergedData.data.schedule.localDate
                   : mergedData.type === 'legacy'
                   ? formatDateLong((mergedData.data as any).localDate)
                   : 'N/A'}
@@ -1356,9 +1815,9 @@ export default function MatchDetailScreen() {
               <Text style={styles.infoLabel}>Court</Text>
               <Text style={styles.infoValue}>
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.court
-                  ? (mergedData.data.court.courtNumber === 'CC' ? 'Center Court' : `Court ${mergedData.data.court.courtNumber}`)
-                  : mergedData.type === 'dto' && mergedData.data.court
-                  ? (mergedData.data.court === 'CC' ? 'Center Court' : `Court ${mergedData.data.court}`)
+                  ? (mergedData.data.court?.courtNumber === 'CC' ? 'Center Court' : `Court ${mergedData.data.court?.courtNumber}`)
+                  : mergedData.type === 'dto' && mergedData.data.venue?.court
+                  ? (mergedData.data.venue?.court === 'CC' ? 'Center Court' : `Court ${mergedData.data.venue?.court}`)
                   : mergedData.type === 'legacy'
                   ? (mergedData.data as any).court
                   : 'N/A'}
@@ -1372,7 +1831,7 @@ export default function MatchDetailScreen() {
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                   ? mergedData.data.roundName || mergedData.data.round
                   : mergedData.type === 'dto'
-                  ? mergedData.data.roundName
+                  ? mergedData.data.round?.name
                   : mergedData.type === 'legacy'
                   ? (mergedData.data as any).round
                   : 'N/A'}
@@ -1386,7 +1845,7 @@ export default function MatchDetailScreen() {
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data)
                   ? mergedData.data.matchCode
                   : mergedData.type === 'dto'
-                  ? mergedData.data.no.toString()
+                  ? mergedData.data.matchNo.toString()
                   : mergedData.type === 'legacy'
                   ? (mergedData.data as any).no
                   : 'N/A'}
@@ -1429,42 +1888,42 @@ export default function MatchDetailScreen() {
                   />
                 </View>
               ))}
-              {mergedData.type === 'dto' && mergedData.data.referees && (
+              {mergedData.type === 'dto' && mergedData.data.officials && (
                 <>
-                  {mergedData.data.referees.first && (
+                  {mergedData.data.officials?.firstReferee && (
                     <View style={styles.refereeItem}>
                       <View style={styles.refereeInfo}>
                         <Text style={styles.refereePosition}>1st Referee</Text>
-                        <Text style={styles.refereeName}>{mergedData.data.referees.first.name}</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.officials?.firstReferee?.name}</Text>
                       </View>
                       <FlagImage
-                        countryCode={mergedData.data.referees.first.federation || 'XXX'}
+                        countryCode={mergedData.data.officials?.firstReferee?.federationCode || 'XXX'}
                         size="large"
                         style={styles.refereeFlag}
                       />
                     </View>
                   )}
-                  {mergedData.data.referees.second && (
+                  {mergedData.data.officials?.secondReferee && (
                     <View style={styles.refereeItem}>
                       <View style={styles.refereeInfo}>
                         <Text style={styles.refereePosition}>2nd Referee</Text>
-                        <Text style={styles.refereeName}>{mergedData.data.referees.second.name}</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.officials?.secondReferee?.name}</Text>
                       </View>
                       <FlagImage
-                        countryCode={mergedData.data.referees.second.federation || 'XXX'}
+                        countryCode={mergedData.data.officials?.secondReferee?.federationCode || 'XXX'}
                         size="large"
                         style={styles.refereeFlag}
                       />
                     </View>
                   )}
-                  {mergedData.data.referees.challenge && (
+                  {mergedData.data.officials?.others && mergedData.data.officials.others.length > 0 && (
                     <View style={styles.refereeItem}>
                       <View style={styles.refereeInfo}>
                         <Text style={styles.refereePosition}>Challenge Referee</Text>
-                        <Text style={styles.refereeName}>{mergedData.data.referees.challenge.name}</Text>
+                        <Text style={styles.refereeName}>{mergedData.data.officials?.others?.[0]?.name}</Text>
                       </View>
                       <FlagImage
-                        countryCode={mergedData.data.referees.challenge.federation || 'XXX'}
+                        countryCode={mergedData.data.officials?.others?.[0]?.federationCode || 'XXX'}
                         size="large"
                         style={styles.refereeFlag}
                       />

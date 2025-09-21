@@ -181,6 +181,7 @@ export class VisApiIntegrationService {
       }
 
       // Parse matches directly to core domain types
+      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
       const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo, undefined);
 
       // Create metrics
@@ -257,6 +258,7 @@ export class VisApiIntegrationService {
       }
 
       // Parse initial match list to get match numbers
+      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
       const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo, undefined);
       
       const listMetrics = this.createRequestMetrics(

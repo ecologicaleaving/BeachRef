@@ -229,6 +229,7 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
       }
 
       // Parse response
+      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
       const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentId, undefined);
 
       // Apply additional filters

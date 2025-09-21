@@ -59,6 +59,7 @@ export interface TournamentLocation {
   readonly contactPhone?: string;
   readonly courts?: number;
   readonly surface?: string;
+  readonly DefaultTimeZone?: string;
 }
 
 /**
@@ -157,7 +158,8 @@ export class VisResponseParser {
         contactEmail: this.extractXmlValue(xmlResponse, 'ContactEmail'),
         contactPhone: this.extractXmlValue(xmlResponse, 'ContactPhone'),
         courts: parseInt(this.extractXmlValue(xmlResponse, 'Courts') || '0') || undefined,
-        surface: this.extractXmlValue(xmlResponse, 'Surface')
+        surface: this.extractXmlValue(xmlResponse, 'Surface'),
+        DefaultTimeZone: this.extractXmlValue(xmlResponse, 'DefaultTimeZone')
       };
       
     } catch (error) {
@@ -202,26 +204,73 @@ export class VisResponseParser {
   static parseBeachMatches(xmlResponse: string, tournamentId: string, tournamentTimezone?: string): BeachMatchCore[] {
     try {
       const matches: BeachMatchCore[] = [];
-      
+
+      // 🔍 DEBUG: Log the incoming XML for parsing
+      console.log('🏐 [VIS-PARSER-INPUT]', {
+        tournamentId,
+        tournamentTimezone,
+        xmlLength: xmlResponse.length,
+        xmlPreview: xmlResponse.substring(0, 500) + '...',
+        timestamp: new Date().toISOString()
+      });
+
       // Extract BeachMatch nodes from XML (VIS API returns <BeachMatch> not <Match>)
-      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) || 
+      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) ||
                           xmlResponse.match(/<BeachMatch[^>]*\/>/gs); // Handle self-closing tags
-      
+
       if (!matchMatches) {
+        console.log('⚠️ [VIS-PARSER-NO-MATCHES]', {
+          tournamentId,
+          xmlLength: xmlResponse.length,
+          timestamp: new Date().toISOString()
+        });
         return matches;
       }
+
+      console.log('🔍 [VIS-PARSER-FOUND-MATCHES]', {
+        tournamentId,
+        matchCount: matchMatches.length,
+        timestamp: new Date().toISOString()
+      });
 
       for (const matchXml of matchMatches) {
         try {
           const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone);
           if (match) {
             matches.push(match);
+
+            // 🔍 DEBUG: Log each parsed match with timezone details
+            console.log('✅ [VIS-PARSER-MATCH-PARSED]', {
+              matchId: match.id,
+              matchCode: match.matchCode,
+              tournamentId: match.tournamentId,
+              scheduledDateTime: match.scheduledDateTime,
+              scheduled: match.scheduled,
+              timezone: match.timezone,
+              localTimeOffset: match.localTimeOffset,
+              rawTimezoneFromXml: this.extractXmlAttribute(matchXml, 'TimeZone'),
+              rawXmlSnippet: matchXml.substring(0, 200) + '...',
+              timestamp: new Date().toISOString()
+            });
           }
         } catch (error) {
-          // console.warn('Failed to parse match:', error);
+          console.error('❌ [VIS-PARSER-MATCH-ERROR]', {
+            tournamentId,
+            error: error instanceof Error ? error.message : String(error),
+            matchXmlSnippet: matchXml.substring(0, 200) + '...',
+            timestamp: new Date().toISOString()
+          });
           // Continue parsing other matches
         }
       }
+
+      console.log('🏁 [VIS-PARSER-SUMMARY]', {
+        tournamentId,
+        totalXmlMatches: matchMatches.length,
+        successfullyParsed: matches.length,
+        failed: matchMatches.length - matches.length,
+        timestamp: new Date().toISOString()
+      });
 
       return matches;
       
@@ -347,11 +396,26 @@ export class VisResponseParser {
         ? localTime
         : `${localTime}:00`;
 
-      // Determine tournament timezone - use multiple fallback sources
-      const resolvedTournamentTz = tournamentTimezone ||
-                                   timezone ||
-                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) ||
-                                   'UTC'; // Safe fallback
+      // Determine tournament timezone - use multiple fallback sources with validation
+      // CRITICAL: BeachMatch TimeZone field often contains invalid values like "24"
+      // Only use timezone from BeachMatch if it passes validation
+      const validatedBeachMatchTimezone = this.validateAndNormalizeTimezone(timezone);
+
+      const resolvedTournamentTz = tournamentTimezone ||                                         // 1. Tournament timezone (from GetTournament call)
+                                   validatedBeachMatchTimezone ||                                 // 2. Validated BeachMatch timezone (often invalid!)
+                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) || // 3. Parse from offset
+                                   'UTC'; // 4. Safe fallback
+
+      // DEBUG: Log timezone resolution for debugging "24" issue
+      if (timezone === "24" || !validatedBeachMatchTimezone) {
+        console.warn('⚠️ [TIMEZONE-VALIDATION]', {
+          rawBeachMatchTimezone: timezone,
+          validatedBeachMatchTimezone,
+          localTimeOffset,
+          resolvedTournamentTz,
+          fallbackReason: timezone === "24" ? 'Invalid BeachMatch TimeZone="24"' : 'Invalid timezone format'
+        });
+      }
 
       try {
         // SOLUTION: Interpret LocalDate+LocalTime in tournament timezone, not as UTC
@@ -372,6 +436,31 @@ export class VisResponseParser {
         scheduledTz = resolvedTournamentTz;
 
       } catch (error) {
+        // 🔍 DEBUG: Detailed timezone error logging
+        console.error('🕐 [TIMEZONE-ERROR-DETAILED]', {
+          error: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          inputData: {
+            localDate,
+            localTime,
+            timeWithSeconds,
+            tournamentTimezone,
+            timezone,
+            localTimeOffset,
+            resolvedTournamentTz
+          },
+          rawXmlSnippet: matchXml.substring(0, 300) + '...',
+          allTimezoneAttributes: {
+            TimeZone: this.extractXmlAttribute(matchXml, 'TimeZone'),
+            LocalTimeOffset: this.extractXmlAttribute(matchXml, 'LocalTimeOffset'),
+            BeginDateTimeUtc: this.extractXmlAttribute(matchXml, 'BeginDateTimeUtc'),
+            EndDateTimeUtc: this.extractXmlAttribute(matchXml, 'EndDateTimeUtc'),
+            UtcDate: this.extractXmlAttribute(matchXml, 'UtcDate'),
+            UtcTime: this.extractXmlAttribute(matchXml, 'UtcTime')
+          },
+          timestamp: new Date().toISOString()
+        });
+
         // Fallback if timezone parsing fails
         console.warn(`[VisResponseParser] Timezone parsing failed for ${localDate}T${timeWithSeconds} in ${resolvedTournamentTz}:`, error);
         scheduledDateTime = new Date().toISOString();
@@ -893,6 +982,51 @@ export class VisResponseParser {
         return OfficialType.ADMINISTRATIVE;
       default:
         return OfficialType.TECHNICAL;
+    }
+  }
+
+  /**
+   * Validate and normalize timezone from VIS API
+   * Handles invalid values like "24" and converts them to valid IANA timezones
+   */
+  private static validateAndNormalizeTimezone(timezone: string | undefined): string | null {
+    if (!timezone || typeof timezone !== 'string') {
+      return null;
+    }
+
+    const cleanTz = timezone.trim();
+
+    // SPECIAL CASE: VIS API sometimes returns invalid values like "24"
+    if (cleanTz === "24" || cleanTz === "25") {
+      console.warn(`[VisResponseParser] Detected known invalid BeachMatch timezone: "${timezone}" - this is a VIS API data issue, ignoring`);
+      return null;
+    }
+
+    // Check if it's a numeric offset (like "1", "-5", "+3")
+    const numericMatch = cleanTz.match(/^([+-]?)(\d{1,2})$/);
+    if (numericMatch) {
+      const [, sign, hours] = numericMatch;
+      const hourOffset = parseInt(hours, 10);
+
+      // Handle invalid offsets (24+ hours)
+      if (hourOffset >= 24) {
+        console.warn(`[VisResponseParser] Invalid timezone offset: ${timezone} (${hourOffset} hours), ignoring`);
+        return null;
+      }
+
+      // Convert to standard offset format and use parseTimezoneFromOffset
+      const standardOffset = `${sign || '+'}${hours.padStart(2, '0')}:00`;
+      return this.parseTimezoneFromOffset(standardOffset);
+    }
+
+    // Check if it's already a valid IANA timezone by testing with dayjs
+    try {
+      // Test if timezone is valid by attempting to create a date with it
+      dayjs.tz('2025-01-01T12:00:00', cleanTz);
+      return cleanTz;
+    } catch {
+      console.warn(`[VisResponseParser] Invalid timezone format: ${timezone}, ignoring`);
+      return null;
     }
   }
 

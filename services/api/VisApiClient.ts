@@ -738,6 +738,15 @@ export class VisApiClient implements IVisApiClient {
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
 
+      // 🔍 DEBUG: Log the outgoing request
+      console.log('🚀 [VIS-API-REQUEST]', {
+        url: this.config.baseUrl,
+        method: 'POST',
+        headers,
+        xmlRequest: xmlRequest,
+        formDataLength: formData.length,
+        timestamp: new Date().toISOString()
+      });
 
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -746,12 +755,27 @@ export class VisApiClient implements IVisApiClient {
         signal: controller.signal
       });
 
-
       if (!response.ok) {
+        console.error('❌ [VIS-API-HTTP-ERROR]', {
+          status: response.status,
+          statusText: response.statusText,
+          url: this.config.baseUrl,
+          timestamp: new Date().toISOString()
+        });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseText = await response.text();
+
+      // 🔍 DEBUG: Log the raw response
+      console.log('📥 [VIS-API-RAW-RESPONSE]', {
+        url: this.config.baseUrl,
+        status: response.status,
+        statusText: response.statusText,
+        responseLength: responseText.length,
+        responseText: responseText,
+        timestamp: new Date().toISOString()
+      });
       
       // Check for VIS API specific errors
       if (this.containsVisError(responseText)) {
@@ -1355,8 +1379,9 @@ export class VisApiClient implements IVisApiClient {
    * @param value - The attribute value to escape
    * @returns Escaped XML attribute value
    */
-  private escapeXmlAttribute(value: string): string {
-    return value
+  private escapeXmlAttribute(value: string | number): string {
+    const stringValue = String(value);
+    return stringValue
       .replace(/&/g, '&amp;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;')

@@ -428,12 +428,6 @@ export class CacheServiceCompatibility {
         updatedAt: Date.now(),
       });
 
-      console.log(`✅ Live score cached for match ${matchNo}:`, {
-        matchNo,
-        hasData: !!liveData,
-        version: liveData?.version,
-        sets: liveData?.sets?.length || 0,
-      });
 
     } catch (error) {
       console.error(`Error caching live score for match ${matchNo}:`, error);
@@ -456,11 +450,6 @@ export class CacheServiceCompatibility {
       const cachedData = queryClient.getQueryData(liveScoreKey);
 
       if (cachedData) {
-        console.log(`✅ Live score retrieved from cache for match ${matchNo}:`, {
-          hasData: !!cachedData,
-          version: cachedData?.version,
-          sets: cachedData?.sets?.length || 0,
-        });
         return cachedData;
       }
 
@@ -475,10 +464,6 @@ export class CacheServiceCompatibility {
       for (const key of alternativeKeys) {
         const data = queryClient.getQueryData(key);
         if (data) {
-          console.log(`✅ Live score retrieved from alternative cache key for match ${matchNo}:`, {
-            key,
-            hasData: !!data,
-          });
           return data;
         }
       }

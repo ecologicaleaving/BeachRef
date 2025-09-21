@@ -102,12 +102,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
   }, [liveScoreRefresh]);
 
-  // Debug: Log when setScores change
-  useEffect(() => {
-    if (isMatchLive(match)) {
-      console.log(`📊 SET SCORES: Match ${match.id} - setScores:`, match.result?.setScores);
-    }
-  }, [setScoresString]);
 
   // Score age counter for LIVE matches (updates every second)
   useEffect(() => {
@@ -514,12 +508,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           // Call the existing onPress if provided
           onPress?.(match);
 
-          // Navigate to match detail screen with match data
+          // Navigate to match detail screen with correct VIS match number
+          // Priority: visNo (pure VIS match number) > extracted from matchCode > fallback
+          const visMatchNo = match.visNo || extractNumericFromString(match.matchCode) || extractNumericFromString(match.id) || 'unknown';
+          const tournamentNo = (match as any).tournamentNo || 'demo';
+
+          // Helper function to extract numeric part
+          function extractNumericFromString(str?: string): string | null {
+            if (!str) return null;
+            const numericMatch = str.match(/\d+/);
+            return numericMatch ? numericMatch[0] : null;
+          }
+
+          if (__DEV__) {
+            console.log('[MatchCard] Navigation with VIS match number:', {
+              visMatchNo,
+              originalId: match.id,
+              matchCode: match.matchCode,
+              visNoField: match.visNo,
+              extractedFromMatchCode: extractNumericFromString(match.matchCode),
+              extractedFromId: extractNumericFromString(match.id),
+              tournamentNo,
+              finalURL: `/match-detail?matchNo=${visMatchNo}&tournamentNo=${tournamentNo}`
+            });
+          }
+
           router.push({
             pathname: '/match-detail',
             params: {
-              matchNo: match.id || match.matchCode || 'unknown',
-              tournamentNo: (match as any).tournamentNo || 'demo',
+              matchNo: visMatchNo,  // Use VIS match number for direct polling
+              tournamentNo,
               matchData: JSON.stringify(match)
             }
           });

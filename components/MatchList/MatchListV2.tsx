@@ -10,7 +10,6 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatTimeWithTimezoneSync } from '../../utils/dateFormatters';
 import { DateTime } from 'luxon';
-import { compareWithinDay } from '../../utils/simpleMatchSort';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -539,20 +538,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return 'All';
   });
 
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default to descending (newest first)
 
-  // Force sort order to descending on component mount (newest dates first)
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        localStorage.removeItem('matchlist-sortOrder');
-        localStorage.setItem('matchlist-sortOrder', 'desc');
-      }
-    } catch (error) {
-      // localStorage not available
-    }
-    setSortOrder('desc');
-  }, []); // Run only once on mount
 
   const [showFilters, setShowFilters] = useState<boolean>(() => {
     try {
@@ -585,13 +571,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           localStorage.setItem('matchlist-refereeFilter', refereeFilter);
         }
         localStorage.setItem('matchlist-statusFilter', statusFilter);
-        localStorage.setItem('matchlist-sortOrder', sortOrder);
         localStorage.setItem('matchlist-showFilters', showFilters.toString());
       }
     } catch (error) {
       // Failed to save filters to localStorage
     }
-  }, [genderFilter, courtFilter, refereeFilter, statusFilter, sortOrder, showFilters, externalCourtFilter, externalGenderFilter, externalRefereeFilter]);
+  }, [genderFilter, courtFilter, refereeFilter, statusFilter, showFilters, externalCourtFilter, externalGenderFilter, externalRefereeFilter]);
 
   // Enhanced matches with FULL VIS API data including duration
   useEffect(() => {
@@ -770,7 +755,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return { filteredMatches: validMatches, tbdMatches };
 
     // Final result logging will happen in UI render
-  }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, sortOrder, enableTimelineView, showAllDays]);
+  }, [activeMatches, enhancedMatches, effectiveGenderFilter, effectiveCourtFilter, effectiveRefereeFilter, statusFilter, selectedReferee, enableTimelineView, showAllDays]);
 
 
   // Calculate target match for auto-scroll and notify parent
@@ -883,18 +868,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     });
 
-    // FRIEND'S EXACT SOLUTION: sortOrder influenza SOLO l'ordine dei pannelli data
+    // Return date groups in DESCENDING order (latest/newest dates first)
     const dayGroups = Object.entries(groups)
-      // ordina i pannelli data secondo sortOrder
-      .sort(([dateA], [dateB]) => {
-        const diff = dateA.localeCompare(dateB);
-        return sortOrder === 'desc' ? -diff : diff;
-      })
-      // ordina SEMPRE i match dentro al gruppo in modo cronologico crescente
-      .map(([dateKey, matches]) => [dateKey, [...matches].sort(compareWithinDay)] as const);
+      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA)) // DESCENDING date order (latest first)
+      .map(([dateKey, matches]) => [dateKey, matches] as const); // No match sorting within groups
 
     return dayGroups;
-  }, [filteredMatches, sortOrder, tournamentTimezone]);
+  }, [filteredMatches, tournamentTimezone]);
 
   // Initialize expanded dates - expand today's panel if it exists
   useEffect(() => {
@@ -1100,7 +1080,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     setEffectiveGenderFilter('All');
     setEffectiveRefereeFilter('All');
     setStatusFilter('All');
-    setSortOrder('asc');
     setShowRefereeDropdown(false);
   };
 
@@ -1457,27 +1436,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           </View>
         )}
 
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Sort:</Text>
-          <View style={styles.filterButtons}>
-            <TouchableOpacity
-              style={[styles.filterButton, sortOrder === 'desc' && styles.filterButtonActive]}
-              onPress={() => setSortOrder('desc')}
-            >
-              <Text style={[styles.filterButtonText, sortOrder === 'desc' && styles.filterButtonTextActive]}>
-                Latest First
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterButton, sortOrder === 'asc' && styles.filterButtonActive]}
-              onPress={() => setSortOrder('asc')}
-            >
-              <Text style={[styles.filterButtonText, sortOrder === 'asc' && styles.filterButtonTextActive]}>
-                Oldest First
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         <View style={styles.filterGroup}>
           <Text style={styles.filterLabel}>Status:</Text>

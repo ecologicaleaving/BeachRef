@@ -233,8 +233,10 @@ export class VisResponseParser {
         timestamp: new Date().toISOString()
       });
 
+      // Step 1: Re-enable basic loop structure without parseSingleMatch to isolate error
       for (const matchXml of matchMatches) {
         try {
+          console.log('🔍 Processing match XML snippet:', matchXml.substring(0, 100) + '...');
           const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone);
           if (match) {
             matches.push(match);

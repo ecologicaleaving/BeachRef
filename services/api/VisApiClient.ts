@@ -309,7 +309,11 @@ export class VisApiClient implements IVisApiClient {
     try {
       const xmlRequest = this.buildGetBeachMatchXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH, xmlRequest);
-      
+
+      if (__DEV__) {
+        console.log('🔍 [GetBeachMatch Response]:', response.data ? response.data.substring(0, 1000) : 'NO DATA');
+      }
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH, true, Date.now() - startTime);
       return response;
       
@@ -998,31 +1002,21 @@ export class VisApiClient implements IVisApiClient {
    * For individual match data retrieval with full details
    */
   private buildGetBeachMatchXml(request: GetBeachMatchRequest): string {
-    const filterAttribs = [
-      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`,
-      `No="${this.escapeXmlAttribute(request.matchNo)}"`
-    ];
-    
-    // Add optional includes
-    const includeResults = request.includeResults !== false;
-    const includeReferees = request.includeReferees !== false;
-    const includeTeamDetails = request.includeTeamDetails !== false;
-    const includeSetScores = request.includeSetScores !== false;
-    const includeStatistics = request.includeStatistics !== false;
-    
-    filterAttribs.push(`IncludeResults="${includeResults}"`);
-    filterAttribs.push(`IncludeReferees="${includeReferees}"`);
-    filterAttribs.push(`IncludeTeamDetails="${includeTeamDetails}"`);
-    filterAttribs.push(`IncludeSetScores="${includeSetScores}"`);
-    filterAttribs.push(`IncludeStatistics="${includeStatistics}"`);
-    
-    // Include all available fields for comprehensive match data (no overcomplicated mapping)
-    const fields = '';
-    
-    const xmlRequest = `<Request Type="GetBeachMatch" Fields="${fields}">
-  <Filter ${filterAttribs.join(' ')} />
-</Request>`;
-    
+    // For GetBeachMatch, the No parameter goes in the Request element, not Filter
+    const requestAttribs = [`No="${this.escapeXmlAttribute(request.matchNo)}"`];
+
+    // Only include tournament number if provided
+    if (request.tournamentNo) {
+      requestAttribs.push(`NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`);
+    }
+
+    // Simple request without fields parameter
+    const xmlRequest = `<Request Type="GetBeachMatch" ${requestAttribs.join(' ')} />`;
+
+    if (__DEV__) {
+      console.log('🔍 [GetBeachMatch XML]:', xmlRequest);
+    }
+
     return xmlRequest;
   }
 

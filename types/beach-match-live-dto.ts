@@ -27,7 +27,8 @@ export type ResultType =
   | "Normal"
   | "ForfeitA" | "ForfeitB" | "ForfeitBoth"
   | "InjuryA"  | "InjuryB"  | "InjuryBoth"
-  | "OutA"     | "OutB"     | "OutBoth";
+  | "OutA"     | "OutB"     | "OutBoth"
+  | "DisqualifiedA" | "DisqualifiedB" | "DisqualifiedBoth";
 
 // ── CORE ──────────────────────────────────────────────────────────────────────
 export interface BeachMatchLiveDTO {
@@ -73,7 +74,7 @@ export interface BeachMatchLiveDTO {
   };
   score: {
     sets: Array<SetScore>;
-    totalPoints?: { home: number; away: number } | null;
+    totalSets?: { home: number; away: number } | null;
     fastestServeKmh?: {
       home?: { p1?: number | null; p2?: number | null };
       away?: { p1?: number | null; p2?: number | null };
@@ -113,6 +114,7 @@ export interface TeamSide {
   seedMainDraw?: number | null;
   seedQualification?: number | null;
   type?: string | null;
+  setWon?: number | null;
   players: [Player, Player];
 }
 
@@ -180,8 +182,7 @@ export interface BeachMatchLiveDTOParams {
  * Status mapping from VIS numeric codes to BeachMatchStatus
  */
 export const VIS_STATUS_TO_BEACH_MATCH_STATUS: Record<number, BeachMatchStatus> = {
-  0: "Scheduled",
-  1: "ReadyToStart",
+  1: "Scheduled",
   2: "ReadyToStart",
   3: "InSet1",
   4: "Set1Finished",
@@ -189,8 +190,32 @@ export const VIS_STATUS_TO_BEACH_MATCH_STATUS: Record<number, BeachMatchStatus> 
   6: "Set2Finished",
   7: "InSet3",
   8: "Set3Finished",
-  9: "Finished",
-  10: "OfficialResult"
+  9: "InSet4",
+  10: "Set4Finished",
+  11: "InSet5",
+  12: "Finished",
+  13: "OfficialResult",
+  14: "Corrected",
+  15: "Closed"
+};
+
+/**
+ * Result type mapping from VIS numeric codes to ResultType
+ */
+export const VIS_RESULT_TYPE_TO_RESULT_TYPE: Record<number, ResultType> = {
+  0: "Normal",
+  1: "ForfeitA",
+  2: "ForfeitB",
+  3: "ForfeitBoth",
+  4: "InjuryA",
+  5: "InjuryB",
+  6: "InjuryBoth",
+  7: "OutA",
+  8: "OutB",
+  9: "OutBoth",
+  10: "DisqualifiedA",
+  11: "DisqualifiedB",
+  12: "DisqualifiedBoth"
 };
 
 /**
@@ -223,10 +248,10 @@ export function createMinimalBeachMatchLiveDTO(matchNo: number): BeachMatchLiveD
     },
     teams: {
       home: {
-        players: [{ name: "TBD" }, { name: "TBD" }]
+        players: [{ name: "" }, { name: "" }]
       },
       away: {
-        players: [{ name: "TBD" }, { name: "TBD" }]
+        players: [{ name: "" }, { name: "" }]
       }
     },
     score: {

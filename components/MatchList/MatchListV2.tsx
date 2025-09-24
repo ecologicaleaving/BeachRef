@@ -969,7 +969,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         // AUTOSCROLL: Scrolling to target position
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
-          y: Math.max(0, yPosition - 250), // Increased offset for header and better visibility
+          y: Math.max(0, yPosition - 450), // Further increased offset for optimal visibility
           animated: true
         });
       } else {

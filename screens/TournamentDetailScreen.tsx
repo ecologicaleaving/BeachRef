@@ -467,7 +467,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const matchRelativeY = matchPositions.current[targetMatchId];
       const absoluteY = matchListOffset.current + matchRelativeY;
 
-      const targetY = Math.max(0, absoluteY + 250); // Bring match to visible area with more offset
+      const targetY = Math.max(0, absoluteY + 450); // Bring match to visible area with more offset
 
       scrollViewRef.current.scrollTo({
         y: targetY,

@@ -954,6 +954,38 @@ export default function MatchDetailScreen() {
     }
   };
 
+  // Get round prefix for gender badge (Q for qualification/rounds 1&2) - same logic as MatchCard
+  const getRoundPrefix = (match: any): string => {
+    const rawMatch = (match as any);
+    const roundPhase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
+    const round = match.round || rawMatch.Round;
+    const roundName = match.roundName || rawMatch.RoundName;
+
+    // Check for qualification matches (VIS API standard)
+    if (roundPhase === '1') return 'Q';
+
+    // Check for qualification keywords
+    const qualificationKeywords = /qualification|qual/i;
+    if (round && qualificationKeywords.test(round)) return 'Q';
+    if (roundName && qualificationKeywords.test(roundName)) return 'Q';
+
+    // Check for Round 1 and Round 2 - both get Q prefix
+    if (round) {
+      const roundStr = round.toString().toLowerCase();
+      if (roundStr === '1' || roundStr === 'round 1' || roundStr === 'r1') return 'Q';
+      if (roundStr === '2' || roundStr === 'round 2' || roundStr === 'r2') return 'Q';
+    }
+
+    if (roundName) {
+      const roundNameStr = roundName.toString().toLowerCase();
+      if (roundNameStr.includes('round 1') || roundNameStr === 'r1') return 'Q';
+      if (roundNameStr.includes('round 2') || roundNameStr === 'r2') return 'Q';
+    }
+
+    // Default: no prefix
+    return '';
+  };
+
   // New helper for DTO system
   const isMatchLiveNew = (): boolean => {
     const mergedData = getMergedMatchData;
@@ -1352,48 +1384,67 @@ export default function MatchDetailScreen() {
             {/* Left: Gender badge and match info */}
             <View style={styles.matchHeaderLeft}>
               <View style={styles.genderSection}>
-                {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) ? (
-                  <>
+                {(() => {
+                  // Try to get badge data from URL params first (from Tournament detail page)
+                  let urlParamData: any = null;
+                  try {
+                    urlParamData = matchData ? JSON.parse(matchData) : null;
+                  } catch (e) {
+                    console.warn('[MatchDetailScreen] Failed to parse matchData param:', e);
+                  }
+
+                  // DEBUG: Log badge fields for first match
+                  if ((mergedData.type === 'legacy' && (mergedData.data as any).visNo === '1') ||
+                      (mergedData.type === 'dto' && mergedData.data.matchNo === 1)) {
+                    console.log(`🏐 [DEBUG-MatchDetail] Match badge fields (${mergedData.type}):`, {
+                      // URL param fields (from Tournament page)
+                      urlParam_tournamentGender: urlParamData?.tournamentGender,
+                      urlParam_noInTournament: urlParamData?.noInTournament,
+                      // Legacy fields
+                      legacy_tournamentGender: mergedData.type === 'legacy' ? (mergedData.data as any).tournamentGender : 'N/A',
+                      legacy_noInTournament: mergedData.type === 'legacy' ? (mergedData.data as any).noInTournament : 'N/A',
+                      legacy_matchCode: mergedData.type === 'legacy' ? (mergedData.data as any).matchCode : 'N/A',
+                      // DTO fields
+                      dto_tournamentGender: mergedData.type === 'dto' ? mergedData.data.tournamentGender : 'N/A',
+                      dto_noInTournament: mergedData.type === 'dto' ? mergedData.data.noInTournament : 'N/A',
+                      dto_matchNo: mergedData.type === 'dto' ? mergedData.data.matchNo : 'N/A'
+                    });
+                  }
+
+                  // Badge fields with priority: URL params > legacy > DTO > fallback
+                  const gender = urlParamData?.tournamentGender ||
+                    (mergedData.type === 'legacy' ? (mergedData.data as any).tournamentGender : mergedData.data.tournamentGender) ||
+                    'M';
+
+                  const matchNumber = urlParamData?.noInTournament ||
+                    (mergedData.type === 'legacy' ?
+                      ((mergedData.data as any).noInTournament || (mergedData.data as any).matchCode || (mergedData.data as any).visNo) :
+                      (mergedData.data.noInTournament || mergedData.data.matchNo)) ||
+                    '1';
+
+                  return (
                     <View style={[
                       styles.genderBadge,
-                      false ? styles.menBadge : styles.womenBadge
+                      gender === 'M' ? styles.menBadge : styles.womenBadge
                     ]}>
                       <Text style={[
                         styles.genderBadgeText,
-                        false ? styles.menBadgeText : styles.womenBadgeText
+                        gender === 'M' ? styles.menBadgeText : styles.womenBadgeText
                       ]}>
-                        {(mergedData.data as any).tournamentGender}{(mergedData.data as any).noInTournament || (mergedData.data as any).matchCode}
+                        {getRoundPrefix(mergedData.data)}{gender}{matchNumber}
                       </Text>
                     </View>
-                    {(mergedData.type === 'legacy' ? (mergedData.data as any).court : mergedData.type === 'dto' ? mergedData.data.venue?.court : null) && (
-                      <Text style={styles.courtInfo}>
-                        Court {mergedData.type === 'legacy' ?
-                          ((mergedData.data as any).court?.courtNumber === 'CC' ? 'CC' : `C${(mergedData.data as any).court?.courtNumber}`) :
-                          (mergedData.data.venue?.court === 'CC' ? 'CC' : `C${mergedData.data.venue?.court}`)
-                        }
-                      </Text>
-                    )}
-                  </>
-                ) : mergedData.type === 'dto' ? (
-                  <>
-                    <View style={[
-                      styles.genderBadge,
-                      false ? styles.menBadge : styles.womenBadge
-                    ]}>
-                      <Text style={[
-                        styles.genderBadgeText,
-                        false ? styles.menBadgeText : styles.womenBadgeText
-                      ]}>
-                        {"M"}{mergedData.data.matchNo}
-                      </Text>
-                    </View>
-                    {mergedData.data.venue?.court && (
-                      <Text style={styles.courtInfo}>
-                        Court {mergedData.data.venue?.court === 'CC' ? 'CC' : `C${mergedData.data.venue?.court}`}
-                      </Text>
-                    )}
-                  </>
-                ) : null}
+                  );
+                })()}
+                {/* Court info - unified for both legacy and DTO */}
+                {(mergedData.type === 'legacy' ? (mergedData.data as any).court : mergedData.type === 'dto' ? mergedData.data.venue?.court : null) && (
+                  <Text style={styles.courtInfo}>
+                    Court {mergedData.type === 'legacy' ?
+                      ((mergedData.data as any).court?.courtNumber === 'CC' ? 'CC' : `C${(mergedData.data as any).court?.courtNumber}`) :
+                      (mergedData.data.venue?.court === 'CC' ? 'CC' : `C${mergedData.data.venue?.court}`)
+                    }
+                  </Text>
+                )}
               </View>
             </View>
 

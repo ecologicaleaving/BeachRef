@@ -227,7 +227,20 @@ export class BeachMatchLiveDTOService {
           // We have detailed match data from GetBeachMatch
           // Populate DTO with match data
           dto.matchNo = params.matchNo;
+          dto.noInTournament = matchData.noInTournament; // For badge display
+          dto.tournamentGender = matchData.tournamentGender; // For badge styling
           dto.tournament.code = matchData.tournamentId || matchData.tournamentNo?.toString() || "unknown";
+
+          // DEBUG: Log DTO badge field assignment
+          if (__DEV__) {
+            console.log(`🏐 [DEBUG-BeachMatchLiveDTO] Assigning badge fields to DTO:`, {
+              from_matchData_noInTournament: matchData.noInTournament,
+              from_matchData_tournamentGender: matchData.tournamentGender,
+              assigned_dto_noInTournament: dto.noInTournament,
+              assigned_dto_tournamentGender: dto.tournamentGender,
+              assigned_dto_matchNo: dto.matchNo
+            });
+          }
 
           dto.round.name = matchData.round;
           dto.round.phase = matchData.phaseCode;
@@ -474,6 +487,25 @@ export class BeachMatchLiveDTOService {
 
         const courtMatch = matchXml.match(/Court="([^"]*)"/i);
         if (courtMatch) matchData.courtNumber = courtMatch[1];
+
+        // Extract NoInTournament for match numbering in badge
+        const noInTournamentMatch = matchXml.match(/NoInTournament="([^"]*)"/i);
+        if (noInTournamentMatch) matchData.noInTournament = noInTournamentMatch[1];
+
+        // Extract TournamentGender for gender badge
+        const tournamentGenderMatch = matchXml.match(/TournamentGender="([^"]*)"/i);
+        if (tournamentGenderMatch) matchData.tournamentGender = tournamentGenderMatch[1];
+
+        // DEBUG: Log extracted badge fields
+        if (__DEV__) {
+          console.log(`🏐 [DEBUG-BeachMatchLiveDTO] Badge fields extracted from XML:`, {
+            xml_noInTournament: noInTournamentMatch ? noInTournamentMatch[1] : 'NOT_FOUND',
+            xml_tournamentGender: tournamentGenderMatch ? tournamentGenderMatch[1] : 'NOT_FOUND',
+            matchData_noInTournament: matchData.noInTournament,
+            matchData_tournamentGender: matchData.tournamentGender,
+            xmlElement: matchXml.substring(0, 200) + '...'
+          });
+        }
 
         // Extract date/time - VIS API uses LocalDate and LocalTime
         const localDateMatch = matchXml.match(/LocalDate="([^"]*)"/i);

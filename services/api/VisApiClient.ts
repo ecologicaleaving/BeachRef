@@ -933,21 +933,28 @@ export class VisApiClient implements IVisApiClient {
    * Based on documentation: <Request Type="GetBeachTournament" No="502" Fields="..." />
    */
   private buildGetBeachTournamentXml(request: GetBeachTournamentRequest): string {
-    // REQUEST NoEvent field - this is needed to filter referee list
-    const fields = 'No Code Name NoEvent';
-    
-    return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    // Only include Fields attribute if fields are specified
+    if (request.fields && request.fields.length > 0) {
+      const fields = request.fields.join(' ');
+      return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    } else {
+      // No fields specified - request without Fields attribute to get all available fields
+      return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" />`;
+    }
   }
 
   /**
    * Build GetEvent XML request (VIS API format)
    */
   private buildGetEventXml(request: GetEventRequest): string {
-    // Include Content field to get BeachTournament information
-    const fields = 'No Name Code Content';
-    
-    // Use simple attribute format like in documentation, not Filter element
-    return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    // Only include Fields attribute if fields are specified
+    if (request.fields && request.fields.length > 0) {
+      const fields = request.fields.join(' ');
+      return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    } else {
+      // No fields specified - request without Fields attribute to get all available fields
+      return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" />`;
+    }
   }
 
   /**

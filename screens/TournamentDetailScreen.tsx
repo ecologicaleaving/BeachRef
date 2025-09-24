@@ -1182,14 +1182,14 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
-  // Load matches for the tournament - MUST wait for real tournament number from GetBeachTournament
+  // Load matches for the tournament - OPTIMIZED API FLOW
   const loadMatches = async () => {
-    // If we don't have the real tournament number yet, we need to get it first
-    if (!(tournament as any).tournamentNo) {
-      
+    // STEP 1: Always start with GetEvent to get tournament structure (without field specification)
+    if (!(tournament as any).beachTournaments) {
+
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
+
       const config = {
         baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
         timeoutMs: 30000,
@@ -1198,19 +1198,17 @@ const TournamentDetailScreenContent: React.FC = () => {
         enableLogging: true,
         headers: {}
       };
-      
+
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-      
+
       try {
+        // GetEvent call without field specification as requested
         const tournamentResponse = await visApi.getEvent({
-          eventNo: tournament.visNo,
-          includeOfficials: false,
-          includeReferees: false
+          eventNo: tournament.visNo
         });
-        
+
         if (tournamentResponse.success && tournamentResponse.xmlData) {
           // Extract BeachTournament numbers from Content field of GetEvent response
-          // The Content field is an attribute on the Event element, not a separate element
           let contentField = '';
           const contentMatch = tournamentResponse.xmlData.match(/Content="([^"]*)"/);
           if (contentMatch) {
@@ -1238,25 +1236,29 @@ const TournamentDetailScreenContent: React.FC = () => {
                 };
               });
 
-              // Store both tournament numbers for loading both men's and women's matches
+              // Store tournament list for subsequent API calls
               const validTournaments = tournaments.filter(t => t.no && t.gender);
               if (validTournaments.length > 0) {
                 (tournament as any).beachTournaments = validTournaments;
-                // For backward compatibility, still set the main tournamentNo to the first one
                 (tournament as any).tournamentNo = validTournaments[0].no;
               } else {
+                (tournament as any).beachTournaments = [];
                 (tournament as any).tournamentNo = tournament.visNo;
               }
             } else {
+              (tournament as any).beachTournaments = [];
               (tournament as any).tournamentNo = tournament.visNo;
             }
           } else {
+            (tournament as any).beachTournaments = [];
             (tournament as any).tournamentNo = tournament.visNo;
           }
         } else {
+          (tournament as any).beachTournaments = [];
           (tournament as any).tournamentNo = tournament.visNo;
         }
       } catch (error) {
+        (tournament as any).beachTournaments = [];
         (tournament as any).tournamentNo = tournament.visNo;
       }
     }
@@ -1288,17 +1290,17 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       let allMatches: BeachMatchCore[] = [];
       
-      // If we have separated beach tournaments, load matches from each IN PARALLEL (80% faster)
+      // STEP 2 & 3: GetBeachTournament and GetBeachMatchList for each tournament in parallel
       if (beachTournaments && beachTournaments.length > 0) {
-        // PARALLEL API CALLS - Replace sequential for loop with Promise.all
+        // OPTIMIZED PARALLEL API CALLS - One GetBeachTournament + One GetBeachMatchList per tournament
         const matchPromises = beachTournaments.map(async (beachTournament) => {
           try {
-            // STEP 1: Fetch tournament details to get DefaultTimeZone
+            // STEP 2: GetBeachTournament without field specification (as requested)
             let tournamentTimezone: string | undefined;
             try {
               const tournamentRequest: GetBeachTournamentRequest = {
-                tournamentNo: beachTournament.no,
-                fields: ['DefaultTimeZone', 'DefaultLocalTimeOffset'] // Only fetch timezone fields for performance
+                tournamentNo: beachTournament.no
+                // No fields specified as requested
               };
               const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
 
@@ -1306,7 +1308,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                 const tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
                 tournamentTimezone = tournamentData?.DefaultTimeZone;
 
-                console.log('🌍 [TOURNAMENT-TIMEZONE-FETCHED]', {
+                console.log('🌍 [OPTIMIZED-TOURNAMENT-FETCHED]', {
                   tournamentNo: beachTournament.no,
                   DefaultTimeZone: tournamentTimezone,
                   tournamentData: tournamentData
@@ -1316,7 +1318,7 @@ const TournamentDetailScreenContent: React.FC = () => {
               console.warn('⚠️ Failed to fetch tournament timezone, will fall back to match-level timezone:', error);
             }
 
-            // STEP 2: Fetch match list with proper timezone context
+            // STEP 3: GetBeachMatchList for each tournament
             const matchRequest: GetBeachMatchListRequest = {
               tournamentNo: beachTournament.no,
               includeResults: true,
@@ -1326,19 +1328,39 @@ const TournamentDetailScreenContent: React.FC = () => {
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
             if (matchResponse.success && matchResponse.xmlData) {
-              // ✅ NOW PASS TOURNAMENT TIMEZONE: This will prevent "24" timezone errors!
+              // Parse matches with tournament timezone context
               const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no, tournamentTimezone);
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
 
               // Add gender information to each match and apply legacy fields
-              const matchesWithGender = matchesCore.map(match => ({
-                ...match,
-                ...legacyFieldsMap[match.visNo], // O(1) lookup instead of expensive per-match regex
-                tournamentGender: beachTournament.gender === '0' ? 'M' : 'W',
-                tournamentNo: beachTournament.no
-              }));
+              const matchesWithGender = matchesCore.map(match => {
+                const legacyFields = legacyFieldsMap[match.visNo];
+
+                // DEBUG: Log first match to see what's happening with preserved fields
+                if (match.visNo === '1' || match.visNo === '2') {
+                  console.log(`🏐 [DEBUG-Match-Merge] Match ${match.visNo}:`, {
+                    originalNoInTournament: (match as any).noInTournament,
+                    originalTournamentGender: (match as any).tournamentGender,
+                    matchCode: match.matchCode,
+                    preservingOriginalValues: true
+                  });
+                }
+
+                // Preserve critical fields from VisResponseParser - don't let legacy fields override them
+                const preservedFields = {
+                  noInTournament: (match as any).noInTournament,
+                  tournamentGender: (match as any).tournamentGender
+                };
+
+                return {
+                  ...match,
+                  ...legacyFields, // O(1) lookup instead of expensive per-match regex
+                  ...preservedFields, // Override legacy fields with VisResponseParser values for critical fields
+                  tournamentNo: beachTournament.no
+                };
+              });
 
               return matchesWithGender;
             }
@@ -1359,13 +1381,13 @@ const TournamentDetailScreenContent: React.FC = () => {
           }
         });
       } else {
-        // Fallback: load from single tournament number
-        // STEP 1: Try to fetch tournament timezone
+        // Fallback: load from single tournament number using optimized approach
+        // GetBeachTournament without field specification (as requested)
         let tournamentTimezone: string | undefined;
         try {
           const tournamentRequest: GetBeachTournamentRequest = {
-            tournamentNo: tournamentNo,
-            fields: ['DefaultTimeZone', 'DefaultLocalTimeOffset']
+            tournamentNo: tournamentNo
+            // No fields specified as requested
           };
           const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
 
@@ -1373,7 +1395,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             const tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
             tournamentTimezone = tournamentData?.DefaultTimeZone;
 
-            console.log('🌍 [FALLBACK-TOURNAMENT-TIMEZONE-FETCHED]', {
+            console.log('🌍 [FALLBACK-OPTIMIZED-TOURNAMENT-FETCHED]', {
               tournamentNo: tournamentNo,
               DefaultTimeZone: tournamentTimezone
             });
@@ -1382,7 +1404,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           console.warn('⚠️ Failed to fetch tournament timezone in fallback, will fall back to match-level timezone:', error);
         }
 
-        // STEP 2: Fetch matches with timezone context
+        // GetBeachMatchList for the tournament
         const matchRequest: GetBeachMatchListRequest = {
           tournamentNo: tournamentNo,
           includeResults: true,
@@ -1471,7 +1493,13 @@ const TournamentDetailScreenContent: React.FC = () => {
           return match ? match[1] : null;
         };
 
+        // DEBUG: Log that we're using VisResponseParser value for NoInTournament
+        if (matchNo === '1' || matchNo === '2') { // Only log first couple matches to avoid spam
+          console.log(`🏐 [DEBUG-NoInTournament] Match ${matchNo}: Using VisResponseParser value, not extracting from legacy fields`);
+        }
+
         fieldsMap[matchNo] = {
+          // Don't extract noInTournament here - we'll use the value from VisResponseParser
           PointsTeamASet1: extractAttribute(matchElement, 'PointsTeamASet1'),
           PointsTeamBSet1: extractAttribute(matchElement, 'PointsTeamBSet1'),
           PointsTeamASet2: extractAttribute(matchElement, 'PointsTeamASet2'),

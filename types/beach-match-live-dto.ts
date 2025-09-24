@@ -33,6 +33,8 @@ export type ResultType =
 // ── CORE ──────────────────────────────────────────────────────────────────────
 export interface BeachMatchLiveDTO {
   matchNo: number;
+  noInTournament?: string; // Match number within tournament for badge display
+  tournamentGender?: 'M' | 'W' | 'MIXED'; // Tournament gender for badge styling
   tournament: {
     code: string;
     name?: string;

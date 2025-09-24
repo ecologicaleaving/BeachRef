@@ -301,6 +301,44 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return match.status === MatchStatus.RUNNING;
   };
 
+  // Get result type for display (only show if not "Normal")
+  const getResultTypeDisplay = (): string | null => {
+    // Check BeachMatchLiveDTO format first
+    const beachMatchDTO = match as any;
+    const resultType = beachMatchDTO.status?.resultType;
+
+    if (resultType && resultType !== 'Normal') {
+      // Convert result type to display format
+      switch (resultType) {
+        case 'ForfeitA':
+        case 'ForfeitB':
+        case 'ForfeitBoth':
+          return 'Forfeit';
+        case 'InjuryA':
+        case 'InjuryB':
+        case 'InjuryBoth':
+          return 'Injury';
+        case 'OutA':
+        case 'OutB':
+        case 'OutBoth':
+          return 'Withdrawal';
+        case 'DisqualifiedA':
+        case 'DisqualifiedB':
+        case 'DisqualifiedBoth':
+          return 'DQ';
+        default:
+          return resultType; // Show other result types as-is
+      }
+    }
+
+    // Check legacy format for forfeit flag
+    if (match.result?.forfeit) {
+      return 'Forfeit';
+    }
+
+    return null; // Don't show anything for normal results
+  };
+
   // Get match duration (from master branch logic) - check multiple sources
   const getMatchDuration = (match: BeachMatchCore): string | null => {
     const matchWithDuration = match as any;
@@ -599,20 +637,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 </Text>
               </View>
             )}
-            {(match as any).tournamentGender && (
-              <View style={[
-                styles.genderBadge,
-                (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge,
-                isQualification && styles.qualificationGenderBadge
-              ]}>
-                <Text style={[
-                  styles.genderBadgeText,
-                  (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+{(() => {
+              // DEBUG: Log what fields are available for first few matches
+              if (match.visNo === '1' || match.visNo === '2') {
+                console.log(`🏐 [DEBUG-MatchCard] Match ${match.visNo} badge fields:`, {
+                  tournamentGender: (match as any).tournamentGender,
+                  noInTournament: (match as any).noInTournament,
+                  matchCode: match.matchCode,
+                  hasGender: !!(match as any).tournamentGender
+                });
+              }
+
+              // Always show the badge with fallback logic
+              const gender = (match as any).tournamentGender || 'M'; // Fallback to M
+              const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
+
+              return (
+                <View style={[
+                  styles.genderBadge,
+                  gender === 'M' ? styles.menBadge : styles.womenBadge,
+                  isQualification && styles.qualificationGenderBadge
                 ]}>
-                  {getRoundPrefix(match)}{(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
-                </Text>
-              </View>
-            )}
+                  <Text style={[
+                    styles.genderBadgeText,
+                    gender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                  ]}>
+                    {getRoundPrefix(match)}{gender}{matchNumber}
+                  </Text>
+                </View>
+              );
+            })()}
           </View>
 
           <View style={styles.timeCourtContainer}>
@@ -635,20 +689,46 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       // Display just HH:MM
                       const displayTime = localTime.substring(0, 5); // "14:00"
 
-                      // For now, we don't show user time vs tournament time
-                      // (can be added later if needed)
-                      return { localTime: displayTime, userTime: null };
+                      // Calculate user time (My Time) using browser's timezone
+                      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                      const matchDate = new Date(scheduled.epochMs);
+                      const userTime = matchDate.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: userTimezone
+                      });
+
+                      // Only show userTime if it's different from localTime
+                      const userTimeFormatted = userTime && userTime !== displayTime ? userTime : null;
+
+                      return { localTime: displayTime, userTime: userTimeFormatted };
                     }
 
                     // Fallback for backward compatibility - but this is the buggy path
                     if (match.scheduledDateTime) {
                       console.warn('[MatchCard] Using fallback scheduledDateTime - timezone bug possible');
-                      const localTime = new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
+                      const matchDate = new Date(match.scheduledDateTime);
+
+                      // Tournament local time (assuming UTC in scheduledDateTime)
+                      const localTime = matchDate.toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
-                        hour12: false
+                        hour12: false,
+                        timeZone: 'UTC' // Assume tournament time is UTC
                       });
-                      return { localTime, userTime: null };
+
+                      // User browser timezone
+                      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                      const userTime = matchDate.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: userTimezone
+                      });
+
+                      const userTimeFormatted = userTime && userTime !== localTime ? userTime : null;
+                      return { localTime, userTime: userTimeFormatted };
                     }
 
                     return { localTime: 'TBD', userTime: null };
@@ -659,8 +739,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                         {timeDisplay.localTime}
                       </Text>
                       {timeDisplay.userTime && (
-                        <Text style={styles.userTime}>
-                          {timeDisplay.userTime}
+                        <Text style={styles.userTimeBelow}>
+                          ({timeDisplay.userTime})
                         </Text>
                       )}
                     </>
@@ -746,9 +826,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
                   {(() => {
                     const totalDuration = getMatchDuration(match);
-                    return totalDuration ? (
-                      <Text style={styles.durationText}>({totalDuration})</Text>
-                    ) : null;
+                    const resultTypeDisplay = getResultTypeDisplay();
+
+                    return (
+                      <View style={styles.durationAndResultContainer}>
+                        {totalDuration && (
+                          <Text style={styles.durationText}>({totalDuration})</Text>
+                        )}
+                        {resultTypeDisplay && (
+                          <Text style={styles.resultTypeText}>({resultTypeDisplay})</Text>
+                        )}
+                      </View>
+                    );
                   })()}
                 </View>
 
@@ -1291,6 +1380,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 1,
   },
+  userTimeBelow: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#374151', // Più scuro del precedente #6B7280
+    textAlign: 'center',
+    marginTop: 2,
+  },
   courtText: {
     fontSize: 14,
     color: '#374151',
@@ -1498,11 +1594,23 @@ const styles = StyleSheet.create({
     color: '#059669',
     fontWeight: '700',
   },
+  durationAndResultContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   durationText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#374151',
     textAlign: 'center',
+  },
+  resultTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#DC2626', // Red color to indicate non-normal result
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   // Live Score Animation Styles (Story 002)
   liveIndicator: {

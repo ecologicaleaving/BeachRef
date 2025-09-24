@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
 import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../../types/match-v2';
+import { BeachSetStatus } from '../../types/beach-live';
 import { MatchList, MatchCard } from '../entities/Match';
 import { useMatches, MatchesFilters } from '../../hooks/useMatches';
 import { MatchDTO } from '../../services/DualReadService';
@@ -968,7 +969,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         // AUTOSCROLL: Scrolling to target position
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
-          y: Math.max(0, yPosition - 100), // Offset for header
+          y: Math.max(0, yPosition - 250), // Increased offset for header and better visibility
           animated: true
         });
       } else {
@@ -1199,22 +1200,40 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const numericCode = String(rawCode).replace(/\D/g, '');
       const matchNo = parseInt(numericCode || '', 10);
       const liveScore = Number.isFinite(matchNo) ? getLiveScore(matchNo) : null;
+
+
       // Live score data retrieved
-      if (liveScore && liveScore.sets && liveScore.sets.length > 0) {
+      if (liveScore) {
+        // Always update status if live data is available
+        const newStatus = liveScore.match?.status !== undefined ? liveScore.match.status : match.rawStatus;
+
+
+        matchWithResult = {
+          ...match,
+          rawStatus: newStatus
+        };
+
+        // If we also have set data, update the result
+        if (liveScore.sets && liveScore.sets.length > 0) {
         // Live score sets detail
         // Create enhanced result from live score data
+        // FIXED: Only count FINISHED sets toward set totals, not in-progress sets
+        const finishedSets = liveScore.sets.filter((set: any) => set.status === BeachSetStatus.FINISHED);
+
         const liveResult = {
-          team1Sets: liveScore.sets.filter((set: any) => set.pointsTeamA > set.pointsTeamB).length,
-          team2Sets: liveScore.sets.filter((set: any) => set.pointsTeamB > set.pointsTeamA).length,
+          // Use matchPoints from teamA/teamB which represents sets won (more reliable than manual calculation)
+          team1Sets: liveScore.teamA?.matchPoints || 0,
+          team2Sets: liveScore.teamB?.matchPoints || 0,
           winner: undefined, // Live matches don't have a winner yet
           setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
         };
-        // Live result calculated
-        
+
+        // Update match with live result (status already updated above)
         matchWithResult = {
-          ...match,
-          result: liveResult
-        };
+            ...matchWithResult,
+            result: liveResult
+          };
+        }
       }
     }
 

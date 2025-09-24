@@ -509,7 +509,8 @@ export class LiveScorePollingService {
             this.getAttributeValue(attributeMap, 'PointsB')
           ) ?? 0;
           const setStatusValue = this.getAttributeValue(attributeMap, 'Status');
-          const setStatus = this.normalizeSetStatus(setStatusValue);
+          // If no explicit status, infer from scores (beach volleyball rules)
+          const setStatus = this.normalizeSetStatus(setStatusValue, pointsTeamA, pointsTeamB);
 
           const durationSeconds = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'Duration'));
           const beginTimeOffsetSeconds = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'BeginTimeOffset'));
@@ -781,42 +782,74 @@ export class LiveScorePollingService {
 
   /**
    * Normalise VIS set status values into BeachSetStatus enum.
+   * If status is not provided, infers from scores using beach volleyball rules
    */
-  private normalizeSetStatus(value?: string | null): BeachSetStatus {
-    if (!value) {
-      return BeachSetStatus.NOT_STARTED;
-    }
+  private normalizeSetStatus(value?: string | null, pointsTeamA?: number, pointsTeamB?: number): BeachSetStatus {
+    // First try to parse explicit status value if provided
+    if (value && value.trim()) {
+      const normalized = value.trim().toLowerCase();
 
-    const normalized = value.trim().toLowerCase();
+      // Handle numeric status codes from VIS API
+      if (/^\d+$/.test(normalized)) {
+        const statusCode = parseInt(normalized, 10);
 
-    // Handle numeric status codes from VIS API
-    if (/^\d+$/.test(normalized)) {
-      const statusCode = parseInt(normalized, 10);
+        // VIS status codes mapping based on observed behavior:
+        // 0 = Not Started
+        // 1-4 = In Progress (different states within a set)
+        // 5 = Finished (set is complete)
+        // 6+ = Other states (treat as finished for safety)
 
-      // VIS status codes mapping based on observed behavior:
-      // 0 = Not Started
-      // 1-4 = In Progress (different states within a set)
-      // 5 = Finished (set is complete)
-      // 6+ = Other states (treat as finished for safety)
+        if (statusCode === 0) {
+          return BeachSetStatus.NOT_STARTED;
+        } else if (statusCode >= 1 && statusCode <= 4) {
+          return BeachSetStatus.IN_PROGRESS;
+        } else if (statusCode >= 5) {
+          return BeachSetStatus.FINISHED;
+        }
+      }
 
-      if (statusCode === 0) {
-        return BeachSetStatus.NOT_STARTED;
-      } else if (statusCode >= 1 && statusCode <= 4) {
+      // Handle string status values
+      if (['inprogress', 'running', 'live', 'playing'].includes(normalized)) {
         return BeachSetStatus.IN_PROGRESS;
-      } else if (statusCode >= 5) {
+      }
+
+      if (['finished', 'complete', 'completed', 'ended', 'closed'].includes(normalized)) {
         return BeachSetStatus.FINISHED;
       }
     }
 
-    // Handle string status values
-    if (['inprogress', 'running', 'live', 'playing'].includes(normalized)) {
-      return BeachSetStatus.IN_PROGRESS;
+    // If no explicit status provided, infer from scores using beach volleyball rules
+    if (pointsTeamA !== undefined && pointsTeamB !== undefined) {
+      const maxScore = Math.max(pointsTeamA, pointsTeamB);
+      const minScore = Math.min(pointsTeamA, pointsTeamB);
+
+      // No scores = not started
+      if (maxScore === 0 && minScore === 0) {
+        return BeachSetStatus.NOT_STARTED;
+      }
+
+      // Beach volleyball set winning conditions:
+      // - First to 21 points with at least 2-point lead (sets 1-2)
+      // - First to 15 points with at least 2-point lead (set 3/deciding set)
+      // For simplicity, check 21-point rule first since we don't know set number here
+
+      // Set is finished if someone reached 21+ with 2+ point lead
+      if (maxScore >= 21 && (maxScore - minScore) >= 2) {
+        return BeachSetStatus.FINISHED;
+      }
+
+      // Set is finished if score is very high (e.g., 30-28 in deuce situation)
+      if (maxScore >= 25) {
+        return BeachSetStatus.FINISHED;
+      }
+
+      // If we have scores but set isn't finished, it's in progress
+      if (maxScore > 0) {
+        return BeachSetStatus.IN_PROGRESS;
+      }
     }
 
-    if (['finished', 'complete', 'completed', 'ended', 'closed'].includes(normalized)) {
-      return BeachSetStatus.FINISHED;
-    }
-
+    // Fallback to NOT_STARTED
     return BeachSetStatus.NOT_STARTED;
   }
 

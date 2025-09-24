@@ -95,18 +95,15 @@ export class BeachMatchLiveDTOService {
 
       // Step 1: GetBeachMatch(no) → core data ONLY (no legacy data support)
       if (__DEV__) {
-        console.log('[BeachMatchLiveDTOService] Making GetBeachMatch API call - no legacy data support');
       }
       await this.populateCoreMatchData(dto, params);
 
       // Step 2: GetBeachTournament(code) → tournament info and timezone (OPTIONAL)
       if (params.includeTournamentInfo === true && dto.tournament.code !== "unknown") {
         if (__DEV__) {
-          console.log('[BeachMatchLiveDTOService] Including tournament info - will make GetBeachTournament API call');
         }
         await this.populateTournamentData(dto);
       } else if (__DEV__) {
-        console.log('[BeachMatchLiveDTOService] Skipping tournament info - no additional API call');
       }
 
       // Step 3: GetBeachMatchLiveScore(no) → live data (this will be handled by existing polling)
@@ -117,21 +114,17 @@ export class BeachMatchLiveDTOService {
 
       if (params.includeStatistics === true || isCompleted) {
         if (__DEV__) {
-          console.log(`[BeachMatchLiveDTOService] Including statistics${isCompleted ? ' (auto for completed match)' : ''} - will make additional GetBeachMatch API call`);
         }
         await this.populateStatistics(dto, params.matchNo);
       } else if (__DEV__) {
-        console.log('[BeachMatchLiveDTOService] Skipping statistics - no additional API call');
       }
 
       // Step 5: BeachMatchPersonnel → additional officials (OPTIONAL or auto for completed matches)
       if (params.includeOfficials === true || isCompleted) {
         if (__DEV__) {
-          console.log(`[BeachMatchLiveDTOService] Including officials${isCompleted ? ' (auto for completed match)' : ''} - will make BeachMatchPersonnel API call`);
         }
         await this.populateOfficials(dto, params.matchNo);
       } else if (__DEV__) {
-        console.log('[BeachMatchLiveDTOService] Skipping officials - no additional API call');
       }
 
       // Validate that we have real data - reject empty/mock data
@@ -164,17 +157,7 @@ export class BeachMatchLiveDTOService {
     }
 
     try {
-      if (__DEV__) {
-        console.log(`[BeachMatchLiveDTOService] Making direct GetBeachMatch API call with params:`, {
-          matchNo: params.matchNo,
-          tournamentNo: params.tournamentNo || 'not provided - using match number only'
-        });
-      }
 
-      if (__DEV__) {
-        console.log('=== INSIDE BeachMatchLiveDTOService.populateCoreMatchData ===');
-        console.log('[BeachMatchLiveDTOService] Using direct GetBeachMatch API call - match number should be unique');
-      }
 
       // Use GetBeachMatch with ONLY match number - simplest possible API call
       const response = await this.visApiClient.getBeachMatch({
@@ -199,29 +182,10 @@ export class BeachMatchLiveDTOService {
       }
 
       if (isSuccessResponse(response)) {
-        if (__DEV__) {
-          console.log('[BeachMatchLiveDTOService] GetBeachMatch API response data (first 1000 chars):',
-            response.xmlData
-              ? (typeof response.xmlData === 'string'
-                  ? response.xmlData.substring(0, 1000)
-                  : JSON.stringify(response.xmlData, null, 2).substring(0, 1000))
-              : 'NO DATA - response.xmlData is null/undefined'
-          );
-        }
 
         // Parse single match response directly (not a list)
         const matchData = this.parseMatchFromGetBeachMatchResponse(response.xmlData);
 
-        if (__DEV__) {
-          console.log('[BeachMatchLiveDTOService] parseMatchFromGetBeachMatchResponse result:', {
-            hasMatchData: !!matchData,
-            hasTeam1: !!matchData?.team1,
-            hasTeam2: !!matchData?.team2,
-            matchDataKeys: matchData ? Object.keys(matchData) : null,
-            team1Data: matchData?.team1,
-            team2Data: matchData?.team2
-          });
-        }
 
         if (matchData && matchData.team1 && matchData.team2) {
           // We have detailed match data from GetBeachMatch

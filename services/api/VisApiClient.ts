@@ -742,15 +742,6 @@ export class VisApiClient implements IVisApiClient {
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
 
-      // 🔍 DEBUG: Log the outgoing request
-      console.log('🚀 [VIS-API-REQUEST]', {
-        url: this.config.baseUrl,
-        method: 'POST',
-        headers,
-        xmlRequest: xmlRequest,
-        formDataLength: formData.length,
-        timestamp: new Date().toISOString()
-      });
 
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -771,15 +762,6 @@ export class VisApiClient implements IVisApiClient {
 
       const responseText = await response.text();
 
-      // 🔍 DEBUG: Log the raw response
-      console.log('📥 [VIS-API-RAW-RESPONSE]', {
-        url: this.config.baseUrl,
-        status: response.status,
-        statusText: response.statusText,
-        responseLength: responseText.length,
-        responseText: responseText,
-        timestamp: new Date().toISOString()
-      });
       
       // Check for VIS API specific errors
       if (this.containsVisError(responseText)) {
@@ -1021,7 +1003,6 @@ export class VisApiClient implements IVisApiClient {
     const xmlRequest = `<Request Type="GetBeachMatch" ${requestAttribs.join(' ')} />`;
 
     if (__DEV__) {
-      console.log('🔍 [GetBeachMatch XML]:', xmlRequest);
     }
 
     return xmlRequest;

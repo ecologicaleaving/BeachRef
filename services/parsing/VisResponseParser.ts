@@ -59,7 +59,8 @@ export interface TournamentLocation {
   readonly contactPhone?: string;
   readonly courts?: number;
   readonly surface?: string;
-  readonly DefaultTimeZone?: string;
+  readonly gender?: string; // Raw numeric value from VIS API (0, 1, etc.)
+  readonly genderText?: GenderType; // Parsed text representation (M, W, MIXED)
 }
 
 /**
@@ -136,31 +137,45 @@ export class VisResponseParser {
    * Fallback method for detailed location information
    */
   static parseBeachTournament(xmlResponse: string): TournamentLocation | null {
+    console.log('🎯 [PARSING-BEACH-TOURNAMENT] Starting tournament parse...');
     try {
-      const visNo = this.extractXmlValue(xmlResponse, 'No');
-      if (!visNo) return null;
+      const visNo = this.extractXmlAttribute(xmlResponse, 'No');
+      console.log('🔍 [TOURNAMENT-PARSE-DEBUG]', {
+        visNo,
+        hasVisNo: !!visNo,
+        xmlPreview: xmlResponse.substring(0, 200) + '...'
+      });
+
+      if (!visNo) {
+        console.warn('❌ [TOURNAMENT-PARSE-FAILED] No visNo found, returning null');
+        return null;
+      }
 
       // Generate tournament ID to match with existing data
-      const code = this.extractXmlValue(xmlResponse, 'Code') || visNo;
-      const genderStr = this.extractXmlValue(xmlResponse, 'Gender') || 'M';
-      const typeStr = this.extractXmlValue(xmlResponse, 'Type') || '';
+      const code = this.extractXmlAttribute(xmlResponse, 'Code') || visNo;
+      const genderStr = this.extractXmlAttribute(xmlResponse, 'Gender') || 'M';
+      const typeStr = this.extractXmlAttribute(xmlResponse, 'Type') || '';
       
       const gender = this.parseGender(genderStr);
       const tournamentType = mapVisTournamentType(typeStr);
       const tournamentId = generateTournamentId(visNo, code, gender, tournamentType);
 
-      return {
+      const tournamentObject = {
         tournamentId,
-        venue: this.extractXmlValue(xmlResponse, 'Venue'),
-        address: this.extractXmlValue(xmlResponse, 'Address'),
-        location: this.extractXmlValue(xmlResponse, 'Location'),
-        contactName: this.extractXmlValue(xmlResponse, 'ContactName'),
-        contactEmail: this.extractXmlValue(xmlResponse, 'ContactEmail'),
-        contactPhone: this.extractXmlValue(xmlResponse, 'ContactPhone'),
-        courts: parseInt(this.extractXmlValue(xmlResponse, 'Courts') || '0') || undefined,
-        surface: this.extractXmlValue(xmlResponse, 'Surface'),
-        DefaultTimeZone: this.extractXmlValue(xmlResponse, 'DefaultTimeZone')
+        venue: this.extractXmlAttribute(xmlResponse, 'Venue'),
+        address: this.extractXmlAttribute(xmlResponse, 'Address'),
+        location: this.extractXmlAttribute(xmlResponse, 'Location'),
+        contactName: this.extractXmlAttribute(xmlResponse, 'ContactName'),
+        contactEmail: this.extractXmlAttribute(xmlResponse, 'ContactEmail'),
+        contactPhone: this.extractXmlAttribute(xmlResponse, 'ContactPhone'),
+        courts: parseInt(this.extractXmlAttribute(xmlResponse, 'Courts') || '0') || undefined,
+        surface: this.extractXmlAttribute(xmlResponse, 'Surface'),
+        gender: genderStr, // Keep raw numeric value (0, 1, etc.)
+        genderText: gender // Parsed text representation (M, W, MIXED)
       };
+
+
+      return tournamentObject;
       
     } catch (error) {
       throw new VisParsingError(
@@ -201,7 +216,7 @@ export class VisResponseParser {
    * Parse GetBeachMatchList response for match data
    * Extract match information with referee assignments
    */
-  static parseBeachMatches(xmlResponse: string, tournamentId: string, tournamentTimezone?: string): BeachMatchCore[] {
+  static parseBeachMatches(xmlResponse: string, tournamentId: string, tournamentTimezone?: string, tournamentGender?: string, tournamentGenderText?: GenderType): BeachMatchCore[] {
     try {
       const matches: BeachMatchCore[] = [];
 
@@ -237,23 +252,35 @@ export class VisResponseParser {
       for (const matchXml of matchMatches) {
         try {
           console.log('🔍 Processing match XML snippet:', matchXml.substring(0, 100) + '...');
-          const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone);
+          const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone, tournamentGender, tournamentGenderText);
           if (match) {
             matches.push(match);
 
-            // 🔍 DEBUG: Log each parsed match with timezone details
-            console.log('✅ [VIS-PARSER-MATCH-PARSED]', {
-              matchId: match.id,
-              matchCode: match.matchCode,
-              tournamentId: match.tournamentId,
-              scheduledDateTime: match.scheduledDateTime,
-              scheduled: match.scheduled,
-              timezone: match.timezone,
-              localTimeOffset: match.localTimeOffset,
-              rawTimezoneFromXml: this.extractXmlAttribute(matchXml, 'TimeZone'),
-              rawXmlSnippet: matchXml.substring(0, 200) + '...',
-              timestamp: new Date().toISOString()
-            });
+            // 🔍 DEBUG: Log first match - parsed object vs raw XML
+            if (matches.length === 1) {
+              console.log('📝 [PARSED-BEACHMATCH-OBJECT]', {
+                matchObject: match,
+                parsedFields: {
+                  id: match.id,
+                  visNo: match.visNo,
+                  matchCode: match.matchCode,
+                  tournamentId: match.tournamentId,
+                  scheduledDateTime: match.scheduledDateTime,
+                  status: match.status,
+                  team1: match.team1,
+                  team2: match.team2,
+                  score: match.score,
+                  court: match.court,
+                  noInTournament: (match as any).noInTournament,
+                  tournamentGender: (match as any).tournamentGender
+                }
+              });
+
+              console.log('🗂️ [RAW-XML-RESPONSE]', {
+                rawXmlMatch: matchXml,
+                xmlLength: matchXml.length
+              });
+            }
           }
         } catch (error) {
           console.error('❌ [VIS-PARSER-MATCH-ERROR]', {
@@ -350,7 +377,7 @@ export class VisResponseParser {
   /**
    * Parse single match from XML
    */
-  private static parseSingleMatch(matchXml: string, tournamentId: string, tournamentTimezone?: string): BeachMatchCore | null {
+  private static parseSingleMatch(matchXml: string, tournamentId: string, tournamentTimezone?: string, tournamentGender?: string, tournamentGenderText?: GenderType): BeachMatchCore | null {
     // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
     const visNo = this.extractXmlAttribute(matchXml, 'No');
     const noInTournament = this.extractXmlAttribute(matchXml, 'NoInTournament');
@@ -518,7 +545,7 @@ export class VisResponseParser {
     const durationSet2 = this.extractXmlAttribute(matchXml, 'DurationSet2');
     const durationSet3 = this.extractXmlAttribute(matchXml, 'DurationSet3');
 
-    return {
+    const matchObject = {
       id,
       visNo,
       version: 1,
@@ -568,14 +595,28 @@ export class VisResponseParser {
       localTime: localTime,
       localTimeOffset: localTimeOffset,
       timezone: timezone,
-      // Add tournament gender for filter functionality
-      tournamentGender: this.extractXmlAttribute(matchXml, 'TournamentGender'),
+      // Add tournament gender for filter functionality (from tournament data, not match XML)
+      tournamentGender: tournamentGender,
+      tournamentGenderText: tournamentGenderText,
       // Add referee names for enhanced filter functionality
       Referee1Name: this.extractXmlAttribute(matchXml, 'Referee1Name'),
       Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
       Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
       Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode')
     } as any;
+
+    // DEBUG: Log first few matches to see gender assignment
+    const matchIndex = parseInt(visNo || '0');
+    if (matchIndex <= 3) {
+      console.log(`🏐 [MATCH-GENDER-ASSIGNED] Match ${visNo}:`, {
+        passedTournamentGender: tournamentGender,
+        passedTournamentGenderText: tournamentGenderText,
+        matchObject_tournamentGender: matchObject.tournamentGender,
+        matchObject_tournamentGenderText: matchObject.tournamentGenderText
+      });
+    }
+
+    return matchObject;
   }
 
   /**
@@ -600,6 +641,11 @@ export class VisResponseParser {
    * Parse gender from string
    */
   private static parseGender(genderStr: string): GenderType {
+    // Handle numeric values from VIS API: 0 = M, 1 = W
+    if (genderStr === '0') return GenderType.M;
+    if (genderStr === '1') return GenderType.W;
+
+    // Handle string values as fallback
     const gender = genderStr.toUpperCase();
     if (gender === 'W' || gender === 'WOMEN') return GenderType.W;
     if (gender === 'MIXED' || gender === 'MX') return GenderType.MIXED;

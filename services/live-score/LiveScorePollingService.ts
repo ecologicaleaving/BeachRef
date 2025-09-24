@@ -325,7 +325,6 @@ export class LiveScorePollingService {
    * @param config - Polling configuration
    */
   private async performPoll(config: PollingConfig): Promise<void> {
-    console.log(`[LiveScorePollingService] performPoll called for match ${config.matchNo}, version ${config.version}, pollDelay ${config.pollDelayMs}ms`);
     if (!config.isActive) {
       return;
     }
@@ -400,9 +399,7 @@ export class LiveScorePollingService {
           
           // Update poll delay from server
           const serverPollDelay = liveData.pollDelay;
-          console.log(`[LiveScorePollingService] Server PollDelay: ${serverPollDelay}ms (before clamp)`);
           config.pollDelayMs = this.clampPollDelay(serverPollDelay);
-          console.log(`[LiveScorePollingService] Using PollDelay: ${config.pollDelayMs}ms (after clamp)`);
           
           // Update match status if adaptive polling enabled
           if (config.useAdaptivePolling && liveData.match?.status) {
@@ -444,7 +441,6 @@ export class LiveScorePollingService {
     
     // Schedule next poll if still active
     if (config.isActive) {
-      console.log(`[LiveScorePollingService] Scheduling next poll for match ${config.matchNo} in ${config.pollDelayMs}ms`);
       config.interval = setTimeout(
         () => this.performPoll(config),
         config.pollDelayMs
@@ -461,7 +457,6 @@ export class LiveScorePollingService {
   private parseBeachLiveResponse(xmlData: string, currentVersion?: number): any {
     try {
       if (xmlData.includes('<NoChanges>true</NoChanges>') || xmlData.includes('NoChanges=""true""') || xmlData.includes('<NoChanges />')) {
-        console.log(`[LiveScorePollingService] NoChanges response detected, preserving version: ${currentVersion}`);
         return { noChanges: true, version: currentVersion };
       }
 
@@ -476,7 +471,6 @@ export class LiveScorePollingService {
       const pollDelaySeconds = this.parseOptionalInt(pollDelayValue);
       const pollDelayMs = pollDelaySeconds ? pollDelaySeconds * 1000 : LiveScorePollingService.DEFAULT_POLL_DELAY_MS;
 
-      console.log(`[LiveScorePollingService] Parsed XML - PollDelay raw: "${pollDelayValue}", seconds: ${pollDelaySeconds}, parsed: ${pollDelayMs}ms`);
 
       const matchNoValue = this.extractXmlValue(xmlData, 'MatchNo') || attr('MatchNo');
       const matchNo = this.parseOptionalInt(matchNoValue) ?? 0;

@@ -4,7 +4,7 @@
  * Part of EPIC-007 Data Architecture Restructuration
  */
 
-import { VisEntity } from './tournament-v2';
+import { VisEntity, GenderType } from './tournament-v2';
 
 /**
  * Match status mapping VIS status values precisely
@@ -165,6 +165,12 @@ export interface BeachMatchCore extends VisEntity {
 
   /** Reliability of timezone conversion */
   readonly timezoneConversionAccuracy?: 'high' | 'medium' | 'low';
+
+  /** Raw tournament gender value from VIS API (0, 1, etc.) */
+  readonly tournamentGender?: string;
+
+  /** Parsed tournament gender text representation (M, W, MIXED) */
+  readonly tournamentGenderText?: GenderType;
 }
 
 /**

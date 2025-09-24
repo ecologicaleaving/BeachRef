@@ -639,30 +639,32 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             )}
 {(() => {
               // DEBUG: Log what fields are available for first few matches
-              if (match.visNo === '1' || match.visNo === '2') {
+              const matchIndex = parseInt(match.visNo || '0');
+              if (matchIndex <= 3) {
                 console.log(`🏐 [DEBUG-MatchCard] Match ${match.visNo} badge fields:`, {
                   tournamentGender: (match as any).tournamentGender,
+                  tournamentGenderText: (match as any).tournamentGenderText,
                   noInTournament: (match as any).noInTournament,
                   matchCode: match.matchCode,
-                  hasGender: !!(match as any).tournamentGender
+                  hasGenderText: !!(match as any).tournamentGenderText
                 });
               }
 
-              // Always show the badge with fallback logic
-              const gender = (match as any).tournamentGender || 'M'; // Fallback to M
+              // Use tournamentGenderText for display, fallback to raw value then 'M'
+              const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
               const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
 
               return (
                 <View style={[
                   styles.genderBadge,
-                  gender === 'M' ? styles.menBadge : styles.womenBadge,
+                  genderText === 'M' ? styles.menBadge : styles.womenBadge,
                   isQualification && styles.qualificationGenderBadge
                 ]}>
                   <Text style={[
                     styles.genderBadgeText,
-                    gender === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                    genderText === 'M' ? styles.menBadgeText : styles.womenBadgeText
                   ]}>
-                    {getRoundPrefix(match)}{gender}{matchNumber}
+                    {getRoundPrefix(match)}{genderText}{matchNumber}
                   </Text>
                 </View>
               );

@@ -1304,8 +1304,28 @@ const TournamentDetailScreenContent: React.FC = () => {
               };
               const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
 
+              console.log('📥 [GET-BEACH-TOURNAMENT-RAW-RESPONSE]', {
+                success: tournamentResponse.success,
+                hasXmlData: !!tournamentResponse.xmlData,
+                rawXmlResponse: tournamentResponse.xmlData,
+                xmlLength: tournamentResponse.xmlData?.length || 0
+              });
+
               if (tournamentResponse.success && tournamentResponse.xmlData) {
+                console.log('🏆 [ABOUT-TO-PARSE-TOURNAMENT]', {
+                  xmlData: tournamentResponse.xmlData
+                });
+
                 const tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
+
+                console.log('🏆 [PARSED-TOURNAMENT-RESULT]', {
+                  parsedTournamentData: tournamentData,
+                  hasData: !!tournamentData,
+                  DefaultTimeZone: tournamentData?.DefaultTimeZone,
+                  gender: tournamentData?.gender,
+                  genderText: tournamentData?.genderText
+                });
+
                 tournamentTimezone = tournamentData?.DefaultTimeZone;
 
                 console.log('🌍 [OPTIMIZED-TOURNAMENT-FETCHED]', {
@@ -1328,8 +1348,26 @@ const TournamentDetailScreenContent: React.FC = () => {
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
             if (matchResponse.success && matchResponse.xmlData) {
-              // Parse matches with tournament timezone context
-              const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no, tournamentTimezone);
+              // Parse matches with tournament timezone context and gender data
+              const tournamentGender = beachTournament.gender; // Use existing parsed gender
+              const tournamentGenderText = tournamentGender === '0' ? 'M' : tournamentGender === '1' ? 'W' : 'M'; // Convert 0→M, 1→W
+
+              console.log('🎯 [PASSING-GENDER-TO-MATCHES]', {
+                tournamentData_gender: tournamentData?.gender,
+                tournamentData_genderText: tournamentData?.genderText,
+                beachTournament_gender: beachTournament.gender,
+                using_tournamentGender: tournamentGender,
+                using_tournamentGenderText: tournamentGenderText,
+                tournamentNo: beachTournament.no
+              });
+
+              const matchesCore = VisResponseParser.parseBeachMatches(
+                matchResponse.xmlData,
+                beachTournament.no,
+                tournamentTimezone,
+                tournamentGender, // Use beachTournament.gender
+                tournamentGenderText // Use beachTournament.gender as text too
+              );
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
@@ -1603,7 +1641,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     TournamentStorageService.clearExpiredTournamentCaches().catch(() => {
       // Silent fail for cache cleanup
     });
-  }, [tournament.visNo, tournamentData]); // Added tournamentData as dependency
+  }, [tournament.visNo]); // Removed tournamentData to prevent excessive reloads
 
   // Clean up - removed debug effect
 

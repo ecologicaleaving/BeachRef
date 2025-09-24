@@ -42,7 +42,6 @@ export interface BeachMatchLiveDTO {
     venue?: string;
     startDate?: string;
     endDate?: string;
-    defaultTimeZone?: string;
   };
   round: {
     code?: string;

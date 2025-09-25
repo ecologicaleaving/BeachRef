@@ -16,7 +16,10 @@ import { colors } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 import {
-  formatTimeWithTimezoneSync,
+  formatMatchTimeForUser,
+  formatMatchTimeDetailed
+} from '../../../utils/matchTimeFormatter';
+import {
   subscribeToTimezonePreferenceChanges,
   getCurrentTimezonePreference
 } from '../../../utils/dateFormatters';
@@ -190,51 +193,31 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Format time display - returns object with local and user times
   const getTimeDisplay = (dateTimeString: string): { localTime: string; userTime: string | null } => {
     try {
-      // Check if we have UTC timestamp available (from Phase 2 VIS API enhancement)
-      const utcStart = (match as any).utc_start;
-      if (utcStart) {
-        // Get local tournament time
-        const localTime = formatTimeWithTimezoneSync(utcStart, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'local',
-          showTimezoneIndicator: false,
-        });
+      // Prepare match data for the new timezone system
+      const matchData = {
+        BeginDateTimeUtc: dateTimeString, // scheduledDateTime is already UTC in the current system
+      };
 
-        // Get user's timezone time
-        const userTime = formatTimeWithTimezoneSync(utcStart, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'user',
-          showTimezoneIndicator: false,
-        });
+      // Prepare tournament data for timezone detection
+      const tournamentData = {
+        countryCode: (match as any).countryCode || (match as any).country,
+        city: (match as any).city || (match as any).venue,
+        name: (match as any).tournamentName || (match as any).name,
+        defaultTimeZone: tournamentTimezone,
+      };
 
-        // Return both times, userTime is null if same as local
-        return {
-          localTime,
-          userTime: localTime !== userTime ? userTime : null
-        };
-      }
+      // Get user's timezone time using the new system
+      const userTime = formatMatchTimeForUser(matchData, {
+        showTimezoneIndicator: false,
+        tournamentData
+      });
 
-      // Fallback: try to use the provided dateTimeString with timezone awareness
-      if (dateTimeString) {
-        const localTime = formatTimeWithTimezoneSync(dateTimeString, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'local',
-          showTimezoneIndicator: false,
-        });
-
-        const userTime = formatTimeWithTimezoneSync(dateTimeString, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'user',
-          showTimezoneIndicator: false,
-        });
-
-        return {
-          localTime,
-          userTime: localTime !== userTime ? userTime : null
-        };
-      }
-
-      return { localTime: 'TBD', userTime: null };
+      // For now, we'll show the same time as both local and user
+      // The new system automatically handles timezone conversion to user time
+      return {
+        localTime: userTime, // Both show user time now
+        userTime: null // No need for dual display since we show user time
+      };
     } catch (error) {
       console.warn('Error formatting time in MatchCard:', error);
       // Ultimate fallback to legacy formatter

@@ -15,7 +15,7 @@ import { MatchResult } from '../types/MatchResults';
 import { BeachMatchCore, MatchStatus } from '../types/match-v2';
 import { BeachMatchLiveDTO, isBeachMatchLiveDTO } from '../types/beach-match-live-dto';
 import { BeachLive, BeachSetStatus } from '../types/beach-live';
-import { formatTime, formatDateLong, formatTimeWithTimezoneSync } from '../utils/dateFormatters';
+import { formatTime, formatDateLong } from '../utils/dateFormatters';
 import { FlagImage } from '../components/FlagImage';
 import { RoundPhaseDisplay } from '../components/Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../components/Status/LiveIndicator';

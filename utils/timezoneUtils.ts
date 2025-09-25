@@ -6,8 +6,6 @@
 
 import { DateTime } from 'luxon';
 import {
-  detectTournamentTimezone,
-  convertTournamentTimeToUTC,
   calculateMyTime,
   TournamentLocation,
   TimezoneDetectionResult
@@ -65,6 +63,7 @@ export interface TimezoneConversionResult {
     originalLocalTime?: string;
     detectedTimezone?: string;
     userTimezone?: string;
+    fallbackReason?: string;
   };
 }
 
@@ -141,11 +140,11 @@ export function convertMatchTimeToUserTime(
     try {
       // Build tournament location data from various sources
       const location: TournamentLocation = {
-        city: matchData.TournamentCity || tournamentData?.city,
-        country: matchData.TournamentCountry || tournamentData?.country,
-        countryCode: matchData.TournamentCountryCode || tournamentData?.countryCode,
-        venue: tournamentData?.venue,
-        name: matchData.TournamentName || tournamentData?.name
+        city: matchData.TournamentCity || tournamentData?.city || '',
+        country: matchData.TournamentCountry || tournamentData?.country || '',
+        countryCode: matchData.TournamentCountryCode || tournamentData?.countryCode || '',
+        venue: tournamentData?.venue || '',
+        name: matchData.TournamentName || tournamentData?.name || ''
       };
 
       const result = calculateMyTime(

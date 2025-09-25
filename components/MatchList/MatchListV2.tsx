@@ -969,7 +969,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         // AUTOSCROLL: Scrolling to target position
         pendingAutoscrollRef.current = false;
         scrollViewRef.current.scrollTo({
-          y: Math.max(0, yPosition - 450), // Further increased offset for optimal visibility
+          y: Math.max(0, yPosition - 100), // Offset for header
           animated: true
         });
       } else {
@@ -1248,11 +1248,15 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
           const isLive = isMatchLive(match);
 
-          // Use tournament timezone for consistent date/time display across all users
+          // Auto-detect tournament timezone and convert to user timezone
           const matchTime = formatTimeWithTimezoneSync(match.scheduledDateTime, {
             tournamentTimezone: tournamentTimezone || 'UTC',
-            cachedPreference: 'local',
+            cachedPreference: 'user',
             showTimezoneIndicator: false,
+            // Pass tournament data for timezone auto-detection
+            countryCode: (match as any).countryCode || (match as any).country,
+            city: (match as any).city || (match as any).venue,
+            tournamentName: (match as any).tournamentName || (match as any).name,
           });
 
           // Check if match is today using tournament timezone (prevents Brazil/Italy date drift)

@@ -426,9 +426,16 @@ const TournamentDetailScreenContent: React.FC = () => {
       targetMatchId = liveMatches[0].id;
       scrollReason = 'LIVE match';
     } else {
-      // Priority 2: Last SCHEDULED match (latest in time)
-      const scheduledMatches = matches.filter(match => {
+      // Priority 2: Last SCHEDULED match of TODAY
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      const todaysScheduledMatches = matches.filter(match => {
         if (!match?.scheduledDateTime) return false;
+
+        // Check if match is today
+        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        if (matchDate !== todayStr) return false;
 
         // Check for SCHEDULED status
         const status = match?.status;
@@ -448,18 +455,17 @@ const TournamentDetailScreenContent: React.FC = () => {
         return false;
       });
 
-      if (scheduledMatches.length > 0) {
-        // Sort by time and take the FIRST one (earliest scheduled match = next available)
-        // This appears at the bottom of the UI since matches are ordered chronologically
-        const sortedScheduledMatches = scheduledMatches.sort((a, b) => {
+      if (todaysScheduledMatches.length > 0) {
+        // Sort by time and take the FIRST one (earliest scheduled match of today)
+        const sortedScheduledMatches = todaysScheduledMatches.sort((a, b) => {
           return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
         });
 
-        const firstScheduledMatch = sortedScheduledMatches[0]; // Next available scheduled match
-        targetMatchId = firstScheduledMatch.id;
-        scrollReason = 'First SCHEDULED match (next available)';
+        const firstScheduledMatchToday = sortedScheduledMatches[0];
+        targetMatchId = firstScheduledMatchToday.id;
+        scrollReason = `First SCHEDULED match of today (${todaysScheduledMatches.length} total today)`;
       }
-      // Priority 3: If no LIVE or SCHEDULED matches, stay at top (no scroll)
+      // Priority 3: If no LIVE or TODAY'S SCHEDULED matches, stay at top (no scroll)
     }
 
     // Scroll to target if position is available

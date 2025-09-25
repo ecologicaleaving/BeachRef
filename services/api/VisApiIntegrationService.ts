@@ -173,16 +173,33 @@ export class VisApiIntegrationService {
         includeReferees: includeRefereeData
       };
 
+      // First fetch tournament location data for proper timezone handling
+      let tournamentLocation: any = undefined;
+      try {
+        const tournamentResponse = await this.apiClient.getBeachTournament({ tournamentNo: request.tournamentNo });
+        if (tournamentResponse.success) {
+          tournamentLocation = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch tournament location data, timezone detection may be inaccurate:', error);
+      }
+
       // Execute API request
       const response = await this.apiClient.getBeachMatchList(optimizedRequest);
-      
+
       if (!response.success) {
         throw new Error(`API request failed: ${response.error}`);
       }
 
-      // Parse matches directly to core domain types
-      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
-      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo, undefined);
+      // Parse matches directly to core domain types with tournament location for timezone detection
+      const coreMatches = VisResponseParser.parseBeachMatches(
+        response.xmlData,
+        request.tournamentNo,
+        undefined, // tournamentTimezone - keep undefined to use location-based detection
+        undefined, // tournamentGender
+        undefined, // tournamentGenderText
+        tournamentLocation // Pass tournament location for timezone detection
+      );
 
       // Create metrics
       const metrics = this.createRequestMetrics(
@@ -244,6 +261,17 @@ export class VisApiIntegrationService {
     const startTime = Date.now();
     
     try {
+      // First fetch tournament location data for proper timezone handling
+      let tournamentLocation: any = undefined;
+      try {
+        const tournamentResponse = await this.apiClient.getBeachTournament({ tournamentNo: request.tournamentNo });
+        if (tournamentResponse.success) {
+          tournamentLocation = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch tournament location data, timezone detection may be inaccurate:', error);
+      }
+
       // Step 1: Get the match list
       const matchListRequest: GetBeachMatchListRequest = {
         ...request,
@@ -252,14 +280,20 @@ export class VisApiIntegrationService {
       };
 
       const listResponse = await this.apiClient.getBeachMatchList(matchListRequest);
-      
+
       if (!listResponse.success) {
         throw new Error(`BeachMatchList API request failed: ${listResponse.error}`);
       }
 
-      // Parse initial match list to get match numbers
-      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
-      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo, undefined);
+      // Parse initial match list to get match numbers with tournament location for timezone detection
+      const initialMatches = VisResponseParser.parseBeachMatches(
+        listResponse.xmlData,
+        request.tournamentNo,
+        undefined, // tournamentTimezone - keep undefined to use location-based detection
+        undefined, // tournamentGender
+        undefined, // tournamentGenderText
+        tournamentLocation // Pass tournament location for timezone detection
+      );
       
       const listMetrics = this.createRequestMetrics(
         VisApiEndpoint.GET_BEACH_MATCH_LIST,

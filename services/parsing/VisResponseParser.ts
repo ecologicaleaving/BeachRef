@@ -150,18 +150,38 @@ export class VisResponseParser {
         return null;
       }
 
+      // DEBUG: Log the raw XML response to understand available attributes
+      console.log('🔍 [GET-BEACH-TOURNAMENT-XML] Raw XML response for tournament', visNo, ':', xmlResponse);
+
       // Generate tournament ID to match with existing data
       const code = this.extractXmlAttribute(xmlResponse, 'Code') || visNo;
       const genderStr = this.extractXmlAttribute(xmlResponse, 'Gender') || 'M';
       const typeStr = this.extractXmlAttribute(xmlResponse, 'Type') || '';
-      
+
       const gender = this.parseGender(genderStr);
       const tournamentType = mapVisTournamentType(typeStr);
       const tournamentId = generateTournamentId(visNo, code, gender, tournamentType);
 
+      // Extract location data with debug logging to see what's actually available
+      const venue = this.extractXmlAttribute(xmlResponse, 'Venue') || this.extractXmlAttribute(xmlResponse, 'DefaultVenue');
+      const city = this.extractXmlAttribute(xmlResponse, 'DefaultCity') || this.extractXmlAttribute(xmlResponse, 'City');
+      const country = this.extractXmlAttribute(xmlResponse, 'CountryName') || this.extractXmlAttribute(xmlResponse, 'Country');
+      const countryCode = this.extractXmlAttribute(xmlResponse, 'CountryCode') || this.extractXmlAttribute(xmlResponse, 'CountryId');
+      const name = this.extractXmlAttribute(xmlResponse, 'Name') || this.extractXmlAttribute(xmlResponse, 'Title');
+
+      console.log('📍 [GET-BEACH-TOURNAMENT-LOCATION] Extracted location data:', {
+        visNo,
+        venue,
+        city,
+        country,
+        countryCode,
+        name,
+        rawGender: genderStr
+      });
+
       const tournamentObject = {
         tournamentId,
-        venue: this.extractXmlAttribute(xmlResponse, 'Venue') || this.extractXmlAttribute(xmlResponse, 'DefaultVenue'),
+        venue,
         address: this.extractXmlAttribute(xmlResponse, 'Address'),
         location: this.extractXmlAttribute(xmlResponse, 'Location'),
         contactName: this.extractXmlAttribute(xmlResponse, 'ContactName'),
@@ -172,10 +192,10 @@ export class VisResponseParser {
         gender: genderStr, // Keep raw numeric value (0, 1, etc.)
         genderText: gender, // Parsed text representation (M, W, MIXED)
         // Add location fields for timezone detection
-        city: this.extractXmlAttribute(xmlResponse, 'DefaultCity'),
-        country: this.extractXmlAttribute(xmlResponse, 'CountryName'),
-        countryCode: this.extractXmlAttribute(xmlResponse, 'CountryCode'),
-        name: this.extractXmlAttribute(xmlResponse, 'Name') || this.extractXmlAttribute(xmlResponse, 'Title')
+        city,
+        country,
+        countryCode,
+        name
       };
 
 
@@ -377,7 +397,8 @@ export class VisResponseParser {
         });
         detectedTournamentTz = detection.timezone;
 
-        console.log('🌍 [PARSER-TIMEZONE-DETECTION]', {
+        console.log('🌍 [PARSER-TIMEZONE-DETECTION] Tournament location data:', {
+          tournamentLocationInput: tournamentLocation,
           location: {
             city: tournamentLocation.city,
             country: tournamentLocation.country,

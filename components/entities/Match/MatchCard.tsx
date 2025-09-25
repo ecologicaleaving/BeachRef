@@ -663,61 +663,71 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               </Text>
               <View style={styles.timeDisplayContainer}>
                 {(() => {
-                  // TIMEZONE-SAFE: Use pre-formatted tournament time (prevents 18→17 bug)
+                  // Use enhanced timezone system for accurate "My Time" display
                   const timeDisplay = (() => {
                     // Try new timezone-safe structure first
                     const scheduled = (match as any).scheduled;
-                    if (scheduled) {
-                      // Use pre-calculated tournament time (immune to browser timezone)
-                      const localTime = scheduled.timeTournament; // "14:00:00" format
+                    console.log('🎯 [MATCHCARD-DEBUG] Processing match time:', {
+                      matchId: match.id,
+                      hasScheduled: !!scheduled,
+                      scheduled: scheduled,
+                      tournamentCity: (match as any).city,
+                      tournamentCountry: (match as any).country,
+                      fallbackDateTime: match.scheduledDateTime
+                    });
 
-                      // Display just HH:MM
+                    if (scheduled) {
+                      // Display tournament local time (immune to browser timezone)
+                      const localTime = scheduled.timeTournament; // "14:00:00" format
                       const displayTime = localTime.substring(0, 5); // "14:00"
 
-                      // Calculate user time (My Time) using browser's timezone
-                      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                      const matchDate = new Date(scheduled.epochMs);
-                      const userTime = matchDate.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                        timeZone: userTimezone
-                      });
+                      // Calculate "My Time" using new timezone utilities
+                      try {
+                        // Prepare match data for timezone conversion
+                        const matchData = {
+                          // Use the UTC timestamp directly since epochMs is already correct
+                          BeginDateTimeUtc: new Date(scheduled.epochMs).toISOString(),
+                          // Also provide local time fields for enhanced detection
+                          LocalDate: scheduled.dateTournament,
+                          LocalTime: scheduled.timeTournament.substring(0, 5),
+                          TournamentCity: (match as any).city || (match as any).venue,
+                          TournamentCountry: (match as any).country,
+                          TournamentCountryCode: (match as any).countryCode,
+                          TournamentName: (match as any).tournamentName
+                        };
 
-                      // Only show userTime if it's different from localTime
-                      const userTimeFormatted = userTime && userTime !== displayTime ? userTime : null;
+                        const tournamentData = {
+                          city: (match as any).city || (match as any).venue,
+                          country: (match as any).country,
+                          countryCode: (match as any).countryCode,
+                          name: (match as any).tournamentName,
+                          defaultTimeZone: tournamentTimezone || scheduled.tz
+                        };
 
-                      return { localTime: displayTime, userTime: userTimeFormatted };
+                        const userTime = formatMatchTimeForUser(matchData, {
+                          showTimezoneIndicator: false,
+                          tournamentData
+                        });
+
+                        // Only show userTime if it's different from tournament time
+                        const userTimeFormatted = userTime && userTime !== displayTime ? userTime : null;
+                        return { localTime: displayTime, userTime: userTimeFormatted };
+
+                      } catch (error) {
+                        console.warn('[MatchCard] Timezone conversion failed, showing tournament time only:', error);
+                        return { localTime: displayTime, userTime: null };
+                      }
                     }
 
-                    // Fallback for backward compatibility - but this is the buggy path
+                    // Fallback for backward compatibility
                     if (match.scheduledDateTime) {
-                      console.warn('[MatchCard] Using fallback scheduledDateTime - timezone bug possible');
-                      const matchDate = new Date(match.scheduledDateTime);
-
-                      // Tournament local time (assuming UTC in scheduledDateTime)
-                      const localTime = matchDate.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                        timeZone: 'UTC' // Assume tournament time is UTC
-                      });
-
-                      // User browser timezone
-                      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                      const userTime = matchDate.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                        timeZone: userTimezone
-                      });
-
-                      const userTimeFormatted = userTime && userTime !== localTime ? userTime : null;
-                      return { localTime, userTime: userTimeFormatted };
+                      console.warn('[MatchCard] Using fallback scheduledDateTime - using new timezone system');
+                      return getTimeDisplay(match.scheduledDateTime);
                     }
 
                     return { localTime: 'TBD', userTime: null };
                   })();
+
                   return (
                     <>
                       <Text style={styles.matchTime}>
@@ -725,7 +735,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       </Text>
                       {timeDisplay.userTime && (
                         <Text style={styles.userTimeBelow}>
-                          ({timeDisplay.userTime})
+                          {timeDisplay.userTime} (My Time)
                         </Text>
                       )}
                     </>

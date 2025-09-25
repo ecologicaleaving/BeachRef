@@ -39,6 +39,7 @@ import {
 } from '../../types/referee-v2';
 
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { detectTournamentTimezone } from '../../utils/tournamentTimezoneMapping';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import tz from 'dayjs/plugin/timezone';
@@ -410,6 +411,7 @@ export class VisResponseParser {
     const localTimeOffset = this.extractXmlAttribute(matchXml, 'LocalTimeOffset');
     const timezone = this.extractXmlAttribute(matchXml, 'TimeZone');
 
+
     // TIMEZONE-SAFE: Build scheduled date/time following robust approach (prevents 18→17 bug)
     // Interpret LocalDate+LocalTime in tournament timezone, not as UTC
     let scheduledDateTime: string;
@@ -430,10 +432,31 @@ export class VisResponseParser {
       // Only use timezone from BeachMatch if it passes validation
       const validatedBeachMatchTimezone = this.validateAndNormalizeTimezone(timezone);
 
+      // NEW: Use tournament location data to detect timezone if available
+      let detectedTournamentTz = 'UTC';
+      if (tournamentLocation) {
+        const detection = detectTournamentTimezone({
+          city: tournamentLocation.city,
+          country: tournamentLocation.country,
+          countryCode: tournamentLocation.countryCode,
+          venue: tournamentLocation.venue,
+          name: tournamentLocation.name
+        });
+        detectedTournamentTz = detection.timezone;
+
+        console.log('🌍 [PARSER-TIMEZONE-DETECTION]', {
+          location: tournamentLocation,
+          detectedTimezone: detectedTournamentTz,
+          confidence: detection.confidence,
+          source: detection.source
+        });
+      }
+
       const resolvedTournamentTz = tournamentTimezone ||                                         // 1. Tournament timezone (from GetTournament call)
-                                   validatedBeachMatchTimezone ||                                 // 2. Validated BeachMatch timezone (often invalid!)
-                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) || // 3. Parse from offset
-                                   'UTC'; // 4. Safe fallback
+                                   detectedTournamentTz ||                                        // 2. NEW: Auto-detected from tournament location
+                                   validatedBeachMatchTimezone ||                                 // 3. Validated BeachMatch timezone (often invalid!)
+                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) || // 4. Parse from offset
+                                   'UTC'; // 5. Safe fallback
 
       // DEBUG: Log timezone resolution for debugging "24" issue
       if (timezone === "24" || !validatedBeachMatchTimezone) {

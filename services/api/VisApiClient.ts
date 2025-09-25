@@ -245,11 +245,20 @@ export class VisApiClient implements IVisApiClient {
    */
   async getBeachTournament(request: GetBeachTournamentRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
-    
+
     try {
       const xmlRequest = this.buildGetBeachTournamentXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_TOURNAMENT, xmlRequest);
-      
+
+      // Log raw GetBeachTournament response for debugging
+      if (response.success && response.data) {
+        console.log('🔴 [RAW-GET-BEACH-TOURNAMENT-RESPONSE]', {
+          tournamentNo: request.tournamentNo,
+          rawXml: response.data,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT, true, Date.now() - startTime);
       return response;
       
@@ -265,11 +274,20 @@ export class VisApiClient implements IVisApiClient {
    */
   async getEvent(request: GetEventRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
-    
+
     try {
       const xmlRequest = this.buildGetEventXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT, xmlRequest);
-      
+
+      // Log raw GetEvent response for debugging
+      if (response.success && response.data) {
+        console.log('🔴 [RAW-GET-EVENT-RESPONSE]', {
+          eventNo: request.eventNo,
+          rawXml: response.data,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       this.updateMonitor(VisApiEndpoint.GET_EVENT, true, Date.now() - startTime);
       return response;
       

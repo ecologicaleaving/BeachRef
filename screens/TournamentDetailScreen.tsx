@@ -314,6 +314,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
   const [refreshing, setRefreshing] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
+
+  // Add loading guards to prevent excessive API calls
+  const [loadMatchesInProgress, setLoadMatchesInProgress] = useState(false);
   
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
@@ -1190,6 +1193,19 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Load matches for the tournament - OPTIMIZED API FLOW
   const loadMatches = async () => {
+    // Prevent multiple simultaneous calls
+    if (loadMatchesInProgress) {
+      console.log('🔴 [DEBUG-LOAD-MATCHES] Already in progress, skipping');
+      return;
+    }
+
+    console.log('🔴 [DEBUG-LOAD-MATCHES] Function called', {
+      tournamentVisNo: tournament.visNo,
+      hasBeachTournaments: !!(tournament as any).beachTournaments,
+      beachTournamentsLength: (tournament as any).beachTournaments?.length
+    });
+
+    setLoadMatchesInProgress(true);
     // STEP 1: Always start with GetEvent to get tournament structure (without field specification)
     if (!(tournament as any).beachTournaments) {
 
@@ -1273,8 +1289,15 @@ const TournamentDetailScreenContent: React.FC = () => {
     const beachTournaments = (tournament as any).beachTournaments;
     const tournamentNo = (tournament as any).tournamentNo;
 
+    console.log('🔴 [DEBUG-BEACH-TOURNAMENTS]', {
+      beachTournaments,
+      tournamentNo,
+      beachTournamentsCount: beachTournaments?.length || 0
+    });
+
     if (!beachTournaments && !tournamentNo) {
       setMatches([]);
+      setLoadMatchesInProgress(false);
       return;
     }
     
@@ -1298,8 +1321,14 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       // STEP 2 & 3: GetBeachTournament and GetBeachMatchList for each tournament in parallel
       if (beachTournaments && beachTournaments.length > 0) {
+        console.log('🔴 [DEBUG-ABOUT-TO-MAKE-API-CALLS] Processing tournaments:', beachTournaments);
+
         // OPTIMIZED PARALLEL API CALLS - One GetBeachTournament + One GetBeachMatchList per tournament
         const matchPromises = beachTournaments.map(async (beachTournament) => {
+          console.log('🔴 [DEBUG-PROCESSING-TOURNAMENT]', {
+            tournamentNo: beachTournament.no,
+            gender: beachTournament.gender
+          });
           try {
             // STEP 2: GetBeachTournament without field specification (as requested)
             let tournamentTimezone: string | undefined;
@@ -1372,7 +1401,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                 beachTournament.no,
                 tournamentTimezone,
                 tournamentGender, // Use beachTournament.gender
-                tournamentGenderText // Use beachTournament.gender as text too
+                tournamentGenderText, // Use beachTournament.gender as text too
+                tournamentData // Pass tournament location data
               );
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
@@ -1467,10 +1497,10 @@ const TournamentDetailScreenContent: React.FC = () => {
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);
 
           if (fallbackResponse.success && fallbackResponse.xmlData) {
-            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, tournamentTimezone);
+            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, tournamentTimezone, undefined, undefined, tournamentData);
           }
         } else if (matchResponse.success && matchResponse.xmlData) {
-          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, tournamentTimezone);
+          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, tournamentTimezone, undefined, undefined, tournamentData);
         }
       }
       
@@ -1499,6 +1529,9 @@ const TournamentDetailScreenContent: React.FC = () => {
     } catch (error) {
       setMatches([]);
       setMatchesLoading(false);
+    } finally {
+      // Reset loading guard
+      setLoadMatchesInProgress(false);
     }
     // Note: Don't set setMatchesLoading(false) in finally - async parsing handles it
   };

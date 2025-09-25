@@ -87,6 +87,17 @@ export function convertMatchTimeToUserTime(
 ): TimezoneConversionResult {
   const userTz = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+  console.log('🌍 [TIMEZONE-CONVERSION] Converting match time:', {
+    LocalDate: matchData.LocalDate,
+    LocalTime: matchData.LocalTime,
+    TournamentCity: matchData.TournamentCity,
+    TournamentCountry: matchData.TournamentCountry,
+    TournamentCountryCode: matchData.TournamentCountryCode,
+    userTimezone: userTz,
+    tournamentDataCity: tournamentData?.city,
+    tournamentDataCountry: tournamentData?.country
+  });
+
   // Method 1: Use UTC datetime if available (highest priority)
   if (matchData.BeginDateTimeUtc) {
     try {
@@ -155,6 +166,15 @@ export function convertMatchTimeToUserTime(
       );
 
       if (result) {
+        console.log('✅ [TIMEZONE-CONVERSION] Successfully detected timezone:', {
+          detectedTimezone: result.detection.timezone,
+          confidence: result.detection.confidence,
+          detectedFrom: result.detection.detectedFrom,
+          originalTime: `${matchData.LocalDate} ${matchData.LocalTime}`,
+          convertedMyTime: result.myTime,
+          utcTime: result.utcTime
+        });
+
         return {
           utcDateTime: result.utcTime,
           userDateTime: result.myTime,

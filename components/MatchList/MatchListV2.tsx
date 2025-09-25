@@ -9,7 +9,7 @@ import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
-import { formatTimeWithTimezoneSync } from '../../utils/dateFormatters';
+import { formatMatchTimeForUser, isMatchToday as checkIfMatchToday } from '../../utils/matchTimeFormatter';
 import { DateTime } from 'luxon';
 
 // Extended match type to include tournament-specific fields
@@ -1248,25 +1248,30 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
           const isLive = isMatchLive(match);
 
-          // Auto-detect tournament timezone and convert to user timezone
-          const matchTime = formatTimeWithTimezoneSync(match.scheduledDateTime, {
-            tournamentTimezone: tournamentTimezone || 'UTC',
-            cachedPreference: 'user',
+          // Convert tournament time to user's timezone using new system
+          const matchTime = formatMatchTimeForUser({
+            BeginDateTimeUtc: match.scheduledDateTime, // Already UTC in current system
+          }, {
             showTimezoneIndicator: false,
-            // Pass tournament data for timezone auto-detection
-            countryCode: (match as any).countryCode || (match as any).country,
-            city: (match as any).city || (match as any).venue,
-            tournamentName: (match as any).tournamentName || (match as any).name,
+            tournamentData: {
+              countryCode: (match as any).countryCode || (match as any).country,
+              city: (match as any).city || (match as any).venue,
+              name: (match as any).tournamentName || (match as any).name,
+              defaultTimeZone: tournamentTimezone,
+            }
           });
 
-          // Check if match is today using tournament timezone (prevents Brazil/Italy date drift)
-          const tournamentDate = DateTime.fromISO(match.scheduledDateTime)
-            .setZone(tournamentTimezone || 'UTC')
-            .toFormat('yyyy-MM-dd');
-          const todayInTournament = DateTime.now()
-            .setZone(tournamentTimezone || 'UTC')
-            .toFormat('yyyy-MM-dd');
-          const isToday = tournamentDate === todayInTournament;
+          // Check if match is today in user's timezone
+          const isToday = checkIfMatchToday({
+            BeginDateTimeUtc: match.scheduledDateTime, // Already UTC in current system
+          }, {
+            tournamentData: {
+              countryCode: (match as any).countryCode || (match as any).country,
+              city: (match as any).city || (match as any).venue,
+              name: (match as any).tournamentName || (match as any).name,
+              defaultTimeZone: tournamentTimezone,
+            }
+          });
 
           // Match layout rendered
 

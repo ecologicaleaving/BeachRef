@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 15,
     ...createShadow({
+      elevation: 6,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.25,
       shadowRadius: 5,
-      elevation: 6,
     }),
   },
   featuresContainer: {
@@ -164,11 +164,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
     minWidth: 160,
     ...createShadow({
+      elevation: 8,
       shadowColor: '#FF6B35',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.4,
       shadowRadius: 8,
-      elevation: 8,
     }),
   },
   startButtonText: {

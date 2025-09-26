@@ -667,14 +667,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   const timeDisplay = (() => {
                     // Try new timezone-safe structure first
                     const scheduled = (match as any).scheduled;
-                    console.log('🎯 [MATCHCARD-DEBUG] Processing match time:', {
-                      matchId: match.id,
-                      hasScheduled: !!scheduled,
-                      scheduled: scheduled,
-                      tournamentCity: (match as any).city,
-                      tournamentCountry: (match as any).country,
-                      fallbackDateTime: match.scheduledDateTime
-                    });
 
                     if (scheduled) {
                       // Display tournament local time (immune to browser timezone)
@@ -714,14 +706,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                         return { localTime: displayTime, userTime: userTimeFormatted };
 
                       } catch (error) {
-                        console.warn('[MatchCard] Timezone conversion failed, showing tournament time only:', error);
                         return { localTime: displayTime, userTime: null };
                       }
                     }
 
                     // Fallback for backward compatibility
                     if (match.scheduledDateTime) {
-                      console.warn('[MatchCard] Using fallback scheduledDateTime - using new timezone system');
                       return getTimeDisplay(match.scheduledDateTime);
                     }
 

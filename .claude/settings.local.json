@@ -119,7 +119,8 @@
       "Bash(del test-match-parsing.js)",
       "Bash(start \"http://localhost:8098\")",
       "Bash(del debug-match-details-dto.js debug-match-service-usage.js)",
-      "Bash(del test-vis-api.js)"
+      "Bash(del test-vis-api.js)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": [],

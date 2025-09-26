@@ -150,9 +150,6 @@ export class VisResponseParser {
         return null;
       }
 
-      // DEBUG: Log the raw XML response to understand available attributes
-      console.log('🔍 [GET-BEACH-TOURNAMENT-XML] Raw XML response for tournament', visNo, ':', xmlResponse);
-
       // Generate tournament ID to match with existing data
       const code = this.extractXmlAttribute(xmlResponse, 'Code') || visNo;
       const genderStr = this.extractXmlAttribute(xmlResponse, 'Gender') || 'M';
@@ -169,15 +166,6 @@ export class VisResponseParser {
       const countryCode = this.extractXmlAttribute(xmlResponse, 'CountryCode') || this.extractXmlAttribute(xmlResponse, 'CountryId');
       const name = this.extractXmlAttribute(xmlResponse, 'Name') || this.extractXmlAttribute(xmlResponse, 'Title');
 
-      console.log('📍 [GET-BEACH-TOURNAMENT-LOCATION] Extracted location data:', {
-        visNo,
-        venue,
-        city,
-        country,
-        countryCode,
-        name,
-        rawGender: genderStr
-      });
 
       const tournamentObject = {
         tournamentId,
@@ -397,19 +385,6 @@ export class VisResponseParser {
         });
         detectedTournamentTz = detection.timezone;
 
-        console.log('🌍 [PARSER-TIMEZONE-DETECTION] Tournament location data:', {
-          tournamentLocationInput: tournamentLocation,
-          location: {
-            city: tournamentLocation.city,
-            country: tournamentLocation.country,
-            countryCode: tournamentLocation.countryCode,
-            venue: tournamentLocation.venue,
-            name: tournamentLocation.name
-          },
-          detectedTimezone: detectedTournamentTz,
-          confidence: detection.confidence,
-          source: detection.detectedFrom
-        });
       }
 
       const resolvedTournamentTz = tournamentTimezone ||                                         // 1. Tournament timezone (from GetTournament call)
@@ -418,10 +393,6 @@ export class VisResponseParser {
                                    (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) || // 4. Parse from offset
                                    'UTC'; // 5. Safe fallback
 
-      // Log invalid timezone values for debugging
-      if (timezone === "24" || !validatedBeachMatchTimezone) {
-        console.warn('[TIMEZONE-VALIDATION] Invalid timezone:', timezone);
-      }
 
       try {
         // SOLUTION: Interpret LocalDate+LocalTime in tournament timezone, not as UTC
@@ -988,7 +959,6 @@ export class VisResponseParser {
 
     // SPECIAL CASE: VIS API sometimes returns invalid values like "24"
     if (cleanTz === "24" || cleanTz === "25") {
-      console.warn(`[VisResponseParser] Detected known invalid BeachMatch timezone: "${timezone}" - this is a VIS API data issue, ignoring`);
       return null;
     }
 
@@ -1000,7 +970,6 @@ export class VisResponseParser {
 
       // Handle invalid offsets (24+ hours)
       if (hourOffset >= 24) {
-        console.warn(`[VisResponseParser] Invalid timezone offset: ${timezone} (${hourOffset} hours), ignoring`);
         return null;
       }
 

@@ -70,7 +70,6 @@ export const migrateAsyncStorageData = async (): Promise<void> => {
     );
 
     if (legacyCacheKeys.length > 0) {
-      console.log(`Found ${legacyCacheKeys.length} legacy cache keys for migration consideration`);
       // Note: Migration logic can be added here if needed
       // For now, we'll let the new system build fresh cache
     }

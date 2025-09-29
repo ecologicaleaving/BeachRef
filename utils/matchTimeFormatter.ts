@@ -54,9 +54,9 @@ export function formatMatchTimeForUser(
   // Base formatted time
   let formattedTime = result.userDateTime;
 
-  // Add timezone indicator if requested
+  // Add timezone indicator if requested - show as (HH:mm) format
   if (showTimezoneIndicator) {
-    formattedTime += ' (My Time)';
+    formattedTime = `(${result.userDateTime})`;
   }
 
   // Add reliability indicator if requested and conversion is unreliable

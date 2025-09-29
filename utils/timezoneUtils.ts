@@ -89,13 +89,6 @@ export function convertMatchTimeToUserTime(
 ): TimezoneConversionResult {
   const userTz = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  console.log('🕐 TIMEZONE CONVERSION START');
-  console.log('📥 Input Data:');
-  console.log('  📊 matchData:', matchData);
-  console.log('  🏟️ tournamentData:', tournamentData);
-  console.log('  🌍 userTimezone:', userTz);
-  console.log('  📍 Call stack:', new Error().stack?.split('\n')[2]?.trim());
-
 
   // Build tournament location data from various sources
   const location: TournamentLocation = {
@@ -106,13 +99,9 @@ export function convertMatchTimeToUserTime(
     name: matchData.tournamentName || tournamentData?.name || ''
   };
 
-  console.log('🗺️ Tournament Location Built:', location);
 
   // Method 1: Use LocalDate + LocalTime with tournament location-based timezone detection
   if (matchData.LocalDate && matchData.LocalTime) {
-    console.log('🕐 Method 1: Using LocalDate + LocalTime');
-    console.log('📅 LocalDate:', matchData.LocalDate);
-    console.log('🕒 LocalTime:', matchData.LocalTime);
 
     const result = calculateMyTime(
       matchData.LocalDate,
@@ -122,10 +111,6 @@ export function convertMatchTimeToUserTime(
     );
 
     if (result) {
-      console.log('✅ Method 1 Success:');
-      console.log('  🕒 User Time:', result.myTime);
-      console.log('  🌐 UTC Time:', result.utcTime);
-      console.log('  📍 Detection:', result.detection);
       return {
         utcDateTime: result.utcTime,
         userDateTime: result.myTime,
@@ -140,32 +125,21 @@ export function convertMatchTimeToUserTime(
           userTimezone: userTz
         }
       };
-    } else {
-      console.log('❌ Method 1 Failed: calculateMyTime returned null');
-
     }
-  } else {
-    console.log('⏩ Method 1 Skipped: Missing LocalDate or LocalTime');
   }
 
   // Method 2: Use scheduledDateTime (local time) with tournament location-based timezone detection
   if (matchData.scheduledDateTime) {
-    console.log('🕐 Method 2: Using scheduledDateTime');
-    console.log('📅 Original scheduledDateTime:', matchData.scheduledDateTime);
 
     // Parse scheduledDateTime as local time, ignoring any timezone info
     // The API data has Z suffix but according to user, this is actually local time
     const cleanedDateTime = matchData.scheduledDateTime.replace('Z', '');
-    console.log('🧹 Cleaned scheduledDateTime:', cleanedDateTime);
 
     const scheduledDate = DateTime.fromISO(cleanedDateTime);
-    console.log('📊 Parsed DateTime:', { isValid: scheduledDate.isValid, toString: scheduledDate.toString() });
 
     if (scheduledDate.isValid) {
       const localDate = scheduledDate.toFormat('yyyy-MM-dd');
       const localTime = scheduledDate.toFormat('HH:mm');
-      console.log('📅 Extracted LocalDate:', localDate);
-      console.log('🕒 Extracted LocalTime:', localTime);
 
       const result = calculateMyTime(
         localDate,
@@ -175,7 +149,6 @@ export function convertMatchTimeToUserTime(
       );
 
       if (result) {
-        console.log('✅ Method 2 Success:', result);
         return {
           utcDateTime: result.utcTime,
           userDateTime: result.myTime,
@@ -191,18 +164,11 @@ export function convertMatchTimeToUserTime(
             userTimezone: userTz
           }
         };
-      } else {
-        console.log('❌ Method 2 Failed: calculateMyTime returned null');
       }
-    } else {
-      console.log('❌ Method 2 Failed: Invalid DateTime parsing');
     }
-  } else {
-    console.log('⏩ Method 2 Skipped: Missing scheduledDateTime');
   }
 
   // NO FALLBACKS - Fail with clear error
-  console.log('❌ TIMEZONE CONVERSION FAILED: All methods exhausted');
   throw new Error(`Timezone conversion failed: Missing LocalDate/LocalTime or scheduledDateTime, or location detection failed`);
 }
 

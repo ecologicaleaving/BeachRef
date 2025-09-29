@@ -732,7 +732,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       </Text>
                       {timeDisplay.userTime && (
                         <Text style={styles.userTimeBelow}>
-                          {timeDisplay.userTime} (My Time)
+                          ({timeDisplay.userTime})
                         </Text>
                       )}
                     </>

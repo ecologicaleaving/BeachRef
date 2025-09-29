@@ -1195,7 +1195,6 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Load matches for the tournament - OPTIMIZED API FLOW
   const loadMatches = async () => {
     // Prevent multiple simultaneous calls
-    console.log('🎬 loadTournamentMatches called with loadMatchesInProgress:', loadMatchesInProgress);
     if (loadMatchesInProgress) {
       return;
     }
@@ -1226,9 +1225,6 @@ const TournamentDetailScreenContent: React.FC = () => {
         });
 
         if (tournamentResponse.success && tournamentResponse.xmlData) {
-          // LOG PHASE 1: GetEvent XML Response (Readable Format)
-          console.log('\n📋 PHASE 1 - GetEvent XML Response (Raw):');
-          console.log('=' .repeat(80));
           // Format XML for readability
           const formattedXml = tournamentResponse.xmlData
             .replace(/></g, '>\n<')
@@ -1237,8 +1233,6 @@ const TournamentDetailScreenContent: React.FC = () => {
             .map(line => line.trim())
             .filter(line => line.length > 0)
             .join('\n');
-          console.log(formattedXml);
-          console.log('=' .repeat(80));
 
           // Extract BeachTournament numbers from Content field of GetEvent response
           let contentField = '';
@@ -1254,9 +1248,6 @@ const TournamentDetailScreenContent: React.FC = () => {
               .replace(/&#xD;&#xA;/g, '')
               .replace(/&#xA;/g, '');
 
-            // LOG PHASE 1: Decoded Content
-            console.log('\n📋 PHASE 1 - Decoded Content:');
-            console.log('=' .repeat(50));
             const formattedContent = decodedContent
               .replace(/></g, '>\n<')
               .replace(/^\s*\n/gm, '')
@@ -1264,8 +1255,6 @@ const TournamentDetailScreenContent: React.FC = () => {
               .map(line => line.trim())
               .filter(line => line.length > 0)
               .join('\n');
-            console.log(formattedContent);
-            console.log('=' .repeat(50));
 
             // Now extract BeachTournament entries from the decoded content
             const beachTournamentMatches = decodedContent.match(/<BeachTournament[^>]*No="([^"]*)"[^>]*Gender="([^"]*)"[^>]*\/>/g);
@@ -1347,7 +1336,6 @@ const TournamentDetailScreenContent: React.FC = () => {
             let tournamentTimezone: string | undefined;
             let tournamentData: any = undefined;
             try {
-              console.log('🚀 Starting GetBeachTournament for tournament:', beachTournament.no);
               const tournamentRequest: GetBeachTournamentRequest = {
                 tournamentNo: beachTournament.no
                 // No fields specified as requested
@@ -1356,9 +1344,6 @@ const TournamentDetailScreenContent: React.FC = () => {
 
 
               if (tournamentResponse.success && tournamentResponse.xmlData) {
-                // LOG PHASE 2: GetBeachTournament XML Response (Readable Format)
-                console.log(`\n🏟️ PHASE 2 - GetBeachTournament XML Response (Tournament ${beachTournament.no}):`);
-                console.log('=' .repeat(80));
                 // Format XML for readability
                 const formattedTournamentXml = tournamentResponse.xmlData
                   .replace(/></g, '>\n<')
@@ -1367,18 +1352,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                   .map(line => line.trim())
                   .filter(line => line.length > 0)
                   .join('\n');
-                console.log(formattedTournamentXml);
-                console.log('=' .repeat(80));
 
-                console.log('🔧 Parsing tournament response...');
                 tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
-                console.log('✅ Tournament parsed successfully');
-
-                // LOG PHASE 2: Parsed Tournament Data
-                console.log(`\n🏟️ PHASE 2 - Parsed Tournament Data (Tournament ${beachTournament.no}):`);
-                console.log('=' .repeat(60));
-                console.log(JSON.stringify(tournamentData, null, 2));
-                console.log('=' .repeat(60));
 
                 tournamentTimezone = tournamentData?.DefaultTimeZone;
 
@@ -1412,20 +1387,10 @@ const TournamentDetailScreenContent: React.FC = () => {
                 name: tournamentData.name || tournamentData.Name || tournamentData.Title
               } : undefined;
 
-              console.log('🔍 Raw Tournament Data Fields:', tournamentData);
-              console.log('🏗️ Constructed Location Data:', tournamentLocationForTimezone);
-
               // Store API tournament location data for use in MatchListV2
               if (tournamentLocationForTimezone) {
-                console.log('💾 Storing API Tournament Location Data:', tournamentLocationForTimezone);
                 setApiTournamentLocationData(tournamentLocationForTimezone);
               }
-
-              // LOG: Tournament Location Data Flow
-              console.log(`\n🗺️ Tournament Location Data Being Passed to Matches (Tournament ${beachTournament.no}):`);
-              console.log('=' .repeat(60));
-              console.log(JSON.stringify(tournamentLocationForTimezone, null, 2));
-              console.log('=' .repeat(60));
 
               const matchesCore = VisResponseParser.parseBeachMatches(
                 matchResponse.xmlData,
@@ -1443,28 +1408,6 @@ const TournamentDetailScreenContent: React.FC = () => {
               const matchesWithGender = matchesCore.map((match, index) => {
                 const legacyFields = legacyFieldsMap[match.visNo];
 
-                // LOG: First match object after parsing but before enhancement
-                if (index === 0) {
-                  console.log(`\n🏐 FIRST MATCH - After VisResponseParser.parseBeachMatches:`);
-                  console.log('=' .repeat(80));
-                  console.log(JSON.stringify({
-                    id: match.id,
-                    visNo: match.visNo,
-                    matchCode: match.matchCode,
-                    scheduledDateTime: match.scheduledDateTime,
-                    // Check for tournament location fields
-                    city: (match as any).city,
-                    country: (match as any).country,
-                    countryCode: (match as any).countryCode,
-                    venue: (match as any).venue,
-                    name: (match as any).name,
-                    tournamentLocation: (match as any).tournamentLocation,
-                    // Other key fields
-                    tournamentGender: (match as any).tournamentGender,
-                    noInTournament: (match as any).noInTournament
-                  }, null, 2));
-                  console.log('=' .repeat(80));
-                }
 
                 // Preserve critical fields from VisResponseParser - don't let legacy fields override them
                 const preservedFields = {
@@ -1479,33 +1422,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                   tournamentNo: beachTournament.no
                 };
 
-                // LOG: First match object after all enhancements
-                if (index === 0) {
-                  console.log(`\n🏐 FIRST MATCH - Final Enhanced Match Object:`);
-                  console.log('=' .repeat(80));
-                  console.log(JSON.stringify({
-                    id: finalMatch.id,
-                    visNo: finalMatch.visNo,
-                    matchCode: finalMatch.matchCode,
-                    scheduledDateTime: finalMatch.scheduledDateTime,
-                    tournamentNo: finalMatch.tournamentNo,
-                    // Check for tournament location fields
-                    city: (finalMatch as any).city,
-                    country: (finalMatch as any).country,
-                    countryCode: (finalMatch as any).countryCode,
-                    venue: (finalMatch as any).venue,
-                    name: (finalMatch as any).name,
-                    tournamentLocation: (finalMatch as any).tournamentLocation,
-                    // Tournament context fields
-                    tournamentGender: (finalMatch as any).tournamentGender,
-                    // Any other relevant fields from legacy or preserved
-                    TournamentCity: (finalMatch as any).TournamentCity,
-                    TournamentCountry: (finalMatch as any).TournamentCountry,
-                    TournamentCountryCode: (finalMatch as any).TournamentCountryCode,
-                    TournamentName: (finalMatch as any).TournamentName
-                  }, null, 2));
-                  console.log('=' .repeat(80));
-                }
 
                 return finalMatch;
               });
@@ -1540,9 +1456,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
 
           if (tournamentResponse.success && tournamentResponse.xmlData) {
-            // LOG PHASE 2 FALLBACK: GetBeachTournament XML Response (Readable Format)
-            console.log(`\n🏟️ PHASE 2 FALLBACK - GetBeachTournament XML Response (Tournament ${tournamentNo}):`);
-            console.log('=' .repeat(80));
             // Format XML for readability
             const formattedFallbackXml = tournamentResponse.xmlData
               .replace(/></g, '>\n<')
@@ -1551,22 +1464,9 @@ const TournamentDetailScreenContent: React.FC = () => {
               .map(line => line.trim())
               .filter(line => line.length > 0)
               .join('\n');
-            console.log(formattedFallbackXml);
-            console.log('=' .repeat(80));
 
             const tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
             tournamentTimezone = tournamentData?.DefaultTimeZone;
-
-            // LOG PHASE 2 FALLBACK: Parsed Tournament Data
-            console.log(`\n🏟️ PHASE 2 FALLBACK - Parsed Tournament Data (Tournament ${tournamentNo}):`);
-            console.log('=' .repeat(60));
-            console.log(JSON.stringify(tournamentData, null, 2));
-            console.log('=' .repeat(60));
-
-            console.log('🌍 [FALLBACK-OPTIMIZED-TOURNAMENT-FETCHED]', {
-              tournamentNo: tournamentNo,
-              DefaultTimeZone: tournamentTimezone
-            });
           }
         } catch (error) {
           console.warn('⚠️ Failed to fetch tournament timezone in fallback, will fall back to match-level timezone:', error);
@@ -1664,10 +1564,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           return match ? match[1] : null;
         };
 
-        // DEBUG: Log that we're using VisResponseParser value for NoInTournament
-        if (matchNo === '1' || matchNo === '2') { // Only log first couple matches to avoid spam
-          console.log(`🏐 [DEBUG-NoInTournament] Match ${matchNo}: Using VisResponseParser value, not extracting from legacy fields`);
-        }
 
         fieldsMap[matchNo] = {
           // Don't extract noInTournament here - we'll use the value from VisResponseParser
@@ -2024,10 +1920,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                       name: apiTournamentLocationData?.name || tournament?.name,
                       venue: apiTournamentLocationData?.venue || tournament?.venue,
                     };
-                    console.log('🎯 Passing Tournament Data to MatchListV2:', {
-                      apiTournamentLocationData,
-                      tournamentDataForMatchList
-                    });
                     return tournamentDataForMatchList;
                   })()}
                   matchFilters={{

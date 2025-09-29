@@ -266,13 +266,6 @@ export const formatTimeWithTimezoneSync = (
       ? detectTournamentTimezone(countryCode, city, tournamentName)
       : tournamentTimezone;
 
-    console.log('🌍 [TIMEZONE-DETECTION]', {
-      provided: tournamentTimezone,
-      detected: detectedTournamentTimezone,
-      countryCode,
-      city,
-      tournamentName
-    });
 
     // Two-step conversion: local time → UTC → user timezone
     let inputDateTime: DateTime;
@@ -282,19 +275,9 @@ export const formatTimeWithTimezoneSync = (
       if (detectedTournamentTimezone && detectedTournamentTimezone !== 'UTC') {
         // Input is tournament local time - parse in detected tournament timezone
         inputDateTime = DateTime.fromISO(utcDate, { zone: detectedTournamentTimezone });
-        console.log('🌍 [LOCAL-TO-UTC]', {
-          localInput: utcDate,
-          detectedTournamentTimezone,
-          parsedInTournamentTz: inputDateTime.toISO(),
-          asUTC: inputDateTime.toUTC().toISO()
-        });
 
         // Step 2: Convert to user timezone
         inputDateTime = inputDateTime.setZone(userTimezone);
-        console.log('🌍 [UTC-TO-USER]', {
-          convertedToUser: inputDateTime.toISO(),
-          userTimezone
-        });
       } else {
         // Fallback: treat as UTC if no tournament timezone detected
         inputDateTime = DateTime.fromISO(utcDate, { zone: 'utc' }).setZone(userTimezone);
@@ -308,10 +291,6 @@ export const formatTimeWithTimezoneSync = (
     }
 
     const result = inputDateTime.toFormat('HH:mm');
-    console.log('🌍 [FINAL-RESULT]', {
-      finalResult: result,
-      finalDateTime: inputDateTime.toISO()
-    });
 
     return result;
 

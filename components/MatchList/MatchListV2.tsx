@@ -431,8 +431,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   // Use either prop matches or hook matches
   const activeMatches = propMatches || hookMatches;
 
-  // Debug tournamentData flow
-  console.log('🎯 MatchListV2 received tournamentData:', tournamentData);
   const loading = propLoading || (shouldUseHook ? hookLoading : false);
   const error = hookError?.message || null;
   // State for collapsible referees and dropdown

@@ -171,6 +171,21 @@ export interface BeachMatchCore extends VisEntity {
 
   /** Parsed tournament gender text representation (M, W, MIXED) */
   readonly tournamentGenderText?: GenderType;
+
+  /** Tournament city for timezone detection */
+  readonly tournamentCity?: string;
+
+  /** Tournament country for timezone detection */
+  readonly tournamentCountry?: string;
+
+  /** Tournament country code for timezone detection */
+  readonly tournamentCountryCode?: string;
+
+  /** Tournament venue for timezone detection */
+  readonly tournamentVenue?: string;
+
+  /** Tournament name for timezone detection */
+  readonly tournamentName?: string;
 }
 
 /**

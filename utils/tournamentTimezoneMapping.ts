@@ -102,17 +102,21 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "Vienna|Austria": "Europe/Vienna",
   "Salzburg|Austria": "Europe/Vienna",
   "Innsbruck|Austria": "Europe/Vienna",
+  "Baden|Austria": "Europe/Vienna",
   "Vienna|AT": "Europe/Vienna",
   "Salzburg|AT": "Europe/Vienna",
   "Innsbruck|AT": "Europe/Vienna",
+  "Baden|AT": "Europe/Vienna",
 
   // Switzerland
   "Zurich|Switzerland": "Europe/Zurich",
   "Geneva|Switzerland": "Europe/Zurich",
   "Basel|Switzerland": "Europe/Zurich",
+  "Gstaad|Switzerland": "Europe/Zurich",
   "Zurich|CH": "Europe/Zurich",
   "Geneva|CH": "Europe/Zurich",
   "Basel|CH": "Europe/Zurich",
+  "Gstaad|CH": "Europe/Zurich",
 
   // Norway
   "Oslo|Norway": "Europe/Oslo",
@@ -146,17 +150,83 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "Osaka|JP": "Asia/Tokyo",
   "Kyoto|JP": "Asia/Tokyo",
 
+  // Philippines
+  "Manila|Philippines": "Asia/Manila",
+  "Cebu|Philippines": "Asia/Manila",
+  "Davao|Philippines": "Asia/Manila",
+  "Boracay|Philippines": "Asia/Manila",
+  "Manila|PH": "Asia/Manila",
+  "Cebu|PH": "Asia/Manila",
+  "Davao|PH": "Asia/Manila",
+  "Boracay|PH": "Asia/Manila",
+
+  // China
+  "Beijing|China": "Asia/Shanghai",
+  "Shanghai|China": "Asia/Shanghai",
+  "Guangzhou|China": "Asia/Shanghai",
+  "Shenzhen|China": "Asia/Shanghai",
+  "Beijing|CN": "Asia/Shanghai",
+  "Shanghai|CN": "Asia/Shanghai",
+  "Guangzhou|CN": "Asia/Shanghai",
+  "Shenzhen|CN": "Asia/Shanghai",
+
+  // Singapore
+  "Singapore|Singapore": "Asia/Singapore",
+  "Singapore|SG": "Asia/Singapore",
+
+  // Thailand
+  "Bangkok|Thailand": "Asia/Bangkok",
+  "Phuket|Thailand": "Asia/Bangkok",
+  "Pattaya|Thailand": "Asia/Bangkok",
+  "Bangkok|TH": "Asia/Bangkok",
+  "Phuket|TH": "Asia/Bangkok",
+  "Pattaya|TH": "Asia/Bangkok",
+
+  // Indonesia
+  "Jakarta|Indonesia": "Asia/Jakarta",
+  "Bali|Indonesia": "Asia/Makassar",
+  "Denpasar|Indonesia": "Asia/Makassar",
+  "Jakarta|ID": "Asia/Jakarta",
+  "Bali|ID": "Asia/Makassar",
+  "Denpasar|ID": "Asia/Makassar",
+
+  // Malaysia
+  "Kuala Lumpur|Malaysia": "Asia/Kuala_Lumpur",
+  "Kuala Lumpur|MY": "Asia/Kuala_Lumpur",
+
+  // South Korea
+  "Seoul|South Korea": "Asia/Seoul",
+  "Busan|South Korea": "Asia/Seoul",
+  "Seoul|KR": "Asia/Seoul",
+  "Busan|KR": "Asia/Seoul",
+
+  // UAE
+  "Dubai|United Arab Emirates": "Asia/Dubai",
+  "Abu Dhabi|United Arab Emirates": "Asia/Dubai",
+  "Dubai|UAE": "Asia/Dubai",
+  "Abu Dhabi|UAE": "Asia/Dubai",
+  "Dubai|AE": "Asia/Dubai",
+  "Abu Dhabi|AE": "Asia/Dubai",
+
+  // Israel
+  "Tel Aviv|Israel": "Asia/Jerusalem",
+  "Jerusalem|Israel": "Asia/Jerusalem",
+  "Tel Aviv|IL": "Asia/Jerusalem",
+  "Jerusalem|IL": "Asia/Jerusalem",
+
   // Australia
   "Sydney|Australia": "Australia/Sydney",
   "Melbourne|Australia": "Australia/Melbourne",
   "Brisbane|Australia": "Australia/Brisbane",
   "Perth|Australia": "Australia/Perth",
   "Adelaide|Australia": "Australia/Adelaide",
+  "Gold Coast|Australia": "Australia/Brisbane",
   "Sydney|AU": "Australia/Sydney",
   "Melbourne|AU": "Australia/Melbourne",
   "Brisbane|AU": "Australia/Brisbane",
   "Perth|AU": "Australia/Perth",
   "Adelaide|AU": "Australia/Adelaide",
+  "Gold Coast|AU": "Australia/Brisbane",
 
   // Canada
   "Toronto|Canada": "America/Toronto",
@@ -178,6 +248,9 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "San Francisco|United States": "America/Los_Angeles",
   "Las Vegas|United States": "America/Los_Angeles",
   "Phoenix|United States": "America/Phoenix",
+  "Manhattan Beach|United States": "America/Los_Angeles",
+  "Hermosa Beach|United States": "America/Los_Angeles",
+  "Virginia Beach|United States": "America/New_York",
   "New York|USA": "America/New_York",
   "Los Angeles|USA": "America/Los_Angeles",
   "Chicago|USA": "America/Chicago",
@@ -185,6 +258,9 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "San Francisco|USA": "America/Los_Angeles",
   "Las Vegas|USA": "America/Los_Angeles",
   "Phoenix|USA": "America/Phoenix",
+  "Manhattan Beach|USA": "America/Los_Angeles",
+  "Hermosa Beach|USA": "America/Los_Angeles",
+  "Virginia Beach|USA": "America/New_York",
   "New York|US": "America/New_York",
   "Los Angeles|US": "America/Los_Angeles",
   "Chicago|US": "America/Chicago",
@@ -192,14 +268,19 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "San Francisco|US": "America/Los_Angeles",
   "Las Vegas|US": "America/Los_Angeles",
   "Phoenix|US": "America/Phoenix",
+  "Manhattan Beach|US": "America/Los_Angeles",
+  "Hermosa Beach|US": "America/Los_Angeles",
+  "Virginia Beach|US": "America/New_York",
 
   // Mexico
   "Mexico City|Mexico": "America/Mexico_City",
   "Cancun|Mexico": "America/Cancun",
   "Guadalajara|Mexico": "America/Mexico_City",
+  "Acapulco|Mexico": "America/Mexico_City",
   "Mexico City|MX": "America/Mexico_City",
   "Cancun|MX": "America/Cancun",
   "Guadalajara|MX": "America/Mexico_City",
+  "Acapulco|MX": "America/Mexico_City",
 
   // Argentina
   "Buenos Aires|Argentina": "America/Argentina/Buenos_Aires",
@@ -229,7 +310,9 @@ const CITY_TIMEZONE_MAP: Record<string, string> = {
   "Brussels|BE": "Europe/Brussels",
 
   "Lisbon|Portugal": "Europe/Lisbon",
+  "Espinho|Portugal": "Europe/Lisbon",
   "Lisbon|PT": "Europe/Lisbon",
+  "Espinho|PT": "Europe/Lisbon",
 };
 
 /**
@@ -287,6 +370,43 @@ const COUNTRY_TIMEZONE_MAP: Record<string, string> = {
   "Japan": "Asia/Tokyo",
   "JP": "Asia/Tokyo",
   "JPN": "Asia/Tokyo",
+
+  "Philippines": "Asia/Manila",
+  "PH": "Asia/Manila",
+  "PHL": "Asia/Manila",
+
+  "China": "Asia/Shanghai",
+  "CN": "Asia/Shanghai",
+  "CHN": "Asia/Shanghai",
+
+  "Singapore": "Asia/Singapore",
+  "SG": "Asia/Singapore",
+  "SGP": "Asia/Singapore",
+
+  "Thailand": "Asia/Bangkok",
+  "TH": "Asia/Bangkok",
+  "THA": "Asia/Bangkok",
+
+  "Indonesia": "Asia/Jakarta",
+  "ID": "Asia/Jakarta",
+  "IDN": "Asia/Jakarta",
+
+  "Malaysia": "Asia/Kuala_Lumpur",
+  "MY": "Asia/Kuala_Lumpur",
+  "MYS": "Asia/Kuala_Lumpur",
+
+  "South Korea": "Asia/Seoul",
+  "Korea": "Asia/Seoul",
+  "KR": "Asia/Seoul",
+  "KOR": "Asia/Seoul",
+
+  "United Arab Emirates": "Asia/Dubai",
+  "UAE": "Asia/Dubai",
+  "AE": "Asia/Dubai",
+
+  "Israel": "Asia/Jerusalem",
+  "IL": "Asia/Jerusalem",
+  "ISR": "Asia/Jerusalem",
 
   "Australia": "Australia/Sydney", // Default to Sydney
   "AU": "Australia/Sydney",

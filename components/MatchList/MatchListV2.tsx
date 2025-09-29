@@ -335,6 +335,14 @@ interface MatchListV2Props {
   getLiveScore?: (matchNumber: number | string) => any; // Function to get live score for a match
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
   tournamentGender?: 'M' | 'W' | 'MIXED'; // Tournament gender for match context injection
+  tournamentData?: {
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    name?: string;
+    venue?: string;
+    defaultTimeZone?: string;
+  }; // Tournament location data for timezone detection
   externalScrollRef?: React.RefObject<ScrollView>; // External ScrollView ref for autoscroll (from parent container)
 }
 
@@ -370,6 +378,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   getLiveScore,
   tournamentTimezone,
   tournamentGender,
+  tournamentData,
 }) => {
   // Analytics tracking for match list interactions
   const { trackRefereeInteraction } = useRefereeScreenAnalytics();
@@ -421,6 +430,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Use either prop matches or hook matches
   const activeMatches = propMatches || hookMatches;
+
+  // Debug tournamentData flow
+  console.log('🎯 MatchListV2 received tournamentData:', tournamentData);
   const loading = propLoading || (shouldUseHook ? hookLoading : false);
   const error = hookError?.message || null;
   // State for collapsible referees and dropdown
@@ -1250,25 +1262,19 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
           // Convert tournament time to user's timezone using new system
           const matchTime = formatMatchTimeForUser({
-            BeginDateTimeUtc: match.scheduledDateTime, // Already UTC in current system
+            scheduledDateTime: match.scheduledDateTime, // Local time according to user clarification
           }, {
             showTimezoneIndicator: false,
-            tournamentData: {
-              countryCode: (match as any).countryCode || (match as any).country,
-              city: (match as any).city || (match as any).venue,
-              name: (match as any).tournamentName || (match as any).name,
+            tournamentData: tournamentData || {
               defaultTimeZone: tournamentTimezone,
             }
           });
 
           // Check if match is today in user's timezone
           const isToday = checkIfMatchToday({
-            BeginDateTimeUtc: match.scheduledDateTime, // Already UTC in current system
+            scheduledDateTime: match.scheduledDateTime, // Local time according to user clarification
           }, {
-            tournamentData: {
-              countryCode: (match as any).countryCode || (match as any).country,
-              city: (match as any).city || (match as any).venue,
-              name: (match as any).tournamentName || (match as any).name,
+            tournamentData: tournamentData || {
               defaultTimeZone: tournamentTimezone,
             }
           });
@@ -1294,11 +1300,12 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           compact={false}
           variant={isMatchLive(match) ? 'live' : 'default'}
           tournamentTimezone={tournamentTimezone}
+          tournamentData={tournamentData}
           liveScoreRefresh={liveScoreRefresh}
         />
       </View>
     );
-  }, [getLiveScore, liveScoreRefresh, onMatchLayout, tournamentTimezone]);
+  }, [getLiveScore, liveScoreRefresh, onMatchLayout, tournamentTimezone, tournamentData]);
 
 
 

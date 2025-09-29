@@ -106,7 +106,7 @@ export class VisResponseParser {
     try {
       // Basic XML parsing - in production would use xml2js or similar
       const tournaments: TournamentCore[] = [];
-      
+
       // Extract tournament nodes from XML
       const tournamentMatches = xmlResponse.match(/<Tournament[^>]*>.*?<\/Tournament>/gs);
       
@@ -287,6 +287,10 @@ export class VisResponseParser {
     
     const dates = this.parseTournamentDates(tournamentXml);
     
+    const city = this.extractXmlValue(tournamentXml, 'City');
+    const country = this.extractXmlValue(tournamentXml, 'Country');
+    const countryCode = this.extractXmlValue(tournamentXml, 'CountryCode');
+
     return {
       id,
       visNo,
@@ -299,9 +303,9 @@ export class VisResponseParser {
       tournamentType,
       dates,
       status,
-      city: this.extractXmlValue(tournamentXml, 'City'),
-      country: this.extractXmlValue(tournamentXml, 'Country'),
-      countryCode: this.extractXmlValue(tournamentXml, 'CountryCode'),
+      city,
+      country,
+      countryCode,
       location: this.extractXmlValue(tournamentXml, 'Location'),
       venue: this.extractXmlValue(tournamentXml, 'Venue'),
       address: this.extractXmlValue(tournamentXml, 'Address'),
@@ -525,7 +529,13 @@ export class VisResponseParser {
       Referee1Name: this.extractXmlAttribute(matchXml, 'Referee1Name'),
       Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
       Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
-      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode')
+      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode'),
+      // Add tournament location fields for timezone conversion
+      tournamentCity: tournamentLocation?.city,
+      tournamentCountry: tournamentLocation?.country,
+      tournamentCountryCode: tournamentLocation?.countryCode,
+      tournamentVenue: tournamentLocation?.venue,
+      tournamentName: tournamentLocation?.name
     } as any;
 
 

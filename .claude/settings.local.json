@@ -120,7 +120,8 @@
       "Bash(start \"http://localhost:8098\")",
       "Bash(del debug-match-details-dto.js debug-match-service-usage.js)",
       "Bash(del test-vis-api.js)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)"
     ],
     "deny": [],
     "ask": [],

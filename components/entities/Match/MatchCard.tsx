@@ -34,6 +34,14 @@ export interface MatchCardProps {
   compact?: boolean;
   variant?: 'default' | 'referee' | 'live';
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
+  tournamentData?: {
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    name?: string;
+    venue?: string;
+    defaultTimeZone?: string;
+  }; // Tournament location data for timezone detection
   liveScoreRefresh?: number; // For triggering score age reset on live score updates
 }
 
@@ -46,6 +54,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onPress,
   variant = 'default',
   tournamentTimezone,
+  tournamentData,
   liveScoreRefresh,
 }) => {
   const router = useRouter();
@@ -195,21 +204,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     try {
       // Prepare match data for the new timezone system
       const matchData = {
-        BeginDateTimeUtc: dateTimeString, // scheduledDateTime is already UTC in the current system
+        scheduledDateTime: dateTimeString, // Local time according to user clarification
       };
 
-      // Prepare tournament data for timezone detection
-      const tournamentData = {
-        countryCode: (match as any).countryCode || (match as any).country,
-        city: (match as any).city || (match as any).venue,
-        name: (match as any).tournamentName || (match as any).name,
+      // Use provided tournament data for timezone detection
+      const tournamentDataForConversion = tournamentData || {
         defaultTimeZone: tournamentTimezone,
       };
 
       // Get user's timezone time using the new system
       const userTime = formatMatchTimeForUser(matchData, {
         showTimezoneIndicator: false,
-        tournamentData
+        tournamentData: tournamentDataForConversion
       });
 
       // For now, we'll show the same time as both local and user
@@ -687,6 +693,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           TournamentCountryCode: (match as any).countryCode,
                           TournamentName: (match as any).tournamentName
                         };
+
 
                         const tournamentData = {
                           city: (match as any).city || (match as any).venue,

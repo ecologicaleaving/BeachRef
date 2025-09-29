@@ -250,14 +250,6 @@ export class VisApiClient implements IVisApiClient {
       const xmlRequest = this.buildGetBeachTournamentXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_TOURNAMENT, xmlRequest);
 
-      // Log raw GetBeachTournament response for debugging
-      if (response.success && response.data) {
-        console.log('🔴 [RAW-GET-BEACH-TOURNAMENT-RESPONSE]', {
-          tournamentNo: request.tournamentNo,
-          rawXml: response.data,
-          timestamp: new Date().toISOString()
-        });
-      }
 
       this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT, true, Date.now() - startTime);
       return response;
@@ -307,7 +299,8 @@ export class VisApiClient implements IVisApiClient {
     try {
       const xmlRequest = this.buildGetBeachMatchListXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH_LIST, xmlRequest);
-      
+
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH_LIST, true, Date.now() - startTime);
       return response;
       
@@ -1387,5 +1380,40 @@ export class VisApiClient implements IVisApiClient {
       .replace(/'/g, '&apos;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * Format XML for readable console output
+   * @param xml - Raw XML string
+   * @returns Formatted XML string
+   */
+  private formatXml(xml: string): string {
+    try {
+      // Simple XML formatting - add line breaks and indentation
+      let formatted = xml
+        .replace(/></g, '>\n<')
+        .replace(/^\s+|\s+$/g, '');
+
+      const lines = formatted.split('\n');
+      let indent = 0;
+      const indentSize = 2;
+
+      return lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('</')) {
+          indent = Math.max(0, indent - indentSize);
+        }
+
+        const result = ' '.repeat(indent) + trimmed;
+
+        if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
+          indent += indentSize;
+        }
+
+        return result;
+      }).join('\n');
+    } catch (error) {
+      return xml; // Return original if formatting fails
+    }
   }
 }

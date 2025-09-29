@@ -17,16 +17,18 @@ import {
 export interface VisBeachMatchData {
   LocalDate?: string;           // Tournament local date (YYYY-MM-DD)
   LocalTime?: string;           // Tournament local time (HH:mm or HH:mm:ss)
+  scheduledDateTime?: string;   // Combined local date and time (ISO format in tournament timezone)
   LocalTimeOffset?: string;     // Timezone offset (e.g., "+03:00")
   TimeZone?: string;           // Timezone identifier
   UtcDate?: string;            // UTC date if available
   UtcTime?: string;            // UTC time if available
   BeginDateTimeUtc?: string;   // UTC datetime if available
   EndDateTimeUtc?: string;     // UTC end datetime if available
-  TournamentName?: string;     // Tournament name for heuristics
-  TournamentCity?: string;     // Tournament city
-  TournamentCountry?: string;  // Tournament country
-  TournamentCountryCode?: string; // Tournament country code
+  tournamentName?: string;     // Tournament name for heuristics
+  tournamentCity?: string;     // Tournament city
+  tournamentCountry?: string;  // Tournament country
+  tournamentCountryCode?: string; // Tournament country code
+  tournamentVenue?: string;    // Tournament venue
 }
 
 /**
@@ -87,207 +89,121 @@ export function convertMatchTimeToUserTime(
 ): TimezoneConversionResult {
   const userTz = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+  console.log('🕐 TIMEZONE CONVERSION START');
+  console.log('📥 Input Data:');
+  console.log('  📊 matchData:', matchData);
+  console.log('  🏟️ tournamentData:', tournamentData);
+  console.log('  🌍 userTimezone:', userTz);
+  console.log('  📍 Call stack:', new Error().stack?.split('\n')[2]?.trim());
 
-  // Method 1: Use UTC datetime if available (highest priority)
-  if (matchData.BeginDateTimeUtc) {
-    try {
-      const utcDateTime = DateTime.fromISO(matchData.BeginDateTimeUtc, { zone: 'utc' });
-      if (utcDateTime.isValid) {
-        const userDateTime = utcDateTime.setZone(userTz);
-        return {
-          utcDateTime: utcDateTime.toISO(),
-          userDateTime: userDateTime.toFormat('HH:mm'),
-          conversionMethod: 'utc_direct',
-          sourceFields: ['BeginDateTimeUtc'],
-          reliable: true,
-          debug: {
-            userTimezone: userTz
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Failed to parse BeginDateTimeUtc:', matchData.BeginDateTimeUtc, error);
-    }
-  }
 
-  // Method 2: Use UtcDate + UtcTime if available
-  if (matchData.UtcDate && matchData.UtcTime) {
-    try {
-      const utcTimeNormalized = /^\d{2}:\d{2}$/.test(matchData.UtcTime)
-        ? `${matchData.UtcTime}:00`
-        : matchData.UtcTime;
+  // Build tournament location data from various sources
+  const location: TournamentLocation = {
+    city: matchData.tournamentCity || tournamentData?.city || '',
+    country: matchData.tournamentCountry || tournamentData?.country || '',
+    countryCode: matchData.tournamentCountryCode || tournamentData?.countryCode || '',
+    venue: matchData.tournamentVenue || tournamentData?.venue || '',
+    name: matchData.tournamentName || tournamentData?.name || ''
+  };
 
-      const utcDateTime = DateTime.fromISO(`${matchData.UtcDate}T${utcTimeNormalized}`, { zone: 'utc' });
-      if (utcDateTime.isValid) {
-        const userDateTime = utcDateTime.setZone(userTz);
-        return {
-          utcDateTime: utcDateTime.toISO(),
-          userDateTime: userDateTime.toFormat('HH:mm'),
-          conversionMethod: 'utc_direct',
-          sourceFields: ['UtcDate', 'UtcTime'],
-          reliable: true,
-          debug: {
-            userTimezone: userTz
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Failed to parse UtcDate/UtcTime:', matchData.UtcDate, matchData.UtcTime, error);
-    }
-  }
+  console.log('🗺️ Tournament Location Built:', location);
 
-  // Method 3: Use LocalDate + LocalTime with tournament location-based timezone detection
+  // Method 1: Use LocalDate + LocalTime with tournament location-based timezone detection
   if (matchData.LocalDate && matchData.LocalTime) {
-    try {
-      // Build tournament location data from various sources
-      const location: TournamentLocation = {
-        city: matchData.TournamentCity || tournamentData?.city || '',
-        country: matchData.TournamentCountry || tournamentData?.country || '',
-        countryCode: matchData.TournamentCountryCode || tournamentData?.countryCode || '',
-        venue: tournamentData?.venue || '',
-        name: matchData.TournamentName || tournamentData?.name || ''
+    console.log('🕐 Method 1: Using LocalDate + LocalTime');
+    console.log('📅 LocalDate:', matchData.LocalDate);
+    console.log('🕒 LocalTime:', matchData.LocalTime);
+
+    const result = calculateMyTime(
+      matchData.LocalDate,
+      matchData.LocalTime,
+      location,
+      userTz
+    );
+
+    if (result) {
+      console.log('✅ Method 1 Success:');
+      console.log('  🕒 User Time:', result.myTime);
+      console.log('  🌐 UTC Time:', result.utcTime);
+      console.log('  📍 Detection:', result.detection);
+      return {
+        utcDateTime: result.utcTime,
+        userDateTime: result.myTime,
+        conversionMethod: 'local_detected',
+        timezoneDetection: result.detection,
+        sourceFields: ['LocalDate', 'LocalTime', 'TournamentLocation'],
+        reliable: result.detection.confidence === 'high',
+        debug: {
+          originalLocalDate: matchData.LocalDate,
+          originalLocalTime: matchData.LocalTime,
+          detectedTimezone: result.detection.timezone,
+          userTimezone: userTz
+        }
       };
+    } else {
+      console.log('❌ Method 1 Failed: calculateMyTime returned null');
+
+    }
+  } else {
+    console.log('⏩ Method 1 Skipped: Missing LocalDate or LocalTime');
+  }
+
+  // Method 2: Use scheduledDateTime (local time) with tournament location-based timezone detection
+  if (matchData.scheduledDateTime) {
+    console.log('🕐 Method 2: Using scheduledDateTime');
+    console.log('📅 Original scheduledDateTime:', matchData.scheduledDateTime);
+
+    // Parse scheduledDateTime as local time, ignoring any timezone info
+    // The API data has Z suffix but according to user, this is actually local time
+    const cleanedDateTime = matchData.scheduledDateTime.replace('Z', '');
+    console.log('🧹 Cleaned scheduledDateTime:', cleanedDateTime);
+
+    const scheduledDate = DateTime.fromISO(cleanedDateTime);
+    console.log('📊 Parsed DateTime:', { isValid: scheduledDate.isValid, toString: scheduledDate.toString() });
+
+    if (scheduledDate.isValid) {
+      const localDate = scheduledDate.toFormat('yyyy-MM-dd');
+      const localTime = scheduledDate.toFormat('HH:mm');
+      console.log('📅 Extracted LocalDate:', localDate);
+      console.log('🕒 Extracted LocalTime:', localTime);
 
       const result = calculateMyTime(
-        matchData.LocalDate,
-        matchData.LocalTime,
+        localDate,
+        localTime,
         location,
         userTz
       );
 
       if (result) {
-
+        console.log('✅ Method 2 Success:', result);
         return {
           utcDateTime: result.utcTime,
           userDateTime: result.myTime,
           conversionMethod: 'local_detected',
           timezoneDetection: result.detection,
-          sourceFields: ['LocalDate', 'LocalTime', 'TournamentLocation'],
+          sourceFields: ['scheduledDateTime', 'TournamentLocation'],
           reliable: result.detection.confidence === 'high',
           debug: {
-            originalLocalDate: matchData.LocalDate,
-            originalLocalTime: matchData.LocalTime,
+            originalLocalDate: localDate,
+            originalLocalTime: localTime,
+            scheduledDateTime: matchData.scheduledDateTime,
             detectedTimezone: result.detection.timezone,
             userTimezone: userTz
           }
         };
+      } else {
+        console.log('❌ Method 2 Failed: calculateMyTime returned null');
       }
-    } catch (error) {
-      console.warn('Failed to convert using location detection:', error);
+    } else {
+      console.log('❌ Method 2 Failed: Invalid DateTime parsing');
     }
+  } else {
+    console.log('⏩ Method 2 Skipped: Missing scheduledDateTime');
   }
 
-  // Method 4: Use LocalDate + LocalTime + LocalTimeOffset if available
-  if (matchData.LocalDate && matchData.LocalTime && matchData.LocalTimeOffset) {
-    try {
-      const localTimeNormalized = /^\d{2}:\d{2}$/.test(matchData.LocalTime)
-        ? `${matchData.LocalTime}:00`
-        : matchData.LocalTime;
-
-      // Parse as local time with offset
-      const localWithOffset = DateTime.fromISO(`${matchData.LocalDate}T${localTimeNormalized}${matchData.LocalTimeOffset}`);
-
-      if (localWithOffset.isValid) {
-        const utcDateTime = localWithOffset.toUTC();
-        const userDateTime = utcDateTime.setZone(userTz);
-
-        return {
-          utcDateTime: utcDateTime.toISO(),
-          userDateTime: userDateTime.toFormat('HH:mm'),
-          conversionMethod: 'local_with_offset',
-          sourceFields: ['LocalDate', 'LocalTime', 'LocalTimeOffset'],
-          reliable: true,
-          debug: {
-            originalLocalDate: matchData.LocalDate,
-            originalLocalTime: matchData.LocalTime,
-            userTimezone: userTz
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Failed to parse LocalDate/LocalTime with offset:', error);
-    }
-  }
-
-  // Method 5: Use LocalDate + LocalTime + TimeZone if available
-  if (matchData.LocalDate && matchData.LocalTime && (matchData.TimeZone || tournamentData?.defaultTimeZone)) {
-    try {
-      const localTimeNormalized = /^\d{2}:\d{2}$/.test(matchData.LocalTime)
-        ? `${matchData.LocalTime}:00`
-        : matchData.LocalTime;
-
-      const timezone = matchData.TimeZone || tournamentData?.defaultTimeZone;
-      const localDateTime = DateTime.fromISO(`${matchData.LocalDate}T${localTimeNormalized}`, { zone: timezone });
-
-      if (localDateTime.isValid) {
-        const utcDateTime = localDateTime.toUTC();
-        const userDateTime = utcDateTime.setZone(userTz);
-
-        return {
-          utcDateTime: utcDateTime.toISO(),
-          userDateTime: userDateTime.toFormat('HH:mm'),
-          conversionMethod: 'local_with_timezone',
-          sourceFields: ['LocalDate', 'LocalTime', matchData.TimeZone ? 'TimeZone' : 'defaultTimeZone'],
-          reliable: true,
-          debug: {
-            originalLocalDate: matchData.LocalDate,
-            originalLocalTime: matchData.LocalTime,
-            detectedTimezone: timezone,
-            userTimezone: userTz
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Failed to parse LocalDate/LocalTime with timezone:', error);
-    }
-  }
-
-  // Fallback: Treat LocalDate + LocalTime as UTC (least reliable)
-  if (matchData.LocalDate && matchData.LocalTime) {
-    try {
-      const localTimeNormalized = /^\d{2}:\d{2}$/.test(matchData.LocalTime)
-        ? `${matchData.LocalTime}:00`
-        : matchData.LocalTime;
-
-      const utcDateTime = DateTime.fromISO(`${matchData.LocalDate}T${localTimeNormalized}`, { zone: 'utc' });
-
-      if (utcDateTime.isValid) {
-        const userDateTime = utcDateTime.setZone(userTz);
-
-        return {
-          utcDateTime: utcDateTime.toISO(),
-          userDateTime: userDateTime.toFormat('HH:mm'),
-          conversionMethod: 'local_detected',
-          sourceFields: ['LocalDate', 'LocalTime'],
-          reliable: false, // Very unreliable fallback
-          debug: {
-            originalLocalDate: matchData.LocalDate,
-            originalLocalTime: matchData.LocalTime,
-            userTimezone: userTz
-          }
-        };
-      }
-    } catch (error) {
-      console.warn('Failed fallback parsing of LocalDate/LocalTime:', error);
-    }
-  }
-
-  // Ultimate fallback: current time
-  console.error('Could not parse any time data from match, using current time as fallback:', matchData);
-  const now = DateTime.now();
-  const utcNow = now.toUTC();
-
-  return {
-    utcDateTime: utcNow.toISO(),
-    userDateTime: now.toFormat('HH:mm'),
-    conversionMethod: 'local_detected',
-    sourceFields: ['fallback_current_time'],
-    reliable: false,
-    debug: {
-      userTimezone: userTz,
-      fallbackReason: 'no_parseable_time_data'
-    }
-  };
+  // NO FALLBACKS - Fail with clear error
+  console.log('❌ TIMEZONE CONVERSION FAILED: All methods exhausted');
+  throw new Error(`Timezone conversion failed: Missing LocalDate/LocalTime or scheduledDateTime, or location detection failed`);
 }
 
 /**

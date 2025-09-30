@@ -21,6 +21,9 @@ import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
 import { FallbackTournamentService } from '../services/FallbackTournamentService';
+import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
+import { TournamentCacheWarmingService } from '../services/cache/TournamentCacheWarmingService';
+import { isStale, CacheTTL } from '../utils/cacheUtils';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -1149,9 +1152,28 @@ const TournamentDetailScreenContent: React.FC = () => {
   const loadTournamentDisplayData = async () => {
     if (!tournament.visNo) return;
 
-    setDetailsLoading(true);
     try {
-      // Dynamic import for VisApiClient
+      // STEP 1: Check cache first
+      const cacheKey = `${tournament.visNo}`;
+      const cached = await TournamentStorageService.getCachedTournamentDetails(tournament.visNo);
+
+      if (cached && !isStale(cached, CacheTTL.TOURNAMENT_DETAILS)) {
+        console.log('📦 Using cached tournament details');
+        setTournamentData(cached.tournament);
+        setDetailsLoading(false);
+        return;
+      }
+
+      // STEP 2: Show stale data immediately if available, then refresh in background
+      if (cached) {
+        console.log('🔄 Showing stale tournament data, refreshing in background');
+        setTournamentData(cached.tournament);
+        setDetailsLoading(false);
+      } else {
+        setDetailsLoading(true);
+      }
+
+      // STEP 3: Fetch fresh data from API
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
@@ -1178,6 +1200,9 @@ const TournamentDetailScreenContent: React.FC = () => {
           location: details.location || tournament.location,
         };
 
+        // Cache the fresh data
+        await TournamentStorageService.cacheTournamentDetails(tournament.visNo, enhancedTournament);
+        setTournamentData(enhancedTournament);
         setDetailedTournament(enhancedTournament);
       } else {
         // No API data available - use basic tournament
@@ -1185,20 +1210,44 @@ const TournamentDetailScreenContent: React.FC = () => {
       }
     } catch (error) {
       console.warn('Tournament display data load failed:', error);
-      // Fallback to basic tournament data
-      setDetailedTournament(tournament);
+
+      // STEP 4: Error handling with cached data fallback
+      if (cached) {
+        console.log('🔄 Using cached data due to API error');
+        setTournamentData(cached.tournament);
+        setDetailedTournament(cached.tournament);
+      } else {
+        // Fallback to basic tournament data
+        setDetailedTournament(tournament);
+      }
     } finally {
       setDetailsLoading(false);
     }
   };
 
-  // Load matches for the tournament - OPTIMIZED API FLOW
+  // Load matches for the tournament - OPTIMIZED API FLOW with CACHE-FIRST LOADING
   const loadMatches = async () => {
     // Prevent multiple simultaneous calls
     if (loadMatchesInProgress) {
       return;
     }
 
+    try {
+      // STEP 1: Check cache first for matches
+      const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo);
+
+      if (cachedMatches) {
+        console.log(`📦 Using cached matches (${cachedMatches.length} matches)`);
+        setMatches(cachedMatches);
+        setMatchesLoading(false);
+        setLoadMatchesInProgress(false);
+        return;
+      }
+
+      console.log('🔄 No cached matches found, fetching from API');
+    } catch (error) {
+      console.warn('Failed to check cache for matches:', error);
+    }
 
     setLoadMatchesInProgress(true);
     // STEP 1: Always start with GetEvent to get tournament structure (without field specification)
@@ -1511,6 +1560,11 @@ const TournamentDetailScreenContent: React.FC = () => {
 
             setMatches(sortedMatches);
             setMatchesLoading(false);
+
+            // Cache the matches with tournament status
+            const tournamentStatus = getTournamentStatus();
+            TournamentMatchCache.cacheMatches(tournament.visNo, sortedMatches, tournamentStatus)
+              .catch(error => console.warn('Failed to cache matches:', error));
           } catch (parseError) {
             setMatches([]);
             setMatchesLoading(false);
@@ -1658,6 +1712,9 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   useEffect(() => {
     if (tournament.visNo) {
+      // Track recently viewed tournament for cache warming
+      TournamentCacheWarmingService.trackRecentlyViewed(tournament.visNo);
+
       // Load tournament display data (country, location info for TournamentCard)
       loadTournamentDisplayData();
       loadMatches();
@@ -1671,6 +1728,16 @@ const TournamentDetailScreenContent: React.FC = () => {
       // Silent fail for cache cleanup
     });
   }, [tournament.visNo]); // Removed tournamentData to prevent excessive reloads
+
+  // Initialize cache warming service on component mount
+  useEffect(() => {
+    TournamentCacheWarmingService.startBackgroundWarming();
+
+    return () => {
+      // Cleanup cache warming on unmount
+      TournamentCacheWarmingService.stopBackgroundWarming();
+    };
+  }, []);
 
   // Clean up - removed debug effect
 

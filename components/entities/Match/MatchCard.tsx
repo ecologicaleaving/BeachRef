@@ -357,10 +357,61 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return null; // Don't show anything for normal results (ResultType = 0)
   };
 
+  // State for live elapsed time
+  const [liveElapsedTime, setLiveElapsedTime] = useState<string | null>(null);
+
+  // Calculate and update live elapsed time for running matches
+  useEffect(() => {
+    if (!isMatchLive(match)) {
+      setLiveElapsedTime(null);
+      return;
+    }
+
+    const calculateLiveElapsed = () => {
+      if (match.actualStartTime) {
+        try {
+          const startTime = new Date(match.actualStartTime).getTime();
+          const now = Date.now();
+
+          if (!isNaN(startTime) && now > startTime) {
+            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours > 0) {
+              setLiveElapsedTime(`${hours}h ${minutes}m`);
+            } else if (totalMinutes > 0) {
+              setLiveElapsedTime(`${totalMinutes}m`);
+            } else {
+              setLiveElapsedTime('< 1m');
+            }
+            return;
+          }
+        } catch (error) {
+          // Skip if date parsing fails
+        }
+      }
+      setLiveElapsedTime(null);
+    };
+
+    // Calculate immediately
+    calculateLiveElapsed();
+
+    // Update every minute for live matches
+    const interval = setInterval(calculateLiveElapsed, 60000);
+
+    return () => clearInterval(interval);
+  }, [match.actualStartTime, match.status, (match as any)?.rawStatus]);
+
   // Get match duration (from master branch logic) - check multiple sources
   const getMatchDuration = (match: BeachMatchCore): string | null => {
     const matchWithDuration = match as any;
-    
+
+    // For LIVE matches, return live elapsed time if available
+    if (isMatchLive(match) && liveElapsedTime) {
+      return liveElapsedTime;
+    }
+
     // First try to get duration from match result (calculated from start/end time)
     if (match.result?.duration && typeof match.result.duration === 'number') {
       const totalMinutes = match.result.duration;

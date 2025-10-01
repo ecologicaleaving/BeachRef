@@ -1535,12 +1535,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   liveStatusText: {
-    color: '#DC2626', // Red color for LIVE status
+    color: '#2563EB', // Blue color for LIVE status
+    fontSize: 16,
+    fontWeight: '700',
   },
   liveRedDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#DC2626', // Red dot
   },
   inlineResultBadge: {

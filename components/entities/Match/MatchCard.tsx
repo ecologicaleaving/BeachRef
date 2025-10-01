@@ -292,12 +292,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return match.status === MatchStatus.RUNNING;
   };
 
-  // Get result type for display (only show if not "Normal")
+  // Get result type for display (only show if ResultType !== 0)
   const getResultTypeDisplay = (): string | null => {
-    // PRIORITY 1: Check the new resultType field from BeachMatchCore
-    if (match.resultType && match.resultType !== 'Normal') {
-      // Convert result type to display format
-      switch (match.resultType) {
+    const rawMatch = match as any;
+
+    // Check if resultTypeText exists (parsed from ResultType field)
+    if (rawMatch.resultTypeText) {
+      // Map the VIS result type to display text
+      switch (rawMatch.resultTypeText) {
         case 'ForfeitA':
         case 'ForfeitB':
         case 'ForfeitBoth':
@@ -311,20 +313,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         case 'OutBoth':
           return 'Withdrawal';
         case 'DisqualifiedA':
+          return 'DQ Team A';
         case 'DisqualifiedB':
+          return 'DQ Team B';
         case 'DisqualifiedBoth':
-          return 'DQ';
+          return 'DQ Both';
         default:
-          return match.resultType; // Show other result types as-is
+          return rawMatch.resultTypeText;
       }
     }
 
     // LEGACY: Check BeachMatchLiveDTO format for compatibility
-    const beachMatchDTO = match as any;
-    const legacyResultType = beachMatchDTO.status?.resultType;
-
+    const legacyResultType = rawMatch.status?.resultType;
     if (legacyResultType && legacyResultType !== 'Normal') {
-      // Convert result type to display format
       switch (legacyResultType) {
         case 'ForfeitA':
         case 'ForfeitB':
@@ -339,11 +340,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         case 'OutBoth':
           return 'Withdrawal';
         case 'DisqualifiedA':
+          return 'DQ Team A';
         case 'DisqualifiedB':
+          return 'DQ Team B';
         case 'DisqualifiedBoth':
-          return 'DQ';
+          return 'DQ Both';
         default:
-          return legacyResultType; // Show other result types as-is
+          return legacyResultType;
       }
     }
 
@@ -352,7 +355,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       return 'Forfeit';
     }
 
-    return null; // Don't show anything for normal results
+    return null; // Don't show anything for normal results (ResultType = 0)
   };
 
   // Get match duration (from master branch logic) - check multiple sources
@@ -462,6 +465,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const roundPhase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
     const round = match.round || rawMatch.Round;
     const roundName = match.roundName || rawMatch.RoundName;
+
+    // Check if qualification position fields exist and have values
+    if (rawMatch.teamAPositionInQualification || rawMatch.teamBPositionInQualification) {
+      return true;
+    }
 
     // Check RoundPhase "1" (VIS API standard for qualification)
     if (roundPhase === '1') return true;
@@ -745,20 +753,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     );
                   })()}
                 </View>
-
-                {/* Court - positioned to the right of time */}
-                <Text style={styles.courtTextRight}>
-                  {match.court?.courtNumber ? (
-                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-                  ) : 'TBD'}
-                </Text>
               </View>
             </View>
           </View>
 
           <View style={styles.centerStatusContainer}>
-            {/* Center - Round/Phase and Status */}
+            {/* Center - Court and Round/Phase on first row, Status on second row */}
             <View style={styles.centerContent}>
+              {/* Court badge - positioned to the left of round */}
+              <View style={[styles.roundBadge, styles.courtBadge]}>
+                <Text style={styles.roundBadgeText}>
+                  {match.court?.courtNumber ? (
+                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+                  ) : 'TBD'}
+                </Text>
+              </View>
+
               {roundData && (
                 <RoundPhaseDisplay
                   round={roundData.round}
@@ -766,9 +776,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   style={styles.roundBadge}
                 />
               )}
+            </View>
 
-              {/* Status */}
-              {(() => {
+            {/* Status on separate row */}
+            {(() => {
                 const rawStatus = (match as any)?.rawStatus;
                 const statusText = (() => {
                   if (typeof rawStatus === 'number') {
@@ -802,17 +813,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   </View>
                 );
               })()}
-            </View>
           </View>
 
           <View style={styles.rightBadgeContainer}>
-            {isQualification && (
-              <View style={styles.qualificationBadge}>
-                <Text style={styles.qualificationBadgeText}>
-                  QUAL
-                </Text>
-              </View>
-            )}
 {(() => {
               // DEBUG: Log what fields are available for first few matches
               const matchIndex = parseInt(match.visNo || '0');
@@ -1184,19 +1187,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   </View>
                 )}
 
-                {/* Duration and Result Type below set scores to avoid overlap */}
+                {/* Duration below set scores */}
                 {(() => {
                   const totalDuration = getMatchDuration(match);
-                  const resultTypeDisplay = getResultTypeDisplay();
 
-                  return (totalDuration || resultTypeDisplay) ? (
+                  return totalDuration ? (
                     <View style={styles.durationAndResultContainer}>
-                      {totalDuration && (
-                        <Text style={styles.durationText}>({totalDuration})</Text>
-                      )}
-                      {resultTypeDisplay && (
-                        <Text style={styles.resultTypeText}>({resultTypeDisplay})</Text>
-                      )}
+                      <Text style={styles.durationText}>({totalDuration})</Text>
                     </View>
                   ) : null;
                 })()}
@@ -1424,8 +1421,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   centerContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 1,
+    gap: 4,
+    marginBottom: 2,
   },
   rightBadgeContainer: {
     flex: 0.8,
@@ -1516,6 +1515,12 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontWeight: '600',
     marginLeft: 8,
+  },
+  courtTextCenter: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    marginRight: 8,
   },
   statusBadge: {
     backgroundColor: '#6B7280',
@@ -1782,11 +1787,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  roundBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  courtBadge: {
+    backgroundColor: '#E5E7EB',
+    marginRight: 4,
+  },
   // Qualification match styles
   qualificationCard: {
     borderLeftWidth: 4,
     borderLeftColor: '#F59E0B', // Amber/orange for qualification
-    backgroundColor: '#FFFBEB', // Very light amber background
   },
   qualificationBadge: {
     backgroundColor: '#F59E0B',

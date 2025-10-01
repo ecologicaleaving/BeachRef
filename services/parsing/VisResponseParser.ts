@@ -28,6 +28,8 @@ import {
   determineMatchImportance
 } from '../../types/match-v2';
 
+import { VIS_RESULT_TYPE_TO_RESULT_TYPE } from '../../types/beach-match-live-dto';
+
 import {
   RefereeOfficial,
   EventReferee,
@@ -346,12 +348,15 @@ export class VisResponseParser {
     const rawStatus = statusStr ? (isNaN(parseInt(statusStr)) ? statusStr : parseInt(statusStr)) : undefined;
     const status = mapVisMatchStatus(statusStr);
 
-    // Extract ResultType field from BeachMatch
-    const resultType = this.extractXmlAttribute(matchXml, 'ResultType');
+    // Extract ResultType field from BeachMatch (numeric code from VIS API)
+    const resultTypeRaw = this.extractXmlAttribute(matchXml, 'ResultType');
+    const resultType = resultTypeRaw ? parseInt(resultTypeRaw) : 0;
 
-    // Debug log for result type extraction
-    if (resultType && resultType !== 'Normal') {
-      console.log(`🏐 [DEBUG-Parser] Match ${visNo} ResultType: ${resultType}`);
+    // Map numeric ResultType to text (0 = Normal, should be hidden)
+    let resultTypeText: string | undefined;
+    if (resultType !== 0 && VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType]) {
+      resultTypeText = VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType];
+      console.log(`🏐 [DEBUG-Parser] Match ${visNo} ResultType: ${resultType} → ${resultTypeText}`);
     }
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
@@ -548,8 +553,9 @@ export class VisResponseParser {
       tournamentCountryCode: tournamentLocation?.countryCode,
       tournamentVenue: tournamentLocation?.venue,
       tournamentName: tournamentLocation?.name,
-      // Add ResultType from VIS API for forfeit/injury detection
-      resultType: resultType
+      // Add ResultType (numeric code) and ResultTypeText (mapped string) from VIS API
+      resultType: resultType,
+      resultTypeText: resultTypeText
     } as any;
 
 

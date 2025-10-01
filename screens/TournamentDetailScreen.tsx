@@ -1422,11 +1422,26 @@ const TournamentDetailScreenContent: React.FC = () => {
 
             // Phase 3 Logging: GetBeachMatchList API Flow
             console.log('🏐 ===== PHASE 3: GetBeachMatchList API Flow =====');
-            console.log('📤 REQUEST:', {
+            console.log('📤 REQUEST (all available fields):', {
               endpoint: 'GetBeachMatchList',
+              // Required fields
               tournamentNo: matchRequest.tournamentNo,
+              // Optional filters (showing what we're requesting)
+              courtNo: matchRequest.courtNo || '(not specified)',
+              status: matchRequest.status || '(not specified)',
+              startDate: matchRequest.startDate || '(not specified)',
+              endDate: matchRequest.endDate || '(not specified)',
               includeResults: matchRequest.includeResults,
               includeReferees: matchRequest.includeReferees,
+              refereeId: matchRequest.refereeId || '(not specified)',
+              // Available but not used fields (from GetBeachMatchListRequest interface):
+              availableButNotUsed: [
+                'courtNo - Filter by court number',
+                'status - Filter by match status',
+                'startDate - Start date for matches',
+                'endDate - End date for matches',
+                'refereeId - Filter by first referee ID'
+              ],
               timestamp: new Date().toISOString()
             });
 

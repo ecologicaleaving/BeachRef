@@ -113,7 +113,9 @@ const FEDERATION_TO_COUNTRY_MAP: Record<string, string> = {
   'TUN': 'TN',  // Tunisia
   'VAN': 'VU',  // Vanuatu
   'THA': 'TH',  // Thailand
-  
+  'DOM': 'DO',  // Dominican Republic
+  'PER': 'PE',  // Peru
+
   // Special federation cases (use 3-letter code)
   'ENG': 'ENG', // England
   'NIR': 'NIR', // Northern Ireland

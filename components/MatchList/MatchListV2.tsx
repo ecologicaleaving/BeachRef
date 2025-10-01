@@ -1349,7 +1349,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
             onPress={() => setShowFilters(!showFilters)}
           >
             <Text style={styles.filterToggleText}>
-              {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+              Filters {showFilters ? '▲' : '▼'}
             </Text>
           </TouchableOpacity>
           

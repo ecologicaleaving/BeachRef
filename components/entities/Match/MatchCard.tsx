@@ -425,18 +425,39 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       }
     }
     
-    // Check for Duration field in seconds (from enhanced data)
-    const totalDurationSeconds = matchWithDuration.Duration;
-    if (totalDurationSeconds && !isNaN(parseInt(totalDurationSeconds))) {
-      const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (totalMinutes > 0) {
-        if (hours > 0) {
-          return `${hours}h ${minutes}m`;
-        } else {
-          return `${minutes}m`;
+    // Check for Duration field (can be in "h:mm:ss" format or seconds)
+    const durationField = matchWithDuration.Duration;
+    if (durationField) {
+      // Try to parse as "h:mm:ss" format first (e.g., "0:39:00" = 39 minutes)
+      if (typeof durationField === 'string' && durationField.includes(':')) {
+        const parts = durationField.split(':');
+        if (parts.length === 3) {
+          const hours = parseInt(parts[0]) || 0;
+          const mins = parseInt(parts[1]) || 0;
+          const secs = parseInt(parts[2]) || 0;
+          const totalMinutes = hours * 60 + mins + Math.floor(secs / 60);
+
+          if (totalMinutes > 0) {
+            if (hours > 0) {
+              return `${hours}h ${mins}m`;
+            } else {
+              return `${totalMinutes}m`;
+            }
+          }
+        }
+      }
+      // Fallback: try parsing as seconds
+      else if (!isNaN(parseInt(durationField))) {
+        const totalMinutes = Math.floor(parseInt(durationField) / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (totalMinutes > 0) {
+          if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+          } else {
+            return `${minutes}m`;
+          }
         }
       }
     }
@@ -1344,6 +1365,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{referee.federationCode}</Text>
                         <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
                       </View>
                     </View>
@@ -1372,6 +1394,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.Referee1FederationCode}</Text>
                         <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
                       </View>
                     </View>
@@ -1387,6 +1410,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.Referee2FederationCode}</Text>
                         <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
                       </View>
                     </View>
@@ -1403,6 +1427,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           countryCode={rawMatch.ChallengeRefereeFederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.ChallengeRefereeFederationCode}</Text>
                         <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
                       </View>
                     </View>
@@ -1734,13 +1759,18 @@ const styles = StyleSheet.create({
   },
   refereeFlag: {
     marginLeft: 8,
-    marginRight: 2,
+    marginRight: 6,
+  },
+  refereeCountryCode: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '600',
+    marginRight: 8,
   },
   refereeName: {
     fontSize: 15,
     color: '#374151',
     fontWeight: '500',
-    marginHorizontal: 8,
     flex: 1,
     textAlign: 'left',
   },

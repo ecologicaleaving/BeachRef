@@ -124,7 +124,9 @@
       "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)",
       "Read(//c/Users/KreshOS/Pictures/Screenshots/**)",
       "Bash(del debug-tournament-data.js debug-timezone-detection.js debug-mx-timezone.js test-mx-detection.js)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(gh pr view:*)",
+      "Bash(npx --yes @expo/cli@latest start --web --port 8082)"
     ],
     "deny": [],
     "ask": [],

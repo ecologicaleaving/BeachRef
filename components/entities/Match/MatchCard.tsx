@@ -466,8 +466,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const round = match.round || rawMatch.Round;
     const roundName = match.roundName || rawMatch.RoundName;
 
-    // Check if qualification position fields exist and have values
-    if (rawMatch.teamAPositionInQualification || rawMatch.teamBPositionInQualification) {
+    // Check if qualification position fields exist and have non-empty values
+    const hasQualPositionA = rawMatch.teamAPositionInQualification &&
+                             rawMatch.teamAPositionInQualification.trim() !== '' &&
+                             rawMatch.teamAPositionInQualification !== '0';
+    const hasQualPositionB = rawMatch.teamBPositionInQualification &&
+                             rawMatch.teamBPositionInQualification.trim() !== '' &&
+                             rawMatch.teamBPositionInQualification !== '0';
+
+    if (hasQualPositionA || hasQualPositionB) {
       return true;
     }
 
@@ -817,18 +824,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
           <View style={styles.rightBadgeContainer}>
 {(() => {
-              // DEBUG: Log what fields are available for first few matches
-              const matchIndex = parseInt(match.visNo || '0');
-              if (matchIndex <= 3) {
-                console.log(`🏐 [DEBUG-MatchCard] Match ${match.visNo} badge fields:`, {
-                  tournamentGender: (match as any).tournamentGender,
-                  tournamentGenderText: (match as any).tournamentGenderText,
-                  noInTournament: (match as any).noInTournament,
-                  matchCode: match.matchCode,
-                  hasGenderText: !!(match as any).tournamentGenderText
-                });
-              }
-
               // Use tournamentGenderText for display, fallback to raw value then 'M'
               const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
               const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;

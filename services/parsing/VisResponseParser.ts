@@ -356,7 +356,6 @@ export class VisResponseParser {
     let resultTypeText: string | undefined;
     if (resultType !== 0 && VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType]) {
       resultTypeText = VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType];
-      console.log(`🏐 [DEBUG-Parser] Match ${visNo} ResultType: ${resultType} → ${resultTypeText}`);
     }
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';

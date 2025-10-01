@@ -116,7 +116,15 @@
       "Bash(start \"http://localhost:8082\")",
       "Bash(start \"http://localhost:8083\")",
       "Bash(del test-timezone-field.js)",
-      "Bash(del test-match-parsing.js)"
+      "Bash(del test-match-parsing.js)",
+      "Bash(start \"http://localhost:8098\")",
+      "Bash(del debug-match-details-dto.js debug-match-service-usage.js)",
+      "Bash(del test-vis-api.js)",
+      "Bash(echo:*)",
+      "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)",
+      "Read(//c/Users/KreshOS/Pictures/Screenshots/**)",
+      "Bash(del debug-tournament-data.js debug-timezone-detection.js debug-mx-timezone.js test-mx-detection.js)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": [],

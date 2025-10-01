@@ -7,6 +7,50 @@
 import { DateTime } from 'luxon';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 
+/**
+ * Auto-detect tournament timezone based on country/city
+ * Maps common tournament locations to their timezones
+ */
+const detectTournamentTimezone = (countryCode?: string, city?: string, tournamentName?: string): string => {
+  const name = (tournamentName || '').toLowerCase();
+  const cityLower = (city || '').toLowerCase();
+
+  // Brazil - different timezones by region
+  if (countryCode === 'BR' || countryCode === 'BRA') {
+    if (name.includes('rio') || cityLower.includes('rio')) return 'America/Sao_Paulo';
+    if (name.includes('brasília') || cityLower.includes('brasília')) return 'America/Sao_Paulo';
+    if (name.includes('salvador') || cityLower.includes('salvador')) return 'America/Bahia';
+    if (name.includes('fortaleza') || cityLower.includes('fortaleza')) return 'America/Fortaleza';
+    return 'America/Sao_Paulo'; // Default Brazil timezone
+  }
+
+  // Other countries
+  if (countryCode === 'US' || countryCode === 'USA') {
+    if (cityLower.includes('los angeles') || cityLower.includes('california')) return 'America/Los_Angeles';
+    if (cityLower.includes('new york') || cityLower.includes('manhattan')) return 'America/New_York';
+    if (cityLower.includes('chicago')) return 'America/Chicago';
+    return 'America/New_York'; // Default US timezone
+  }
+
+  if (countryCode === 'DE' || countryCode === 'DEU') return 'Europe/Berlin';
+  if (countryCode === 'FR' || countryCode === 'FRA') return 'Europe/Paris';
+  if (countryCode === 'IT' || countryCode === 'ITA') return 'Europe/Rome';
+  if (countryCode === 'ES' || countryCode === 'ESP') return 'Europe/Madrid';
+  if (countryCode === 'NL' || countryCode === 'NLD') return 'Europe/Amsterdam';
+  if (countryCode === 'AT' || countryCode === 'AUT') return 'Europe/Vienna';
+  if (countryCode === 'CH' || countryCode === 'CHE') return 'Europe/Zurich';
+  if (countryCode === 'NO' || countryCode === 'NOR') return 'Europe/Oslo';
+  if (countryCode === 'PL' || countryCode === 'POL') return 'Europe/Warsaw';
+  if (countryCode === 'TR' || countryCode === 'TUR') return 'Europe/Istanbul';
+  if (countryCode === 'JP' || countryCode === 'JPN') return 'Asia/Tokyo';
+  if (countryCode === 'AU' || countryCode === 'AUS') return 'Australia/Sydney';
+  if (countryCode === 'CA' || countryCode === 'CAN') return 'America/Toronto';
+  if (countryCode === 'MX' || countryCode === 'MEX') return 'America/Mexico_City';
+  if (countryCode === 'AR' || countryCode === 'ARG') return 'America/Argentina/Buenos_Aires';
+
+  return 'UTC'; // Fallback
+};
+
 // Legacy formatters (preserved for backward compatibility)
 export const formatTime = (date: Date, time?: string): string => {
   if (time) return time;
@@ -197,51 +241,58 @@ export const formatDateTimeWithTimezone = async (
  */
 export const formatTimeWithTimezoneSync = (
   utcDate: Date | string,
-  options: TimezoneAwareFormatOptions & { cachedPreference?: 'user' | 'local' } = {}
+  options: TimezoneAwareFormatOptions & {
+    cachedPreference?: 'user' | 'local';
+    countryCode?: string;
+    city?: string;
+    tournamentName?: string;
+  } = {}
 ): string => {
   try {
     const {
       tournamentTimezone = 'UTC',
       showTimezoneIndicator = true,
-      cachedPreference = 'user'
+      cachedPreference = 'user',
+      countryCode,
+      city,
+      tournamentName
     } = options;
 
-    // Parse UTC date
-    const utcDateTime = typeof utcDate === 'string'
-      ? DateTime.fromISO(utcDate, { zone: 'utc' })
-      : DateTime.fromJSDate(utcDate, { zone: 'utc' });
+    // Get user's timezone from browser
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    if (!utcDateTime.isValid) {
+    // Auto-detect tournament timezone if not provided or is UTC
+    const detectedTournamentTimezone = (tournamentTimezone === 'UTC' || !tournamentTimezone)
+      ? detectTournamentTimezone(countryCode, city, tournamentName)
+      : tournamentTimezone;
+
+
+    // Two-step conversion: local time → UTC → user timezone
+    let inputDateTime: DateTime;
+
+    if (typeof utcDate === 'string') {
+      // Step 1: Parse as tournament local time using detected timezone
+      if (detectedTournamentTimezone && detectedTournamentTimezone !== 'UTC') {
+        // Input is tournament local time - parse in detected tournament timezone
+        inputDateTime = DateTime.fromISO(utcDate, { zone: detectedTournamentTimezone });
+
+        // Step 2: Convert to user timezone
+        inputDateTime = inputDateTime.setZone(userTimezone);
+      } else {
+        // Fallback: treat as UTC if no tournament timezone detected
+        inputDateTime = DateTime.fromISO(utcDate, { zone: 'utc' }).setZone(userTimezone);
+      }
+    } else {
+      inputDateTime = DateTime.fromJSDate(utcDate).setZone(userTimezone);
+    }
+
+    if (!inputDateTime.isValid) {
       return formatTime(new Date(utcDate));
     }
 
-    // Use cached preference
-    const useLocalTime = cachedPreference === 'local';
+    const result = inputDateTime.toFormat('HH:mm');
 
-    // Get user's timezone for comparison
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    // Determine target timezone
-    const targetTimezone = useLocalTime ? tournamentTimezone : userTimezone;
-
-    // Convert to target timezone
-    const localDateTime = utcDateTime.setZone(targetTimezone);
-
-    // Format time
-    const timeString = localDateTime.toFormat('HH:mm');
-
-    if (!showTimezoneIndicator) {
-      return timeString;
-    }
-
-    // Don't show indicator if user timezone matches tournament timezone
-    if (userTimezone === tournamentTimezone) {
-      return timeString;
-    }
-
-    // Add timezone indicator only when timezones differ
-    const indicator = useLocalTime ? 'Local Time' : 'My Time';
-    return `${timeString} (${indicator})`;
+    return result;
 
   } catch (error) {
     console.error('Error in formatTimeWithTimezoneSync:', error);

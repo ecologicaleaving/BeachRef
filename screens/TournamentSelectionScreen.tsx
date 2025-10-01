@@ -78,13 +78,13 @@ const TournamentSelectionScreen: React.FC = () => {
       setError(null);
       
       try {
-        // Try VIS API first with shorter timeout
+        // Try VIS API first
         const { VisApiClient } = await import('../services/api/VisApiClient');
         const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
         const config = {
           baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
-          timeoutMs: 5000, // Reduced timeout
+          timeoutMs: 30000, // Increased timeout for large tournament list response
           maxRetries: 1,
           retryDelayMs: 500,
           exponentialBackoff: false,
@@ -93,18 +93,18 @@ const TournamentSelectionScreen: React.FC = () => {
 
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
-        // Attempting VIS API call
+        // Attempting VIS API call - filter for current year only
+        const currentYear = new Date().getFullYear();
         const response = await visApi.getEventList({
           tournamentType: 'BPT',
+          startDate: `${currentYear}-01-01`,
+          endDate: `${currentYear}-12-31`,
           maxResults: 50
         });
 
         if (response.success && response.xmlData) {
           // VIS API success, parsing tournaments
-          // Parse manually
           const visTournaments = parseXMLDirectly(response.xmlData);
-
-          // Use VIS tournaments
           const finalTournaments = visTournaments;
 
           // Show tournaments immediately with EventNo fallback
@@ -118,17 +118,13 @@ const TournamentSelectionScreen: React.FC = () => {
         }
       } catch (apiError) {
         // VIS API failed, using fallback tournaments
-
-        // Load fallback tournaments when VIS API is down
         const fallbackTournaments = await FallbackTournamentService.getTournaments();
         setTournaments(fallbackTournaments);
-
-        // Show user that we're using cached/fallback data
-        // Loaded fallback tournaments
       }
-      
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setInitialLoading(false);
       setTournamentLoading(false);

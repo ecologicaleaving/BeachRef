@@ -245,11 +245,12 @@ export class VisApiClient implements IVisApiClient {
    */
   async getBeachTournament(request: GetBeachTournamentRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
-    
+
     try {
       const xmlRequest = this.buildGetBeachTournamentXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_TOURNAMENT, xmlRequest);
-      
+
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT, true, Date.now() - startTime);
       return response;
       
@@ -265,11 +266,20 @@ export class VisApiClient implements IVisApiClient {
    */
   async getEvent(request: GetEventRequest): Promise<VisApiResponse> {
     const startTime = Date.now();
-    
+
     try {
       const xmlRequest = this.buildGetEventXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_EVENT, xmlRequest);
-      
+
+      // Log raw GetEvent response for debugging
+      if (response.success && response.data) {
+        console.log('🔴 [RAW-GET-EVENT-RESPONSE]', {
+          eventNo: request.eventNo,
+          rawXml: response.data,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       this.updateMonitor(VisApiEndpoint.GET_EVENT, true, Date.now() - startTime);
       return response;
       
@@ -289,7 +299,8 @@ export class VisApiClient implements IVisApiClient {
     try {
       const xmlRequest = this.buildGetBeachMatchListXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH_LIST, xmlRequest);
-      
+
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH_LIST, true, Date.now() - startTime);
       return response;
       
@@ -309,7 +320,11 @@ export class VisApiClient implements IVisApiClient {
     try {
       const xmlRequest = this.buildGetBeachMatchXml(request);
       const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH, xmlRequest);
-      
+
+      if (__DEV__) {
+        console.log('🔍 [GetBeachMatch Response]:', response.data ? response.data.substring(0, 1000) : 'NO DATA');
+      }
+
       this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH, true, Date.now() - startTime);
       return response;
       
@@ -746,12 +761,18 @@ export class VisApiClient implements IVisApiClient {
         signal: controller.signal
       });
 
-
       if (!response.ok) {
+        console.error('❌ [VIS-API-HTTP-ERROR]', {
+          status: response.status,
+          statusText: response.statusText,
+          url: this.config.baseUrl,
+          timestamp: new Date().toISOString()
+        });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseText = await response.text();
+
       
       // Check for VIS API specific errors
       if (this.containsVisError(responseText)) {
@@ -905,21 +926,28 @@ export class VisApiClient implements IVisApiClient {
    * Based on documentation: <Request Type="GetBeachTournament" No="502" Fields="..." />
    */
   private buildGetBeachTournamentXml(request: GetBeachTournamentRequest): string {
-    // REQUEST NoEvent field - this is needed to filter referee list
-    const fields = 'No Code Name NoEvent';
-    
-    return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    // Only include Fields attribute if fields are specified
+    if (request.fields && request.fields.length > 0) {
+      const fields = request.fields.join(' ');
+      return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    } else {
+      // No fields specified - request without Fields attribute to get all available fields
+      return `<Request Type="GetBeachTournament" No="${this.escapeXmlAttribute(request.tournamentNo)}" />`;
+    }
   }
 
   /**
    * Build GetEvent XML request (VIS API format)
    */
   private buildGetEventXml(request: GetEventRequest): string {
-    // Include Content field to get BeachTournament information
-    const fields = 'No Name Code Content';
-    
-    // Use simple attribute format like in documentation, not Filter element
-    return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    // Only include Fields attribute if fields are specified
+    if (request.fields && request.fields.length > 0) {
+      const fields = request.fields.join(' ');
+      return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+    } else {
+      // No fields specified - request without Fields attribute to get all available fields
+      return `<Request Type="GetEvent" No="${this.escapeXmlAttribute(request.eventNo)}" />`;
+    }
   }
 
   /**
@@ -957,8 +985,8 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, and timezone data
-    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3';
+    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, and timezone data
+    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -974,31 +1002,20 @@ export class VisApiClient implements IVisApiClient {
    * For individual match data retrieval with full details
    */
   private buildGetBeachMatchXml(request: GetBeachMatchRequest): string {
-    const filterAttribs = [
-      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`,
-      `No="${this.escapeXmlAttribute(request.matchNo)}"`
-    ];
-    
-    // Add optional includes
-    const includeResults = request.includeResults !== false;
-    const includeReferees = request.includeReferees !== false;
-    const includeTeamDetails = request.includeTeamDetails !== false;
-    const includeSetScores = request.includeSetScores !== false;
-    const includeStatistics = request.includeStatistics !== false;
-    
-    filterAttribs.push(`IncludeResults="${includeResults}"`);
-    filterAttribs.push(`IncludeReferees="${includeReferees}"`);
-    filterAttribs.push(`IncludeTeamDetails="${includeTeamDetails}"`);
-    filterAttribs.push(`IncludeSetScores="${includeSetScores}"`);
-    filterAttribs.push(`IncludeStatistics="${includeStatistics}"`);
-    
-    // Include all available fields for comprehensive match data (no overcomplicated mapping)
-    const fields = '';
-    
-    const xmlRequest = `<Request Type="GetBeachMatch" Fields="${fields}">
-  <Filter ${filterAttribs.join(' ')} />
-</Request>`;
-    
+    // For GetBeachMatch, the No parameter goes in the Request element, not Filter
+    const requestAttribs = [`No="${this.escapeXmlAttribute(request.matchNo)}"`];
+
+    // Only include tournament number if provided
+    if (request.tournamentNo) {
+      requestAttribs.push(`NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`);
+    }
+
+    // Simple request without fields parameter
+    const xmlRequest = `<Request Type="GetBeachMatch" ${requestAttribs.join(' ')} />`;
+
+    if (__DEV__) {
+    }
+
     return xmlRequest;
   }
 
@@ -1355,12 +1372,48 @@ export class VisApiClient implements IVisApiClient {
    * @param value - The attribute value to escape
    * @returns Escaped XML attribute value
    */
-  private escapeXmlAttribute(value: string): string {
-    return value
+  private escapeXmlAttribute(value: string | number): string {
+    const stringValue = String(value);
+    return stringValue
       .replace(/&/g, '&amp;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * Format XML for readable console output
+   * @param xml - Raw XML string
+   * @returns Formatted XML string
+   */
+  private formatXml(xml: string): string {
+    try {
+      // Simple XML formatting - add line breaks and indentation
+      let formatted = xml
+        .replace(/></g, '>\n<')
+        .replace(/^\s+|\s+$/g, '');
+
+      const lines = formatted.split('\n');
+      let indent = 0;
+      const indentSize = 2;
+
+      return lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('</')) {
+          indent = Math.max(0, indent - indentSize);
+        }
+
+        const result = ' '.repeat(indent) + trimmed;
+
+        if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
+          indent += indentSize;
+        }
+
+        return result;
+      }).join('\n');
+    } catch (error) {
+      return xml; // Return original if formatting fails
+    }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,10 @@ import { colors } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 import {
-  formatTimeWithTimezoneSync,
+  formatMatchTimeForUser,
+  formatMatchTimeDetailed
+} from '../../../utils/matchTimeFormatter';
+import {
   subscribeToTimezonePreferenceChanges,
   getCurrentTimezonePreference
 } from '../../../utils/dateFormatters';
@@ -31,6 +34,16 @@ export interface MatchCardProps {
   compact?: boolean;
   variant?: 'default' | 'referee' | 'live';
   tournamentTimezone?: string; // Phase 3: Tournament timezone for timezone-aware formatting
+  tournamentData?: {
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    name?: string;
+    venue?: string;
+    defaultTimeZone?: string;
+    startDate?: string; // Tournament start date for live detection
+    endDate?: string; // Tournament end date for live detection
+  }; // Tournament location data for timezone detection
   liveScoreRefresh?: number; // For triggering score age reset on live score updates
 }
 
@@ -43,6 +56,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onPress,
   variant = 'default',
   tournamentTimezone,
+  tournamentData,
   liveScoreRefresh,
 }) => {
   const router = useRouter();
@@ -74,16 +88,56 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
 
-  // Get live scores from match result
-  const team1Score = match.result?.team1Sets || 0;
-  const team2Score = match.result?.team2Sets || 0;
+  // Get live scores from match result - support both formats
+  const getTeamScores = () => {
+    // NEW: BeachMatchLiveDTO format
+    const beachMatchDTO = match as any;
+    if (beachMatchDTO.score?.sets) {
+      let team1Wins = 0;
+      let team2Wins = 0;
+
+      for (const setScore of beachMatchDTO.score.sets) {
+        const homeScore = setScore.home || 0;
+        const awayScore = setScore.away || 0;
+
+        // Determine set winner (21+ with 2-point lead, or 15+ in deciding set)
+        if (homeScore >= 21 && homeScore - awayScore >= 2) {
+          team1Wins++;
+        } else if (awayScore >= 21 && awayScore - homeScore >= 2) {
+          team2Wins++;
+        }
+      }
+
+      return { team1Score: team1Wins, team2Score: team2Wins };
+    }
+
+    // LEGACY: Original format
+    return {
+      team1Score: match.result?.team1Sets || 0,
+      team2Score: match.result?.team2Sets || 0
+    };
+  };
+
+  const { team1Score, team2Score } = getTeamScores();
 
   // Track score age for LIVE matches
   const [scoreAge, setScoreAge] = useState<number>(0);
   const [lastScoreUpdate, setLastScoreUpdate] = useState<Date>(new Date());
 
   // Convert setScores array to string for proper dependency tracking
-  const setScoresString = match.result?.setScores ? JSON.stringify(match.result.setScores) : '';
+  // Support both legacy setScores format and new BeachMatchLiveDTO score.sets format
+  const getScoresForTracking = () => {
+    // New BeachMatchLiveDTO format
+    if ((match as any).score?.sets) {
+      return JSON.stringify((match as any).score.sets);
+    }
+    // Legacy format
+    if (match.result?.setScores) {
+      return JSON.stringify(match.result.setScores);
+    }
+    return '';
+  };
+  const setScoresString = getScoresForTracking();
 
   // Update score timestamp when scores change for LIVE matches
   useEffect(() => {
@@ -96,18 +150,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Reset score age when live score refresh timer triggers (every 5 seconds)
   useEffect(() => {
     if (isMatchLive(match) && liveScoreRefresh !== undefined && liveScoreRefresh > 0) {
-      console.log(`🔄 SCORE AGE RESET: Match ${match.id} - resetting to 0s due to fresh data (refresh: ${liveScoreRefresh})`);
       setLastScoreUpdate(new Date());
       setScoreAge(0);
     }
   }, [liveScoreRefresh]);
 
-  // Debug: Log when setScores change
-  useEffect(() => {
-    if (isMatchLive(match)) {
-      console.log(`📊 SET SCORES: Match ${match.id} - setScores:`, match.result?.setScores);
-    }
-  }, [setScoresString]);
 
   // Score age counter for LIVE matches (updates every second)
   useEffect(() => {
@@ -156,51 +203,28 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Format time display - returns object with local and user times
   const getTimeDisplay = (dateTimeString: string): { localTime: string; userTime: string | null } => {
     try {
-      // Check if we have UTC timestamp available (from Phase 2 VIS API enhancement)
-      const utcStart = (match as any).utc_start;
-      if (utcStart) {
-        // Get local tournament time
-        const localTime = formatTimeWithTimezoneSync(utcStart, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'local',
-          showTimezoneIndicator: false,
-        });
+      // Prepare match data for the new timezone system
+      const matchData = {
+        scheduledDateTime: dateTimeString, // Local time according to user clarification
+      };
 
-        // Get user's timezone time
-        const userTime = formatTimeWithTimezoneSync(utcStart, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'user',
-          showTimezoneIndicator: false,
-        });
+      // Use provided tournament data for timezone detection
+      const tournamentDataForConversion = tournamentData || {
+        defaultTimeZone: tournamentTimezone,
+      };
 
-        // Return both times, userTime is null if same as local
-        return {
-          localTime,
-          userTime: localTime !== userTime ? userTime : null
-        };
-      }
+      // Get user's timezone time using the new system
+      const userTime = formatMatchTimeForUser(matchData, {
+        showTimezoneIndicator: false,
+        tournamentData: tournamentDataForConversion
+      });
 
-      // Fallback: try to use the provided dateTimeString with timezone awareness
-      if (dateTimeString) {
-        const localTime = formatTimeWithTimezoneSync(dateTimeString, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'local',
-          showTimezoneIndicator: false,
-        });
-
-        const userTime = formatTimeWithTimezoneSync(dateTimeString, {
-          tournamentTimezone: tournamentTimezone || 'UTC',
-          cachedPreference: 'user',
-          showTimezoneIndicator: false,
-        });
-
-        return {
-          localTime,
-          userTime: localTime !== userTime ? userTime : null
-        };
-      }
-
-      return { localTime: 'TBD', userTime: null };
+      // For now, we'll show the same time as both local and user
+      // The new system automatically handles timezone conversion to user time
+      return {
+        localTime: userTime, // Both show user time now
+        userTime: null // No need for dual display since we show user time
+      };
     } catch (error) {
       console.warn('Error formatting time in MatchCard:', error);
       // Ultimate fallback to legacy formatter
@@ -267,10 +291,127 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return match.status === MatchStatus.RUNNING;
   };
 
+  // Get result type for display (only show if ResultType !== 0)
+  const getResultTypeDisplay = (): string | null => {
+    const rawMatch = match as any;
+
+    // Check if resultTypeText exists (parsed from ResultType field)
+    if (rawMatch.resultTypeText) {
+      // Map the VIS result type to display text
+      switch (rawMatch.resultTypeText) {
+        case 'ForfeitA':
+        case 'ForfeitB':
+        case 'ForfeitBoth':
+          return 'Forfeit';
+        case 'InjuryA':
+        case 'InjuryB':
+        case 'InjuryBoth':
+          return 'Injury';
+        case 'OutA':
+        case 'OutB':
+        case 'OutBoth':
+          return 'Withdrawal';
+        case 'DisqualifiedA':
+          return 'DQ Team A';
+        case 'DisqualifiedB':
+          return 'DQ Team B';
+        case 'DisqualifiedBoth':
+          return 'DQ Both';
+        default:
+          return rawMatch.resultTypeText;
+      }
+    }
+
+    // LEGACY: Check BeachMatchLiveDTO format for compatibility
+    const legacyResultType = rawMatch.status?.resultType;
+    if (legacyResultType && legacyResultType !== 'Normal') {
+      switch (legacyResultType) {
+        case 'ForfeitA':
+        case 'ForfeitB':
+        case 'ForfeitBoth':
+          return 'Forfeit';
+        case 'InjuryA':
+        case 'InjuryB':
+        case 'InjuryBoth':
+          return 'Injury';
+        case 'OutA':
+        case 'OutB':
+        case 'OutBoth':
+          return 'Withdrawal';
+        case 'DisqualifiedA':
+          return 'DQ Team A';
+        case 'DisqualifiedB':
+          return 'DQ Team B';
+        case 'DisqualifiedBoth':
+          return 'DQ Both';
+        default:
+          return legacyResultType;
+      }
+    }
+
+    // LEGACY: Check forfeit flag in match result
+    if (match.result?.forfeit) {
+      return 'Forfeit';
+    }
+
+    return null; // Don't show anything for normal results (ResultType = 0)
+  };
+
+  // State for live elapsed time
+  const [liveElapsedTime, setLiveElapsedTime] = useState<string | null>(null);
+
+  // Calculate and update live elapsed time for running matches
+  useEffect(() => {
+    if (!isMatchLive(match)) {
+      setLiveElapsedTime(null);
+      return;
+    }
+
+    const calculateLiveElapsed = () => {
+      if (match.actualStartTime) {
+        try {
+          const startTime = new Date(match.actualStartTime).getTime();
+          const now = Date.now();
+
+          if (!isNaN(startTime) && now > startTime) {
+            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours > 0) {
+              setLiveElapsedTime(`${hours}h ${minutes}m`);
+            } else if (totalMinutes > 0) {
+              setLiveElapsedTime(`${totalMinutes}m`);
+            } else {
+              setLiveElapsedTime('< 1m');
+            }
+            return;
+          }
+        } catch (error) {
+          // Skip if date parsing fails
+        }
+      }
+      setLiveElapsedTime(null);
+    };
+
+    // Calculate immediately
+    calculateLiveElapsed();
+
+    // Update every minute for live matches
+    const interval = setInterval(calculateLiveElapsed, 60000);
+
+    return () => clearInterval(interval);
+  }, [match.actualStartTime, match.status, (match as any)?.rawStatus]);
+
   // Get match duration (from master branch logic) - check multiple sources
   const getMatchDuration = (match: BeachMatchCore): string | null => {
     const matchWithDuration = match as any;
-    
+
+    // For LIVE matches, return live elapsed time if available
+    if (isMatchLive(match) && liveElapsedTime) {
+      return liveElapsedTime;
+    }
+
     // First try to get duration from match result (calculated from start/end time)
     if (match.result?.duration && typeof match.result.duration === 'number') {
       const totalMinutes = match.result.duration;
@@ -284,18 +425,39 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       }
     }
     
-    // Check for Duration field in seconds (from enhanced data)
-    const totalDurationSeconds = matchWithDuration.Duration;
-    if (totalDurationSeconds && !isNaN(parseInt(totalDurationSeconds))) {
-      const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (totalMinutes > 0) {
-        if (hours > 0) {
-          return `${hours}h ${minutes}m`;
-        } else {
-          return `${minutes}m`;
+    // Check for Duration field (can be in "h:mm:ss" format or seconds)
+    const durationField = matchWithDuration.Duration;
+    if (durationField) {
+      // Try to parse as "h:mm:ss" format first (e.g., "0:39:00" = 39 minutes)
+      if (typeof durationField === 'string' && durationField.includes(':')) {
+        const parts = durationField.split(':');
+        if (parts.length === 3) {
+          const hours = parseInt(parts[0]) || 0;
+          const mins = parseInt(parts[1]) || 0;
+          const secs = parseInt(parts[2]) || 0;
+          const totalMinutes = hours * 60 + mins + Math.floor(secs / 60);
+
+          if (totalMinutes > 0) {
+            if (hours > 0) {
+              return `${hours}h ${mins}m`;
+            } else {
+              return `${totalMinutes}m`;
+            }
+          }
+        }
+      }
+      // Fallback: try parsing as seconds
+      else if (!isNaN(parseInt(durationField))) {
+        const totalMinutes = Math.floor(parseInt(durationField) / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (totalMinutes > 0) {
+          if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+          } else {
+            return `${minutes}m`;
+          }
         }
       }
     }
@@ -374,6 +536,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const roundPhase = rawMatch.phase || rawMatch.Phase || rawMatch.RoundPhase;
     const round = match.round || rawMatch.Round;
     const roundName = match.roundName || rawMatch.RoundName;
+
+    // Check if qualification position fields exist and have non-empty values
+    const hasQualPositionA = rawMatch.teamAPositionInQualification &&
+                             rawMatch.teamAPositionInQualification.trim() !== '' &&
+                             rawMatch.teamAPositionInQualification !== '0';
+    const hasQualPositionB = rawMatch.teamBPositionInQualification &&
+                             rawMatch.teamBPositionInQualification.trim() !== '' &&
+                             rawMatch.teamBPositionInQualification !== '0';
+
+    if (hasQualPositionA || hasQualPositionB) {
+      return true;
+    }
 
     // Check RoundPhase "1" (VIS API standard for qualification)
     if (roundPhase === '1') return true;
@@ -510,7 +684,32 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           variant === 'live' && styles.liveCard,
           isQualification && styles.qualificationCard,
         ]}
-        onPress={() => onPress?.(match)}
+        onPress={() => {
+          // Call the existing onPress if provided
+          onPress?.(match);
+
+          // Navigate to match detail screen with correct VIS match number
+          // Priority: visNo (pure VIS match number) > extracted from matchCode > fallback
+          const visMatchNo = match.visNo || extractNumericFromString(match.matchCode) || extractNumericFromString(match.id) || 'unknown';
+          const tournamentNo = (match as any).tournamentNo || 'demo';
+
+          // Helper function to extract numeric part
+          function extractNumericFromString(str?: string): string | null {
+            if (!str) return null;
+            const numericMatch = str.match(/\d+/);
+            return numericMatch ? numericMatch[0] : null;
+          }
+
+
+          router.push({
+            pathname: '/match-detail',
+            params: {
+              matchNo: visMatchNo,  // Use VIS match number for direct polling
+              tournamentNo,
+              matchData: JSON.stringify(match)
+            }
+          });
+        }}
         activeOpacity={0.7}
       >
         {/* Top band for women's matches */}
@@ -520,125 +719,198 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
         {/* Match Header - with gender badge and time/court */}
         <View style={styles.matchHeader}>
-          <View style={styles.leftBadgeContainer}>
-            {isQualification && (
-              <View style={styles.qualificationBadge}>
-                <Text style={styles.qualificationBadgeText}>
-                  QUAL
-                </Text>
-              </View>
-            )}
-            {(match as any).tournamentGender && (
-              <View style={[
-                styles.genderBadge,
-                (match as any).tournamentGender === 'M' ? styles.menBadge : styles.womenBadge,
-                isQualification && styles.qualificationGenderBadge
-              ]}>
-                <Text style={[
-                  styles.genderBadgeText,
-                  (match as any).tournamentGender === 'M' ? styles.menBadgeText : styles.womenBadgeText
-                ]}>
-                  {getRoundPrefix(match)}{(match as any).tournamentGender}{(match as any).noInTournament || match.matchCode}
-                </Text>
-              </View>
-            )}
-          </View>
+          <View style={styles.leftTimeCourtContainer}>
+            {/* Left - Time and Court */}
+            <View style={styles.timeCourtContent}>
+              {/* Time Display and Court in horizontal layout */}
+              <View style={styles.timeCourtRow}>
+                {/* Time Display */}
+                <View style={styles.timeDisplayContainer}>
+                  {(() => {
+                    // Use enhanced timezone system for accurate "My Time" display
+                    const timeDisplay = (() => {
+                      // Try new timezone-safe structure first
+                      const scheduled = (match as any).scheduled;
 
-          <View style={styles.timeCourtContainer}>
-            <View style={styles.timeContainer}>
-              <Text style={styles.courtText}>
-                {match.court?.courtNumber ? (
-                  match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-                ) : 'TBD'}
-              </Text>
-              <View style={styles.timeDisplayContainer}>
-                {(() => {
-                  // FIXED: Treat scheduledDateTime as local tournament time, calculate user time
-                  const timeDisplay = match.scheduledDateTime ? (() => {
-                    // Step 1: scheduledDateTime is already correct local tournament time
-                    const localTime = new Date(match.scheduledDateTime).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false
-                    });
 
-                    // Step 2: Calculate user's timezone time if different from tournament timezone
-                    let userTime = null;
-                    if (tournamentTimezone) {
-                      try {
-                        // Create a date as if it's in the tournament timezone
-                        const matchDateTime = match.scheduledDateTime;
+                      if (scheduled) {
+                        // Display tournament local time (immune to browser timezone)
+                        const localTime = scheduled.timeTournament; // "14:00:00" format
+                        const displayTime = localTime.substring(0, 5); // "14:00"
 
-                        // If we have UTC components from VIS API, use them for accurate conversion
-                        if ((match as any).utcDate && (match as any).utcTime) {
-                          const utcDateTime = `${(match as any).utcDate}T${(match as any).utcTime}Z`;
-                          const userTimeFormatted = new Date(utcDateTime).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
+                        // Calculate "My Time" using new timezone utilities
+                        try {
+                          // Prepare match data for timezone conversion
+                          const matchData = {
+                            // Use the UTC timestamp directly since epochMs is already correct
+                            BeginDateTimeUtc: new Date(scheduled.epochMs).toISOString(),
+                            // Also provide local time fields for enhanced detection
+                            LocalDate: scheduled.dateTournament,
+                            LocalTime: scheduled.timeTournament.substring(0, 5),
+                            TournamentCity: (match as any).city || (match as any).venue,
+                            TournamentCountry: (match as any).country,
+                            TournamentCountryCode: (match as any).countryCode,
+                            TournamentName: (match as any).tournamentName
+                          };
+
+                          const tournamentDataForConversion = {
+                            city: tournamentData?.city || (match as any).city || (match as any).venue,
+                            country: tournamentData?.country || (match as any).country,
+                            countryCode: tournamentData?.countryCode || (match as any).countryCode,
+                            name: tournamentData?.name || (match as any).tournamentName,
+                            defaultTimeZone: tournamentData?.defaultTimeZone || tournamentTimezone || scheduled.tz
+                          };
+
+                          const userTime = formatMatchTimeForUser(matchData, {
+                            showTimezoneIndicator: false,
+                            tournamentData: tournamentDataForConversion
                           });
 
-                          // Only show if different from local time
-                          if (userTimeFormatted !== localTime) {
-                            userTime = userTimeFormatted;
-                          }
+                          // Show userTime only when tournament is LIVE (using date-based logic like TournamentCard)
+                          const hasTournamentTimezone = !!tournamentDataForConversion.defaultTimeZone;
+
+                          // Check if tournament is live using date comparison (same as TournamentCard)
+                          const isTournamentLive = (() => {
+                            if (!tournamentData?.startDate || !tournamentData?.endDate) return false;
+
+                            const now = new Date();
+                            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                            const startDate = new Date(tournamentData.startDate);
+                            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+
+                            const endDate = new Date(tournamentData.endDate);
+                            const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+                            // Tournament is live if today is between start and end dates (inclusive)
+                            return startDateOnly <= today && today <= endDateOnly;
+                          })();
+
+                          // Show My Time when: tournament is LIVE + has timezone + times are different
+                          const shouldShowMyTime = isTournamentLive && hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
+                          const userTimeFormatted = shouldShowMyTime ? userTime : null;
+
+                          return { localTime: displayTime, userTime: userTimeFormatted };
+
+                        } catch (error) {
+                          return { localTime: displayTime, userTime: null };
                         }
-                      } catch (error) {
-                        console.warn('Error calculating user time:', error);
                       }
-                    }
 
-                    return { localTime, userTime };
-                  })() : { localTime: 'TBD', userTime: null };
-                  return (
-                    <>
-                      <Text style={styles.matchTime}>
-                        {timeDisplay.localTime}
-                      </Text>
-                      {timeDisplay.userTime && (
-                        <Text style={styles.userTime}>
-                          {timeDisplay.userTime}
+                      // Fallback for backward compatibility
+                      if (match.scheduledDateTime) {
+                        return getTimeDisplay(match.scheduledDateTime);
+                      }
+
+                      return { localTime: 'TBD', userTime: null };
+                    })();
+
+                    return (
+                      <View style={{alignItems: 'flex-start'}}>
+                        <Text style={styles.matchTime}>
+                          {timeDisplay.localTime}
                         </Text>
-                      )}
-                    </>
-                  );
-                })()}
+                        {timeDisplay.userTime && (
+                          <Text style={styles.userTimeBelow}>
+                            ({timeDisplay.userTime})
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })()}
+                </View>
               </View>
+            </View>
+          </View>
 
-              {/* Status display - positioned closer to the right of time */}
-              <Text style={{fontSize: 10, color: '#666', fontFamily: 'monospace', textAlign: 'right', minWidth: 60, marginLeft: 4}}>
-                {(() => {
-                  const rawStatus = (match as any)?.rawStatus;
+          <View style={styles.centerStatusContainer}>
+            {/* Status on first row */}
+            {(() => {
+                const rawStatus = (match as any)?.rawStatus;
+                const statusText = (() => {
                   if (typeof rawStatus === 'number') {
                     if (rawStatus >= 9) {
                       return 'Closed';
+                    } else if (rawStatus >= 3 && rawStatus <= 8) {
+                      return 'LIVE';
+                    } else if (rawStatus === 2) {
+                      return 'Ready';
+                    } else if (rawStatus === 1) {
+                      return 'Scheduled';
+                    } else {
+                      return `Status ${rawStatus}`;
                     }
-                    const statusText = {
-                      1: 'Scheduled',
-                      2: 'Ready to Start',
-                      3: 'InSet1',
-                      4: 'Set1Finished',
-                      5: 'InSet2',
-                      6: 'Set2Finished',
-                      7: 'InSet3',
-                      8: 'Set3Finished'
-                    }[rawStatus] || 'Unknown';
-                    return statusText;
                   }
-                  return typeof match.status === 'string' ? match.status : `#${match.status}`;
-                })()}
-              </Text>
+                  // Fallback: convert RUNNING to LIVE
+                  const fallbackStatus = match.status || '';
+                  return fallbackStatus === 'RUNNING' ? 'LIVE' : fallbackStatus;
+                })();
+
+                const isLiveStatus = (typeof rawStatus === 'number' && rawStatus >= 3 && rawStatus <= 8) ||
+                                     match.status === 'RUNNING';
+                const resultTypeDisplay = getResultTypeDisplay();
+
+                return (
+                  <View style={styles.statusContainer}>
+                    <View style={styles.statusRow}>
+                      {isLiveStatus && (
+                        <View style={styles.liveRedDot} />
+                      )}
+                      <Text style={[styles.statusText, isLiveStatus && styles.liveStatusText]}>
+                        {statusText}
+                      </Text>
+                    </View>
+                    {resultTypeDisplay && (
+                      <View style={styles.inlineResultBadge}>
+                        <Text style={styles.inlineResultText}>• {resultTypeDisplay}</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })()}
+
+            {/* Court and Round/Phase on second row */}
+            <View style={styles.centerContent}>
+              {/* Court badge - positioned to the left of round */}
+              <View style={[styles.roundBadge, styles.courtBadge]}>
+                <Text style={styles.roundBadgeText}>
+                  {match.court?.courtNumber ? (
+                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+                  ) : 'TBD'}
+                </Text>
+              </View>
+
+              {roundData && (
+                <RoundPhaseDisplay
+                  round={roundData.round}
+                  phase={roundData.phase}
+                  style={styles.roundBadge}
+                />
+              )}
             </View>
           </View>
 
           <View style={styles.rightBadgeContainer}>
-            {roundData && (
-              <RoundPhaseDisplay
-                round={roundData.round}
-                phase={roundData.phase}
-                style={styles.roundBadge}
-              />
-            )}
+{(() => {
+              // Use tournamentGenderText for display, fallback to raw value then 'M'
+              const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
+              const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
+
+              return (
+                <View style={[
+                  styles.genderBadge,
+                  genderText === 'M' ? styles.menBadge : styles.womenBadge,
+                  isQualification && styles.qualificationGenderBadge
+                ]}>
+                  <Text style={[
+                    styles.genderBadgeText,
+                    genderText === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                  ]}>
+                    {getRoundPrefix(match)}{genderText}{matchNumber}
+                  </Text>
+                </View>
+              );
+            })()}
           </View>
         </View>
 
@@ -657,46 +929,43 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <View style={styles.centerResultContainer}>
             {matchWithResult.result ? (
               <View style={styles.resultContainerWithSets}>
-                <View style={styles.scoreAndDurationRow}>
-                  <View style={styles.resultContainer}>
-                    <View>
-                      <Text style={[
-                        styles.resultScore,
-                        matchWithResult.result.winner === 1 && styles.winnerScore,
-                        isLive && styles.liveScore
-                      ]}>
-                        {matchWithResult.result.team1Sets}
-                      </Text>
-                    </View>
-                    <Text style={styles.scoreSeparator}>-</Text>
-                    <View>
-                      <Text style={[
-                        styles.resultScore,
-                        matchWithResult.result.winner === 2 && styles.winnerScore,
-                        isLive && styles.liveScore
-                      ]}>
-                        {matchWithResult.result.team2Sets}
-                      </Text>
-                    </View>
+                {/* Main score row - simplified without duration to avoid overlap */}
+                <View style={styles.resultContainer}>
+                  <View>
+                    <Text style={[
+                      styles.resultScore,
+                      matchWithResult.result.winner === 1 && styles.winnerScore,
+                      isLive && styles.liveScore
+                    ]}>
+                      {matchWithResult.result.team1Sets}
+                    </Text>
                   </View>
-
-
-                  {(() => {
-                    const totalDuration = getMatchDuration(match);
-                    return totalDuration ? (
-                      <Text style={styles.durationText}>({totalDuration})</Text>
-                    ) : null;
-                  })()}
+                  <Text style={styles.scoreSeparator}>-</Text>
+                  <View>
+                    <Text style={[
+                      styles.resultScore,
+                      matchWithResult.result.winner === 2 && styles.winnerScore,
+                      isLive && styles.liveScore
+                    ]}>
+                      {matchWithResult.result.team2Sets}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Set Scores Display - check multiple sources */}
                 {(() => {
-                  // First check if we have setScores in result
+                  // NEW: Check for BeachMatchLiveDTO format first
+                  const beachMatchDTO = match as any;
+                  if (beachMatchDTO.score?.sets && beachMatchDTO.score.sets.length > 0) {
+                    return true;
+                  }
+
+                  // LEGACY: Check if we have setScores in result
                   if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
                     return true;
                   }
 
-                  // Check legacy BeachMatch format for individual set score fields
+                  // LEGACY: Check BeachMatch format for individual set score fields
                   const rawMatch = match as any;
                   const hasLegacySetScores = (rawMatch.PointsTeamASet1 && rawMatch.PointsTeamBSet1) ||
                                             (rawMatch.PointsTeamASet2 && rawMatch.PointsTeamBSet2) ||
@@ -707,9 +976,81 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   <View style={styles.setScoresContainer}>
                     {(() => {
                       const sets = [];
+                      const beachMatchDTO = match as any;
 
-                      // Try to use result.setScores first
-                      if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
+                      // NEW: Try BeachMatchLiveDTO format first (preferred)
+                      if (beachMatchDTO.score?.sets && beachMatchDTO.score.sets.length > 0) {
+                        const scoreSets = beachMatchDTO.score.sets;
+
+                        // Determine current set for live matches
+                        const getCurrentSetNumber = (): number => {
+                          if (!isMatchLive(match)) return -1;
+
+                          // Check status from DTO
+                          const statusState = beachMatchDTO.status?.state;
+                          if (statusState) {
+                            if (statusState === 'InSet1') return 1;
+                            if (statusState === 'InSet2') return 2;
+                            if (statusState === 'InSet3') return 3;
+                            if (statusState === 'InSet4') return 4;
+                            if (statusState === 'InSet5') return 5;
+                          }
+
+                          // Fallback: Find last incomplete set
+                          for (let i = 0; i < scoreSets.length; i++) {
+                            const setScore = scoreSets[i];
+                            const homeScore = setScore.home || 0;
+                            const awayScore = setScore.away || 0;
+                            const maxScore = Math.max(homeScore, awayScore);
+                            const minScore = Math.min(homeScore, awayScore);
+
+                            // Current set if: scores are close OR match is explicitly in this set
+                            if (maxScore < 21 || (maxScore >= 21 && Math.abs(homeScore - awayScore) < 2)) {
+                              return setScore.setNo;
+                            }
+                          }
+
+                          return scoreSets.length > 0 ? scoreSets.length : 1;
+                        };
+
+                        const currentSetNumber = getCurrentSetNumber();
+
+                        for (const setScore of scoreSets) {
+                          const isCurrentSet = isMatchLive(match) && setScore.setNo === currentSetNumber;
+                          const homeScore = setScore.home || 0;
+                          const awayScore = setScore.away || 0;
+
+                          // Skip empty sets unless it's the current live set
+                          if (!isCurrentSet && homeScore === 0 && awayScore === 0) {
+                            continue;
+                          }
+
+                          sets.push(
+                            <View
+                              key={`set-${setScore.setNo}`}
+                              style={[
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
+                              ]}
+                            >
+                              <Text style={[
+                                styles.setScoreText,
+                                isCurrentSet && styles.currentSetScoreText
+                              ]}>
+                                {homeScore}-{awayScore}
+                              </Text>
+                              {isCurrentSet && (
+                                <View style={styles.liveIndicator}>
+                                  <Text style={styles.liveIndicatorText}>●</Text>
+                                </View>
+                              )}
+                            </View>
+                          );
+                        }
+                      }
+
+                      // LEGACY: Try to use result.setScores
+                      else if (matchWithResult.result?.setScores && matchWithResult.result.setScores.length >= 2) {
                         const setScores = matchWithResult.result.setScores;
 
                         // Parse set scores: [set1_team1, set1_team2, set2_team1, set2_team2, ...]
@@ -908,6 +1249,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     )}
                   </View>
                 )}
+
+                {/* Duration below set scores */}
+                {(() => {
+                  const totalDuration = getMatchDuration(match);
+
+                  return totalDuration ? (
+                    <View style={styles.durationAndResultContainer}>
+                      <Text style={styles.durationText}>({totalDuration})</Text>
+                    </View>
+                  ) : null;
+                })()}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -931,14 +1283,34 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <View style={styles.teamSection}>
               <Text style={[styles.teamName, styles.leftTeamName]} numberOfLines={2}>
                 {match.team1?.teamName || 'Team A'}
-                {(match as any).teamAPositionInMainDraw && ` (${(match as any).teamAPositionInMainDraw})`}
+                {(() => {
+                  // For qualification matches, show qualification position if available
+                  if (isQualification) {
+                    const qualPosition = (match as any).teamAPositionInQualification || (match as any).teams?.home?.seedQualification;
+                    if (qualPosition) return ` (${qualPosition})`;
+                  }
+                  // For main draw matches, show main draw position
+                  const mainPosition = (match as any).teamAPositionInMainDraw;
+                  if (mainPosition) return ` (${mainPosition})`;
+                  return '';
+                })()}
               </Text>
             </View>
 
             <View style={styles.teamSection}>
               <Text style={[styles.teamName, styles.rightTeamName]} numberOfLines={2}>
                 {match.team2?.teamName || 'Team B'}
-                {(match as any).teamBPositionInMainDraw && ` (${(match as any).teamBPositionInMainDraw})`}
+                {(() => {
+                  // For qualification matches, show qualification position if available
+                  if (isQualification) {
+                    const qualPosition = (match as any).teamBPositionInQualification || (match as any).teams?.away?.seedQualification;
+                    if (qualPosition) return ` (${qualPosition})`;
+                  }
+                  // For main draw matches, show main draw position
+                  const mainPosition = (match as any).teamBPositionInMainDraw;
+                  if (mainPosition) return ` (${mainPosition})`;
+                  return '';
+                })()}
               </Text>
             </View>
           </View>
@@ -973,31 +1345,57 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
                   }
 
+                  // Format referee name as "Surname, FirstInitial."
+                  const formatRefereeName = (fullName: string): string => {
+                    const nameParts = fullName.trim().split(/\s+/);
+                    if (nameParts.length >= 2) {
+                      const surname = nameParts[0]; // First word is surname
+                      const firstName = nameParts[nameParts.length - 1]; // Last word is first name
+                      const firstInitial = firstName.charAt(0).toUpperCase();
+                      return `${surname}, ${firstInitial}.`;
+                    }
+                    return fullName; // Fallback to original if parsing fails
+                  };
+
                   refereeRows.push(
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>{position}</Text>
-                        <Text style={styles.refereeName}>{referee.refereeName}</Text>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{referee.federationCode}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
                       </View>
                     </View>
                   );
                 });
               } else {
+                // Format referee name as "Surname, FirstInitial." for legacy format too
+                const formatRefereeName = (fullName: string): string => {
+                  const nameParts = fullName.trim().split(/\s+/);
+                  if (nameParts.length >= 2) {
+                    const surname = nameParts[0]; // First word is surname
+                    const firstName = nameParts[nameParts.length - 1]; // Last word is first name
+                    const firstInitial = firstName.charAt(0).toUpperCase();
+                    return `${surname}, ${firstInitial}.`;
+                  }
+                  return fullName; // Fallback to original if parsing fails
+                };
+
                 // Fallback to legacy BeachMatch format
                 if (rawMatch.Referee1Name) {
                   refereeRows.push(
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>1°</Text>
-                        <Text style={styles.refereeName}>{rawMatch.Referee1Name}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.Referee1FederationCode}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
                       </View>
                     </View>
                   );
@@ -1008,11 +1406,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>2°</Text>
-                        <Text style={styles.refereeName}>{rawMatch.Referee2Name}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.Referee2FederationCode}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
                       </View>
                     </View>
                   );
@@ -1024,11 +1423,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="challenge-referee" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>CR</Text>
-                        <Text style={styles.refereeName}>{rawMatch.ChallengeRefereeName}</Text>
                         <FlagImage
                           countryCode={rawMatch.ChallengeRefereeFederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeCountryCode}>{rawMatch.ChallengeRefereeFederationCode}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
                       </View>
                     </View>
                   );
@@ -1079,17 +1479,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  leftBadgeContainer: {
+  leftTimeCourtContainer: {
     flex: 0.8,
     alignItems: 'flex-start',
   },
-  timeCourtContainer: {
+  centerStatusContainer: {
     flex: 2,
     alignItems: 'center',
+  },
+  centerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   rightBadgeContainer: {
     flex: 0.8,
     alignItems: 'flex-end',
+  },
+  timeCourtContent: {
+    alignItems: 'flex-start',
+  },
+  timeCourtRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   genderBadge: {
     paddingVertical: 2,
@@ -1138,7 +1552,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   matchTime: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#1B365D',
     textAlign: 'center',
@@ -1150,7 +1564,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 1,
   },
+  userTimeBelow: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#374151', // Più scuro del precedente #6B7280
+    textAlign: 'center',
+    marginTop: 2,
+  },
   courtText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  courtTextRight: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  courtTextCenter: {
     fontSize: 14,
     color: '#374151',
     fontWeight: '600',
@@ -1162,7 +1595,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 4,
   },
+  statusContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   statusText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  liveStatusText: {
+    color: '#2563EB', // Blue color for LIVE status
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  liveRedDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#DC2626', // Red dot
+  },
+  inlineResultBadge: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 3,
+  },
+  inlineResultText: {
     fontSize: 10,
     color: '#FFFFFF',
     fontWeight: '600',
@@ -1292,12 +1759,20 @@ const styles = StyleSheet.create({
   },
   refereeFlag: {
     marginLeft: 8,
+    marginRight: 6,
+  },
+  refereeCountryCode: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '600',
+    marginRight: 8,
   },
   refereeName: {
     fontSize: 15,
     color: '#374151',
     fontWeight: '500',
-    marginHorizontal: 8,
+    flex: 1,
+    textAlign: 'left',
   },
   refereeNameClickable: {
     textDecorationLine: 'underline',
@@ -1357,11 +1832,25 @@ const styles = StyleSheet.create({
     color: '#059669',
     fontWeight: '700',
   },
+  durationAndResultContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
   durationText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#374151',
     textAlign: 'center',
+  },
+  resultTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#DC2626', // Red color to indicate non-normal result
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   // Live Score Animation Styles (Story 002)
   liveIndicator: {
@@ -1387,11 +1876,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  roundBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  courtBadge: {
+    backgroundColor: '#E5E7EB',
+    marginRight: 4,
+  },
   // Qualification match styles
   qualificationCard: {
     borderLeftWidth: 4,
     borderLeftColor: '#F59E0B', // Amber/orange for qualification
-    backgroundColor: '#FFFBEB', // Very light amber background
   },
   qualificationBadge: {
     backgroundColor: '#F59E0B',
@@ -1410,3 +1907,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
+

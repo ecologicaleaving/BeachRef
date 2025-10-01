@@ -24,6 +24,8 @@ export enum VisApiEndpoint {
   GET_BEACH_ROUND_LIST = 'GetBeachRoundList',
   /** Endpoint for individual match data */
   GET_BEACH_MATCH = 'GetBeachMatch',
+  /** Endpoint for match status/live polling */
+  GET_BEACH_MATCH_STATUS = 'GetBeachMatchStatus',
   /** Endpoint for live score data */
   GET_BEACH_LIVE = 'GetBeachLive',
   /** Endpoint for batch requests */
@@ -153,9 +155,11 @@ export interface GetBeachMatchListRequest extends VisApiRequestBase {
  */
 export interface GetBeachMatchRequest extends VisApiRequestBase {
   /** Match number from VIS */
-  readonly matchNo: string;
+  readonly matchNo: number;
   /** Tournament number from VIS */
-  readonly tournamentNo: string;
+  readonly tournamentNo?: number;
+  /** Include tournament context for timezone normalization */
+  readonly includeTournamentContext?: boolean;
   /** Include detailed match results */
   readonly includeResults?: boolean;
   /** Include referee assignments */
@@ -166,6 +170,23 @@ export interface GetBeachMatchRequest extends VisApiRequestBase {
   readonly includeSetScores?: boolean;
   /** Include match statistics */
   readonly includeStatistics?: boolean;
+}
+
+/**
+ * GetBeachMatchStatus request parameters
+ * For lightweight live polling of match state and current scores
+ */
+export interface GetBeachMatchStatusRequest extends VisApiRequestBase {
+  /** Match number from VIS */
+  readonly matchNo: number;
+  /** Last known version for bandwidth optimization */
+  readonly lastVersion?: number;
+  /** Include timeout information */
+  readonly includeTimeouts?: boolean;
+  /** Include serving team information */
+  readonly includeServingInfo?: boolean;
+  /** Tournament context for timezone normalization */
+  readonly includeTournamentContext?: boolean;
 }
 
 /**
@@ -408,7 +429,14 @@ export interface IVisApiClient {
    * @returns Promise with XML response
    */
   getBeachMatch(request: GetBeachMatchRequest): Promise<VisApiResponse>;
-  
+
+  /**
+   * Get lightweight match status for live polling
+   * @param request - GetBeachMatchStatus request parameters
+   * @returns Promise with XML response containing current match state
+   */
+  getBeachMatchStatus(request: GetBeachMatchStatusRequest): Promise<VisApiResponse>;
+
   /**
    * Get beach round data
    * @param request - GetBeachRound request parameters
@@ -580,6 +608,10 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
     'Sets', 'SetScores', 'Statistics', 'Duration', 'TournamentGender',
     'StartTime', 'EndTime'
   ],
+  [VisApiEndpoint.GET_BEACH_MATCH_STATUS]: [
+    'No', 'Status', 'CurrentSet', 'PointsA', 'PointsB', 'ServingTeam',
+    'TimeoutsA', 'TimeoutsB', 'TechnicalTimeout', 'LastUpdate', 'Version'
+  ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Name', 'Teams', 'Matches', 'Status'
   ],
@@ -597,6 +629,9 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
     'NoOfficial', 'FirstName', 'LastName', 'Role', 'Status'
   ],
   [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: [
+    'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Gender', 'Type', 'Status'
+  ],
+  [VisApiEndpoint.GET_REFEREE_LIST]: [
     'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Gender', 'Type', 'Status'
   ]
 } as const;
@@ -623,6 +658,9 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
   [VisApiEndpoint.GET_BEACH_MATCH]: [
     'No', 'Status', 'LocalDate', 'LocalTime'
   ],
+  [VisApiEndpoint.GET_BEACH_MATCH_STATUS]: [
+    'No', 'Status', 'PointsA', 'PointsB'
+  ],
   [VisApiEndpoint.GET_BEACH_ROUND]: [
     'RoundNo', 'Status'
   ],
@@ -639,6 +677,9 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
     'FirstName', 'LastName', 'NoOfficial', 'Role', 'Status'
   ],
   [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: [
+    'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
+  ],
+  [VisApiEndpoint.GET_REFEREE_LIST]: [
     'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
   ]
 } as const;

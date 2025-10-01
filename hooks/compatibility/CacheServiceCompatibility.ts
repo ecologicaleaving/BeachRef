@@ -407,14 +407,76 @@ export class CacheServiceCompatibility {
   }
 
   /**
+   * Set live score for a match (compatibility method)
+   * This method provides backward compatibility for live score storage
+   */
+  static setLiveScore(matchNumber: string | number, liveData: any): void {
+    // Convert string to number if needed
+    const matchNo = typeof matchNumber === 'string' ? parseInt(matchNumber, 10) : matchNumber;
+
+    try {
+      // Store live score data in TanStack Query cache with standardized key
+      const liveScoreKey = ['live-score', matchNo];
+
+      // Set the data with a short TTL (5 seconds for live data)
+      queryClient.setQueryData(liveScoreKey, liveData, {
+        updatedAt: Date.now(),
+      });
+
+      // Also store with alternative key for backward compatibility
+      queryClient.setQueryData(['liveScore', matchNo], liveData, {
+        updatedAt: Date.now(),
+      });
+
+
+    } catch (error) {
+      console.error(`Error caching live score for match ${matchNo}:`, error);
+    }
+  }
+
+  /**
    * Get live score for a match (compatibility method)
    * This method provides backward compatibility for live score access
    */
-  static getLiveScore(matchNumber: string): any {
-    // This is a compatibility shim - the actual live score functionality
-    // should be handled by the useLiveScores hook directly
-    // Return null to indicate no live score available from cache service
-    return null;
+  static getLiveScore(matchNumber: string | number): any {
+    // Convert string to number if needed
+    const matchNo = typeof matchNumber === 'string' ? parseInt(matchNumber, 10) : matchNumber;
+
+    // Try to get live score from the polling service cache
+    try {
+      // Access the global live score polling service cache
+      // This requires accessing the cache through the query client
+      const liveScoreKey = ['live-score', matchNo];
+      const cachedData = queryClient.getQueryData(liveScoreKey);
+
+      if (cachedData) {
+        return cachedData;
+      }
+
+      // Fallback: Try to get from TanStack Query cache with different key patterns
+      const alternativeKeys = [
+        ['liveScore', matchNo],
+        ['live_score', matchNo],
+        [`match_${matchNo}_live`],
+        [`live-${matchNo}`]
+      ];
+
+      for (const key of alternativeKeys) {
+        const data = queryClient.getQueryData(key);
+        if (data) {
+          return data;
+        }
+      }
+
+      // No cached live score found
+      console.log(`❌ No live score found in cache for match ${matchNo}`);
+      return null;
+
+    } catch (error) {
+      // If there's an error accessing the cache, return null
+      console.warn(`Error retrieving live score for match ${matchNo}:`, error);
+      return null;
+    }
   }
 
   /**

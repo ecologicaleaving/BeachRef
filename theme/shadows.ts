@@ -35,10 +35,14 @@ export const createShadow = (config: ShadowConfig): ViewStyle => {
 
   return Platform.select({
     web: {
-      // Use CSS box-shadow for web
+      // Use CSS box-shadow for web and nullify the shadow* properties to avoid warnings
       boxShadow: `${shadowOffset.width}px ${shadowOffset.height}px ${shadowRadius}px rgba(${
         shadowColor === '#000' ? '0, 0, 0' : shadowColor.replace('#', '')
       }, ${shadowOpacity})`,
+      shadowColor: null,
+      shadowOffset: null,
+      shadowOpacity: null,
+      shadowRadius: null,
     } as ViewStyle,
     default: {
       // Use only elevation for native platforms to avoid shadow* warnings

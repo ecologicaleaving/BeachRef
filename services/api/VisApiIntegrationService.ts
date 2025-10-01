@@ -175,13 +175,14 @@ export class VisApiIntegrationService {
 
       // Execute API request
       const response = await this.apiClient.getBeachMatchList(optimizedRequest);
-      
+
       if (!response.success) {
         throw new Error(`API request failed: ${response.error}`);
       }
 
       // Parse matches directly to core domain types
-      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo);
+      // TODO: Pass tournament location data from tournament-level parsing
+      const coreMatches = VisResponseParser.parseBeachMatches(response.xmlData, request.tournamentNo, undefined);
 
       // Create metrics
       const metrics = this.createRequestMetrics(
@@ -251,13 +252,14 @@ export class VisApiIntegrationService {
       };
 
       const listResponse = await this.apiClient.getBeachMatchList(matchListRequest);
-      
+
       if (!listResponse.success) {
         throw new Error(`BeachMatchList API request failed: ${listResponse.error}`);
       }
 
       // Parse initial match list to get match numbers
-      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo);
+      // TODO: Pass tournament location data from tournament-level parsing
+      const initialMatches = VisResponseParser.parseBeachMatches(listResponse.xmlData, request.tournamentNo, undefined);
       
       const listMetrics = this.createRequestMetrics(
         VisApiEndpoint.GET_BEACH_MATCH_LIST,

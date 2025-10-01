@@ -1,0 +1,143 @@
+﻿diff --git a/services/api/VisApiClient.ts b/services/api/VisApiClient.ts
+--- a/services/api/VisApiClient.ts
++++ b/services/api/VisApiClient.ts
+@@
+-      try {
+-        const response = await this.makeHttpRequest(xmlRequest);
++      try {
++        if (typeof __DEV__ !== "undefined" && __DEV__) {
++          console.log(`[VisApiClient] executing ${endpoint} with payload`, xmlRequest);
++        }
++
++        const response = await this.makeHttpRequest(xmlRequest);
+@@
+-  private async makeHttpRequest(xmlRequest: string): Promise<string> {
+-    const controller = new AbortController();
+-    const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+-
+-    try {
+-      // VIS API expects form data with Request parameter, not SOAP
+-      const headers: Record<string, string> = {
+-        'Content-Type': 'application/x-www-form-urlencoded',
+-        ...this.config.headers
+-      };
+-
+-      // Encode XML request as form data parameter
+-      const formData = `Request=${encodeURIComponent(xmlRequest)}`;
+-
+-
+-      const response = await fetch(this.config.baseUrl, {
+-        method: 'POST',
+-        headers,
+-        body: formData,
+-        signal: controller.signal
+-      });
+-
+-
+-      if (!response.ok) {
+-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+-      }
+-
+-      const responseText = await response.text();
+-      
+-      // Check for VIS API specific errors
+-      if (this.containsVisError(responseText)) {
+-        const errorMessage = this.parseVisError(responseText);
+-        throw new Error(`VIS API Error: ${errorMessage}`);
+-      }
+-      
+-      return responseText;
+-      
+-    } catch (error) {
+-      throw error;
+-      
+-    } finally {
+-      clearTimeout(timeout);
+-    }
+-  }
++  private async makeHttpRequest(xmlRequest: string): Promise<string> {
++    const controller = new AbortController();
++    const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
++
++    try {
++      // VIS API expects form data with Request parameter, not SOAP
++      const headers: Record<string, string> = {
++        'Content-Type': 'application/x-www-form-urlencoded',
++        ...this.config.headers
++      };
++
++      // Encode XML request as form data parameter
++      const formData = `Request=${encodeURIComponent(xmlRequest)}`;
++
++      const response = await fetch(this.config.baseUrl, {
++        method: 'POST',
++        headers,
++        body: formData,
++        signal: controller.signal
++      });
++
++      const responseText = await response.text();
++
++      if (!response.ok) {
++        const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
++        if (typeof __DEV__ !== 'undefined' && __DEV__) {
++          console.warn('[VisApiClient] request failed', errorMessage, responseText);
++        }
++        throw new Error(responseText ? `${errorMessage}: ${responseText}` : errorMessage);
++      }
++
++      if (typeof __DEV__ !== 'undefined' && __DEV__) {
++        console.log('[VisApiClient] response received', responseText.slice(0, 200));
++      }
++
++      // Check for VIS API specific errors
++      if (this.containsVisError(responseText)) {
++        const errorMessage = this.parseVisError(responseText);
++        throw new Error(`VIS API Error: ${errorMessage}`);
++      }
++
++      return responseText;
++
++    } catch (error) {
++      if (error instanceof Error && error.name === 'AbortError') {
++        throw new Error(`HTTP request timed out after ${this.config.timeoutMs}ms`);
++      }
++      throw error;
++
++    } finally {
++      clearTimeout(timeout);
++    }
++  }
+@@
+-    const filterAttribs = [
+-      `NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`,
+-      `No="${this.escapeXmlAttribute(request.matchNo)}"`
+-    ];
+-    
+-    // Add optional includes
++    const attributes: string[] = [];
++
++    attributes.push(`No="${this.escapeXmlAttribute(String(request.matchNo))}"`);
++
++    if (request.tournamentNo !== undefined && request.tournamentNo !== null) {
++      attributes.push(`NoTournament="${this.escapeXmlAttribute(String(request.tournamentNo))}"`);
++    }
++
++    const includeResults = request.includeResults !== false;
++    const includeReferees = request.includeReferees !== false;
++    const includeTeamDetails = request.includeTeamDetails !== false;
++    const includeSetScores = request.includeSetScores !== false;
++    const includeStatistics = request.includeStatistics !== false;
++
++    attributes.push(`IncludeResults="${includeResults}"`);
++    attributes.push(`IncludeReferees="${includeReferees}"`);
++    attributes.push(`IncludeTeamDetails="${includeTeamDetails}"`);
++    attributes.push(`IncludeSetScores="${includeSetScores}"`);
++    attributes.push(`IncludeStatistics="${includeStatistics}"`);
++
++    const fields = '';
++
++    const xmlRequest = `<Request Type="GetBeachMatch" ${attributes.join(' ')} Fields="${fields}" />`;
++
++    return xmlRequest;
+   }

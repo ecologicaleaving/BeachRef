@@ -5,11 +5,68 @@
  */
 
 import { IVisApiClient, GetBeachLiveRequest, isSuccessResponse, MatchPollingStatus, FieldSelectionMode, VisApiEndpoint } from '../../types/api-v2';
-import { BeachLive, isValidBeachLive, isNoChangesResponse, extractVersion, extractPollDelay } from '../../types/beach-live';
+import { BeachLive, BeachLiveSet, BeachSetStatus, isValidBeachLive, isNoChangesResponse, extractVersion, extractPollDelay } from '../../types/beach-live';
 import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
 import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { MatchStatusPollingManager, matchStatusPollingManager } from '../MatchStatusPollingManager';
 import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
+interface ParsedAttributeMap {
+  raw: Record<string, string>;
+  aliases: Record<string, string>;
+}
+
+const ATTRIBUTE_ALIAS_DEFINITIONS: Record<string, string[]> = {
+  PointsTeamA: ['PointsTeamA', 'PointsA', 'TeamAPoints', 'ScoreTeamA', 'Team1Points'],
+  PointsTeamB: ['PointsTeamB', 'PointsB', 'TeamBPoints', 'ScoreTeamB', 'Team2Points'],
+  Status: ['Status', 'SetStatus'],
+  No: ['No', 'SetNo', 'Number'],
+  Duration: ['Duration', 'DurationSeconds', 'SetDuration', 'DurationSec'],
+  BeginTimeOffset: ['BeginTimeOffset', 'StartOffset', 'BeginOffset', 'BeginTime'],
+  NbTimeoutTeamA: ['NbTimeoutTeamA', 'TimeoutsTeamA', 'TeamATimeouts'],
+  NbTimeoutTeamB: ['NbTimeoutTeamB', 'TimeoutsTeamB', 'TeamBTimeouts'],
+  NbChallengeRequestedTeamA: ['NbChallengeRequestedTeamA', 'ChallengesTeamA', 'NbChallengesTeamA', 'ChallengesRequestedTeamA'],
+  NbChallengeRequestedTeamB: ['NbChallengeRequestedTeamB', 'ChallengesTeamB', 'NbChallengesTeamB', 'ChallengesRequestedTeamB'],
+  NbChallengeUsedTeamA: ['NbChallengeUsedTeamA', 'ChallengesUsedTeamA'],
+  NbChallengeUsedTeamB: ['NbChallengeUsedTeamB', 'ChallengesUsedTeamB'],
+  PointsRallyTeamA: ['PointsRallyTeamA', 'RallyPointsTeamA', 'PointsTeamARally'],
+  PointsRallyTeamB: ['PointsRallyTeamB', 'RallyPointsTeamB', 'PointsTeamBRally'],
+  MatchNo: ['MatchNo', 'MatchNumber'],
+  MatchStatus: ['MatchStatus', 'Status'],
+  DateTime: ['DateTime', 'MatchDateTime'],
+  CourtNo: ['CourtNo', 'CourtNumber'],
+  CourtName: ['CourtName', 'Court'],
+  TeamAName: ['TeamAName', 'Team1Name'],
+  TeamBName: ['TeamBName', 'Team2Name'],
+  TeamACode: ['TeamACode', 'Team1Code'],
+  TeamBCode: ['TeamBCode', 'Team2Code'],
+  TournamentNo: ['TournamentNo', 'EventNo'],
+  TournamentName: ['TournamentName', 'EventName'],
+  MatchPointTeamA: ['MatchPointTeamA', 'MatchPointA'],
+  MatchPointTeamB: ['MatchPointTeamB', 'MatchPointB'],
+  SetPointTeamA: ['SetPointTeamA', 'SetPointA'],
+  SetPointTeamB: ['SetPointTeamB', 'SetPointB'],
+  BallInPlay: ['BallInPlay'],
+  ServingTeam: ['ServingTeam', 'NoServingTeam'],
+  ServingPlayer: ['ServingPlayer', 'NoServingPlayer'],
+  TeamATimeouts: ['TeamATimeouts', 'TimeoutsTeamA'],
+  TeamBTimeouts: ['TeamBTimeouts', 'TimeoutsTeamB'],
+  PollDelay: ['PollDelay', 'PollingDelay'],
+  Version: ['Version']
+};
+
+const ATTRIBUTE_ALIAS_TO_CANONICAL: Record<string, string> = {};
+const ATTRIBUTE_CANONICAL_TO_ALIASES: Record<string, string[]> = {};
+
+Object.entries(ATTRIBUTE_ALIAS_DEFINITIONS).forEach(([canonical, names]) => {
+  const canonicalLower = canonical.toLowerCase();
+  const uniqueAliases = new Set<string>();
+  uniqueAliases.add(canonicalLower);
+  names.forEach(name => uniqueAliases.add(name.toLowerCase()));
+  ATTRIBUTE_CANONICAL_TO_ALIASES[canonicalLower] = Array.from(uniqueAliases);
+  uniqueAliases.forEach(name => {
+    ATTRIBUTE_ALIAS_TO_CANONICAL[name] = canonicalLower;
+  });
+});
 
 /**
  * Callback function type for live score updates
@@ -297,7 +354,7 @@ export class LiveScorePollingService {
       
       if (isSuccessResponse(response)) {
         // Parse XML response to JSON
-        const liveData = this.parseBeachLiveResponse(response.xmlData);
+        const liveData = this.parseBeachLiveResponse(response.xmlData, config.version);
         
         if (isNoChangesResponse(liveData)) {
           // No changes since last version - bandwidth saved!
@@ -341,11 +398,19 @@ export class LiveScorePollingService {
           }
           
           // Update poll delay from server
-          config.pollDelayMs = this.clampPollDelay(liveData.pollDelay);
+          const serverPollDelay = liveData.pollDelay;
+          config.pollDelayMs = this.clampPollDelay(serverPollDelay);
           
           // Update match status if adaptive polling enabled
-          if (config.useAdaptivePolling && liveData.match?.status) {
-            this.updateMatchStatusFromResponse(config.matchNo, liveData.match.status);
+          if (config.useAdaptivePolling && liveData.match) {
+            // Check for numeric rawStatus first (VIS API standard), then string status
+            const matchData = liveData.match as any;
+            const rawStatus = matchData.rawStatus;
+            const status = matchData.status;
+
+            if (rawStatus !== undefined || status) {
+              this.updateMatchStatusFromResponse(config.matchNo, status, rawStatus);
+            }
           }
           
           // Cache the live score data with shorter TTL
@@ -393,83 +458,181 @@ export class LiveScorePollingService {
   /**
    * Parse BeachLive XML response to JSON object
    * @param xmlData - Raw XML response
+   * @param currentVersion - Current version to preserve for NoChanges responses
    * @returns Parsed BeachLive object
    */
-  private parseBeachLiveResponse(xmlData: string): any {
+  private parseBeachLiveResponse(xmlData: string, currentVersion?: number): any {
     try {
-      // Check for NoChanges response first
-      if (xmlData.includes('<NoChanges>true</NoChanges>') || xmlData.includes('NoChanges="true"')) {
-        return { noChanges: true };
+      if (xmlData.includes('<NoChanges>true</NoChanges>') || xmlData.includes('NoChanges=""true""') || xmlData.includes('<NoChanges />')) {
+        return { noChanges: true, version: currentVersion };
       }
 
-      // Extract main BeachLive data using regex patterns similar to VisResponseParser
-      const version = this.extractXmlValue(xmlData, 'Version');
-      const pollDelay = this.extractXmlValue(xmlData, 'PollDelay');
-      
-      // Extract match information
-      const matchNo = this.extractXmlValue(xmlData, 'MatchNo') || this.extractXmlAttribute(xmlData, 'MatchNo');
-      const matchStatus = this.extractXmlValue(xmlData, 'MatchStatus') || this.extractXmlAttribute(xmlData, 'Status');
-      const matchDateTime = this.extractXmlValue(xmlData, 'DateTime') || this.extractXmlAttribute(xmlData, 'DateTime');
-      
-      // Extract court information
-      const courtNo = this.extractXmlValue(xmlData, 'CourtNo') || this.extractXmlAttribute(xmlData, 'CourtNo');
-      const courtName = this.extractXmlValue(xmlData, 'CourtName') || this.extractXmlAttribute(xmlData, 'CourtName');
-      
-      // Extract game state
-      const isBallInPlay = this.extractXmlValue(xmlData, 'BallInPlay') === 'true';
-      const noServingTeam = parseInt(this.extractXmlValue(xmlData, 'ServingTeam') || '0') || undefined;
-      const noServingPlayer = parseInt(this.extractXmlValue(xmlData, 'ServingPlayer') || '0') || undefined;
-      
-      // Extract team information
-      const teamAName = this.extractXmlValue(xmlData, 'TeamAName') || this.extractXmlAttribute(xmlData, 'TeamAName');
-      const teamBName = this.extractXmlValue(xmlData, 'TeamBName') || this.extractXmlAttribute(xmlData, 'TeamBName');
-      const teamACode = this.extractXmlValue(xmlData, 'TeamACode') || this.extractXmlAttribute(xmlData, 'TeamACode');
-      const teamBCode = this.extractXmlValue(xmlData, 'TeamBCode') || this.extractXmlAttribute(xmlData, 'TeamBCode');
-      
-      // Extract set scores - look for Set elements
-      const sets: any[] = [];
-      const setMatches = xmlData.match(/<Set[^>]*>[\s\S]*?<\/Set>/g);
+      const globalAttributes = this.extractXmlAttributes(xmlData);
+      const attr = (name: string) => this.getAttributeValue(globalAttributes, name);
+
+      const versionValue = this.extractXmlValue(xmlData, 'Version') || attr('Version');
+      const pollDelayValue = this.extractXmlValue(xmlData, 'PollDelay') || attr('PollDelay');
+      const versionNumber = this.parseOptionalInt(versionValue) ?? 1;
+
+      // VIS API sends PollDelay in SECONDS, convert to milliseconds
+      const pollDelaySeconds = this.parseOptionalInt(pollDelayValue);
+      const pollDelayMs = pollDelaySeconds ? pollDelaySeconds * 1000 : LiveScorePollingService.DEFAULT_POLL_DELAY_MS;
+
+
+      const matchNoValue = this.extractXmlValue(xmlData, 'MatchNo') || attr('MatchNo');
+      const matchNo = this.parseOptionalInt(matchNoValue) ?? 0;
+      const matchStatusValue = this.extractXmlValue(xmlData, 'MatchStatus') || attr('MatchStatus') || attr('Status');
+      const matchStatus = matchStatusValue || 'InProgress';
+
+      // Extract numeric status code for accurate status detection (VIS API codes: 1=Scheduled, 3-8=RUNNING, 9+=FINISHED)
+      const rawStatusValue = this.extractXmlValue(xmlData, 'Status') || attr('Status');
+      const rawStatus = this.parseOptionalInt(rawStatusValue);
+
+      const matchDateTime = this.extractXmlValue(xmlData, 'DateTime') || attr('DateTime');
+
+      const courtNoValue = this.extractXmlValue(xmlData, 'CourtNo') || attr('CourtNo');
+      const courtNo = this.parseOptionalInt(courtNoValue) ?? 1;
+      const courtNameValue = this.extractXmlValue(xmlData, 'CourtName') || attr('CourtName');
+      const courtName = courtNameValue || `Court ${courtNo}`;
+
+      const isBallInPlay = this.parseXmlBoolean(this.extractXmlValue(xmlData, 'BallInPlay') || attr('BallInPlay'));
+      const noServingTeam = this.parseOptionalInt(this.extractXmlValue(xmlData, 'ServingTeam') || attr('ServingTeam')) ?? 0;
+      const noServingPlayer = this.parseOptionalInt(this.extractXmlValue(xmlData, 'ServingPlayer') || attr('ServingPlayer')) ?? 0;
+
+      const teamAName = this.extractXmlValue(xmlData, 'TeamAName') || attr('TeamAName');
+      const teamBName = this.extractXmlValue(xmlData, 'TeamBName') || attr('TeamBName');
+      const teamACode = this.extractXmlValue(xmlData, 'TeamACode') || attr('TeamACode');
+      const teamBCode = this.extractXmlValue(xmlData, 'TeamBCode') || attr('TeamBCode');
+
+      const setMatches = xmlData.match(/<Set\b[^>]*?(?:\/>|>[\s\S]*?<\/Set>)/gi);
+      const sets: BeachLiveSet[] = [];
+      const rawSetAttributes: Record<number, Record<string, string>> = {};
+
       if (setMatches) {
         setMatches.forEach((setXml, index) => {
-          const setNo = parseInt(this.extractXmlAttribute(setXml, 'No') || (index + 1).toString());
-          const pointsA = parseInt(this.extractXmlAttribute(setXml, 'PointsA') || '0');
-          const pointsB = parseInt(this.extractXmlAttribute(setXml, 'PointsB') || '0');
-          const setStatus = this.extractXmlAttribute(setXml, 'Status') || 'NotStarted';
-          
-          sets.push({
+          const attributeMap = this.parseTagAttributes(setXml);
+          const setNo = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'No')) ?? index + 1;
+          const pointsTeamA = this.parseOptionalInt(
+            this.getAttributeValue(attributeMap, 'PointsTeamA') ||
+            this.getAttributeValue(attributeMap, 'PointsA')
+          ) ?? 0;
+          const pointsTeamB = this.parseOptionalInt(
+            this.getAttributeValue(attributeMap, 'PointsTeamB') ||
+            this.getAttributeValue(attributeMap, 'PointsB')
+          ) ?? 0;
+          const setStatusValue = this.getAttributeValue(attributeMap, 'Status');
+          // If no explicit status, infer from scores (beach volleyball rules)
+          const setStatus = this.normalizeSetStatus(setStatusValue, pointsTeamA, pointsTeamB);
+
+          const durationSeconds = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'Duration'));
+          const beginTimeOffsetSeconds = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'BeginTimeOffset'));
+          const nbTimeoutTeamA = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'NbTimeoutTeamA'));
+          const nbTimeoutTeamB = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'NbTimeoutTeamB'));
+          const nbChallengeRequestedTeamA = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'NbChallengeRequestedTeamA'));
+          const nbChallengeRequestedTeamB = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'NbChallengeRequestedTeamB'));
+          const nbChallengeUsedTeamA = this.parseOptionalInt(
+            this.getAttributeValue(attributeMap, 'NbChallengeUsedTeamA') ||
+            this.getAttributeValue(attributeMap, 'ChallengesTeamAUsed')
+          );
+          const nbChallengeUsedTeamB = this.parseOptionalInt(
+            this.getAttributeValue(attributeMap, 'NbChallengeUsedTeamB') ||
+            this.getAttributeValue(attributeMap, 'ChallengesTeamBUsed')
+          );
+          const pointsRallyTeamA = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'PointsRallyTeamA'));
+          const pointsRallyTeamB = this.parseOptionalInt(this.getAttributeValue(attributeMap, 'PointsRallyTeamB'));
+          const durationMinutes = durationSeconds !== undefined ? Math.floor(durationSeconds / 60) : undefined;
+
+          const setData: BeachLiveSet = {
             no: setNo,
-            pointsTeamA: pointsA,
-            pointsTeamB: pointsB,
-            status: setStatus
-          });
+            pointsTeamA,
+            pointsTeamB,
+            status: setStatus,
+            durationMinutes,
+            durationSeconds,
+            beginTimeOffsetSeconds,
+            nbTimeoutTeamA,
+            nbTimeoutTeamB,
+            nbChallengeRequestedTeamA,
+            nbChallengeRequestedTeamB,
+            nbChallengeUsedTeamA,
+            nbChallengeUsedTeamB,
+            pointsRallyTeamA,
+            pointsRallyTeamB,
+            rawAttributes: attributeMap.raw
+          };
+
+          sets.push(setData);
+          rawSetAttributes[setNo] = attributeMap.raw;
         });
       }
-      
-      // Extract tournament information
-      const tournamentNo = this.extractXmlValue(xmlData, 'TournamentNo') || this.extractXmlAttribute(xmlData, 'TournamentNo');
-      const tournamentName = this.extractXmlValue(xmlData, 'TournamentName') || this.extractXmlAttribute(xmlData, 'TournamentName');
-      
-      // Build BeachLive object structure
+
+      const tournamentNoValue = this.extractXmlValue(xmlData, 'TournamentNo') || attr('TournamentNo');
+      const tournamentNo = this.parseOptionalInt(tournamentNoValue) ?? 1;
+      const tournamentNameValue = this.extractXmlValue(xmlData, 'TournamentName') || attr('TournamentName');
+      const tournamentName = tournamentNameValue || 'Live Tournament';
+
+      const teamATimeouts = this.parseOptionalInt(this.extractXmlValue(xmlData, 'TeamATimeouts') || attr('TeamATimeouts')) ?? 1;
+      const teamBTimeouts = this.parseOptionalInt(this.extractXmlValue(xmlData, 'TeamBTimeouts') || attr('TeamBTimeouts')) ?? 1;
+
+      if (sets.length === 0) {
+        const fallbackSets: BeachLiveSet[] = [];
+        for (let setIndex = 1; setIndex <= 5; setIndex++) {
+          const pointsAKey = `PointsTeamASet${setIndex}`;
+          const pointsBKey = `PointsTeamBSet${setIndex}`;
+          const statusKey = `SetStatus${setIndex}`;
+
+          const pointsAValue = this.extractXmlValue(xmlData, pointsAKey) || attr(pointsAKey);
+          const pointsBValue = this.extractXmlValue(xmlData, pointsBKey) || attr(pointsBKey);
+          const pointsA = this.parseOptionalInt(pointsAValue);
+          const pointsB = this.parseOptionalInt(pointsBValue);
+
+          if (pointsA !== undefined || pointsB !== undefined) {
+            const fallbackSet: BeachLiveSet = {
+              no: setIndex,
+              pointsTeamA: pointsA ?? 0,
+              pointsTeamB: pointsB ?? 0,
+              status: this.normalizeSetStatus(attr(statusKey))
+            };
+
+            fallbackSets.push(fallbackSet);
+            rawSetAttributes[setIndex] = {
+              ...(rawSetAttributes[setIndex] || {}),
+              [pointsAKey]: pointsAValue ?? '',
+              [pointsBKey]: pointsBValue ?? ''
+            };
+          }
+        }
+
+        if (fallbackSets.length > 0) {
+          fallbackSets.forEach(fallbackSet => sets.push(fallbackSet));
+        }
+      }
+
+      const matchPoints = this.computeMatchPoints(sets);
+
+      const telemetry = Object.keys(rawSetAttributes).length > 0 ? { rawSetAttributes } : undefined;
+
       return {
-        version: parseInt(version || '1'),
-        pollDelay: parseInt(pollDelay || '5000'),
+        version: versionNumber,
+        pollDelay: pollDelayMs,
         isBallInPlay,
-        isMatchPointTeamA: this.extractXmlValue(xmlData, 'MatchPointA') === 'true',
-        isMatchPointTeamB: this.extractXmlValue(xmlData, 'MatchPointB') === 'true',
-        isSetPointTeamA: this.extractXmlValue(xmlData, 'SetPointA') === 'true',
-        isSetPointTeamB: this.extractXmlValue(xmlData, 'SetPointB') === 'true',
+        isMatchPointTeamA: this.parseXmlBoolean(this.extractXmlValue(xmlData, 'MatchPointA') || attr('MatchPointTeamA')),
+        isMatchPointTeamB: this.parseXmlBoolean(this.extractXmlValue(xmlData, 'MatchPointB') || attr('MatchPointTeamB')),
+        isSetPointTeamA: this.parseXmlBoolean(this.extractXmlValue(xmlData, 'SetPointA') || attr('SetPointTeamA')),
+        isSetPointTeamB: this.parseXmlBoolean(this.extractXmlValue(xmlData, 'SetPointB') || attr('SetPointTeamB')),
         noServingTeam,
         noServingPlayer,
-        noTeamAtLeft: 1, // Default positioning
+        noTeamAtLeft: 1,
         noTeamAtRight: 2,
         match: {
-          no: parseInt(matchNo || '0'),
+          no: matchNo,
           noInTournament: 1,
-          status: matchStatus || 'InProgress',
+          status: matchStatus,
+          rawStatus: rawStatus, // Numeric VIS API status code for accurate state detection
           dateTime: matchDateTime || new Date().toISOString(),
           court: {
-            no: parseInt(courtNo || '1'),
-            name: courtName || `Court ${courtNo || '1'}`,
+            no: courtNo,
+            name: courtName,
             surface: 'Sand'
           },
           round: {
@@ -484,28 +647,29 @@ export class LiveScorePollingService {
           no: 1,
           name: teamAName || 'Team A',
           federationCode: teamACode || '',
-          players: [], // Would be populated from player data if available
-          matchPoints: 0,
+          players: [],
+          matchPoints: matchPoints.teamA,
           isServing: noServingTeam === 1,
-          timeoutsRemaining: parseInt(this.extractXmlValue(xmlData, 'TeamATimeouts') || '1')
+          timeoutsRemaining: teamATimeouts
         },
         teamB: {
           no: 2,
           name: teamBName || 'Team B',
           federationCode: teamBCode || '',
-          players: [], // Would be populated from player data if available
-          matchPoints: 0,
+          players: [],
+          matchPoints: matchPoints.teamB,
           isServing: noServingTeam === 2,
-          timeoutsRemaining: parseInt(this.extractXmlValue(xmlData, 'TeamBTimeouts') || '1')
+          timeoutsRemaining: teamBTimeouts
         },
         tournament: {
-          no: parseInt(tournamentNo || '1'),
-          name: tournamentName || 'Live Tournament',
+          no: tournamentNo,
+          name: tournamentName,
           code: this.extractXmlValue(xmlData, 'TournamentCode') || '',
           city: this.extractXmlValue(xmlData, 'City') || '',
           country: this.extractXmlValue(xmlData, 'Country') || '',
           federation: this.extractXmlValue(xmlData, 'Federation') || 'FIVB'
-        }
+        },
+        telemetry
       };
     } catch (error) {
       throw new Error(`Failed to parse BeachLive XML response: ${error}`);
@@ -522,12 +686,230 @@ export class LiveScorePollingService {
   }
 
   /**
-   * Extract XML attribute value from tag attributes (following VisResponseParser pattern)
+   * Extract all attributes from XML string for flexible lookup.
    */
-  private extractXmlAttribute(xml: string, attributeName: string): string | undefined {
-    const regex = new RegExp(`${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
-    const match = xml.match(regex);
-    return match ? match[1].trim() : undefined;
+  private extractXmlAttributes(xml: string): ParsedAttributeMap {
+    const raw: Record<string, string> = {};
+    const aliases: Record<string, string> = {};
+    const tagRegex = /<[^>]+>/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = tagRegex.exec(xml)) !== null) {
+      this.populateAttributeMaps(match[0], raw, aliases);
+    }
+
+    return { raw, aliases };
+  }
+
+  /**
+   * Parse attributes from a single XML tag fragment.
+   */
+  private parseTagAttributes(xmlFragment: string): ParsedAttributeMap {
+    const raw: Record<string, string> = {};
+    const aliases: Record<string, string> = {};
+    const tagMatch = xmlFragment.match(/<[^>]+>/);
+
+    if (tagMatch) {
+      this.populateAttributeMaps(tagMatch[0], raw, aliases);
+    }
+
+    return { raw, aliases };
+  }
+
+  /**
+   * Populate raw and alias maps with attributes from a tag string.
+   */
+  private populateAttributeMaps(tag: string, raw: Record<string, string>, aliases: Record<string, string>): void {
+    const attributeSection = tag.replace(/^<[^ \t\r\n>]+/, '').replace(/\/?>$/, '');
+    const attributePattern = /([A-Za-z_][\w:.-]*)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+
+    let attributeMatch: RegExpExecArray | null;
+
+    while ((attributeMatch = attributePattern.exec(attributeSection)) !== null) {
+      const name = attributeMatch[1];
+      const value = (attributeMatch[3] ?? attributeMatch[4] ?? attributeMatch[5] ?? '').trim();
+      const lowerName = name.toLowerCase();
+      const canonical = ATTRIBUTE_ALIAS_TO_CANONICAL[lowerName] || lowerName;
+      const aliasNames = ATTRIBUTE_CANONICAL_TO_ALIASES[canonical] || [canonical];
+
+      if (!(name in raw)) {
+        raw[name] = value;
+      }
+
+      aliasNames.forEach(aliasName => {
+        if (!(aliasName in aliases)) {
+          aliases[aliasName] = value;
+        }
+      });
+    }
+  }
+
+  /**
+   * Retrieve an attribute value using literal or aliased names.
+   */
+  private getAttributeValue(attributes: ParsedAttributeMap, attributeName: string): string | undefined {
+    if (!attributeName) {
+      return undefined;
+    }
+
+    const lowerName = attributeName.toLowerCase();
+
+    if (attributes.raw[attributeName] !== undefined) {
+      return attributes.raw[attributeName];
+    }
+
+    if (attributes.aliases[lowerName] !== undefined) {
+      return attributes.aliases[lowerName];
+    }
+
+    const canonical = ATTRIBUTE_ALIAS_TO_CANONICAL[lowerName];
+    if (canonical && attributes.aliases[canonical] !== undefined) {
+      return attributes.aliases[canonical];
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Parse optional integer values safely.
+   */
+  private parseOptionalInt(value?: string | null): number | undefined {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+
+  /**
+   * Parse VIS boolean strings.
+   */
+  private parseXmlBoolean(value?: string | null): boolean {
+    if (!value) {
+      return false;
+    }
+
+    return value.trim().toLowerCase() === 'true';
+  }
+
+  /**
+   * Normalise VIS set status values into BeachSetStatus enum.
+   * If status is not provided, infers from scores using beach volleyball rules
+   */
+  private normalizeSetStatus(value?: string | null, pointsTeamA?: number, pointsTeamB?: number): BeachSetStatus {
+    // First try to parse explicit status value if provided
+    if (value && value.trim()) {
+      const normalized = value.trim().toLowerCase();
+
+      // Handle numeric status codes from VIS API
+      if (/^\d+$/.test(normalized)) {
+        const statusCode = parseInt(normalized, 10);
+
+        // VIS status codes mapping based on observed behavior:
+        // 0 = Not Started
+        // 1-4 = In Progress (different states within a set)
+        // 5 = Finished (set is complete)
+        // 6+ = Other states (treat as finished for safety)
+
+        if (statusCode === 0) {
+          return BeachSetStatus.NOT_STARTED;
+        } else if (statusCode >= 1 && statusCode <= 4) {
+          return BeachSetStatus.IN_PROGRESS;
+        } else if (statusCode >= 5) {
+          return BeachSetStatus.FINISHED;
+        }
+      }
+
+      // Handle string status values
+      if (['inprogress', 'running', 'live', 'playing'].includes(normalized)) {
+        return BeachSetStatus.IN_PROGRESS;
+      }
+
+      if (['finished', 'complete', 'completed', 'ended', 'closed'].includes(normalized)) {
+        return BeachSetStatus.FINISHED;
+      }
+    }
+
+    // If no explicit status provided, infer from scores using beach volleyball rules
+    if (pointsTeamA !== undefined && pointsTeamB !== undefined) {
+      const maxScore = Math.max(pointsTeamA, pointsTeamB);
+      const minScore = Math.min(pointsTeamA, pointsTeamB);
+
+      // No scores = not started
+      if (maxScore === 0 && minScore === 0) {
+        return BeachSetStatus.NOT_STARTED;
+      }
+
+      // Beach volleyball set winning conditions:
+      // - First to 21 points with at least 2-point lead (sets 1-2)
+      // - First to 15 points with at least 2-point lead (set 3/deciding set)
+      // For simplicity, check 21-point rule first since we don't know set number here
+
+      // Set is finished if someone reached 21+ with 2+ point lead
+      if (maxScore >= 21 && (maxScore - minScore) >= 2) {
+        return BeachSetStatus.FINISHED;
+      }
+
+      // Set is finished if score is very high (e.g., 30-28 in deuce situation)
+      if (maxScore >= 25) {
+        return BeachSetStatus.FINISHED;
+      }
+
+      // If we have scores but set isn't finished, it's in progress
+      if (maxScore > 0) {
+        return BeachSetStatus.IN_PROGRESS;
+      }
+    }
+
+    // Fallback to NOT_STARTED
+    return BeachSetStatus.NOT_STARTED;
+  }
+
+  /**
+   * Determine if a set should count toward match points.
+   */
+  private isSetComplete(set: Pick<BeachLiveSet, 'no' | 'pointsTeamA' | 'pointsTeamB' | 'status'>): boolean {
+    if (set.status === BeachSetStatus.FINISHED) {
+      return true;
+    }
+
+    const maxPoints = Math.max(set.pointsTeamA, set.pointsTeamB);
+    const minPoints = Math.min(set.pointsTeamA, set.pointsTeamB);
+
+    if (maxPoints === 0 && minPoints === 0) {
+      return false;
+    }
+
+    const threshold = set.no >= 3 ? 15 : 21;
+
+    if (maxPoints < threshold) {
+      return false;
+    }
+
+    return maxPoints - minPoints >= 2;
+  }
+
+  /**
+   * Compute match points for each team based on completed sets.
+   */
+  private computeMatchPoints(sets: BeachLiveSet[]): { teamA: number; teamB: number } {
+    let teamA = 0;
+    let teamB = 0;
+
+    sets.forEach(set => {
+      if (!this.isSetComplete(set)) {
+        return;
+      }
+
+      if (set.pointsTeamA > set.pointsTeamB) {
+        teamA++;
+      } else if (set.pointsTeamB > set.pointsTeamA) {
+        teamB++;
+      }
+    });
+
+    return { teamA, teamB };
   }
   
   /**
@@ -545,12 +927,43 @@ export class LiveScorePollingService {
   /**
    * Update match status from API response
    * @param matchNo - Match number
-   * @param responseStatus - Status from API response
+   * @param responseStatus - Status from API response (string or number)
+   * @param rawStatus - Optional numeric status code (VIS API codes: 1=Scheduled, 3-8=RUNNING, 9+=FINISHED)
    */
-  private updateMatchStatusFromResponse(matchNo: number, responseStatus: string): void {
+  private updateMatchStatusFromResponse(matchNo: number, responseStatus: string | number, rawStatus?: number): void {
     let pollingStatus: MatchPollingStatus;
-    
-    // Map API response status to polling status
+
+    // First check numeric rawStatus if provided (VIS API standard)
+    if (typeof rawStatus === 'number') {
+      if (rawStatus >= 9) {
+        pollingStatus = MatchPollingStatus.FINISHED;
+      } else if (rawStatus >= 3 && rawStatus <= 8) {
+        pollingStatus = MatchPollingStatus.RUNNING;
+      } else if (rawStatus >= 1 && rawStatus <= 2) {
+        pollingStatus = MatchPollingStatus.SCHEDULED;
+      } else {
+        pollingStatus = MatchPollingStatus.SCHEDULED; // Default fallback
+      }
+
+      this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
+      return;
+    }
+
+    // Fallback: check if responseStatus is numeric
+    if (typeof responseStatus === 'number') {
+      if (responseStatus >= 9) {
+        pollingStatus = MatchPollingStatus.FINISHED;
+      } else if (responseStatus >= 3 && responseStatus <= 8) {
+        pollingStatus = MatchPollingStatus.RUNNING;
+      } else {
+        pollingStatus = MatchPollingStatus.SCHEDULED;
+      }
+
+      this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
+      return;
+    }
+
+    // Fallback: Map string status to polling status
     switch (responseStatus.toLowerCase()) {
       case 'inprogress':
       case 'running':
@@ -565,12 +978,13 @@ export class LiveScorePollingService {
       case 'finished':
       case 'completed':
       case 'ended':
+      case 'closed':
         pollingStatus = MatchPollingStatus.FINISHED;
         break;
       default:
         pollingStatus = MatchPollingStatus.SCHEDULED; // Default fallback
     }
-    
+
     this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
   }
 
@@ -600,3 +1014,13 @@ export function createLiveScorePollingService(
  * Default export for service
  */
 export default LiveScorePollingService;
+
+
+
+
+
+
+
+
+
+

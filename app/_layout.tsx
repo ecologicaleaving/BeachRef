@@ -10,6 +10,7 @@ import { asyncStoragePersister, migrateAsyncStorageData, handlePersistenceError 
 import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { QueryDevTools } from "../components/DevTools/QueryDevTools";
 import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
+import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -46,8 +47,10 @@ export default function RootLayout() {
         
         // Initialize brand assets
         await preloadBrandAssets();
-        
-        // Cache warmup replaced by database-first strategy with TanStack Query
+
+        // Initialize tournament cache warming service
+        TournamentCacheWarmingService.startBackgroundWarming();
+
         // Performance monitoring and data persistence handled by queryClient
         
       } catch (error) {

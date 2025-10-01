@@ -28,6 +28,8 @@ import {
   determineMatchImportance
 } from '../../types/match-v2';
 
+import { VIS_RESULT_TYPE_TO_RESULT_TYPE } from '../../types/beach-match-live-dto';
+
 import {
   RefereeOfficial,
   EventReferee,
@@ -39,6 +41,13 @@ import {
 } from '../../types/referee-v2';
 
 import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { detectTournamentTimezone } from '../../utils/tournamentTimezoneMapping';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import tz from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(tz);
 
 /**
  * Tournament location data from GetBeachTournament
@@ -53,6 +62,13 @@ export interface TournamentLocation {
   readonly contactPhone?: string;
   readonly courts?: number;
   readonly surface?: string;
+  readonly gender?: string; // Raw numeric value from VIS API (0, 1, etc.)
+  readonly genderText?: GenderType; // Parsed text representation (M, W, MIXED)
+  // Location fields for timezone detection
+  readonly city?: string;
+  readonly country?: string;
+  readonly countryCode?: string;
+  readonly name?: string;
 }
 
 /**
@@ -92,7 +108,7 @@ export class VisResponseParser {
     try {
       // Basic XML parsing - in production would use xml2js or similar
       const tournaments: TournamentCore[] = [];
-      
+
       // Extract tournament nodes from XML
       const tournamentMatches = xmlResponse.match(/<Tournament[^>]*>.*?<\/Tournament>/gs);
       
@@ -130,29 +146,50 @@ export class VisResponseParser {
    */
   static parseBeachTournament(xmlResponse: string): TournamentLocation | null {
     try {
-      const visNo = this.extractXmlValue(xmlResponse, 'No');
-      if (!visNo) return null;
+      const visNo = this.extractXmlAttribute(xmlResponse, 'No');
+
+      if (!visNo) {
+        return null;
+      }
 
       // Generate tournament ID to match with existing data
-      const code = this.extractXmlValue(xmlResponse, 'Code') || visNo;
-      const genderStr = this.extractXmlValue(xmlResponse, 'Gender') || 'M';
-      const typeStr = this.extractXmlValue(xmlResponse, 'Type') || '';
-      
+      const code = this.extractXmlAttribute(xmlResponse, 'Code') || visNo;
+      const genderStr = this.extractXmlAttribute(xmlResponse, 'Gender') || 'M';
+      const typeStr = this.extractXmlAttribute(xmlResponse, 'Type') || '';
+
       const gender = this.parseGender(genderStr);
       const tournamentType = mapVisTournamentType(typeStr);
       const tournamentId = generateTournamentId(visNo, code, gender, tournamentType);
 
-      return {
+      // Extract location data with debug logging to see what's actually available
+      const venue = this.extractXmlAttribute(xmlResponse, 'Venue') || this.extractXmlAttribute(xmlResponse, 'DefaultVenue');
+      const city = this.extractXmlAttribute(xmlResponse, 'DefaultCity') || this.extractXmlAttribute(xmlResponse, 'City');
+      const country = this.extractXmlAttribute(xmlResponse, 'CountryName') || this.extractXmlAttribute(xmlResponse, 'Country');
+      const countryCode = this.extractXmlAttribute(xmlResponse, 'CountryCode') || this.extractXmlAttribute(xmlResponse, 'CountryId');
+      const name = this.extractXmlAttribute(xmlResponse, 'Name') || this.extractXmlAttribute(xmlResponse, 'Title');
+
+
+      const tournamentObject = {
         tournamentId,
-        venue: this.extractXmlValue(xmlResponse, 'Venue'),
-        address: this.extractXmlValue(xmlResponse, 'Address'),
-        location: this.extractXmlValue(xmlResponse, 'Location'),
-        contactName: this.extractXmlValue(xmlResponse, 'ContactName'),
-        contactEmail: this.extractXmlValue(xmlResponse, 'ContactEmail'),
-        contactPhone: this.extractXmlValue(xmlResponse, 'ContactPhone'),
-        courts: parseInt(this.extractXmlValue(xmlResponse, 'Courts') || '0') || undefined,
-        surface: this.extractXmlValue(xmlResponse, 'Surface')
+        venue,
+        address: this.extractXmlAttribute(xmlResponse, 'Address'),
+        location: this.extractXmlAttribute(xmlResponse, 'Location'),
+        contactName: this.extractXmlAttribute(xmlResponse, 'ContactName'),
+        contactEmail: this.extractXmlAttribute(xmlResponse, 'ContactEmail'),
+        contactPhone: this.extractXmlAttribute(xmlResponse, 'ContactPhone'),
+        courts: parseInt(this.extractXmlAttribute(xmlResponse, 'Courts') || '0') || undefined,
+        surface: this.extractXmlAttribute(xmlResponse, 'Surface'),
+        gender: genderStr, // Keep raw numeric value (0, 1, etc.)
+        genderText: gender, // Parsed text representation (M, W, MIXED)
+        // Add location fields for timezone detection
+        city,
+        country,
+        countryCode,
+        name
       };
+
+
+      return tournamentObject;
       
     } catch (error) {
       throw new VisParsingError(
@@ -193,26 +230,26 @@ export class VisResponseParser {
    * Parse GetBeachMatchList response for match data
    * Extract match information with referee assignments
    */
-  static parseBeachMatches(xmlResponse: string, tournamentId: string): BeachMatchCore[] {
+  static parseBeachMatches(xmlResponse: string, tournamentId: string, tournamentTimezone?: string, tournamentGender?: string, tournamentGenderText?: GenderType, tournamentLocation?: TournamentLocation): BeachMatchCore[] {
     try {
       const matches: BeachMatchCore[] = [];
-      
+
       // Extract BeachMatch nodes from XML (VIS API returns <BeachMatch> not <Match>)
-      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) || 
+      const matchMatches = xmlResponse.match(/<BeachMatch[^>]*>.*?<\/BeachMatch>/gs) ||
                           xmlResponse.match(/<BeachMatch[^>]*\/>/gs); // Handle self-closing tags
-      
+
       if (!matchMatches) {
         return matches;
       }
 
+      // Parse each match
       for (const matchXml of matchMatches) {
         try {
-          const match = this.parseSingleMatch(matchXml, tournamentId);
+          const match = this.parseSingleMatch(matchXml, tournamentId, tournamentTimezone, tournamentGender, tournamentGenderText, tournamentLocation);
           if (match) {
             matches.push(match);
           }
         } catch (error) {
-          // console.warn('Failed to parse match:', error);
           // Continue parsing other matches
         }
       }
@@ -252,6 +289,10 @@ export class VisResponseParser {
     
     const dates = this.parseTournamentDates(tournamentXml);
     
+    const city = this.extractXmlValue(tournamentXml, 'City');
+    const country = this.extractXmlValue(tournamentXml, 'Country');
+    const countryCode = this.extractXmlValue(tournamentXml, 'CountryCode');
+
     return {
       id,
       visNo,
@@ -264,9 +305,9 @@ export class VisResponseParser {
       tournamentType,
       dates,
       status,
-      city: this.extractXmlValue(tournamentXml, 'City'),
-      country: this.extractXmlValue(tournamentXml, 'Country'),
-      countryCode: this.extractXmlValue(tournamentXml, 'CountryCode'),
+      city,
+      country,
+      countryCode,
       location: this.extractXmlValue(tournamentXml, 'Location'),
       venue: this.extractXmlValue(tournamentXml, 'Venue'),
       address: this.extractXmlValue(tournamentXml, 'Address'),
@@ -279,21 +320,12 @@ export class VisResponseParser {
       category: this.extractXmlValue(tournamentXml, 'Category'),
       DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone')
     };
-
-    // Debug: Log parsed tournament with DefaultTimeZone
-    console.log('🔄 PARSED TOURNAMENT OBJECT:', {
-      name: name,
-      DefaultTimeZone: this.extractXmlValue(tournamentXml, 'DefaultTimeZone'),
-      allKeys: Object.keys(result)
-    });
-
-    return result;
   }
 
   /**
    * Parse single match from XML
    */
-  private static parseSingleMatch(matchXml: string, tournamentId: string): BeachMatchCore | null {
+  private static parseSingleMatch(matchXml: string, tournamentId: string, tournamentTimezone?: string, tournamentGender?: string, tournamentGenderText?: GenderType, tournamentLocation?: TournamentLocation): BeachMatchCore | null {
     // Extract from BeachMatch attributes (VIS API uses attributes, not child elements)
     const visNo = this.extractXmlAttribute(matchXml, 'No');
     const noInTournament = this.extractXmlAttribute(matchXml, 'NoInTournament');
@@ -305,6 +337,8 @@ export class VisResponseParser {
     // Extract team position fields
     const teamAPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamAPositionInMainDraw');
     const teamBPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamBPositionInMainDraw');
+    const teamAPositionInQualification = this.extractXmlAttribute(matchXml, 'TeamAPositionInQualification');
+    const teamBPositionInQualification = this.extractXmlAttribute(matchXml, 'TeamBPositionInQualification');
     
     if (!visNo || !matchCode) {
       return null;
@@ -313,6 +347,16 @@ export class VisResponseParser {
     const statusStr = this.extractXmlAttribute(matchXml, 'Status') || '';
     const rawStatus = statusStr ? (isNaN(parseInt(statusStr)) ? statusStr : parseInt(statusStr)) : undefined;
     const status = mapVisMatchStatus(statusStr);
+
+    // Extract ResultType field from BeachMatch (numeric code from VIS API)
+    const resultTypeRaw = this.extractXmlAttribute(matchXml, 'ResultType');
+    const resultType = resultTypeRaw ? parseInt(resultTypeRaw) : 0;
+
+    // Map numeric ResultType to text (0 = Normal, should be hidden)
+    let resultTypeText: string | undefined;
+    if (resultType !== 0 && VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType]) {
+      resultTypeText = VIS_RESULT_TYPE_TO_RESULT_TYPE[resultType];
+    }
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
     const localDate = this.extractXmlAttribute(matchXml, 'LocalDate') || '';
@@ -326,18 +370,84 @@ export class VisResponseParser {
     const localTimeOffset = this.extractXmlAttribute(matchXml, 'LocalTimeOffset');
     const timezone = this.extractXmlAttribute(matchXml, 'TimeZone');
 
-    
-    // Build scheduledDateTime safely - handle cases where localTime might already include seconds
+
+    // TIMEZONE-SAFE: Build scheduled date/time following robust approach (prevents 18→17 bug)
+    // Interpret LocalDate+LocalTime in tournament timezone, not as UTC
     let scheduledDateTime: string;
+    let scheduledDateTournament: string;
+    let scheduledTimeTournament: string;
+    let scheduledDateTimeTournament: string;
+    let scheduledEpochMs: number;
+    let scheduledTz: string;
+
     if (localDate && localTime) {
-      // If localTime already has seconds (HH:MM:SS), don't add :00
-      // If it's just HH:MM, add :00
-      const timeWithSeconds = localTime.includes(':') && localTime.split(':').length === 3 
-        ? localTime 
+      // Normalize time format to include seconds
+      const timeWithSeconds = localTime.includes(':') && localTime.split(':').length === 3
+        ? localTime
         : `${localTime}:00`;
-      scheduledDateTime = `${localDate}T${timeWithSeconds}`;
+
+      // Determine tournament timezone - use multiple fallback sources with validation
+      // CRITICAL: BeachMatch TimeZone field often contains invalid values like "24"
+      // Only use timezone from BeachMatch if it passes validation
+      const validatedBeachMatchTimezone = this.validateAndNormalizeTimezone(timezone);
+
+      // Use tournament location data to detect timezone if available
+      let detectedTournamentTz = 'UTC';
+      if (tournamentLocation) {
+        const detection = detectTournamentTimezone({
+          city: tournamentLocation.city || '',
+          country: tournamentLocation.country || '',
+          countryCode: tournamentLocation.countryCode || '',
+          venue: tournamentLocation.venue || '',
+          name: tournamentLocation.name || ''
+        });
+        detectedTournamentTz = detection.timezone;
+
+      }
+
+      const resolvedTournamentTz = tournamentTimezone ||                                         // 1. Tournament timezone (from GetTournament call)
+                                   detectedTournamentTz ||                                        // 2. NEW: Auto-detected from tournament location
+                                   validatedBeachMatchTimezone ||                                 // 3. Validated BeachMatch timezone (often invalid!)
+                                   (localTimeOffset ? this.parseTimezoneFromOffset(localTimeOffset) : null) || // 4. Parse from offset
+                                   'UTC'; // 5. Safe fallback
+
+
+      try {
+        // SOLUTION: Interpret LocalDate+LocalTime in tournament timezone, not as UTC
+        const dtLocal = dayjs.tz(`${localDate}T${timeWithSeconds}`, resolvedTournamentTz);
+
+        // 1) UTC ISO for global sorting and storage
+        scheduledDateTime = dtLocal.toISOString(); // e.g., "2025-09-18T17:00:00.000Z"
+
+        // 2) Tournament-local representations (immune to browser timezone)
+        scheduledDateTournament = dtLocal.format("YYYY-MM-DD");      // "2025-09-18"
+        scheduledTimeTournament = dtLocal.format("HH:mm:ss");        // "14:00:00"
+        scheduledDateTimeTournament = dtLocal.format("YYYY-MM-DD[T]HH:mm:ss"); // "2025-09-18T14:00:00"
+
+        // 3) Epoch for stable sorting
+        scheduledEpochMs = dtLocal.valueOf();
+
+        // 4) Tournament timezone for reference
+        scheduledTz = resolvedTournamentTz;
+
+      } catch (error) {
+        // Fallback if timezone parsing fails
+        console.warn(`[VisResponseParser] Timezone parsing failed for ${localDate}T${timeWithSeconds} in ${resolvedTournamentTz}:`, error);
+        scheduledDateTime = new Date().toISOString();
+        scheduledDateTournament = localDate;
+        scheduledTimeTournament = timeWithSeconds;
+        scheduledDateTimeTournament = `${localDate}T${timeWithSeconds}`;
+        scheduledEpochMs = Date.now();
+        scheduledTz = 'UTC';
+      }
     } else {
+      // No date/time available
       scheduledDateTime = new Date().toISOString();
+      scheduledDateTournament = new Date().toISOString().split('T')[0];
+      scheduledTimeTournament = '00:00:00';
+      scheduledDateTimeTournament = `${scheduledDateTournament}T${scheduledTimeTournament}`;
+      scheduledEpochMs = Date.now();
+      scheduledTz = tournamentTimezone || 'UTC';
     }
     
     const court: CourtInfo = {
@@ -376,7 +486,7 @@ export class VisResponseParser {
     const durationSet2 = this.extractXmlAttribute(matchXml, 'DurationSet2');
     const durationSet3 = this.extractXmlAttribute(matchXml, 'DurationSet3');
 
-    return {
+    const matchObject = {
       id,
       visNo,
       version: 1,
@@ -390,7 +500,16 @@ export class VisResponseParser {
       status,
       rawStatus, // Preserve original VIS status (numeric or string)
       court,
-      scheduledDateTime,
+      scheduledDateTime, // Legacy field for backward compatibility
+      // NEW: Timezone-safe scheduled date/time structure (prevents 18→17 bug)
+      scheduled: {
+        utcISO: scheduledDateTime,                  // UTC timestamp for global sorting
+        tz: scheduledTz,                           // Tournament timezone
+        dateTournament: scheduledDateTournament,    // "2025-09-18" (immune to browser)
+        timeTournament: scheduledTimeTournament,    // "14:00:00" (tournament time)
+        dateTimeTournament: scheduledDateTimeTournament, // "2025-09-18T14:00:00" (tournament)
+        epochMs: scheduledEpochMs                   // Epoch for stable sorting
+      },
       actualStartTime: this.extractXmlAttribute(matchXml, 'StartTime'),
       actualEndTime: this.extractXmlAttribute(matchXml, 'EndTime'),
       team1: finalTeam1,
@@ -404,6 +523,8 @@ export class VisResponseParser {
       noInTournament: noInTournament,
       teamAPositionInMainDraw: teamAPositionInMainDraw,
       teamBPositionInMainDraw: teamBPositionInMainDraw,
+      teamAPositionInQualification: teamAPositionInQualification,
+      teamBPositionInQualification: teamBPositionInQualification,
       // Add duration fields for debugging and access
       DurationSet1: durationSet1,
       DurationSet2: durationSet2,
@@ -417,21 +538,35 @@ export class VisResponseParser {
       localTime: localTime,
       localTimeOffset: localTimeOffset,
       timezone: timezone,
-      // Add tournament gender for filter functionality
-      tournamentGender: this.extractXmlAttribute(matchXml, 'TournamentGender'),
+      // Add tournament gender for filter functionality (from tournament data, not match XML)
+      tournamentGender: tournamentGender,
+      tournamentGenderText: tournamentGenderText,
       // Add referee names for enhanced filter functionality
       Referee1Name: this.extractXmlAttribute(matchXml, 'Referee1Name'),
       Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
       Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
-      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode')
+      Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode'),
+      // Add tournament location fields for timezone conversion
+      tournamentCity: tournamentLocation?.city,
+      tournamentCountry: tournamentLocation?.country,
+      tournamentCountryCode: tournamentLocation?.countryCode,
+      tournamentVenue: tournamentLocation?.venue,
+      tournamentName: tournamentLocation?.name,
+      // Add ResultType (numeric code) and ResultTypeText (mapped string) from VIS API
+      resultType: resultType,
+      resultTypeText: resultTypeText
     } as any;
+
+
+    return matchObject;
   }
 
   /**
    * Parse tournament dates from XML
    */
   private static parseTournamentDates(tournamentXml: string): TournamentDates {
-    const startDate = this.extractXmlValue(tournamentXml, 'StartDate') || new Date().toISOString();
+    // Use date-only format to prevent timezone interpretation issues
+    const startDate = this.extractXmlValue(tournamentXml, 'StartDate') || new Date().toISOString().split('T')[0];
     const endDate = this.extractXmlValue(tournamentXml, 'EndDate') || startDate;
     
     return {
@@ -448,6 +583,11 @@ export class VisResponseParser {
    * Parse gender from string
    */
   private static parseGender(genderStr: string): GenderType {
+    // Handle numeric values from VIS API: 0 = M, 1 = W
+    if (genderStr === '0') return GenderType.M;
+    if (genderStr === '1') return GenderType.W;
+
+    // Handle string values as fallback
     const gender = genderStr.toUpperCase();
     if (gender === 'W' || gender === 'WOMEN') return GenderType.W;
     if (gender === 'MIXED' || gender === 'MX') return GenderType.MIXED;
@@ -833,5 +973,105 @@ export class VisResponseParser {
       default:
         return OfficialType.TECHNICAL;
     }
+  }
+
+  /**
+   * Validate and normalize timezone from VIS API
+   * Handles invalid values like "24" and converts them to valid IANA timezones
+   */
+  private static validateAndNormalizeTimezone(timezone: string | undefined): string | null {
+    if (!timezone || typeof timezone !== 'string') {
+      return null;
+    }
+
+    const cleanTz = timezone.trim();
+
+    // SPECIAL CASE: VIS API sometimes returns invalid values like "24"
+    if (cleanTz === "24" || cleanTz === "25") {
+      return null;
+    }
+
+    // Check if it's a numeric offset (like "1", "-5", "+3")
+    const numericMatch = cleanTz.match(/^([+-]?)(\d{1,2})$/);
+    if (numericMatch) {
+      const [, sign, hours] = numericMatch;
+      const hourOffset = parseInt(hours, 10);
+
+      // Handle invalid offsets (24+ hours)
+      if (hourOffset >= 24) {
+        return null;
+      }
+
+      // Convert to standard offset format and use parseTimezoneFromOffset
+      const standardOffset = `${sign || '+'}${hours.padStart(2, '0')}:00`;
+      return this.parseTimezoneFromOffset(standardOffset);
+    }
+
+    // Check if it's already a valid IANA timezone by testing with dayjs
+    try {
+      // Test if timezone is valid by attempting to create a date with it
+      dayjs.tz('2025-01-01T12:00:00', cleanTz);
+      return cleanTz;
+    } catch {
+      console.warn(`[VisResponseParser] Invalid timezone format: ${timezone}, ignoring`);
+      return null;
+    }
+  }
+
+  /**
+   * Parse timezone from LocalTimeOffset format (e.g., "+03:00", "-05:00")
+   * Converts offset to best-guess IANA timezone name
+   */
+  private static parseTimezoneFromOffset(localTimeOffset: string): string | null {
+    if (!localTimeOffset || typeof localTimeOffset !== 'string') {
+      return null;
+    }
+
+    // Clean and validate offset format
+    const cleanOffset = localTimeOffset.trim();
+    const offsetMatch = cleanOffset.match(/^([+-])(\d{1,2}):?(\d{2})$/);
+
+    if (!offsetMatch) {
+      return null;
+    }
+
+    const [, sign, hours, minutes] = offsetMatch;
+    const offsetHours = parseInt(hours, 10);
+    const offsetMinutes = parseInt(minutes, 10);
+
+    // Convert to total offset in hours
+    const totalOffset = (offsetHours + offsetMinutes / 60) * (sign === '+' ? 1 : -1);
+
+    // Map common offsets to IANA timezones (best effort)
+    const offsetToTimezone: Record<number, string> = {
+      '-12': 'Pacific/Wake',
+      '-11': 'Pacific/Midway',
+      '-10': 'Pacific/Honolulu',
+      '-9': 'America/Anchorage',
+      '-8': 'America/Los_Angeles',
+      '-7': 'America/Denver',
+      '-6': 'America/Chicago',
+      '-5': 'America/New_York',
+      '-4': 'America/Halifax',
+      '-3': 'America/Sao_Paulo',  // ← Brazil timezone
+      '-2': 'America/Noronha',
+      '-1': 'Atlantic/Azores',
+      '0': 'UTC',
+      '1': 'Europe/Paris',
+      '2': 'Europe/Rome',        // ← Italy timezone
+      '3': 'Europe/Moscow',
+      '4': 'Asia/Dubai',
+      '5': 'Asia/Karachi',
+      '6': 'Asia/Dhaka',
+      '7': 'Asia/Bangkok',
+      '8': 'Asia/Singapore',
+      '9': 'Asia/Tokyo',
+      '10': 'Australia/Sydney',
+      '11': 'Australia/Lord_Howe',
+      '12': 'Pacific/Fiji'
+    };
+
+    const offsetKey = totalOffset.toString();
+    return offsetToTimezone[offsetKey] || null;
   }
 }

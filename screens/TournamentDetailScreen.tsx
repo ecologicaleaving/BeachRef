@@ -21,6 +21,9 @@ import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
 import { FallbackTournamentService } from '../services/FallbackTournamentService';
+import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
+import { TournamentCacheWarmingService } from '../services/cache/TournamentCacheWarmingService';
+import { isStale, CacheTTL } from '../utils/cacheUtils';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -314,6 +317,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
   const [refreshing, setRefreshing] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
+
+  // Add loading guards to prevent excessive API calls
+  const [loadMatchesInProgress, setLoadMatchesInProgress] = useState(false);
   
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
@@ -323,6 +329,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   // State to track if we need to load complete tournament data
   const [isMinimalTournament, setIsMinimalTournament] = useState(false);
   const [completeTournamentData, setCompleteTournamentData] = useState<TournamentCore | null>(null);
+  const [apiTournamentLocationData, setApiTournamentLocationData] = useState<any>(null);
   
   const router = useRouter();
   const { tournamentData, tab, visNo } = useLocalSearchParams<{ tournamentData?: string; tab?: string; visNo?: string }>();
@@ -405,7 +412,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     return false;
   };
 
-  // Auto-scroll logic with priority: 1) LIVE matches, 2) Today's first match
+  // Auto-scroll logic with priority: 1) LIVE matches, 2) Last SCHEDULED match, 3) Stay at top
   const attemptAutoScroll = (matches: any[], forceRetry: boolean = false) => {
     if (hasAutoScrolled.current || !scrollViewRef.current || matches.length === 0) {
       return;
@@ -413,56 +420,59 @@ const TournamentDetailScreenContent: React.FC = () => {
 
     // Only autoscroll on matches or schedule panel (where match list is shown)
     if (activeTab !== 'matches' && activeTab !== 'schedule') {
-      console.log('🚫 EXTERNAL AUTOSCROLL: Not on matches/schedule panel, skipping autoscroll');
       return;
     }
-
-    console.log('🔍 EXTERNAL AUTOSCROLL: Attempting autoscroll with', matches.length, 'matches');
-    console.log('🔍 EXTERNAL AUTOSCROLL: Available positions:', Object.keys(matchPositions.current).length);
-
-    // Debug: log all match statuses
-    matches.slice(0, 10).forEach(match => {
-      const statusType = typeof match?.status;
-      const rawStatus = match?.rawStatus || match?.visStatus || 'none';
-      console.log(`🔍 MATCH DEBUG: ${match.id} - Status: "${match?.status}" (${statusType}) - RawStatus: ${rawStatus} - Teams: ${match?.team1?.teamName} vs ${match?.team2?.teamName} - LIVE: ${isMatchLive(match, matches)}`);
-    });
 
     let targetMatchId: string | null = null;
     let scrollReason = '';
 
     // Priority 1: Find any LIVE match using enhanced isMatchLive logic with court sequencing
     const liveMatches = matches.filter(match => isMatchLive(match, matches));
-    console.log('🔍 EXTERNAL AUTOSCROLL: Found', liveMatches.length, 'LIVE matches');
 
     if (liveMatches.length > 0) {
       targetMatchId = liveMatches[0].id;
       scrollReason = 'LIVE match';
-      console.log('🎯 EXTERNAL AUTOSCROLL: Target = LIVE match:', targetMatchId);
     } else {
-      // Priority 2: Last match of today (simplified)
+      // Priority 2: Last SCHEDULED match of TODAY
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
 
-      const todayMatches = matches.filter(match => {
+      const todaysScheduledMatches = matches.filter(match => {
         if (!match?.scheduledDateTime) return false;
+
+        // Check if match is today
         const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
-        return matchDate === todayStr;
+        if (matchDate !== todayStr) return false;
+
+        // Check for SCHEDULED status
+        const status = match?.status;
+        const enhancedStatus = getEnhancedMatchStatus(match, matches);
+
+        // Include scheduled matches (status 1 or 'Scheduled')
+        if (typeof status === 'string') {
+          return status === MatchStatus.SCHEDULED;
+        }
+        if (typeof status === 'number') {
+          return status === 1; // VIS API: 1 = Scheduled
+        }
+        if (enhancedStatus === MatchStatus.SCHEDULED) {
+          return true;
+        }
+
+        return false;
       });
 
-      console.log('📅 TODAY MATCHES: Found', todayMatches.length, 'matches for today');
-
-      if (todayMatches.length > 0) {
-        // Sort by time and take the FIRST one (earliest in the day, appears LAST in Today panel)
-        const sortedTodayMatches = todayMatches.sort((a, b) => {
+      if (todaysScheduledMatches.length > 0) {
+        // Sort by time and take the FIRST one (earliest scheduled match of today)
+        const sortedScheduledMatches = todaysScheduledMatches.sort((a, b) => {
           return new Date(a.scheduledDateTime).getTime() - new Date(b.scheduledDateTime).getTime();
         });
 
-        const firstTodayMatch = sortedTodayMatches[0]; // First chronologically = bottom of Today panel
-        targetMatchId = firstTodayMatch.id;
-        scrollReason = 'Today first match (bottom of panel)';
-
-        console.log('🎯 EXTERNAL AUTOSCROLL: Target = Today first match (bottom of panel):', targetMatchId);
+        const firstScheduledMatchToday = sortedScheduledMatches[0];
+        targetMatchId = firstScheduledMatchToday.id;
+        scrollReason = `First SCHEDULED match of today (${todaysScheduledMatches.length} total today)`;
       }
+      // Priority 3: If no LIVE or TODAY'S SCHEDULED matches, stay at top (no scroll)
     }
 
     // Scroll to target if position is available
@@ -470,13 +480,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const matchRelativeY = matchPositions.current[targetMatchId];
       const absoluteY = matchListOffset.current + matchRelativeY;
 
-      console.log('✅ EXTERNAL AUTOSCROLL: Scrolling to', scrollReason);
-      console.log('   - Match relative Y:', matchRelativeY);
-      console.log('   - MatchList offset:', matchListOffset.current);
-      console.log('   - Absolute Y:', absoluteY);
-
-      const targetY = Math.max(0, absoluteY + 250); // Bring match to visible area with more offset
-      console.log('   - Final scroll Y:', targetY);
+      const targetY = Math.max(0, absoluteY + 450); // Bring match to visible area with more offset
 
       scrollViewRef.current.scrollTo({
         y: targetY,
@@ -484,20 +488,14 @@ const TournamentDetailScreenContent: React.FC = () => {
       });
 
       hasAutoScrolled.current = true;
-      console.log('📋 EXTERNAL AUTOSCROLL: Auto-scroll completed');
     } else {
-      console.log('⏳ EXTERNAL AUTOSCROLL: Target found but position not available yet:', targetMatchId);
-
       // Retry logic with delay
       if (autoscrollRetryCount.current < maxRetries) {
         autoscrollRetryCount.current++;
-        console.log(`🔄 EXTERNAL AUTOSCROLL: Retry ${autoscrollRetryCount.current}/${maxRetries} in 200ms...`);
 
         setTimeout(() => {
           attemptAutoScroll(matches, true);
         }, 200);
-      } else {
-        console.log('❌ EXTERNAL AUTOSCROLL: Max retries exceeded, giving up');
       }
     }
   };
@@ -505,26 +503,12 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Handle match layout measurement and trigger autoscroll
   const handleMatchLayout = (matchId: string, y: number) => {
     matchPositions.current[matchId] = y;
-    console.log('📍 EXTERNAL LAYOUT: Match', matchId, 'at Y=', y);
-
-    // Debug autoscroll conditions
-    console.log('🔍 LAYOUT TRIGGER CHECK:', {
-      hasMatches: !!(matches && matches.length > 0),
-      matchesLength: matches?.length || 0,
-      activeTab,
-      hasAutoScrolled: hasAutoScrolled.current,
-      positionsCount: Object.keys(matchPositions.current).length
-    });
 
     // Try autoscroll when new position is recorded
     if (matches && matches.length > 0 && (activeTab === 'matches' || activeTab === 'schedule')) {
-      console.log('🚀 LAYOUT: Triggering autoscroll attempt in 100ms...');
       setTimeout(() => {
-        console.log('🚀 LAYOUT: Executing delayed autoscroll...');
         attemptAutoScroll(matches);
       }, 100);
-    } else {
-      console.log('❌ LAYOUT: Autoscroll conditions not met');
     }
   };
 
@@ -542,12 +526,10 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       if (completeTournamentData) {
         // Use loaded complete tournament data if available
-        // Using loaded complete tournament data
         return completeTournamentData;
       } else if (tournamentData) {
         // Normal case: full tournament data passed as JSON
         const parsed = JSON.parse(tournamentData) as TournamentCore;
-        // Received tournament data in TournamentDetailScreen
         return parsed;
       } else if (visNo) {
         // Fallback case: only visNo provided - create minimal tournament object
@@ -558,7 +540,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           dates: {},
           // Add other required fields as needed
         } as TournamentCore;
-        // Using minimal tournament from visNo
         // Mark that we need to load complete data
         if (!isMinimalTournament) {
           setIsMinimalTournament(true);
@@ -747,7 +728,6 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Get match numbers for live score polling
   const matchNumbers = React.useMemo(() => {
-    console.log('🔍 MATCH NUMBERS USEMEMO: Recalculating with', matches?.length || 0, 'matches');
     if (!matches) return [];
     const toNumericMatchNo = (m: any): number | null => {
       const raw = m?.visNo || m?.matchCode || '';
@@ -765,11 +745,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           status === MatchStatus.SCHEDULED ||
           (typeof rawStatus === 'number' && rawStatus >= 1 && rawStatus <= 8) ||
           isMatchLive(match, matches);
-
-        // Debug: Log filtering decisions for first few matches and specific LIVE matches
-        if (matches.indexOf(match) < 5 || match.id.includes('8243_courtcc_1758182400000_7') || match.id.includes('8243_court2_1758182400000_8')) {
-          console.log(`🔍 POLLING FILTER: Match ${match.id} - status: ${status} (${typeof status}), rawStatus: ${rawStatus} (${typeof rawStatus}), included: ${shouldInclude}`);
-        }
 
         return shouldInclude;
       })
@@ -802,29 +777,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     staleTimeMs: 3000, // Cache stale time for running matches (3 seconds)
     cacheTimeMs: 10000 // Cache time for frequently changing data (10 seconds)
   });
-
-  // Debug: Log what match numbers are being polled
-  useEffect(() => {
-    console.log('🔍 LIVE POLLING: matchNumbers being polled:', matchNumbers.slice(0, 10));
-    console.log('🔍 LIVE POLLING: Total matches being polled:', matchNumbers.length);
-    console.log('🔍 LIVE POLLING: Looking for match numbers 499612 and 499613 in list:', matchNumbers.includes(499612), matchNumbers.includes(499613));
-  }, [matchNumbers]);
-
-  // Force a debug log every few seconds to check current state
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('🔍 DEBUG STATE: Current matchNumbers length:', matchNumbers.length, 'First 5:', matchNumbers.slice(0, 5));
-      console.log('🔍 DEBUG STATE: getLiveScore available:', typeof getLiveScore === 'function');
-      if (typeof getLiveScore === 'function') {
-        console.log('🔍 DEBUG STATE: Test getLiveScore(499612):', getLiveScore(499612));
-        console.log('🔍 DEBUG STATE: Test getLiveScore(499613):', getLiveScore(499613));
-      }
-    }, 10000); // Every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [matchNumbers, getLiveScore]);
-
-
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -1071,14 +1023,11 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       // STEP 1: Always clear default tournament first (if this tournament is set as default)
       const tournamentVisNo = tournament.visNo || visNo;
-      // handleGoBack: Using tournament visNo
 
       if (tournamentVisNo) {
         const isDefault = await DefaultTournamentService.isDefaultTournament(tournamentVisNo);
         if (isDefault) {
-          // Tournament not found but is set as default. Clearing default tournament.
           await DefaultTournamentService.clearDefaultTournament();
-          // Default tournament cleared successfully.
 
           // STEP 2: Add small delay to ensure state updates propagate
           // This prevents race condition where home still sees old default tournament
@@ -1088,7 +1037,6 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       // STEP 3: After ensuring default is cleared, redirect to home
       // This ensures proper routing logic and prevents getting stuck
-      // Redirecting to home...
       router.replace('/');
     } catch (error) {
       console.error('Error handling tournament not found:', error);
@@ -1204,9 +1152,28 @@ const TournamentDetailScreenContent: React.FC = () => {
   const loadTournamentDisplayData = async () => {
     if (!tournament.visNo) return;
 
-    setDetailsLoading(true);
     try {
-      // Dynamic import for VisApiClient
+      // STEP 1: Check cache first
+      const cacheKey = `${tournament.visNo}`;
+      const cached = await TournamentStorageService.getCachedTournamentDetails(tournament.visNo);
+
+      if (cached && !isStale(cached, CacheTTL.TOURNAMENT_DETAILS)) {
+        console.log('📦 Using cached tournament details');
+        setTournamentData(cached.tournament);
+        setDetailsLoading(false);
+        return;
+      }
+
+      // STEP 2: Show stale data immediately if available, then refresh in background
+      if (cached) {
+        console.log('🔄 Showing stale tournament data, refreshing in background');
+        setTournamentData(cached.tournament);
+        setDetailsLoading(false);
+      } else {
+        setDetailsLoading(true);
+      }
+
+      // STEP 3: Fetch fresh data from API
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
@@ -1233,6 +1200,9 @@ const TournamentDetailScreenContent: React.FC = () => {
           location: details.location || tournament.location,
         };
 
+        // Cache the fresh data
+        await TournamentStorageService.cacheTournamentDetails(tournament.visNo, enhancedTournament);
+        setTournamentData(enhancedTournament);
         setDetailedTournament(enhancedTournament);
       } else {
         // No API data available - use basic tournament
@@ -1240,22 +1210,51 @@ const TournamentDetailScreenContent: React.FC = () => {
       }
     } catch (error) {
       console.warn('Tournament display data load failed:', error);
-      // Fallback to basic tournament data
-      setDetailedTournament(tournament);
+
+      // STEP 4: Error handling with cached data fallback
+      if (cached) {
+        console.log('🔄 Using cached data due to API error');
+        setTournamentData(cached.tournament);
+        setDetailedTournament(cached.tournament);
+      } else {
+        // Fallback to basic tournament data
+        setDetailedTournament(tournament);
+      }
     } finally {
       setDetailsLoading(false);
     }
   };
 
-  // Load matches for the tournament - MUST wait for real tournament number from GetBeachTournament
+  // Load matches for the tournament - OPTIMIZED API FLOW with CACHE-FIRST LOADING
   const loadMatches = async () => {
-    
-    // If we don't have the real tournament number yet, we need to get it first
-    if (!(tournament as any).tournamentNo) {
-      
+    // Prevent multiple simultaneous calls
+    if (loadMatchesInProgress) {
+      return;
+    }
+
+    try {
+      // STEP 1: Check cache first for matches
+      const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo);
+
+      if (cachedMatches) {
+        setMatches(cachedMatches);
+        setMatchesLoading(false);
+        setLoadMatchesInProgress(false);
+        return;
+      }
+
+      console.log('🔄 No cached matches found, fetching from API');
+    } catch (error) {
+      console.warn('Failed to check cache for matches:', error);
+    }
+
+    setLoadMatchesInProgress(true);
+    // STEP 1: Always start with GetEvent to get tournament structure (without field specification)
+    if (!(tournament as any).beachTournaments) {
+
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
+
       const config = {
         baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
         timeoutMs: 30000,
@@ -1264,25 +1263,31 @@ const TournamentDetailScreenContent: React.FC = () => {
         enableLogging: true,
         headers: {}
       };
-      
+
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-      
+
       try {
+        // GetEvent call without field specification as requested
         const tournamentResponse = await visApi.getEvent({
-          eventNo: tournament.visNo,
-          includeOfficials: false,
-          includeReferees: false
+          eventNo: tournament.visNo
         });
-        
+
         if (tournamentResponse.success && tournamentResponse.xmlData) {
-          
+          // Format XML for readability
+          const formattedXml = tournamentResponse.xmlData
+            .replace(/></g, '>\n<')
+            .replace(/^\s*\n/gm, '')
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .join('\n');
+
           // Extract BeachTournament numbers from Content field of GetEvent response
-          // The Content field is an attribute on the Event element, not a separate element
           let contentField = '';
           const contentMatch = tournamentResponse.xmlData.match(/Content="([^"]*)"/);
           if (contentMatch) {
             contentField = contentMatch[1];
-            
+
             // Decode HTML entities
             const decodedContent = contentField
               .replace(/&lt;/g, '<')
@@ -1290,11 +1295,18 @@ const TournamentDetailScreenContent: React.FC = () => {
               .replace(/&quot;/g, '"')
               .replace(/&#xD;&#xA;/g, '')
               .replace(/&#xA;/g, '');
-            
-            
+
+            const formattedContent = decodedContent
+              .replace(/></g, '>\n<')
+              .replace(/^\s*\n/gm, '')
+              .split('\n')
+              .map(line => line.trim())
+              .filter(line => line.length > 0)
+              .join('\n');
+
             // Now extract BeachTournament entries from the decoded content
             const beachTournamentMatches = decodedContent.match(/<BeachTournament[^>]*No="([^"]*)"[^>]*Gender="([^"]*)"[^>]*\/>/g);
-            
+
             if (beachTournamentMatches && beachTournamentMatches.length > 0) {
               // Parse each BeachTournament entry
               const tournaments = beachTournamentMatches.map(match => {
@@ -1305,27 +1317,30 @@ const TournamentDetailScreenContent: React.FC = () => {
                   gender: genderMatch ? genderMatch[1] : null
                 };
               });
-              
-              
-              // Store both tournament numbers for loading both men's and women's matches
+
+              // Store tournament list for subsequent API calls
               const validTournaments = tournaments.filter(t => t.no && t.gender);
               if (validTournaments.length > 0) {
                 (tournament as any).beachTournaments = validTournaments;
-                // For backward compatibility, still set the main tournamentNo to the first one
                 (tournament as any).tournamentNo = validTournaments[0].no;
               } else {
+                (tournament as any).beachTournaments = [];
                 (tournament as any).tournamentNo = tournament.visNo;
               }
             } else {
+              (tournament as any).beachTournaments = [];
               (tournament as any).tournamentNo = tournament.visNo;
             }
           } else {
+            (tournament as any).beachTournaments = [];
             (tournament as any).tournamentNo = tournament.visNo;
           }
         } else {
+          (tournament as any).beachTournaments = [];
           (tournament as any).tournamentNo = tournament.visNo;
         }
       } catch (error) {
+        (tournament as any).beachTournaments = [];
         (tournament as any).tournamentNo = tournament.visNo;
       }
     }
@@ -1333,10 +1348,11 @@ const TournamentDetailScreenContent: React.FC = () => {
     // Get all available tournament numbers (both men's and women's if available)
     const beachTournaments = (tournament as any).beachTournaments;
     const tournamentNo = (tournament as any).tournamentNo;
-    
-    
+
+
     if (!beachTournaments && !tournamentNo) {
       setMatches([]);
+      setLoadMatchesInProgress(false);
       return;
     }
     
@@ -1358,12 +1374,43 @@ const TournamentDetailScreenContent: React.FC = () => {
       
       let allMatches: BeachMatchCore[] = [];
       
-      // If we have separated beach tournaments, load matches from each IN PARALLEL (80% faster)
+      // STEP 2 & 3: GetBeachTournament and GetBeachMatchList for each tournament in parallel
       if (beachTournaments && beachTournaments.length > 0) {
 
-        // PARALLEL API CALLS - Replace sequential for loop with Promise.all
+        // OPTIMIZED PARALLEL API CALLS - One GetBeachTournament + One GetBeachMatchList per tournament
         const matchPromises = beachTournaments.map(async (beachTournament) => {
           try {
+            // STEP 2: GetBeachTournament without field specification (as requested)
+            let tournamentTimezone: string | undefined;
+            let tournamentData: any = undefined;
+            try {
+              const tournamentRequest: GetBeachTournamentRequest = {
+                tournamentNo: beachTournament.no
+                // No fields specified as requested
+              };
+              const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
+
+
+              if (tournamentResponse.success && tournamentResponse.xmlData) {
+                // Format XML for readability
+                const formattedTournamentXml = tournamentResponse.xmlData
+                  .replace(/></g, '>\n<')
+                  .replace(/^\s*\n/gm, '')
+                  .split('\n')
+                  .map(line => line.trim())
+                  .filter(line => line.length > 0)
+                  .join('\n');
+
+                tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
+
+                tournamentTimezone = tournamentData?.DefaultTimeZone;
+
+              }
+            } catch (error) {
+              console.warn('⚠️ Failed to fetch tournament timezone, will fall back to match-level timezone:', error);
+            }
+
+            // STEP 3: GetBeachMatchList for each tournament
             const matchRequest: GetBeachMatchListRequest = {
               tournamentNo: beachTournament.no,
               includeResults: true,
@@ -1373,18 +1420,59 @@ const TournamentDetailScreenContent: React.FC = () => {
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
             if (matchResponse.success && matchResponse.xmlData) {
-              const matchesCore = VisResponseParser.parseBeachMatches(matchResponse.xmlData, beachTournament.no);
+              // Parse matches with tournament timezone context and gender data
+              const tournamentGender = beachTournament.gender; // Use existing parsed gender
+              const tournamentGenderText = tournamentGender === '0' ? 'M' : tournamentGender === '1' ? 'W' : 'M'; // Convert 0→M, 1→W
+
+
+              // Construct timezone-compatible TournamentLocation from parsed tournament data
+              // Check various possible field names from the API response
+              const tournamentLocationForTimezone = tournamentData ? {
+                city: tournamentData.city || tournamentData.DefaultCity,
+                country: tournamentData.country || tournamentData.CountryName,
+                countryCode: tournamentData.countryCode || tournamentData.CountryCode,
+                venue: tournamentData.venue || tournamentData.DefaultVenue,
+                name: tournamentData.name || tournamentData.Name || tournamentData.Title
+              } : undefined;
+
+              // Store API tournament location data for use in MatchListV2
+              if (tournamentLocationForTimezone) {
+                setApiTournamentLocationData(tournamentLocationForTimezone);
+              }
+
+              const matchesCore = VisResponseParser.parseBeachMatches(
+                matchResponse.xmlData,
+                beachTournament.no,
+                tournamentTimezone,
+                tournamentGender, // Use beachTournament.gender
+                tournamentGenderText, // Use beachTournament.gender as text too
+                tournamentLocationForTimezone // Pass timezone-compatible tournament location data
+              );
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
 
               // Add gender information to each match and apply legacy fields
-              const matchesWithGender = matchesCore.map(match => ({
-                ...match,
-                ...legacyFieldsMap[match.visNo], // O(1) lookup instead of expensive per-match regex
-                tournamentGender: beachTournament.gender === '0' ? 'M' : 'W',
-                tournamentNo: beachTournament.no
-              }));
+              const matchesWithGender = matchesCore.map((match, index) => {
+                const legacyFields = legacyFieldsMap[match.visNo];
+
+
+                // Preserve critical fields from VisResponseParser - don't let legacy fields override them
+                const preservedFields = {
+                  noInTournament: (match as any).noInTournament,
+                  tournamentGender: (match as any).tournamentGender
+                };
+
+                const finalMatch = {
+                  ...match,
+                  ...legacyFields, // O(1) lookup instead of expensive per-match regex
+                  ...preservedFields, // Override legacy fields with VisResponseParser values for critical fields
+                  tournamentNo: beachTournament.no
+                };
+
+
+                return finalMatch;
+              });
 
               return matchesWithGender;
             }
@@ -1405,16 +1493,42 @@ const TournamentDetailScreenContent: React.FC = () => {
           }
         });
       } else {
-        // Fallback: load from single tournament number
-        
+        // Fallback: load from single tournament number using optimized approach
+        // GetBeachTournament without field specification (as requested)
+        let tournamentTimezone: string | undefined;
+        try {
+          const tournamentRequest: GetBeachTournamentRequest = {
+            tournamentNo: tournamentNo
+            // No fields specified as requested
+          };
+          const tournamentResponse = await visApi.getBeachTournament(tournamentRequest);
+
+          if (tournamentResponse.success && tournamentResponse.xmlData) {
+            // Format XML for readability
+            const formattedFallbackXml = tournamentResponse.xmlData
+              .replace(/></g, '>\n<')
+              .replace(/^\s*\n/gm, '')
+              .split('\n')
+              .map(line => line.trim())
+              .filter(line => line.length > 0)
+              .join('\n');
+
+            const tournamentData = VisResponseParser.parseBeachTournament(tournamentResponse.xmlData);
+            tournamentTimezone = tournamentData?.DefaultTimeZone;
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to fetch tournament timezone in fallback, will fall back to match-level timezone:', error);
+        }
+
+        // GetBeachMatchList for the tournament
         const matchRequest: GetBeachMatchListRequest = {
           tournamentNo: tournamentNo,
           includeResults: true,
           includeReferees: true
         };
-        
+
         const matchResponse = await visApi.getBeachMatchList(matchRequest);
-        
+
         // If failed and we have a real TournamentNo different from EventNo, try EventNo as fallback
         if (!matchResponse.success && tournament.visNo !== tournamentNo) {
           const fallbackRequest: GetBeachMatchListRequest = {
@@ -1423,36 +1537,33 @@ const TournamentDetailScreenContent: React.FC = () => {
             includeReferees: true
           };
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);
-          
+
           if (fallbackResponse.success && fallbackResponse.xmlData) {
-            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo);
+            allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, tournamentTimezone, undefined, undefined, tournamentData);
           }
         } else if (matchResponse.success && matchResponse.xmlData) {
-          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo);
+          allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, tournamentTimezone, undefined, undefined, tournamentData);
         }
       }
       
       // Parse the response asynchronously to avoid blocking UI
       if (allMatches.length > 0) {
-        
         setTimeout(async () => {
           try {
-            // Sort matches by date and time for better organization
+            // Sort matches by date and time in DESCENDING order (newest/latest first)
             const sortedMatches = allMatches.sort((a, b) => {
               const dateA = new Date(a.scheduledDateTime);
               const dateB = new Date(b.scheduledDateTime);
-              return dateA.getTime() - dateB.getTime();
+              return dateB.getTime() - dateA.getTime(); // Reversed for descending order
             });
-            
-            
+
             setMatches(sortedMatches);
-
-            // Debug: Log first match object
-            if (sortedMatches && sortedMatches.length > 0) {
-              console.log('First match object:', sortedMatches[0]);
-            }
-
             setMatchesLoading(false);
+
+            // Cache the matches with tournament status
+            const tournamentStatus = getTournamentStatus();
+            TournamentMatchCache.cacheMatches(tournament.visNo, sortedMatches, tournamentStatus)
+              .catch(error => console.warn('Failed to cache matches:', error));
           } catch (parseError) {
             setMatches([]);
             setMatchesLoading(false);
@@ -1465,32 +1576,22 @@ const TournamentDetailScreenContent: React.FC = () => {
     } catch (error) {
       setMatches([]);
       setMatchesLoading(false);
+    } finally {
+      // Reset loading guard
+      setLoadMatchesInProgress(false);
     }
     // Note: Don't set setMatchesLoading(false) in finally - async parsing handles it
   };
 
   // Trigger autoscroll when matches are loaded
   useEffect(() => {
-    console.log('🔍 EFFECT TRIGGER CHECK:', {
-      hasMatches: !!(matches && matches.length > 0),
-      matchesLength: matches?.length || 0,
-      matchesLoading,
-      activeTab,
-      hasAutoScrolled: hasAutoScrolled.current
-    });
-
     if (matches && matches.length > 0 && !matchesLoading && (activeTab === 'matches' || activeTab === 'schedule')) {
-      console.log('🚀 EXTERNAL EFFECT: Matches loaded on matches panel, attempting autoscroll...');
-
       // Reset retry counter for new attempt
       autoscrollRetryCount.current = 0;
 
       setTimeout(() => {
-        console.log('🚀 EFFECT: Executing delayed autoscroll...');
         attemptAutoScroll(matches);
       }, 300); // Delay to allow layout
-    } else {
-      console.log('❌ EFFECT: Autoscroll conditions not met');
     }
   }, [matches, matchesLoading, activeTab]);
 
@@ -1516,7 +1617,9 @@ const TournamentDetailScreenContent: React.FC = () => {
           return match ? match[1] : null;
         };
 
+
         fieldsMap[matchNo] = {
+          // Don't extract noInTournament here - we'll use the value from VisResponseParser
           PointsTeamASet1: extractAttribute(matchElement, 'PointsTeamASet1'),
           PointsTeamBSet1: extractAttribute(matchElement, 'PointsTeamBSet1'),
           PointsTeamASet2: extractAttribute(matchElement, 'PointsTeamASet2'),
@@ -1565,7 +1668,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     const loadCompleteDataFromAPI = async () => {
       if (!isMinimalTournament || !visNo || completeTournamentData) return;
 
-      // Loading complete tournament data from API
       setDetailsLoading(true);
 
       try {
@@ -1586,7 +1688,6 @@ const TournamentDetailScreenContent: React.FC = () => {
           tournaments = apiResponse.tournaments || [];
 
         } catch (apiError) {
-          // VIS API failed, using fallback tournaments
           // Fallback to sample tournaments
           tournaments = await FallbackTournamentService.getTournaments();
         }
@@ -1595,12 +1696,8 @@ const TournamentDetailScreenContent: React.FC = () => {
         const fullTournament = tournaments.find(t => t.visNo === visNo);
 
         if (fullTournament) {
-          // Found complete tournament data
           setCompleteTournamentData(fullTournament);
           setIsMinimalTournament(false);
-        } else {
-          // Tournament not found in API/fallback, will use existing minimal data
-          // If not found, we'll keep the minimal data
         }
       } catch (error) {
         console.error('Error loading complete tournament data:', error);
@@ -1614,6 +1711,9 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   useEffect(() => {
     if (tournament.visNo) {
+      // Track recently viewed tournament for cache warming
+      TournamentCacheWarmingService.trackRecentlyViewed(tournament.visNo);
+
       // Load tournament display data (country, location info for TournamentCard)
       loadTournamentDisplayData();
       loadMatches();
@@ -1626,7 +1726,17 @@ const TournamentDetailScreenContent: React.FC = () => {
     TournamentStorageService.clearExpiredTournamentCaches().catch(() => {
       // Silent fail for cache cleanup
     });
-  }, [tournament.visNo, tournamentData]); // Added tournamentData as dependency
+  }, [tournament.visNo]); // Removed tournamentData to prevent excessive reloads
+
+  // Initialize cache warming service on component mount
+  useEffect(() => {
+    TournamentCacheWarmingService.startBackgroundWarming();
+
+    return () => {
+      // Cleanup cache warming on unmount
+      TournamentCacheWarmingService.stopBackgroundWarming();
+    };
+  }, []);
 
   // Clean up - removed debug effect
 
@@ -1805,7 +1915,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                   onLayout={(event) => {
                     const yPosition = event.nativeEvent.layout.y;
                     matchListOffset.current = yPosition;
-                    console.log('📍 MATCHLIST OFFSET: MatchListV2 positioned at Y=', yPosition);
                   }}
                 >
                   <MatchListV2
@@ -1842,33 +1951,59 @@ const TournamentDetailScreenContent: React.FC = () => {
                   enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
                   enableLiveScores={getTournamentStatus() === 'LIVE'}
                   tournamentTimezone={(() => {
-                    // Map tournament location to timezone like gender field
-                    const getTimezoneForTournament = (tournament: any) => {
-                      // Map based on country code or city
-                      if (tournament?.countryCode === 'BR') {
-                        if (tournament?.name?.includes('João Pessoa')) return 'America/Fortaleza';
-                        if (tournament?.name?.includes('São Paulo')) return 'America/Sao_Paulo';
-                        return 'America/Sao_Paulo'; // Default Brazil timezone
-                      }
-                      if (tournament?.countryCode === 'DE') {
-                        return 'Europe/Berlin'; // Germany
-                      }
-                      if (tournament?.countryCode === 'US') {
-                        return 'America/New_York'; // Default US timezone
-                      }
-                      // Add more mappings as needed
-                      return 'UTC'; // Default fallback
-                    };
+                    try {
+                      // Use the comprehensive timezone detection system
+                      const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
 
-                    const enhancedTournament = {
-                      ...tournament,
-                      DefaultTimeZone: getTimezoneForTournament(tournament)
-                    };
+                      const tournamentLocation = {
+                        city: apiTournamentLocationData?.city || tournament?.city,
+                        country: apiTournamentLocationData?.country || tournament?.country,
+                        countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                        venue: apiTournamentLocationData?.venue || tournament?.venue,
+                        name: apiTournamentLocationData?.name || tournament?.name
+                      };
 
-                    const timezone = enhancedTournament?.DefaultTimeZone;
-                    return timezone;
+                      const detectionResult = detectTournamentTimezone(tournamentLocation);
+
+                      return detectionResult.timezone;
+                    } catch (error) {
+                      return 'UTC'; // Fallback
+                    }
                   })()}
                   tournamentGender={enhancedTournament?.gender}
+                  tournamentData={(() => {
+                    // Get the detected timezone from the previous calculation
+                    const detectedTimezone = (() => {
+                      try {
+                        const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
+                        const tournamentLocation = {
+                          city: apiTournamentLocationData?.city || tournament?.city,
+                          country: apiTournamentLocationData?.country || tournament?.country,
+                          countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                          venue: apiTournamentLocationData?.venue || tournament?.venue,
+                          name: apiTournamentLocationData?.name || tournament?.name
+                        };
+                        const detectionResult = detectTournamentTimezone(tournamentLocation);
+                        return detectionResult.timezone;
+                      } catch (error) {
+                        return 'UTC';
+                      }
+                    })();
+
+                    const tournamentDataForMatchList = {
+                      city: apiTournamentLocationData?.city || tournament?.city,
+                      country: apiTournamentLocationData?.country || tournament?.country,
+                      countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                      name: apiTournamentLocationData?.name || tournament?.name,
+                      venue: apiTournamentLocationData?.venue || tournament?.venue,
+                      defaultTimeZone: detectedTimezone,
+                      startDate: tournament?.dates?.startDate, // For live tournament detection
+                      endDate: tournament?.dates?.endDate, // For live tournament detection
+                    };
+
+
+                    return tournamentDataForMatchList;
+                  })()}
                   matchFilters={{
                     // Use the tournament numbers from the existing complex loading logic
                     tournamentCode: enhancedTournament?.visNo,

@@ -83,6 +83,15 @@ export const CacheStrategies = {
     compression: false,
     prefix: '@VisCache:assignments:',
     maxSize: 50
+  } as CacheStrategy,
+
+  // Tournament matches - Dynamic TTL based on status (from TournamentMatchCache)
+  TOURNAMENT_MATCHES: {
+    namespace: 'tournament_matches',
+    ttl: 5 * 60 * 1000, // 5 minutes base TTL (actual TTL is dynamic)
+    compression: true,
+    prefix: '@VisCache:matches:',
+    maxSize: 100
   } as CacheStrategy
 } as const;
 

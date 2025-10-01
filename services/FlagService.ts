@@ -115,6 +115,7 @@ const FEDERATION_TO_COUNTRY_MAP: Record<string, string> = {
   'THA': 'TH',  // Thailand
   'DOM': 'DO',  // Dominican Republic
   'PER': 'PE',  // Peru
+  'RWA': 'RW',  // Rwanda
 
   // Special federation cases (use 3-letter code)
   'ENG': 'ENG', // England
@@ -206,8 +207,9 @@ const KNOWN_WORKING_FLAGS = new Set([
   'GE', 'MD', 'AZ', 'AL', 'AM', 'BY', 'BA', 'LV', 'MK', 'ME', 'RS', 'TM',
   'AF', 'BT', 'BN', 'KH', 'LA', 'MV', 'MM', 'NP', 'PK', 'TL', 'UA', 'HR', 'EE', 'LT',
   // Missing flags reported by user - ISO codes
-  'CU', 'CR', 'GT', 'PR', 'VU',  // Cuba, Costa Rica, Guatemala, Puerto Rico, Vanuatu
-  // Standard ISO 2-letter codes that work
+  'CU', 'CR', 'GT', 'PR', 'VU', 'DO', 'RW',  // Cuba, Costa Rica, Guatemala, Puerto Rico, Vanuatu, Dominican Republic, Rwanda
+  // Special codes that work
+  'ENG',  // England
 ]);
 
 /**

@@ -643,147 +643,168 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
         {/* Match Header - with gender badge and time/court */}
         <View style={styles.matchHeader}>
-          <View style={styles.leftBadgeContainer}>
-            {isQualification && (
-              <View style={styles.qualificationBadge}>
-                <Text style={styles.qualificationBadgeText}>
-                  QUAL
+          <View style={styles.leftTimeCourtContainer}>
+            {/* Left - Time and Court */}
+            <View style={styles.timeCourtContent}>
+              {/* Time Display and Court in horizontal layout */}
+              <View style={styles.timeCourtRow}>
+                {/* Time Display */}
+                <View style={styles.timeDisplayContainer}>
+                  {(() => {
+                    // Use enhanced timezone system for accurate "My Time" display
+                    const timeDisplay = (() => {
+                      // Try new timezone-safe structure first
+                      const scheduled = (match as any).scheduled;
+
+                      // DEBUG: Check which path is being taken
+                      console.log('🚨 MatchCard Path Debug:', {
+                        hasScheduled: !!scheduled,
+                        hasScheduledDateTime: !!(match.scheduledDateTime),
+                        tournamentCountryCode: tournamentData?.countryCode,
+                        pathTaken: scheduled ? 'NEW_TIMEZONE_SYSTEM' : 'LEGACY_FALLBACK'
+                      });
+
+                      if (scheduled) {
+                        // Display tournament local time (immune to browser timezone)
+                        const localTime = scheduled.timeTournament; // "14:00:00" format
+                        const displayTime = localTime.substring(0, 5); // "14:00"
+
+                        // Calculate "My Time" using new timezone utilities
+                        try {
+                          console.log('🚨 Starting timezone conversion...');
+
+                          // Prepare match data for timezone conversion
+                          const matchData = {
+                            // Use the UTC timestamp directly since epochMs is already correct
+                            BeginDateTimeUtc: new Date(scheduled.epochMs).toISOString(),
+                            // Also provide local time fields for enhanced detection
+                            LocalDate: scheduled.dateTournament,
+                            LocalTime: scheduled.timeTournament.substring(0, 5),
+                            TournamentCity: (match as any).city || (match as any).venue,
+                            TournamentCountry: (match as any).country,
+                            TournamentCountryCode: (match as any).countryCode,
+                            TournamentName: (match as any).tournamentName
+                          };
+
+                          console.log('🚨 matchData prepared:', matchData);
+
+                          const tournamentDataForConversion = {
+                            city: tournamentData?.city || (match as any).city || (match as any).venue,
+                            country: tournamentData?.country || (match as any).country,
+                            countryCode: tournamentData?.countryCode || (match as any).countryCode,
+                            name: tournamentData?.name || (match as any).tournamentName,
+                            defaultTimeZone: tournamentData?.defaultTimeZone || tournamentTimezone || scheduled.tz
+                          };
+
+                          console.log('🚨 tournamentDataForConversion prepared:', tournamentDataForConversion);
+
+                          const userTime = formatMatchTimeForUser(matchData, {
+                            showTimezoneIndicator: false,
+                            tournamentData: tournamentDataForConversion
+                          });
+
+                          console.log('🚨 userTime calculated:', userTime);
+
+                          // DEBUG: Check timezone calculation details
+                          console.log('🚨 Timezone Details:', {
+                            mexicoTime: displayTime,
+                            userTime: userTime,
+                            timeDifference: `${displayTime} → ${userTime}`,
+                            expectedDifference: 'Should be ~7-8 hours difference',
+                            userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                            mexicoTimezone: 'America/Mexico_City',
+                            epochMs: scheduled.epochMs,
+                            utcTime: new Date(scheduled.epochMs).toISOString()
+                          });
+
+                          // Debug: Check what data is being passed to timezone conversion
+                          if (tournamentData?.countryCode === 'MX') {
+                            console.log('🚨 Timezone Conversion Debug:', {
+                              matchData,
+                              tournamentData,
+                              userTime,
+                              displayTime
+                            });
+                          }
+
+                          // Show userTime for timezone-converted matches when timezone preference is 'user'
+                          const isLiveMatch = match.status === MatchStatus.RUNNING;
+
+                          // TEMPORARY: Show My Time for all Mexico matches to test timezone conversion
+                          const isMexicoMatch = tournamentData?.defaultTimeZone === 'America/Mexico_City';
+                          // TEMPORARY OVERRIDE: Force show My Time for Mexico regardless of preference
+                          const shouldShowMyTime = (isLiveMatch || isMexicoMatch) && userTime && userTime !== displayTime;
+                          const userTimeFormatted = shouldShowMyTime ? userTime : null;
+
+                          // Debug the condition evaluation
+                          if (isMexicoMatch || isLiveMatch) {
+                            console.log('🚨 My Time Condition Debug:', {
+                              isMexicoMatch,
+                              isLiveMatch,
+                              timezonePreference,
+                              userTime,
+                              displayTime,
+                              userTimeDifferent: userTime !== displayTime,
+                              shouldShowMyTime,
+                              userTimeFormatted
+                            });
+                          }
+
+                          // Final debug: what's actually being returned
+                          const result = { localTime: displayTime, userTime: userTimeFormatted };
+                          if (isMexicoMatch) {
+                            console.log('🚨 FINAL RETURN:', result);
+                          }
+                          return result;
+
+                        } catch (error) {
+                          return { localTime: displayTime, userTime: null };
+                        }
+                      }
+
+                      // Fallback for backward compatibility
+                      if (match.scheduledDateTime) {
+                        return getTimeDisplay(match.scheduledDateTime);
+                      }
+
+                      return { localTime: 'TBD', userTime: null };
+                    })();
+
+                    return (
+                      <View style={{alignItems: 'flex-start'}}>
+                        <Text style={styles.matchTime}>
+                          {timeDisplay.localTime}
+                        </Text>
+                        {timeDisplay.userTime && (
+                          <Text style={styles.userTimeBelow}>
+                            ({timeDisplay.userTime})
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })()}
+                </View>
+
+                {/* Court - positioned to the right of time */}
+                <Text style={styles.courtTextRight}>
+                  {match.court?.courtNumber ? (
+                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+                  ) : 'TBD'}
                 </Text>
               </View>
-            )}
-{(() => {
-              // DEBUG: Log what fields are available for first few matches
-              const matchIndex = parseInt(match.visNo || '0');
-              if (matchIndex <= 3) {
-                console.log(`🏐 [DEBUG-MatchCard] Match ${match.visNo} badge fields:`, {
-                  tournamentGender: (match as any).tournamentGender,
-                  tournamentGenderText: (match as any).tournamentGenderText,
-                  noInTournament: (match as any).noInTournament,
-                  matchCode: match.matchCode,
-                  hasGenderText: !!(match as any).tournamentGenderText
-                });
-              }
-
-              // Use tournamentGenderText for display, fallback to raw value then 'M'
-              const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
-              const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
-
-              return (
-                <View style={[
-                  styles.genderBadge,
-                  genderText === 'M' ? styles.menBadge : styles.womenBadge,
-                  isQualification && styles.qualificationGenderBadge
-                ]}>
-                  <Text style={[
-                    styles.genderBadgeText,
-                    genderText === 'M' ? styles.menBadgeText : styles.womenBadgeText
-                  ]}>
-                    {getRoundPrefix(match)}{genderText}{matchNumber}
-                  </Text>
-                </View>
-              );
-            })()}
+            </View>
           </View>
 
-          <View style={styles.timeCourtContainer}>
-            {/* Compact horizontal layout - Court, Time, Status close together */}
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
-              {/* Court */}
-              <Text style={styles.courtText}>
-                {match.court?.courtNumber ? (
-                  match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-                ) : 'TBD'}
-              </Text>
-
-              {/* Time Display */}
-              <View style={styles.timeDisplayContainer}>
-                {(() => {
-                  // Use enhanced timezone system for accurate "My Time" display
-                  const timeDisplay = (() => {
-                    // Try new timezone-safe structure first
-                    const scheduled = (match as any).scheduled;
-
-                    if (scheduled) {
-                      // Display tournament local time (immune to browser timezone)
-                      const localTime = scheduled.timeTournament; // "14:00:00" format
-                      const displayTime = localTime.substring(0, 5); // "14:00"
-
-                      // Calculate "My Time" using new timezone utilities
-                      try {
-                        // Prepare match data for timezone conversion
-                        const matchData = {
-                          // Use the UTC timestamp directly since epochMs is already correct
-                          BeginDateTimeUtc: new Date(scheduled.epochMs).toISOString(),
-                          // Also provide local time fields for enhanced detection
-                          LocalDate: scheduled.dateTournament,
-                          LocalTime: scheduled.timeTournament.substring(0, 5),
-                          TournamentCity: (match as any).city || (match as any).venue,
-                          TournamentCountry: (match as any).country,
-                          TournamentCountryCode: (match as any).countryCode,
-                          TournamentName: (match as any).tournamentName
-                        };
-
-
-                        const tournamentData = {
-                          city: (match as any).city || (match as any).venue,
-                          country: (match as any).country,
-                          countryCode: (match as any).countryCode,
-                          name: (match as any).tournamentName,
-                          defaultTimeZone: tournamentTimezone || scheduled.tz
-                        };
-
-                        const userTime = formatMatchTimeForUser(matchData, {
-                          showTimezoneIndicator: false,
-                          tournamentData
-                        });
-
-                        // Show userTime for LIVE matches when timezone preference is 'user'
-                        const isLiveMatch = match.status === MatchStatus.RUNNING;
-                        const shouldShowMyTime = isLiveMatch && timezonePreference === 'user' && userTime;
-                        const userTimeFormatted = shouldShowMyTime ? userTime : null;
-
-                        // Debug logging for timezone issues
-                        if (isLiveMatch) {
-                          console.log('🕒 MatchCard timezone debug:', {
-                            isLiveMatch,
-                            timezonePreference,
-                            userTime,
-                            displayTime,
-                            shouldShowMyTime,
-                            userTimeFormatted,
-                            tournamentCity: (match as any).city,
-                            tournamentCountry: (match as any).country
-                          });
-                        }
-                        return { localTime: displayTime, userTime: userTimeFormatted };
-
-                      } catch (error) {
-                        return { localTime: displayTime, userTime: null };
-                      }
-                    }
-
-                    // Fallback for backward compatibility
-                    if (match.scheduledDateTime) {
-                      return getTimeDisplay(match.scheduledDateTime);
-                    }
-
-                    return { localTime: 'TBD', userTime: null };
-                  })();
-
-                  return (
-                    <View style={{alignItems: 'center'}}>
-                      <Text style={styles.matchTime}>
-                        {timeDisplay.localTime}
-                      </Text>
-                      {timeDisplay.userTime && (
-                        <Text style={styles.userTimeBelow}>
-                          ({timeDisplay.userTime})
-                        </Text>
-                      )}
-                    </View>
-                  );
-                })()}
-              </View>
+          <View style={styles.centerStatusContainer}>
+            {/* Center - Round/Phase and Status */}
+            <View style={styles.centerContent}>
+              {roundData && (
+                <RoundPhaseDisplay
+                  round={roundData.round}
+                  phase={roundData.phase}
+                  style={styles.roundBadge}
+                />
+              )}
 
               {/* Status */}
               {(() => {
@@ -824,13 +845,45 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
 
           <View style={styles.rightBadgeContainer}>
-            {roundData && (
-              <RoundPhaseDisplay
-                round={roundData.round}
-                phase={roundData.phase}
-                style={styles.roundBadge}
-              />
+            {isQualification && (
+              <View style={styles.qualificationBadge}>
+                <Text style={styles.qualificationBadgeText}>
+                  QUAL
+                </Text>
+              </View>
             )}
+{(() => {
+              // DEBUG: Log what fields are available for first few matches
+              const matchIndex = parseInt(match.visNo || '0');
+              if (matchIndex <= 3) {
+                console.log(`🏐 [DEBUG-MatchCard] Match ${match.visNo} badge fields:`, {
+                  tournamentGender: (match as any).tournamentGender,
+                  tournamentGenderText: (match as any).tournamentGenderText,
+                  noInTournament: (match as any).noInTournament,
+                  matchCode: match.matchCode,
+                  hasGenderText: !!(match as any).tournamentGenderText
+                });
+              }
+
+              // Use tournamentGenderText for display, fallback to raw value then 'M'
+              const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
+              const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
+
+              return (
+                <View style={[
+                  styles.genderBadge,
+                  genderText === 'M' ? styles.menBadge : styles.womenBadge,
+                  isQualification && styles.qualificationGenderBadge
+                ]}>
+                  <Text style={[
+                    styles.genderBadgeText,
+                    genderText === 'M' ? styles.menBadgeText : styles.womenBadgeText
+                  ]}>
+                    {getRoundPrefix(match)}{genderText}{matchNumber}
+                  </Text>
+                </View>
+              );
+            })()}
           </View>
         </View>
 
@@ -1251,11 +1304,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
                   }
 
+                  // Format referee name as "Surname, FirstInitial."
+                  const formatRefereeName = (fullName: string): string => {
+                    const nameParts = fullName.trim().split(/\s+/);
+                    if (nameParts.length >= 2) {
+                      const surname = nameParts[0]; // First word is surname
+                      const firstName = nameParts[nameParts.length - 1]; // Last word is first name
+                      const firstInitial = firstName.charAt(0).toUpperCase();
+                      return `${surname}, ${firstInitial}.`;
+                    }
+                    return fullName; // Fallback to original if parsing fails
+                  };
+
                   refereeRows.push(
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>{position}</Text>
-                        <Text style={styles.refereeName}>{referee.refereeName}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
@@ -1265,13 +1330,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   );
                 });
               } else {
+                // Format referee name as "Surname, FirstInitial." for legacy format too
+                const formatRefereeName = (fullName: string): string => {
+                  const nameParts = fullName.trim().split(/\s+/);
+                  if (nameParts.length >= 2) {
+                    const surname = nameParts[0]; // First word is surname
+                    const firstName = nameParts[nameParts.length - 1]; // Last word is first name
+                    const firstInitial = firstName.charAt(0).toUpperCase();
+                    return `${surname}, ${firstInitial}.`;
+                  }
+                  return fullName; // Fallback to original if parsing fails
+                };
+
                 // Fallback to legacy BeachMatch format
                 if (rawMatch.Referee1Name) {
                   refereeRows.push(
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>1°</Text>
-                        <Text style={styles.refereeName}>{rawMatch.Referee1Name}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
@@ -1286,7 +1363,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>2°</Text>
-                        <Text style={styles.refereeName}>{rawMatch.Referee2Name}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
@@ -1302,7 +1379,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="challenge-referee" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>CR</Text>
-                        <Text style={styles.refereeName}>{rawMatch.ChallengeRefereeName}</Text>
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
                         <FlagImage
                           countryCode={rawMatch.ChallengeRefereeFederationCode}
                           style={styles.refereeFlag}
@@ -1357,17 +1434,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  leftBadgeContainer: {
+  leftTimeCourtContainer: {
     flex: 0.8,
     alignItems: 'flex-start',
   },
-  timeCourtContainer: {
+  centerStatusContainer: {
     flex: 2,
     alignItems: 'center',
+  },
+  centerContent: {
+    alignItems: 'center',
+    gap: 1,
   },
   rightBadgeContainer: {
     flex: 0.8,
     alignItems: 'flex-end',
+  },
+  timeCourtContent: {
+    alignItems: 'flex-start',
+  },
+  timeCourtRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   genderBadge: {
     paddingVertical: 2,
@@ -1416,7 +1505,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   matchTime: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#1B365D',
     textAlign: 'center',
@@ -1441,6 +1530,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginRight: 8,
   },
+  courtTextRight: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   statusBadge: {
     backgroundColor: '#6B7280',
     paddingVertical: 2,
@@ -1449,22 +1544,23 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     flexDirection: 'column',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   statusText: {
-    fontSize: 10,
-    color: '#666',
-    fontFamily: 'monospace',
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   inlineResultBadge: {
     backgroundColor: '#DC2626',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
-    marginTop: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 3,
   },
   inlineResultText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#FFFFFF',
     fontWeight: '600',
     textTransform: 'uppercase',

@@ -343,6 +343,14 @@ export class VisResponseParser {
     const statusStr = this.extractXmlAttribute(matchXml, 'Status') || '';
     const rawStatus = statusStr ? (isNaN(parseInt(statusStr)) ? statusStr : parseInt(statusStr)) : undefined;
     const status = mapVisMatchStatus(statusStr);
+
+    // Extract ResultType field from BeachMatch
+    const resultType = this.extractXmlAttribute(matchXml, 'ResultType');
+
+    // Debug log for result type extraction
+    if (resultType && resultType !== 'Normal') {
+      console.log(`🏐 [DEBUG-Parser] Match ${visNo} ResultType: ${resultType}`);
+    }
     
     const courtNumber = this.extractXmlAttribute(matchXml, 'Court') || '1';
     const localDate = this.extractXmlAttribute(matchXml, 'LocalDate') || '';
@@ -535,7 +543,9 @@ export class VisResponseParser {
       tournamentCountry: tournamentLocation?.country,
       tournamentCountryCode: tournamentLocation?.countryCode,
       tournamentVenue: tournamentLocation?.venue,
-      tournamentName: tournamentLocation?.name
+      tournamentName: tournamentLocation?.name,
+      // Add ResultType from VIS API for forfeit/injury detection
+      resultType: resultType
     } as any;
 
 

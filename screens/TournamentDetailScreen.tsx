@@ -1952,41 +1952,75 @@ const TournamentDetailScreenContent: React.FC = () => {
                   enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
                   enableLiveScores={getTournamentStatus() === 'LIVE'}
                   tournamentTimezone={(() => {
-                    // Map tournament location to timezone like gender field
-                    const getTimezoneForTournament = (tournament: any) => {
-                      // Map based on country code or city
-                      if (tournament?.countryCode === 'BR') {
-                        if (tournament?.name?.includes('João Pessoa')) return 'America/Fortaleza';
-                        if (tournament?.name?.includes('São Paulo')) return 'America/Sao_Paulo';
-                        return 'America/Sao_Paulo'; // Default Brazil timezone
-                      }
-                      if (tournament?.countryCode === 'DE') {
-                        return 'Europe/Berlin'; // Germany
-                      }
-                      if (tournament?.countryCode === 'US') {
-                        return 'America/New_York'; // Default US timezone
-                      }
-                      // Add more mappings as needed
-                      return 'UTC'; // Default fallback
-                    };
+                    try {
+                      // Use the comprehensive timezone detection system
+                      const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
 
-                    const enhancedTournament = {
-                      ...tournament,
-                      DefaultTimeZone: getTimezoneForTournament(tournament)
-                    };
+                      const tournamentLocation = {
+                        city: apiTournamentLocationData?.city || tournament?.city,
+                        country: apiTournamentLocationData?.country || tournament?.country,
+                        countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                        venue: apiTournamentLocationData?.venue || tournament?.venue,
+                        name: apiTournamentLocationData?.name || tournament?.name
+                      };
 
-                    const timezone = enhancedTournament?.DefaultTimeZone;
-                    return timezone;
+                      const detectionResult = detectTournamentTimezone(tournamentLocation);
+
+                      // Debug only for Mexico
+                      if (tournament?.countryCode === 'MX') {
+                        console.log('🚨 MX Timezone Debug:', {
+                          tournamentLocation,
+                          detectionResult,
+                          finalTimezone: detectionResult.timezone
+                        });
+                      }
+
+                      return detectionResult.timezone;
+                    } catch (error) {
+                      console.error('🚨 Timezone detection failed:', error);
+                      return 'UTC'; // Fallback
+                    }
                   })()}
                   tournamentGender={enhancedTournament?.gender}
                   tournamentData={(() => {
+                    // Get the detected timezone from the previous calculation
+                    const detectedTimezone = (() => {
+                      try {
+                        const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
+                        const tournamentLocation = {
+                          city: apiTournamentLocationData?.city || tournament?.city,
+                          country: apiTournamentLocationData?.country || tournament?.country,
+                          countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                          venue: apiTournamentLocationData?.venue || tournament?.venue,
+                          name: apiTournamentLocationData?.name || tournament?.name
+                        };
+                        const detectionResult = detectTournamentTimezone(tournamentLocation);
+                        return detectionResult.timezone;
+                      } catch (error) {
+                        return 'UTC';
+                      }
+                    })();
+
                     const tournamentDataForMatchList = {
                       city: apiTournamentLocationData?.city || tournament?.city,
                       country: apiTournamentLocationData?.country || tournament?.country,
                       countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
                       name: apiTournamentLocationData?.name || tournament?.name,
                       venue: apiTournamentLocationData?.venue || tournament?.venue,
+                      defaultTimeZone: detectedTimezone,
                     };
+
+                    // Debug: Check what's actually in tournamentDataForMatchList
+                    if (tournament?.countryCode === 'MX') {
+                      console.log('🚨 TournamentDetailScreen - Final data for MatchCard:', {
+                        original_tournament_countryCode: tournament?.countryCode,
+                        apiLocationData_countryCode: apiTournamentLocationData?.countryCode,
+                        final_countryCode: tournamentDataForMatchList.countryCode,
+                        detected_timezone: detectedTimezone,
+                        fullTournamentDataForMatchList: tournamentDataForMatchList
+                      });
+                    }
+
                     return tournamentDataForMatchList;
                   })()}
                   matchFilters={{

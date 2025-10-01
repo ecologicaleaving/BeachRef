@@ -186,6 +186,9 @@ export interface BeachMatchCore extends VisEntity {
 
   /** Tournament name for timezone detection */
   readonly tournamentName?: string;
+
+  /** Result type from VIS API (Normal, ForfeitA, ForfeitB, InjuryA, etc.) */
+  readonly resultType?: string;
 }
 
 /**

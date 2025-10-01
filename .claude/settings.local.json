@@ -121,7 +121,9 @@
       "Bash(del debug-match-details-dto.js debug-match-service-usage.js)",
       "Bash(del test-vis-api.js)",
       "Bash(echo:*)",
-      "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)"
+      "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)",
+      "Read(//c/Users/KreshOS/Pictures/Screenshots/**)",
+      "Bash(del debug-tournament-data.js debug-timezone-detection.js debug-mx-timezone.js test-mx-detection.js)"
     ],
     "deny": [],
     "ask": [],

@@ -803,27 +803,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
 
           <View style={styles.centerStatusContainer}>
-            {/* Center - Court and Round/Phase on first row, Status on second row */}
-            <View style={styles.centerContent}>
-              {/* Court badge - positioned to the left of round */}
-              <View style={[styles.roundBadge, styles.courtBadge]}>
-                <Text style={styles.roundBadgeText}>
-                  {match.court?.courtNumber ? (
-                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
-                  ) : 'TBD'}
-                </Text>
-              </View>
-
-              {roundData && (
-                <RoundPhaseDisplay
-                  round={roundData.round}
-                  phase={roundData.phase}
-                  style={styles.roundBadge}
-                />
-              )}
-            </View>
-
-            {/* Status on separate row */}
+            {/* Status on first row */}
             {(() => {
                 const rawStatus = (match as any)?.rawStatus;
                 const statusText = (() => {
@@ -867,6 +847,26 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   </View>
                 );
               })()}
+
+            {/* Court and Round/Phase on second row */}
+            <View style={styles.centerContent}>
+              {/* Court badge - positioned to the left of round */}
+              <View style={[styles.roundBadge, styles.courtBadge]}>
+                <Text style={styles.roundBadgeText}>
+                  {match.court?.courtNumber ? (
+                    match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
+                  ) : 'TBD'}
+                </Text>
+              </View>
+
+              {roundData && (
+                <RoundPhaseDisplay
+                  round={roundData.round}
+                  phase={roundData.phase}
+                  style={styles.roundBadge}
+                />
+              )}
+            </View>
           </View>
 
           <View style={styles.rightBadgeContainer}>
@@ -1573,6 +1573,7 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: 'column',
     alignItems: 'center',
+    marginBottom: 4,
   },
   statusRow: {
     flexDirection: 'row',

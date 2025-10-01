@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
-import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../../types/match-v2';
+import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus, mapVisMatchStatus } from '../../types/match-v2';
 import { BeachSetStatus } from '../../types/beach-live';
 import { MatchList, MatchCard } from '../entities/Match';
 import { useMatches, MatchesFilters } from '../../hooks/useMatches';
@@ -1217,12 +1217,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Live score data retrieved
       if (liveScore) {
         // Always update status if live data is available
-        const newStatus = liveScore.match?.status !== undefined ? liveScore.match.status : match.rawStatus;
-
+        const newRawStatus = liveScore.match?.status !== undefined ? liveScore.match.status : match.rawStatus;
+        const newMappedStatus = mapVisMatchStatus(String(newRawStatus));
 
         matchWithResult = {
           ...match,
-          rawStatus: newStatus
+          rawStatus: newRawStatus,
+          status: newMappedStatus
         };
 
         // If we also have set data, update the result

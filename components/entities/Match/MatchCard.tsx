@@ -629,18 +629,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             return numericMatch ? numericMatch[0] : null;
           }
 
-          if (__DEV__) {
-            console.log('[MatchCard] Navigation with VIS match number:', {
-              visMatchNo,
-              originalId: match.id,
-              matchCode: match.matchCode,
-              visNoField: match.visNo,
-              extractedFromMatchCode: extractNumericFromString(match.matchCode),
-              extractedFromId: extractNumericFromString(match.id),
-              tournamentNo,
-              finalURL: `/match-detail?matchNo=${visMatchNo}&tournamentNo=${tournamentNo}`
-            });
-          }
 
           router.push({
             pathname: '/match-detail',

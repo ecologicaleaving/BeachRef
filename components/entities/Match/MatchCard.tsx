@@ -780,7 +780,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     if (rawStatus >= 9) {
                       return 'Closed';
                     } else if (rawStatus >= 3 && rawStatus <= 8) {
-                      return 'Live';
+                      return 'LIVE';
                     } else if (rawStatus === 2) {
                       return 'Ready';
                     } else if (rawStatus === 1) {
@@ -792,13 +792,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   return match.status || '';
                 })();
 
+                const isLiveStatus = typeof rawStatus === 'number' && rawStatus >= 3 && rawStatus <= 8;
                 const resultTypeDisplay = getResultTypeDisplay();
 
                 return (
                   <View style={styles.statusContainer}>
-                    <Text style={styles.statusText}>
-                      {statusText}
-                    </Text>
+                    <View style={styles.statusRow}>
+                      {isLiveStatus && (
+                        <View style={styles.liveRedDot} />
+                      )}
+                      <Text style={[styles.statusText, isLiveStatus && styles.liveStatusText]}>
+                        {statusText}
+                      </Text>
+                    </View>
                     {resultTypeDisplay && (
                       <View style={styles.inlineResultBadge}>
                         <Text style={styles.inlineResultText}>• {resultTypeDisplay}</Text>
@@ -1514,11 +1520,25 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
   },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   statusText: {
     fontSize: 14,
     color: '#374151',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  liveStatusText: {
+    color: '#DC2626', // Red color for LIVE status
+  },
+  liveRedDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#DC2626', // Red dot
   },
   inlineResultBadge: {
     backgroundColor: '#DC2626',

@@ -150,7 +150,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   // Reset score age when live score refresh timer triggers (every 5 seconds)
   useEffect(() => {
     if (isMatchLive(match) && liveScoreRefresh !== undefined && liveScoreRefresh > 0) {
-      console.log(`🔄 SCORE AGE RESET: Match ${match.id} - resetting to 0s due to fresh data (refresh: ${liveScoreRefresh})`);
       setLastScoreUpdate(new Date());
       setScoreAge(0);
     }

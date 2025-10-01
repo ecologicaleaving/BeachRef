@@ -49,8 +49,6 @@ export class TournamentCacheWarmingService {
         console.warn('Periodic cache warming failed:', error);
       });
     }, this.WARMING_INTERVAL);
-
-    console.log('🔥 Tournament cache warming service started');
   }
 
   /**
@@ -61,7 +59,6 @@ export class TournamentCacheWarmingService {
       clearInterval(this.warmingInterval);
       this.warmingInterval = null;
     }
-    console.log('🛑 Tournament cache warming service stopped');
   }
 
   /**
@@ -86,8 +83,6 @@ export class TournamentCacheWarmingService {
       if (tournamentsToWarm.length === 0) {
         return;
       }
-
-      console.log(`🔥 Cache warming ${tournamentsToWarm.length} tournaments`);
 
       // Warm in parallel but rate-limited
       const promises = tournamentsToWarm

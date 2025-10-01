@@ -1237,7 +1237,6 @@ const TournamentDetailScreenContent: React.FC = () => {
       const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo);
 
       if (cachedMatches) {
-        console.log(`📦 Using cached matches (${cachedMatches.length} matches)`);
         setMatches(cachedMatches);
         setMatchesLoading(false);
         setLoadMatchesInProgress(false);

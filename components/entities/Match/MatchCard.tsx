@@ -789,10 +789,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       return `Status ${rawStatus}`;
                     }
                   }
-                  return match.status || '';
+                  // Fallback: convert RUNNING to LIVE
+                  const fallbackStatus = match.status || '';
+                  return fallbackStatus === 'RUNNING' ? 'LIVE' : fallbackStatus;
                 })();
 
-                const isLiveStatus = typeof rawStatus === 'number' && rawStatus >= 3 && rawStatus <= 8;
+                const isLiveStatus = (typeof rawStatus === 'number' && rawStatus >= 3 && rawStatus <= 8) ||
+                                     match.status === 'RUNNING';
                 const resultTypeDisplay = getResultTypeDisplay();
 
                 return (

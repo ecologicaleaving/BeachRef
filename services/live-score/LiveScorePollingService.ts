@@ -402,8 +402,15 @@ export class LiveScorePollingService {
           config.pollDelayMs = this.clampPollDelay(serverPollDelay);
           
           // Update match status if adaptive polling enabled
-          if (config.useAdaptivePolling && liveData.match?.status) {
-            this.updateMatchStatusFromResponse(config.matchNo, liveData.match.status);
+          if (config.useAdaptivePolling && liveData.match) {
+            // Check for numeric rawStatus first (VIS API standard), then string status
+            const matchData = liveData.match as any;
+            const rawStatus = matchData.rawStatus;
+            const status = matchData.status;
+
+            if (rawStatus !== undefined || status) {
+              this.updateMatchStatusFromResponse(config.matchNo, status, rawStatus);
+            }
           }
           
           // Cache the live score data with shorter TTL
@@ -476,6 +483,11 @@ export class LiveScorePollingService {
       const matchNo = this.parseOptionalInt(matchNoValue) ?? 0;
       const matchStatusValue = this.extractXmlValue(xmlData, 'MatchStatus') || attr('MatchStatus') || attr('Status');
       const matchStatus = matchStatusValue || 'InProgress';
+
+      // Extract numeric status code for accurate status detection (VIS API codes: 1=Scheduled, 3-8=RUNNING, 9+=FINISHED)
+      const rawStatusValue = this.extractXmlValue(xmlData, 'Status') || attr('Status');
+      const rawStatus = this.parseOptionalInt(rawStatusValue);
+
       const matchDateTime = this.extractXmlValue(xmlData, 'DateTime') || attr('DateTime');
 
       const courtNoValue = this.extractXmlValue(xmlData, 'CourtNo') || attr('CourtNo');
@@ -616,6 +628,7 @@ export class LiveScorePollingService {
           no: matchNo,
           noInTournament: 1,
           status: matchStatus,
+          rawStatus: rawStatus, // Numeric VIS API status code for accurate state detection
           dateTime: matchDateTime || new Date().toISOString(),
           court: {
             no: courtNo,
@@ -914,12 +927,43 @@ export class LiveScorePollingService {
   /**
    * Update match status from API response
    * @param matchNo - Match number
-   * @param responseStatus - Status from API response
+   * @param responseStatus - Status from API response (string or number)
+   * @param rawStatus - Optional numeric status code (VIS API codes: 1=Scheduled, 3-8=RUNNING, 9+=FINISHED)
    */
-  private updateMatchStatusFromResponse(matchNo: number, responseStatus: string): void {
+  private updateMatchStatusFromResponse(matchNo: number, responseStatus: string | number, rawStatus?: number): void {
     let pollingStatus: MatchPollingStatus;
-    
-    // Map API response status to polling status
+
+    // First check numeric rawStatus if provided (VIS API standard)
+    if (typeof rawStatus === 'number') {
+      if (rawStatus >= 9) {
+        pollingStatus = MatchPollingStatus.FINISHED;
+      } else if (rawStatus >= 3 && rawStatus <= 8) {
+        pollingStatus = MatchPollingStatus.RUNNING;
+      } else if (rawStatus >= 1 && rawStatus <= 2) {
+        pollingStatus = MatchPollingStatus.SCHEDULED;
+      } else {
+        pollingStatus = MatchPollingStatus.SCHEDULED; // Default fallback
+      }
+
+      this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
+      return;
+    }
+
+    // Fallback: check if responseStatus is numeric
+    if (typeof responseStatus === 'number') {
+      if (responseStatus >= 9) {
+        pollingStatus = MatchPollingStatus.FINISHED;
+      } else if (responseStatus >= 3 && responseStatus <= 8) {
+        pollingStatus = MatchPollingStatus.RUNNING;
+      } else {
+        pollingStatus = MatchPollingStatus.SCHEDULED;
+      }
+
+      this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
+      return;
+    }
+
+    // Fallback: Map string status to polling status
     switch (responseStatus.toLowerCase()) {
       case 'inprogress':
       case 'running':
@@ -934,12 +978,13 @@ export class LiveScorePollingService {
       case 'finished':
       case 'completed':
       case 'ended':
+      case 'closed':
         pollingStatus = MatchPollingStatus.FINISHED;
         break;
       default:
         pollingStatus = MatchPollingStatus.SCHEDULED; // Default fallback
     }
-    
+
     this.statusPollingManager.updateMatchStatus(matchNo, pollingStatus);
   }
 

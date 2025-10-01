@@ -78,25 +78,28 @@ export interface BeachLiveTelemetry {
 export interface BeachLiveMatch {
   /** Match number */
   readonly no: number;
-  
+
   /** Match number within tournament */
   readonly noInTournament: number;
-  
+
   /** Current match status */
   readonly status: BeachMatchStatus;
-  
+
+  /** Raw numeric status code from VIS API (1=Scheduled, 3-8=RUNNING, 9+=FINISHED) */
+  readonly rawStatus?: number;
+
   /** Match date and time */
   readonly dateTime: string;
-  
+
   /** Court information */
   readonly court: BeachLiveCourt;
-  
+
   /** Current round information */
   readonly round: BeachLiveRound;
-  
+
   /** Duration of match in minutes */
   readonly durationMinutes?: number;
-  
+
   /** Weather conditions */
   readonly weather?: BeachLiveWeather;
 }

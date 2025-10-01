@@ -292,13 +292,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   // Get result type for display (only show if not "Normal")
   const getResultTypeDisplay = (): string | null => {
-    // Check BeachMatchLiveDTO format first
-    const beachMatchDTO = match as any;
-    const resultType = beachMatchDTO.status?.resultType;
-
-    if (resultType && resultType !== 'Normal') {
+    // PRIORITY 1: Check the new resultType field from BeachMatchCore
+    if (match.resultType && match.resultType !== 'Normal') {
       // Convert result type to display format
-      switch (resultType) {
+      switch (match.resultType) {
         case 'ForfeitA':
         case 'ForfeitB':
         case 'ForfeitBoth':
@@ -316,11 +313,39 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         case 'DisqualifiedBoth':
           return 'DQ';
         default:
-          return resultType; // Show other result types as-is
+          return match.resultType; // Show other result types as-is
       }
     }
 
-    // Check legacy format for forfeit flag
+    // LEGACY: Check BeachMatchLiveDTO format for compatibility
+    const beachMatchDTO = match as any;
+    const legacyResultType = beachMatchDTO.status?.resultType;
+
+    if (legacyResultType && legacyResultType !== 'Normal') {
+      // Convert result type to display format
+      switch (legacyResultType) {
+        case 'ForfeitA':
+        case 'ForfeitB':
+        case 'ForfeitBoth':
+          return 'Forfeit';
+        case 'InjuryA':
+        case 'InjuryB':
+        case 'InjuryBoth':
+          return 'Injury';
+        case 'OutA':
+        case 'OutB':
+        case 'OutBoth':
+          return 'Withdrawal';
+        case 'DisqualifiedA':
+        case 'DisqualifiedB':
+        case 'DisqualifiedBoth':
+          return 'DQ';
+        default:
+          return legacyResultType; // Show other result types as-is
+      }
+    }
+
+    // LEGACY: Check forfeit flag in match result
     if (match.result?.forfeit) {
       return 'Forfeit';
     }
@@ -661,12 +686,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
 
           <View style={styles.timeCourtContainer}>
-            <View style={styles.timeContainer}>
+            {/* Compact horizontal layout - Court, Time, Status close together */}
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+              {/* Court */}
               <Text style={styles.courtText}>
                 {match.court?.courtNumber ? (
                   match.court.courtNumber === 'CC' ? 'CC' : `C${match.court.courtNumber}`
                 ) : 'TBD'}
               </Text>
+
+              {/* Time Display */}
               <View style={styles.timeDisplayContainer}>
                 {(() => {
                   // Use enhanced timezone system for accurate "My Time" display
@@ -708,8 +737,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           tournamentData
                         });
 
-                        // Only show userTime if it's different from tournament time
-                        const userTimeFormatted = userTime && userTime !== displayTime ? userTime : null;
+                        // Show userTime for LIVE matches when timezone preference is 'user'
+                        const isLiveMatch = match.status === MatchStatus.RUNNING;
+                        const shouldShowMyTime = isLiveMatch && timezonePreference === 'user' && userTime;
+                        const userTimeFormatted = shouldShowMyTime ? userTime : null;
+
+                        // Debug logging for timezone issues
+                        if (isLiveMatch) {
+                          console.log('🕒 MatchCard timezone debug:', {
+                            isLiveMatch,
+                            timezonePreference,
+                            userTime,
+                            displayTime,
+                            shouldShowMyTime,
+                            userTimeFormatted,
+                            tournamentCity: (match as any).city,
+                            tournamentCountry: (match as any).country
+                          });
+                        }
                         return { localTime: displayTime, userTime: userTimeFormatted };
 
                       } catch (error) {
@@ -726,7 +771,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   })();
 
                   return (
-                    <>
+                    <View style={{alignItems: 'center'}}>
                       <Text style={styles.matchTime}>
                         {timeDisplay.localTime}
                       </Text>
@@ -735,34 +780,46 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           ({timeDisplay.userTime})
                         </Text>
                       )}
-                    </>
+                    </View>
                   );
                 })()}
               </View>
 
-              {/* Status display - positioned closer to the right of time */}
-              <Text style={{fontSize: 10, color: '#666', fontFamily: 'monospace', textAlign: 'right', minWidth: 60, marginLeft: 4}}>
-                {(() => {
-                  const rawStatus = (match as any)?.rawStatus;
+              {/* Status */}
+              {(() => {
+                const rawStatus = (match as any)?.rawStatus;
+                const statusText = (() => {
                   if (typeof rawStatus === 'number') {
                     if (rawStatus >= 9) {
                       return 'Closed';
+                    } else if (rawStatus >= 3 && rawStatus <= 8) {
+                      return 'Live';
+                    } else if (rawStatus === 2) {
+                      return 'Ready';
+                    } else if (rawStatus === 1) {
+                      return 'Scheduled';
+                    } else {
+                      return `Status ${rawStatus}`;
                     }
-                    const statusText = {
-                      1: 'Scheduled',
-                      2: 'Ready to Start',
-                      3: 'InSet1',
-                      4: 'Set1Finished',
-                      5: 'InSet2',
-                      6: 'Set2Finished',
-                      7: 'InSet3',
-                      8: 'Set3Finished'
-                    }[rawStatus] || 'Unknown';
-                    return statusText;
                   }
-                  return typeof match.status === 'string' ? match.status : `#${match.status}`;
-                })()}
-              </Text>
+                  return match.status || '';
+                })();
+
+                const resultTypeDisplay = getResultTypeDisplay();
+
+                return (
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>
+                      {statusText}
+                    </Text>
+                    {resultTypeDisplay && (
+                      <View style={styles.inlineResultBadge}>
+                        <Text style={styles.inlineResultText}>• {resultTypeDisplay}</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })()}
             </View>
           </View>
 
@@ -792,45 +849,27 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <View style={styles.centerResultContainer}>
             {matchWithResult.result ? (
               <View style={styles.resultContainerWithSets}>
-                <View style={styles.scoreAndDurationRow}>
-                  <View style={styles.resultContainer}>
-                    <View>
-                      <Text style={[
-                        styles.resultScore,
-                        matchWithResult.result.winner === 1 && styles.winnerScore,
-                        isLive && styles.liveScore
-                      ]}>
-                        {matchWithResult.result.team1Sets}
-                      </Text>
-                    </View>
-                    <Text style={styles.scoreSeparator}>-</Text>
-                    <View>
-                      <Text style={[
-                        styles.resultScore,
-                        matchWithResult.result.winner === 2 && styles.winnerScore,
-                        isLive && styles.liveScore
-                      ]}>
-                        {matchWithResult.result.team2Sets}
-                      </Text>
-                    </View>
+                {/* Main score row - simplified without duration to avoid overlap */}
+                <View style={styles.resultContainer}>
+                  <View>
+                    <Text style={[
+                      styles.resultScore,
+                      matchWithResult.result.winner === 1 && styles.winnerScore,
+                      isLive && styles.liveScore
+                    ]}>
+                      {matchWithResult.result.team1Sets}
+                    </Text>
                   </View>
-
-
-                  {(() => {
-                    const totalDuration = getMatchDuration(match);
-                    const resultTypeDisplay = getResultTypeDisplay();
-
-                    return (
-                      <View style={styles.durationAndResultContainer}>
-                        {totalDuration && (
-                          <Text style={styles.durationText}>({totalDuration})</Text>
-                        )}
-                        {resultTypeDisplay && (
-                          <Text style={styles.resultTypeText}>({resultTypeDisplay})</Text>
-                        )}
-                      </View>
-                    );
-                  })()}
+                  <Text style={styles.scoreSeparator}>-</Text>
+                  <View>
+                    <Text style={[
+                      styles.resultScore,
+                      matchWithResult.result.winner === 2 && styles.winnerScore,
+                      isLive && styles.liveScore
+                    ]}>
+                      {matchWithResult.result.team2Sets}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Set Scores Display - check multiple sources */}
@@ -1130,6 +1169,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     )}
                   </View>
                 )}
+
+                {/* Duration and Result Type below set scores to avoid overlap */}
+                {(() => {
+                  const totalDuration = getMatchDuration(match);
+                  const resultTypeDisplay = getResultTypeDisplay();
+
+                  return (totalDuration || resultTypeDisplay) ? (
+                    <View style={styles.durationAndResultContainer}>
+                      {totalDuration && (
+                        <Text style={styles.durationText}>({totalDuration})</Text>
+                      )}
+                      {resultTypeDisplay && (
+                        <Text style={styles.resultTypeText}>({resultTypeDisplay})</Text>
+                      )}
+                    </View>
+                  ) : null;
+                })()}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -1391,8 +1447,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 4,
   },
+  statusContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
   statusText: {
     fontSize: 10,
+    color: '#666',
+    fontFamily: 'monospace',
+  },
+  inlineResultBadge: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 3,
+    marginTop: 2,
+  },
+  inlineResultText: {
+    fontSize: 8,
     color: '#FFFFFF',
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -1589,7 +1661,9 @@ const styles = StyleSheet.create({
   durationAndResultContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
+    marginTop: 4,
   },
   durationText: {
     fontSize: 12,

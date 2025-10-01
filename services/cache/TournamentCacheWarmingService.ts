@@ -116,7 +116,6 @@ export class TournamentCacheWarmingService {
       // Check if already cached and fresh
       const hasFreshCache = await TournamentMatchCache.hasFreshCache(tournamentNo);
       if (hasFreshCache) {
-        console.log(`🔥 Tournament ${tournamentNo} already has fresh cache, skipping`);
         return;
       }
 

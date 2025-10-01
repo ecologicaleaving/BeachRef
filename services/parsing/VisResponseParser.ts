@@ -335,6 +335,8 @@ export class VisResponseParser {
     // Extract team position fields
     const teamAPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamAPositionInMainDraw');
     const teamBPositionInMainDraw = this.extractXmlAttribute(matchXml, 'TeamBPositionInMainDraw');
+    const teamAPositionInQualification = this.extractXmlAttribute(matchXml, 'TeamAPositionInQualification');
+    const teamBPositionInQualification = this.extractXmlAttribute(matchXml, 'TeamBPositionInQualification');
     
     if (!visNo || !matchCode) {
       return null;
@@ -517,6 +519,8 @@ export class VisResponseParser {
       noInTournament: noInTournament,
       teamAPositionInMainDraw: teamAPositionInMainDraw,
       teamBPositionInMainDraw: teamBPositionInMainDraw,
+      teamAPositionInQualification: teamAPositionInQualification,
+      teamBPositionInQualification: teamBPositionInQualification,
       // Add duration fields for debugging and access
       DurationSet1: durationSet1,
       DurationSet2: durationSet2,

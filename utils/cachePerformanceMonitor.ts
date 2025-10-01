@@ -42,7 +42,6 @@ export class CachePerformanceMonitor {
       dataSize
     });
 
-    console.log(`📊 Cache HIT: ${cacheKey} (${responseTime}ms)${dataSize ? ` - ${this.formatBytes(dataSize)}` : ''}`);
   }
 
   /**
@@ -59,7 +58,6 @@ export class CachePerformanceMonitor {
       responseTime
     });
 
-    console.log(`📊 Cache MISS: ${cacheKey} (${responseTime}ms)`);
   }
 
   /**

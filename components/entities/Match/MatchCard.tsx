@@ -41,6 +41,8 @@ export interface MatchCardProps {
     name?: string;
     venue?: string;
     defaultTimeZone?: string;
+    startDate?: string; // Tournament start date for live detection
+    endDate?: string; // Tournament end date for live detection
   }; // Tournament location data for timezone detection
   liveScoreRefresh?: number; // For triggering score age reset on live score updates
 }
@@ -656,13 +658,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                       // Try new timezone-safe structure first
                       const scheduled = (match as any).scheduled;
 
-                      // DEBUG: Check which path is being taken
-                      console.log('🚨 MatchCard Path Debug:', {
-                        hasScheduled: !!scheduled,
-                        hasScheduledDateTime: !!(match.scheduledDateTime),
-                        tournamentCountryCode: tournamentData?.countryCode,
-                        pathTaken: scheduled ? 'NEW_TIMEZONE_SYSTEM' : 'LEGACY_FALLBACK'
-                      });
 
                       if (scheduled) {
                         // Display tournament local time (immune to browser timezone)
@@ -671,8 +666,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
                         // Calculate "My Time" using new timezone utilities
                         try {
-                          console.log('🚨 Starting timezone conversion...');
-
                           // Prepare match data for timezone conversion
                           const matchData = {
                             // Use the UTC timestamp directly since epochMs is already correct
@@ -686,8 +679,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             TournamentName: (match as any).tournamentName
                           };
 
-                          console.log('🚨 matchData prepared:', matchData);
-
                           const tournamentDataForConversion = {
                             city: tournamentData?.city || (match as any).city || (match as any).venue,
                             country: tournamentData?.country || (match as any).country,
@@ -696,66 +687,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             defaultTimeZone: tournamentData?.defaultTimeZone || tournamentTimezone || scheduled.tz
                           };
 
-                          console.log('🚨 tournamentDataForConversion prepared:', tournamentDataForConversion);
-
                           const userTime = formatMatchTimeForUser(matchData, {
                             showTimezoneIndicator: false,
                             tournamentData: tournamentDataForConversion
                           });
 
-                          console.log('🚨 userTime calculated:', userTime);
+                          // Show userTime only when tournament is LIVE (using date-based logic like TournamentCard)
+                          const hasTournamentTimezone = !!tournamentDataForConversion.defaultTimeZone;
 
-                          // DEBUG: Check timezone calculation details
-                          console.log('🚨 Timezone Details:', {
-                            mexicoTime: displayTime,
-                            userTime: userTime,
-                            timeDifference: `${displayTime} → ${userTime}`,
-                            expectedDifference: 'Should be ~7-8 hours difference',
-                            userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                            mexicoTimezone: 'America/Mexico_City',
-                            epochMs: scheduled.epochMs,
-                            utcTime: new Date(scheduled.epochMs).toISOString()
-                          });
+                          // Check if tournament is live using date comparison (same as TournamentCard)
+                          const isTournamentLive = (() => {
+                            if (!tournamentData?.startDate || !tournamentData?.endDate) return false;
 
-                          // Debug: Check what data is being passed to timezone conversion
-                          if (tournamentData?.countryCode === 'MX') {
-                            console.log('🚨 Timezone Conversion Debug:', {
-                              matchData,
-                              tournamentData,
-                              userTime,
-                              displayTime
-                            });
-                          }
+                            const now = new Date();
+                            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-                          // Show userTime for timezone-converted matches when timezone preference is 'user'
-                          const isLiveMatch = match.status === MatchStatus.RUNNING;
+                            const startDate = new Date(tournamentData.startDate);
+                            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
 
-                          // TEMPORARY: Show My Time for all Mexico matches to test timezone conversion
-                          const isMexicoMatch = tournamentData?.defaultTimeZone === 'America/Mexico_City';
-                          // TEMPORARY OVERRIDE: Force show My Time for Mexico regardless of preference
-                          const shouldShowMyTime = (isLiveMatch || isMexicoMatch) && userTime && userTime !== displayTime;
+                            const endDate = new Date(tournamentData.endDate);
+                            const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+                            // Tournament is live if today is between start and end dates (inclusive)
+                            return startDateOnly <= today && today <= endDateOnly;
+                          })();
+
+                          // Show My Time when: tournament is LIVE + has timezone + times are different
+                          const shouldShowMyTime = isTournamentLive && hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
                           const userTimeFormatted = shouldShowMyTime ? userTime : null;
 
-                          // Debug the condition evaluation
-                          if (isMexicoMatch || isLiveMatch) {
-                            console.log('🚨 My Time Condition Debug:', {
-                              isMexicoMatch,
-                              isLiveMatch,
-                              timezonePreference,
-                              userTime,
-                              displayTime,
-                              userTimeDifferent: userTime !== displayTime,
-                              shouldShowMyTime,
-                              userTimeFormatted
-                            });
-                          }
-
-                          // Final debug: what's actually being returned
-                          const result = { localTime: displayTime, userTime: userTimeFormatted };
-                          if (isMexicoMatch) {
-                            console.log('🚨 FINAL RETURN:', result);
-                          }
-                          return result;
+                          return { localTime: displayTime, userTime: userTimeFormatted };
 
                         } catch (error) {
                           return { localTime: displayTime, userTime: null };
@@ -1262,14 +1223,34 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <View style={styles.teamSection}>
               <Text style={[styles.teamName, styles.leftTeamName]} numberOfLines={2}>
                 {match.team1?.teamName || 'Team A'}
-                {(match as any).teamAPositionInMainDraw && ` (${(match as any).teamAPositionInMainDraw})`}
+                {(() => {
+                  // For qualification matches, show qualification position if available
+                  if (isQualification) {
+                    const qualPosition = (match as any).teamAPositionInQualification || (match as any).teams?.home?.seedQualification;
+                    if (qualPosition) return ` (${qualPosition})`;
+                  }
+                  // For main draw matches, show main draw position
+                  const mainPosition = (match as any).teamAPositionInMainDraw;
+                  if (mainPosition) return ` (${mainPosition})`;
+                  return '';
+                })()}
               </Text>
             </View>
 
             <View style={styles.teamSection}>
               <Text style={[styles.teamName, styles.rightTeamName]} numberOfLines={2}>
                 {match.team2?.teamName || 'Team B'}
-                {(match as any).teamBPositionInMainDraw && ` (${(match as any).teamBPositionInMainDraw})`}
+                {(() => {
+                  // For qualification matches, show qualification position if available
+                  if (isQualification) {
+                    const qualPosition = (match as any).teamBPositionInQualification || (match as any).teams?.away?.seedQualification;
+                    if (qualPosition) return ` (${qualPosition})`;
+                  }
+                  // For main draw matches, show main draw position
+                  const mainPosition = (match as any).teamBPositionInMainDraw;
+                  if (mainPosition) return ` (${mainPosition})`;
+                  return '';
+                })()}
               </Text>
             </View>
           </View>
@@ -1320,11 +1301,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>{position}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
                       </View>
                     </View>
                   );
@@ -1348,11 +1329,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>1°</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
                       </View>
                     </View>
                   );
@@ -1363,11 +1344,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>2°</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
                       </View>
                     </View>
                   );
@@ -1379,11 +1360,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     <View key="challenge-referee" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
                         <Text style={styles.refereePosition}>CR</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
                         <FlagImage
                           countryCode={rawMatch.ChallengeRefereeFederationCode}
                           style={styles.refereeFlag}
                         />
+                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
                       </View>
                     </View>
                   );
@@ -1689,12 +1670,15 @@ const styles = StyleSheet.create({
   },
   refereeFlag: {
     marginLeft: 8,
+    marginRight: 2,
   },
   refereeName: {
     fontSize: 15,
     color: '#374151',
     fontWeight: '500',
     marginHorizontal: 8,
+    flex: 1,
+    textAlign: 'left',
   },
   refereeNameClickable: {
     textDecorationLine: 'underline',

@@ -342,6 +342,8 @@ interface MatchListV2Props {
     name?: string;
     venue?: string;
     defaultTimeZone?: string;
+    startDate?: string; // Tournament start date for live detection
+    endDate?: string; // Tournament end date for live detection
   }; // Tournament location data for timezone detection
   externalScrollRef?: React.RefObject<ScrollView>; // External ScrollView ref for autoscroll (from parent container)
 }

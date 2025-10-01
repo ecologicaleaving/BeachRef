@@ -1420,7 +1420,29 @@ const TournamentDetailScreenContent: React.FC = () => {
 
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
+            // Phase 3 Logging: GetBeachMatchList API Flow
+            console.log('🏐 ===== PHASE 3: GetBeachMatchList API Flow =====');
+            console.log('📤 REQUEST:', {
+              endpoint: 'GetBeachMatchList',
+              tournamentNo: matchRequest.tournamentNo,
+              includeResults: matchRequest.includeResults,
+              includeReferees: matchRequest.includeReferees,
+              timestamp: new Date().toISOString()
+            });
+
             if (matchResponse.success && matchResponse.xmlData) {
+              // Log raw response (truncated for readability)
+              const rawResponse = matchResponse.xmlData;
+              const truncatedResponse = rawResponse.length > 2000
+                ? rawResponse.substring(0, 2000) + '...[TRUNCATED]...'
+                : rawResponse;
+
+              console.log('📥 RAW RESPONSE (readable):', {
+                success: matchResponse.success,
+                dataLength: rawResponse.length,
+                responsePreview: truncatedResponse.replace(/></g, '>\n<'), // Add newlines between tags
+                timestamp: new Date().toISOString()
+              });
               // Parse matches with tournament timezone context and gender data
               const tournamentGender = beachTournament.gender; // Use existing parsed gender
               const tournamentGenderText = tournamentGender === '0' ? 'M' : tournamentGender === '1' ? 'W' : 'M'; // Convert 0→M, 1→W
@@ -1449,6 +1471,53 @@ const TournamentDetailScreenContent: React.FC = () => {
                 tournamentGenderText, // Use beachTournament.gender as text too
                 tournamentLocationForTimezone // Pass timezone-compatible tournament location data
               );
+
+              // Log parsed objects (first match only)
+              if (matchesCore.length > 0) {
+                const firstMatch = matchesCore[0];
+                console.log('📋 PARSED OBJECT (first match):', {
+                  totalMatches: matchesCore.length,
+                  firstMatch: {
+                    id: firstMatch.id,
+                    visNo: firstMatch.visNo,
+                    matchCode: firstMatch.matchCode,
+                    round: firstMatch.round,
+                    status: firstMatch.status,
+                    rawStatus: (firstMatch as any).rawStatus,
+                    court: firstMatch.court,
+                    scheduledDateTime: firstMatch.scheduledDateTime,
+                    team1: {
+                      teamName: firstMatch.team1.teamName,
+                      countryCode: firstMatch.team1.countryCode,
+                      player1Name: firstMatch.team1.player1Name,
+                      player2Name: firstMatch.team1.player2Name
+                    },
+                    team2: {
+                      teamName: firstMatch.team2.teamName,
+                      countryCode: firstMatch.team2.countryCode,
+                      player1Name: firstMatch.team2.player1Name,
+                      player2Name: firstMatch.team2.player2Name
+                    },
+                    refereeAssignments: firstMatch.refereeAssignments,
+                    result: firstMatch.result,
+                    resultType: (firstMatch as any).resultType,
+                    tournamentGender: (firstMatch as any).tournamentGender,
+                    tournamentGenderText: (firstMatch as any).tournamentGenderText,
+                    teamAPositionInMainDraw: (firstMatch as any).teamAPositionInMainDraw,
+                    teamBPositionInMainDraw: (firstMatch as any).teamBPositionInMainDraw,
+                    teamAPositionInQualification: (firstMatch as any).teamAPositionInQualification,
+                    teamBPositionInQualification: (firstMatch as any).teamBPositionInQualification,
+                    timezone: (firstMatch as any).timezone,
+                    tournamentTimezone: firstMatch.tournamentTimezone,
+                    Referee1Name: (firstMatch as any).Referee1Name,
+                    Referee2Name: (firstMatch as any).Referee2Name
+                  },
+                  timestamp: new Date().toISOString()
+                });
+              } else {
+                console.log('📋 PARSED OBJECT: No matches found in response');
+              }
+              console.log('🏐 ===== END PHASE 3 LOGGING =====');
 
               // OPTIMIZED: Batch extract legacy fields to avoid per-match regex
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
@@ -1530,6 +1599,31 @@ const TournamentDetailScreenContent: React.FC = () => {
 
         const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
+        // Phase 3 Logging: GetBeachMatchList API Flow (Fallback Path)
+        console.log('🏐 ===== PHASE 3: GetBeachMatchList API Flow (Fallback) =====');
+        console.log('📤 REQUEST (fallback):', {
+          endpoint: 'GetBeachMatchList',
+          tournamentNo: matchRequest.tournamentNo,
+          includeResults: matchRequest.includeResults,
+          includeReferees: matchRequest.includeReferees,
+          timestamp: new Date().toISOString()
+        });
+
+        if (matchResponse.success && matchResponse.xmlData) {
+          // Log raw response (truncated for readability)
+          const rawResponse = matchResponse.xmlData;
+          const truncatedResponse = rawResponse.length > 2000
+            ? rawResponse.substring(0, 2000) + '...[TRUNCATED]...'
+            : rawResponse;
+
+          console.log('📥 RAW RESPONSE (readable, fallback):', {
+            success: matchResponse.success,
+            dataLength: rawResponse.length,
+            responsePreview: truncatedResponse.replace(/></g, '>\n<'), // Add newlines between tags
+            timestamp: new Date().toISOString()
+          });
+        }
+
         // If failed and we have a real TournamentNo different from EventNo, try EventNo as fallback
         if (!matchResponse.success && tournament.visNo !== tournamentNo) {
           const fallbackRequest: GetBeachMatchListRequest = {
@@ -1541,6 +1635,47 @@ const TournamentDetailScreenContent: React.FC = () => {
 
           if (fallbackResponse.success && fallbackResponse.xmlData) {
             allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, tournamentTimezone, undefined, undefined, tournamentData);
+
+            // Phase 3 Logging: Show parsed object for first match (fallback path)
+            if (allMatches.length > 0) {
+              const firstMatch = allMatches[0];
+              console.log('📥 PARSED OBJECT (FALLBACK - First Match):', {
+                id: firstMatch.id,
+                matchNumber: firstMatch.matchNumber,
+                status: firstMatch.status,
+                scheduledDateTime: firstMatch.scheduledDateTime,
+                teams: {
+                  teamA: {
+                    name: firstMatch.teamA.name,
+                    country: firstMatch.teamA.country,
+                    score: firstMatch.teamA.score,
+                    position: firstMatch.teamA.position,
+                    positionInQualification: (firstMatch.teamA as any).positionInQualification
+                  },
+                  teamB: {
+                    name: firstMatch.teamB.name,
+                    country: firstMatch.teamB.country,
+                    score: firstMatch.teamB.score,
+                    position: firstMatch.teamB.position,
+                    positionInQualification: (firstMatch.teamB as any).positionInQualification
+                  }
+                },
+                court: firstMatch.court,
+                round: firstMatch.round,
+                phase: firstMatch.phase,
+                referees: firstMatch.referees?.map(ref => ({
+                  name: ref.name,
+                  country: ref.country,
+                  function: ref.function
+                })) || [],
+                scheduled: (firstMatch as any).scheduled,
+                tournamentInfo: {
+                  tournamentTimezone,
+                  defaultTimeZone: tournamentData?.defaultTimeZone
+                },
+                timestamp: new Date().toISOString()
+              });
+            }
           }
         } else if (matchResponse.success && matchResponse.xmlData) {
           allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, tournamentTimezone, undefined, undefined, tournamentData);
@@ -1966,18 +2101,8 @@ const TournamentDetailScreenContent: React.FC = () => {
 
                       const detectionResult = detectTournamentTimezone(tournamentLocation);
 
-                      // Debug only for Mexico
-                      if (tournament?.countryCode === 'MX') {
-                        console.log('🚨 MX Timezone Debug:', {
-                          tournamentLocation,
-                          detectionResult,
-                          finalTimezone: detectionResult.timezone
-                        });
-                      }
-
                       return detectionResult.timezone;
                     } catch (error) {
-                      console.error('🚨 Timezone detection failed:', error);
                       return 'UTC'; // Fallback
                     }
                   })()}
@@ -2008,18 +2133,10 @@ const TournamentDetailScreenContent: React.FC = () => {
                       name: apiTournamentLocationData?.name || tournament?.name,
                       venue: apiTournamentLocationData?.venue || tournament?.venue,
                       defaultTimeZone: detectedTimezone,
+                      startDate: tournament?.dates?.startDate, // For live tournament detection
+                      endDate: tournament?.dates?.endDate, // For live tournament detection
                     };
 
-                    // Debug: Check what's actually in tournamentDataForMatchList
-                    if (tournament?.countryCode === 'MX') {
-                      console.log('🚨 TournamentDetailScreen - Final data for MatchCard:', {
-                        original_tournament_countryCode: tournament?.countryCode,
-                        apiLocationData_countryCode: apiTournamentLocationData?.countryCode,
-                        final_countryCode: tournamentDataForMatchList.countryCode,
-                        detected_timezone: detectedTimezone,
-                        fullTournamentDataForMatchList: tournamentDataForMatchList
-                      });
-                    }
 
                     return tournamentDataForMatchList;
                   })()}

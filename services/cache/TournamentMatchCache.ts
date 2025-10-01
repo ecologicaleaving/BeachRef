@@ -52,7 +52,6 @@ export class TournamentMatchCache {
       const dataSize = JSON.stringify(cached.matches).length;
 
       CachePerformanceMonitor.recordCacheHit(cacheKey, responseTime, dataSize);
-      console.log(`📦 Using cached matches for tournament ${tournamentNo} (${cached.matches.length} matches)`);
       return cached.matches;
     } catch (error) {
       CachePerformanceMonitor.recordCacheError(cacheKey, Date.now() - startTime);

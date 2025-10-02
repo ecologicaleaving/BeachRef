@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Switch,
   Platform,
+  Pressable,
 } from 'react-native';
 import { Icon } from '../components/Icons/FeatherIcons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -252,44 +253,8 @@ const ExpandedFiltersView: React.FC<{
         </View>
       </View>
 
-      {/* Court Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Court:</Text>
-        <View style={styles.filterButtons}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              courtFilter === 'All' && styles.filterButtonActive
-            ]}
-            onPress={() => setCourtFilter('All')}
-          >
-            <Text style={[
-              styles.filterButtonText,
-              courtFilter === 'All' && styles.filterButtonTextActive
-            ]}>
-              All Courts
-            </Text>
-          </TouchableOpacity>
-          {courtNumbers.map((court) => (
-            <TouchableOpacity
-              key={court}
-              style={[
-                styles.filterButton,
-                courtFilter === court && styles.filterButtonActive
-              ]}
-              onPress={() => setCourtFilter(court)}
-            >
-              <Text style={[
-                styles.filterButtonText,
-                courtFilter === court && styles.filterButtonTextActive
-              ]}>
-                {court === 'CC' ? 'CC' : `Court ${court}`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-      
+      {/* Court Filter - REMOVED: Now in top bar as dropdown */}
+
       {/* Save Button */}
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity 
@@ -352,6 +317,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [refereeFilter, setRefereeFilter] = useState<string>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
+  const [showCourtDropdown, setShowCourtDropdown] = useState(false);
 
   // Ref for auto-scrolling to relevant matches
   const scrollViewRef = useRef<ScrollView>(null);
@@ -1834,9 +1800,93 @@ const TournamentDetailScreenContent: React.FC = () => {
                       onPress={() => setShowFilters(!showFilters)}
                     >
                       <Text style={styles.filterToggleText}>
-                        {showFilters ? 'Hide Filters' : 'Show Filters'} {showFilters ? '▲' : '▼'}
+                        {showFilters ? 'Hide' : 'Filters'} {showFilters ? '▲' : '▼'}
                       </Text>
                     </TouchableOpacity>
+
+                    {/* Court Filter Dropdown - Always visible in top bar */}
+                    {matches && matches.length > 0 && (() => {
+                      // Only include courts that have at least one match
+                      const courtNumbers = Array.from(new Set(
+                        matches
+                          ?.filter(m => m.court?.courtNumber && m.court.courtNumber.toString().trim() !== '') // Only matches with valid court number
+                          ?.map(m => String(m.court?.courtNumber).trim()) // Ensure string and trim
+                      ))
+                        .filter(Boolean) // Remove null/undefined/empty
+                        .sort((a, b) => {
+                          // CC always comes first
+                          if (a === 'CC') return -1;
+                          if (b === 'CC') return 1;
+
+                          // Numeric sort for number courts, alphabetic for others
+                          const numA = parseInt(a);
+                          const numB = parseInt(b);
+                          if (!isNaN(numA) && !isNaN(numB)) {
+                            return numA - numB;
+                          }
+                          return a.localeCompare(b);
+                        });
+
+                      if (courtNumbers.length >= 1) {
+                        return (
+                          <View style={styles.courtFilterDropdownContainer}>
+                            <Text style={styles.courtFilterLabel}>Court:</Text>
+                            <View style={styles.courtDropdownWrapper}>
+                              <TouchableOpacity
+                                style={[styles.courtDropdownButton, showCourtDropdown && styles.courtDropdownButtonActive]}
+                                onPress={() => setShowCourtDropdown(!showCourtDropdown)}
+                              >
+                                <Text style={[styles.courtDropdownButtonText, showCourtDropdown && styles.courtDropdownButtonTextActive]}>
+                                  {courtFilter === 'All' ? 'All' : (courtFilter === 'CC' ? 'CC' : `C${courtFilter}`)}
+                                </Text>
+                                <Text style={[styles.courtDropdownArrow, showCourtDropdown && styles.courtDropdownArrowActive]}>
+                                  {showCourtDropdown ? '▲' : '▼'}
+                                </Text>
+                              </TouchableOpacity>
+
+                              {showCourtDropdown && (
+                                <>
+                                  <Pressable
+                                    style={styles.courtDropdownOverlay}
+                                    onPress={() => setShowCourtDropdown(false)}
+                                  />
+                                  <View style={styles.courtDropdownList}>
+                                    <ScrollView style={styles.courtDropdownScrollView} nestedScrollEnabled={true}>
+                                      <TouchableOpacity
+                                        style={[styles.courtDropdownItem, courtFilter === 'All' && styles.courtDropdownItemActive]}
+                                        onPress={() => {
+                                          setCourtFilter('All');
+                                          setShowCourtDropdown(false);
+                                        }}
+                                      >
+                                        <Text style={[styles.courtDropdownItemText, courtFilter === 'All' && styles.courtDropdownItemTextActive]}>
+                                          All
+                                        </Text>
+                                      </TouchableOpacity>
+                                      {courtNumbers.map(court => (
+                                        <TouchableOpacity
+                                          key={court}
+                                          style={[styles.courtDropdownItem, courtFilter === court && styles.courtDropdownItemActive]}
+                                          onPress={() => {
+                                            setCourtFilter(court);
+                                            setShowCourtDropdown(false);
+                                          }}
+                                        >
+                                          <Text style={[styles.courtDropdownItemText, courtFilter === court && styles.courtDropdownItemTextActive]}>
+                                            {court === 'CC' ? 'CC' : `C${court}`}
+                                          </Text>
+                                        </TouchableOpacity>
+                                      ))}
+                                    </ScrollView>
+                                  </View>
+                                </>
+                              )}
+                            </View>
+                          </View>
+                        );
+                      }
+                      return null;
+                    })()}
 
                     <TouchableOpacity
                       style={styles.resetFiltersButton}
@@ -1848,7 +1898,7 @@ const TournamentDetailScreenContent: React.FC = () => {
                         setShowRefereeDropdown(false);
                       }}
                     >
-                      <Text style={styles.resetFiltersText}>Reset Filters</Text>
+                      <Text style={styles.resetFiltersText}>Reset</Text>
                     </TouchableOpacity>
 
                   </View>
@@ -2261,28 +2311,145 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+    flexWrap: 'wrap',
   },
-  
+
   filterToggleButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
     backgroundColor: '#F3F4F6',
   },
-  
+
   filterToggleText: {
     fontSize: 14,
     color: '#4B5563',
     fontWeight: '500',
   },
-  
+
+  courtFilterDropdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+
+  courtFilterLabel: {
+    fontSize: 14,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+
+  courtDropdownWrapper: {
+    position: 'relative',
+    zIndex: 9999,
+    flex: 1,
+  },
+
+  courtDropdownButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minWidth: 80,
+  },
+
+  courtDropdownButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+
+  courtDropdownButtonText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '600',
+    flex: 1,
+  },
+
+  courtDropdownButtonTextActive: {
+    color: '#FFFFFF',
+  },
+
+  courtDropdownArrow: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginLeft: 8,
+  },
+
+  courtDropdownArrowActive: {
+    color: '#FFFFFF',
+  },
+
+  courtDropdownOverlay: {
+    position: 'absolute',
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    zIndex: 9998,
+  },
+
+  courtDropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    marginTop: 2,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 100,
+    zIndex: 10000,
+  },
+
+  courtDropdownScrollView: {
+    maxHeight: 200,
+  },
+
+  courtDropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+
+  courtDropdownItemActive: {
+    backgroundColor: '#EFF6FF',
+  },
+
+  courtDropdownItemText: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '500',
+  },
+
+  courtDropdownItemTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+
   resetFiltersButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
     backgroundColor: '#FEE2E2',
   },
-  
+
   resetFiltersText: {
     fontSize: 14,
     color: '#DC2626',

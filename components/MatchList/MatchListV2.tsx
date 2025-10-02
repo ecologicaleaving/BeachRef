@@ -1320,20 +1320,45 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       {/* Only show filter toggle if any filters are enabled */}
       {(showGenderFilter || showCourtFilter || showRefereeFilter || showStatsInFilter) && (
         <View style={styles.filterControlsContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.filterToggleButton}
             onPress={() => setShowFilters(!showFilters)}
           >
             <Text style={styles.filterToggleText}>
-              Filters {showFilters ? '▲' : '▼'}
+              {showFilters ? 'Hide' : 'Show'}
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          {/* Court Filter - Always visible in top bar */}
+          {showCourtFilter && uniqueCourts.length > 1 && (
+            <View style={styles.courtFilterInline}>
+              <TouchableOpacity
+                style={[styles.courtFilterButton, effectiveCourtFilter === 'All' && styles.courtFilterButtonActive]}
+                onPress={() => setEffectiveCourtFilter('All')}
+              >
+                <Text style={[styles.courtFilterButtonText, effectiveCourtFilter === 'All' && styles.courtFilterButtonTextActive]}>
+                  All
+                </Text>
+              </TouchableOpacity>
+              {uniqueCourts.map(court => (
+                <TouchableOpacity
+                  key={court}
+                  style={[styles.courtFilterButton, effectiveCourtFilter === court && styles.courtFilterButtonActive]}
+                  onPress={() => setEffectiveCourtFilter(court)}
+                >
+                  <Text style={[styles.courtFilterButtonText, effectiveCourtFilter === court && styles.courtFilterButtonTextActive]}>
+                    {court === 'CC' ? 'CC' : `C${court}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity
             style={styles.resetFiltersButton}
             onPress={resetFilters}
           >
-            <Text style={styles.resetFiltersText}>Reset Filters</Text>
+            <Text style={styles.resetFiltersText}>Reset</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -1397,33 +1422,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
                   </View>
                 </>
               )}
-            </View>
-          </View>
-        )}
-
-        {showCourtFilter && uniqueCourts.length > 1 && (
-          <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Court:</Text>
-            <View style={styles.filterButtons}>
-              <TouchableOpacity
-                style={[styles.filterButton, effectiveCourtFilter === 'All' && styles.filterButtonActive]}
-                onPress={() => setEffectiveCourtFilter('All')}
-              >
-                <Text style={[styles.filterButtonText, effectiveCourtFilter === 'All' && styles.filterButtonTextActive]}>
-                  All
-                </Text>
-              </TouchableOpacity>
-              {uniqueCourts.map(court => (
-                <TouchableOpacity
-                  key={court}
-                  style={[styles.filterButton, effectiveCourtFilter === court && styles.filterButtonActive]}
-                  onPress={() => setEffectiveCourtFilter(court)}
-                >
-                  <Text style={[styles.filterButtonText, effectiveCourtFilter === court && styles.filterButtonTextActive]}>
-                    {court === 'CC' ? 'CC' : `C${court}`}
-                  </Text>
-                </TouchableOpacity>
-              ))}
             </View>
           </View>
         )}
@@ -1595,6 +1593,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     gap: 8,
+    flexWrap: 'wrap',
+    alignItems: 'center',
   },
   filterToggleButton: {
     backgroundColor: '#F3F4F6',
@@ -1604,7 +1604,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  courtFilterInline: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
     flex: 1,
+  },
+  courtFilterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  courtFilterButtonActive: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+  courtFilterButtonText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+  courtFilterButtonTextActive: {
+    color: '#FFFFFF',
   },
   filterToggleText: {
     fontSize: 14,

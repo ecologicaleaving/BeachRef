@@ -777,68 +777,43 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     const now = new Date();
     let targetMatchIndex = -1;
-    let nextUpcomingIndex = -1;
-    let mostRecentPastIndex = -1;
-
+    let lastScheduledIndex = -1; // Last in list = earliest in time (lista invertita)
+    let firstClosedIndex = -1; // First in list = most recent closed match
 
     // Find the most relevant match to scroll to
     for (let i = 0; i < filteredMatches.length; i++) {
       const match = filteredMatches[i];
       const matchTime = new Date(match.scheduledDateTime);
-      const isFuture = matchTime.getTime() >= now.getTime();
 
-      // Simplified logging
-
-      // Priority 1: Currently running match (check both status and time-based logic)
+      // Priority 1: First LIVE match (check both status and time-based logic)
       const isStatusRunning = match.status === MatchStatus.RUNNING;
       const isLikelyLive = matchTime.getTime() <= now.getTime() &&
                           (now.getTime() - matchTime.getTime()) <= 75 * 60 * 1000; // Within 75 minutes of start time
-      
+
       if (isStatusRunning || isLikelyLive) {
         targetMatchIndex = i;
-        break;
+        break; // Found LIVE match, stop searching
       }
 
-      // Track next upcoming match (first future match)
-      if (isFuture && nextUpcomingIndex === -1) {
-        nextUpcomingIndex = i;
-        // Found first upcoming match
+      // Priority 2: Track LAST scheduled match in list (earliest chronologically, appears at bottom)
+      if (match.status === MatchStatus.SCHEDULED) {
+        lastScheduledIndex = i; // Keep updating to get the last one in the list
       }
 
-      // Track most recent past match
-      if (!isFuture) {
-        mostRecentPastIndex = i;
-        // Track most recent past match
+      // Priority 3: Track FIRST closed/completed match in list (most recent, appears at top)
+      if (match.status === MatchStatus.COMPLETED || match.status === MatchStatus.FINISHED) {
+        if (firstClosedIndex === -1) {
+          firstClosedIndex = i; // First closed match in inverted list = most recent
+        }
       }
     }
 
-    // Priority logic: Running > Next Upcoming > Most Recent Past
+    // Apply priority: LIVE > Last Scheduled in list > First Closed in list
     if (targetMatchIndex === -1) {
-      if (nextUpcomingIndex !== -1) {
-        // Double-check: ensure we have the EARLIEST future match
-        let earliestFutureIndex = -1;
-        let earliestFutureTime = Infinity;
-        
-        for (let i = 0; i < filteredMatches.length; i++) {
-          const match = filteredMatches[i];
-          const matchTime = new Date(match.scheduledDateTime);
-          
-          if (matchTime.getTime() >= now.getTime()) {
-            if (matchTime.getTime() < earliestFutureTime) {
-              earliestFutureTime = matchTime.getTime();
-              earliestFutureIndex = i;
-            }
-          }
-        }
-        
-        if (earliestFutureIndex !== -1) {
-          targetMatchIndex = earliestFutureIndex;
-        } else {
-          targetMatchIndex = nextUpcomingIndex;
-        }
-      } else if (mostRecentPastIndex !== -1) {
-        // Fallback to most recent past match only if no future matches
-        targetMatchIndex = mostRecentPastIndex;
+      if (lastScheduledIndex !== -1) {
+        targetMatchIndex = lastScheduledIndex;
+      } else if (firstClosedIndex !== -1) {
+        targetMatchIndex = firstClosedIndex;
       }
     }
 

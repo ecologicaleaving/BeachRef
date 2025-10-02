@@ -480,7 +480,9 @@ const TournamentDetailScreenContent: React.FC = () => {
       const matchRelativeY = matchPositions.current[targetMatchId];
       const absoluteY = matchListOffset.current + matchRelativeY;
 
-      const targetY = Math.max(0, absoluteY + 450); // Bring match to visible area with more offset
+      // Add extra offset for SCHEDULED matches (to show more context)
+      const extraOffset = scrollReason.includes('SCHEDULED') ? 175 : 0;
+      const targetY = Math.max(0, absoluteY + 450 + extraOffset);
 
       scrollViewRef.current.scrollTo({
         y: targetY,
@@ -512,14 +514,22 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
-  // Handle auto-scroll when matches are ready - DISABLED per user request
+  // Handle auto-scroll when matches are ready
   const handleMatchesReady = (matches: BeachMatchCore[], targetIndex: number) => {
-    // Just clear loading
+    // Clear loading
     setTimeout(() => {
       setMatchesLoading(false);
     }, 1000);
 
-    // Auto-scroll logic disabled - will work on it later
+    // Trigger autoscroll with new priority logic from MatchListV2
+    if (targetIndex >= 0 && matches.length > 0) {
+      const targetMatch = matches[targetIndex];
+      if (targetMatch) {
+        setTimeout(() => {
+          attemptAutoScroll(matches, false);
+        }, 300);
+      }
+    }
   };
 
   const tournament: TournamentCore = React.useMemo(() => {

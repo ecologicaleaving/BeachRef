@@ -537,17 +537,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const round = match.round || rawMatch.Round;
     const roundName = match.roundName || rawMatch.RoundName;
 
-    // Check if qualification position fields exist and have non-empty values
-    const hasQualPositionA = rawMatch.teamAPositionInQualification &&
-                             rawMatch.teamAPositionInQualification.trim() !== '' &&
-                             rawMatch.teamAPositionInQualification !== '0';
-    const hasQualPositionB = rawMatch.teamBPositionInQualification &&
-                             rawMatch.teamBPositionInQualification.trim() !== '' &&
-                             rawMatch.teamBPositionInQualification !== '0';
-
-    if (hasQualPositionA || hasQualPositionB) {
-      return true;
-    }
+    // FIXED: Only check RoundPhase to determine if match is in qualification round
+    // Don't check team qualification positions because main draw teams can come from qualifications
 
     // Check RoundPhase "1" (VIS API standard for qualification)
     if (roundPhase === '1') return true;

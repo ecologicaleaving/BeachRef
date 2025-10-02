@@ -149,7 +149,7 @@ export const WorkloadAnalyticsChart: React.FC<WorkloadAnalyticsChartProps> = ({
       </View>
 
       {/* Workload chart */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chartScroll}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chartScroll} nestedScrollEnabled={true}>
         <View style={styles.chart}>
           {data.slice(0, compact ? 8 : 15).map((referee) => (
             <TouchableOpacity

@@ -1040,6 +1040,7 @@ const TournamentSelectionScreen: React.FC = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.liveCarouselContainer}
               style={styles.liveCarousel}
+              nestedScrollEnabled={true}
             >
               {liveTournaments.map((tournament, index) => (
                 <View key={tournament.id} style={styles.liveCarouselItem}>
@@ -1177,7 +1178,7 @@ const TournamentSelectionScreen: React.FC = () => {
           }}
           ListHeaderComponent={renderLiveTournaments}
           showsVerticalScrollIndicator={false}
-          stickySectionHeadersEnabled={true}
+          stickySectionHeadersEnabled={Platform.OS === 'ios'}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

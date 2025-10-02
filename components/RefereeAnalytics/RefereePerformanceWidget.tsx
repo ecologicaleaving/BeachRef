@@ -88,7 +88,7 @@ export const RefereePerformanceWidget: React.FC<RefereePerformanceWidgetProps> =
         </View>
       )}
       
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll} nestedScrollEnabled={true}>
         {sortedData.slice(0, compact ? 5 : 10).map((referee) => (
           <TouchableOpacity
             key={referee.referee_id}

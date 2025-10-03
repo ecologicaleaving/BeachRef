@@ -85,11 +85,14 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
-          {showBurgerMenu && (
-            <BurgerButton
-              onPress={() => setSideMenuVisible(true)}
-              color={titleColor}
-            />
+          {showHomeButton && (
+            <TouchableOpacity
+              style={styles.homeButton}
+              onPress={handleHomePress}
+              activeOpacity={0.7}
+            >
+              <Home size={20} color={titleColor} />
+            </TouchableOpacity>
           )}
           {showLogo && (
             <TouchableOpacity
@@ -101,7 +104,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             </TouchableOpacity>
           )}
         </View>
-        
+
         {title && (
           <View style={styles.centerSection}>
             <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
@@ -114,18 +117,15 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             )}
           </View>
         )}
-        
+
         <View style={styles.rightSection}>
-          {showHomeButton && (
-            <TouchableOpacity
-              style={styles.homeButton}
-              onPress={handleHomePress}
-              activeOpacity={0.7}
-            >
-              <Home size={20} color={titleColor} />
-            </TouchableOpacity>
-          )}
           {rightComponent}
+          {showBurgerMenu && (
+            <BurgerButton
+              onPress={() => setSideMenuVisible(true)}
+              color={titleColor}
+            />
+          )}
         </View>
       </View>
       
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     minWidth: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginRight: 8,
   },
   homeButtonText: {
     fontSize: 16,

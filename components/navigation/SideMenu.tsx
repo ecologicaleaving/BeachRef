@@ -87,7 +87,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
       icon: 'whistle',
       title: 'All Referees',
       route: '/all-referees',
-      disabled: false,
+      disabled: false, // ACTIVE
     },
     {
       icon: 'cog',

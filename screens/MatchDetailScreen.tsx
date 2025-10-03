@@ -25,113 +25,8 @@ import { colors, spacing, typography } from '../theme/tokens';
 import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
 import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
-import { LiveScorePollingService, createLiveScorePollingService } from '../services/live-score/LiveScorePollingService';
-import { VisApiClient } from '../services/api/VisApiClient';
-import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
-import { ConnectionCircuitBreaker } from '../services/ConnectionCircuitBreaker';
+import { useLiveScores } from '../hooks/useLiveScores';
 
-// Simple Status-Driven Polling Solution
-enum PollingMode {
-  OFF = 0,           // No polling
-  SOFT = 30000,      // 30 seconds for pre-match
-  LIVE = 5000        // 5 seconds for live matches
-}
-
-// Single function determines polling interval based on match status
-function getPollingInterval(match: BeachMatchLiveDTO): number {
-  // Live match = fast polling
-  if (match.status?.state?.startsWith('InSet')) {
-    return PollingMode.LIVE;
-  }
-
-  // Finished = no polling
-  if (['Finished', 'Cancelled'].includes(match.status?.state)) {
-    return PollingMode.OFF;
-  }
-
-  // Scheduled + within 30 min = soft polling
-  if (match.status?.state === 'Scheduled') {
-    const now = Date.now();
-    const startTime = new Date(match.schedule?.startTime || 0).getTime();
-    const thirtyMinutes = 30 * 60 * 1000;
-
-    if (startTime - now <= thirtyMinutes && startTime > now) {
-      return PollingMode.SOFT;
-    }
-  }
-
-  return PollingMode.OFF;
-}
-
-function extractNumericIdentifier(...values: Array<unknown>): number | null {
-  for (const value of values) {
-    if (value === null || value === undefined) {
-      continue;
-    }
-
-    const raw = String(value).trim();
-
-    // Handle pure numeric strings first
-    if (/^\d+$/.test(raw)) {
-      const parsed = Number.parseInt(raw, 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed;
-      }
-      continue;
-    }
-
-    // Handle legacy composite match IDs like "8243_courtcc_1758366000000_31"
-    // Extract the last numeric part after final underscore (likely the actual match number)
-    const lastNumericMatch = raw.match(/_(\d+)$/);
-    if (lastNumericMatch) {
-      const parsed = Number.parseInt(lastNumericMatch[1], 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed;
-      }
-    }
-
-    // Extract the first numeric part before underscore (fallback - might be tournament number)
-    const firstNumericMatch = raw.match(/^(\d+)_/);
-    if (firstNumericMatch) {
-      const parsed = Number.parseInt(firstNumericMatch[1], 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed;
-      }
-    }
-
-    // Extract any numeric sequence from the string as fallback
-    const anyNumericMatch = raw.match(/\d+/);
-    if (anyNumericMatch) {
-      const parsed = Number.parseInt(anyNumericMatch[0], 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed;
-      }
-    }
-  }
-
-  return null;
-}
-
-const DEFAULT_VIS_BASE_URL = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
-const DEFAULT_VIS_TIMEOUT_MS = 15000;
-const BACK_BUTTON_LABEL = '\u2190 Back';
-
-function resolveVisApiBaseUrl(): string {
-  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_VIS_API_BASE_URL) {
-    return process.env.EXPO_PUBLIC_VIS_API_BASE_URL;
-  }
-  return DEFAULT_VIS_BASE_URL;
-}
-
-function resolveVisApiTimeout(): number {
-  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_TIMEOUT) {
-    const parsed = Number(process.env.EXPO_PUBLIC_API_TIMEOUT);
-    if (!Number.isNaN(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-  return DEFAULT_VIS_TIMEOUT_MS;
-}
 
 
 // Interface for the new DTO-based state structure
@@ -203,44 +98,20 @@ export default function MatchDetailScreen() {
     throw error;
   }
 
-  const pollingService = useRef<LiveScorePollingService | null>(null);
-  const pollingCleanup = useRef<(() => void) | null>(null);
-  const visApiClientRef = useRef<VisApiClient | null>(null);
-  const pollingCircuitBreakerRef = useRef<ConnectionCircuitBreaker | null>(null);
+  // Use the same live score hook as Tournament Detail
+  const resolvedMatchNumber = parseInt(matchNo?.trim() ?? '', 10);
+  const matchNumbers = !isNaN(resolvedMatchNumber) && resolvedMatchNumber > 0 ? [resolvedMatchNumber] : [];
 
-  const resolveVisApiClient = useCallback((): VisApiClient => {
-    if (!visApiClientRef.current) {
-      visApiClientRef.current = new VisApiClient(
-        {
-          baseUrl: resolveVisApiBaseUrl(),
-          timeoutMs: resolveVisApiTimeout(),
-          maxRetries: 3,
-          retryDelayMs: 1000,
-          exponentialBackoff: true,
-          enableLogging: false,
-        },
-        DEFAULT_RETRY_CONFIG
-      );
-    }
-    return visApiClientRef.current;
-  }, []);
-
-  const resolvePollingCircuitBreaker = useCallback((): ConnectionCircuitBreaker => {
-    if (!pollingCircuitBreakerRef.current) {
-      pollingCircuitBreakerRef.current = ConnectionCircuitBreaker.getInstance('live-score-polling');
-    }
-    return pollingCircuitBreakerRef.current;
-  }, []);
-
-  // Initialize polling service lazily
-  const getPollingService = useCallback(() => {
-    if (!pollingService.current) {
-      const visClient = resolveVisApiClient();
-      const circuitBreaker = resolvePollingCircuitBreaker();
-      pollingService.current = createLiveScorePollingService(visClient, circuitBreaker);
-    }
-    return pollingService.current;
-  }, [resolveVisApiClient, resolvePollingCircuitBreaker]);
+  const {
+    liveScores,
+    isPolling: isLivePollingActive,
+    startPollingMatch,
+    stopPollingMatch
+  } = useLiveScores({
+    matchNumbers,
+    autoStart: false, // We'll start manually based on match status
+    useAdaptivePolling: true
+  });
 
   /**
    * Load match data using ONLY BeachMatchLiveDTO service (single GetBeachMatch API call)
@@ -314,242 +185,30 @@ export default function MatchDetailScreen() {
     if (matchNo && tournamentNo) {
       loadMatchDetail();
     }
-
-    // Cleanup polling on unmount
-    return () => {
-      if (pollingCleanup.current) {
-        pollingCleanup.current();
-        pollingCleanup.current = null;
-      }
-    };
   }, [matchNo, tournamentNo, loadMatchDetail]);
 
   const handleRefresh = () => {
     loadMatchDetail();
   };
 
-  // Removed: No longer needed since we're making only one API call
 
-
-  /**
-   * Update live data with optimization for frequent updates
-   */
-  const updateLiveData = useCallback((liveData: BeachMatchLiveDTO) => {
-    setState(prev => {
-      // Version filtering: reject older data
-      if (prev.liveData && prev.lastLiveUpdate) {
-        const currentVersion = parseInt(prev.lastLiveUpdate) || 0;
-        const newVersion = parseInt(liveData.lastUpdate) || 0;
-
-        if (newVersion < currentVersion) {
-          return prev;
-        }
-
-        // Data quality filtering: reject empty data if we have better data
-        if (newVersion <= currentVersion) {
-          const hasCurrentData = (prev.liveData.closedSets?.length || 0) > 0 || prev.liveData.currentSet;
-          const hasNewData = (liveData.closedSets?.length || 0) > 0 || liveData.currentSet;
-
-          if (hasCurrentData && !hasNewData) {
-            return prev;
-          }
-        }
-      }
-
-      // Same-version change detection
-      if (prev.liveData && prev.lastLiveUpdate === liveData.lastUpdate) {
-        const unchanged =
-          prev.liveData.status === liveData.status &&
-          prev.liveData.currentSet === liveData.currentSet &&
-          prev.liveData.points.a === liveData.points.a &&
-          prev.liveData.points.b === liveData.points.b;
-
-        if (unchanged) {
-          return prev;
-        }
-      }
-
-      return {
-        ...prev,
-        liveData,
-        lastLiveUpdate: liveData.lastUpdate ?? prev.lastLiveUpdate,
-        pollingError: null, // Clear any previous polling errors
-        renderKey: `live-${liveData.lastUpdate ?? Date.now()}`
-      };
-    });
-  }, []);
-
-
-  /**
-   * Start live polling for matches that need it
-   */
-  const startLivePolling = useCallback((matchNumber: number) => {
-    if (state.isPollingActive) {
-      return;
-    }
-
-    const pollingCallback = (liveData: BeachLive, error?: Error) => {
-      if (error) {
-        handlePollingError(error);
-        return;
-      }
-
-      // NEW: Update DTO with live data (no legacy fallback)
-      if (state.matchDTO) {
-        const updatedDTO = dtoService.current.updateDTOWithLiveData(state.matchDTO, liveData);
-
-        // Log the updated BeachMatchLiveDTO with live data
-        if (__DEV__) {
-          console.log('[MatchDetail] Updated BeachMatchLiveDTO with Live Data:', JSON.stringify(updatedDTO, null, 2));
-        }
-
-        setState(prev => ({
-          ...prev,
-          matchDTO: updatedDTO,
-          renderKey: `dto-live-${updatedDTO.audit?.liveVersion ?? Date.now()}`
-        }));
-      }
-    };
-
-    const service = getPollingService();
-    service.startPolling(
-      matchNumber,
-      pollingCallback,
-      [],
-      true
-    );
-
-    setState(prev => ({ ...prev, isPollingActive: true }));
-
-    pollingCleanup.current = () => {
-      const pollingInstance = getPollingService();
-      pollingInstance.stopPolling(matchNumber);
-      setState(prev => ({ ...prev, isPollingActive: false }));
-    };
-  }, [getPollingService, state.baseMatch?.status, state.isPollingActive, updateLiveData]);
-
-  // Simple status-driven polling - replaces all complex polling logic
+  // Auto-start live polling based on match status (same as Tournament Detail)
   useEffect(() => {
-    // TEMPORARILY DISABLED - Polling disabled for debugging GetBeachMatch API calls
-    /*
-    if (!state.matchDTO || !matchNo) return;
+    if (!state.matchDTO || !resolvedMatchNumber) return;
 
-    const interval = getPollingInterval(state.matchDTO);
+    const matchStatus = state.matchDTO.status?.state;
+    const shouldPoll = matchStatus && ['InSet1', 'InSet2', 'InSet3', 'InSet4', 'InSet5'].includes(matchStatus);
 
-    if (interval === 0) {
-      // Stop polling
-      if (pollingCleanup.current) {
-        pollingCleanup.current();
-        pollingCleanup.current = null;
-      }
-      setState(prev => ({ ...prev, isPollingActive: false }));
-      return;
+    if (shouldPoll && !isLivePollingActive) {
+      startPollingMatch(resolvedMatchNumber);
+    } else if (!shouldPoll && isLivePollingActive) {
+      stopPollingMatch(resolvedMatchNumber);
     }
+  }, [state.matchDTO?.status?.state, resolvedMatchNumber, isLivePollingActive, startPollingMatch, stopPollingMatch]);
 
-    // For live matches, use the existing live polling with real-time updates
-    if (interval === PollingMode.LIVE) {
-      const matchNumber = parseInt(matchNo, 10);
-      if (!isNaN(matchNumber) && !state.isPollingActive) {
-        startLivePolling(matchNumber);
-      }
-      return;
-    }
+  // Get current live score from hook state (no effect needed - will re-render automatically)
+  const currentLiveScore = resolvedMatchNumber ? liveScores[resolvedMatchNumber]?.liveScore : null;
 
-    // For soft polling (pre-match), use simple interval with loadMatchDetail
-    if (interval === PollingMode.SOFT) {
-      if (pollingCleanup.current) {
-        pollingCleanup.current();
-      }
-
-      const timer = setInterval(() => {
-        loadMatchDetail(); // Refresh match data to check for status changes
-      }, interval);
-
-      pollingCleanup.current = () => clearInterval(timer);
-    }
-    */
-
-  }, [state.matchDTO?.status?.state, state.matchDTO?.schedule?.startTime, matchNo, state.isPollingActive, startLivePolling, loadMatchDetail]);
-
-  /**
-   * Transform BeachLive data to BeachMatchLiveDTO
-   */
-  const transformBeachLiveToDTO = useCallback((beachLive: BeachLive): BeachMatchLiveDTO => {
-    const currentSet = getCurrentSetFromBeachLive(beachLive);
-    const closedSets = extractClosedSetsFromBeachLive(beachLive.sets, beachLive.status);
-    const events = beachLive.events?.map(event => ({
-      set: event.setNo,
-      rally: event.sequence,
-      ts: event.timestamp,
-      servingTeam: event.teamNo === 1 ? "A" : event.teamNo === 2 ? "B" : null,
-      action: event.type,
-      detail: event.description || null,
-      scoreAfter: parseEventScore(event.scoreAfter)
-    }));
-
-    return {
-      status: beachLive.match?.status || "Unknown",
-      currentSet: currentSet?.no,
-      points: {
-        a: currentSet?.pointsTeamA ?? null,
-        b: currentSet?.pointsTeamB ?? null
-      },
-      teamServing:
-        beachLive.noServingTeam === 1 ? "A" :
-        beachLive.noServingTeam === 2 ? "B" : null,
-      timeouts: {
-        a: beachLive.teamA?.timeoutsRemaining ?? 0,
-        b: beachLive.teamB?.timeoutsRemaining ?? 0
-      },
-      lastUpdate: String(beachLive.version ?? Date.now()),
-      closedSets,
-      liveFeed: {
-        available: Array.isArray(events) && events.length > 0,
-        events
-      }
-    };
-  }, []);
-
-  /**
-   * Handle polling errors with graceful degradation
-   */
-  const handlePollingError = useCallback((error: Error) => {
-    setState(prev => ({
-      ...prev,
-      pollingError: `Live updates temporarily unavailable: ${error.message}`
-    }));
-  }, []);
-
-  /**
-   * Helper functions
-   */
-  const shouldStartLivePolling = (baseMatch: BeachMatchDTO): boolean => {
-    if (!baseMatch) {
-      return false;
-    }
-
-    if (isMatchFinished(baseMatch.status)) {
-      return false;
-    }
-
-    const normalizedStatus = baseMatch.status?.toLowerCase?.() ?? '';
-    if (!normalizedStatus) {
-      return false;
-    }
-
-    if (normalizedStatus.startsWith('status')) {
-      const numeric = Number(normalizedStatus.replace('status', ''));
-      if (!Number.isNaN(numeric)) {
-        return numeric >= 3 && numeric < 9;
-      }
-    }
-
-    return normalizedStatus.includes('inset') ||
-           normalizedStatus.includes('running') ||
-           normalizedStatus.includes('live') ||
-           normalizedStatus.includes('ready') ||
-           normalizedStatus.includes('scheduled');
-  };
 
   const isMatchFinished = (status: any): boolean => {
     // Handle both DTO status object and string status
@@ -579,104 +238,6 @@ export default function MatchDetailScreen() {
            lowerStatus.includes('cancelled');
   };
 
-  // Helper function to derive set status from overall match status and set number
-  // Based on beachMatchLiveDTO.md reference: status 5 = "InSet2" means set 1 finished, set 2 in progress
-  const deriveSetStatus = (setNo: number, overallMatchStatus: string): BeachSetStatus => {
-    const numericStatus = parseInt(overallMatchStatus, 10);
-
-    if (isNaN(numericStatus)) {
-      return BeachSetStatus.NOT_STARTED;
-    }
-
-    // Using VIS_STATUS_TO_BEACH_MATCH_STATUS mapping from reference
-    switch (numericStatus) {
-      case 0: case 1: case 2: // Scheduled, ReadyToStart
-        return BeachSetStatus.NOT_STARTED;
-
-      case 3: // InSet1
-        return setNo === 1 ? BeachSetStatus.IN_PROGRESS : BeachSetStatus.NOT_STARTED;
-
-      case 4: // Set1Finished
-        return setNo === 1 ? BeachSetStatus.FINISHED : BeachSetStatus.NOT_STARTED;
-
-      case 5: // InSet2
-        if (setNo === 1) return BeachSetStatus.FINISHED;
-        if (setNo === 2) return BeachSetStatus.IN_PROGRESS;
-        return BeachSetStatus.NOT_STARTED;
-
-      case 6: // Set2Finished
-        if (setNo === 1 || setNo === 2) return BeachSetStatus.FINISHED;
-        return BeachSetStatus.NOT_STARTED;
-
-      case 7: // InSet3
-        if (setNo === 1 || setNo === 2) return BeachSetStatus.FINISHED;
-        if (setNo === 3) return BeachSetStatus.IN_PROGRESS;
-        return BeachSetStatus.NOT_STARTED;
-
-      case 8: // Set3Finished
-        if (setNo <= 3) return BeachSetStatus.FINISHED;
-        return BeachSetStatus.NOT_STARTED;
-
-      default: // 9+ = Finished, OfficialResult
-        return BeachSetStatus.FINISHED;
-    }
-  };
-
-  const getCurrentSetFromBeachLive = (beachLive: BeachLive) => {
-    if (!beachLive.sets || beachLive.sets.length === 0) {
-      return undefined;
-    }
-
-    // Use overall match status to derive set statuses (per beachMatchLiveDTO.md reference)
-    const overallStatus = beachLive.status || '0';
-
-    // Find the set that should be in progress based on overall match status
-    const inProgress = beachLive.sets.find(set =>
-      deriveSetStatus(set.no, overallStatus) === BeachSetStatus.IN_PROGRESS
-    );
-    if (inProgress) {
-      return inProgress;
-    }
-
-    const upcoming = beachLive.sets.find(set =>
-      deriveSetStatus(set.no, overallStatus) === BeachSetStatus.NOT_STARTED
-    );
-    if (upcoming) {
-      return upcoming;
-    }
-
-    return beachLive.sets[beachLive.sets.length - 1];
-  };
-
-  const extractClosedSetsFromBeachLive = (sets?: BeachLive['sets'], overallStatus?: string): Array<{ set: number; a: number; b: number }> => {
-    if (!sets || sets.length === 0) return [];
-
-    const matchStatus = overallStatus || '0';
-
-    return sets
-      .filter(set => deriveSetStatus(set.no, matchStatus) === BeachSetStatus.FINISHED)
-      .map(set => ({
-        set: set.no,
-        a: set.pointsTeamA,
-        b: set.pointsTeamB
-      }));
-  };
-
-  const parseEventScore = (scoreString?: string): { a: number; b: number } | undefined => {
-    if (!scoreString) {
-      return undefined;
-    }
-
-    const match = scoreString.match(/(\d+)[:-](\d+)/);
-    if (!match) {
-      return undefined;
-    }
-
-    return {
-      a: parseInt(match[1], 10),
-      b: parseInt(match[2], 10)
-    };
-  };
 
 
   const handleGoBack = () => {
@@ -722,12 +283,21 @@ export default function MatchDetailScreen() {
   const getMergedMatchData = useMemo(() => {
     // NEW: Priority 1 - Use DTO if available (preferred approach)
     if (state.matchDTO) {
-      const isLive = ['InSet1', 'InSet2', 'InSet3', 'InSet4', 'InSet5'].includes(state.matchDTO?.status?.state);
+      // If we have live score data, merge it with the DTO
+      let finalDTO = state.matchDTO;
+      if (currentLiveScore) {
+        finalDTO = dtoService.current.updateDTOWithLiveData(state.matchDTO, currentLiveScore);
+        if (__DEV__) {
+          console.log('[MatchDetail] Merged live data with DTO in useMemo');
+        }
+      }
+
+      const isLive = ['InSet1', 'InSet2', 'InSet3', 'InSet4', 'InSet5'].includes(finalDTO?.status?.state);
       return {
         type: 'dto' as const,
-        data: state.matchDTO,
+        data: finalDTO,
         isLive,
-        live: null // DTO already includes live data
+        live: currentLiveScore
       };
     }
 
@@ -807,7 +377,7 @@ export default function MatchDetailScreen() {
     };
 
     return result;
-  }, [state.matchDTO, state.baseMatch, state.liveData, legacyData.legacyMatch, state.renderKey]);
+  }, [state.matchDTO, state.baseMatch, state.liveData, legacyData.legacyMatch, currentLiveScore]);
 
   // Complete data fetch for finished matches - one-time comprehensive fetch
   useEffect(() => {

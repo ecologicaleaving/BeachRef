@@ -314,7 +314,7 @@ export const AssignmentTimeline: React.FC<AssignmentTimelineProps> = React.memo(
       {/* Filters and Sort Controls */}
       {showFilters && (
         <View style={styles.filtersContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled={true}>
             <TouchableOpacity
               style={[styles.filterButton, currentSort === 'time' && styles.activeFilterButton]}
               onPress={() => setCurrentSort('time')}

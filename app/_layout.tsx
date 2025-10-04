@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from 'react-native';
@@ -11,8 +11,14 @@ import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { QueryDevTools } from "../components/DevTools/QueryDevTools";
 import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
+import { useAnalytics } from "../hooks/useAnalytics";
 
 export default function RootLayout() {
+  const pathname = usePathname();
+
+  // Track page views with Google Analytics
+  useAnalytics(pathname);
+
   useEffect(() => {
     // Swallow benign web-only promise rejections to keep dev UX smooth
     if (Platform.OS === 'web') {

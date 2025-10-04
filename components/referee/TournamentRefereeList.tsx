@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   },
   roleTotalLabel: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     lineHeight: 10,
   },
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   },
   vsText: {
     fontSize: 10,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginVertical: 2,
     fontWeight: '500',
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   refereeRole: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 4,
     minWidth: 20,
   },

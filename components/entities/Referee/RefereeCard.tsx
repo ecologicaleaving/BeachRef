@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
   },
   roleLabel: {
     fontSize: 9,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   roleSeparator: {
@@ -629,13 +629,13 @@ const styles = StyleSheet.create({
   },
   statisticsLoading: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     paddingVertical: 8,
   },
   statisticsEmpty: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     paddingVertical: 4,
     fontStyle: 'italic',
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   },
   roleTotalLabel: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     lineHeight: 10,
   },

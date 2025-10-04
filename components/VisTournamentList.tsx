@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { TournamentCore } from '../types/tournament-v2';
 import { FlagImage } from './FlagImage';
+import { designTokens } from '../theme/tokens';
 
 interface VisTournamentItemProps {
   tournament: TournamentCore;
@@ -443,12 +444,12 @@ const styles = StyleSheet.create({
   completedBadgeStyle: {
     backgroundColor: '#F3F4F6', // Light gray background
     borderWidth: 1,
-    borderColor: '#6B7280', // Gray border
+    borderColor: designTokens.neutrals.textSecondary, // Gray border
   },
   completedStatusText: {
     fontSize: 10,
     letterSpacing: 0.5,
-    color: '#6B7280', // Gray text
+    color: designTokens.neutrals.textSecondary, // Gray text
   },
   titleRow: {
     flexDirection: 'row',
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
   },
   tournamentDate: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   genderRow: {
@@ -506,7 +507,7 @@ const styles = StyleSheet.create({
   },
   genderText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   // Gender badge styles (like in MatchCard)
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   loadingText: {
@@ -568,7 +569,7 @@ const styles = StyleSheet.create({
   },
   errorSubtext: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },

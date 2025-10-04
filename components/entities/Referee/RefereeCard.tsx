@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   refereeId: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   refereeIdCompact: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   typeTextCompact: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   experienceText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   strongPoints: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusTextCompact: {
@@ -546,13 +546,13 @@ const styles = StyleSheet.create({
   },
   assignmentIcon: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 4,
   },
   assignmentCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   
   // Analytics variant card style
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },

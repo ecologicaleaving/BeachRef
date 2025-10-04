@@ -9,7 +9,7 @@ import { BeachLivePlayer } from '../../../types/beach-live';
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 // Extended player interface that combines live player data with team context
 export interface PlayerInfo extends Partial<BeachLivePlayer> {
@@ -74,7 +74,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
     if (!showStatus) return null;
     
     let statusText = '';
-    let statusColor = '#6B7280';
+    let statusColor = designTokens.neutrals.textSecondary;
     
     if (player.isServing) {
       statusText = 'Serving';
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   playerNumber: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   playerNumberCompact: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   },
   teamNameText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginBottom: 2,
   },
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   pointsText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statsContainer: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 8,
     paddingVertical: 4,

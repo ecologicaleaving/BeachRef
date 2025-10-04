@@ -12,6 +12,7 @@ import { Text, H2Text, BodyText, CaptionText } from './Typography';
 import { BeachMatch } from '../types/match';
 import { TournamentCore, GenderType as CoreGenderType , TournamentType, GenderType } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
+import { designTokens } from '../theme/tokens';
 
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';

@@ -67,7 +67,7 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
       case ConnectionState.DISCONNECTED:
       default:
         return {
-          color: '#9E9E9E', // Gray
+          color: designTokens.neutrals.textSecondary, // Gray
           text: 'Offline',
           icon: '⚫', // Black dot
           description: 'No real-time connection',
@@ -177,9 +177,9 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
       case 'poor':
         return '#F44336';
       case 'offline':
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
       default:
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
     }
   }
 };
@@ -201,7 +201,7 @@ export const CompactConnectionIndicator: React.FC<{
       case ConnectionState.ERROR:
         return '#F44336'; // Red
       default:
-        return '#9E9E9E'; // Gray
+        return designTokens.neutrals.textSecondary; // Gray
     }
   };
 
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   timestampText: {
     fontSize: 10,
-    color: '#999999',
+    color: designTokens.neutrals.textSecondary,
   },
   connectionMode: {
     flexDirection: 'row',

@@ -52,7 +52,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Offline Mode',
     description: 'Manual refresh only, no automatic updates',
     icon: '📴',
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
 ];
 
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   toggleTextDisabled: {
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
   toggleDescription: {
     fontSize: 12,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     color: '#2196F3',
   },
   modeNameDisabled: {
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
   recommendedBadge: {
     backgroundColor: '#4CAF50',

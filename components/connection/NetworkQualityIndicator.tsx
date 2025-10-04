@@ -64,9 +64,9 @@ const NetworkQualityIndicator: React.FC<NetworkQualityIndicatorProps> = ({
       case 'poor':
         return '#F44336';
       case 'offline':
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
       default:
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
     }
   };
 

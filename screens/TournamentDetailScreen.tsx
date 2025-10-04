@@ -2367,7 +2367,7 @@ const styles = StyleSheet.create({
 
   courtDropdownButtonText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     flex: 1,
   },
@@ -2378,7 +2378,7 @@ const styles = StyleSheet.create({
 
   courtDropdownArrow: {
     fontSize: 10,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
   },
 
@@ -2434,7 +2434,7 @@ const styles = StyleSheet.create({
 
   courtDropdownItemText: {
     fontSize: 13,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
   },
 
@@ -2476,7 +2476,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 6,
   },
   
@@ -2502,7 +2502,7 @@ const styles = StyleSheet.create({
   
   filterButtonText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   
@@ -2528,7 +2528,7 @@ const styles = StyleSheet.create({
   
   filtersPlaceholderText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   tabHeadersContainer: {
@@ -2560,7 +2560,7 @@ const styles = StyleSheet.create({
   tabHeaderText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   activeTabHeaderText: {
     color: '#FFFFFF',
@@ -2580,7 +2580,7 @@ const styles = StyleSheet.create({
   },
   rankingPlaceholderText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontWeight: '500',
     lineHeight: 24,
@@ -2675,7 +2675,7 @@ const styles = StyleSheet.create({
   },
   dropdownButtonText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -2684,7 +2684,7 @@ const styles = StyleSheet.create({
   },
   dropdownArrow: {
     fontSize: 10,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
   },
   dropdownArrowActive: {
@@ -2729,7 +2729,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 12,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
   },
   dropdownItemTextActive: {
@@ -2802,14 +2802,14 @@ const styles = StyleSheet.create({
   },
   emptyStateMessage: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

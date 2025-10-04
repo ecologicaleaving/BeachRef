@@ -2253,7 +2253,7 @@ const styles = StyleSheet.create({
   },
   readOnlyText: {
     fontSize: 16,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     padding: 12,
     backgroundColor: '#f9fafb',
     borderRadius: 8,
@@ -2567,7 +2567,7 @@ const styles = StyleSheet.create({
   },
   courtSelectionHint: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -2615,7 +2615,7 @@ const styles = StyleSheet.create({
   },
   refereeDropdownArrow: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
   },
   selectedRefereeInfo: {
@@ -2624,7 +2624,7 @@ const styles = StyleSheet.create({
   },
   selectedRefereeDetails: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   
@@ -2650,7 +2650,7 @@ const styles = StyleSheet.create({
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   optionsContainer: {
@@ -2688,7 +2688,7 @@ const styles = StyleSheet.create({
   },
   cardDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 8,
@@ -2739,7 +2739,7 @@ const styles = StyleSheet.create({
   },
   courtSelectionSubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   
@@ -2777,7 +2777,7 @@ const styles = StyleSheet.create({
   },
   noMatchesText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
     textAlign: 'center',
   },
@@ -2858,7 +2858,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   dateNavButtonTextDisabled: {
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
   dateDisplayContainer: {
     flex: 1,
@@ -2875,7 +2875,7 @@ const styles = StyleSheet.create({
   },
   datePositionText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   
@@ -2893,7 +2893,7 @@ const styles = StyleSheet.create({
   },
   courtInfoTop: {
     fontSize: 11,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   roundInfoTop: {
@@ -3040,12 +3040,12 @@ const styles = StyleSheet.create({
   refereeHeaderTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   refereeHeaderSubtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   mostRecentDateTab: {
     borderWidth: 1,

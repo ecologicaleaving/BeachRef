@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   refereeName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   refereeId: {
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   quickStatValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   quickStatLabel: {
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   detailRow: {
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: 14,
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     flex: 2,
     textAlign: 'right',
   },
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   roleCount: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   roleLabel: {
@@ -611,11 +611,11 @@ const styles = StyleSheet.create({
   },
   tournamentName: {
     fontSize: 14,
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     paddingVertical: 20,
     fontStyle: 'italic',

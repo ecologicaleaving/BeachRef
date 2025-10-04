@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Text } from 'react-native';
 import { Button } from '../Foundation/Button';
 import type { RefereePerformanceMetrics } from '../../hooks/useRefereeAnalytics';
+import { designTokens } from '../../theme/tokens';
 
 /**
  * Analytics Widget Props Interface
@@ -294,12 +295,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 16,
   },
   metricsContainer: {
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginTop: 4,
   },
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   refereeItem: {
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   refereeName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     flex: 1,
   },
   refereeStats: {
@@ -359,11 +360,11 @@ const styles = StyleSheet.create({
   },
   refereeAssignments: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
   },
   performanceDetail: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   overviewStats: {
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   },
   overviewText: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 8,
   },
   emptyState: {
@@ -380,13 +381,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: designTokens.neutrals.textTertiary,
     textAlign: 'center',
   },
   loadingContainer: {
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 8,
   },
   drillDownIndicator: {

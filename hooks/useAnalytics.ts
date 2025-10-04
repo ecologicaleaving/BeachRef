@@ -31,10 +31,12 @@ export function useAnalytics(pathname: string) {
 
     // Send page_view event on pathname change
     if (window.gtag) {
+      console.log("Invio page_view con ID:", gaId, "path:", pathname);
       window.gtag("event", "page_view", {
         page_path: pathname,
         page_location: window.location.href,
         page_title: document.title,
+        debug_mode: true,
       });
     }
   }, [pathname]);

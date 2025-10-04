@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RefereeAssignment } from '../../types/RefereeAssignments';
+import { designTokens } from '../../theme/tokens';
 
 interface UpcomingAssignmentCardProps {
   assignment: RefereeAssignment;
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   roleIndicator: {
     marginTop: 8,

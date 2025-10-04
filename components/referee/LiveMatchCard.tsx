@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MatchResult } from '../../types/MatchResults';
 import { MatchResultsService } from '../../services/MatchResultsService';
 import { formatTime, formatDate } from '../../utils/dateFormatters';
+import { designTokens } from '../../theme/tokens';
 
 interface LiveMatchCardProps {
   match: MatchResult;
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   vsText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginVertical: 4,
   },
   scoreContainer: {
@@ -218,6 +219,6 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { BeachMatch } from '../../types/match';
+import { designTokens } from '../../theme/tokens';
 
 interface RefereeFromDB {
   No: string;
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   courtInfo: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   timeInfo: {
     alignItems: 'flex-end',
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   teamsContainer: {
     marginBottom: 12,
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   teamScore: {
@@ -372,7 +373,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     textTransform: 'uppercase',
   },

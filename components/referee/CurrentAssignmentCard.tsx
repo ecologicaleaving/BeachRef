@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RefereeAssignment } from '../../types/RefereeAssignments';
+import { designTokens } from '../../theme/tokens';
 
 interface CurrentAssignmentCardProps {
   assignment: RefereeAssignment;
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6', // Professional blue
   },
   statusDefault: {
-    backgroundColor: '#6B7280', // Neutral gray
+    backgroundColor: designTokens.neutrals.textSecondary, // Neutral gray
   },
   statusText: {
     color: '#FFFFFF',
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   roleIndicator: {
     marginTop: 16,

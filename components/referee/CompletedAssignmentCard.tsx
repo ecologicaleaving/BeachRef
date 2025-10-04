@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RefereeAssignment } from '../../types/RefereeAssignments';
+import { designTokens } from '../../theme/tokens';
 
 interface CompletedAssignmentCardProps {
   assignment: RefereeAssignment;
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusCompleted: {
-    backgroundColor: '#6B7280', // Muted gray for completed
+    backgroundColor: designTokens.neutrals.textSecondary, // Muted gray for completed
   },
   statusCancelled: {
     backgroundColor: '#EF4444', // Alert red for cancelled
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 16, // Smaller for muted appearance
     fontWeight: '600', // Less bold than current/upcoming
-    color: '#6B7280', // Muted text color
+    color: designTokens.neutrals.textSecondary, // Muted text color
     lineHeight: 20,
     marginBottom: 6,
   },
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   rightDetails: {
     alignItems: 'flex-end',
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   roundText: {
@@ -209,6 +210,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
 });

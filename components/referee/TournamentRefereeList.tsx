@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '../Typography/Text';
-import { colors } from '../../theme/tokens';
+import { colors, designTokens } from '../../theme/tokens';
 import { RefereeStatsService, RefereeStats, SeasonStats, CareerStats, RefereeMatch, EnhancedTournamentStats } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
 import { MatchRefereeCard } from './MatchRefereeCard';
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
   },
   matchTime: {
     fontSize: 11,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   teamsSection: {
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
   refereeSectionTitle: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
   },
   matchRound: {
     fontSize: 11,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   matchDetails: {
     flexDirection: 'row',
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
   },
   noMatchesText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
 });

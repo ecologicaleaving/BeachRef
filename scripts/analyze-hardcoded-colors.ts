@@ -61,7 +61,7 @@ const COLOR_TO_TOKEN_MAP: Record<string, string> = {
   '#F5F5F5': 'neutrals.bgSurface',   // dist 10.5
   '#F0F9FF': 'neutrals.bgSurface',   // dist 7.1
   '#EFF6FF': 'neutrals.bgSurface',   // dist 9.0
-  '#F0FDF4': 'neutrals.bgSurface',   // dist 12.6 - verdini chiari
+  // '#F0FDF4' moved to green-50 section (better match)
   '#F4F3F4': 'neutrals.bgSurface',
   '#EEF2FF': 'neutrals.bgSurface',
   '#F0F8FF': 'neutrals.bgSurface',
@@ -79,7 +79,7 @@ const COLOR_TO_TOKEN_MAP: Record<string, string> = {
   '#E2E8F0': 'neutrals.borderSubtle',
   '#E9ECEF': 'neutrals.borderSubtle',
   '#E6F3FF': 'neutrals.borderSubtle',
-  '#DBEAFE': 'neutrals.borderSubtle',
+  // '#DBEAFE' moved to info-50 section (better match)
   '#E0E7FF': 'neutrals.borderSubtle',
 
   // Grigi medi/scuri testo → neutral-700

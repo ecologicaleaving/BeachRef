@@ -11,6 +11,7 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatMatchTimeForUser, isMatchToday as checkIfMatchToday } from '../../utils/matchTimeFormatter';
 import { DateTime } from 'luxon';
+import { designTokens } from '../../theme/tokens';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -1148,17 +1149,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       
       // If match was scheduled for the past and not explicitly cancelled/postponed, consider it completed
       if (matchDate < now && status === MatchStatus.SCHEDULED) {
-        return { text: 'Final', color: '#374151' };
+        return { text: 'Final', color: designTokens.neutrals.textPrimary };
       }
     }
 
     switch (status) {
       case MatchStatus.SCHEDULED:
-        return { text: 'Scheduled', color: '#6B7280' };
+        return { text: 'Scheduled', color: designTokens.neutrals.textSecondary };
       case MatchStatus.RUNNING:
         return { text: 'Live', color: '#10B981' };
       case MatchStatus.FINISHED:
-        return { text: 'Final', color: '#374151' };
+        return { text: 'Final', color: designTokens.neutrals.textPrimary };
       case MatchStatus.INTERRUPTED:
         return { text: 'Interrupted', color: '#F59E0B' };
       case MatchStatus.CANCELLED:
@@ -1166,9 +1167,9 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       case MatchStatus.POSTPONED:
         return { text: 'Postponed', color: '#F59E0B' };
       case MatchStatus.TBD:
-        return { text: 'TBD', color: '#6B7280' };
+        return { text: 'TBD', color: designTokens.neutrals.textSecondary };
       default:
-        return { text: status, color: '#6B7280' };
+        return { text: status, color: designTokens.neutrals.textSecondary };
     }
   };
 
@@ -1627,7 +1628,7 @@ const styles = StyleSheet.create({
   },
   courtFilterButtonText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
   },
   courtFilterButtonTextActive: {
@@ -1636,7 +1637,7 @@ const styles = StyleSheet.create({
   filterToggleText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   resetFiltersButton: {
     backgroundColor: '#FEF2F2',
@@ -1677,7 +1678,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   errorText: {
     fontSize: 16,
@@ -1715,7 +1716,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   filterButtons: {
@@ -1739,7 +1740,7 @@ const styles = StyleSheet.create({
   },
   filterButtonText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   filterButtonTextActive: {
@@ -1765,7 +1766,7 @@ const styles = StyleSheet.create({
   },
   matchCount: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   matchCard: {
     backgroundColor: '#FFFFFF',
@@ -1818,12 +1819,12 @@ const styles = StyleSheet.create({
   matchTime: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   courtText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   topScoreContainer: {
     flexDirection: 'row',
@@ -1836,12 +1837,12 @@ const styles = StyleSheet.create({
   topScore: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   scoreSeparator: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 8,
   },
   statusBadge: {
@@ -1913,12 +1914,12 @@ const styles = StyleSheet.create({
   setScore: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 3,
   },
   winningSetScore: {
@@ -1928,12 +1929,12 @@ const styles = StyleSheet.create({
   resultScore: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   teamName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 18,
   },
   leftTeamName: {
@@ -1945,17 +1946,17 @@ const styles = StyleSheet.create({
   rankingText: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   durationText: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 12,
   },
   countryCode: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
     fontWeight: '500',
   },
@@ -1971,7 +1972,7 @@ const styles = StyleSheet.create({
   playerName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 16,
     marginBottom: 2,
   },
@@ -1986,7 +1987,7 @@ const styles = StyleSheet.create({
   teamScore: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
   },
   winnerScore: {
@@ -1999,7 +2000,7 @@ const styles = StyleSheet.create({
   },
   vsText: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontWeight: '500',
   },
@@ -2021,7 +2022,7 @@ const styles = StyleSheet.create({
   refereePosition: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginRight: 8,
   },
   refereeFlag: {
@@ -2029,19 +2030,19 @@ const styles = StyleSheet.create({
   },
   refereeName: {
     fontSize: 15,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     marginHorizontal: 8,
   },
   refereesLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   refereeText: {
     fontSize: 12,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginLeft: 8,
   },
   roundContainer: {
@@ -2050,7 +2051,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -2061,7 +2062,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   genderBadge: {
@@ -2073,7 +2074,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: designTokens.neutrals.textPrimary,
   },
   menBadge: {
     // Same styling as base genderBadge
@@ -2085,7 +2086,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   menBadgeText: {
     // Same as base genderBadgeText
@@ -2125,11 +2126,11 @@ const styles = StyleSheet.create({
   dateHeaderText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   dateHeaderCount: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   
@@ -2153,7 +2154,7 @@ const styles = StyleSheet.create({
   },
   matchCountText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 8,
@@ -2171,7 +2172,7 @@ const styles = StyleSheet.create({
   expandIndicator: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
     minWidth: 20,
     textAlign: 'center',
@@ -2212,7 +2213,7 @@ const styles = StyleSheet.create({
   },
   dropdownButtonText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -2221,7 +2222,7 @@ const styles = StyleSheet.create({
   },
   dropdownArrow: {
     fontSize: 10,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
   },
   dropdownArrowActive: {
@@ -2271,7 +2272,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 12,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
   },
   dropdownItemTextActive: {

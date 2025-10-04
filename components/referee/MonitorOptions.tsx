@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { designTokens } from '../../theme/tokens';
 
 interface MonitorOptionsProps {
   onCourtMonitor: () => void;
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 48,
     lineHeight: 24,
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

@@ -13,7 +13,7 @@ import { EventReferee, RefereeOfficial, getOfficialDisplayName } from '../../../
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';
 
 export interface RefereeStatsModalProps {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     fontSize: 24,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   headerTitle: {
     fontSize: 20,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
   refereeId: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginBottom: 8,
   },
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   headerRight: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   genderMale: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   genderFemale: {
     color: '#EC4899',
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   errorContainer: {
     padding: 40,
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   mainStatsGrid: {
@@ -462,12 +462,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
   subsectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   roleBreakdown: {
@@ -505,11 +505,11 @@ const styles = StyleSheet.create({
   roleCount: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   roleLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   recentSection: {
@@ -526,11 +526,11 @@ const styles = StyleSheet.create({
   },
   tournamentText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   moreText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
@@ -558,11 +558,11 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   infoValue: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     flex: 1,
     textAlign: 'right',
   },

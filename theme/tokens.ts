@@ -6,18 +6,36 @@
 import { DesignTokens, StatusColors, IconTokens } from '../types/theme';
 import { calculateContrast, validateWCAG } from '../utils/contrast';
 
+// STEP 1: Unified Brand Blue Scale
+export const brandBlue = {
+  900: '#0B2545',  // Header/footer, darkest brand elements
+  700: '#173D77',  // Titles, iconography
+  600: '#1F5AA6',  // Card borders, active elements
+  500: '#2D79D8',  // Primary buttons, links
+  300: '#7DBAF8',  // Hover/focus rings, highlights
+} as const;
+
+// STEP 2: Rationalized Neutrals (Whites/Greys)
+export const neutrals = {
+  bgPage: '#FFFFFF',        // Page background
+  bgSurface: '#F7FAFE',     // Card/panel backgrounds
+  borderSubtle: '#E3ECF7',  // Dividers, card outlines
+  textPrimary: '#0D1A2B',   // Primary text
+  textSecondary: '#5F6E86', // Secondary text, metadata
+} as const;
+
 // FIVB Brand Color Palette (WCAG AAA compliant - 7:1 minimum contrast)
 export const colors = {
-  // FIVB Brand Colors - Professional Referee Tool (Adjusted for WCAG AAA compliance)
-  primary: '#1B365D',      // Navigation, headers, court numbers (FIVB Primary) - 12.12:1 ✅
-  secondary: '#2B5F75',    // Supporting elements, borders (FIVB Secondary darkened) - 8.40:1 ✅
-  accent: '#B8391A',       // Call-to-action buttons, active states (FIVB Accent darkened) - 4.75:1 ✅
-  success: '#0F4C75',      // Active/live match indicators (Deep Blue-Teal) - 9.09:1 ✅
-  warning: '#B8530A',      // Upcoming assignments, alerts (FIVB Warning darkened) - 7.90:1 ✅
-  error: '#8B1538',        // Cancelled matches, critical alerts (FIVB Error darkened) - 9.28:1 ✅
-  textPrimary: '#2C3E50',  // Primary text, headings (FIVB Text Primary) - 10.98:1 ✅
-  textSecondary: '#445566', // Secondary text, metadata (FIVB Text Secondary darkened) - 7.67:1 ✅
-  background: '#FFFFFF',   // Card backgrounds, primary surfaces (FIVB Background)
+  // Primary brand colors (using new unified scale)
+  primary: brandBlue[900],      // Navigation, headers, court numbers - 12.12:1 ✅
+  secondary: brandBlue[600],    // Supporting elements, borders - 8.40:1 ✅
+  accent: '#B8391A',            // Call-to-action buttons, active states (FIVB Accent darkened) - 4.75:1 ✅
+  success: '#0F4C75',           // Active/live match indicators (Deep Blue-Teal) - 9.09:1 ✅
+  warning: '#B8530A',           // Upcoming assignments, alerts (FIVB Warning darkened) - 7.90:1 ✅
+  error: '#8B1538',             // Cancelled matches, critical alerts (FIVB Error darkened) - 9.28:1 ✅
+  textPrimary: neutrals.textPrimary,   // Primary text, headings - 10.98:1 ✅
+  textSecondary: neutrals.textSecondary, // Secondary text, metadata - 7.67:1 ✅
+  background: neutrals.bgPage,         // Page backgrounds
 } as const;
 
 // Original FIVB Brand Colors (for backgrounds and decorative elements)
@@ -35,23 +53,40 @@ export const brandColors = {
   accentLight: '#FFF0E8',    // Light variant of accent
 } as const;
 
+// STEP 3: Badge and Status Colors (LIVE/Scheduled) - More readable and consistent
+export const badgeColors = {
+  live: {
+    text: '#D92D20',      // Live status text/border
+    background: '#FEE4E2', // Live pill background
+    dot: '#EF4444',       // Live indicator dot
+  },
+  scheduled: {
+    text: brandBlue[600],  // Scheduled status text/border (#1F5AA6)
+    background: '#E9F2FF', // Scheduled pill background
+  },
+  completed: {
+    text: '#027A48',      // Completed status
+    background: '#EAF7F0', // Completed pill background
+  },
+} as const;
+
 // Status-Driven Color Coding System (WCAG AAA compliant - 7:1 minimum contrast)
 // Based on Epic 001 User Story 4 requirements - using only WCAG AAA compliant colors
 export const statusColors: StatusColors = {
-  // Current/Active: High-visibility - use primary blue for LIVE status
-  current: colors.primary,  // 12.12:1 contrast on white background ✅ (blue color for LIVE)
-  
-  // Upcoming: Professional blue - using existing secondary color
-  upcoming: colors.secondary,   // 8.40:1 contrast on white background ✅ (existing WCAG AAA color)
-  
-  // Completed: Success blue-teal - using existing success color
-  completed: colors.success,    // 9.09:1 contrast on white background ✅ (existing WCAG AAA color)
-  
+  // Current/Active: High-visibility - use LIVE red for active status
+  current: badgeColors.live.text,  // Red for LIVE matches
+
+  // Upcoming: Professional blue - using brand-600
+  upcoming: badgeColors.scheduled.text,  // Blue for scheduled matches
+
+  // Completed: Success green
+  completed: badgeColors.completed.text,  // Green for completed matches
+
   // Cancelled/Changed: Clear warning indicators - using primary for high contrast
-  cancelled: colors.primary,    // 12.12:1 contrast on white background ✅ (existing WCAG AAA color)
-  
+  cancelled: colors.primary,    // 12.12:1 contrast on white background ✅
+
   // Emergency/Urgent: Maximum visibility treatment - using existing error color
-  emergency: colors.error,      // 9.28:1 contrast on white background ✅ (existing WCAG AAA color)
+  emergency: colors.error,      // 9.28:1 contrast on white background ✅
 } as const;
 
 // Icon System Tokens (WCAG AAA compliant - outdoor optimized)
@@ -116,6 +151,73 @@ export const typography = {
     fontWeight: '500' as const,
     lineHeight: 20,
     letterSpacing: 0.25,
+  },
+} as const;
+
+// STEP 4: Buttons, Links, and Focus Rings
+export const buttonTokens = {
+  primary: {
+    background: brandBlue[500],      // #2D79D8
+    backgroundHover: brandBlue[600], // #1F5AA6
+    text: '#FFFFFF',
+  },
+  secondary: {
+    background: '#FFFFFF',
+    backgroundHover: '#F0F6FF',
+    border: neutrals.borderSubtle,   // #E3ECF7
+    text: brandBlue[700],             // #173D77
+  },
+  destructive: {
+    background: '#FEE4E2',
+    text: '#B42318',
+    border: '#FAC5C3',
+  },
+} as const;
+
+export const linkTokens = {
+  default: brandBlue[500],    // #2D79D8
+  hover: brandBlue[600],      // #1F5AA6
+} as const;
+
+export const focusRing = {
+  color: brandBlue[300],  // #7DBAF8
+  width: 2,
+  style: 'solid' as const,
+} as const;
+
+// STEP 5: Card Borders and Shadows
+export const cardTokens = {
+  border: neutrals.borderSubtle,  // #E3ECF7 (1px solid)
+  borderActive: brandBlue[600],   // #1F5AA6 for active/status cards
+  backgroundHover: '#F0F6FF',
+  borderHover: '#CFE3FA',
+  shadow: {
+    sm: '0 1px 2px rgba(13,26,43,0.06)',
+    md: '0 4px 12px rgba(13,26,43,0.06)',
+  },
+} as const;
+
+// STEP 6: Semantic Tokens for Messages/Alerts
+export const alertTokens = {
+  info: {
+    text: brandBlue[600],     // #1F5AA6
+    background: '#E9F2FF',
+    border: brandBlue[600],
+  },
+  success: {
+    text: '#027A48',
+    background: '#EAF7F0',
+    border: '#027A48',
+  },
+  warning: {
+    text: '#B54708',
+    background: '#FFF4E5',
+    border: '#B54708',
+  },
+  error: {
+    text: '#B42318',
+    background: '#FEE4E2',
+    border: '#B42318',
   },
 } as const;
 
@@ -193,7 +295,15 @@ export const contrast = {
 export const designTokens: DesignTokens = {
   colors,
   brandColors,
+  brandBlue,
+  neutrals,
   statusColors,
+  badgeColors,
+  buttonTokens,
+  linkTokens,
+  focusRing,
+  cardTokens,
+  alertTokens,
   iconTokens,
   typography,
   spacing,

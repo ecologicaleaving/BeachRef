@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useOfflineSync } from '../hooks/useOfflineSync';
+import { colors } from '../theme/tokens';
 
 interface StorageInfo {
   totalSize: number;
@@ -75,9 +76,9 @@ export function StorageManager({ style }: { style?: any }) {
 
   const getUsageColor = (): string => {
     const percentage = getUsagePercentage();
-    if (percentage < 50) return '#4CAF50';
-    if (percentage < 80) return '#FF9800';
-    return '#F44336';
+    if (percentage < 50) return colors.success;
+    if (percentage < 80) return colors.warning;
+    return colors.error;
   };
 
   const handleClearOfflineCache = () => {
@@ -307,11 +308,11 @@ export function StorageIndicator({
   };
 
   const getColor = () => {
-    if (storageInfo.isNearLimit) return '#F44336';
+    if (storageInfo.isNearLimit) return colors.error;
     const maxStorage = 6 * 1024 * 1024;
     const percentage = (storageInfo.totalSize / maxStorage) * 100;
-    if (percentage > 60) return '#FF9800';
-    return '#4CAF50';
+    if (percentage > 60) return colors.warning;
+    return colors.success;
   };
 
   return (

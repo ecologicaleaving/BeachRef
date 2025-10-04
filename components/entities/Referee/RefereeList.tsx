@@ -11,7 +11,7 @@ import {
 import { EventReferee, RefereeOfficial, isActiveOfficial } from '../../../types/referee-v2';
 import { RefereeCard } from './RefereeCard';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { useReferees, RefereesFilters } from '../../../hooks/useReferees';
 import { RefereeDTO } from '../../../services/DualReadService';
 import { featureFlags } from '../../../hooks/compatibility/FeatureFlags';
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 16,
     fontWeight: '500',
   },
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { PlayerInfo, PlayerCard } from './PlayerCard';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface PlayerListProps {
   players: PlayerInfo[];
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 16,
     fontWeight: '500',
   },
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ConnectionState } from '../services/RealtimePerformanceMonitor';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../services/NetworkStateManager';
+import { designTokens, colors } from '../theme/tokens';
 
 interface ConnectionStatusIndicatorProps {
   connectionState: ConnectionState;
@@ -29,7 +30,7 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
       case ConnectionState.CONNECTED:
         if (hasLiveMatches) {
           return {
-            color: '#4CAF50', // Green
+            color: colors.success, // Green
             text: 'Live Updates',
             icon: '🔴', // Red dot for live
             description: 'Receiving real-time match updates',
@@ -44,21 +45,21 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
         }
       case ConnectionState.CONNECTING:
         return {
-          color: '#FF9800', // Orange
+          color: colors.warning, // Orange
           text: 'Connecting...',
           icon: '🟡', // Yellow dot
           description: 'Establishing real-time connection',
         };
       case ConnectionState.RECONNECTING:
         return {
-          color: '#FF9800', // Orange
+          color: colors.warning, // Orange
           text: 'Reconnecting...',
           icon: '🟡', // Yellow dot
           description: 'Attempting to restore connection',
         };
       case ConnectionState.ERROR:
         return {
-          color: '#F44336', // Red
+          color: colors.error, // Red
           text: 'Connection Error',
           icon: '🔴', // Red dot
           description: 'Real-time updates unavailable',
@@ -66,7 +67,7 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
       case ConnectionState.DISCONNECTED:
       default:
         return {
-          color: '#9E9E9E', // Gray
+          color: designTokens.neutrals.textSecondary, // Gray
           text: 'Offline',
           icon: '⚫', // Black dot
           description: 'No real-time connection',
@@ -168,17 +169,17 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
   function getQualityColor(level: string): string {
     switch (level) {
       case 'excellent':
-        return '#4CAF50';
+        return colors.success;
       case 'good':
         return '#8BC34A';
       case 'fair':
-        return '#FF9800';
+        return colors.warning;
       case 'poor':
-        return '#F44336';
+        return colors.error;
       case 'offline':
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
       default:
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
     }
   }
 };
@@ -193,14 +194,14 @@ export const CompactConnectionIndicator: React.FC<{
   const getIndicatorColor = () => {
     switch (connectionState) {
       case ConnectionState.CONNECTED:
-        return hasLiveMatches ? '#F44336' : '#4CAF50'; // Red for live, Green for connected
+        return hasLiveMatches ? colors.error : colors.success; // Red for live, Green for connected
       case ConnectionState.CONNECTING:
       case ConnectionState.RECONNECTING:
-        return '#FF9800'; // Orange
+        return colors.warning; // Orange
       case ConnectionState.ERROR:
-        return '#F44336'; // Red
+        return colors.error; // Red
       default:
-        return '#9E9E9E'; // Gray
+        return designTokens.neutrals.textSecondary; // Gray
     }
   };
 
@@ -241,12 +242,12 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   timestampText: {
     fontSize: 10,
-    color: '#999999',
+    color: designTokens.neutrals.textSecondary,
   },
   connectionMode: {
     flexDirection: 'row',
@@ -255,13 +256,13 @@ const styles = StyleSheet.create({
   },
   modeLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },
   modeText: {
     fontSize: 11,
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   networkDetails: {
     flexDirection: 'row',
@@ -270,13 +271,13 @@ const styles = StyleSheet.create({
   },
   networkLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },
   networkText: {
     fontSize: 11,
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   qualityDetails: {
     flexDirection: 'row',
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   },
   qualityLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RefereeAssignment } from '../../types/RefereeAssignments';
+import { designTokens } from '../../theme/tokens';
 
 interface UpcomingAssignmentCardProps {
   assignment: RefereeAssignment;
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statusBadge: {
-    backgroundColor: '#3B82F6', // Professional blue
+    backgroundColor: designTokens.linkTokens.default, // Professional blue
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
   timeUntil: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   matchInfo: {
     flex: 1,
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 18, // Minimum 16px for outdoor visibility
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 24,
     marginBottom: 8,
   },
@@ -170,13 +171,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   timeText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   rightDetails: {
     alignItems: 'flex-end',
@@ -184,13 +185,13 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   roundText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   roleIndicator: {
     marginTop: 8,
@@ -203,6 +204,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
 });

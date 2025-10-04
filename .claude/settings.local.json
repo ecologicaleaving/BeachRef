@@ -124,7 +124,16 @@
       "Bash(del debug-brazil-timezone.js debug-timezone-fix.js debug-match-time.js)",
       "Read(//c/Users/KreshOS/Pictures/Screenshots/**)",
       "Bash(del debug-tournament-data.js debug-timezone-detection.js debug-mx-timezone.js test-mx-detection.js)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(gh pr create --title \"feat: Google Analytics 4 integration and comprehensive match enhancements\" --base master --head development --body \"$(cat <<''EOF''\n## Summary\n- **Google Analytics 4**: Integrate GA4 tracking for web platform with automatic page view tracking\n- **Match Enhancements**: Comprehensive improvements to match display, live scores, and timezone handling\n- **All Referees Page**: New page with 2025 season data\n- **Performance**: Tournament cache optimization with sub-200ms load times\n\n## Key Features\n\n### Google Analytics 4 Integration\n- Dynamic gtag.js loading for web platform\n- Automatic page view tracking with Expo Router\n- TypeScript declarations for type safety\n- Environment-based configuration\n\n### Match Display Enhancements\n- Live score polling with 5-second refresh\n- Enhanced match card with status indicators\n- Result type display (pool, bracket, qualification)\n- Score age indicators for live matches\n- Court sequencing and current set highlighting\n\n### Timezone & Scheduling\n- Robust timezone-safe date parsing\n- Tournament-specific timezone mapping\n- My Time display for live tournaments\n- Chronological match sorting within daily panels\n\n### Performance Optimizations\n- Tournament cache warming service\n- Sub-200ms tournament load times\n- Smart autoscroll with parallel API loading\n- Memory cache optimization\n\n## Test Plan\n- [x] Verify GA4 tracking in browser console and GA4 Realtime\n- [x] Test live score updates with 5-second polling\n- [x] Confirm match status indicators display correctly\n- [x] Verify timezone conversions for international tournaments\n- [x] Test cache performance improvements\n- [x] Verify All Referees page loads with 2025 data\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\nEOF\n)\")",
+      "Bash(gh pr view:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(npx tsx:*)",
+      "Bash(do echo \"=== $pattern ===\")",
+      "Bash(/dev/null)",
+      "Bash(cat:*)",
+      "Bash(python -c \"import json, sys; data=json.load(sys.stdin); files=[x[''''file''''] for x in data[''''colorUsage''''][''''#666666''''][''''occurrences''''][:10]]; print(''''\\n''''.join(set(files)))\")",
+      "Bash(do echo \"$file:\")"
     ],
     "deny": [],
     "ask": [],

@@ -100,10 +100,95 @@ export interface IconTokens {
   };
 }
 
+// New unified design system tokens
+export interface BrandBlueScale {
+  900: string;
+  700: string;
+  600: string;
+  500: string;
+  300: string;
+}
+
+export interface NeutralColors {
+  bgPage: string;
+  bgSurface: string;
+  borderSubtle: string;
+  textPrimary: string;
+  textSecondary: string;
+}
+
+export interface BadgeColorSet {
+  text: string;
+  background: string;
+  dot?: string;
+}
+
+export interface BadgeColors {
+  live: BadgeColorSet;
+  scheduled: BadgeColorSet;
+  completed: BadgeColorSet;
+}
+
+export interface ButtonColorSet {
+  background: string;
+  backgroundHover: string;
+  text: string;
+  border?: string;
+}
+
+export interface ButtonTokens {
+  primary: ButtonColorSet;
+  secondary: ButtonColorSet;
+  destructive: ButtonColorSet;
+}
+
+export interface LinkTokens {
+  default: string;
+  hover: string;
+}
+
+export interface FocusRing {
+  color: string;
+  width: number;
+  style: 'solid' | 'dashed' | 'dotted';
+}
+
+export interface CardTokens {
+  border: string;
+  borderActive: string;
+  backgroundHover: string;
+  borderHover: string;
+  shadow: {
+    sm: string;
+    md: string;
+  };
+}
+
+export interface AlertColorSet {
+  text: string;
+  background: string;
+  border: string;
+}
+
+export interface AlertTokens {
+  info: AlertColorSet;
+  success: AlertColorSet;
+  warning: AlertColorSet;
+  error: AlertColorSet;
+}
+
 export interface DesignTokens {
   colors: ColorToken;
   brandColors: BrandColors;
+  brandBlue: BrandBlueScale;
+  neutrals: NeutralColors;
   statusColors: StatusColors;
+  badgeColors: BadgeColors;
+  buttonTokens: ButtonTokens;
+  linkTokens: LinkTokens;
+  focusRing: FocusRing;
+  cardTokens: CardTokens;
+  alertTokens: AlertTokens;
   iconTokens: IconTokens;
   typography: TypographyScale;
   spacing: SpacingToken;

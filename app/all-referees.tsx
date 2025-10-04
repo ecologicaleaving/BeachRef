@@ -12,7 +12,7 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { Container } from '../components/Foundation/Container';
 import { Text } from '../components/Typography/Text';
 import { FlagImage } from '../components/FlagImage';
-import { colors } from '../theme/tokens';
+import { colors, designTokens } from '../theme/tokens';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 import { createShadow } from '../theme/shadows';
 // import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus'; // Not needed for All Referees
@@ -669,7 +669,7 @@ function AllRefereesScreenContent() {
             onChangeText={setSearchQuery}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={designTokens.neutrals.textSecondary}
           />
           <Text style={styles.sortInfo}>Active referees first, sorted by season matches (descending)</Text>
         </View>
@@ -863,12 +863,12 @@ const styles = StyleSheet.create({
   roleTotalCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 14,
   },
   roleTotalLabel: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     lineHeight: 10,
   },

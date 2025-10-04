@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { RealtimePerformanceMonitor } from '../services/RealtimePerformanceMonitor';
+import { colors } from '../theme/tokens';
 
 interface PerformanceDashboardProps {
   visible: boolean;
@@ -35,7 +36,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
   const getMetricColor = (value: number, threshold: number, reverse: boolean = false) => {
     const isGood = reverse ? value < threshold : value > threshold;
-    return isGood ? '#4CAF50' : '#F44336';
+    return isGood ? colors.success : colors.error;
   };
 
   const formatBytes = (bytes: number) => {
@@ -137,10 +138,10 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
               <Text style={styles.statusLabel}>Current State:</Text>
               <View style={[
                 styles.statusBadge,
-                { 
-                  backgroundColor: metrics.isBackgroundOptimized 
-                    ? '#FF9800' 
-                    : '#4CAF50' 
+                {
+                  backgroundColor: metrics.isBackgroundOptimized
+                    ? colors.warning
+                    : colors.success
                 }
               ]}>
                 <Text style={styles.statusText}>
@@ -186,8 +187,8 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                 styles.performanceIndicator,
                 {
                   backgroundColor: RealtimePerformanceMonitor.shouldOptimizeForBattery()
-                    ? '#FF9800'
-                    : '#4CAF50'
+                    ? colors.warning
+                    : colors.success
                 }
               ]}>
                 <Text style={styles.performanceText}>

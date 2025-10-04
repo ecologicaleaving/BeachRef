@@ -12,7 +12,7 @@ import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../../Status/LiveIndicator';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 import {
@@ -1230,7 +1230,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     {isMatchLive(match) && (
                       <Text style={{
                         fontSize: 10,
-                        color: '#333',
+                        color: designTokens.neutrals.textPrimary,
                         fontFamily: 'monospace',
                         marginLeft: 8,
                         alignSelf: 'center'
@@ -1446,7 +1446,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     ...shadowPresets.card,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: designTokens.neutrals.borderSubtle,
     overflow: 'hidden',
   },
   womenTopBand: {
@@ -1517,7 +1517,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   menBadgeText: {
     // Same as base genderBadgeText
@@ -1535,7 +1535,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#DC2626', // Red color
+    backgroundColor: colors.error, // Red color
     marginRight: 6,
   },
   timeDisplayContainer: {
@@ -1551,32 +1551,32 @@ const styles = StyleSheet.create({
   userTime: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginTop: 1,
   },
   userTimeBelow: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#374151', // Più scuro del precedente #6B7280
+    color: designTokens.neutrals.textPrimary, // Più scuro del precedente #6B7280
     textAlign: 'center',
     marginTop: 2,
   },
   courtText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
   courtTextRight: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginLeft: 8,
   },
   courtTextCenter: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
@@ -1598,12 +1598,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     textAlign: 'center',
   },
   liveStatusText: {
-    color: '#2563EB', // Blue color for LIVE status
+    color: designTokens.linkTokens.default, // Blue color for LIVE status
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1611,10 +1611,10 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#DC2626', // Red dot
+    backgroundColor: colors.error, // Red dot
   },
   inlineResultBadge: {
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.error,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1666,7 +1666,7 @@ const styles = StyleSheet.create({
   resultScore: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -1676,12 +1676,12 @@ const styles = StyleSheet.create({
   scoreSeparator: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 4,
   },
   vsText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   teamsContainer: {
@@ -1716,7 +1716,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: 13,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
   },
   leftCountryCode: {
@@ -1731,7 +1731,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   refereeRow: {
     marginBottom: 4,
@@ -1745,7 +1745,7 @@ const styles = StyleSheet.create({
   refereePosition: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginRight: 8,
   },
   refereeFlag: {
@@ -1754,13 +1754,13 @@ const styles = StyleSheet.create({
   },
   refereeCountryCode: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 8,
   },
   refereeName: {
     fontSize: 15,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     flex: 1,
     textAlign: 'left',
@@ -1780,13 +1780,13 @@ const styles = StyleSheet.create({
   individualSet: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   currentSet: {
-    backgroundColor: '#374151', // Dark gray background for current set in live matches
+    backgroundColor: designTokens.neutrals.textPrimary, // Dark gray background for current set in live matches
     borderWidth: 1,
     borderColor: '#4B5563',
     paddingHorizontal: 8,
@@ -1796,7 +1796,7 @@ const styles = StyleSheet.create({
   setScore: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   currentSetScore: {
     fontSize: 13, // Slightly bigger font for current set (was 11, now 13 = ~18% increase)
@@ -1806,7 +1806,7 @@ const styles = StyleSheet.create({
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 3,
   },
   currentSetSeparator: {
@@ -1816,7 +1816,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeSetScore: {
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '700',
   },
   winningSetScore: {
@@ -1833,13 +1833,13 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
   },
   resultTypeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#DC2626', // Red color to indicate non-normal result
+    color: colors.error, // Red color to indicate non-normal result
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -1870,10 +1870,10 @@ const styles = StyleSheet.create({
   roundBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   courtBadge: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     marginRight: 4,
   },
   // Qualification match styles

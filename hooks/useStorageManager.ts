@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CacheServiceCompatibility as CacheService } from './compatibility/CacheServiceCompatibility';
+import { colors } from '../theme/tokens';
 
 interface StorageUsage {
   totalSize: number;
@@ -198,9 +199,9 @@ export function useStorageFormatting() {
   }, []);
 
   const getStorageColor = useCallback((percentage: number): string => {
-    if (percentage < 50) return '#4CAF50'; // Green
-    if (percentage < 75) return '#FF9800'; // Orange  
-    if (percentage < 90) return '#F44336'; // Red
+    if (percentage < 50) return colors.success; // Green
+    if (percentage < 75) return colors.warning; // Orange
+    if (percentage < 90) return colors.error; // Red
     return '#D32F2F'; // Dark red
   }, []);
 

@@ -10,7 +10,7 @@ import { PlayerInfo } from './PlayerCard';
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface PlayerDetailProps {
   player: PlayerInfo;
@@ -457,13 +457,13 @@ const styles = StyleSheet.create({
   },
   playerNumber: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginBottom: 2,
   },
   countryName: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   servingBadge: {
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   },
   historyItem: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 8,
     paddingLeft: 8,
     lineHeight: 18,
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 20,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 12,
   },
   actionIconPrimary: {
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   actionButtonTextPrimary: {

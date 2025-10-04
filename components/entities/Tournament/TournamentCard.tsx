@@ -12,7 +12,7 @@ import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { DefaultTournamentService } from '../../../services/DefaultTournamentService';
 import { getStatusColorWithText, determineTournamentStatus } from '../../../utils/statusColors';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface TournamentCardProps {
   tournament: TournamentCore;
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   liveText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2563EB',
+    color: designTokens.linkTokens.default,
   },
   customStatusBadgeText: {
     fontSize: 12,
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   tournamentName: {
     fontSize: 18,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
   },
   dateRange: {
     fontSize: 15,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   dateRangeCompact: {

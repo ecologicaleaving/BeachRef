@@ -12,6 +12,7 @@ import { QueryDevTools } from "../components/DevTools/QueryDevTools";
 import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { useAnalytics } from "../hooks/useAnalytics";
+import { injectCSSVariables } from "../theme/css-variables";
 
 export default function RootLayout() {
   const pathname = usePathname();
@@ -42,15 +43,20 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // Inject CSS variables for web platform
+    if (Platform.OS === 'web') {
+      injectCSSVariables();
+    }
+
     // Initialize cache warmup service and brand assets on app start
     const initializeApp = async () => {
       try {
         // Enable performance monitoring for TanStack Query
         enablePerformanceMonitoring(queryClient);
-        
+
         // Migrate existing AsyncStorage data if needed
         await migrateAsyncStorageData();
-        
+
         // Initialize brand assets
         await preloadBrandAssets();
 
@@ -58,7 +64,7 @@ export default function RootLayout() {
         TournamentCacheWarmingService.startBackgroundWarming();
 
         // Performance monitoring and data persistence handled by queryClient
-        
+
       } catch (error) {
         // Handle initialization errors gracefully
         console.warn('App initialization warning:', error);

@@ -10,7 +10,7 @@ import { EventReferee, RefereeOfficial, getOfficialDisplayName, getOfficialFullD
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface RefereeDetailProps {
   referee: EventReferee | RefereeOfficial;
@@ -93,10 +93,10 @@ export const RefereeDetail: React.FC<RefereeDetailProps> = ({
   const getStatusColor = () => {
     switch (referee.status) {
       case 'Active': return colors.success;
-      case 'Inactive': return '#6B7280';
+      case 'Inactive': return designTokens.neutrals.textSecondary;
       case 'Suspended': return colors.error;
       case 'Restricted': return colors.warning;
-      default: return '#6B7280';
+      default: return designTokens.neutrals.textSecondary;
     }
   };
 
@@ -386,13 +386,13 @@ const styles = StyleSheet.create({
   },
   refereeId: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginBottom: 2,
   },
   federationCode: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusBadge: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   assignmentItem: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
     paddingLeft: 8,
   },
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 20,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 12,
   },
   actionIconPrimary: {
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   actionButtonTextPrimary: {

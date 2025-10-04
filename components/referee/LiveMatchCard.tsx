@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MatchResult } from '../../types/MatchResults';
 import { MatchResultsService } from '../../services/MatchResultsService';
 import { formatTime, formatDate } from '../../utils/dateFormatters';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface LiveMatchCardProps {
   match: MatchResult;
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 3,
-    borderColor: '#10B981', // High-contrast green for live matches
+    borderColor: colors.success, // High-contrast green for live matches
     minHeight: 180, // Large touch target for outdoor use
   },
   pressed: {
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#10B981',
+    backgroundColor: colors.success,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -137,14 +138,14 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 20, // Large font for outdoor visibility
     fontWeight: '800',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
     marginVertical: 2,
   },
   vsText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginVertical: 4,
   },
   scoreContainer: {
@@ -157,13 +158,13 @@ const styles = StyleSheet.create({
   matchPoints: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   setScores: {
     fontSize: 24, // Extra large for score visibility
     fontWeight: '800',
-    color: '#10B981', // Green to match live status
+    color: colors.success, // Green to match live status
     textAlign: 'center',
   },
   refereesContainer: {
@@ -172,18 +173,18 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
+    borderLeftColor: colors.success,
   },
   refereesLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   refereesText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 22,
   },
   matchInfo: {
@@ -198,13 +199,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   timeText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   venueInfo: {
     alignItems: 'flex-end',
@@ -212,12 +213,12 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   roundText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
 });

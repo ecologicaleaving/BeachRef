@@ -12,7 +12,7 @@ import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { getStatusColorWithText } from '../../../utils/statusColors';
 import { DefaultTournamentService } from '../../../services/DefaultTournamentService';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface TournamentDetailProps {
   tournament: TournamentCore;
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
   countryName: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusBadge: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -323,6 +323,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionButtonTextDisabled: {
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
 });

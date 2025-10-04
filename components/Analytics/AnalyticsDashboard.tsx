@@ -5,6 +5,7 @@ import { AnalyticsWidget } from './AnalyticsWidget';
 import { AnalyticsRefreshIndicator } from './AnalyticsRefreshIndicator';
 import { Container } from '../Foundation/Container';
 import { GracefulErrorBoundary } from '../GracefulErrorBoundary';
+import { designTokens } from '../../theme/tokens';
 
 /**
  * Analytics Customization Interface
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   activeNavButton: {
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     fontSize: 16,
     textAlign: 'center',
   },

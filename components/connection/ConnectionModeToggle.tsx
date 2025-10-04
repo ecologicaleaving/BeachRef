@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { ConnectionStrategy } from '../../services/NetworkStateManager';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface ConnectionModeToggleProps {
   currentMode: ConnectionStrategy;
@@ -23,7 +24,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Fast Mode',
     description: 'Fastest updates, best for stable Wi-Fi connections',
     icon: '⚡',
-    color: '#4CAF50',
+    color: colors.success,
   },
   {
     strategy: ConnectionStrategy.CONSERVATIVE_WEBSOCKET,
@@ -37,7 +38,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Hybrid Mode',
     description: 'Mix of real-time and polling, adaptive to conditions',
     icon: '🔀',
-    color: '#FF9800',
+    color: colors.warning,
   },
   {
     strategy: ConnectionStrategy.POLLING_ONLY,
@@ -51,7 +52,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Offline Mode',
     description: 'Manual refresh only, no automatic updates',
     icon: '📴',
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
 ];
 
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   toggle: {
@@ -221,8 +222,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   toggleDisabled: {
-    backgroundColor: '#F5F5F5',
-    borderColor: '#E0E0E0',
+    backgroundColor: designTokens.neutrals.bgSurface,
+    borderColor: designTokens.neutrals.borderSubtle,
   },
   toggleIcon: {
     fontSize: 24,
@@ -234,22 +235,22 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   toggleTextDisabled: {
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
   toggleDescription: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   toggleDescriptionDisabled: {
     color: '#BDBDBD',
   },
   chevron: {
     fontSize: 20,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: 'bold',
   },
   chevronDisabled: {
@@ -277,14 +278,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   closeButton: {
     padding: 4,
   },
   closeButtonText: {
     fontSize: 18,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   modalBody: {
     flex: 1,
@@ -317,16 +318,16 @@ const styles = StyleSheet.create({
   modeName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   modeNameSelected: {
     color: '#2196F3',
   },
   modeNameDisabled: {
-    color: '#9E9E9E',
+    color: designTokens.neutrals.textSecondary,
   },
   recommendedBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
   },
   modeDescription: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   modeDescriptionSelected: {
     color: '#555555',
@@ -359,7 +360,7 @@ const styles = StyleSheet.create({
   },
   unavailableText: {
     fontSize: 10,
-    color: '#F44336',
+    color: colors.error,
     textAlign: 'center',
   },
   modalFooter: {
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
 });

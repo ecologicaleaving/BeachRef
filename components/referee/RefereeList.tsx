@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   refereeNumber: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   selectButton: {

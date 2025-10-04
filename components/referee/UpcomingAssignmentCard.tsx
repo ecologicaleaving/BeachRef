@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 18, // Minimum 16px for outdoor visibility
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 24,
     marginBottom: 8,
   },
@@ -171,13 +171,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   timeText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   rightDetails: {
     alignItems: 'flex-end',
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   roundText: {
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
 });

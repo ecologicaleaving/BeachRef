@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   roleTotalCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 14,
   },
   roleTotalLabel: {
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   matchesList: {
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     flex: 1,
   },
   vsText: {
@@ -798,7 +798,7 @@ const styles = StyleSheet.create({
   },
   refereeName: {
     fontSize: 11,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     flex: 1,
   },
@@ -821,7 +821,7 @@ const styles = StyleSheet.create({
   matchCourt: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   matchRound: {
@@ -858,7 +858,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     backgroundColor: '#F3F4F6',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     minWidth: 20,
     textAlign: 'center',
   },

@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   timeText: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
   roleIndicator: {
     marginTop: 6,

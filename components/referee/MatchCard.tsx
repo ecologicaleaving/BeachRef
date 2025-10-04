@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   vsText: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginVertical: 4,
   },

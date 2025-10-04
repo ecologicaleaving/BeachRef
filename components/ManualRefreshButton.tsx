@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   disabledText: {
-    color: '#999999',
+    color: designTokens.neutrals.textTertiary,
   },
   lastUpdatedText: {
     fontSize: 12,

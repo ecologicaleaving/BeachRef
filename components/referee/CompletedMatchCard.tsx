@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   matchPoints: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   setScores: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   duration: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   refereesContainer: {
@@ -198,13 +198,13 @@ const styles = StyleSheet.create({
   refereesLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   refereesText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 22,
   },
   matchInfo: {
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   venueInfo: {
     alignItems: 'flex-end',
@@ -233,12 +233,12 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   roundText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
 });

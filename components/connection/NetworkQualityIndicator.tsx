@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../../services/NetworkStateManager';
 import { useNetworkState } from '../../hooks/useNetworkState';
+import { designTokens } from '../../theme/tokens';
 
 interface NetworkQualityIndicatorProps {
   networkState?: NetworkState | null;
@@ -77,7 +78,7 @@ const NetworkQualityIndicator: React.FC<NetworkQualityIndicatorProps> = ({
         style={[
           styles.qualityBar,
           {
-            backgroundColor: i < bars ? getQualityColor(connectionQuality.level) : '#E0E0E0',
+            backgroundColor: i < bars ? getQualityColor(connectionQuality.level) : designTokens.neutrals.borderSubtle,
             height: (i + 1) * 3 + 2, // Progressive height
           },
         ]}
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: designTokens.neutrals.bgSurface,
     borderRadius: 16,
   },
   header: {
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
   },
   details: {
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: designTokens.neutrals.borderSubtle,
     paddingTop: 12,
   },
   detailRow: {

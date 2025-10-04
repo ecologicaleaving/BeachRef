@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { designTokens } from '../theme/tokens';
 
 interface DataFreshnessProps {
   timestamp?: number;
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   detailedContainer: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: designTokens.neutrals.bgSurface,
     padding: 12,
     borderRadius: 8,
     borderLeftWidth: 3,

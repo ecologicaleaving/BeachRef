@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { ConnectionStrategy } from '../../services/NetworkStateManager';
+import { designTokens } from '../../theme/tokens';
 
 interface ConnectionModeToggleProps {
   currentMode: ConnectionStrategy;
@@ -221,8 +222,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   toggleDisabled: {
-    backgroundColor: '#F5F5F5',
-    borderColor: '#E0E0E0',
+    backgroundColor: designTokens.neutrals.bgSurface,
+    borderColor: designTokens.neutrals.borderSubtle,
   },
   toggleIcon: {
     fontSize: 24,

@@ -669,7 +669,7 @@ function AllRefereesScreenContent() {
             onChangeText={setSearchQuery}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={designTokens.neutrals.textSecondary}
           />
           <Text style={styles.sortInfo}>Active referees first, sorted by season matches (descending)</Text>
         </View>

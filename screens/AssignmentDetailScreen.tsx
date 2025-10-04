@@ -10,6 +10,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { RefereeAssignment } from '../types/RefereeAssignments';
 import { RoundPhaseDisplay } from '../components/Typography/RoundPhaseDisplay';
+import { designTokens } from '../theme/tokens';
 
 export const AssignmentDetailScreen: React.FC = () => {
   const { assignmentData } = useLocalSearchParams<{ assignmentData: string }>();
@@ -239,12 +240,12 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   placeholder: {
     width: 80,
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   card: {
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 32,
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   matchNumber: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -343,12 +344,12 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   refereeInfo: {
     alignItems: 'center',
@@ -362,14 +363,14 @@ const styles = StyleSheet.create({
   refereeDescription: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },
   instructionText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 24,
     marginBottom: 12,
   },

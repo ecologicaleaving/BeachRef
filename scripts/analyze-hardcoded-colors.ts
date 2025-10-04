@@ -17,44 +17,124 @@ interface ColorMatch {
 }
 
 /**
- * Color to token mapping - ONLY colors from the 6-step palette
- * Maps existing hardcoded colors to the closest token from your original palette
+ * Color to token mapping - COMPLETE MAPPING to original palette ONLY
+ * Maps ALL hardcoded colors to the 20-25 tokens from the original palette
  */
 const COLOR_TO_TOKEN_MAP: Record<string, string> = {
-  // STEP 1: Unified Brand Blue Scale (--brand-900 to --brand-300)
-  '#0B2545': 'brandBlue[900]',  // Header/footer
-  '#173D77': 'brandBlue[700]',  // Titles/iconography
-  '#1F5AA6': 'brandBlue[600]',  // Card borders/active
-  '#2D79D8': 'brandBlue[500]',  // Primary buttons/links
-  '#7DBAF8': 'brandBlue[300]',  // Hover/focus rings
+  // === PALETTE ORIGINALE (esatti) ===
 
-  // STEP 2: Rationalized Neutrals (bianchi/grigi-azzurri)
-  '#FFFFFF': 'neutrals.bgPage',        // Pagina
-  '#F7FAFE': 'neutrals.bgSurface',     // Card/pannelli
-  '#E3ECF7': 'neutrals.borderSubtle',  // Divider/contorni card
-  '#0D1A2B': 'neutrals.textPrimary',   // Testo primario
-  '#5F6E86': 'neutrals.textSecondary', // Testo secondario
+  // Brand Blues
+  '#0B2545': 'brandBlue[900]',
+  '#173D77': 'brandBlue[700]',
+  '#1F5AA6': 'brandBlue[600]',
+  '#2D79D8': 'brandBlue[500]',
+  '#7DBAF8': 'brandBlue[300]',
 
-  // STEP 3: Badge e stati (LIVE/Scheduled)
-  '#D92D20': 'badgeColors.live.text',         // LIVE testo/bordo
-  '#FEE4E2': 'badgeColors.live.background',   // LIVE pill bkg
-  '#EF4444': 'badgeColors.live.dot',          // Punto rosso live
-  '#E9F2FF': 'badgeColors.scheduled.background', // Scheduled pill bkg
-  '#027A48': 'badgeColors.completed.text',    // Completed testo
-  '#EAF7F0': 'badgeColors.completed.background', // Completed pill bkg
+  // Neutrals
+  '#FFFFFF': 'neutrals.bgPage',
+  '#F7FAFE': 'neutrals.bgSurface',
+  '#E3ECF7': 'neutrals.borderSubtle',
+  '#CFE3FA': 'neutrals.borderHover',
+  '#90A4BF': 'neutrals[500]',
+  '#5F6E86': 'neutrals.textSecondary',
+  '#0D1A2B': 'neutrals.textPrimary',
 
-  // STEP 4: Pulsanti, link e focus ring
-  '#F0F6FF': 'buttonTokens.secondary.backgroundHover', // Secondary hover
-  '#B42318': 'buttonTokens.destructive.text',          // Reset/destructive text
-  '#FAC5C3': 'buttonTokens.destructive.border',        // Reset/destructive border
+  // Stati
+  '#D92D20': 'badgeColors.live.text',
+  '#FEE4E2': 'badgeColors.live.background',
+  '#E9F2FF': 'badgeColors.scheduled.background',
+  '#027A48': 'badgeColors.completed.text',
+  '#EAF7F0': 'badgeColors.completed.background',
 
-  // STEP 5: Card tornei: bordo/ombra
-  '#CFE3FA': 'cardTokens.borderHover',  // Card hover border
+  // === MAPPING COLORI SIMILI → PALETTE ===
 
-  // STEP 6: Token semantici messaggi/alert
-  '#B54708': 'alertTokens.warning.text',       // Warning testo
-  '#FFF4E5': 'alertTokens.warning.background', // Warning bkg
-  // Note: #EAF7F0 already mapped in STEP 3 as badgeColors.completed.background (same as alertTokens.success.background)
+  // Bianchi/grigi chiarissimi → neutral-50
+  '#F9FAFB': 'neutrals.bgPage',      // dist 8.8
+  '#F8FAFC': 'neutrals.bgPage',      // dist 9.1
+  '#FAFAFA': 'neutrals.bgPage',      // dist 8.7
+  '#F8F9FA': 'neutrals.bgPage',      // dist 10.5
+  '#FAFBFC': 'neutrals.bgPage',      // dist 7.1
+  '#FFF': 'neutrals.bgPage',
+
+  // Azzurrini pallidissimi → neutral-100
+  '#F3F4F6': 'neutrals.bgSurface',   // dist 10.8 - grigi chiari
+  '#F5F5F5': 'neutrals.bgSurface',   // dist 10.5
+  '#F0F9FF': 'neutrals.bgSurface',   // dist 7.1
+  '#EFF6FF': 'neutrals.bgSurface',   // dist 9.0
+  '#F0FDF4': 'neutrals.bgSurface',   // dist 12.6 - verdini chiari
+  '#F4F3F4': 'neutrals.bgSurface',
+  '#EEF2FF': 'neutrals.bgSurface',
+  '#F0F8FF': 'neutrals.bgSurface',
+  '#F8F9FF': 'neutrals.bgSurface',
+  '#FEF7FF': 'neutrals.bgSurface',
+  '#F8F8F8': 'neutrals.bgSurface',
+  '#EBF4FF': 'neutrals.bgSurface',
+
+  // Bordi/divider → neutral-200
+  '#E5E7EB': 'neutrals.borderSubtle', // dist 13.2
+  '#E0E0E0': 'neutrals.borderSubtle',
+  '#E3F2FD': 'neutrals.borderSubtle', // dist 8.5
+  '#D1D5DB': 'neutrals.borderSubtle',
+  '#EEEEEE': 'neutrals.borderSubtle',
+  '#E2E8F0': 'neutrals.borderSubtle',
+  '#E9ECEF': 'neutrals.borderSubtle',
+  '#E6F3FF': 'neutrals.borderSubtle',
+  '#DBEAFE': 'neutrals.borderSubtle',
+  '#E0E7FF': 'neutrals.borderSubtle',
+
+  // Grigi medi/scuri testo → neutral-700
+  '#6B7280': 'neutrals.textSecondary', // dist 14.0
+  '#666666': 'neutrals.textSecondary',
+  '#666': 'neutrals.textSecondary',
+  '#9CA3AF': 'neutrals.textSecondary',
+  '#999999': 'neutrals.textSecondary',
+  '#999': 'neutrals.textSecondary',
+  '#9E9E9E': 'neutrals.textSecondary',
+
+  // Quasi neri testo → neutral-900
+  '#000000': 'neutrals.textPrimary',
+  '#000': 'neutrals.textPrimary',
+  '#333333': 'neutrals.textPrimary',
+  '#333': 'neutrals.textPrimary',
+  '#374151': 'neutrals.textPrimary',
+  '#111827': 'neutrals.textPrimary', // dist 6.0
+
+  // Blu scuri header → brandBlue-900
+  '#1B365D': 'brandBlue[900]',
+
+  // Blu medi links/buttons → brandBlue-500
+  '#2196F3': 'brandBlue[500]',
+  '#0066CC': 'brandBlue[500]',
+  '#007AFF': 'brandBlue[500]',
+  '#3B82F6': 'brandBlue[500]',
+
+  // Rossi LIVE → red-500
+  '#DC2626': 'badgeColors.live.text', // dist 9.7
+  '#F44336': 'badgeColors.live.text',
+  '#EF4444': 'badgeColors.live.dot',
+
+  // Rossi chiari background → red-50
+  '#FEE2E2': 'badgeColors.live.background', // dist 2.0
+  '#FFE5E5': 'badgeColors.live.background',
+  '#FFEBEE': 'badgeColors.live.background',
+  '#FEF2F2': 'badgeColors.live.background',
+
+  // Verdi success → green-500
+  '#4CAF50': 'badgeColors.completed.text',
+  '#10B981': 'badgeColors.completed.text',
+
+  // Verdi chiari background → green-50
+  '#E8F5E8': 'badgeColors.completed.background',
+  '#ECFDF5': 'badgeColors.completed.background',
+  '#D1FAE5': 'badgeColors.completed.background',
+  '#F0FDF4': 'badgeColors.completed.background',
+
+  // Blu chiari scheduled → info-50
+  '#DBEAFE': 'badgeColors.scheduled.background',
+
+  // Altri colori brand/legacy → brandBlue-500
+  '#FF6B35': 'brandBlue[500]', // Vecchio brand arancione
+  '#4A90A4': 'brandBlue[600]', // Teal
 };
 
 // Hex color regex (matches #RGB, #RRGGBB, #RRGGBBAA)

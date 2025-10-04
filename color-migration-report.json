@@ -1,6 +1,6 @@
 {
   "totalFiles": 186,
-  "totalColors": 1358,
+  "totalColors": 1287,
   "uniqueColors": 130,
   "mappedColors": 55,
   "unmappedColors": 75,
@@ -471,19 +471,19 @@
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 248
+          "line": 249
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 269
+          "line": 270
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 320
+          "line": 321
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 341
+          "line": 342
         },
         {
           "file": "components\\RealtimeErrorBoundary.tsx",
@@ -591,43 +591,43 @@
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 264
+          "line": 265
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 295
+          "line": 296
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 337
+          "line": 338
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 420
+          "line": 421
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 490
+          "line": 491
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 83
+          "line": 84
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 97
+          "line": 98
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 253
+          "line": 254
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 258
+          "line": 259
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 304
+          "line": 305
         },
         {
           "file": "components\\TournamentDetail.tsx",
@@ -1779,7 +1779,7 @@
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 211
+          "line": 212
         },
         {
           "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
@@ -2215,15 +2215,15 @@
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 262
+          "line": 263
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 292
+          "line": 293
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 310
+          "line": 311
         },
         {
           "file": "components\\RealtimeErrorBoundary.tsx",
@@ -2247,23 +2247,23 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 348
+          "line": 349
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 393
+          "line": 394
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 465
+          "line": 466
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 164
+          "line": 165
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 278
+          "line": 279
         },
         {
           "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
@@ -2429,19 +2429,19 @@
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 255
+          "line": 256
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 277
+          "line": 278
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 299
+          "line": 300
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 327
+          "line": 328
         },
         {
           "file": "components\\RealtimeErrorBoundary.tsx",
@@ -2461,31 +2461,31 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 344
+          "line": 345
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 367
+          "line": 368
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 398
+          "line": 399
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 431
+          "line": 432
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 460
+          "line": 461
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 268
+          "line": 269
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 283
+          "line": 284
         },
         {
           "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
@@ -2819,341 +2819,6 @@
         }
       ]
     },
-    "#FF9800": {
-      "count": 42,
-      "occurrences": [
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 61
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 75
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 199
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 209
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 146
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 155
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 41
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 63
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 48
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 55
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 176
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 200
-        },
-        {
-          "file": "components\\DataFreshness.tsx",
-          "line": 63
-        },
-        {
-          "file": "components\\DataFreshness.tsx",
-          "line": 159
-        },
-        {
-          "file": "components\\GracefulErrorBoundary.tsx",
-          "line": 178
-        },
-        {
-          "file": "components\\GracefulErrorBoundary.tsx",
-          "line": 203
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 74
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 77
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 198
-        },
-        {
-          "file": "components\\PartialDataIndicator.tsx",
-          "line": 157
-        },
-        {
-          "file": "components\\PartialDataIndicator.tsx",
-          "line": 190
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 142
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 189
-        },
-        {
-          "file": "components\\RealtimeErrorBoundary.tsx",
-          "line": 294
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 180
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 205
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 253
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 256
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 259
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 79
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 313
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 404
-        },
-        {
-          "file": "components\\SyncStatus.tsx",
-          "line": 67
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 82
-        },
-        {
-          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
-          "line": 32
-        },
-        {
-          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
-          "line": 34
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 24
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 58
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1575
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1893
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 547
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 614
-        }
-      ]
-    },
-    "#4CAF50": {
-      "count": 39,
-      "suggestedToken": "badgeColors.completed.text",
-      "occurrences": [
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 59
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 73
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 197
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 207
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 146
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 155
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 27
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 330
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 59
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 33
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 172
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 197
-        },
-        {
-          "file": "components\\DataFreshness.tsx",
-          "line": 62
-        },
-        {
-          "file": "components\\DataFreshness.tsx",
-          "line": 158
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 56
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 59
-        },
-        {
-          "file": "components\\ManualRefreshButton.tsx",
-          "line": 224
-        },
-        {
-          "file": "components\\MinimalTournamentDetail.tsx",
-          "line": 162
-        },
-        {
-          "file": "components\\NetworkStatus.tsx",
-          "line": 25
-        },
-        {
-          "file": "components\\OfflineBanner.tsx",
-          "line": 26
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 38
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 143
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 190
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 179
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 78
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 314
-        },
-        {
-          "file": "components\\SyncStatus.tsx",
-          "line": 68
-        },
-        {
-          "file": "components\\SyncStatus.tsx",
-          "line": 147
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetManager.tsx",
-          "line": 191
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 80
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 35
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 93
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 633
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 638
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1879
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1927
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 541
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 685
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 743
-        }
-      ]
-    },
     "#FF6B35": {
       "count": 32,
       "suggestedToken": "brandBlue[500]",
@@ -3288,132 +2953,6 @@
         }
       ]
     },
-    "#F44336": {
-      "count": 30,
-      "suggestedToken": "badgeColors.live.text",
-      "occurrences": [
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 63
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 201
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 155
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 363
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 65
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 62
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 178
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 197
-        },
-        {
-          "file": "components\\ConnectionStatusIndicator.tsx",
-          "line": 202
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 44
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 47
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 176
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 192
-        },
-        {
-          "file": "components\\ManualRefreshButton.tsx",
-          "line": 189
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 38
-        },
-        {
-          "file": "components\\StorageAlert.tsx",
-          "line": 181
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 80
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 310
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetManager.tsx",
-          "line": 191
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 81
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 373
-        },
-        {
-          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
-          "line": 25
-        },
-        {
-          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
-          "line": 25
-        },
-        {
-          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
-          "line": 316
-        },
-        {
-          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
-          "line": 389
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 65
-        },
-        {
-          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
-          "line": 87
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1912
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 562
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 688
-        }
-      ]
-    },
     "#F5F5F5": {
       "count": 25,
       "suggestedToken": "neutrals.bgSurface",
@@ -3432,7 +2971,7 @@
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 239
+          "line": 240
         },
         {
           "file": "components\\RealtimeErrorBoundary.tsx",
@@ -3452,15 +2991,15 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 352
+          "line": 353
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 497
+          "line": 498
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 208
+          "line": 209
         },
         {
           "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
@@ -3517,6 +3056,107 @@
         {
           "file": "screens\\TournamentDetailScreen.tsx",
           "line": 2282
+        }
+      ]
+    },
+    "#FF9800": {
+      "count": 24,
+      "occurrences": [
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 61
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 75
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 199
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 209
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
+          "line": 146
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
+          "line": 155
+        },
+        {
+          "file": "components\\GracefulErrorBoundary.tsx",
+          "line": 178
+        },
+        {
+          "file": "components\\GracefulErrorBoundary.tsx",
+          "line": 203
+        },
+        {
+          "file": "components\\PartialDataIndicator.tsx",
+          "line": 157
+        },
+        {
+          "file": "components\\PartialDataIndicator.tsx",
+          "line": 190
+        },
+        {
+          "file": "components\\RealtimeErrorBoundary.tsx",
+          "line": 294
+        },
+        {
+          "file": "components\\StorageAlert.tsx",
+          "line": 206
+        },
+        {
+          "file": "components\\StorageAlert.tsx",
+          "line": 254
+        },
+        {
+          "file": "components\\StorageAlert.tsx",
+          "line": 257
+        },
+        {
+          "file": "components\\StorageAlert.tsx",
+          "line": 260
+        },
+        {
+          "file": "components\\StorageManager.tsx",
+          "line": 405
+        },
+        {
+          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
+          "line": 32
+        },
+        {
+          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
+          "line": 34
+        },
+        {
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 24
+        },
+        {
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 58
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1575
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1893
+        },
+        {
+          "file": "components\\TournamentList.tsx",
+          "line": 547
+        },
+        {
+          "file": "components\\TournamentList.tsx",
+          "line": 614
         }
       ]
     },
@@ -3664,7 +3304,7 @@
         },
         {
           "file": "components\\PerformanceDashboard.tsx",
-          "line": 250
+          "line": 251
         },
         {
           "file": "components\\referee\\TournamentRefereeList.tsx",
@@ -3672,19 +3312,19 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 375
+          "line": 376
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 426
+          "line": 427
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 502
+          "line": 503
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 262
+          "line": 263
         },
         {
           "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
@@ -3856,23 +3496,23 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 481
+          "line": 482
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 66
+          "line": 67
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 164
+          "line": 165
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 249
+          "line": 250
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 298
+          "line": 299
         },
         {
           "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
@@ -3974,77 +3614,77 @@
         }
       ]
     },
-    "#DC2626": {
+    "#4CAF50": {
       "count": 17,
-      "suggestedToken": "badgeColors.live.text",
+      "suggestedToken": "badgeColors.completed.text",
       "occurrences": [
         {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1538
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 59
         },
         {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1614
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 73
         },
         {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1617
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 197
         },
         {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1842
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 207
         },
         {
-          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
           "line": 146
         },
         {
-          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
-          "line": 483
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
+          "line": 155
         },
         {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1654
+          "file": "components\\ManualRefreshButton.tsx",
+          "line": 224
         },
         {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1685
+          "file": "components\\MinimalTournamentDetail.tsx",
+          "line": 162
         },
         {
-          "file": "components\\referee\\MatchCard.tsx",
-          "line": 292
+          "file": "components\\NetworkStatus.tsx",
+          "line": 25
         },
         {
-          "file": "components\\RefereeDropdown\\RefereeDropdown.tsx",
-          "line": 246
+          "file": "components\\OfflineBanner.tsx",
+          "line": 26
         },
         {
-          "file": "components\\Status\\StatusBadge.tsx",
-          "line": 179
+          "file": "components\\TouchTarget\\TouchTargetManager.tsx",
+          "line": 191
         },
         {
-          "file": "components\\VisTournamentList.tsx",
-          "line": 532
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 35
         },
         {
-          "file": "components\\VisTournamentList.tsx",
-          "line": 566
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 93
         },
         {
-          "file": "screens\\MatchResultsScreen.tsx",
-          "line": 589
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1879
         },
         {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2455
+          "file": "components\\TournamentList.tsx",
+          "line": 541
         },
         {
-          "file": "screens\\TournamentSelectionScreen.tsx",
-          "line": 1357
+          "file": "components\\TournamentList.tsx",
+          "line": 685
         },
         {
-          "file": "screens\\TournamentSelectionScreen.tsx",
-          "line": 1766
+          "file": "components\\TournamentList.tsx",
+          "line": 743
         }
       ]
     },
@@ -4249,72 +3889,6 @@
         }
       ]
     },
-    "#10B981": {
-      "count": 15,
-      "suggestedToken": "badgeColors.completed.text",
-      "occurrences": [
-        {
-          "file": "components\\Icons\\FeatherIcons.tsx",
-          "line": 91
-        },
-        {
-          "file": "components\\Icons\\MaterialCommunityIcons.tsx",
-          "line": 59
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1160
-        },
-        {
-          "file": "components\\referee\\CurrentAssignmentCard.tsx",
-          "line": 132
-        },
-        {
-          "file": "components\\referee\\LiveMatchCard.tsx",
-          "line": 101
-        },
-        {
-          "file": "components\\referee\\LiveMatchCard.tsx",
-          "line": 114
-        },
-        {
-          "file": "components\\referee\\LiveMatchCard.tsx",
-          "line": 167
-        },
-        {
-          "file": "components\\referee\\LiveMatchCard.tsx",
-          "line": 176
-        },
-        {
-          "file": "components\\referee\\__tests__\\AssignmentCards.test.tsx",
-          "line": 338
-        },
-        {
-          "file": "components\\VisTournamentList.tsx",
-          "line": 413
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 271
-        },
-        {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 866
-        },
-        {
-          "file": "screens\\MatchResultsScreen.tsx",
-          "line": 222
-        },
-        {
-          "file": "screens\\MatchResultsScreen.tsx",
-          "line": 628
-        },
-        {
-          "file": "screens\\MatchResultsScreen.tsx",
-          "line": 663
-        }
-      ]
-    },
     "#999999": {
       "count": 14,
       "suggestedToken": "neutrals.textSecondary",
@@ -4374,6 +3948,64 @@
         {
           "file": "screens\\RefereeSettingsScreen.tsx",
           "line": 2196
+        }
+      ]
+    },
+    "#F44336": {
+      "count": 13,
+      "suggestedToken": "badgeColors.live.text",
+      "occurrences": [
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 63
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 201
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
+          "line": 155
+        },
+        {
+          "file": "components\\ManualRefreshButton.tsx",
+          "line": 189
+        },
+        {
+          "file": "components\\TouchTarget\\TouchTargetManager.tsx",
+          "line": 191
+        },
+        {
+          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
+          "line": 25
+        },
+        {
+          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
+          "line": 25
+        },
+        {
+          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
+          "line": 316
+        },
+        {
+          "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
+          "line": 389
+        },
+        {
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 65
+        },
+        {
+          "file": "components\\tournament\\TournamentStatusIndicator.tsx",
+          "line": 87
+        },
+        {
+          "file": "components\\TournamentList.tsx",
+          "line": 562
+        },
+        {
+          "file": "components\\TournamentList.tsx",
+          "line": 688
         }
       ]
     },
@@ -4564,7 +4196,7 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 437
+          "line": 438
         },
         {
           "file": "components\\TournamentDetail.tsx",
@@ -4617,20 +4249,108 @@
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 65
+          "line": 66
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 147
+          "line": 148
         },
         {
           "file": "components\\SyncStatus.tsx",
-          "line": 301
+          "line": 302
+        }
+      ]
+    },
+    "#10B981": {
+      "count": 10,
+      "suggestedToken": "badgeColors.completed.text",
+      "occurrences": [
+        {
+          "file": "components\\Icons\\FeatherIcons.tsx",
+          "line": 91
+        },
+        {
+          "file": "components\\Icons\\MaterialCommunityIcons.tsx",
+          "line": 59
+        },
+        {
+          "file": "components\\MatchList\\MatchListV2.tsx",
+          "line": 1160
+        },
+        {
+          "file": "components\\referee\\CurrentAssignmentCard.tsx",
+          "line": 132
+        },
+        {
+          "file": "components\\referee\\__tests__\\AssignmentCards.test.tsx",
+          "line": 338
+        },
+        {
+          "file": "screens\\AssignmentDetailScreen.tsx",
+          "line": 271
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 866
+        },
+        {
+          "file": "screens\\MatchResultsScreen.tsx",
+          "line": 222
+        },
+        {
+          "file": "screens\\MatchResultsScreen.tsx",
+          "line": 628
+        },
+        {
+          "file": "screens\\MatchResultsScreen.tsx",
+          "line": 663
+        }
+      ]
+    },
+    "#DC2626": {
+      "count": 9,
+      "suggestedToken": "badgeColors.live.text",
+      "occurrences": [
+        {
+          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
+          "line": 146
+        },
+        {
+          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
+          "line": 483
+        },
+        {
+          "file": "components\\referee\\MatchCard.tsx",
+          "line": 292
+        },
+        {
+          "file": "components\\RefereeDropdown\\RefereeDropdown.tsx",
+          "line": 246
+        },
+        {
+          "file": "components\\Status\\StatusBadge.tsx",
+          "line": 179
+        },
+        {
+          "file": "screens\\MatchResultsScreen.tsx",
+          "line": 589
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2455
+        },
+        {
+          "file": "screens\\TournamentSelectionScreen.tsx",
+          "line": 1357
+        },
+        {
+          "file": "screens\\TournamentSelectionScreen.tsx",
+          "line": 1766
         }
       ]
     },
     "#EF4444": {
-      "count": 9,
+      "count": 8,
       "suggestedToken": "badgeColors.live.dot",
       "occurrences": [
         {
@@ -4652,10 +4372,6 @@
         {
           "file": "components\\Icons\\MaterialCommunityIcons.tsx",
           "line": 60
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1166
         },
         {
           "file": "components\\referee\\CompletedAssignmentCard.tsx",
@@ -4878,11 +4594,11 @@
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 204
+          "line": 205
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 403
+          "line": 404
         },
         {
           "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
@@ -4908,7 +4624,7 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 469
+          "line": 470
         },
         {
           "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
@@ -5127,11 +4843,11 @@
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 232
+          "line": 233
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 417
+          "line": 418
         }
       ]
     },
@@ -5209,7 +4925,7 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 477
+          "line": 478
         },
         {
           "file": "screens\\TournamentSelectionScreen.tsx",
@@ -5302,7 +5018,7 @@
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 237
+          "line": 238
         }
       ]
     },
@@ -5316,7 +5032,7 @@
         },
         {
           "file": "components\\StorageManager.tsx",
-          "line": 445
+          "line": 446
         },
         {
           "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
@@ -5643,11 +5359,11 @@
       "occurrences": [
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 272
+          "line": 273
         },
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 289
+          "line": 290
         }
       ]
     },
@@ -5657,7 +5373,7 @@
       "occurrences": [
         {
           "file": "components\\StorageManager.tsx",
-          "line": 442
+          "line": 443
         },
         {
           "file": "screens\\TournamentSelectionScreen.tsx",
@@ -6001,7 +5717,7 @@
       "occurrences": [
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 271
+          "line": 272
         }
       ]
     },
@@ -6010,7 +5726,7 @@
       "occurrences": [
         {
           "file": "components\\StorageAlert.tsx",
-          "line": 285
+          "line": 286
         }
       ]
     },
@@ -6019,7 +5735,7 @@
       "occurrences": [
         {
           "file": "components\\StorageManager.tsx",
-          "line": 446
+          "line": 447
         }
       ]
     },

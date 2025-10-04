@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { Container } from '../components/Foundation/Container';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
-import { colors } from '../theme/tokens';
+import { colors, designTokens } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 import { FlagImage } from '../components/FlagImage';
@@ -1284,7 +1284,7 @@ const styles = StyleSheet.create({
   tabButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   tabButtonTextActive: {
     color: '#FFFFFF',
@@ -1313,7 +1313,7 @@ const styles = StyleSheet.create({
   },
   achievementText: {
     fontSize: 12,
-    color: colors.textSecondary || '#6B7280',
+    color: colors.textSecondary || designTokens.neutrals.textSecondary,
     marginLeft: 6,
     fontWeight: '500',
   },

@@ -17,7 +17,7 @@ import { StatusBadge } from '../components/Status';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { RefereeAnalyticsDashboard } from '../components/RefereeAnalytics/RefereeAnalyticsDashboard';
 import { useRefereeAnalytics } from '../hooks/useRefereeAnalytics';
-import { colors } from '../theme/tokens';
+import { colors, designTokens } from '../theme/tokens';
 import { ActionIcons } from '../components/Icons/IconLibrary';
 
 /**
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   content: {
     flex: 1,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   },
   refereeId: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 8,
   },
   refereeMetadata: {
@@ -441,15 +441,15 @@ const styles = StyleSheet.create({
   federationText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   genderText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   typeText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   headerRight: {
     alignItems: 'flex-end',
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   },
   quickStatLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   activeTabText: {
     color: '#FFFFFF',
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   detailValue: {
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
   },
   roleLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   tournamentsList: {
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
   },
   tournamentIcon: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 12,
   },
   tournamentName: {

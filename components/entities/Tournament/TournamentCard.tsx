@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   liveText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2563EB',
+    color: designTokens.linkTokens.default,
   },
   customStatusBadgeText: {
     fontSize: 12,

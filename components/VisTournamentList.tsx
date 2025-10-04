@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   menSymbol: {
-    color: '#2563EB', // Blue for men
+    color: designTokens.linkTokens.default, // Blue for men
   },
   womenSymbol: {
     color: '#DC2626', // Red for women

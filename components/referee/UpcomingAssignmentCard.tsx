@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statusBadge: {
-    backgroundColor: '#3B82F6', // Professional blue
+    backgroundColor: designTokens.linkTokens.default, // Professional blue
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   timeUntil: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   matchInfo: {
     flex: 1,

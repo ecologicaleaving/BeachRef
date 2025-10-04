@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   },
   selectedRefereeName: {
     fontWeight: '600',
-    color: '#2563EB',
+    color: designTokens.linkTokens.default,
   },
   refereeCode: {
     fontSize: 14,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   selectedRefereeCode: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   clearText: {
     fontSize: 16,

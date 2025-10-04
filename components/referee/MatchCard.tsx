@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   menSymbol: {
-    color: '#2563EB', // Blue for men
+    color: designTokens.linkTokens.default, // Blue for men
   },
   womenSymbol: {
     color: '#DC2626', // Red for women
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   winnerTeam: {
     backgroundColor: '#F0F9FF',
     borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderColor: designTokens.brandBlue[500], // Winner highlight
   },
   teamNameContainer: {
     flexDirection: 'row',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   winnerText: {
-    color: '#0EA5E9',
+    color: designTokens.brandBlue[500], // Winner highlight
   },
   vsText: {
     textAlign: 'center',

@@ -1410,7 +1410,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   menSymbol: {
-    color: '#3B82F6', // Blue for men
+    color: designTokens.linkTokens.default, // Blue for men
   },
   womenSymbol: {
     color: '#EC4899', // Pink for women

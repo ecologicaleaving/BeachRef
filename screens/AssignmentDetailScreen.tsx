@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981', // High contrast green
   },
   statusUpcoming: {
-    backgroundColor: '#3B82F6', // Professional blue
+    backgroundColor: designTokens.linkTokens.default, // Professional blue
   },
   statusCompleted: {
     backgroundColor: '#6B7280', // Muted gray
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
     textAlign: 'center',
   },
   infoRow: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   refereeRole: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
     marginBottom: 8,
   },
   refereeDescription: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   reminderText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
     backgroundColor: '#EBF4FF',
     padding: 12,
     borderRadius: 8,

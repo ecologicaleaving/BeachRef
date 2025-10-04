@@ -1603,7 +1603,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   liveStatusText: {
-    color: '#2563EB', // Blue color for LIVE status
+    color: designTokens.linkTokens.default, // Blue color for LIVE status
     fontSize: 16,
     fontWeight: '700',
   },

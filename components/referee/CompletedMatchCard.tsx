@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderColor: designTokens.brandBlue[500], // Winner highlight
   },
   winnerText: {
     fontSize: 18,

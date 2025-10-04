@@ -1623,8 +1623,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   courtFilterButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: designTokens.linkTokens.default,
+    borderColor: designTokens.linkTokens.default,
   },
   courtFilterButtonText: {
     fontSize: 13,
@@ -1735,8 +1735,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: designTokens.linkTokens.default,
+    borderColor: designTokens.linkTokens.default,
   },
   filterButtonText: {
     fontSize: 12,
@@ -2138,7 +2138,7 @@ const styles = StyleSheet.create({
   timelineDateHeader: {
     backgroundColor: '#EFF6FF',
     borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6',
+    borderLeftColor: designTokens.linkTokens.default,
     marginTop: 24,
     paddingVertical: 16,
     shadowColor: '#000',
@@ -2178,12 +2178,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   timelineExpandIndicator: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
     fontSize: 16,
   },
   expandedDateHeader: {
     backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
+    borderColor: designTokens.linkTokens.default,
     shadowOpacity: 0.1,
   },
   matchesContainer: {
@@ -2208,8 +2208,8 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   dropdownButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: designTokens.linkTokens.default,
+    borderColor: designTokens.linkTokens.default,
   },
   dropdownButtonText: {
     fontSize: 12,
@@ -2276,7 +2276,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dropdownItemTextActive: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
     fontWeight: '600',
   },
 

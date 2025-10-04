@@ -380,7 +380,7 @@ export const getWeatherAlertSeverityColor = (severity: WeatherSeverity): string 
     case 'high':
       return '#D97706'; // Orange
     case 'medium':
-      return '#2563EB'; // Blue
+      return designTokens.linkTokens.default; // Blue
     case 'low':
       return designTokens.neutrals.textSecondary; // Gray
     default:

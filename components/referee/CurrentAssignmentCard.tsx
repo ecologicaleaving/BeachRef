@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981', // High contrast green
   },
   statusUpcoming: {
-    backgroundColor: '#3B82F6', // Professional blue
+    backgroundColor: designTokens.linkTokens.default, // Professional blue
   },
   statusDefault: {
     backgroundColor: designTokens.neutrals.textSecondary, // Neutral gray

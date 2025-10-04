@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   genderMale: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   genderFemale: {
     color: '#EC4899',

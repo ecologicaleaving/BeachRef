@@ -1,9 +1,9 @@
 {
   "totalFiles": 186,
-  "totalColors": 1737,
+  "totalColors": 1700,
   "uniqueColors": 131,
-  "mappedColors": 2,
-  "unmappedColors": 129,
+  "mappedColors": 56,
+  "unmappedColors": 75,
   "colorUsage": {
     "#FFFFFF": {
       "count": 252,
@@ -19,19 +19,19 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 213
+          "line": 214
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 264
+          "line": 265
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 338
+          "line": 339
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 198
+          "line": 199
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -1020,12 +1020,9 @@
       ]
     },
     "#6B7280": {
-      "count": 158,
+      "count": 153,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1554
-        },
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
           "line": 1561
@@ -1033,22 +1030,6 @@
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
           "line": 1584
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1679
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1684
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1757
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1809
         },
         {
           "file": "components\\entities\\Match\\MatchDetail.tsx",
@@ -1658,6 +1639,7 @@
     },
     "#1B365D": {
       "count": 122,
+      "suggestedToken": "brandBlue[900]",
       "occurrences": [
         {
           "file": "components\\AppHeader.tsx",
@@ -2151,6 +2133,7 @@
     },
     "#000000": {
       "count": 91,
+      "suggestedToken": "neutrals.textPrimary",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsSettings.tsx",
@@ -2166,11 +2149,11 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 217
+          "line": 218
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 202
+          "line": 203
         },
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
@@ -2520,6 +2503,7 @@
     },
     "#666666": {
       "count": 88,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsDashboard.tsx",
@@ -2595,51 +2579,51 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 245
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 252
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 287
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 342
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 372
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 242
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
           "line": 246
         },
         {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 251
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 253
+        },
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 288
+        },
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 343
+        },
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 373
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 291
+          "line": 243
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 309
+          "line": 247
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 330
+          "line": 252
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 334
+          "line": 292
+        },
+        {
+          "file": "components\\connection\\NetworkQualityIndicator.tsx",
+          "line": 310
+        },
+        {
+          "file": "components\\connection\\NetworkQualityIndicator.tsx",
+          "line": 331
+        },
+        {
+          "file": "components\\connection\\NetworkQualityIndicator.tsx",
+          "line": 335
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -2659,7 +2643,7 @@
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 226
+          "line": 227
         },
         {
           "file": "components\\ManualRefreshButton.tsx",
@@ -2876,20 +2860,9 @@
       ]
     },
     "#E5E7EB": {
-      "count": 78,
+      "count": 75,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1449
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1783
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1876
-        },
         {
           "file": "components\\entities\\Match\\MatchDetail.tsx",
           "line": 565
@@ -3194,6 +3167,7 @@
     },
     "#333333": {
       "count": 72,
+      "suggestedToken": "neutrals.textPrimary",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
@@ -3229,31 +3203,31 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 207
+          "line": 208
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 237
+          "line": 238
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 280
+          "line": 281
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 320
+          "line": 321
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 237
+          "line": 238
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 297
+          "line": 298
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 315
+          "line": 316
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -3486,7 +3460,8 @@
       ]
     },
     "#374151": {
-      "count": 62,
+      "count": 49,
+      "suggestedToken": "neutrals.textPrimary",
       "occurrences": [
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
@@ -3494,59 +3469,7 @@
         },
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1520
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1561
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1567
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1573
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1579
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1601
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1669
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1719
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1748
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1763
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
           "line": 1789
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1799
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1836
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1873
         },
         {
           "file": "components\\entities\\Referee\\RefereeCard.tsx",
@@ -3739,24 +3662,9 @@
       ]
     },
     "#F3F4F6": {
-      "count": 51,
+      "count": 47,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1734
-        },
-        {
-          "file": "components\\entities\\Match\\MatchDetail.tsx",
-          "line": 431
-        },
-        {
-          "file": "components\\entities\\Match\\MatchDetail.tsx",
-          "line": 474
-        },
-        {
-          "file": "components\\entities\\Match\\MatchDetail.tsx",
-          "line": 532
-        },
         {
           "file": "components\\entities\\Player\\PlayerCard.tsx",
           "line": 382
@@ -3976,11 +3884,11 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 40
+          "line": 41
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 62
+          "line": 63
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -4000,11 +3908,11 @@
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 62
+          "line": 63
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 158
+          "line": 159
         },
         {
           "file": "components\\GracefulErrorBoundary.tsx",
@@ -4122,6 +4030,7 @@
     },
     "#4CAF50": {
       "count": 39,
+      "suggestedToken": "badgeColors.completed.text",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
@@ -4149,15 +4058,15 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 26
+          "line": 27
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 329
+          "line": 330
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 58
+          "line": 59
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -4173,11 +4082,11 @@
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 61
+          "line": 62
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 157
+          "line": 158
         },
         {
           "file": "components\\LiveMatchIndicator.tsx",
@@ -4283,6 +4192,7 @@
     },
     "#3B82F6": {
       "count": 32,
+      "suggestedToken": "brandBlue[500]",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsSettings.tsx",
@@ -4416,6 +4326,7 @@
     },
     "#FF6B35": {
       "count": 32,
+      "suggestedToken": "brandBlue[500]",
       "occurrences": [
         {
           "file": "components\\Icons\\FeatherIcons.tsx",
@@ -4549,6 +4460,7 @@
     },
     "#F44336": {
       "count": 30,
+      "suggestedToken": "badgeColors.live.text",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
@@ -4564,11 +4476,11 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 362
+          "line": 363
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 64
+          "line": 65
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -4672,125 +4584,9 @@
         }
       ]
     },
-    "#F5F5F5": {
-      "count": 28,
-      "occurrences": [
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 224
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 213
-        },
-        {
-          "file": "components\\DataFreshness.tsx",
-          "line": 203
-        },
-        {
-          "file": "components\\LiveMatchIndicator.tsx",
-          "line": 83
-        },
-        {
-          "file": "components\\MinimalTournamentDetail.tsx",
-          "line": 97
-        },
-        {
-          "file": "components\\PartialDataIndicator.tsx",
-          "line": 234
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 239
-        },
-        {
-          "file": "components\\RealtimeErrorBoundary.tsx",
-          "line": 232
-        },
-        {
-          "file": "components\\SimpleTournamentList.tsx",
-          "line": 143
-        },
-        {
-          "file": "components\\SimpleTournamentList.tsx",
-          "line": 156
-        },
-        {
-          "file": "components\\SimpleTournamentList.tsx",
-          "line": 167
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 352
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 497
-        },
-        {
-          "file": "components\\SyncStatus.tsx",
-          "line": 208
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 489
-        },
-        {
-          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
-          "line": 450
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1260
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1438
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1456
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1460
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1464
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 497
-        },
-        {
-          "file": "components\\TournamentList.tsx",
-          "line": 504
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2090
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2634
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 3031
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2124
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2282
-        }
-      ]
-    },
     "#9CA3AF": {
       "count": 28,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
         {
           "file": "components\\entities\\Match\\MatchDetail.tsx",
@@ -4906,117 +4702,9 @@
         }
       ]
     },
-    "#E0E0E0": {
-      "count": 26,
-      "occurrences": [
-        {
-          "file": "components\\Analytics\\AnalyticsDashboard.tsx",
-          "line": 241
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
-          "line": 221
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 452
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 464
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsWidget.tsx",
-          "line": 330
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 225
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 275
-        },
-        {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 368
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 80
-        },
-        {
-          "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 280
-        },
-        {
-          "file": "components\\PartialDataIndicator.tsx",
-          "line": 208
-        },
-        {
-          "file": "components\\PartialDataIndicator.tsx",
-          "line": 236
-        },
-        {
-          "file": "components\\PerformanceDashboard.tsx",
-          "line": 250
-        },
-        {
-          "file": "components\\referee\\TournamentRefereeList.tsx",
-          "line": 455
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 375
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 426
-        },
-        {
-          "file": "components\\StorageManager.tsx",
-          "line": 502
-        },
-        {
-          "file": "components\\SyncStatus.tsx",
-          "line": 262
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 445
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 450
-        },
-        {
-          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
-          "line": 455
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1270
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1413
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1679
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1717
-        },
-        {
-          "file": "components\\TournamentDetail.tsx",
-          "line": 1739
-        }
-      ]
-    },
     "#111827": {
       "count": 25,
+      "suggestedToken": "neutrals.textPrimary",
       "occurrences": [
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
@@ -5120,113 +4808,115 @@
         }
       ]
     },
-    "#F9FAFB": {
+    "#F5F5F5": {
       "count": 25,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
-          "file": "components\\entities\\Referee\\RefereeCard.tsx",
-          "line": 383
+          "file": "components\\LiveMatchIndicator.tsx",
+          "line": 83
         },
         {
-          "file": "components\\entities\\Referee\\RefereeCard.tsx",
-          "line": 608
+          "file": "components\\MinimalTournamentDetail.tsx",
+          "line": 97
         },
         {
-          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
-          "line": 330
+          "file": "components\\PartialDataIndicator.tsx",
+          "line": 234
         },
         {
-          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
-          "line": 457
+          "file": "components\\PerformanceDashboard.tsx",
+          "line": 239
         },
         {
-          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
-          "line": 502
+          "file": "components\\RealtimeErrorBoundary.tsx",
+          "line": 232
         },
         {
-          "file": "components\\live-score\\LiveScore.styles.ts",
-          "line": 52
+          "file": "components\\SimpleTournamentList.tsx",
+          "line": 143
         },
         {
-          "file": "components\\live-score\\LiveScoreCard.tsx",
-          "line": 336
+          "file": "components\\SimpleTournamentList.tsx",
+          "line": 156
         },
         {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1700
+          "file": "components\\SimpleTournamentList.tsx",
+          "line": 167
         },
         {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2107
+          "file": "components\\StorageManager.tsx",
+          "line": 352
         },
         {
-          "file": "components\\referee\\CompletedAssignmentCard.tsx",
-          "line": 107
+          "file": "components\\StorageManager.tsx",
+          "line": 497
         },
         {
-          "file": "components\\referee\\CompletedMatchCard.tsx",
-          "line": 166
+          "file": "components\\SyncStatus.tsx",
+          "line": 208
         },
         {
-          "file": "components\\referee\\TournamentRefereeList.tsx",
-          "line": 740
+          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
+          "line": 489
         },
         {
-          "file": "components\\Typography\\InfoPanel.tsx",
-          "line": 288
+          "file": "components\\tournament\\CourtAssignmentIndicator.tsx",
+          "line": 450
         },
         {
-          "file": "components\\Typography\\MatchCard.tsx",
-          "line": 320
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1260
         },
         {
-          "file": "components\\Typography\\StatusIndicator.tsx",
-          "line": 67
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1438
         },
         {
-          "file": "components\\Typography\\StatusIndicator.tsx",
-          "line": 75
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1456
         },
         {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 1382
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1460
         },
         {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 1632
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1464
         },
         {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 1735
+          "file": "components\\TournamentList.tsx",
+          "line": 497
         },
         {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 1772
-        },
-        {
-          "file": "screens\\MatchResultsScreen.tsx",
-          "line": 564
+          "file": "components\\TournamentList.tsx",
+          "line": 504
         },
         {
           "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2235
+          "line": 2090
         },
         {
           "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2258
+          "line": 2634
+        },
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 3031
         },
         {
           "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2493
+          "line": 2124
         },
         {
-          "file": "screens\\TournamentSelectionScreen.tsx",
-          "line": 1665
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2282
         }
       ]
     },
     "#D1D5DB": {
       "count": 24,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsSettings.tsx",
@@ -5326,16 +5016,213 @@
         }
       ]
     },
-    "#2196F3": {
-      "count": 18,
+    "#E0E0E0": {
+      "count": 23,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
-          "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 33
+          "file": "components\\Analytics\\AnalyticsDashboard.tsx",
+          "line": 241
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsRefreshIndicator.tsx",
+          "line": 221
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 452
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 464
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsWidget.tsx",
+          "line": 330
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 323
+          "line": 276
+        },
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 369
+        },
+        {
+          "file": "components\\PartialDataIndicator.tsx",
+          "line": 208
+        },
+        {
+          "file": "components\\PartialDataIndicator.tsx",
+          "line": 236
+        },
+        {
+          "file": "components\\PerformanceDashboard.tsx",
+          "line": 250
+        },
+        {
+          "file": "components\\referee\\TournamentRefereeList.tsx",
+          "line": 455
+        },
+        {
+          "file": "components\\StorageManager.tsx",
+          "line": 375
+        },
+        {
+          "file": "components\\StorageManager.tsx",
+          "line": 426
+        },
+        {
+          "file": "components\\StorageManager.tsx",
+          "line": 502
+        },
+        {
+          "file": "components\\SyncStatus.tsx",
+          "line": 262
+        },
+        {
+          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
+          "line": 445
+        },
+        {
+          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
+          "line": 450
+        },
+        {
+          "file": "components\\TouchTarget\\TouchTargetVisualization.tsx",
+          "line": 455
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1270
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1413
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1679
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1717
+        },
+        {
+          "file": "components\\TournamentDetail.tsx",
+          "line": 1739
+        }
+      ]
+    },
+    "#F9FAFB": {
+      "count": 23,
+      "suggestedToken": "neutrals.bgPage",
+      "occurrences": [
+        {
+          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
+          "line": 330
+        },
+        {
+          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
+          "line": 457
+        },
+        {
+          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
+          "line": 502
+        },
+        {
+          "file": "components\\live-score\\LiveScore.styles.ts",
+          "line": 52
+        },
+        {
+          "file": "components\\live-score\\LiveScoreCard.tsx",
+          "line": 336
+        },
+        {
+          "file": "components\\MatchList\\MatchListV2.tsx",
+          "line": 1700
+        },
+        {
+          "file": "components\\MatchList\\MatchListV2.tsx",
+          "line": 2107
+        },
+        {
+          "file": "components\\referee\\CompletedAssignmentCard.tsx",
+          "line": 107
+        },
+        {
+          "file": "components\\referee\\CompletedMatchCard.tsx",
+          "line": 166
+        },
+        {
+          "file": "components\\referee\\TournamentRefereeList.tsx",
+          "line": 740
+        },
+        {
+          "file": "components\\Typography\\InfoPanel.tsx",
+          "line": 288
+        },
+        {
+          "file": "components\\Typography\\MatchCard.tsx",
+          "line": 320
+        },
+        {
+          "file": "components\\Typography\\StatusIndicator.tsx",
+          "line": 67
+        },
+        {
+          "file": "components\\Typography\\StatusIndicator.tsx",
+          "line": 75
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 1382
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 1632
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 1735
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 1772
+        },
+        {
+          "file": "screens\\MatchResultsScreen.tsx",
+          "line": 564
+        },
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2235
+        },
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2258
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2493
+        },
+        {
+          "file": "screens\\TournamentSelectionScreen.tsx",
+          "line": 1665
+        }
+      ]
+    },
+    "#2196F3": {
+      "count": 18,
+      "suggestedToken": "brandBlue[500]",
+      "occurrences": [
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 34
+        },
+        {
+          "file": "components\\connection\\ConnectionModeToggle.tsx",
+          "line": 324
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -5405,6 +5292,7 @@
     },
     "#0066CC": {
       "count": 18,
+      "suggestedToken": "brandBlue[500]",
       "occurrences": [
         {
           "file": "components\\ManualRefreshButton.tsx",
@@ -5482,6 +5370,7 @@
     },
     "#999999": {
       "count": 17,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsWidget.tsx",
@@ -5493,7 +5382,7 @@
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 231
+          "line": 232
         },
         {
           "file": "components\\ManualRefreshButton.tsx",
@@ -5555,6 +5444,7 @@
     },
     "#DC2626": {
       "count": 17,
+      "suggestedToken": "badgeColors.live.text",
       "occurrences": [
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
@@ -5626,77 +5516,9 @@
         }
       ]
     },
-    "#F8FAFC": {
-      "count": 16,
-      "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchDetail.tsx",
-          "line": 372
-        },
-        {
-          "file": "components\\entities\\Match\\MatchList.tsx",
-          "line": 389
-        },
-        {
-          "file": "components\\entities\\Match\\MatchList.tsx",
-          "line": 458
-        },
-        {
-          "file": "components\\entities\\Player\\PlayerDetail.tsx",
-          "line": 418
-        },
-        {
-          "file": "components\\entities\\Player\\PlayerList.tsx",
-          "line": 271
-        },
-        {
-          "file": "components\\entities\\Player\\PlayerList.tsx",
-          "line": 340
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeDetail.tsx",
-          "line": 347
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeList.tsx",
-          "line": 394
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeList.tsx",
-          "line": 463
-        },
-        {
-          "file": "components\\entities\\Tournament\\TournamentDetail.tsx",
-          "line": 196
-        },
-        {
-          "file": "components\\entities\\Tournament\\TournamentList.tsx",
-          "line": 247
-        },
-        {
-          "file": "components\\referee\\CompletedMatchCard.tsx",
-          "line": 190
-        },
-        {
-          "file": "components\\referee\\LiveMatchCard.tsx",
-          "line": 170
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2749
-        },
-        {
-          "file": "screens\\ToolsSelectionScreen.tsx",
-          "line": 186
-        },
-        {
-          "file": "screens\\ToolsSelectionScreen.tsx",
-          "line": 223
-        }
-      ]
-    },
     "#4A90A4": {
       "count": 16,
+      "suggestedToken": "brandBlue[600]",
       "occurrences": [
         {
           "file": "components\\RefereeDropdown\\RefereeDropdown.tsx",
@@ -5766,6 +5588,7 @@
     },
     "#007AFF": {
       "count": 15,
+      "suggestedToken": "brandBlue[500]",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsDashboard.tsx",
@@ -5896,6 +5719,7 @@
     },
     "#10B981": {
       "count": 15,
+      "suggestedToken": "badgeColors.completed.text",
       "occurrences": [
         {
           "file": "components\\Icons\\FeatherIcons.tsx",
@@ -5961,26 +5785,27 @@
     },
     "#9E9E9E": {
       "count": 14,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 54
+          "line": 55
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 241
+          "line": 242
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 326
+          "line": 327
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 66
+          "line": 67
         },
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 68
+          "line": 69
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -6020,6 +5845,64 @@
         }
       ]
     },
+    "#F8FAFC": {
+      "count": 13,
+      "suggestedToken": "neutrals.bgPage",
+      "occurrences": [
+        {
+          "file": "components\\entities\\Player\\PlayerDetail.tsx",
+          "line": 418
+        },
+        {
+          "file": "components\\entities\\Player\\PlayerList.tsx",
+          "line": 271
+        },
+        {
+          "file": "components\\entities\\Player\\PlayerList.tsx",
+          "line": 340
+        },
+        {
+          "file": "components\\entities\\Referee\\RefereeDetail.tsx",
+          "line": 347
+        },
+        {
+          "file": "components\\entities\\Referee\\RefereeList.tsx",
+          "line": 394
+        },
+        {
+          "file": "components\\entities\\Referee\\RefereeList.tsx",
+          "line": 463
+        },
+        {
+          "file": "components\\entities\\Tournament\\TournamentDetail.tsx",
+          "line": 196
+        },
+        {
+          "file": "components\\entities\\Tournament\\TournamentList.tsx",
+          "line": 247
+        },
+        {
+          "file": "components\\referee\\CompletedMatchCard.tsx",
+          "line": 190
+        },
+        {
+          "file": "components\\referee\\LiveMatchCard.tsx",
+          "line": 170
+        },
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2749
+        },
+        {
+          "file": "screens\\ToolsSelectionScreen.tsx",
+          "line": 186
+        },
+        {
+          "file": "screens\\ToolsSelectionScreen.tsx",
+          "line": 223
+        }
+      ]
+    },
     "#F0F0F0": {
       "count": 12,
       "occurrences": [
@@ -6045,7 +5928,7 @@
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 297
+          "line": 298
         },
         {
           "file": "components\\ManualRefreshButton.tsx",
@@ -6075,6 +5958,7 @@
     },
     "#F8F9FA": {
       "count": 10,
+      "suggestedToken": "neutrals.bgPage",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsDashboard.tsx",
@@ -6123,11 +6007,11 @@
       "occurrences": [
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 63
+          "line": 64
         },
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 159
+          "line": 160
         },
         {
           "file": "components\\NetworkStatus.tsx",
@@ -6207,6 +6091,7 @@
     },
     "#EFF6FF": {
       "count": 8,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\MatchList\\MatchListV2.tsx",
@@ -6239,39 +6124,6 @@
         {
           "file": "screens\\TournamentSelectionScreen.tsx",
           "line": 1685
-        }
-      ]
-    },
-    "#F0FDF4": {
-      "count": 7,
-      "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1465
-        },
-        {
-          "file": "components\\entities\\Player\\PlayerCard.tsx",
-          "line": 259
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeCard.tsx",
-          "line": 380
-        },
-        {
-          "file": "components\\live-score\\LiveScoreCard.tsx",
-          "line": 332
-        },
-        {
-          "file": "components\\Typography\\MatchCard.tsx",
-          "line": 311
-        },
-        {
-          "file": "components\\Typography\\MatchCard.tsx",
-          "line": 329
-        },
-        {
-          "file": "screens\\MatchDetailScreen.tsx",
-          "line": 1468
         }
       ]
     },
@@ -6337,6 +6189,36 @@
         }
       ]
     },
+    "#F0FDF4": {
+      "count": 6,
+      "suggestedToken": "badgeColors.completed.background",
+      "occurrences": [
+        {
+          "file": "components\\entities\\Match\\MatchCard.tsx",
+          "line": 1465
+        },
+        {
+          "file": "components\\entities\\Player\\PlayerCard.tsx",
+          "line": 259
+        },
+        {
+          "file": "components\\live-score\\LiveScoreCard.tsx",
+          "line": 332
+        },
+        {
+          "file": "components\\Typography\\MatchCard.tsx",
+          "line": 311
+        },
+        {
+          "file": "components\\Typography\\MatchCard.tsx",
+          "line": 329
+        },
+        {
+          "file": "screens\\MatchDetailScreen.tsx",
+          "line": 1468
+        }
+      ]
+    },
     "#2563EB": {
       "count": 6,
       "occurrences": [
@@ -6368,6 +6250,7 @@
     },
     "#F4F3F4": {
       "count": 6,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\entities\\Tournament\\TournamentCard.tsx",
@@ -6426,6 +6309,7 @@
     },
     "#E3F2FD": {
       "count": 6,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\LiveMatchIndicator.tsx",
@@ -6530,6 +6414,7 @@
     },
     "#FEF2F2": {
       "count": 5,
+      "suggestedToken": "badgeColors.live.background",
       "occurrences": [
         {
           "file": "components\\MatchList\\MatchListV2.tsx",
@@ -6580,6 +6465,7 @@
     },
     "#F0F9FF": {
       "count": 5,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\referee\\CompletedMatchCard.tsx",
@@ -6714,6 +6600,7 @@
     },
     "#EEEEEE": {
       "count": 4,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\MinimalTournamentDetail.tsx",
@@ -6759,15 +6646,15 @@
       "occurrences": [
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 248
+          "line": 249
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 256
+          "line": 257
         },
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 348
+          "line": 349
         }
       ]
     },
@@ -6841,6 +6728,7 @@
     },
     "#FFEBEE": {
       "count": 3,
+      "suggestedToken": "badgeColors.live.background",
       "occurrences": [
         {
           "file": "components\\LiveMatchIndicator.tsx",
@@ -6858,6 +6746,7 @@
     },
     "#E8F5E8": {
       "count": 3,
+      "suggestedToken": "badgeColors.completed.background",
       "occurrences": [
         {
           "file": "components\\LiveMatchIndicator.tsx",
@@ -6909,6 +6798,7 @@
     },
     "#FEE2E2": {
       "count": 3,
+      "suggestedToken": "badgeColors.live.background",
       "occurrences": [
         {
           "file": "components\\referee\\TournamentRefereeList.tsx",
@@ -6926,6 +6816,7 @@
     },
     "#E2E8F0": {
       "count": 3,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "screens\\RefereeSettingsScreen.tsx",
@@ -6943,6 +6834,7 @@
     },
     "#F0F8FF": {
       "count": 2,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\Analytics\\AnalyticsSettings.tsx",
@@ -6969,6 +6861,7 @@
     },
     "#FFE5E5": {
       "count": 2,
+      "suggestedToken": "badgeColors.live.background",
       "occurrences": [
         {
           "file": "components\\Assignment\\AssignmentStatusManager.tsx",
@@ -6985,7 +6878,7 @@
       "occurrences": [
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 345
+          "line": 346
         },
         {
           "file": "components\\tournament\\ScheduleChangeIndicator.tsx",
@@ -6998,7 +6891,7 @@
       "occurrences": [
         {
           "file": "components\\connection\\NetworkQualityIndicator.tsx",
-          "line": 60
+          "line": 61
         },
         {
           "file": "components\\ConnectionStatusIndicator.tsx",
@@ -7011,7 +6904,7 @@
       "occurrences": [
         {
           "file": "components\\DataFreshness.tsx",
-          "line": 207
+          "line": 208
         },
         {
           "file": "screens\\RefereeSettingsScreen.tsx",
@@ -7034,6 +6927,7 @@
     },
     "#FAFAFA": {
       "count": 2,
+      "suggestedToken": "neutrals.bgPage",
       "occurrences": [
         {
           "file": "components\\entities\\Referee\\RefereeCard.tsx",
@@ -7060,6 +6954,7 @@
     },
     "#FAFBFC": {
       "count": 2,
+      "suggestedToken": "neutrals.bgPage",
       "occurrences": [
         {
           "file": "components\\entities\\Tournament\\TournamentCard.tsx",
@@ -7164,6 +7059,7 @@
     },
     "#E9ECEF": {
       "count": 2,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\StorageManager.tsx",
@@ -7190,6 +7086,7 @@
     },
     "#E6F3FF": {
       "count": 2,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\TournamentDetail.tsx",
@@ -7228,16 +7125,17 @@
       "occurrences": [
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 47
+          "line": 48
         }
       ]
     },
     "#F8F9FF": {
       "count": 1,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\connection\\ConnectionModeToggle.tsx",
-          "line": 300
+          "line": 301
         }
       ]
     },
@@ -7270,6 +7168,7 @@
     },
     "#EEF2FF": {
       "count": 1,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\entities\\Player\\PlayerCard.tsx",
@@ -7288,6 +7187,7 @@
     },
     "#FEF7FF": {
       "count": 1,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\MatchList\\MatchListV2.tsx",
@@ -7315,6 +7215,7 @@
     },
     "#F8F8F8": {
       "count": 1,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "components\\RealtimeErrorBoundary.tsx",
@@ -7333,6 +7234,7 @@
     },
     "#DBEAFE": {
       "count": 1,
+      "suggestedToken": "badgeColors.scheduled.background",
       "occurrences": [
         {
           "file": "components\\referee\\TournamentRefereeList.tsx",
@@ -7360,6 +7262,7 @@
     },
     "#D1FAE5": {
       "count": 1,
+      "suggestedToken": "badgeColors.completed.background",
       "occurrences": [
         {
           "file": "components\\referee\\TournamentRefereeList.tsx",
@@ -7387,6 +7290,7 @@
     },
     "#E0E7FF": {
       "count": 1,
+      "suggestedToken": "neutrals.borderSubtle",
       "occurrences": [
         {
           "file": "components\\referee\\TournamentRefereeList.tsx",
@@ -7531,6 +7435,7 @@
     },
     "#ECFDF5": {
       "count": 1,
+      "suggestedToken": "badgeColors.completed.background",
       "occurrences": [
         {
           "file": "components\\Typography\\StatusIndicator.tsx",
@@ -7558,6 +7463,7 @@
     },
     "#EBF4FF": {
       "count": 1,
+      "suggestedToken": "neutrals.bgSurface",
       "occurrences": [
         {
           "file": "screens\\AssignmentDetailScreen.tsx",

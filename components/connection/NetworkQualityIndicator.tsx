@@ -235,21 +235,21 @@ const styles = StyleSheet.create({
   networkType: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   cellularGen: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   ssid: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   carrier: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   qualityIndicator: {
@@ -289,13 +289,13 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   metrics: {
     flexDirection: 'row',
@@ -307,13 +307,13 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   metricValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   statusIndicator: {
     flexDirection: 'row',
@@ -328,11 +328,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   loadingText: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

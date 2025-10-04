@@ -1517,7 +1517,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   menBadgeText: {
     // Same as base genderBadgeText
@@ -1551,32 +1551,32 @@ const styles = StyleSheet.create({
   userTime: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginTop: 1,
   },
   userTimeBelow: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#374151', // Più scuro del precedente #6B7280
+    color: designTokens.neutrals.textPrimary, // Più scuro del precedente #6B7280
     textAlign: 'center',
     marginTop: 2,
   },
   courtText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
   courtTextRight: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginLeft: 8,
   },
   courtTextCenter: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
@@ -1598,7 +1598,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -1666,7 +1666,7 @@ const styles = StyleSheet.create({
   resultScore: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -1676,12 +1676,12 @@ const styles = StyleSheet.create({
   scoreSeparator: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 4,
   },
   vsText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   teamsContainer: {
@@ -1716,7 +1716,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: 13,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
   },
   leftCountryCode: {
@@ -1745,7 +1745,7 @@ const styles = StyleSheet.create({
   refereePosition: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginRight: 8,
   },
   refereeFlag: {
@@ -1754,13 +1754,13 @@ const styles = StyleSheet.create({
   },
   refereeCountryCode: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 8,
   },
   refereeName: {
     fontSize: 15,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     flex: 1,
     textAlign: 'left',
@@ -1796,7 +1796,7 @@ const styles = StyleSheet.create({
   setScore: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   currentSetScore: {
     fontSize: 13, // Slightly bigger font for current set (was 11, now 13 = ~18% increase)
@@ -1806,7 +1806,7 @@ const styles = StyleSheet.create({
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 3,
   },
   currentSetSeparator: {
@@ -1833,7 +1833,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
   },
   resultTypeText: {
@@ -1870,7 +1870,7 @@ const styles = StyleSheet.create({
   roundBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   courtBadge: {
     backgroundColor: designTokens.neutrals.bgSurface,

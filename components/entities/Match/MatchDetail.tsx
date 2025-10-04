@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   courtInfo: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusBadge: {
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   },
   teamPlayers: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   matchScore: {
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   matchScoreText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   matchScoreWinner: {
     color: colors.success,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   setLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   setScoreContainer: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   setScoreText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 20,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 12,
   },
   actionIconPrimary: {
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   actionButtonTextPrimary: {

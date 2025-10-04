@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ConnectionState } from '../services/RealtimePerformanceMonitor';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../services/NetworkStateManager';
+import { designTokens } from '../theme/tokens';
 
 interface ConnectionStatusIndicatorProps {
   connectionState: ConnectionState;
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   timestampText: {
@@ -255,13 +256,13 @@ const styles = StyleSheet.create({
   },
   modeLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },
   modeText: {
     fontSize: 11,
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   networkDetails: {
     flexDirection: 'row',
@@ -270,13 +271,13 @@ const styles = StyleSheet.create({
   },
   networkLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },
   networkText: {
     fontSize: 11,
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   qualityDetails: {
     flexDirection: 'row',
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   },
   qualityLabel: {
     fontSize: 11,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 6,
   },

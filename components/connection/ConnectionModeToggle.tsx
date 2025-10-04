@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   toggle: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   toggleTextDisabled: {
@@ -243,14 +243,14 @@ const styles = StyleSheet.create({
   },
   toggleDescription: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   toggleDescriptionDisabled: {
     color: '#BDBDBD',
   },
   chevron: {
     fontSize: 20,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: 'bold',
   },
   chevronDisabled: {
@@ -278,14 +278,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   closeButton: {
     padding: 4,
   },
   closeButtonText: {
     fontSize: 18,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   modalBody: {
     flex: 1,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   modeName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   modeNameSelected: {
     color: '#2196F3',
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   modeDescription: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   modeDescriptionSelected: {
     color: '#555555',
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
 });

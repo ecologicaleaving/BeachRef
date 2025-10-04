@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
 import { ConnectionState } from '../services/RealtimePerformanceMonitor';
 import { BaseComponentProps } from '../types/props';
+import { designTokens } from '../theme/tokens';
 
 interface ManualRefreshButtonProps extends BaseComponentProps {
   onRefresh: () => void;
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
   },
   lastUpdatedText: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 6,
     textAlign: 'center',
   },

@@ -12,7 +12,7 @@ import { StatusBadge } from '../../Status';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { determineMatchStatus } from '../../../utils/statusColors';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface MatchDetailProps {
   match: BeachMatchCore;
@@ -369,7 +369,7 @@ const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: designTokens.neutrals.bgSurface,
   },
   headerSection: {
     flexDirection: 'row',
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: designTokens.neutrals.borderSubtle,
   },
   teamInfo: {
     flexDirection: 'row',
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   setScoresTitle: {
     fontSize: 16,
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: designTokens.neutrals.borderSubtle,
   },
   detailLabel: {
     fontSize: 16,

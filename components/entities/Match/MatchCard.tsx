@@ -12,7 +12,7 @@ import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../../Status/LiveIndicator';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
 import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
 import {
@@ -1446,7 +1446,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     ...shadowPresets.card,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: designTokens.neutrals.borderSubtle,
     overflow: 'hidden',
   },
   womenTopBand: {
@@ -1731,7 +1731,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   refereeRow: {
     marginBottom: 4,
@@ -1780,7 +1780,7 @@ const styles = StyleSheet.create({
   individualSet: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -1873,7 +1873,7 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   courtBadge: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     marginRight: 4,
   },
   // Qualification match styles

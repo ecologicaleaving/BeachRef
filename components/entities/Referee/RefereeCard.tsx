@@ -10,7 +10,7 @@ import { EventReferee, RefereeOfficial, getOfficialDisplayName, isActiveOfficial
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';
 
 export interface RefereeCardProps {
@@ -377,10 +377,10 @@ const styles = StyleSheet.create({
   cardSelection: {
     borderColor: colors.success,
     borderWidth: 2,
-    backgroundColor: '#F0FDF4',
+    backgroundColor: designTokens.badgeColors.completed.background,
   },
   cardInactive: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     opacity: 0.7,
   },
   cardHeader: {
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F9FAFB',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   roleItem: {
     alignItems: 'center',

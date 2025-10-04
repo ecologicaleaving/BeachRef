@@ -12,7 +12,7 @@ import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo } from '
 import { MatchCard } from './MatchCard';
 import { determineMatchStatus } from '../../../utils/statusColors';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { useMatches, MatchesFilters } from '../../../hooks/useMatches';
 import { MatchDTO } from '../../../services/DualReadService';
 import { featureFlags } from '../../../hooks/compatibility/FeatureFlags';
@@ -386,7 +386,7 @@ export const MatchList: React.FC<MatchListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: designTokens.neutrals.bgSurface,
   },
   listContent: {
     paddingBottom: 32,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: designTokens.neutrals.bgSurface,
   },
   sectionHeaderText: {
     fontSize: 18,

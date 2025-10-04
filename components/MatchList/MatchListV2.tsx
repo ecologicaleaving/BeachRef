@@ -11,7 +11,7 @@ import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
 import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
 import { formatMatchTimeForUser, isMatchToday as checkIfMatchToday } from '../../utils/matchTimeFormatter';
 import { DateTime } from 'luxon';
-import { designTokens } from '../../theme/tokens';
+import { designTokens, colors } from '../../theme/tokens';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -1163,7 +1163,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       case MatchStatus.INTERRUPTED:
         return { text: 'Interrupted', color: '#F59E0B' };
       case MatchStatus.CANCELLED:
-        return { text: 'Cancelled', color: '#EF4444' };
+        return { text: 'Cancelled', color: colors.error };
       case MatchStatus.POSTPONED:
         return { text: 'Postponed', color: '#F59E0B' };
       case MatchStatus.TBD:
@@ -1651,7 +1651,7 @@ const styles = StyleSheet.create({
   resetFiltersText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#DC2626',
+    color: colors.error,
   },
   refereeToggleButton: {
     backgroundColor: '#1E40AF',
@@ -1682,7 +1682,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#DC2626',
+    color: colors.error,
     textAlign: 'center',
     marginBottom: 16,
   },

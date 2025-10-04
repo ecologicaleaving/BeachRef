@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MatchResult } from '../../types/MatchResults';
 import { MatchResultsService } from '../../services/MatchResultsService';
 import { formatTime, formatDate } from '../../utils/dateFormatters';
-import { designTokens } from '../../theme/tokens';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface LiveMatchCardProps {
   match: MatchResult;
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 3,
-    borderColor: '#10B981', // High-contrast green for live matches
+    borderColor: colors.success, // High-contrast green for live matches
     minHeight: 180, // Large touch target for outdoor use
   },
   pressed: {
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#10B981',
+    backgroundColor: colors.success,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   setScores: {
     fontSize: 24, // Extra large for score visibility
     fontWeight: '800',
-    color: '#10B981', // Green to match live status
+    color: colors.success, // Green to match live status
     textAlign: 'center',
   },
   refereesContainer: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
+    borderLeftColor: colors.success,
   },
   refereesLabel: {
     fontSize: 14,

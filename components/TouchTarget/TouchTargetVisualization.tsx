@@ -14,7 +14,7 @@ import {
   ScrollView,
   Switch,
 } from 'react-native';
-import { designTokens } from '../../theme/tokens';
+import { designTokens, colors } from '../../theme/tokens';
 import type {
   TouchTargetVisualizationData,
   TouchTargetValidationStatus,
@@ -77,9 +77,9 @@ export const TouchTargetVisualization: React.FC<TouchTargetVisualizationProps> =
   onTargetPress,
   onIssuePress,
   overlayOpacity = 0.3,
-  compliantColor = '#4CAF50',
-  nonCompliantColor = '#F44336',
-  warningColor = '#FF9800',
+  compliantColor = colors.success,
+  nonCompliantColor = colors.error,
+  warningColor = colors.warning,
   showDebugPanel = false,
   debugPanelPosition = 'bottom',
 }) => {
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#F44336',
+    backgroundColor: colors.error,
     borderRadius: 10,
     minWidth: 20,
     height: 20,

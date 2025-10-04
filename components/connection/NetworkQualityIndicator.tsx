@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../../services/NetworkStateManager';
 import { useNetworkState } from '../../hooks/useNetworkState';
-import { designTokens } from '../../theme/tokens';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface NetworkQualityIndicatorProps {
   networkState?: NetworkState | null;
@@ -56,13 +56,13 @@ const NetworkQualityIndicator: React.FC<NetworkQualityIndicatorProps> = ({
   const getQualityColor = (level: string) => {
     switch (level) {
       case 'excellent':
-        return '#4CAF50';
+        return colors.success;
       case 'good':
         return '#8BC34A';
       case 'fair':
-        return '#FF9800';
+        return colors.warning;
       case 'poor':
-        return '#F44336';
+        return colors.error;
       case 'offline':
         return designTokens.neutrals.textSecondary;
       default:

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useStorageMonitoring, useStorageManager } from '../hooks/useStorageManager';
+import { colors } from '../theme/tokens';
 
 interface StorageAlertProps {
   style?: any;
@@ -176,9 +177,9 @@ export function StorageStatusIndicator({
   const { currentUsage } = useStorageMonitoring(30000, 0.85);
 
   const getStatusColor = () => {
-    if (currentUsage < 50) return '#4CAF50';
-    if (currentUsage < 75) return '#FF9800';
-    return '#F44336';
+    if (currentUsage < 50) return colors.success;
+    if (currentUsage < 75) return colors.warning;
+    return colors.error;
   };
 
   const getStatusIcon = () => {

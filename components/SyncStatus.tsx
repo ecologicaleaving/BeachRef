@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSyncManager } from '../hooks/useSyncManager';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { colors } from '../theme/tokens';
 
 interface SyncStatusProps {
   compact?: boolean;
@@ -64,8 +65,8 @@ export function SyncStatus({
   const getStatusColor = () => {
     if (!isConnected) return '#FF5722';
     if (isSyncing) return '#2196F3';
-    if (syncStatus.queueLength > 0) return '#FF9800';
-    return '#4CAF50';
+    if (syncStatus.queueLength > 0) return colors.warning;
+    return colors.success;
   };
 
   const getStatusIcon = () => {
@@ -143,8 +144,8 @@ export function SyncStatusDetailed({ style }: { style?: any }) {
       <View style={styles.detailedRow}>
         <Text style={styles.detailedLabel}>Network:</Text>
         <Text style={[
-          styles.detailedValue, 
-          { color: isConnected ? '#4CAF50' : '#FF5722' }
+          styles.detailedValue,
+          { color: isConnected ? colors.success : '#FF5722' }
         ]}>
           {isConnected ? 'Connected' : 'Offline'}
         </Text>

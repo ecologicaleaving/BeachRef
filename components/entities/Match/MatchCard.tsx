@@ -1535,7 +1535,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#DC2626', // Red color
+    backgroundColor: colors.error, // Red color
     marginRight: 6,
   },
   timeDisplayContainer: {
@@ -1611,10 +1611,10 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#DC2626', // Red dot
+    backgroundColor: colors.error, // Red dot
   },
   inlineResultBadge: {
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.error,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1839,7 +1839,7 @@ const styles = StyleSheet.create({
   resultTypeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#DC2626', // Red color to indicate non-normal result
+    color: colors.error, // Red color to indicate non-normal result
     textAlign: 'center',
     fontStyle: 'italic',
   },

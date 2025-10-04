@@ -12,7 +12,7 @@ import { Text, H2Text, BodyText, CaptionText } from './Typography';
 import { BeachMatch } from '../types/match';
 import { TournamentCore, GenderType as CoreGenderType , TournamentType, GenderType } from '../types/tournament-v2';
 import { BeachMatchCore } from '../types/match-v2';
-import { designTokens } from '../theme/tokens';
+import { designTokens, colors } from '../theme/tokens';
 
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';
@@ -630,12 +630,12 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   const getGenderColor = (match: BeachMatch): string => {
     // First try to get gender from tournament metadata if available
     if (match.tournamentGender) {
-      return match.tournamentGender === 'M' ? '#4CAF50' : '#E91E63'; // Green for men, Pink for women
+      return match.tournamentGender === 'M' ? colors.success : '#E91E63'; // Green for men, Pink for women
     }
-    
+
     // If no tournament metadata, use current tournament's structured gender
     const gender = currentTournament.gender;
-    return gender === 'M' ? '#4CAF50' : gender === 'W' ? '#E91E63' : '#9E9E9E'; // Gray for unknown/mixed
+    return gender === 'M' ? colors.success : gender === 'W' ? '#E91E63' : '#9E9E9E'; // Gray for unknown/mixed
   };
 
   const renderMatchItem = ({ item: match }: { item: BeachMatch }) => {
@@ -1909,7 +1909,7 @@ const styles = StyleSheet.create({
   },
   statusErrorText: {
     fontSize: 12,
-    color: '#f44336',
+    color: colors.error,
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 0,
@@ -1924,7 +1924,7 @@ const styles = StyleSheet.create({
   },
   // Repository implementation indicator styles
   repositoryIndicator: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,

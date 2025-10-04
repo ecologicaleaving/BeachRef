@@ -1,8 +1,8 @@
 {
   "totalFiles": 186,
-  "totalColors": 1396,
-  "uniqueColors": 131,
-  "mappedColors": 56,
+  "totalColors": 1358,
+  "uniqueColors": 130,
+  "mappedColors": 55,
   "unmappedColors": 75,
   "colorUsage": {
     "#FFFFFF": {
@@ -731,15 +731,15 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 227
+          "line": 228
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 285
+          "line": 286
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 300
+          "line": 301
         },
         {
           "file": "screens\\MatchResultsScreen.tsx",
@@ -1787,7 +1787,7 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 303
+          "line": 304
         },
         {
           "file": "screens\\MatchDetailScreen.tsx",
@@ -2085,11 +2085,11 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 229
+          "line": 230
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 312
+          "line": 313
         },
         {
           "file": "screens\\MatchDetailScreen.tsx",
@@ -2751,15 +2751,15 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 219
+          "line": 220
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 235
+          "line": 236
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 341
+          "line": 342
         },
         {
           "file": "screens\\MatchResultsScreen.tsx",
@@ -3151,140 +3151,6 @@
         {
           "file": "components\\TournamentList.tsx",
           "line": 743
-        }
-      ]
-    },
-    "#3B82F6": {
-      "count": 32,
-      "suggestedToken": "brandBlue[500]",
-      "occurrences": [
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 290
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 302
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 314
-        },
-        {
-          "file": "components\\Analytics\\AnalyticsSettings.tsx",
-          "line": 334
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeCard.tsx",
-          "line": 457
-        },
-        {
-          "file": "components\\entities\\Referee\\RefereeStatsModal.tsx",
-          "line": 399
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1626
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1627
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1738
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 1739
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2141
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2181
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2186
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2211
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2212
-        },
-        {
-          "file": "components\\MatchList\\MatchListV2.tsx",
-          "line": 2279
-        },
-        {
-          "file": "components\\referee\\CurrentAssignmentCard.tsx",
-          "line": 135
-        },
-        {
-          "file": "components\\referee\\UpcomingAssignmentCard.tsx",
-          "line": 134
-        },
-        {
-          "file": "components\\referee\\UpcomingAssignmentCard.tsx",
-          "line": 150
-        },
-        {
-          "file": "components\\RefereeDropdown\\RefereeDropdown.tsx",
-          "line": 241
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 273
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 332
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 359
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 379
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2364
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2365
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2442
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2673
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2674
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 2736
-        },
-        {
-          "file": "screens\\TournamentSelectionScreen.tsx",
-          "line": 1413
-        },
-        {
-          "file": "screens\\TournamentSelectionScreen.tsx",
-          "line": 1686
         }
       ]
     },
@@ -4429,7 +4295,7 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 270
+          "line": 271
         },
         {
           "file": "screens\\MatchDetailScreen.tsx",
@@ -4622,6 +4488,56 @@
         }
       ]
     },
+    "#3B82F6": {
+      "count": 11,
+      "suggestedToken": "brandBlue[500]",
+      "occurrences": [
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 290
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 302
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 314
+        },
+        {
+          "file": "components\\Analytics\\AnalyticsSettings.tsx",
+          "line": 334
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2364
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2365
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2442
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2673
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2674
+        },
+        {
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 2736
+        },
+        {
+          "file": "screens\\TournamentSelectionScreen.tsx",
+          "line": 1686
+        }
+      ]
+    },
     "#F8F9FA": {
       "count": 10,
       "suggestedToken": "neutrals.bgPage",
@@ -4713,48 +4629,6 @@
         }
       ]
     },
-    "#6B7280": {
-      "count": 9,
-      "suggestedToken": "neutrals.textSecondary",
-      "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1561
-        },
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1584
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 276
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 325
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 346
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 365
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2231
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2329
-        },
-        {
-          "file": "screens\\TournamentDetailScreen.tsx",
-          "line": 991
-        }
-      ]
-    },
     "#EF4444": {
       "count": 9,
       "suggestedToken": "badgeColors.live.dot",
@@ -4789,11 +4663,11 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 279
+          "line": 280
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 388
+          "line": 389
         }
       ]
     },
@@ -4927,32 +4801,33 @@
         }
       ]
     },
-    "#2563EB": {
+    "#6B7280": {
       "count": 6,
+      "suggestedToken": "neutrals.textSecondary",
       "occurrences": [
         {
           "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1606
+          "line": 1561
         },
         {
-          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
-          "line": 157
+          "file": "components\\entities\\Match\\MatchCard.tsx",
+          "line": 1584
         },
         {
-          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
-          "line": 488
+          "file": "screens\\AssignmentDetailScreen.tsx",
+          "line": 277
         },
         {
-          "file": "components\\referee\\MatchCard.tsx",
-          "line": 289
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2231
         },
         {
-          "file": "components\\RefereeDropdown\\RefereeDropdown.tsx",
-          "line": 233
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2329
         },
         {
-          "file": "components\\VisTournamentList.tsx",
-          "line": 529
+          "file": "screens\\TournamentDetailScreen.tsx",
+          "line": 991
         }
       ]
     },
@@ -5142,7 +5017,7 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 389
+          "line": 390
         }
       ]
     },
@@ -5194,31 +5069,6 @@
         {
           "file": "screens\\TournamentSelectionScreen.tsx",
           "line": 1556
-        }
-      ]
-    },
-    "#0EA5E9": {
-      "count": 5,
-      "occurrences": [
-        {
-          "file": "components\\referee\\CompletedMatchCard.tsx",
-          "line": 137
-        },
-        {
-          "file": "components\\referee\\MatchCard.tsx",
-          "line": 326
-        },
-        {
-          "file": "components\\referee\\MatchCard.tsx",
-          "line": 361
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2216
-        },
-        {
-          "file": "screens\\RefereeSettingsScreen.tsx",
-          "line": 2242
         }
       ]
     },
@@ -5371,28 +5221,6 @@
         }
       ]
     },
-    "#111827": {
-      "count": 4,
-      "suggestedToken": "neutrals.textPrimary",
-      "occurrences": [
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 247
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 296
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 317
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 351
-        }
-      ]
-    },
     "#BDBDBD": {
       "count": 3,
       "occurrences": [
@@ -5424,24 +5252,6 @@
         {
           "file": "components\\Dashboard\\EnhancedCurrentAssignmentCard.tsx",
           "line": 401
-        }
-      ]
-    },
-    "#374151": {
-      "count": 3,
-      "suggestedToken": "neutrals.textPrimary",
-      "occurrences": [
-        {
-          "file": "components\\entities\\Match\\MatchCard.tsx",
-          "line": 1508
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 242
-        },
-        {
-          "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 372
         }
       ]
     },
@@ -5785,7 +5595,7 @@
         },
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 282
+          "line": 283
         }
       ]
     },
@@ -5895,6 +5705,19 @@
         }
       ]
     },
+    "#0EA5E9": {
+      "count": 2,
+      "occurrences": [
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2216
+        },
+        {
+          "file": "screens\\RefereeSettingsScreen.tsx",
+          "line": 2242
+        }
+      ]
+    },
     "#6C757D": {
       "count": 1,
       "occurrences": [
@@ -5950,6 +5773,16 @@
         }
       ]
     },
+    "#374151": {
+      "count": 1,
+      "suggestedToken": "neutrals.textPrimary",
+      "occurrences": [
+        {
+          "file": "components\\entities\\Match\\MatchCard.tsx",
+          "line": 1508
+        }
+      ]
+    },
     "#EEF2FF": {
       "count": 1,
       "suggestedToken": "neutrals.bgSurface",
@@ -5966,6 +5799,15 @@
         {
           "file": "components\\entities\\Tournament\\TournamentCard.tsx",
           "line": 151
+        }
+      ]
+    },
+    "#2563EB": {
+      "count": 1,
+      "occurrences": [
+        {
+          "file": "components\\entities\\Tournament\\TournamentCard.tsx",
+          "line": 157
         }
       ]
     },
@@ -6251,7 +6093,7 @@
       "occurrences": [
         {
           "file": "screens\\AssignmentDetailScreen.tsx",
-          "line": 380
+          "line": 381
         }
       ]
     },

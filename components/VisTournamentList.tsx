@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { TournamentCore } from '../types/tournament-v2';
 import { FlagImage } from './FlagImage';
-import { designTokens } from '../theme/tokens';
+import { designTokens, colors } from '../theme/tokens';
 
 interface VisTournamentItemProps {
   tournament: TournamentCore;
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusBadge: {
-    backgroundColor: '#10B981',
+    backgroundColor: colors.success,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     color: designTokens.linkTokens.default, // Blue for men
   },
   womenSymbol: {
-    color: '#DC2626', // Red for women
+    color: colors.error, // Red for women
   },
   mixedSymbol: {
     color: '#8B5CF6', // Purple for mixed
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#DC2626',
+    color: colors.error,
     textAlign: 'center',
     marginBottom: 8,
   },

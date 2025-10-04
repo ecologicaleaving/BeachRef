@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { ConnectionStrategy } from '../../services/NetworkStateManager';
-import { designTokens } from '../../theme/tokens';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface ConnectionModeToggleProps {
   currentMode: ConnectionStrategy;
@@ -24,7 +24,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Fast Mode',
     description: 'Fastest updates, best for stable Wi-Fi connections',
     icon: '⚡',
-    color: '#4CAF50',
+    color: colors.success,
   },
   {
     strategy: ConnectionStrategy.CONSERVATIVE_WEBSOCKET,
@@ -38,7 +38,7 @@ const CONNECTION_MODES: ConnectionMode[] = [
     name: 'Hybrid Mode',
     description: 'Mix of real-time and polling, adaptive to conditions',
     icon: '🔀',
-    color: '#FF9800',
+    color: colors.warning,
   },
   {
     strategy: ConnectionStrategy.POLLING_ONLY,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     color: designTokens.neutrals.textSecondary,
   },
   recommendedBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   unavailableText: {
     fontSize: 10,
-    color: '#F44336',
+    color: colors.error,
     textAlign: 'center',
   },
   modalFooter: {

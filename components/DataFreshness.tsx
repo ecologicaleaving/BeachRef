@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { designTokens } from '../theme/tokens';
+import { designTokens, colors as themeColors } from '../theme/tokens';
 
 interface DataFreshnessProps {
   timestamp?: number;
@@ -57,10 +57,10 @@ export function DataFreshness({
 
   const freshnessLevel = getFreshnessLevel();
   const relativeTime = getRelativeTime();
-  
+
   const colors = {
-    fresh: '#4CAF50',
-    moderate: '#FF9800', 
+    fresh: themeColors.success,
+    moderate: themeColors.warning,
     stale: '#FF5722'
   };
 
@@ -155,8 +155,8 @@ export function DataFreshnessDetailed({
   };
 
   const colors = {
-    fresh: '#4CAF50',
-    moderate: '#FF9800', 
+    fresh: themeColors.success,
+    moderate: themeColors.warning,
     stale: '#FF5722'
   };
 

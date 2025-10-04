@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ConnectionState } from '../services/RealtimePerformanceMonitor';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../services/NetworkStateManager';
-import { designTokens } from '../theme/tokens';
+import { designTokens, colors } from '../theme/tokens';
 
 interface ConnectionStatusIndicatorProps {
   connectionState: ConnectionState;
@@ -30,7 +30,7 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
       case ConnectionState.CONNECTED:
         if (hasLiveMatches) {
           return {
-            color: '#4CAF50', // Green
+            color: colors.success, // Green
             text: 'Live Updates',
             icon: '🔴', // Red dot for live
             description: 'Receiving real-time match updates',
@@ -45,21 +45,21 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
         }
       case ConnectionState.CONNECTING:
         return {
-          color: '#FF9800', // Orange
+          color: colors.warning, // Orange
           text: 'Connecting...',
           icon: '🟡', // Yellow dot
           description: 'Establishing real-time connection',
         };
       case ConnectionState.RECONNECTING:
         return {
-          color: '#FF9800', // Orange
+          color: colors.warning, // Orange
           text: 'Reconnecting...',
           icon: '🟡', // Yellow dot
           description: 'Attempting to restore connection',
         };
       case ConnectionState.ERROR:
         return {
-          color: '#F44336', // Red
+          color: colors.error, // Red
           text: 'Connection Error',
           icon: '🔴', // Red dot
           description: 'Real-time updates unavailable',
@@ -169,13 +169,13 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
   function getQualityColor(level: string): string {
     switch (level) {
       case 'excellent':
-        return '#4CAF50';
+        return colors.success;
       case 'good':
         return '#8BC34A';
       case 'fair':
-        return '#FF9800';
+        return colors.warning;
       case 'poor':
-        return '#F44336';
+        return colors.error;
       case 'offline':
         return designTokens.neutrals.textSecondary;
       default:
@@ -194,12 +194,12 @@ export const CompactConnectionIndicator: React.FC<{
   const getIndicatorColor = () => {
     switch (connectionState) {
       case ConnectionState.CONNECTED:
-        return hasLiveMatches ? '#F44336' : '#4CAF50'; // Red for live, Green for connected
+        return hasLiveMatches ? colors.error : colors.success; // Red for live, Green for connected
       case ConnectionState.CONNECTING:
       case ConnectionState.RECONNECTING:
-        return '#FF9800'; // Orange
+        return colors.warning; // Orange
       case ConnectionState.ERROR:
-        return '#F44336'; // Red
+        return colors.error; // Red
       default:
         return designTokens.neutrals.textSecondary; // Gray
     }

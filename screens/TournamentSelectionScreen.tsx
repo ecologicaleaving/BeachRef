@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Icon } from '../components/Icons/MaterialCommunityIcons';
 import { TournamentCore } from '../types/tournament-v2';
-import { colors } from '../theme/tokens';
+import { colors, designTokens } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { TournamentCard } from '../components/entities/Tournament';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
@@ -1143,7 +1143,7 @@ const TournamentSelectionScreen: React.FC = () => {
       {/* Main SectionList */}
       {tournamentSections.length === 0 && !initialLoading && !tournamentLoading ? (
         <View style={styles.emptyState}>
-          <Icon name="clock-outline" size={48} color="#9CA3AF" />
+          <Icon name="clock-outline" size={48} color={designTokens.neutrals.textSecondary} />
           <Text style={styles.emptyText}>No tournaments found</Text>
           <Text style={styles.emptySubtext}>
             No tournaments available
@@ -1391,7 +1391,7 @@ const styles = StyleSheet.create({
   },
   tournamentDate: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 12,
   },
   // Gender badge styles (like in match cards)
@@ -1426,13 +1426,13 @@ const styles = StyleSheet.create({
   },
   tournamentParticipants: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginTop: 2,
   },
   tournamentVenue: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginTop: 2,
   },
@@ -1520,7 +1520,7 @@ const styles = StyleSheet.create({
   },
   dropdownArrow: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: 'bold',
   },
   dropdownList: {
@@ -1557,7 +1557,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 16,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   activeDropdownItemText: {
     color: '#1B365D',
@@ -1695,11 +1695,11 @@ const styles = StyleSheet.create({
   monthHeaderText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   tournamentCountText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 8,
@@ -1710,7 +1710,7 @@ const styles = StyleSheet.create({
   expandIndicator: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
     minWidth: 20,
     textAlign: 'center',

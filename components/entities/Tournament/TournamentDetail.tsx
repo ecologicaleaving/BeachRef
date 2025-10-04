@@ -323,6 +323,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionButtonTextDisabled: {
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
 });

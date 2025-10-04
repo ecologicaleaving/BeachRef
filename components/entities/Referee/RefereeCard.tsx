@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   statLabel: {
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   roleCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 1,
   },
   roleLabel: {
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   roleTotalCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 14,
   },
   roleTotalLabel: {

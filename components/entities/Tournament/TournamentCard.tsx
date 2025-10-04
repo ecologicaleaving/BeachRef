@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   tournamentName: {
     fontSize: 18,

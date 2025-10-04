@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { designTokens } from '../../theme/tokens';
 
 interface Referee {
   No: string;
@@ -168,17 +169,17 @@ const styles = StyleSheet.create({
   },
   selectedRefereeCode: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   placeholderText: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   dropdownArrow: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginLeft: 8,
   },
   dropdownArrowUp: {
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   },
   refereeCode: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   selectedRefereeCode: {

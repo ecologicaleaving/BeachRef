@@ -1230,7 +1230,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     {isMatchLive(match) && (
                       <Text style={{
                         fontSize: 10,
-                        color: '#333',
+                        color: designTokens.neutrals.textPrimary,
                         fontFamily: 'monospace',
                         marginLeft: 8,
                         alignSelf: 'center'
@@ -1786,7 +1786,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   currentSet: {
-    backgroundColor: '#374151', // Dark gray background for current set in live matches
+    backgroundColor: designTokens.neutrals.textPrimary, // Dark gray background for current set in live matches
     borderWidth: 1,
     borderColor: '#4B5563',
     paddingHorizontal: 8,
@@ -1816,7 +1816,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeSetScore: {
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '700',
   },
   winningSetScore: {

@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   setScoreSeparator: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 4,
   },
   detailsSection: {

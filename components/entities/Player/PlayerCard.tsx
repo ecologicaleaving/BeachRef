@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   partnerText: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   headerRight: {

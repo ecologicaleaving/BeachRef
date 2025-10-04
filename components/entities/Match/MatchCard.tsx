@@ -368,6 +368,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
 
     const calculateLiveElapsed = () => {
+      // Try actualStartTime first
       if (match.actualStartTime) {
         try {
           const startTime = new Date(match.actualStartTime).getTime();
@@ -388,9 +389,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             return;
           }
         } catch (error) {
-          // Skip if date parsing fails
+          // Continue to fallback
         }
       }
+
+      // Fallback: use scheduled time if actualStartTime is not available
+      const scheduled = (match as any).scheduled;
+      if (scheduled?.epochMs) {
+        try {
+          const startTime = scheduled.epochMs;
+          const now = Date.now();
+
+          if (!isNaN(startTime) && now > startTime) {
+            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours > 0) {
+              setLiveElapsedTime(`${hours}h ${minutes}m`);
+            } else if (totalMinutes > 0) {
+              setLiveElapsedTime(`${totalMinutes}m`);
+            } else {
+              setLiveElapsedTime('< 1m');
+            }
+            return;
+          }
+        } catch (error) {
+          // Skip if calculation fails
+        }
+      }
+
       setLiveElapsedTime(null);
     };
 
@@ -672,7 +700,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <TouchableOpacity
         style={[
           styles.matchCard,
-          variant === 'live' && styles.liveCard,
+          isMatchLive(match) && styles.liveCard,
           isQualification && styles.qualificationCard,
         ]}
         onPress={() => {

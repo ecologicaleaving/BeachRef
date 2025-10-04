@@ -26,6 +26,21 @@ export function useAnalytics(pathname: string) {
     // Initialize gtag if not already loaded
     if (!window.gtag) {
       console.log("[GA Debug] Initializing gtag for ID:", gaId);
+
+      // Initialize dataLayer and gtag function first
+      window.dataLayer = window.dataLayer || [];
+      function gtag(...args: any[]) {
+        (window.dataLayer as any).push(args);
+      }
+      (window as any).gtag = gtag;
+
+      // Set default consent to denied (GDPR compliance)
+      const savedConsent = localStorage.getItem('cookieConsent');
+      gtag('consent', 'default', {
+        'analytics_storage': savedConsent === 'granted' ? 'granted' : 'denied'
+      });
+
+      // Load gtag script
       const script = document.createElement("script");
       script.async = true;
       script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
@@ -35,14 +50,9 @@ export function useAnalytics(pathname: string) {
 
       document.head.appendChild(script);
 
-      window.dataLayer = window.dataLayer || [];
-      function gtag(...args: any[]) {
-        (window.dataLayer as any).push(args);
-      }
-      (window as any).gtag = gtag;
       gtag("js", new Date());
       gtag("config", gaId, { send_page_view: false });
-      console.log("[GA Debug] gtag configured");
+      console.log("[GA Debug] gtag configured with consent mode");
     }
 
     // Send page_view event on pathname change

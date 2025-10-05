@@ -13,7 +13,6 @@ import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { injectCSSVariables } from "../theme/css-variables";
-import { CookieBanner } from "../components/CookieBanner";
 
 export default function RootLayout() {
   const pathname = usePathname();
@@ -112,7 +111,6 @@ export default function RootLayout() {
           <Stack.Screen name="switch-tournament" />
         </Stack>
         <QueryDevTools />
-        <CookieBanner />
       </AssignmentStatusProvider>
     </PersistQueryClientProvider>
   );

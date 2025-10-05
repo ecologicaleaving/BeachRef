@@ -133,7 +133,11 @@
       "Bash(/dev/null)",
       "Bash(cat:*)",
       "Bash(python -c \"import json, sys; data=json.load(sys.stdin); files=[x[''''file''''] for x in data[''''colorUsage''''][''''#666666''''][''''occurrences''''][:10]]; print(''''\\n''''.join(set(files)))\")",
-      "Bash(do echo \"$file:\")"
+      "Bash(do echo \"$file:\")",
+      "Bash(start test-ga.html)",
+      "Bash(npx --yes @expo/cli@latest start --web --port 8082 --clear)",
+      "Bash(del test-ga.html)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": [],

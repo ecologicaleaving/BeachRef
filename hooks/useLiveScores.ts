@@ -118,14 +118,14 @@ function getStatusBasedCacheTime(matchNo: number, useAdaptivePolling: boolean): 
 
   switch (status) {
     case MatchPollingStatus.RUNNING:
-      return { 
-        staleTime: 2000, // Slightly less than polling interval (3s) 
-        cacheTime: 10000 // Short cache for frequently changing data
+      return {
+        staleTime: 14000, // Slightly less than polling interval (15s)
+        cacheTime: 30000 // Short cache for frequently changing data
       };
     
     case MatchPollingStatus.SCHEDULED:
-      return { 
-        staleTime: 25000, // Slightly less than polling interval (30s)
+      return {
+        staleTime: 55000, // Slightly less than polling interval (60s)
         cacheTime: 120000 // Longer cache for stable data (2 minutes)
       };
     
@@ -235,9 +235,9 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
 
       // Start polling with callback
       const callback = createLiveScoreCallback(matchNo);
-      pollingServiceRef.current!.startPolling(matchNo, callback);
+      pollingServiceRef.current!.startPolling(matchNo, callback, [], useAdaptivePolling);
     });
-  }, [matchNumbers, isOnline, createLiveScoreCallback]);
+  }, [matchNumbers, isOnline, createLiveScoreCallback, useAdaptivePolling]);
 
   // Stop polling for all matches
   const stopPolling = useCallback(() => {

@@ -12,42 +12,78 @@ export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    console.log('[Cookie Banner] Initializing...');
+    console.log('[Cookie Banner] Platform:', Platform.OS);
+
     // Only show on web platform
-    if (Platform.OS !== 'web') return;
+    if (Platform.OS !== 'web') {
+      console.log('[Cookie Banner] Not web platform, hiding');
+      return;
+    }
+
+    // Expose helper to test banner visibility
+    (window as any).showCookieBanner = () => {
+      console.log('[Cookie Banner] Forcing banner to show...');
+      localStorage.removeItem('cookieConsent');
+      setIsVisible(true);
+    };
+    console.log('[Cookie Banner] Test helper available: window.showCookieBanner()');
 
     // Check if user has already made a choice
     const consent = localStorage.getItem('cookieConsent');
+    console.log('[Cookie Banner] Saved consent:', consent);
+
     if (!consent) {
+      console.log('[Cookie Banner] No consent found, showing banner');
       setIsVisible(true);
     } else {
+      console.log('[Cookie Banner] Consent already saved:', consent);
       // Apply saved consent to GA
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('consent', 'update', {
           'analytics_storage': consent === 'granted' ? 'granted' : 'denied'
         });
+        console.log('[Cookie Banner] Applied saved consent to GA');
       }
     }
   }, []);
 
   const handleAccept = () => {
+    console.log('[Cookie Banner] User accepted cookies');
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('consent', 'update', { 'analytics_storage': 'granted' });
+      console.log('[Cookie Banner] Consent updated to: granted');
     }
     localStorage.setItem('cookieConsent', 'granted');
+    console.log('[Cookie Banner] localStorage updated:', localStorage.getItem('cookieConsent'));
     setIsVisible(false);
+
+    // Send a test event to verify GA is now working
+    if (window.gtag) {
+      window.gtag('event', 'cookie_consent_granted', {
+        event_category: 'consent',
+        event_label: 'user_accepted'
+      });
+      console.log('[Cookie Banner] Test event sent to GA');
+    }
   };
 
   const handleDeny = () => {
+    console.log('[Cookie Banner] User denied cookies');
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('consent', 'update', { 'analytics_storage': 'denied' });
+      console.log('[Cookie Banner] Consent updated to: denied');
     }
     localStorage.setItem('cookieConsent', 'denied');
     setIsVisible(false);
   };
 
   if (!isVisible || Platform.OS !== 'web') {
+    console.log('[Cookie Banner] Not rendering:', { isVisible, platform: Platform.OS });
     return null;
   }
+
+  console.log('[Cookie Banner] Rendering banner');
 
   return (
     <View style={styles.container}>

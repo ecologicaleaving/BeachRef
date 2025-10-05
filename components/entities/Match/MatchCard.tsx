@@ -704,30 +704,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           isQualification && styles.qualificationCard,
         ]}
         onPress={() => {
-          // Call the existing onPress if provided
+          // Call the existing onPress if provided (only custom callbacks, no navigation)
           onPress?.(match);
-
-          // Navigate to match detail screen with correct VIS match number
-          // Priority: visNo (pure VIS match number) > extracted from matchCode > fallback
-          const visMatchNo = match.visNo || extractNumericFromString(match.matchCode) || extractNumericFromString(match.id) || 'unknown';
-          const tournamentNo = (match as any).tournamentNo || 'demo';
-
-          // Helper function to extract numeric part
-          function extractNumericFromString(str?: string): string | null {
-            if (!str) return null;
-            const numericMatch = str.match(/\d+/);
-            return numericMatch ? numericMatch[0] : null;
-          }
-
-
-          router.push({
-            pathname: '/match-detail',
-            params: {
-              matchNo: visMatchNo,  // Use VIS match number for direct polling
-              tournamentNo,
-              matchData: JSON.stringify(match)
-            }
-          });
         }}
         activeOpacity={0.7}
       >

@@ -48,10 +48,32 @@ export function useAnalytics(pathname: string) {
       script.onload = () => {
         console.log("[GA Debug] gtag script loaded successfully");
         console.log("[GA Debug] Script URL:", script.src);
+
+        // Configure gtag AFTER script is loaded
+        gtag("js", new Date());
+        gtag("config", gaId, {
+          send_page_view: false,
+          debug_mode: true
+        });
+        console.log("[GA Debug] gtag configured with ID:", gaId);
+
+        // Mark script as loaded
+        (window as any).gtagScriptLoaded = true;
+
+        // Send initial page_view
+        gtag("event", "page_view", {
+          page_path: pathname,
+          page_location: window.location.href,
+          page_title: document.title,
+          debug_mode: true,
+        });
+        console.log("[GA Debug] Initial page_view sent for:", pathname);
+
         // Test if gtag is actually callable
         setTimeout(() => {
           console.log("[GA Debug] gtag callable?", typeof window.gtag === 'function');
           console.log("[GA Debug] dataLayer initialized?", Array.isArray(window.dataLayer));
+          console.log("[GA Debug] dataLayer contents:", window.dataLayer);
         }, 500);
       };
       script.onerror = (err) => {
@@ -61,10 +83,7 @@ export function useAnalytics(pathname: string) {
       };
 
       document.head.appendChild(script);
-
-      gtag("js", new Date());
-      gtag("config", gaId, { send_page_view: false });
-      console.log("[GA Debug] gtag configured with consent mode");
+      console.log("[GA Debug] gtag script appended to head, waiting for load...");
 
       // Expose debug helper to window for manual testing
       (window as any).testGA = () => {
@@ -84,10 +103,10 @@ export function useAnalytics(pathname: string) {
       console.log("[GA Debug] Test helper available: window.testGA()");
     }
 
-    // Send page_view event on pathname change
-    if (window.gtag) {
-      console.log("[GA Debug] Sending page_view event:", {
-        gaId,
+    // Send page_view event on pathname change (for subsequent navigations)
+    // First page_view is sent in script.onload
+    if (window.gtag && (window as any).gtagScriptLoaded) {
+      console.log("[GA Debug] Sending page_view for navigation:", {
         pathname,
         location: window.location.href,
         title: document.title
@@ -99,13 +118,6 @@ export function useAnalytics(pathname: string) {
         page_title: document.title,
         debug_mode: true,
       });
-
-      // Check dataLayer after sending
-      setTimeout(() => {
-        console.log("[GA Debug] dataLayer contents:", window.dataLayer);
-      }, 100);
-    } else {
-      console.warn("[GA Debug] gtag not available, skipping page_view");
     }
   }, [pathname]);
 }

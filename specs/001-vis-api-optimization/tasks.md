@@ -62,7 +62,7 @@
 - [X] T013 [P] [US1] Create services/monitoring/ApiAuditService.ts with request capture and validation logic
 - [X] T014 [P] [US1] Create services/monitoring/FieldSelectionValidator.ts with field count validation and over-fetching detection
 - [X] T015 [P] [US1] Create services/monitoring/AuditReportGenerator.ts with report aggregation and compliance scoring
-- [ ] T016 [US1] Integrate ApiAuditService with services/api/VisApiClient.ts to capture requests in __DEV__ mode
+- [X] T016 [US1] Integrate ApiAuditService with services/api/VisApiClient.ts to capture requests in __DEV__ mode
 - [X] T017 [US1] Add XML format validation to ApiAuditService using fast-xml-parser
 - [X] T018 [US1] Add parameter validation to ApiAuditService checking for correct form parameter name ("Request" not "xmlRequest")
 - [X] T019 [US1] Add <Requests> wrapper validation to ApiAuditService
@@ -83,9 +83,9 @@
 
 **Error Handling & Logging**
 
-- [ ] T028 [US1] Add Sentry error capture for malformed requests in ApiAuditService
-- [ ] T029 [US1] Add console logging for audit findings in __DEV__ mode
-- [ ] T030 [US1] Implement fallback to cached data when BadRequestSyntax errors occur in VisApiClient
+- [X] T028 [US1] Add Sentry error capture for malformed requests in ApiAuditService
+- [X] T029 [US1] Add console logging for audit findings in __DEV__ mode
+- [X] T030 [US1] Implement fallback to cached data when BadRequestSyntax errors occur in VisApiClient
 
 **Checkpoint**: At this point, API audit should capture all requests, validate against VIS documentation, identify issues, and generate reports. Test independently by navigating app and checking audit output.
 

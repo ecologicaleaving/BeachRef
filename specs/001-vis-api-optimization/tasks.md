@@ -101,39 +101,39 @@
 
 **MMKV Migration**
 
-- [ ] T031 [P] [US2] Create services/cache/MmkvStorage.ts wrapper for react-native-mmkv
-- [ ] T032 [US2] Migrate services/cache/CacheService.ts from AsyncStorage to MmkvStorage
-- [ ] T033 [US2] Add cache encryption using EXPO_PUBLIC_MMKV_KEY in MmkvStorage
-- [ ] T034 [US2] Update services/cache/MemoryCacheManager.ts to integrate with MMKV as Level 2 storage
+- [X] T031 [P] [US2] Create services/cache/MmkvStorage.ts wrapper for react-native-mmkv
+- [X] T032 [US2] Migrate services/cache/CacheService.ts from AsyncStorage to MmkvStorage
+- [X] T033 [US2] Add cache encryption using EXPO_PUBLIC_MMKV_KEY in MmkvStorage
+- [X] T034 [US2] Update services/cache/MemoryCacheManager.ts to integrate with MMKV as Level 2 storage
 
 **Adaptive TTL**
 
-- [ ] T035 [US2] Add DataVolatility determination logic to CacheService based on entity type and status
-- [ ] T036 [US2] Implement TTL mapping in CacheService (live: 5s, dynamic: 15s, semi-static: 120s, static: 24h)
-- [ ] T037 [US2] Update CacheEntry creation in CacheService with staleness and expiration timestamps
-- [ ] T038 [US2] Add stale-while-revalidate pattern to CacheService (serve stale data, refetch in background)
+- [X] T035 [US2] Add DataVolatility determination logic to CacheService based on entity type and status
+- [X] T036 [US2] Implement TTL mapping in CacheService (live: 5s, dynamic: 15s, semi-static: 120s, static: 24h)
+- [X] T037 [US2] Update CacheEntry creation in CacheService with staleness and expiration timestamps
+- [X] T038 [US2] Add stale-while-revalidate pattern to CacheService (serve stale data, refetch in background)
 
 **Adaptive Polling**
 
-- [ ] T039 [P] [US2] Create services/polling/PollingConfigurationManager.ts for managing polling configurations
-- [ ] T040 [US2] Implement status-based interval logic in PollingConfigurationManager (Running: 3-5s, Scheduled: 30-60s, Finished: off)
-- [ ] T041 [US2] Add app state detection to PollingConfigurationManager using AppState (active/background/inactive)
-- [ ] T042 [US2] Integrate PollingConfigurationManager with services/polling/PollingPerformanceMonitor.ts
-- [ ] T043 [US2] Add polling suspension when app backgrounded for >30s in PollingConfigurationManager
-- [ ] T044 [US2] Add polling resumption when app returns to foreground in PollingConfigurationManager
+- [X] T039 [P] [US2] Create services/polling/PollingConfigurationManager.ts for managing polling configurations
+- [X] T040 [US2] Implement status-based interval logic in PollingConfigurationManager (Running: 3-5s, Scheduled: 30-60s, Finished: off)
+- [X] T041 [US2] Add app state detection to PollingConfigurationManager using AppState (active/background/inactive)
+- [X] T042 [US2] Integrate PollingConfigurationManager with services/polling/PollingPerformanceMonitor.ts
+- [X] T043 [US2] Add polling suspension when app backgrounded for >30s in PollingConfigurationManager
+- [X] T044 [US2] Add polling resumption when app returns to foreground in PollingConfigurationManager
 
 **Cache Invalidation**
 
-- [ ] T045 [US2] Implement event-driven cache invalidation in CacheService for status changes (Scheduled → Running, Running → Finished)
-- [ ] T046 [US2] Add related query invalidation (when tournament status changes, invalidate match list)
-- [ ] T047 [US2] Implement cache revalidation on reconnect in CacheService using NetInfo
+- [X] T045 [US2] Implement event-driven cache invalidation in CacheService for status changes (Scheduled → Running, Running → Finished)
+- [X] T046 [US2] Add related query invalidation (when tournament status changes, invalidate match list)
+- [X] T047 [US2] Implement cache revalidation on reconnect in CacheService using NetInfo
 
 **Cache Performance Tracking**
 
-- [ ] T048 [P] [US2] Add hit/miss rate tracking to services/cache/CachePerformanceMonitor.ts
-- [ ] T049 [P] [US2] Add access count tracking to CacheEntry in CacheService
-- [ ] T050 [P] [US2] Add last accessed timestamp tracking to CacheEntry in CacheService
-- [ ] T051 [US2] Implement cache metrics reporting in CachePerformanceMonitor (hit rate, avg response time, storage quota)
+- [X] T048 [P] [US2] Add hit/miss rate tracking to services/cache/CachePerformanceMonitor.ts
+- [X] T049 [P] [US2] Add access count tracking to CacheEntry in CacheService
+- [X] T050 [P] [US2] Add last accessed timestamp tracking to CacheEntry in CacheService
+- [X] T051 [US2] Implement cache metrics reporting in CachePerformanceMonitor (hit rate, avg response time, storage quota)
 
 **Checkpoint**: At this point, cache should use MMKV storage, adapt TTL by data volatility, poll adaptively by status, invalidate intelligently, and track performance. Test independently by monitoring cache behavior.
 

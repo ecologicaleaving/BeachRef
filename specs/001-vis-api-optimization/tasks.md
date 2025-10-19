@@ -149,43 +149,43 @@
 
 **Field Selection Configuration**
 
-- [ ] T052 [P] [US3] Define FIELD_MODES constants in types/field-selection.ts with slim/default/full field arrays for each endpoint
-- [ ] T053 [P] [US3] Add tournament slim mode fields (8 fields: No, Name, City, StartDate, EndDate, Gender, Level, Status)
-- [ ] T054 [P] [US3] Add match slim mode fields (6 fields: No, TeamA, TeamB, Status, Court, StartDateTime)
-- [ ] T055 [P] [US3] Add tournament default mode fields (10 fields: add Location, NoOfMatches)
-- [ ] T056 [P] [US3] Add match default mode fields (10 fields: add ScoreA, ScoreB, Phase, Round)
-- [ ] T057 [P] [US3] Add live match polling slim mode fields (5 fields: No, Status, SetScore, RallyScore, ServingTeam)
+- [X] T052 [P] [US3] Define FIELD_MODES constants in types/field-selection.ts with slim/default/full field arrays for each endpoint
+- [X] T053 [P] [US3] Add tournament slim mode fields (8 fields: No, Name, City, StartDate, EndDate, Gender, Level, Status)
+- [X] T054 [P] [US3] Add match slim mode fields (6 fields: No, TeamA, TeamB, Status, Court, StartDateTime)
+- [X] T055 [P] [US3] Add tournament default mode fields (10 fields: add Location, NoOfMatches)
+- [X] T056 [P] [US3] Add match default mode fields (10 fields: add ScoreA, ScoreB, Phase, Round)
+- [X] T057 [P] [US3] Add live match polling slim mode fields (5 fields: No, Status, SetScore, RallyScore, ServingTeam)
 
 **Network-Aware Field Selection**
 
-- [ ] T058 [US3] Create hooks/useFieldMode.ts hook for adaptive mode selection based on network type
-- [ ] T059 [US3] Integrate NetworkMonitor with useFieldMode hook to detect WiFi/cellular/offline
-- [ ] T060 [US3] Implement mode selection logic in useFieldMode (offline→slim, cellular→slim, WiFi→default)
-- [ ] T061 [US3] Add field mode state management in useFieldMode with network type listener
+- [X] T058 [US3] Create hooks/useFieldMode.ts hook for adaptive mode selection based on network type
+- [X] T059 [US3] Integrate NetworkMonitor with useFieldMode hook to detect WiFi/cellular/offline
+- [X] T060 [US3] Implement mode selection logic in useFieldMode (offline→slim, cellular→slim, WiFi→default)
+- [X] T061 [US3] Add field mode state management in useFieldMode with network type listener
 
 **API Integration**
 
-- [ ] T062 [US3] Update services/api/VisApiClient.ts to accept field selection mode parameter
-- [ ] T063 [US3] Implement field projection in VisApiClient getOptimizedFields method
-- [ ] T064 [US3] Add field count validation in VisApiClient (slim: <=10 list/<=5 polling, default: <=20 list/<=15 detail)
-- [ ] T065 [US3] Update all API call sites to use field mode from useFieldMode hook
+- [X] T062 [US3] Update services/api/VisApiClient.ts to accept field selection mode parameter
+- [X] T063 [US3] Implement field projection in VisApiClient getOptimizedFields method
+- [X] T064 [US3] Add field count validation in VisApiClient (slim: <=10 list/<=5 polling, default: <=20 list/<=15 detail)
+- [X] T065 [US3] Update all API call sites to use field mode from useFieldMode hook
 
 **Additive Fetching**
 
-- [ ] T066 [US3] Implement additive field fetching in CacheService (merge slim cached + additional fields requested)
-- [ ] T067 [US3] Add field diff calculation in CacheService to determine missing fields
-- [ ] T068 [US3] Create partial update logic in CacheService to merge new fields with cached entity
+- [X] T066 [US3] Implement additive field fetching in CacheService (merge slim cached + additional fields requested)
+- [X] T067 [US3] Add field diff calculation in CacheService to determine missing fields
+- [X] T068 [US3] Create partial update logic in CacheService to merge new fields with cached entity
 
 **Payload Monitoring**
 
-- [ ] T069 [P] [US3] Add payload size logging to ApiAuditService for optimization tracking
-- [ ] T070 [P] [US3] Add field count logging per request in ApiAuditService
-- [ ] T071 [US3] Implement payload size threshold alerts in ApiAuditService (warn if >50KB)
+- [X] T069 [P] [US3] Add payload size logging to ApiAuditService for optimization tracking
+- [X] T070 [P] [US3] Add field count logging per request in ApiAuditService
+- [X] T071 [US3] Implement payload size threshold alerts in ApiAuditService (warn if >50KB)
 
 **Batch Request Optimization**
 
-- [ ] T072 [US3] Add batch request size validation to VisApiClient (split if >recommended size)
-- [ ] T073 [US3] Implement sequential fallback in VisApiClient for oversized batch requests
+- [X] T072 [US3] Add batch request size validation to VisApiClient (split if >recommended size)
+- [X] T073 [US3] Implement sequential fallback in VisApiClient for oversized batch requests
 
 **Checkpoint**: All user stories should now be independently functional. Field selection adapts to network type, payloads are minimized, additive fetching works, batch requests are optimized.
 

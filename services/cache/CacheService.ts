@@ -367,4 +367,199 @@ export class CacheService {
       mmkvEntries: allKeys.length,
     };
   }
+
+  // ========================================================================
+  // Additive Fetching (T066-T068)
+  // ========================================================================
+
+  /**
+   * T066: Implement additive field fetching
+   *
+   * Returns cached data if it contains all requested fields, or null if additional
+   * fields need to be fetched. Caller should then merge results using mergeFields.
+   *
+   * @param key - Cache key
+   * @param requestedFields - Fields needed for current use case
+   * @returns Cached data if sufficient, null if additional fields needed
+   *
+   * @example
+   * ```typescript
+   * const cached = await cache.getWithFields('tournament:123', ['No', 'Name', 'StartDate']);
+   * if (!cached) {
+   *   // Need to fetch from API with requested fields
+   *   const fresh = await api.getTournament({ fields: requestedFields });
+   *   await cache.mergeFields('tournament:123', fresh, requestedFields);
+   * }
+   * ```
+   */
+  async getWithFields<T extends Record<string, any>>(
+    key: string,
+    requestedFields: string[]
+  ): Promise<{ data: T | undefined; needsAdditionalFields: boolean; missingFields?: string[] }> {
+    try {
+      // Get cached entry
+      const entry = this.getMemoryCache(key);
+      const cachedData = entry?.value as T | undefined;
+
+      if (!cachedData) {
+        return { data: undefined, needsAdditionalFields: true, missingFields: requestedFields };
+      }
+
+      // T067: Calculate field diff - determine missing fields
+      const missingFields = this.calculateMissingFields(cachedData, requestedFields);
+
+      // If all requested fields are present, return cached data
+      if (missingFields.length === 0) {
+        console.log(`[CacheService] Cache hit with all fields: ${key} (${requestedFields.length} fields)`);
+        return { data: cachedData, needsAdditionalFields: false };
+      }
+
+      // Some fields are missing - return cached data with indicator
+      console.log(`[CacheService] Cache hit but missing fields: ${key} (missing: ${missingFields.join(', ')})`);
+      return { data: cachedData, needsAdditionalFields: true, missingFields };
+
+    } catch (error) {
+      console.error('[CacheService] Failed to get with fields:', error);
+      return { data: undefined, needsAdditionalFields: true, missingFields: requestedFields };
+    }
+  }
+
+  /**
+   * T067: Calculate field diff to determine missing fields
+   *
+   * @param cachedData - Cached entity data
+   * @param requestedFields - Fields needed for current use case
+   * @returns Array of field names that are missing from cached data
+   */
+  private calculateMissingFields<T extends Record<string, any>>(
+    cachedData: T,
+    requestedFields: string[]
+  ): string[] {
+    const missingFields: string[] = [];
+
+    for (const field of requestedFields) {
+      // Check if field exists and has a non-null/non-undefined value
+      if (!(field in cachedData) || cachedData[field] === null || cachedData[field] === undefined) {
+        missingFields.push(field);
+      }
+    }
+
+    return missingFields;
+  }
+
+  /**
+   * T068: Merge new fields with cached entity (partial update)
+   *
+   * Updates cached entity with additional fields from fresh API response.
+   * Preserves existing fields that are not in the new data.
+   *
+   * @param key - Cache key
+   * @param freshData - Fresh data from API with additional fields
+   * @param newFields - Fields that were newly fetched
+   * @param entityType - Type of entity being cached
+   * @param status - Optional entity status for TTL
+   *
+   * @example
+   * ```typescript
+   * // Cached: { No: '123', Name: 'Tournament' }
+   * // Fresh:  { No: '123', Name: 'Tournament', Location: 'Beach', NoOfMatches: 42 }
+   * await cache.mergeFields('tournament:123', fresh, ['Location', 'NoOfMatches'], 'tournament');
+   * // Result: { No: '123', Name: 'Tournament', Location: 'Beach', NoOfMatches: 42 }
+   * ```
+   */
+  async mergeFields<T extends Record<string, any>>(
+    key: string,
+    freshData: T,
+    newFields: string[],
+    entityType: EntityType,
+    status?: string
+  ): Promise<void> {
+    try {
+      // Get existing cached data
+      const entry = this.getMemoryCache(key);
+      const cachedData = (entry?.value as T) || ({} as T);
+
+      // T068: Merge fresh fields with cached data
+      const mergedData: T = { ...cachedData };
+
+      // Update only the new fields from fresh data
+      for (const field of newFields) {
+        if (field in freshData) {
+          mergedData[field] = freshData[field];
+        }
+      }
+
+      // Update cache with merged data
+      await this.set(key, mergedData, entityType, status);
+
+      console.log(`[CacheService] Merged ${newFields.length} new fields into ${key}`);
+    } catch (error) {
+      console.error('[CacheService] Failed to merge fields:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Smart fetch with additive field strategy
+   *
+   * High-level helper that handles the complete additive fetching flow:
+   * 1. Check cache for existing data
+   * 2. Determine if additional fields are needed
+   * 3. Fetch only missing fields if needed
+   * 4. Merge results and update cache
+   *
+   * @param key - Cache key
+   * @param requestedFields - Fields needed for current use case
+   * @param fetchFn - Function to fetch fresh data from API
+   * @param entityType - Type of entity
+   * @param status - Optional entity status
+   * @returns Complete data with all requested fields
+   *
+   * @example
+   * ```typescript
+   * const tournament = await cache.fetchWithAdditiveFields(
+   *   'tournament:123',
+   *   ['No', 'Name', 'Location', 'NoOfMatches'],
+   *   () => api.getTournament({ tournamentNo: '123', fields: ['Location', 'NoOfMatches'] }),
+   *   'tournament'
+   * );
+   * ```
+   */
+  async fetchWithAdditiveFields<T extends Record<string, any>>(
+    key: string,
+    requestedFields: string[],
+    fetchFn: (missingFields: string[]) => Promise<T>,
+    entityType: EntityType,
+    status?: string
+  ): Promise<T> {
+    try {
+      // Check cache for existing data
+      const { data: cachedData, needsAdditionalFields, missingFields } = await this.getWithFields<T>(
+        key,
+        requestedFields
+      );
+
+      // If all fields are in cache, return immediately
+      if (!needsAdditionalFields && cachedData) {
+        return cachedData;
+      }
+
+      // Fetch missing fields from API
+      const freshData = await fetchFn(missingFields || requestedFields);
+
+      // Merge and update cache
+      if (cachedData && missingFields && missingFields.length > 0) {
+        // Partial update - merge new fields
+        await this.mergeFields(key, freshData, missingFields, entityType, status);
+        return { ...cachedData, ...freshData };
+      } else {
+        // Full update - no cached data
+        await this.set(key, freshData, entityType, status);
+        return freshData;
+      }
+    } catch (error) {
+      console.error('[CacheService] Failed to fetch with additive fields:', error);
+      throw error;
+    }
+  }
 }

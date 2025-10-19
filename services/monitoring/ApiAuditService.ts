@@ -81,6 +81,10 @@ export class ApiAuditService {
       // Store request
       this.requests.set(request.id, request);
 
+      // T069-T071: Payload monitoring
+      this.logPayloadSize(request);
+      this.logFieldCount(request);
+
       // Validate request and collect findings
       const findings = this.validateRequest(request);
       if (findings.length > 0) {
@@ -362,5 +366,172 @@ export class ApiAuditService {
   clearAudit(): void {
     this.requests.clear();
     this.findings.clear();
+  }
+
+  // ========================================================================
+  // Payload Monitoring (T069-T071)
+  // ========================================================================
+
+  /**
+   * T069: Log payload size for optimization tracking
+   *
+   * Tracks request/response payload sizes and logs warnings for oversized payloads.
+   *
+   * @param request - API request to analyze
+   */
+  logPayloadSize(request: ApiRequest): void {
+    const requestSizeKB = request.payloadSize / 1024;
+    const responseSizeKB = request.responseBody.length / 1024;
+    const totalSizeKB = requestSizeKB + responseSizeKB;
+
+    console.log('[API Audit - Payload Size]', {
+      endpoint: request.endpoint,
+      requestId: request.id,
+      requestSize: `${requestSizeKB.toFixed(2)} KB`,
+      responseSize: `${responseSizeKB.toFixed(2)} KB`,
+      totalSize: `${totalSizeKB.toFixed(2)} KB`,
+      timestamp: new Date(request.timestamp).toISOString(),
+    });
+
+    // T071: Warn if payload exceeds 50KB threshold
+    this.checkPayloadThreshold(request, totalSizeKB);
+  }
+
+  /**
+   * T070: Log field count per request for optimization tracking
+   *
+   * Tracks number of fields requested and compares to recommended values.
+   *
+   * @param request - API request to analyze
+   */
+  logFieldCount(request: ApiRequest): void {
+    const isListEndpoint = request.endpoint.includes('List');
+    const recommendedSlim = isListEndpoint ? 10 : 5;
+    const recommendedDefault = isListEndpoint ? 20 : 15;
+
+    const modeIndicator = request.fieldCount <= recommendedSlim ? 'slim' :
+                          request.fieldCount <= recommendedDefault ? 'default' :
+                          'full/over-fetching';
+
+    console.log('[API Audit - Field Count]', {
+      endpoint: request.endpoint,
+      requestId: request.id,
+      fieldCount: request.fieldCount,
+      mode: modeIndicator,
+      recommendedSlim,
+      recommendedDefault,
+      source: request.source,
+      timestamp: new Date(request.timestamp).toISOString(),
+    });
+  }
+
+  /**
+   * T071: Check payload size threshold and create alert if exceeded
+   *
+   * Creates audit finding if payload exceeds 50KB warning threshold.
+   *
+   * @param request - API request to check
+   * @param totalSizeKB - Total payload size in KB
+   */
+  private checkPayloadThreshold(request: ApiRequest, totalSizeKB: number): void {
+    const THRESHOLD_KB = 50;
+
+    if (totalSizeKB > THRESHOLD_KB) {
+      const finding = this.createFinding(
+        request.id,
+        'warning',
+        'over-fetching',
+        `Payload size ${totalSizeKB.toFixed(2)} KB exceeds ${THRESHOLD_KB} KB threshold`,
+        `Use field selection to reduce payload to <${THRESHOLD_KB} KB`,
+        `${totalSizeKB.toFixed(2)} KB total (request + response)`,
+        {
+          errorRate: 0,
+          payloadIncrease: (totalSizeKB - THRESHOLD_KB) * 1024, // Bytes over threshold
+          affectedEndpoints: [request.endpoint],
+        }
+      );
+
+      // Add finding to tracking
+      const existingFindings = this.findings.get(request.id) || [];
+      this.findings.set(request.id, [...existingFindings, finding]);
+
+      console.warn('[API Audit - Payload Threshold]', {
+        endpoint: request.endpoint,
+        requestId: request.id,
+        payloadSize: `${totalSizeKB.toFixed(2)} KB`,
+        threshold: `${THRESHOLD_KB} KB`,
+        overBy: `${(totalSizeKB - THRESHOLD_KB).toFixed(2)} KB`,
+        recommendation: 'Use slim or default field mode to reduce payload size',
+      });
+    }
+  }
+
+  /**
+   * Get payload statistics across all captured requests
+   *
+   * @returns Payload statistics for reporting
+   */
+  getPayloadStats(): {
+    totalRequests: number;
+    avgPayloadSizeKB: number;
+    maxPayloadSizeKB: number;
+    minPayloadSizeKB: number;
+    payloadsOverThreshold: number;
+    avgFieldCount: number;
+    maxFieldCount: number;
+    minFieldCount: number;
+  } {
+    const requests = this.getAllRequests();
+
+    if (requests.length === 0) {
+      return {
+        totalRequests: 0,
+        avgPayloadSizeKB: 0,
+        maxPayloadSizeKB: 0,
+        minPayloadSizeKB: 0,
+        payloadsOverThreshold: 0,
+        avgFieldCount: 0,
+        maxFieldCount: 0,
+        minFieldCount: 0,
+      };
+    }
+
+    const THRESHOLD_KB = 50;
+    let totalPayloadSize = 0;
+    let maxPayloadSize = 0;
+    let minPayloadSize = Infinity;
+    let payloadsOverThreshold = 0;
+    let totalFieldCount = 0;
+    let maxFieldCount = 0;
+    let minFieldCount = Infinity;
+
+    for (const request of requests) {
+      const requestSizeKB = request.payloadSize / 1024;
+      const responseSizeKB = request.responseBody.length / 1024;
+      const totalSizeKB = requestSizeKB + responseSizeKB;
+
+      totalPayloadSize += totalSizeKB;
+      maxPayloadSize = Math.max(maxPayloadSize, totalSizeKB);
+      minPayloadSize = Math.min(minPayloadSize, totalSizeKB);
+
+      if (totalSizeKB > THRESHOLD_KB) {
+        payloadsOverThreshold++;
+      }
+
+      totalFieldCount += request.fieldCount;
+      maxFieldCount = Math.max(maxFieldCount, request.fieldCount);
+      minFieldCount = Math.min(minFieldCount, request.fieldCount);
+    }
+
+    return {
+      totalRequests: requests.length,
+      avgPayloadSizeKB: totalPayloadSize / requests.length,
+      maxPayloadSizeKB: maxPayloadSize,
+      minPayloadSizeKB: minPayloadSize === Infinity ? 0 : minPayloadSize,
+      payloadsOverThreshold,
+      avgFieldCount: totalFieldCount / requests.length,
+      maxFieldCount,
+      minFieldCount: minFieldCount === Infinity ? 0 : minFieldCount,
+    };
   }
 }

@@ -485,9 +485,126 @@ export class VisApiClient implements IVisApiClient {
    * Execute batch request with multiple API calls
    * Combines multiple requests into a single batch for improved performance
    */
+  /**
+   * T073: Execute batch chunks sequentially and combine results
+   *
+   * @param chunks - Array of batch request chunks
+   * @param startTime - Start time for duration tracking
+   * @returns Combined batch response
+   */
+  private async executeSequentialBatchChunks(chunks: BatchRequest[], startTime: number): Promise<BatchResponse> {
+    const allResults: BatchResponseItem[] = [];
+    let hasPartialFailures = false;
+
+    console.log(`[VisApiClient] Executing ${chunks.length} batch chunks sequentially`);
+
+    for (const [index, chunk] of chunks.entries()) {
+      try {
+        console.log(`[VisApiClient] Executing chunk ${index + 1}/${chunks.length} (${chunk.requests.length} requests)`);
+
+        // Build and execute chunk
+        const xmlRequest = this.buildBatchRequestXml(chunk);
+        const response = await this.executeRequest(VisApiEndpoint.BATCH_REQUEST, xmlRequest);
+
+        if (response.success) {
+          // Parse chunk results
+          const chunkResults = this.parseBatchResponse(response.xmlData, chunk.requests);
+          allResults.push(...chunkResults);
+
+          if (chunkResults.some(r => !r.success)) {
+            hasPartialFailures = true;
+          }
+        } else {
+          // Chunk failed - mark all requests in chunk as failed
+          hasPartialFailures = true;
+          chunk.requests.forEach((item, i) => {
+            allResults.push({
+              requestId: item.requestId || `chunk_${index}_req_${i}`,
+              type: item.type,
+              success: false,
+              error: response as VisApiErrorResponse,
+            });
+          });
+        }
+
+      } catch (error) {
+        console.error(`[VisApiClient] Chunk ${index + 1} failed:`, error);
+        hasPartialFailures = true;
+
+        // Mark all requests in failed chunk as failed
+        chunk.requests.forEach((item, i) => {
+          allResults.push({
+            requestId: item.requestId || `chunk_${index}_req_${i}`,
+            type: item.type,
+            success: false,
+            error: this.createErrorResponse(error, Date.now() - startTime),
+          });
+        });
+      }
+    }
+
+    const totalDuration = Date.now() - startTime;
+    console.log(`[VisApiClient] Sequential batch complete: ${allResults.length} total results in ${totalDuration}ms`);
+
+    return {
+      timestamp: new Date().toISOString(),
+      success: true,
+      durationMs: totalDuration,
+      results: allResults,
+      hasPartialFailures,
+    };
+  }
+
+  /**
+   * T072: Validate batch request size and split if oversized
+   *
+   * Recommended batch size: ≤10 requests per batch to avoid timeouts
+   * and improve reliability.
+   *
+   * @param request - Batch request to validate
+   * @returns Array of batch chunks (single element if size is OK)
+   */
+  private validateAndSplitBatchRequest(request: BatchRequest): BatchRequest[] {
+    const MAX_BATCH_SIZE = 10; // Recommended max batch size
+    const requestCount = request.requests.length;
+
+    // If batch is within limits, return as-is
+    if (requestCount <= MAX_BATCH_SIZE) {
+      return [request];
+    }
+
+    // T072: Batch exceeds recommended size - split into chunks
+    console.warn('[VisApiClient] Batch request exceeds recommended size', {
+      requestCount,
+      maxSize: MAX_BATCH_SIZE,
+      splitting: true,
+    });
+
+    const chunks: BatchRequest[] = [];
+    for (let i = 0; i < requestCount; i += MAX_BATCH_SIZE) {
+      const chunk = request.requests.slice(i, i + MAX_BATCH_SIZE);
+      chunks.push({
+        requests: chunk,
+        failureStrategy: request.failureStrategy,
+        requestId: `${request.requestId}_chunk_${Math.floor(i / MAX_BATCH_SIZE)}`,
+        timestamp: request.timestamp,
+        timeoutMs: request.timeoutMs,
+      });
+    }
+
+    console.log(`[VisApiClient] Split batch into ${chunks.length} chunks`);
+    return chunks;
+  }
+
+  /**
+   * T073: Execute batch request with sequential fallback for oversized requests
+   *
+   * If batch exceeds recommended size, splits into smaller chunks and executes
+   * sequentially to avoid timeouts.
+   */
   async executeBatchRequest(request: BatchRequest): Promise<BatchResponse> {
     const startTime = Date.now();
-    
+
     // Handle empty batch requests
     if (request.requests.length === 0) {
       return {
@@ -498,7 +615,16 @@ export class VisApiClient implements IVisApiClient {
         hasPartialFailures: false
       };
     }
-    
+
+    // T072-T073: Validate and split oversized batch requests
+    const batchChunks = this.validateAndSplitBatchRequest(request);
+
+    // If batch was split into multiple chunks, execute sequentially
+    if (batchChunks.length > 1) {
+      return this.executeSequentialBatchChunks(batchChunks, startTime);
+    }
+
+    // Single batch - execute normally
     try {
       // Build batch XML request
       const xmlRequest = this.buildBatchRequestXml(request);

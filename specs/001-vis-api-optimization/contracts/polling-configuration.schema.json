@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beachref.app/schemas/polling-configuration.json",
+  "title": "Polling Configuration",
+  "description": "Adaptive polling configuration based on entity status and app state",
+  "type": "object",
+  "required": [
+    "entityType",
+    "entityId",
+    "entityStatus",
+    "intervalMs",
+    "enabled",
+    "backgroundInterval",
+    "lastPollTimestamp",
+    "nextPollTimestamp",
+    "pollCount",
+    "appState"
+  ],
+  "properties": {
+    "entityType": {
+      "type": "string",
+      "enum": ["match", "tournament", "assignment"],
+      "description": "Type of entity being polled"
+    },
+    "entityId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier of the entity"
+    },
+    "entityStatus": {
+      "type": "string",
+      "description": "Current status of the entity (e.g., 'Running', 'Scheduled', 'Finished')"
+    },
+    "intervalMs": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 1000,
+          "description": "Polling interval in milliseconds (minimum 1 second)"
+        },
+        {
+          "type": "null",
+          "description": "Null disables polling"
+        }
+      ]
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether polling is currently active"
+    },
+    "backgroundInterval": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 1000,
+          "description": "Interval when app is backgrounded (must be >= intervalMs * 2)"
+        },
+        {
+          "type": "null",
+          "description": "Null pauses polling in background"
+        }
+      ]
+    },
+    "lastPollTimestamp": {
+      "type": "number",
+      "description": "Unix timestamp (ms) of most recent poll",
+      "minimum": 0
+    },
+    "nextPollTimestamp": {
+      "type": "number",
+      "description": "Unix timestamp (ms) when next poll is scheduled",
+      "minimum": 0
+    },
+    "pollCount": {
+      "type": "number",
+      "description": "Total number of polls executed",
+      "minimum": 0
+    },
+    "appState": {
+      "type": "string",
+      "enum": ["active", "background", "inactive"],
+      "description": "Current application state"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "entityStatus": { "const": "Running" }
+        }
+      },
+      "then": {
+        "properties": {
+          "intervalMs": {
+            "type": "number",
+            "minimum": 3000,
+            "maximum": 5000
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "entityStatus": { "const": "Scheduled" }
+        }
+      },
+      "then": {
+        "properties": {
+          "intervalMs": {
+            "type": "number",
+            "minimum": 30000,
+            "maximum": 60000
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "entityStatus": { "const": "Finished" }
+        }
+      },
+      "then": {
+        "properties": {
+          "intervalMs": { "type": "null" },
+          "enabled": { "const": false }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "entityType": "match",
+      "entityId": "match-12345",
+      "entityStatus": "Running",
+      "intervalMs": 5000,
+      "enabled": true,
+      "backgroundInterval": 15000,
+      "lastPollTimestamp": 1705683600000,
+      "nextPollTimestamp": 1705683605000,
+      "pollCount": 42,
+      "appState": "active"
+    },
+    {
+      "entityType": "match",
+      "entityId": "match-67890",
+      "entityStatus": "Scheduled",
+      "intervalMs": 60000,
+      "enabled": true,
+      "backgroundInterval": null,
+      "lastPollTimestamp": 1705683500000,
+      "nextPollTimestamp": 1705683560000,
+      "pollCount": 5,
+      "appState": "active"
+    },
+    {
+      "entityType": "match",
+      "entityId": "match-99999",
+      "entityStatus": "Finished",
+      "intervalMs": null,
+      "enabled": false,
+      "backgroundInterval": null,
+      "lastPollTimestamp": 1705680000000,
+      "nextPollTimestamp": 1705680000000,
+      "pollCount": 120,
+      "appState": "active"
+    }
+  ]
+}

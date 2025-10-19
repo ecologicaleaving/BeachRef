@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beachref.app/schemas/field-selection-strategy.json",
+  "title": "Field Selection Strategy",
+  "description": "Context-aware field selection configuration for API payload optimization",
+  "type": "object",
+  "required": [
+    "mode",
+    "endpoint",
+    "useCase",
+    "fields",
+    "networkType",
+    "estimatedPayloadSize",
+    "fieldCount"
+  ],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["slim", "default", "full"],
+      "description": "Field selection mode"
+    },
+    "endpoint": {
+      "type": "string",
+      "enum": [
+        "GetEventList",
+        "GetBeachTournamentList",
+        "GetBeachTournament",
+        "GetBeachMatchList",
+        "GetBeachMatch",
+        "GetBeachRoundList",
+        "GetEventRefereeList"
+      ],
+      "description": "VIS API endpoint this strategy applies to"
+    },
+    "useCase": {
+      "type": "string",
+      "enum": ["list", "detail", "polling", "prefetch"],
+      "description": "What triggered this API request"
+    },
+    "fields": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Specific fields to request; null means all fields"
+    },
+    "networkType": {
+      "type": "string",
+      "enum": ["wifi", "cellular", "offline", "any"],
+      "description": "Network condition when this strategy applies"
+    },
+    "estimatedPayloadSize": {
+      "type": "number",
+      "description": "Expected response size in bytes",
+      "minimum": 0
+    },
+    "fieldCount": {
+      "type": "number",
+      "description": "Count of fields requested",
+      "minimum": 0
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "slim" },
+          "useCase": { "const": "list" }
+        }
+      },
+      "then": {
+        "properties": {
+          "fieldCount": { "maximum": 10 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "slim" },
+          "useCase": { "const": "polling" }
+        }
+      },
+      "then": {
+        "properties": {
+          "fieldCount": { "maximum": 5 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "default" },
+          "useCase": { "const": "list" }
+        }
+      },
+      "then": {
+        "properties": {
+          "fieldCount": { "maximum": 20 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "default" },
+          "useCase": { "const": "detail" }
+        }
+      },
+      "then": {
+        "properties": {
+          "fieldCount": { "maximum": 15 }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "mode": "slim",
+      "endpoint": "GetBeachTournamentList",
+      "useCase": "list",
+      "fields": ["No", "Name", "City", "StartDate", "EndDate", "Gender", "Level", "Status"],
+      "networkType": "cellular",
+      "estimatedPayloadSize": 2000,
+      "fieldCount": 8
+    },
+    {
+      "mode": "default",
+      "endpoint": "GetBeachMatchList",
+      "useCase": "detail",
+      "fields": ["No", "NoRound", "Court", "StartDateTime", "Status", "TeamA", "TeamB", "ScoreA", "ScoreB", "Phase"],
+      "networkType": "wifi",
+      "estimatedPayloadSize": 5000,
+      "fieldCount": 10
+    },
+    {
+      "mode": "full",
+      "endpoint": "GetBeachMatch",
+      "useCase": "prefetch",
+      "fields": null,
+      "networkType": "any",
+      "estimatedPayloadSize": 15000,
+      "fieldCount": 35
+    }
+  ]
+}

@@ -7,7 +7,7 @@
  * Task: T014
  */
 
-import { v4 as uuidv4 } from '@react-native-community/datetimepicker/node_modules/uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {
   ApiRequest,
   AuditFinding,

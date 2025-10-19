@@ -8,9 +8,7 @@
  * Tasks: T013, T016-T019
  */
 
-import { XMLParser } from 'fast-xml-parser';
-import * as Sentry from '@sentry/react-native';
-import { v4 as uuidv4 } from '@react-native-community/datetimepicker/node_modules/uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {
   ApiRequest,
   AuditFinding,
@@ -20,6 +18,28 @@ import {
   NetworkType,
   RequestSource,
 } from '../../types/audit';
+
+// Platform detection
+const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
+// Conditional imports for native-only dependencies
+let XMLParser: any = null;
+let Sentry: any = null;
+
+if (!isWeb) {
+  try {
+    const fxp = require('fast-xml-parser');
+    XMLParser = fxp.XMLParser;
+  } catch (e) {
+    console.warn('[API Audit] fast-xml-parser not available');
+  }
+
+  try {
+    Sentry = require('@sentry/react-native');
+  } catch (e) {
+    console.warn('[API Audit] Sentry not available');
+  }
+}
 
 /**
  * ApiAuditService
@@ -37,14 +57,16 @@ export class ApiAuditService {
   private static instance: ApiAuditService | null = null;
   private requests: Map<string, ApiRequest> = new Map();
   private findings: Map<string, AuditFinding[]> = new Map();
-  private xmlParser: XMLParser;
+  private xmlParser: any = null;
   private enabled: boolean = __DEV__;
 
   private constructor() {
-    this.xmlParser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: '@_',
-    });
+    if (XMLParser) {
+      this.xmlParser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '@_',
+      });
+    }
   }
 
   /**
@@ -93,9 +115,9 @@ export class ApiAuditService {
         // Log findings in development
         console.warn(`[API Audit] Found ${findings.length} issues in request ${request.id}:`, findings);
 
-        // Send critical findings to Sentry (if configured)
+        // Send critical findings to Sentry (if configured and available)
         const criticalFindings = findings.filter(f => f.severity === 'critical');
-        if (criticalFindings.length > 0 && process.env.EXPO_PUBLIC_SENTRY_DSN) {
+        if (Sentry && criticalFindings.length > 0 && process.env.EXPO_PUBLIC_SENTRY_DSN) {
           criticalFindings.forEach(finding => {
             Sentry.captureMessage(
               `VIS API Issue: ${finding.issue}`,
@@ -156,6 +178,11 @@ export class ApiAuditService {
    */
   private validateXmlFormat(request: ApiRequest): AuditFinding[] {
     const findings: AuditFinding[] = [];
+
+    // Skip XML parsing if xmlParser not available (web platform)
+    if (!this.xmlParser) {
+      return findings;
+    }
 
     try {
       // Try to parse XML

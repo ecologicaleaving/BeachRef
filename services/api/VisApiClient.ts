@@ -36,15 +36,32 @@ import {
   RequestMonitor
 } from '../../types/api-v2';
 import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
-
-// VIS API Optimization: Audit service integration (T016)
-import { ApiAuditService } from '../monitoring/ApiAuditService';
-import { AuditStorageService } from '../monitoring/AuditStorageService';
-import { v4 as uuidv4 } from '@react-native-community/datetimepicker/node_modules/uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { ApiRequest, NetworkType, RequestSource } from '../../types/audit';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
+
+// VIS API Optimization: Audit service integration (T016)
+// Conditional imports for audit services (only in __DEV__, not on web)
+let ApiAuditService: any = null;
+let AuditStorageService: any = null;
+
+if (__DEV__ && !isWebEnvironment) {
+  try {
+    const auditModule = require('../monitoring/ApiAuditService');
+    ApiAuditService = auditModule.ApiAuditService;
+  } catch (e) {
+    console.warn('[VisApiClient] ApiAuditService not available');
+  }
+
+  try {
+    const storageModule = require('../monitoring/AuditStorageService');
+    AuditStorageService = storageModule.AuditStorageService;
+  } catch (e) {
+    console.warn('[VisApiClient] AuditStorageService not available');
+  }
+}
 
 /**
  * Unified VIS API Client implementation
@@ -880,11 +897,11 @@ export class VisApiClient implements IVisApiClient {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
-    // T016: Audit capture setup (only in __DEV__)
+    // T016: Audit capture setup (only in __DEV__, not on web)
     const requestId = uuidv4();
     const startTime = Date.now();
-    const auditService = __DEV__ ? ApiAuditService.getInstance() : null;
-    const storageService = __DEV__ ? AuditStorageService.getInstance() : null;
+    const auditService = ApiAuditService ? ApiAuditService.getInstance() : null;
+    const storageService = AuditStorageService ? AuditStorageService.getInstance() : null;
 
     try {
       // VIS API expects form data with Request parameter, not SOAP

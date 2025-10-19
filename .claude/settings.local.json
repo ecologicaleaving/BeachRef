@@ -144,7 +144,15 @@
       "mcp__chrome-devtools__navigate_page",
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__take_screenshot",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__wait_for",
+      "Bash(start \"http://localhost:8089\")",
+      "Bash(git log -1 --pretty=format:\"%h - %s (%ar)\")"
     ],
     "deny": [],
     "ask": [],

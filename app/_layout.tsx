@@ -1,3 +1,31 @@
+// VIS API Optimization: Monitoring Setup (Phase 1)
+// @ts-ignore - Sentry may not have types in dev builds
+import * as Sentry from '@sentry/react-native';
+import { startNetworkLogging } from 'react-native-network-logger';
+
+// Initialize Sentry for production monitoring (T006)
+if (!__DEV__ && process.env.EXPO_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    integrations: [
+      // @ts-ignore - TracingIntegrations may not have types
+      new Sentry.ReactNativeTracing({
+        tracingOrigins: ['localhost', /^\//],
+      }),
+    ],
+  });
+}
+
+// Initialize Network Logger for development (T005)
+if (__DEV__) {
+  startNetworkLogging({
+    maxRequests: 500,
+    // Only capture VIS API calls (filter out other requests)
+    ignoredPatterns: [/^(?!.*vis-adapter)/, /analytics/, /fonts/, /assets/],
+  });
+}
+
 import { Stack, usePathname } from "expo-router";
 import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";

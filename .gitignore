@@ -32,9 +32,17 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
+
+# logs
+*.log
+logs/
+
+# builds
+build/
 
 app-example
 expo-go.apk

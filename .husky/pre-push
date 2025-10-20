@@ -5,11 +5,12 @@ echo "🔍 Running production audit (pre-push)..."
 echo "This is the same check that will run in CI/CD"
 echo ""
 
-# Run CI-level checks (same as CI will run)
+# Run CI-level checks and capture exit code
 npm run audit:ci
+AUDIT_EXIT_CODE=$?
 
 # Check exit code
-if [ $? -ne 0 ]; then
+if [ $AUDIT_EXIT_CODE -ne 0 ]; then
   echo ""
   echo "❌ Push blocked: Critical or High severity issues found"
   echo ""

@@ -4,11 +4,12 @@
 echo "🔍 Running production audit (pre-commit)..."
 echo ""
 
-# Run quick quality checks (TypeScript, ESLint, Complexity)
+# Run quick quality checks and capture exit code
 npm run audit -- --checks=quality --fail-on=critical
+AUDIT_EXIT_CODE=$?
 
 # Check exit code
-if [ $? -ne 0 ]; then
+if [ $AUDIT_EXIT_CODE -ne 0 ]; then
   echo ""
   echo "❌ Commit blocked: Critical issues found"
   echo ""

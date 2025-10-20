@@ -154,7 +154,7 @@ export class LiveScorePollingService {
       // Get adaptive configuration from status manager
       initialPollDelayMs = this.statusPollingManager.getPollingInterval(matchNo);
       fieldSelectionMode = this.statusPollingManager.getFieldSelectionMode(matchNo);
-      
+
       // Don't start polling for finished matches
       if (!this.statusPollingManager.shouldPoll(matchNo)) {
         return;
@@ -372,9 +372,14 @@ export class LiveScorePollingService {
             requestSaved: true
           });
           
-          // Update poll delay from server if provided
+          // Update poll delay from server if provided (only if NOT using adaptive polling)
           const pollDelay = extractPollDelay(liveData);
-          config.pollDelayMs = this.clampPollDelay(pollDelay);
+          const clampedDelay = this.clampPollDelay(pollDelay);
+
+          if (!config.useAdaptivePolling) {
+            config.pollDelayMs = clampedDelay;
+          }
+          // If using adaptive polling, keep the status-based interval
           
         } else if (isValidBeachLive(liveData)) {
           // Valid new data received
@@ -397,9 +402,15 @@ export class LiveScorePollingService {
             config.version = newVersion;
           }
           
-          // Update poll delay from server
+          // Update poll delay from server (only if NOT using adaptive polling)
           const serverPollDelay = liveData.pollDelay;
-          config.pollDelayMs = this.clampPollDelay(serverPollDelay);
+          const clampedDelay = this.clampPollDelay(serverPollDelay);
+
+          // IMPORTANT: Only use server poll delay if NOT using adaptive polling
+          if (!config.useAdaptivePolling) {
+            config.pollDelayMs = clampedDelay;
+          }
+          // If using adaptive polling, keep the status-based interval
           
           // Update match status if adaptive polling enabled
           if (config.useAdaptivePolling && liveData.match) {

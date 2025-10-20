@@ -1,19 +1,13 @@
-/**
- * Google Analytics 4 (gtag.js) TypeScript declarations
- * Provides type safety for GA4 integration
- */
+export {}
 
-interface Window {
-  dataLayer: any[];
-  gtag: (
-    command: 'config' | 'event' | 'js' | 'set',
-    targetId: string | Date,
-    config?: {
-      send_page_view?: boolean;
-      page_path?: string;
-      page_location?: string;
-      page_title?: string;
-      [key: string]: any;
+declare global {
+  interface Window {
+    dataLayer?: IArguments[]
+    gtag?: (...args: unknown[]) => void
+    __ga4?: {
+      measurementId?: string
+      initialized?: boolean
+      consentSet?: boolean
     }
-  ) => void;
+  }
 }

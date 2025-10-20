@@ -1192,8 +1192,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
       // Live score data retrieved
       if (liveScore) {
-        // Always update status if live data is available
-        const newRawStatus = liveScore.match?.status !== undefined ? liveScore.match.status : match.rawStatus;
+        // Always update status if live data is available - use rawStatus for numeric VIS codes
+        const newRawStatus = liveScore.match?.rawStatus !== undefined ? liveScore.match.rawStatus : match.rawStatus;
         const newMappedStatus = mapVisMatchStatus(String(newRawStatus));
 
         matchWithResult = {

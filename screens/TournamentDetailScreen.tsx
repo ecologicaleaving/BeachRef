@@ -1154,7 +1154,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
       const config = {
-        baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || '',
+        baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
         timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
       };
 
@@ -1655,7 +1655,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
           const config = {
-            baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || '',
+            baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
             timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
           };
 

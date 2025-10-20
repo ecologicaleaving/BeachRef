@@ -368,6 +368,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     }
 
     const calculateLiveElapsed = () => {
+      // Try actualStartTime first
       if (match.actualStartTime) {
         try {
           const startTime = new Date(match.actualStartTime).getTime();
@@ -388,9 +389,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             return;
           }
         } catch (error) {
-          // Skip if date parsing fails
+          // Continue to fallback
         }
       }
+
+      // Fallback: use scheduled time if actualStartTime is not available
+      const scheduled = (match as any).scheduled;
+      if (scheduled?.epochMs) {
+        try {
+          const startTime = scheduled.epochMs;
+          const now = Date.now();
+
+          if (!isNaN(startTime) && now > startTime) {
+            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours > 0) {
+              setLiveElapsedTime(`${hours}h ${minutes}m`);
+            } else if (totalMinutes > 0) {
+              setLiveElapsedTime(`${totalMinutes}m`);
+            } else {
+              setLiveElapsedTime('< 1m');
+            }
+            return;
+          }
+        } catch (error) {
+          // Skip if calculation fails
+        }
+      }
+
       setLiveElapsedTime(null);
     };
 
@@ -672,34 +700,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <TouchableOpacity
         style={[
           styles.matchCard,
-          variant === 'live' && styles.liveCard,
+          isMatchLive(match) && styles.liveCard,
           isQualification && styles.qualificationCard,
         ]}
         onPress={() => {
-          // Call the existing onPress if provided
+          // Call the existing onPress if provided (only custom callbacks, no navigation)
           onPress?.(match);
-
-          // Navigate to match detail screen with correct VIS match number
-          // Priority: visNo (pure VIS match number) > extracted from matchCode > fallback
-          const visMatchNo = match.visNo || extractNumericFromString(match.matchCode) || extractNumericFromString(match.id) || 'unknown';
-          const tournamentNo = (match as any).tournamentNo || 'demo';
-
-          // Helper function to extract numeric part
-          function extractNumericFromString(str?: string): string | null {
-            if (!str) return null;
-            const numericMatch = str.match(/\d+/);
-            return numericMatch ? numericMatch[0] : null;
-          }
-
-
-          router.push({
-            pathname: '/match-detail',
-            params: {
-              matchNo: visMatchNo,  // Use VIS match number for direct polling
-              tournamentNo,
-              matchData: JSON.stringify(match)
-            }
-          });
         }}
         activeOpacity={0.7}
       >

@@ -32,12 +32,12 @@ export class TournamentCacheWarmingService {
    * Start background cache warming service
    */
   static startBackgroundWarming(): void {
-    // Initial warming after a short delay
+    // Initial warming immediately (no delay for faster startup)
     setTimeout(() => {
       this.warmFrequentTournaments().catch(error => {
         console.warn('Initial cache warming failed:', error);
       });
-    }, 2000);
+    }, 0); // Changed from 2000ms to 0ms for immediate execution
 
     // Set up periodic warming for live tournaments
     if (this.warmingInterval) {

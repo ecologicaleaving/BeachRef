@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beachref.app/schemas/audit/audit-report.schema.json",
+  "title": "AuditReport",
+  "description": "Comprehensive report of a single audit execution",
+  "type": "object",
+  "required": [
+    "auditRunId",
+    "timestamp",
+    "overallStatus",
+    "exitCode",
+    "durationMs",
+    "summary",
+    "findings",
+    "checkerResults"
+  ],
+  "properties": {
+    "auditRunId": {
+      "type": "string",
+      "description": "Unique identifier for this audit run",
+      "pattern": "^run-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "When audit was executed (ISO 8601 format)",
+      "format": "date-time"
+    },
+    "overallStatus": {
+      "type": "string",
+      "description": "Whether audit passed or failed",
+      "enum": ["PASS", "FAIL"]
+    },
+    "exitCode": {
+      "type": "integer",
+      "description": "Process exit code (0=pass, 1=fail, 2=error)",
+      "enum": [0, 1, 2]
+    },
+    "durationMs": {
+      "type": "integer",
+      "description": "Total audit execution time in milliseconds",
+      "minimum": 0
+    },
+    "summary": {
+      "$ref": "#/definitions/AuditSummary"
+    },
+    "findings": {
+      "type": "array",
+      "description": "All findings discovered (sorted by severity desc)",
+      "items": {
+        "$ref": "finding.schema.json"
+      }
+    },
+    "trendAnalysis": {
+      "oneOf": [
+        { "$ref": "#/definitions/TrendAnalysis" },
+        { "type": "null" }
+      ],
+      "description": "Historical comparison (null if first run)"
+    },
+    "checkerResults": {
+      "type": "array",
+      "description": "Per-checker execution details",
+      "items": {
+        "$ref": "#/definitions/CheckerResult"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "AuditSummary": {
+      "type": "object",
+      "description": "Aggregate statistics for an audit run",
+      "required": [
+        "totalFindings",
+        "criticalCount",
+        "highCount",
+        "mediumCount",
+        "lowCount",
+        "newFindings",
+        "existingFindings",
+        "resolvedFindings",
+        "manualReviewCount"
+      ],
+      "properties": {
+        "totalFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "criticalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "highCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mediumCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lowCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "newFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "existingFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolvedFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "manualReviewCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "TrendAnalysis": {
+      "type": "object",
+      "description": "Historical comparison showing remediation progress",
+      "required": [
+        "previousRunId",
+        "totalFindingsChange",
+        "criticalChange",
+        "highChange",
+        "resolutionRate",
+        "newFindingRate",
+        "recentRuns"
+      ],
+      "properties": {
+        "previousRunId": {
+          "type": "string",
+          "pattern": "^run-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}$"
+        },
+        "totalFindingsChange": {
+          "type": "integer"
+        },
+        "criticalChange": {
+          "type": "integer"
+        },
+        "highChange": {
+          "type": "integer"
+        },
+        "resolutionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "newFindingRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "recentRuns": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/AuditRunSummary"
+          }
+        }
+      }
+    },
+    "AuditRunSummary": {
+      "type": "object",
+      "required": [
+        "auditRunId",
+        "timestamp",
+        "totalFindings",
+        "criticalCount",
+        "highCount",
+        "exitCode"
+      ],
+      "properties": {
+        "auditRunId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "criticalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "highCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exitCode": {
+          "type": "integer",
+          "enum": [0, 1, 2]
+        }
+      }
+    },
+    "CheckerResult": {
+      "type": "object",
+      "description": "Execution details for a single audit checker",
+      "required": [
+        "checkerId",
+        "checkerName",
+        "status",
+        "durationMs",
+        "findingCount"
+      ],
+      "properties": {
+        "checkerId": {
+          "type": "string",
+          "description": "Unique checker identifier (e.g., 'typescript', 'eslint')"
+        },
+        "checkerName": {
+          "type": "string",
+          "description": "Human-readable checker name"
+        },
+        "status": {
+          "type": "string",
+          "description": "Checker execution outcome",
+          "enum": ["success", "failure", "error"]
+        },
+        "durationMs": {
+          "type": "integer",
+          "description": "Checker execution time",
+          "minimum": 0
+        },
+        "findingCount": {
+          "type": "integer",
+          "description": "Number of findings produced by this checker",
+          "minimum": 0
+        },
+        "errorMessage": {
+          "type": ["string", "null"],
+          "description": "Error details if checker failed (status: 'error')"
+        }
+      }
+    }
+  }
+}

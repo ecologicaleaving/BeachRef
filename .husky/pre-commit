@@ -1,0 +1,25 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running production audit (pre-commit)..."
+echo ""
+
+# Run quick quality checks (TypeScript, ESLint, Complexity)
+npm run audit -- --checks=quality --fail-on=critical
+
+# Check exit code
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Commit blocked: Critical issues found"
+  echo ""
+  echo "Please fix the critical issues above, or use one of these options:"
+  echo "  1. Fix the issues and commit again"
+  echo "  2. Run 'npm run audit -- --severity=critical' to see all critical issues"
+  echo "  3. Use 'git commit --no-verify' to skip audit (not recommended)"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ Audit passed - proceeding with commit"
+echo ""

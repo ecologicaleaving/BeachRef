@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beachref.app/schemas/audit/audit-history.schema.json",
+  "title": "AuditHistory",
+  "description": "Persistent record of all findings and audit runs over time",
+  "type": "object",
+  "properties": {
+    "findings": {
+      "type": "object",
+      "description": "Map of finding IDs to historical finding data",
+      "patternProperties": {
+        "^[a-f0-9]{16}$": {
+          "$ref": "#/definitions/HistoricalFinding"
+        }
+      },
+      "additionalProperties": false
+    },
+    "runs": {
+      "type": "array",
+      "description": "Historical audit run metadata",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/definitions/HistoricalRun"
+      }
+    }
+  },
+  "required": ["findings", "runs"],
+  "definitions": {
+    "HistoricalFinding": {
+      "type": "object",
+      "description": "Finding with historical occurrence tracking",
+      "required": [
+        "id",
+        "type",
+        "firstSeen",
+        "lastSeen",
+        "status",
+        "occurrences"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "type": {
+          "type": "string"
+        },
+        "firstSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When first detected"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent occurrence"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Resolved"],
+          "description": "Current status"
+        },
+        "occurrences": {
+          "type": "array",
+          "description": "All historical occurrences",
+          "items": {
+            "$ref": "#/definitions/FindingOccurrence"
+          }
+        }
+      }
+    },
+    "FindingOccurrence": {
+      "type": "object",
+      "required": [
+        "auditRunId",
+        "timestamp",
+        "severity",
+        "file"
+      ],
+      "properties": {
+        "auditRunId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["Critical", "High", "Medium", "Low"]
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      }
+    },
+    "HistoricalRun": {
+      "type": "object",
+      "description": "Metadata for a historical audit run",
+      "required": [
+        "id",
+        "timestamp",
+        "totalFindings",
+        "criticalCount",
+        "highCount",
+        "mediumCount",
+        "lowCount",
+        "newFindings",
+        "resolvedFindings",
+        "exitCode"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^run-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}$"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "criticalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "highCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mediumCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lowCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "newFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolvedFindings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exitCode": {
+          "type": "integer",
+          "enum": [0, 1, 2]
+        }
+      }
+    }
+  }
+}

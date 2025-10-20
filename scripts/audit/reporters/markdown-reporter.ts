@@ -1,0 +1,289 @@
+/**
+ * Markdown Reporter
+ * Feature: 002-production-refactoring
+ *
+ * Generates human-readable Markdown audit reports.
+ * Includes executive summary, findings grouped by severity, and trend analysis.
+ */
+
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { AuditReport, Severity, Finding } from '../types';
+import { getReportPath } from '../config';
+import {
+  getSeverityEmoji,
+  groupBySeverity,
+} from '../utils/severity-classifier';
+import { getExitCodeEmoji } from '../utils/exit-code-manager';
+import { getTrendEmoji, getTrendSummary } from '../tracking/trend-analyzer';
+
+/**
+ * Generate and save Markdown audit report
+ * @param report - Audit report to save
+ * @param filename - Report filename (default: 'latest.md')
+ * @returns Path to saved report
+ */
+export async function generateMarkdownReport(
+  report: AuditReport,
+  filename: string = 'latest.md'
+): Promise<string> {
+  const reportPath = getReportPath(filename);
+
+  // Generate markdown content
+  const markdown = exportReportAsMarkdown(report);
+
+  // Ensure directory exists
+  const reportDir = path.dirname(reportPath);
+  await fs.mkdir(reportDir, { recursive: true });
+
+  // Write markdown report
+  await fs.writeFile(reportPath, markdown, 'utf-8');
+
+  return reportPath;
+}
+
+/**
+ * Export audit report as Markdown string
+ * @param report - Audit report
+ * @returns Markdown string
+ */
+export function exportReportAsMarkdown(report: AuditReport): string {
+  const sections: string[] = [];
+
+  // Header
+  sections.push(generateHeader(report));
+
+  // Summary
+  sections.push(generateSummary(report));
+
+  // Trend Analysis (if available)
+  if (report.trendAnalysis) {
+    sections.push(generateTrendSection(report));
+  }
+
+  // Findings by Severity
+  sections.push(generateFindingsSection(report));
+
+  // Manual Review Items
+  const manualReviewItems = report.findings.filter(
+    (f) => f.requiresManualReview
+  );
+  if (manualReviewItems.length > 0) {
+    sections.push(generateManualReviewSection(manualReviewItems));
+  }
+
+  // Checker Results
+  sections.push(generateCheckerResultsSection(report));
+
+  // Footer
+  sections.push(generateFooter(report));
+
+  return sections.join('\n\n');
+}
+
+/**
+ * Generate markdown header
+ */
+function generateHeader(report: AuditReport): string {
+  const statusEmoji = getExitCodeEmoji(report.exitCode);
+  const dateStr = new Date(report.timestamp).toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
+  return `# Production Audit Report
+
+**Date**: ${dateStr} | **Status**: ${statusEmoji} ${report.overallStatus} | **Exit Code**: ${report.exitCode}`;
+}
+
+/**
+ * Generate summary section
+ */
+function generateSummary(report: AuditReport): string {
+  const { summary } = report;
+
+  const criticalIcon = summary.criticalCount > 0 ? '❌' : '✅';
+  const highIcon = summary.highCount > 0 ? '❌' : '✅';
+  const mediumIcon = summary.mediumCount > 0 ? '⚠️' : '✅';
+  const lowIcon = summary.lowCount > 0 ? 'ℹ️' : '✅';
+
+  return `## Summary
+
+- **Total Findings**: ${summary.totalFindings} (🆕 ${summary.newFindings} new, ✅ ${summary.resolvedFindings} resolved)
+- **Critical**: ${summary.criticalCount} ${criticalIcon}${summary.criticalCount > 0 ? ' (blocks deployment)' : ''}
+- **High**: ${summary.highCount} ${highIcon}${summary.highCount > 0 ? ' (blocks deployment)' : ''}
+- **Medium**: ${summary.mediumCount} ${mediumIcon}
+- **Low**: ${summary.lowCount} ${lowIcon}
+- **Manual Review Required**: ${summary.manualReviewCount} findings`;
+}
+
+/**
+ * Generate trend analysis section
+ */
+function generateTrendSection(report: AuditReport): string {
+  const trend = report.trendAnalysis!;
+
+  const totalTrend = getTrendEmoji(trend.totalFindingsChange);
+  const criticalTrend = getTrendEmoji(trend.criticalChange);
+  const highTrend = getTrendEmoji(trend.highChange);
+
+  const summary = getTrendSummary(trend);
+
+  return `## Trend Analysis
+
+**Compared to**: ${trend.previousRunId}
+
+- **Total Findings**: ${totalTrend} ${trend.totalFindingsChange > 0 ? '+' : ''}${trend.totalFindingsChange}
+- **Critical**: ${criticalTrend} ${trend.criticalChange > 0 ? '+' : ''}${trend.criticalChange}
+- **High**: ${highTrend} ${trend.highChange > 0 ? '+' : ''}${trend.highChange}
+- **Resolution Rate**: ${trend.resolutionRate}%
+- **New Finding Rate**: ${trend.newFindingRate}%
+
+**Summary**: ${summary}`;
+}
+
+/**
+ * Generate findings section grouped by severity
+ */
+function generateFindingsSection(report: AuditReport): string {
+  if (report.findings.length === 0) {
+    return `## Findings
+
+No findings detected. Great job! ✨`;
+  }
+
+  const grouped = groupBySeverity(report.findings);
+  const sections: string[] = ['## Findings'];
+
+  // Generate section for each severity level
+  for (const severity of [
+    Severity.CRITICAL,
+    Severity.HIGH,
+    Severity.MEDIUM,
+    Severity.LOW,
+  ]) {
+    const findings = grouped.get(severity);
+    if (!findings || findings.length === 0) {
+      continue;
+    }
+
+    const emoji = getSeverityEmoji(severity);
+    sections.push(`### ${emoji} ${severity} (${findings.length})`);
+    sections.push('');
+
+    for (const finding of findings) {
+      sections.push(generateFindingMarkdown(finding));
+    }
+  }
+
+  return sections.join('\n');
+}
+
+/**
+ * Generate markdown for a single finding
+ */
+function generateFindingMarkdown(finding: Finding): string {
+  const location = finding.line
+    ? `\`${finding.file}:${finding.line}\``
+    : `\`${finding.file}\``;
+
+  const statusBadge =
+    finding.status === 'New'
+      ? '🆕 New'
+      : finding.status === 'Existing'
+        ? '📌 Existing'
+        : '✅ Resolved';
+
+  const ruleInfo = finding.ruleId ? ` (Rule: \`${finding.ruleId}\`)` : '';
+
+  return `#### ${finding.type}${ruleInfo}
+
+**Location**: ${location}
+**Status**: ${statusBadge}
+**Message**: ${finding.message}
+
+---
+`;
+}
+
+/**
+ * Generate manual review section
+ */
+function generateManualReviewSection(findings: Finding[]): string {
+  const sections: string[] = [
+    '## 🔍 Manual Review Required',
+    '',
+    `${findings.length} finding(s) require human judgment:`,
+    '',
+  ];
+
+  for (const finding of findings) {
+    sections.push(generateManualReviewItem(finding));
+  }
+
+  return sections.join('\n');
+}
+
+/**
+ * Generate manual review item
+ */
+function generateManualReviewItem(finding: Finding): string {
+  const location = finding.line
+    ? `\`${finding.file}:${finding.line}\``
+    : `\`${finding.file}\``;
+
+  return `### ${finding.type}
+
+**Location**: ${location}
+**Message**: ${finding.message}
+
+**Review Guidance**: ${finding.reviewGuidance || 'Please manually verify this finding.'}
+
+---
+`;
+}
+
+/**
+ * Generate checker results section
+ */
+function generateCheckerResultsSection(report: AuditReport): string {
+  const sections: string[] = ['## Checker Results', ''];
+
+  for (const checker of report.checkerResults) {
+    const statusEmoji =
+      checker.status === 'success'
+        ? '✅'
+        : checker.status === 'failure'
+          ? '⚠️'
+          : '❌';
+
+    const durationSeconds = (checker.durationMs / 1000).toFixed(1);
+
+    sections.push(
+      `- ${statusEmoji} **${checker.checkerName}** (${durationSeconds}s) - ${checker.findingCount} findings`
+    );
+
+    if (checker.errorMessage) {
+      sections.push(`  - Error: ${checker.errorMessage}`);
+    }
+  }
+
+  return sections.join('\n');
+}
+
+/**
+ * Generate footer
+ */
+function generateFooter(report: AuditReport): string {
+  const durationSeconds = (report.durationMs / 1000).toFixed(1);
+
+  return `---
+
+**Audit Run ID**: \`${report.auditRunId}\`
+**Duration**: ${durationSeconds}s
+**Generated**: ${new Date(report.timestamp).toISOString()}`;
+}

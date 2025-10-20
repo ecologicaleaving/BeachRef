@@ -51,3 +51,6 @@ expo-go.apk
 docs/
 archive/
 architecture/
+
+# Audit history (contains historical finding data)
+.audit-history/

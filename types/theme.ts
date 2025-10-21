@@ -12,13 +12,16 @@ export interface ColorToken {
   error: string;
   textPrimary: string;
   textSecondary: string;
+  textDisabled?: string;
   background: string;
   // Additional color properties
   statusColors?: StatusColors;
   surfacePrimary?: string;
   surfaceSecondary?: string;
+  surfaceDisabled?: string;
   border?: string;
   text?: string;
+  shadows?: string;
 }
 
 export interface BrandColors {
@@ -79,6 +82,7 @@ export interface SpacingToken {
   xxl: number;
   // Aliases for common usage
   xsmall: number;
+  extraSmall: number; // Alias for xs
   small: number;
   medium: number;
   large: number;

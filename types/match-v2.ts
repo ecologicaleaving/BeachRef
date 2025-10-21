@@ -99,16 +99,19 @@ export interface MatchTeam {
 export interface BeachMatchCore extends VisEntity {
   /** Tournament ID this match belongs to */
   readonly tournamentId: string;
-  
+
   /** Match code/number within tournament */
   readonly matchCode: string;
-  
+
   /** Match round/phase (e.g., "Pool A", "Quarterfinal") */
   readonly round: string;
-  
+
+  /** Round name (alias for round) - VIS API compatibility */
+  readonly roundName?: string;
+
   /** Match phase code for bracket position */
   readonly phaseCode?: string;
-  
+
   /** Current match status */
   readonly status: MatchStatus;
 
@@ -117,40 +120,55 @@ export interface BeachMatchCore extends VisEntity {
 
   /** Court information */
   readonly court: CourtInfo;
-  
+
   /** Scheduled match date/time in ISO format */
   readonly scheduledDateTime: string;
-  
+
+  /** VIS API Date field alias (for scheduledDateTime) */
+  readonly Date?: string;
+
+  /** VIS API MatchDate field alias (for scheduledDateTime) */
+  readonly MatchDate?: string;
+
+  /** VIS API StartDate field alias (for scheduledDateTime) */
+  readonly StartDate?: string;
+
   /** Actual start time if match has started */
   readonly actualStartTime?: string;
-  
+
   /** Actual end time if match has finished */
   readonly actualEndTime?: string;
-  
+
   /** Team 1 information */
   readonly team1: MatchTeam;
-  
+
   /** Team 2 information */
   readonly team2: MatchTeam;
-  
+
+  /** Teams array (compatibility alias) */
+  readonly teams?: readonly MatchTeam[];
+
   /** Match result if completed */
   readonly result?: MatchResult;
-  
+
   /** Assigned referees */
   readonly refereeAssignments: readonly RefereeAssignment[];
-  
+
+  /** Officials (alias for refereeAssignments) - VIS API compatibility */
+  readonly officials?: readonly RefereeAssignment[];
+
   /** Match notes or special conditions */
   readonly notes?: string;
-  
+
   /** Weather conditions if relevant */
   readonly weather?: string;
-  
+
   /** Match importance level */
   readonly importance?: 'LOW' | 'MEDIUM' | 'HIGH' | 'FINAL';
-  
+
   /** Match number within tournament for display (NoInTournament from VIS API) */
   readonly noInTournament?: string;
-  
+
   /** Team A position/seed in main draw bracket */
   readonly teamAPositionInMainDraw?: string;
 
@@ -189,6 +207,15 @@ export interface BeachMatchCore extends VisEntity {
 
   /** Result type from VIS API (Normal, ForfeitA, ForfeitB, InjuryA, etc.) */
   readonly resultType?: string;
+
+  /** Current set number for live matches (1, 2, or 3) */
+  readonly currentSet?: number;
+
+  /** Current points in active set {home, away} */
+  readonly points?: {
+    readonly home: number;
+    readonly away: number;
+  } | null;
 }
 
 /**

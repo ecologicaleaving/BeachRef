@@ -35,8 +35,8 @@ export interface ReadResult<T> {
 export interface TournamentDTO {
   id: string;
   visNo: string;
-  code: string;
-  tournamentCode?: string; // Alias for code
+  code?: string; // Optional - can use tournamentCode as alias
+  tournamentCode?: string; // Alias for code - optional
   name: string;
   title?: string;
   gender: 'M' | 'W' | 'MIXED';

@@ -12,7 +12,16 @@ export interface ColorToken {
   error: string;
   textPrimary: string;
   textSecondary: string;
+  textDisabled?: string;
   background: string;
+  // Additional color properties
+  statusColors: StatusColors; // Required - always present in design system
+  surfacePrimary?: string;
+  surfaceSecondary?: string;
+  surfaceDisabled?: string;
+  border?: string;
+  text?: string;
+  shadows?: string;
 }
 
 export interface BrandColors {
@@ -52,9 +61,16 @@ export interface TypographyScale {
   hero: TypographyToken;
   h1: TypographyToken;
   h2: TypographyToken;
+  h3?: TypographyToken;
   bodyLarge: TypographyToken;
   body: TypographyToken;
+  bodySmall?: TypographyToken;
   caption: TypographyToken;
+  sizes?: {
+    small: number;
+    medium: number;
+    large: number;
+  };
 }
 
 export interface SpacingToken {
@@ -64,6 +80,14 @@ export interface SpacingToken {
   lg: number;
   xl: number;
   xxl: number;
+  // Aliases for common usage
+  xsmall: number;
+  extraSmall: number; // Alias for xs
+  small: number;
+  medium: number;
+  large: number;
+  extraLarge: number;
+  borderRadius: number;
 }
 
 // Status-specific color mappings for tournament referees

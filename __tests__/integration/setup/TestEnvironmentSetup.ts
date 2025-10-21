@@ -70,7 +70,7 @@ export async function setupIntegrationTestEnvironment(): Promise<IntegrationTest
 async function populateTestDatabase(
   database: TestDatabaseContext,
   testData: ReturnType<typeof createCompleteTestDataset>,
-  testId: string
+  _testId: string
 ): Promise<void> {
   // Transform DTOs to database format for insertion
   const dbTournaments = testData.tournaments.map(tournament => ({

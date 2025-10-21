@@ -1,0 +1,110 @@
+# Production Readiness Audit - GitLab CI
+# Copy this file to: .gitlab-ci.yml (or merge with existing)
+
+stages:
+  - audit-quick
+  - audit-full
+  - deploy-gate
+
+# Template for audit jobs
+.audit-template:
+  image: node:18-alpine
+  before_script:
+    - npm ci
+  cache:
+    paths:
+      - node_modules/
+    key:
+      files:
+        - package-lock.json
+
+# Quick code quality check (runs first, fails fast)
+audit:code-quality:
+  extends: .audit-template
+  stage: audit-quick
+  script:
+    - npm run audit -- --checks=quality --fail-on=critical,high
+  artifacts:
+    when: always
+    paths:
+      - specs/002-production-refactoring/reports/latest.md
+    expire_in: 30 days
+  only:
+    - merge_requests
+    - master
+    - main
+    - development
+
+# Security scan (runs in parallel with code quality)
+audit:security:
+  extends: .audit-template
+  stage: audit-quick
+  script:
+    - npm run audit -- --checks=security --fail-on=critical,high
+  artifacts:
+    when: always
+    paths:
+      - specs/002-production-refactoring/reports/latest.md
+    expire_in: 30 days
+  only:
+    - merge_requests
+    - master
+    - main
+    - development
+  allow_failure: false
+
+# Full audit (all checkers - runs after quick checks pass)
+audit:full:
+  extends: .audit-template
+  stage: audit-full
+  script:
+    - npm run audit -- --checks=all --fail-on=critical,high
+  artifacts:
+    when: always
+    paths:
+      - specs/002-production-refactoring/reports/latest.json
+      - specs/002-production-refactoring/reports/latest.md
+    reports:
+      # GitLab will parse this for merge request insights
+      codequality: specs/002-production-refactoring/reports/latest.json
+    expire_in: 90 days
+  dependencies:
+    - audit:code-quality
+    - audit:security
+  only:
+    - merge_requests
+    - master
+    - main
+    - development
+
+# Deployment gate (strict audit for production branches)
+audit:deployment-gate:
+  extends: .audit-template
+  stage: deploy-gate
+  script:
+    - npm run audit:ci
+    - echo "✅ All audits passed - deployment approved"
+  dependencies:
+    - audit:full
+  only:
+    - master
+    - main
+  when: on_success
+  allow_failure: false
+
+# Optional: Audit on schedule (weekly)
+audit:scheduled:
+  extends: .audit-template
+  stage: audit-full
+  script:
+    - npm run audit -- --checks=all
+    - echo "📊 Weekly audit complete"
+  artifacts:
+    when: always
+    paths:
+      - specs/002-production-refactoring/reports/latest.json
+      - specs/002-production-refactoring/reports/latest.md
+    expire_in: 1 year
+  only:
+    - schedules
+  allow_failure: true

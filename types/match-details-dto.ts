@@ -29,6 +29,10 @@ export type BeachMatchDTO = {
   localTime?: string;            // LocalTime
   localTimeOffset?: string;      // LocalTimeOffset (e.g. +02:00)
   timeZone?: string;             // TimeZone (timezone name)
+  // VIS API aliases
+  Date?: string;                 // Alias for localDate
+  MatchDate?: string;            // Alias for beginDateTimeUtc
+  StartDate?: string;            // Alias for beginDateTimeUtc
 
   // Venue / court
   court?: string;                // Court
@@ -61,6 +65,10 @@ export type BeachMatchDTO = {
     second?: { no?: number; name?: string; federation?: string };
     challenge?: { no?: number; name?: string } | null;
   };
+  // VIS API referee aliases
+  Referee?: { no?: number; name?: string; federation?: string };   // Alias for first referee
+  Referee1?: { no?: number; name?: string; federation?: string };  // Alias for first referee
+  Referee2?: { no?: number; name?: string; federation?: string };  // Alias for second referee
 
   // Closed set scores + summary
   sets?: Array<{ set: number; a: number; b: number; durationSec?: number }>;

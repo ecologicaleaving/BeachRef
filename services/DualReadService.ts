@@ -36,6 +36,7 @@ export interface TournamentDTO {
   id: string;
   visNo: string;
   code: string;
+  tournamentCode?: string; // Alias for code
   name: string;
   title?: string;
   gender: 'M' | 'W' | 'MIXED';

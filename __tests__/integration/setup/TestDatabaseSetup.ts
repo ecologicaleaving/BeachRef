@@ -68,7 +68,7 @@ export async function resetTestDatabase(context: TestDatabaseContext): Promise<v
  */
 export async function verifyDatabaseConnection(supabase: SupabaseClient): Promise<boolean> {
   try {
-    const { data, error } = await supabase.from('tournaments').select('id').limit(1);
+    const { data: _data, error } = await supabase.from('tournaments').select('id').limit(1);
     return !error;
   } catch {
     return false;

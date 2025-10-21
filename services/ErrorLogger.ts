@@ -118,6 +118,17 @@ export class ErrorLogger {
   }
 
   /**
+   * Simple log method (alias for logError with minimal params)
+   */
+  async log(message: string, context?: Record<string, any>): Promise<string> {
+    return this.logError({
+      entity_type: 'app',
+      error: message,
+      context
+    });
+  }
+
+  /**
    * Log network-related errors with detailed context
    */
   async logNetworkError(params: {

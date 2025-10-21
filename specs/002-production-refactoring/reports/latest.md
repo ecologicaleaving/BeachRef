@@ -1,11 +1,11 @@
 # Production Audit Report
 
-**Date**: 10/20/2025, 08:04:26 PM | **Status**: ❌ FAIL | **Exit Code**: 1
+**Date**: 10/20/2025, 11:12:11 PM | **Status**: ❌ FAIL | **Exit Code**: 1
 
 ## Summary
 
-- **Total Findings**: 4215 (🆕 1 new, ✅ 0 resolved)
-- **Critical**: 4215 ❌ (blocks deployment)
+- **Total Findings**: 3661 (🆕 48 new, ✅ 0 resolved)
+- **Critical**: 3661 ❌ (blocks deployment)
 - **High**: 0 ✅
 - **Medium**: 0 ✅
 - **Low**: 0 ✅
@@ -13,48 +13,40 @@
 
 ## Trend Analysis
 
-**Compared to**: run-2025-10-20-18-04-33
+**Compared to**: run-2025-10-20-20-45-11
 
-- **Total Findings**: 📉 -2378
-- **Critical**: ➡️ 0
-- **High**: 📉 -141
+- **Total Findings**: 📉 -55
+- **Critical**: 📉 -55
+- **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 0%
+- **New Finding Rate**: 1.3%
 
-**Summary**: 2378 fewer findings | severity: -141 High | 0% resolved, 0% new
+**Summary**: 55 fewer findings | severity: -55 Critical | 0% resolved, 1.3% new
 
 ## Findings
-### 🔴 Critical (4215)
+### 🔴 Critical (3661)
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2741`)
 
-**Location**: `__tests__/integration/setup/TestDatabaseSetup.ts:71`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2353`)
-
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:18`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'tournamentCode' does not exist in type 'TournamentDTO'.
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:15`
+**Status**: 🆕 New
+**Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "M"; tournamentType: "FIVB"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "ACTIVE"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2353`)
+#### typescript-error (Rule: `typescript:2741`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:37`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'tournamentCode' does not exist in type 'TournamentDTO'.
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:34`
+**Status**: 🆕 New
+**Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "W"; tournamentType: "BPT"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "UPCOMING"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2353`)
+#### typescript-error (Rule: `typescript:2741`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:56`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'tournamentCode' does not exist in type 'TournamentDTO'.
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:53`
+**Status**: 🆕 New
+**Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "M"; tournamentType: "CEV"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "COMPLETED"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
 
@@ -162,27 +154,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:335`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `__tests__/integration/setup/TestEnvironmentSetup.ts:73`
-**Status**: 📌 Existing
-**Message**: 'testId' is declared but its value is never read.
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:339`
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `__tests__/integration/setup/TestEnvironmentSetup.ts:78`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:341`
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -234,27 +220,30 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:31`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:32`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:35`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -274,19 +263,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:238`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:239`
-**Status**: 📌 Existing
-**Message**: Property 'tournamentCode' does not exist on type 'TournamentDTO'.
+**Status**: 🆕 New
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -1150,89 +1141,17 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:175`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:176`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:177`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:178`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:179`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/Assignment/AssignmentCard.tsx:185`
 **Status**: 📌 Existing
 **Message**: Property 'fontFamily' does not exist on type 'TypographyScale'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:199`
+**Location**: `components/Assignment/AssignmentCard.tsx:267`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:216`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:228`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:241`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:258`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1240,71 +1159,23 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:267`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:268`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:272`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:273`
-**Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:274`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:278`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/Assignment/AssignmentCard.tsx:279`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:283`
+**Location**: `components/Assignment/AssignmentCard.tsx:290`
 **Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:286`
-**Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1312,7 +1183,15 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:290`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'h2' does not exist on type '{ small: number; medium: number; large: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `components/Assignment/AssignmentCard.tsx:290`
+**Status**: 📌 Existing
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1320,7 +1199,7 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:290`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'h3' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
@@ -1340,19 +1219,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:295`
+**Location**: `components/Assignment/AssignmentCard.tsx:304`
 **Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:300`
-**Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1360,7 +1231,15 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:304`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `components/Assignment/AssignmentCard.tsx:310`
+**Status**: 📌 Existing
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1368,23 +1247,15 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:310`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:314`
+**Location**: `components/Assignment/AssignmentCard.tsx:321`
 **Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:315`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1392,119 +1263,31 @@
 
 **Location**: `components/Assignment/AssignmentCard.tsx:321`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:326`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/Assignment/AssignmentCard.tsx:330`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:152`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:154`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:155`
-**Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:156`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/Assignment/AssignmentCardVariants.tsx:164`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:166`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:171`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:173`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:174`
-**Status**: 📌 Existing
-**Message**: Property 'xsmall' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:175`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/Assignment/AssignmentCardVariants.tsx:178`
 **Status**: 📌 Existing
-**Message**: Property 'sizes' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:180`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -4755,16 +4538,16 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:80`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:82`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -4772,16 +4555,16 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:88`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:90`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -4789,16 +4572,16 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:96`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:98`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -4806,16 +4589,16 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:104`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:106`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -5285,38 +5068,6 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:285`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:286`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:287`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:288`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/MatchResultCard.tsx:290`
 **Status**: 📌 Existing
 **Message**: Property 'shadowColor' does not exist on type 'ColorToken'.
@@ -5355,38 +5106,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:328`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:334`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:345`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:351`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:355`
@@ -5398,139 +5117,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:363`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:366`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:375`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:381`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:385`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:394`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:400`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:401`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:403`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:413`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:417`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:418`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:419`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:420`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:423`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:428`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:437`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -5545,131 +5136,14 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:451`
+**Location**: `components/MatchResult/MatchResultCard.tsx:503`
 **Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:452`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:454`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:459`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:462`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:463`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:465`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:474`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:487`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:488`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:490`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:495`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:498`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:499`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:501`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:504`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
+**Message**: Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6048,14 +5522,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:208`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:209`
@@ -6115,6 +5581,42 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:312`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:314`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:315`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:316`
@@ -6125,12 +5627,133 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:317`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:319`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:325`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:326`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:327`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginHorizontal: any; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginHorizontal: any; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
-    Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:328`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:332`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:348`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:349`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:350`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:351`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -6138,10 +5761,35 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:352`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
-    Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:353`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:355`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -6149,10 +5797,35 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:356`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
-    Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:357`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:359`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -6160,10 +5833,47 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:360`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
-    Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:361`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:367`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:369`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -6175,6 +5885,30 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:374`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:379`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:386`
@@ -6183,11 +5917,15 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:386`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:387`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -6236,10 +5974,21 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:474`
+**Status**: 📌 Existing
+**Message**: Type '{ color: string; marginBottom: number; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginBottom: number; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:479`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginHorizontal: any; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginHorizontal: any; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; marginHorizontal: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginHorizontal: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
       Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
@@ -6253,187 +6002,14 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:535`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:558`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:536`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:537`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:538`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:546`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:553`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:556`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:559`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:566`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:578`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:582`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:585`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:586`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:587`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:588`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:593`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:596`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:599`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:604`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:607`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:608`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:609`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:610`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6448,531 +6024,54 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:621`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:628`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:629`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:630`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:639`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:646`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:647`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:685`
 **Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:648`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:654`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:655`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:662`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:663`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:664`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:665`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:673`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:680`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:683`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:686`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:693`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:705`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:709`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:712`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:713`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:714`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:715`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:718`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:721`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:736`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:743`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:750`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:751`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:752`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:761`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:768`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:769`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:770`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:776`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:777`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:784`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:785`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:786`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:787`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:795`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:802`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:805`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:811`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:817`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:820`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:822`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:839`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:842`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:845`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:849`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:853`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:858`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:859`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:865`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:866`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:869`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:870`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:881`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:891`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:892`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:893`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:894`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:904`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -7375,289 +6474,9 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/QuickActions.tsx:309`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:310`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:311`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:312`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:313`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:320`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:331`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:338`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:342`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:347`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:348`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:349`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:351`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:357`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:367`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:368`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:369`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:379`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:380`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:381`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:382`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:388`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:389`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:390`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:391`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:394`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:400`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:408`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:409`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:410`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:412`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:423`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:424`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:426`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/QuickActions.tsx:430`
 **Status**: 📌 Existing
 **Message**: Property 'surfaceDisabled' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:436`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
 
 ---
 
@@ -7705,16 +6524,16 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:228`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:230`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -8168,25 +6987,9 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:415`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:417`
 **Status**: 📌 Existing
 **Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:420`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
 
 ---
 
@@ -8334,243 +7137,33 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:491`
+**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:540`
 **Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:494`
+**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:572`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
+**Message**: Type '{ color: string; textAlign: "center"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; textAlign: "center"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:495`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:496`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:505`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:516`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:521`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:522`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:523`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:524`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:527`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:530`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:533`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:541`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:548`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:551`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:561`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:567`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:570`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:573`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:578`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:584`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:589`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:590`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:591`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:592`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:595`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:603`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:606`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:611`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -8585,75 +7178,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:624`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:625`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:626`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:629`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:631`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:635`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:641`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:642`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:643`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -8662,182 +7191,6 @@
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:647`
 **Status**: 📌 Existing
 **Message**: Property 'surfaceDisabled' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:653`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:654`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:660`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:661`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:662`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:671`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:674`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:675`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:676`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:686`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:687`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:688`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:692`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:695`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:700`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:705`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:709`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:710`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:711`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:723`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:724`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:731`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
 
 ---
 
@@ -9105,11 +7458,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:216`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -9241,14 +7594,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:277`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:279`
@@ -9269,107 +7614,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:289`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:290`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:291`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:292`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:294`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:294`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:300`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:303`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:313`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:327`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:329`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:341`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:344`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -9381,99 +7638,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:359`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:360`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:361`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:362`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:377`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:385`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:394`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:407`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:408`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:409`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:410`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:411`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -9482,22 +7651,6 @@
 **Location**: `components/MatchResult/ScoreEntry.tsx:415`
 **Status**: 📌 Existing
 **Message**: Property 'surfaceDisabled' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:421`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:422`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
 
 ---
 
@@ -9541,19 +7694,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:126`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:136`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -9743,7 +7896,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:250`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & CommonIconProps'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & CommonIconProps'.
   Property 'width' does not exist on type 'IntrinsicAttributes & CommonIconProps'.
 
 ---
@@ -9910,14 +8063,6 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:315`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:316`
 **Status**: 📌 Existing
 **Message**: Property 'extraSmall' does not exist on type 'SpacingToken'.
@@ -9926,65 +8071,9 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:317`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:318`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:330`
 **Status**: 📌 Existing
 **Message**: Property 'extraSmall' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:335`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:336`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:337`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:355`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:358`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
 
 ---
 
@@ -10001,129 +8090,36 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:370`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:371`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:372`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:373`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:374`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:386`
 **Status**: 📌 Existing
 **Message**: Property 'extraSmall' does not exist on type 'SpacingToken'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:397`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:398`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:399`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:400`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:413`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:414`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:424`
+**Location**: `components/MatchResult/SyncStatusIndicator.tsx:431`
 **Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:432`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:438`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:441`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12394,371 +10390,25 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/CourtInformation.tsx:287`
+**Location**: `components/TournamentInfo/CourtInformation.tsx:304`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/CourtInformation.tsx:288`
+**Location**: `components/TournamentInfo/CourtInformation.tsx:426`
 **Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:289`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:290`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:291`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:296`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:299`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:305`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:311`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:312`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:313`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:314`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:315`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:336`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:337`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:338`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:339`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:341`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:353`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:361`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:370`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:375`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:388`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:389`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:391`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:396`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:410`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:411`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:413`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:421`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:427`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:431`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:432`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:434`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:439`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:442`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:448`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:461`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:464`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:472`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:473`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:478`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:485`
-**Status**: 📌 Existing
-**Message**: Property 'extraLarge' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:488`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:490`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/CourtInformation.tsx:491`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -13414,363 +11064,14 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:369`
+**Location**: `components/TournamentInfo/EmergencyInformation.tsx:485`
 **Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:370`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:371`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:372`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:373`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:382`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:385`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:388`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:394`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:397`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:406`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:407`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:413`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:426`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:430`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:431`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:432`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:441`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:449`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:458`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:471`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:480`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:486`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:490`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:493`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:494`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:495`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:502`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:511`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:530`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:537`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:540`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:546`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:555`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:570`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:572`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:576`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:579`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:584`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:589`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:594`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:600`
-**Status**: 📌 Existing
-**Message**: Property 'extraLarge' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:603`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:605`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/EmergencyInformation.tsx:606`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -13930,52 +11231,20 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:210`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:211`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:212`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:213`
-**Status**: 📌 Existing
-**Message**: Property 'extraLarge' does not exist on type 'SpacingToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:56`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:56`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -13983,16 +11252,16 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:61`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:61`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -14000,16 +11269,16 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:63`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:63`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -14526,171 +11795,27 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:271`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:272`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:273`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:274`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:275`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:283`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:286`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:296`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:304`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:309`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:310`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:313`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:319`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:323`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:324`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:325`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:326`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:329`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:332`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:333`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:341`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -14705,155 +11830,62 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:384`
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:438`
 **Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:391`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:394`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:416`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:434`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:439`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:445`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:446`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:448`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:454`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:455`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:459`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:464`
-**Status**: 📌 Existing
-**Message**: Property 'extraLarge' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:467`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:469`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/ScheduleOverview.tsx:470`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:42`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:44`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:46`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -14861,7 +11893,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:59`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -14870,7 +11902,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:67`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -14879,7 +11911,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:75`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -14888,7 +11920,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:83`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -15237,267 +12269,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:226`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:227`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:228`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:229`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:230`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:240`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:247`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:254`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:279`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:282`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:291`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:298`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:303`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:309`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:314`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:317`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:319`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:324`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:325`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:326`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:327`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:328`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:333`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:338`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:344`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:346`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:350`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:356`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:362`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:363`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:365`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:368`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:371`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -15740,16 +12524,16 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:208`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:210`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -16330,78 +13114,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:451`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:454`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:455`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:456`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:457`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:458`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:479`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:486`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:488`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2353`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:500`
@@ -16410,91 +13122,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:506`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:507`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:518`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:524`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:534`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:539`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:545`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:546`
 **Status**: 📌 Existing
-**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:555`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:557`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:561`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
+**Message**: 'designTokens.colors.statusColors' is possibly 'undefined'.
 
 ---
 
@@ -16509,75 +13141,14 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:582`
+**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:581`
 **Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:588`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:589`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:590`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:591`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:605`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:611`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:614`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:616`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -16592,46 +13163,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:625`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:626`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:627`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:628`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:635`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:642`
@@ -16643,75 +13174,14 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:648`
+**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:652`
 **Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:653`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:660`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:665`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:671`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:675`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:676`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:686`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:695`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
+**Message**: Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -16723,22 +13193,6 @@
   Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
       Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:704`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:705`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
 
 ---
 
@@ -17534,134 +13988,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:347`
-**Status**: 📌 Existing
-**Message**: Property 'surfacePrimary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:348`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:349`
-**Status**: 📌 Existing
-**Message**: Property 'large' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:350`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:351`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:359`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:367`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:370`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:377`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:391`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:405`
-**Status**: 📌 Existing
-**Message**: Property 'surfaceSecondary' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:406`
-**Status**: 📌 Existing
-**Message**: Property 'borderRadius' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:407`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:418`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:425`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:428`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:447`
@@ -17673,203 +13999,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:460`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:469`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:486`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:487`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:489`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:495`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:498`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:501`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:504`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:507`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:515`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:520`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:523`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:526`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:529`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:534`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:542`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:545`
-**Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:548`
 **Status**: 📌 Existing
-**Message**: Property 'bodySmall' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:553`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:554`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:556`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:565`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:566`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:568`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type 'ColorToken'.
+**Message**: 'designTokens.typography.bodySmall' is possibly 'undefined'.
 
 ---
 
@@ -17881,38 +14015,6 @@
   Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
       Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:577`
-**Status**: 📌 Existing
-**Message**: Property 'extraLarge' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:580`
-**Status**: 📌 Existing
-**Message**: Property 'h3' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:582`
-**Status**: 📌 Existing
-**Message**: Property 'medium' does not exist on type 'SpacingToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:583`
-**Status**: 📌 Existing
-**Message**: Property 'small' does not exist on type 'SpacingToken'.
 
 ---
 
@@ -24160,7 +20262,7 @@
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `scripts/audit/run-audit.ts:370`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -26053,43 +22155,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:131`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:146`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:156`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DataConsistencyValidator.ts:205`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 3.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:228`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -26245,35 +22315,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:544`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/DataConsistencyValidator.ts:555`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' is not assignable to type 'Timeout' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:556`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/DataConsistencyValidator.ts:819`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -26391,112 +22437,112 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:172`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:173`
+**Status**: 🆕 New
 **Message**: 'circuitBreaker' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:202`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:203`
+**Status**: 🆕 New
 **Message**: Expected 1-2 arguments, but got 0.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:254`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:255`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:297`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:298`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:330`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:331`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:511`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:512`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:553`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:554`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:583`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:584`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:632`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:633`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:673`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:674`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:703`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:704`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:784`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:785`
+**Status**: 🆕 New
 **Message**: 'count' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:858`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:859`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/DualReadService.ts:1032`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1033`
+**Status**: 🆕 New
 **Message**: Type '{ id: any; visNo: any; tournamentCode: any; matchCode: string; round: any; phaseCode: any; status: any; court: { courtNumber: any; courtName: any; }; scheduledDateTime: any; actualStartTime: any; team1: { ...; }; team2: { ...; }; result: { ...; } | undefined; }' is not assignable to type 'MatchDTO' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'result' are incompatible.
     Type '{ team1Sets: any; team2Sets: any; setScores: any; winner: any; forfeit: any; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; }'.
@@ -26506,18 +22552,9 @@
 
 #### typescript-error (Rule: `typescript:2739`)
 
-**Location**: `services/DualReadService.ts:1114`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1115`
+**Status**: 🆕 New
 **Message**: Type '{ id: any; visNo: any; tournamentId: any; tournamentCode: any; matchCode: any; matchNo: any; round: any; team1: { teamNumber: number; teamName: any; player1Name: any; player2Name: any; countryCode: any; }; ... 5 more ...; result: { ...; } | undefined; }' is missing the following properties from type 'BeachMatchCore': version, lastUpdated
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `services/DualReadService.ts:1124`
-**Status**: 📌 Existing
-**Message**: Type 'number | undefined' is not assignable to type 'number'.
-  Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -26530,26 +22567,35 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/DualReadService.ts:1126`
+**Status**: 🆕 New
+**Message**: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+---
+
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:1140`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1141`
+**Status**: 🆕 New
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2412`)
 
-**Location**: `services/DualReadService.ts:1209`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1210`
+**Status**: 🆕 New
 **Message**: Type '{ team1Sets: number; team2Sets: number; setScores: never[]; winner: number | undefined; forfeit: boolean; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; } | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
 
 ---
 
 #### typescript-error (Rule: `typescript:6234`)
 
-**Location**: `services/DualReadService.ts:1367`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1368`
+**Status**: 🆕 New
 **Message**: This expression is not callable because it is a 'get' accessor. Did you mean to use it without '()'?
   Type 'Boolean' has no call signatures.
 
@@ -26557,16 +22603,16 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:1427`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1428`
+**Status**: 🆕 New
 **Message**: 'type' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:1427`
-**Status**: 📌 Existing
+**Location**: `services/DualReadService.ts:1428`
+**Status**: 🆕 New
 **Message**: 'filters' is declared but its value is never read.
 
 ---
@@ -26625,10 +22671,21 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `services/ErrorLogger.ts:124`
+**Status**: 🆕 New
+**Message**: Argument of type '{ entity_type: string; error: string; context: Record<string, any> | undefined; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'context' are incompatible.
+    Type 'Record<string, any> | undefined' is not assignable to type 'Record<string, any>'.
+      Type 'undefined' is not assignable to type 'Record<string, any>'.
+
+---
+
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/ErrorLogger.ts:134`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:145`
+**Status**: 🆕 New
 **Message**: Type '{ url: string; method: string; status_code: number | undefined; timeout_ms: number | undefined; retry_attempt: number; response_time_ms: number | undefined; }' is not assignable to type 'NetworkErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'status_code' are incompatible.
     Type 'number | undefined' is not assignable to type 'number'.
@@ -26638,8 +22695,8 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/ErrorLogger.ts:143`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:154`
+**Status**: 🆕 New
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: NetworkErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -26649,8 +22706,8 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/ErrorLogger.ts:171`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:182`
+**Status**: 🆕 New
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: AuthErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -26660,8 +22717,8 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/ErrorLogger.ts:193`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:204`
+**Status**: 🆕 New
 **Message**: Type '{ endpoint: string; request_payload: Record<string, any> | undefined; response_status: number | undefined; response_body: string | undefined; parsing_error: string | undefined; }' is not assignable to type 'APIErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'request_payload' are incompatible.
     Type 'Record<string, any> | undefined' is not assignable to type 'Record<string, any>'.
@@ -26671,8 +22728,8 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/ErrorLogger.ts:201`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:212`
+**Status**: 🆕 New
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: APIErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -26682,8 +22739,8 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/ErrorLogger.ts:221`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:232`
+**Status**: 🆕 New
 **Message**: Type '{ query_type: "SELECT" | "INSERT" | "UPDATE" | "DELETE" | "UPSERT"; table_name: string; constraint_violation: string; connection_error: boolean; deadlock: boolean; }' is not assignable to type 'DatabaseErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'table_name' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -26693,72 +22750,72 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/ErrorLogger.ts:351`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:362`
+**Status**: 🆕 New
 **Message**: 'message' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/ErrorLogger.ts:360`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:371`
+**Status**: 🆕 New
 **Message**: 'message' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/ErrorLogger.ts:381`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:392`
+**Status**: 🆕 New
 **Message**: 'message' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/ErrorLogger.ts:402`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:413`
+**Status**: 🆕 New
 **Message**: 'retryAttempt' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/ErrorLogger.ts:424`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:435`
+**Status**: 🆕 New
 **Message**: 'message' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:7053`)
 
-**Location**: `services/ErrorLogger.ts:538`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:549`
+**Status**: 🆕 New
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorType, number>'.
 
 ---
 
 #### typescript-error (Rule: `typescript:7053`)
 
-**Location**: `services/ErrorLogger.ts:538`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:549`
+**Status**: 🆕 New
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorType, number>'.
 
 ---
 
 #### typescript-error (Rule: `typescript:7053`)
 
-**Location**: `services/ErrorLogger.ts:543`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:554`
+**Status**: 🆕 New
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorSeverity, number>'.
 
 ---
 
 #### typescript-error (Rule: `typescript:7053`)
 
-**Location**: `services/ErrorLogger.ts:543`
-**Status**: 📌 Existing
+**Location**: `services/ErrorLogger.ts:554`
+**Status**: 🆕 New
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorSeverity, number>'.
 
 ---
@@ -26779,14 +22836,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:193`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/IntegrationTestSuite.ts:213`
@@ -26795,35 +22844,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:228`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:293`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/IntegrationTestSuite.ts:305`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:434`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -26851,27 +22876,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:475`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/IntegrationTestSuite.ts:577`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:665`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -26929,51 +22938,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:838`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:850`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:860`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2353`)
 
 **Location**: `services/IntegrationTestSuite.ts:873`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'enabled' does not exist in type 'Partial<SyncConfiguration>'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:876`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:933`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -26985,14 +22954,6 @@
   Types of property 'currentExecution' are incompatible.
     Type '{ suiteId: string; executionId: string; startTime: string; completedScenarios: number; totalScenarios: number; } | undefined' is not assignable to type '{ suiteId: string; executionId: string; startTime: string; completedScenarios: number; totalScenarios: number; }'.
       Type 'undefined' is not assignable to type '{ suiteId: string; executionId: string; startTime: string; completedScenarios: number; totalScenarios: number; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/IntegrationTestSuite.ts:968`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -27672,22 +23633,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:240`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:247`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `services/MigrationMonitoringService.ts:250`
@@ -27720,14 +23665,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:285`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `services/MigrationMonitoringService.ts:348`
@@ -27739,36 +23676,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:362`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/MigrationMonitoringService.ts:394`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
   Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:396`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:410`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -27793,14 +23706,6 @@
 **Location**: `services/MigrationMonitoringService.ts:573`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:582`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -27911,22 +23816,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:960`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationMonitoringService.ts:976`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2614`)
 
 **Location**: `services/MigrationOrchestrationService.ts:2`
@@ -27943,75 +23832,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:207`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:233`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:252`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:261`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:269`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:280`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/MigrationOrchestrationService.ts:286`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:303`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:351`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28034,27 +23859,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:527`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2740`)
 
 **Location**: `services/MigrationOrchestrationService.ts:578`
 **Status**: 📌 Existing
 **Message**: Type '{ responseTimeMs: number; syncMetrics: { successRate: number; averageLatencyMs: number; failureCount: number; totalOperations: number; lastSuccessfulSync?: string; }; performanceMetrics: { ...; }; consistencyMetrics: { ...; }; systemMetrics: { ...; }; }' is missing the following properties from type 'AlertThresholds': syncFailureCount, syncFailureRatePercent, performanceDegradationPercent, dataInconsistencyPercent, and 3 more.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:702`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28082,14 +23891,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:746`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:18046`)
 
 **Location**: `services/MigrationOrchestrationService.ts:757`
@@ -28114,22 +23915,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:785`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:806`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/MigrationOrchestrationService.ts:814`
@@ -28143,30 +23928,6 @@
 **Location**: `services/MigrationOrchestrationService.ts:820`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:847`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:867`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:954`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28213,27 +23974,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationOrchestrationService.ts:1085`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2614`)
 
 **Location**: `services/MigrationRollbackService.ts:3`
 **Status**: 📌 Existing
 **Message**: Module '"./NetworkStateManager"' has no exported member 'NetworkMonitor'. Did you mean to use 'import NetworkMonitor from "./NetworkStateManager"' instead?
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:130`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28245,14 +23990,6 @@
   Types of property 'rollbackReason' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
       Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:144`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28269,14 +24006,6 @@
 **Location**: `services/MigrationRollbackService.ts:220`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:231`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28320,14 +24049,6 @@
 **Location**: `services/MigrationRollbackService.ts:320`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'boolean' and 'string' have no overlap.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:406`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -28489,27 +24210,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:841`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
-
----
-
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/MigrationRollbackService.ts:857`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' is not assignable to type 'RollbackExecution' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MigrationRollbackService.ts:858`
-**Status**: 📌 Existing
-**Message**: Property 'log' does not exist on type 'ErrorLogger'.
 
 ---
 
@@ -36238,6 +31943,14 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2740`)
+
+**Location**: `theme/tokens.ts:309`
+**Status**: 🆕 New
+**Message**: Type '{ readonly xs: 4; readonly sm: 8; readonly md: 16; readonly lg: 24; readonly xl: 32; readonly xxl: 48; }' is missing the following properties from type 'SpacingToken': xsmall, small, medium, large, and 2 more.
+
+---
+
 #### typescript-error (Rule: `typescript:2312`)
 
 **Location**: `types/api-responses.ts:312`
@@ -37135,10 +32848,10 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (40.1s) - 4215 findings
+- ✅ **TypeScript Checker** (43.7s) - 3661 findings
 
 ---
 
-**Audit Run ID**: `run-2025-10-20-20-04-26`
-**Duration**: 40.1s
-**Generated**: 2025-10-20T18:04:26.370Z
+**Audit Run ID**: `run-2025-10-20-23-12-11`
+**Duration**: 43.7s
+**Generated**: 2025-10-20T21:12:11.139Z

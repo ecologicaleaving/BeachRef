@@ -494,7 +494,21 @@ export interface IVisApiClient {
    * @returns Promise with XML response containing referee list
    */
   getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse>;
-  
+
+  /**
+   * Alias for getBeachMatchList - fetch matches for a tournament
+   * @param request - GetBeachMatchList request parameters
+   * @returns Promise with XML response
+   */
+  fetchMatchesForTournament?(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
+
+  /**
+   * Alias for getEventList - get tournaments
+   * @param request - GetEventList request parameters
+   * @returns Promise with XML response
+   */
+  getTournaments?(request: GetEventListRequest): Promise<VisApiResponse>;
+
   /**
    * Test API connectivity
    * @returns Promise with connection status

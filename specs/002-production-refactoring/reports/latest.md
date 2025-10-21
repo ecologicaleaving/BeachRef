@@ -1,10 +1,10 @@
 # Production Audit Report
 
-**Date**: 10/20/2025, 11:12:11 PM | **Status**: ❌ FAIL | **Exit Code**: 1
+**Date**: 10/21/2025, 08:30:19 AM | **Status**: ❌ FAIL | **Exit Code**: 1
 
 ## Summary
 
-- **Total Findings**: 3661 (🆕 48 new, ✅ 0 resolved)
+- **Total Findings**: 3661 (🆕 0 new, ✅ 0 resolved)
 - **Critical**: 3661 ❌ (blocks deployment)
 - **High**: 0 ✅
 - **Medium**: 0 ✅
@@ -13,15 +13,15 @@
 
 ## Trend Analysis
 
-**Compared to**: run-2025-10-20-20-45-11
+**Compared to**: run-2025-10-21-08-10-38
 
-- **Total Findings**: 📉 -55
-- **Critical**: 📉 -55
+- **Total Findings**: ➡️ 0
+- **Critical**: ➡️ 0
 - **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 1.3%
+- **New Finding Rate**: 0%
 
-**Summary**: 55 fewer findings | severity: -55 Critical | 0% resolved, 1.3% new
+**Summary**: same number of findings | 0% resolved, 0% new
 
 ## Findings
 ### 🔴 Critical (3661)
@@ -29,7 +29,7 @@
 #### typescript-error (Rule: `typescript:2741`)
 
 **Location**: `__tests__/integration/setup/TestDataFixtures.ts:15`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "M"; tournamentType: "FIVB"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "ACTIVE"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
@@ -37,7 +37,7 @@
 #### typescript-error (Rule: `typescript:2741`)
 
 **Location**: `__tests__/integration/setup/TestDataFixtures.ts:34`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "W"; tournamentType: "BPT"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "UPCOMING"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
@@ -45,7 +45,7 @@
 #### typescript-error (Rule: `typescript:2741`)
 
 **Location**: `__tests__/integration/setup/TestDataFixtures.ts:53`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Property 'code' is missing in type '{ id: string; visNo: string; tournamentCode: string; name: string; title: string; gender: "M"; tournamentType: "CEV"; dates: { startDate: string; endDate: string; startDateMainDraw: string; }; status: "COMPLETED"; city: string; country: string; countryCode: string; location: string; }' but required in type 'TournamentDTO'.
 
 ---
@@ -157,7 +157,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/TestDataFixtures.ts:339`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -166,7 +166,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/TestDataFixtures.ts:341`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -223,7 +223,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:31`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -232,7 +232,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:32`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -241,7 +241,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:35`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -266,7 +266,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:238`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -275,7 +275,7 @@
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `__tests__/integration/setup/VisAdapterMock.ts:239`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
@@ -22438,7 +22438,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/DualReadService.ts:173`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'circuitBreaker' is declared but its value is never read.
 
 ---
@@ -22446,7 +22446,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:203`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1-2 arguments, but got 0.
 
 ---
@@ -22454,7 +22454,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:255`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22462,7 +22462,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:298`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22470,7 +22470,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:331`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22478,7 +22478,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:512`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22486,7 +22486,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:554`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22494,7 +22494,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:584`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22502,7 +22502,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:633`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22510,7 +22510,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:674`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22518,7 +22518,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:704`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22526,7 +22526,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/DualReadService.ts:785`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'count' is declared but its value is never read.
 
 ---
@@ -22534,7 +22534,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:859`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22542,7 +22542,7 @@
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `services/DualReadService.ts:1033`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ id: any; visNo: any; tournamentCode: any; matchCode: string; round: any; phaseCode: any; status: any; court: { courtNumber: any; courtName: any; }; scheduledDateTime: any; actualStartTime: any; team1: { ...; }; team2: { ...; }; result: { ...; } | undefined; }' is not assignable to type 'MatchDTO' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'result' are incompatible.
     Type '{ team1Sets: any; team2Sets: any; setScores: any; winner: any; forfeit: any; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; }'.
@@ -22553,7 +22553,7 @@
 #### typescript-error (Rule: `typescript:2739`)
 
 **Location**: `services/DualReadService.ts:1115`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ id: any; visNo: any; tournamentId: any; tournamentCode: any; matchCode: any; matchNo: any; round: any; team1: { teamNumber: number; teamName: any; player1Name: any; player2Name: any; countryCode: any; }; ... 5 more ...; result: { ...; } | undefined; }' is missing the following properties from type 'BeachMatchCore': version, lastUpdated
 
 ---
@@ -22570,7 +22570,7 @@
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `services/DualReadService.ts:1126`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
 
@@ -22579,7 +22579,7 @@
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/DualReadService.ts:1141`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
@@ -22587,7 +22587,7 @@
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/DualReadService.ts:1210`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ team1Sets: number; team2Sets: number; setScores: never[]; winner: number | undefined; forfeit: boolean; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; } | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
 
 ---
@@ -22595,7 +22595,7 @@
 #### typescript-error (Rule: `typescript:6234`)
 
 **Location**: `services/DualReadService.ts:1368`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: This expression is not callable because it is a 'get' accessor. Did you mean to use it without '()'?
   Type 'Boolean' has no call signatures.
 
@@ -22604,7 +22604,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/DualReadService.ts:1428`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'type' is declared but its value is never read.
 
 ---
@@ -22612,7 +22612,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/DualReadService.ts:1428`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'filters' is declared but its value is never read.
 
 ---
@@ -22674,7 +22674,7 @@
 #### typescript-error (Rule: `typescript:2379`)
 
 **Location**: `services/ErrorLogger.ts:124`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type '{ entity_type: string; error: string; context: Record<string, any> | undefined; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'context' are incompatible.
     Type 'Record<string, any> | undefined' is not assignable to type 'Record<string, any>'.
@@ -22685,7 +22685,7 @@
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `services/ErrorLogger.ts:145`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ url: string; method: string; status_code: number | undefined; timeout_ms: number | undefined; retry_attempt: number; response_time_ms: number | undefined; }' is not assignable to type 'NetworkErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'status_code' are incompatible.
     Type 'number | undefined' is not assignable to type 'number'.
@@ -22696,7 +22696,7 @@
 #### typescript-error (Rule: `typescript:2379`)
 
 **Location**: `services/ErrorLogger.ts:154`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: NetworkErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -22707,7 +22707,7 @@
 #### typescript-error (Rule: `typescript:2379`)
 
 **Location**: `services/ErrorLogger.ts:182`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: AuthErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -22718,7 +22718,7 @@
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `services/ErrorLogger.ts:204`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ endpoint: string; request_payload: Record<string, any> | undefined; response_status: number | undefined; response_body: string | undefined; parsing_error: string | undefined; }' is not assignable to type 'APIErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'request_payload' are incompatible.
     Type 'Record<string, any> | undefined' is not assignable to type 'Record<string, any>'.
@@ -22729,7 +22729,7 @@
 #### typescript-error (Rule: `typescript:2379`)
 
 **Location**: `services/ErrorLogger.ts:212`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Argument of type '{ entity_type: string; tournament_no: string | undefined; error: string; context: APIErrorContext; recovery_suggestion: string; }' is not assignable to parameter of type '{ entity_type: string; tournament_no?: string; error: string | Error; context?: Record<string, any>; recovery_suggestion?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournament_no' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -22740,7 +22740,7 @@
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `services/ErrorLogger.ts:232`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ query_type: "SELECT" | "INSERT" | "UPDATE" | "DELETE" | "UPSERT"; table_name: string; constraint_violation: string; connection_error: boolean; deadlock: boolean; }' is not assignable to type 'DatabaseErrorContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'table_name' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
@@ -22751,7 +22751,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/ErrorLogger.ts:362`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'message' is declared but its value is never read.
 
 ---
@@ -22759,7 +22759,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/ErrorLogger.ts:371`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'message' is declared but its value is never read.
 
 ---
@@ -22767,7 +22767,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/ErrorLogger.ts:392`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'message' is declared but its value is never read.
 
 ---
@@ -22775,7 +22775,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/ErrorLogger.ts:413`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'retryAttempt' is declared but its value is never read.
 
 ---
@@ -22783,7 +22783,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/ErrorLogger.ts:435`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'message' is declared but its value is never read.
 
 ---
@@ -22791,7 +22791,7 @@
 #### typescript-error (Rule: `typescript:7053`)
 
 **Location**: `services/ErrorLogger.ts:549`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorType, number>'.
 
 ---
@@ -22799,7 +22799,7 @@
 #### typescript-error (Rule: `typescript:7053`)
 
 **Location**: `services/ErrorLogger.ts:549`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorType, number>'.
 
 ---
@@ -22807,7 +22807,7 @@
 #### typescript-error (Rule: `typescript:7053`)
 
 **Location**: `services/ErrorLogger.ts:554`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorSeverity, number>'.
 
 ---
@@ -22815,7 +22815,7 @@
 #### typescript-error (Rule: `typescript:7053`)
 
 **Location**: `services/ErrorLogger.ts:554`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<ErrorSeverity, number>'.
 
 ---
@@ -31946,7 +31946,7 @@
 #### typescript-error (Rule: `typescript:2740`)
 
 **Location**: `theme/tokens.ts:309`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type '{ readonly xs: 4; readonly sm: 8; readonly md: 16; readonly lg: 24; readonly xl: 32; readonly xxl: 48; }' is missing the following properties from type 'SpacingToken': xsmall, small, medium, large, and 2 more.
 
 ---
@@ -32848,10 +32848,10 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (43.7s) - 3661 findings
+- ✅ **TypeScript Checker** (30.1s) - 3661 findings
 
 ---
 
-**Audit Run ID**: `run-2025-10-20-23-12-11`
-**Duration**: 43.7s
-**Generated**: 2025-10-20T21:12:11.139Z
+**Audit Run ID**: `run-2025-10-21-08-30-19`
+**Duration**: 30.1s
+**Generated**: 2025-10-21T06:30:19.658Z

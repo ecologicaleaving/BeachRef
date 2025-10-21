@@ -15,7 +15,7 @@ export interface ColorToken {
   textDisabled?: string;
   background: string;
   // Additional color properties
-  statusColors?: StatusColors;
+  statusColors: StatusColors; // Required - always present in design system
   surfacePrimary?: string;
   surfaceSecondary?: string;
   surfaceDisabled?: string;

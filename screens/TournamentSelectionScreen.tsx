@@ -21,7 +21,10 @@ import { colors, designTokens } from '../theme/tokens';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { TournamentCard } from '../components/entities/Tournament';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
-import { FallbackTournamentService } from '../services/FallbackTournamentService';
+import { useTournamentLoading } from '../hooks/useTournamentLoading';
+import { EmptyTournamentState } from '../components/tournament/EmptyTournamentState';
+import { TournamentLoadingSkeleton } from '../components/tournament/TournamentLoadingSkeleton';
+import { errorTransformService } from '../services/ErrorTransformService';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Removed local TournamentCard component - using unified component from entities/Tournament
@@ -42,15 +45,35 @@ interface TournamentSection {
 
 const TournamentSelectionScreen: React.FC = () => {
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
-  
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [tournamentLoading, setTournamentLoading] = useState(false);
+
+  // US1 - Loading States: Use unified loading state hook
+  const {
+    isLoading,
+    isEmpty: isListEmpty,
+    hasError,
+    context: loadingContext,
+    setLoading,
+    setLoaded,
+    setEmpty,
+    setError: setLoadingError
+  } = useTournamentLoading();
+
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   // Simplified state - season/month hierarchy
   const [expandedSeasons, setExpandedSeasons] = useState<{[key: string]: boolean}>({});
   const [expandedMonths, setExpandedMonths] = useState<{[key: string]: boolean}>({});
   const [hierarchyInitialized, setHierarchyInitialized] = useState<boolean>(false);
+
+  // US5 - Filter Panel: Filter state and panel visibility
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED'>('All');
+  const [selectedType, setSelectedType] = useState<string>('ALL');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Store active filters separately for save/reset functionality
+  const [activeStatusFilter, setActiveStatusFilter] = useState<'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED'>('All');
+  const [activeTypeFilter, setActiveTypeFilter] = useState<string>('ALL');
+
   const router = useRouter();
 
   // Helper function to format month name
@@ -70,12 +93,8 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const loadTournaments = useCallback(async (forceRefresh = false, isInitial = false) => {
     try {
-      if (isInitial) {
-        setInitialLoading(true);
-      } else {
-        setTournamentLoading(true);
-      }
-      setError(null);
+      // US1 - Loading States: Set loading state
+      setLoading();
       
       try {
         // Try VIS API first
@@ -110,26 +129,30 @@ const TournamentSelectionScreen: React.FC = () => {
           // Show tournaments immediately with EventNo fallback
           setTournaments(finalTournaments);
 
+          // US1 - Loading States: Check if empty or loaded
+          if (finalTournaments.length === 0) {
+            setEmpty();
+          } else {
+            setLoaded(finalTournaments.length);
+          }
+
           // Enhance tournaments with real tournament numbers in background
           enhanceTournamentsInBackground(finalTournaments, visApi);
         } else {
-          // VIS API returned no data, using fallback
+          // VIS API returned no data
           throw new Error('VIS API returned no data');
         }
       } catch (apiError) {
-        // VIS API failed, using fallback tournaments
-        const fallbackTournaments = await FallbackTournamentService.getTournaments();
-        setTournaments(fallbackTournaments);
+        // US3 & US4: Let error propagate to show user-friendly error message
+        throw apiError;
       }
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-    } finally {
-      setInitialLoading(false);
-      setTournamentLoading(false);
+      // US3 - API Error Handling: Transform error to user-friendly message
+      const apiError = errorTransformService.transformError(err);
+      setLoadingError(apiError);
     }
-  }, []); // Remove dependencies that cause re-runs
+  }, [setLoading, setLoaded, setEmpty, setLoadingError]); // Add dependencies
 
   // Enhance tournaments with real tournament numbers in background (non-blocking)
   const enhanceTournamentsInBackground = (tournaments: TournamentCore[], visApi: any): void => {
@@ -320,9 +343,8 @@ const TournamentSelectionScreen: React.FC = () => {
     // Load tournaments directly from API - inline to avoid dependency issues
     const runDirectApiCall = async () => {
       try {
-        // Starting tournament load
-        setInitialLoading(true);
-        setError(null);
+        // Starting tournament load - using unified loading state
+        setLoading();
         
         // DIRECT API CALL - Bypass broken cache system
         
@@ -355,38 +377,28 @@ const TournamentSelectionScreen: React.FC = () => {
             
             // Use VIS tournaments
             const finalTournaments = visTournaments;
-          
-            setTournaments(finalTournaments);
-            
-            // No need for dynamic categories - showing all tournaments
-          } catch (parseError) {
-            // Parse error, using fallback
 
-            // Load fallback tournaments when parsing fails
-            const fallbackTournaments = await FallbackTournamentService.getTournaments();
-            setTournaments(fallbackTournaments);
+            setTournaments(finalTournaments);
+
+            // US1 - Loading States: Mark as loaded or empty
+            if (finalTournaments.length === 0) {
+              setEmpty();
+            } else {
+              setLoaded(finalTournaments.length);
+            }
+          } catch (parseError) {
+            // US3 & US4: Let error propagate to show proper error message
+            throw parseError;
           }
         } else {
-          // No API data, using fallback
-
-          // Load fallback tournaments when API returns no data
-          const fallbackTournaments = await FallbackTournamentService.getTournaments();
-          setTournaments(fallbackTournaments);
+          // US3 & US4: API returned no data - throw error to show proper message
+          throw new Error('VIS API returned no data');
         }
         
       } catch (error) {
-        // Main catch block, using fallback
-
-        // Final fallback if everything else fails
-        try {
-          const fallbackTournaments = await FallbackTournamentService.getTournaments();
-          setTournaments(fallbackTournaments);
-        } catch (fallbackError) {
-          setError('Unable to load tournaments. Please check your internet connection.');
-        }
-      } finally {
-        setInitialLoading(false);
-        setTournamentLoading(false);
+        // US3 & US4: Transform error to user-friendly message
+        const apiError = errorTransformService.transformError(error);
+        setLoadingError(apiError);
       }
     };
     
@@ -580,6 +592,109 @@ const TournamentSelectionScreen: React.FC = () => {
     return getTournamentStatus(tournament) === 'LIVE NOW';
   });
 
+  // Extract tournament categories from tournament data
+  // NOTE: Defined here before usage to avoid "Cannot access before initialization" error
+  const extractTournamentCategories = (tournaments: TournamentCore[]): string[] => {
+    const categorySet = new Set<string>();
+    categorySet.add('ALL'); // Always include ALL option
+
+    tournaments.forEach(tournament => {
+      // Extract from tournament type field
+      const sources = [
+        tournament.tournamentType
+      ].filter(Boolean);
+
+      sources.forEach(source => {
+        if (typeof source === 'string') {
+          const normalized = source.trim().toUpperCase();
+          if (normalized && normalized !== 'NULL' && normalized !== 'UNDEFINED') {
+            categorySet.add(normalized);
+          }
+        }
+      });
+
+      // Extract from tournament name patterns
+      const name = (tournament.name || tournament.title || '').toUpperCase();
+
+      // BPT subcategories (check specific ones first, then general BPT)
+      if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && name.includes('FUTURES')) {
+        categorySet.add('BPT FUTURES');
+      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('ELITE') || name.includes('ELITE16'))) {
+        categorySet.add('BPT ELITE');
+      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('CHALLENGER') || name.includes('CHALLENGE'))) {
+        categorySet.add('BPT CHALLENGER');
+      } else if (name.includes('BPT') || name.includes('BEACH PRO TOUR')) {
+        categorySet.add('BPT');
+      }
+
+      if (name.includes('CEV') || name.includes('EUROPEAN')) {
+        categorySet.add('CEV');
+      }
+      if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN') || name.includes('CARIBBEAN')) {
+        categorySet.add('NORCECA');
+      }
+      if (name.includes('FIVB') || name.includes('WORLD')) {
+        categorySet.add('FIVB');
+      }
+      if (name.includes('NATIONAL') || name.includes('DOMESTIC')) {
+        categorySet.add('NATIONAL');
+      }
+      if (name.includes('YOUTH') || name.includes('U21') || name.includes('U19')) {
+        categorySet.add('YOUTH');
+      }
+      if (name.includes('QUALIFICATION') || name.includes('QUALIFIER')) {
+        categorySet.add('QUALIFICATION');
+      }
+      // Default to LOCAL if no specific category was added
+      if (categorySet.size === 1) { // Only 'ALL' was added
+        categorySet.add('LOCAL');
+      }
+    });
+
+    const categories = Array.from(categorySet).sort((a, b) => {
+      // Prioritize the requested categories: BPT CHALLENGER, BPT FUTURES, BPT ELITE, CEV, NORCECA, LOCAL
+      const priority = [
+        'ALL',
+        'FIVB',
+        'BPT ELITE', 'BPT CHALLENGER', 'BPT FUTURES', 'BPT',
+        'CEV', 'NORCECA', 'LOCAL',
+        'NATIONAL', 'YOUTH', 'QUALIFICATION'
+      ];
+      const aIndex = priority.indexOf(a);
+      const bIndex = priority.indexOf(b);
+
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    return categories;
+  };
+
+  // US5 - Filter Panel: Extract available categories from tournaments
+  const availableCategories = React.useMemo(() => {
+    return extractTournamentCategories(tournaments);
+  }, [tournaments]);
+
+  // US5 - Filter Panel: Filter handlers
+  const handleSaveFilters = useCallback(() => {
+    setActiveStatusFilter(statusFilter);
+    setActiveTypeFilter(selectedType);
+    setFilterPanelOpen(false);
+  }, [statusFilter, selectedType]);
+
+  const handleResetFilters = useCallback(() => {
+    setStatusFilter('All');
+    setSelectedType('ALL');
+    setActiveStatusFilter('All');
+    setActiveTypeFilter('ALL');
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    loadTournaments(true);
+  }, [loadTournaments]);
+
   // Get season years sorted (recent first)
   const getSeasonYears = (): number[] => {
     const years: number[] = [];
@@ -600,7 +715,7 @@ const TournamentSelectionScreen: React.FC = () => {
   const tournamentSections = React.useMemo(() => {
     const sections: TournamentSection[] = [];
 
-    // Filter tournaments
+    // US5 - Filter Panel: Apply active filters to tournaments
     const baseFilteredTournaments = tournaments.filter(tournament => {
       if (!tournament.name || !tournament.dates?.startDate) {
         return false;
@@ -612,6 +727,21 @@ const TournamentSelectionScreen: React.FC = () => {
       // Only include tournaments from 2001 to 2026
       if (year < 2001 || year > 2026) {
         return false;
+      }
+
+      // Apply status filter
+      if (activeStatusFilter !== 'All') {
+        const tournamentStatus = getTournamentStatus(tournament);
+        if (tournamentStatus !== activeStatusFilter) {
+          return false;
+        }
+      }
+
+      // Apply category filter
+      if (activeTypeFilter !== 'ALL') {
+        if (!matchesTournamentCategory(tournament, activeTypeFilter)) {
+          return false;
+        }
       }
 
       return true;
@@ -703,7 +833,7 @@ const TournamentSelectionScreen: React.FC = () => {
     });
 
     return sections;
-  }, [tournaments, expandedSeasons, expandedMonths]);
+  }, [tournaments, expandedSeasons, expandedMonths, activeStatusFilter, activeTypeFilter]);
   
   // Initialize expanded seasons and months - 2025 season open, current month open
   useEffect(() => {
@@ -777,95 +907,6 @@ const TournamentSelectionScreen: React.FC = () => {
     });
   };
 
-  // Get tournaments filtered by status for display in specific sections
-  const getStatusFilteredTournaments = (status: 'All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED') => {
-    return groupedTournaments.flatMap(([monthKey, tournaments]) => tournaments).filter(tournament => {
-      if (status === 'All') return true;
-      const tournamentStatus = getTournamentStatus(tournament);
-      return tournamentStatus === status;
-    });
-  };
-
-
-
-  // Extract tournament categories from tournament data
-  const extractTournamentCategories = (tournaments: TournamentCore[]): string[] => {
-    const categorySet = new Set<string>();
-    categorySet.add('ALL'); // Always include ALL option
-    
-    tournaments.forEach(tournament => {
-      // Extract from tournament type field
-      const sources = [
-        tournament.tournamentType
-      ].filter(Boolean);
-      
-      sources.forEach(source => {
-        if (typeof source === 'string') {
-          const normalized = source.trim().toUpperCase();
-          if (normalized && normalized !== 'NULL' && normalized !== 'UNDEFINED') {
-            categorySet.add(normalized);
-          }
-        }
-      });
-      
-      // Extract from tournament name patterns
-      const name = (tournament.name || tournament.title || '').toUpperCase();
-      
-      // BPT subcategories (check specific ones first, then general BPT)
-      if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && name.includes('FUTURES')) {
-        categorySet.add('BPT FUTURES');
-      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('ELITE') || name.includes('ELITE16'))) {
-        categorySet.add('BPT ELITE');
-      } else if ((name.includes('BPT') || name.includes('BEACH PRO TOUR')) && (name.includes('CHALLENGER') || name.includes('CHALLENGE'))) {
-        categorySet.add('BPT CHALLENGER');
-      } else if (name.includes('BPT') || name.includes('BEACH PRO TOUR')) {
-        categorySet.add('BPT');
-      }
-      
-      if (name.includes('CEV') || name.includes('EUROPEAN')) {
-        categorySet.add('CEV');
-      }
-      if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN') || name.includes('CARIBBEAN')) {
-        categorySet.add('NORCECA');
-      }
-      if (name.includes('FIVB') || name.includes('WORLD')) {
-        categorySet.add('FIVB');
-      }
-      if (name.includes('NATIONAL') || name.includes('DOMESTIC')) {
-        categorySet.add('NATIONAL');
-      }
-      if (name.includes('YOUTH') || name.includes('U21') || name.includes('U19')) {
-        categorySet.add('YOUTH');
-      }
-      if (name.includes('QUALIFICATION') || name.includes('QUALIFIER')) {
-        categorySet.add('QUALIFICATION');
-      }
-      // Default to LOCAL if no specific category was added
-      if (categorySet.size === 1) { // Only 'ALL' was added
-        categorySet.add('LOCAL');
-      }
-    });
-    
-    const categories = Array.from(categorySet).sort((a, b) => {
-      // Prioritize the requested categories: BPT CHALLENGER, BPT FUTURES, BPT ELITE, CEV, NORCECA, LOCAL
-      const priority = [
-        'ALL', 
-        'FIVB',
-        'BPT ELITE', 'BPT CHALLENGER', 'BPT FUTURES', 'BPT',
-        'CEV', 'NORCECA', 'LOCAL',
-        'NATIONAL', 'YOUTH', 'QUALIFICATION'
-      ];
-      const aIndex = priority.indexOf(a);
-      const bIndex = priority.indexOf(b);
-      
-      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-      if (aIndex !== -1) return -1;
-      if (bIndex !== -1) return 1;
-      return a.localeCompare(b);
-    });
-    
-    return categories;
-  };
 
   // SectionList render functions
   const renderTournament = ({ item }: { item: TournamentCore }) => {
@@ -1063,7 +1104,7 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const renderStatusFilter = () => {
     const statuses: ('All' | 'SCHEDULED' | 'LIVE NOW' | 'COMPLETED')[] = ['All', 'SCHEDULED', 'LIVE NOW', 'COMPLETED'];
-    
+
     const getStatusLabel = (status: string) => {
       switch (status) {
         case 'All': return 'All';
@@ -1073,7 +1114,7 @@ const TournamentSelectionScreen: React.FC = () => {
         default: return status;
       }
     };
-    
+
     return (
       <View style={styles.filterRowContainer}>
         <Text style={styles.filterRowLabel}>Status:</Text>
@@ -1100,23 +1141,75 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  if (initialLoading) {
+  // US5 - Filter Panel: Render collapsible filter panel
+  const renderFilterPanel = () => {
+    if (!filterPanelOpen) return null;
+
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading tournaments...</Text>
+      <View style={styles.filterPanel}>
+        <View style={styles.filterPanelHeader}>
+          <Text style={styles.filterPanelTitle}>Filter Tournaments</Text>
+        </View>
+
+        {/* Category Filter */}
+        {renderCategoryDropdown()}
+
+        {/* Status Filter */}
+        {renderStatusFilter()}
+
+        {/* Action Buttons */}
+        <View style={styles.filterPanelActions}>
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={handleResetFilters}
+          >
+            <Icon name="refresh" size={18} color="#FF6B35" />
+            <Text style={styles.resetButtonText}>Reset</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.saveCloseButton}
+            onPress={handleSaveFilters}
+          >
+            <Icon name="check" size={18} color="#FFFFFF" />
+            <Text style={styles.saveCloseButtonText}>Save & Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  // US1 & US3: Show loading skeleton during initial load
+  if (isLoading && tournaments.length === 0) {
+    return (
+      <View style={styles.container}>
+        <NavigationHeader
+          title="Tournament Selection"
+          showBackButton={false}
+          showStatusBar={false}
+        />
+        <TournamentLoadingSkeleton count={5} />
       </View>
     );
   }
 
-  if (error) {
+  // US3: Show user-friendly error message
+  if (hasError && loadingContext.error) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Unable to load tournaments</Text>
-        <Text style={styles.errorSubtext}>Please check your internet connection</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadTournaments}>
-          <Text style={styles.retryButtonText}>Try Again</Text>
-        </TouchableOpacity>
+      <View style={styles.container}>
+        <NavigationHeader
+          title="Tournament Selection"
+          showBackButton={false}
+          showStatusBar={false}
+        />
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>{loadingContext.error.message}</Text>
+          {loadingContext.error.canRetry && (
+            <TouchableOpacity style={styles.retryButton} onPress={() => loadTournaments(false, true)}>
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     );
   }
@@ -1129,26 +1222,15 @@ const TournamentSelectionScreen: React.FC = () => {
         showStatusBar={false}
       />
 
-      {/* Loading overlay */}
-      {tournamentLoading && (
-        <View
-          style={styles.tournamentLoadingOverlay}
-          accessibilityLabel="Loading tournaments"
-          accessibilityLiveRegion="polite"
-        >
-          <ActivityIndicator size="small" color="#FF6B35" />
-        </View>
-      )}
+      {/* US5 - Filter Panel: Render filter panel */}
+      {renderFilterPanel()}
 
-      {/* Main SectionList */}
-      {tournamentSections.length === 0 && !initialLoading && !tournamentLoading ? (
-        <View style={styles.emptyState}>
-          <Icon name="clock-outline" size={48} color={designTokens.neutrals.textSecondary} />
-          <Text style={styles.emptyText}>No tournaments found</Text>
-          <Text style={styles.emptySubtext}>
-            No tournaments available
-          </Text>
-        </View>
+      {/* US1: Show empty state when no tournaments found */}
+      {isListEmpty && tournamentSections.length === 0 ? (
+        <EmptyTournamentState
+          message="No tournaments found"
+          description="There are no tournaments matching your current filters or date range."
+        />
       ) : (
         <SectionList
           sections={[
@@ -1871,6 +1953,68 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   activeStatusFilterText: {
+    color: '#FFFFFF',
+  },
+  // US5 - Filter Panel Styles
+  filterPanel: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  filterPanelHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  filterPanelTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1B365D',
+  },
+  filterPanelActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    marginTop: 16,
+    gap: 12,
+  },
+  resetButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B35',
+    backgroundColor: 'transparent',
+    gap: 8,
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF6B35',
+  },
+  saveCloseButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#1B365D',
+    gap: 8,
+  },
+  saveCloseButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
   },
 });

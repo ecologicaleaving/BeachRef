@@ -21,6 +21,8 @@ export interface BeachMatch {
   DurationSet1?: string;
   DurationSet2?: string;
   DurationSet3?: string;
+  StartTime?: string;  // Match start time (HH:MM format)
+  EndTime?: string;    // Match end time (HH:MM format)
   Version?: string;
   Status?: string;
   Round?: string;

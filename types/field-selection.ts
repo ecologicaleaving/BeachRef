@@ -55,7 +55,7 @@ export const FIELD_MODES: Record<FieldMode, Record<string, string[] | null>> = {
       'Status',
     ],
 
-    // Match Lists (6 fields)
+    // Match Lists (8 fields)
     [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
       'No',
       'TeamA',
@@ -63,6 +63,8 @@ export const FIELD_MODES: Record<FieldMode, Record<string, string[] | null>> = {
       'Status',
       'Court',
       'StartDateTime',
+      'StartTime',
+      'EndTime',
     ],
 
     // Live Match Polling (5 fields) - Minimal for real-time updates
@@ -139,7 +141,7 @@ export const FIELD_MODES: Record<FieldMode, Record<string, string[] | null>> = {
       'Level',
     ],
 
-    // Match Lists (10 fields)
+    // Match Lists (12 fields)
     [VisApiEndpoint.GET_BEACH_MATCH_LIST]: [
       'No',
       'TeamA',
@@ -147,18 +149,22 @@ export const FIELD_MODES: Record<FieldMode, Record<string, string[] | null>> = {
       'Status',
       'Court',
       'StartDateTime',
+      'StartTime',
+      'EndTime',
       'ScoreA',
       'ScoreB',
       'Phase',
       'Round',
     ],
 
-    // Match Detail (15 fields)
+    // Match Detail (17 fields)
     [VisApiEndpoint.GET_BEACH_MATCH]: [
       'No',
       'NoRound',
       'Court',
       'StartDateTime',
+      'StartTime',
+      'EndTime',
       'Status',
       'TeamA',
       'TeamB',

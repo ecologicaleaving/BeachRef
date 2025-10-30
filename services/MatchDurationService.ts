@@ -1,7 +1,7 @@
 /**
  * Match Duration Service
- * Calculates live match duration from VIS API data
- * Syncs with 5-second live score polling for real-time updates
+ * Calculates match duration from VIS API StartTime and EndTime fields
+ * Simplified implementation using server-provided timestamps
  */
 
 import { BeachMatch, MatchDuration } from '../types';
@@ -17,19 +17,11 @@ const MATCH_STATUS = {
 } as const;
 
 /**
- * Set duration parsing regex (format: "MM:SS" or "MM")
- */
-const DURATION_REGEX = /^(\d{1,2}):?(\d{2})?$/;
-
-/**
  * Match Duration Service
  * Singleton service for calculating match durations
  */
 export class MatchDurationService {
   private static instance: MatchDurationService;
-
-  // In-memory cache of match start times for running matches
-  private matchStartTimes: Map<string, number> = new Map();
 
   private constructor() {}
 
@@ -45,6 +37,7 @@ export class MatchDurationService {
 
   /**
    * Calculate match duration from VIS API match data
+   * Uses StartTime and EndTime fields from VIS API
    * @param match - BeachMatch from VIS API
    * @returns MatchDuration with calculated times
    */
@@ -52,32 +45,16 @@ export class MatchDurationService {
     const isLive = match.Status === MATCH_STATUS.RUNNING;
     const matchNo = match.No;
 
-    // Initialize start time if this is a newly running match
-    if (isLive && !this.matchStartTimes.has(matchNo)) {
-      this.matchStartTimes.set(matchNo, Date.now());
-    }
-
-    // Clear start time if match is no longer running
-    if (!isLive && this.matchStartTimes.has(matchNo)) {
-      this.matchStartTimes.delete(matchNo);
-    }
-
-    // Parse set durations from VIS API
+    // Parse set durations from VIS API (still available for per-set display)
     const set1Duration = this.parseSetDuration(match.DurationSet1);
     const set2Duration = this.parseSetDuration(match.DurationSet2);
     const set3Duration = this.parseSetDuration(match.DurationSet3);
 
-    // Calculate total duration
-    const totalMinutes = this.calculateTotalDuration(
-      set1Duration,
-      set2Duration,
-      set3Duration,
-      isLive,
-      matchNo
-    );
+    // Calculate total duration using VIS API timestamps
+    const totalMinutes = this.calculateTotalDurationFromTimestamps(match);
 
     // Calculate current set duration for live matches
-    const currentSetMinutes = isLive ? this.calculateCurrentSetDuration(match) : null;
+    const currentSetMinutes = isLive ? this.getCurrentSetDuration(match) : null;
 
     return {
       matchNo,
@@ -101,78 +78,80 @@ export class MatchDurationService {
       return null;
     }
 
-    const matchResult = duration.match(DURATION_REGEX);
-    if (!matchResult) {
-      return null;
+    // Handle MM:SS format
+    const parts = duration.split(':');
+    if (parts.length === 2) {
+      const minutes = parseInt(parts[0] ?? '0', 10);
+      const seconds = parseInt(parts[1] ?? '0', 10);
+      return minutes + Math.round(seconds / 60);
     }
 
-    const minutes = parseInt(matchResult[1] ?? '0', 10);
-    const seconds = matchResult[2] ? parseInt(matchResult[2], 10) : 0;
+    // Handle MM format
+    if (parts.length === 1) {
+      return parseInt(parts[0] ?? '0', 10);
+    }
 
-    return minutes + Math.round(seconds / 60);
+    return null;
   }
 
   /**
-   * Calculate total match duration
+   * Calculate total match duration from VIS API timestamps
+   * Uses StartTime and EndTime fields from VIS API
+   * @param match - BeachMatch from VIS API
+   * @returns Total duration in minutes
    */
-  private calculateTotalDuration(
-    set1: number | null,
-    set2: number | null,
-    set3: number | null,
-    isLive: boolean,
-    matchNo: string
-  ): number {
-    let total = 0;
+  private calculateTotalDurationFromTimestamps(match: BeachMatch): number {
+    const isLive = match.Status === MATCH_STATUS.RUNNING;
 
-    // Add completed set durations
-    if (set1 !== null) total += set1;
-    if (set2 !== null) total += set2;
-    if (set3 !== null) total += set3;
-
-    // Add current set duration for live matches
-    if (isLive) {
-      const currentSetDuration = this.calculateLiveSetDuration(matchNo);
-      total += currentSetDuration;
+    // For live matches: currentTime - startTime
+    if (isLive && match.StartTime) {
+      const startMs = this.parseTimeToMs(match.StartTime);
+      if (startMs !== null) {
+        const elapsedMs = Date.now() - startMs;
+        return Math.floor(elapsedMs / 60000); // Convert to minutes
+      }
     }
 
-    return total;
+    // For finished matches: endTime - startTime
+    if (match.StartTime && match.EndTime) {
+      const startMs = this.parseTimeToMs(match.StartTime);
+      const endMs = this.parseTimeToMs(match.EndTime);
+
+      if (startMs !== null && endMs !== null) {
+        const durationMs = endMs - startMs;
+        return Math.floor(durationMs / 60000); // Convert to minutes
+      }
+    }
+
+    // Fallback: sum of set durations if timestamps not available
+    const set1 = this.parseSetDuration(match.DurationSet1) ?? 0;
+    const set2 = this.parseSetDuration(match.DurationSet2) ?? 0;
+    const set3 = this.parseSetDuration(match.DurationSet3) ?? 0;
+    return set1 + set2 + set3;
   }
 
   /**
-   * Calculate duration of current set for live matches
+   * Get current set duration for live matches
+   * Uses the most recent set's duration value from VIS API
    */
-  private calculateCurrentSetDuration(match: BeachMatch): number | null {
-    // Determine which set is currently being played
-    const hasSet1 = this.hasSetStarted(match.PointsTeamASet1, match.PointsTeamBSet1);
-    const hasSet2 = this.hasSetStarted(match.PointsTeamASet2, match.PointsTeamBSet2);
+  private getCurrentSetDuration(match: BeachMatch): number | null {
+    // Check which set is currently being played
     const hasSet3 = this.hasSetStarted(match.PointsTeamASet3, match.PointsTeamBSet3);
+    const hasSet2 = this.hasSetStarted(match.PointsTeamASet2, match.PointsTeamBSet2);
+    const hasSet1 = this.hasSetStarted(match.PointsTeamASet1, match.PointsTeamBSet1);
 
-    // If Set3 has started, use Set3 duration
+    // Return the duration of the current set
     if (hasSet3) {
-      const set3Duration = this.parseSetDuration(match.DurationSet3);
-      if (set3Duration !== null) {
-        return set3Duration;
-      }
+      return this.parseSetDuration(match.DurationSet3);
+    }
+    if (hasSet2) {
+      return this.parseSetDuration(match.DurationSet2);
+    }
+    if (hasSet1) {
+      return this.parseSetDuration(match.DurationSet1);
     }
 
-    // If Set2 has started (but not Set3), use Set2 duration
-    if (hasSet2 && !hasSet3) {
-      const set2Duration = this.parseSetDuration(match.DurationSet2);
-      if (set2Duration !== null) {
-        return set2Duration;
-      }
-    }
-
-    // If only Set1 has started, use Set1 duration
-    if (hasSet1 && !hasSet2 && !hasSet3) {
-      const set1Duration = this.parseSetDuration(match.DurationSet1);
-      if (set1Duration !== null) {
-        return set1Duration;
-      }
-    }
-
-    // Fallback: calculate from match start time
-    return this.calculateLiveSetDuration(match.No);
+    return null;
   }
 
   /**
@@ -185,16 +164,40 @@ export class MatchDurationService {
   }
 
   /**
-   * Calculate live set duration from start time
+   * Parse time string (HH:MM format) to milliseconds since midnight today
+   * @param timeStr - Time string in HH:MM format (e.g., "14:30")
+   * @returns Milliseconds since midnight today, or null if invalid
    */
-  private calculateLiveSetDuration(matchNo: string): number {
-    const startTime = this.matchStartTimes.get(matchNo);
-    if (!startTime) {
-      return 0;
+  private parseTimeToMs(timeStr: string): number | null {
+    if (!timeStr || !timeStr.includes(':')) {
+      return null;
     }
 
-    const elapsedMs = Date.now() - startTime;
-    return Math.floor(elapsedMs / 60000); // Convert to minutes
+    const parts = timeStr.split(':');
+    if (parts.length !== 2) {
+      return null;
+    }
+
+    const hours = parseInt(parts[0] ?? '0', 10);
+    const minutes = parseInt(parts[1] ?? '0', 10);
+
+    if (isNaN(hours) || isNaN(minutes)) {
+      return null;
+    }
+
+    // Create timestamp for today at the specified time
+    const now = new Date();
+    const matchTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes,
+      0,
+      0
+    );
+
+    return matchTime.getTime();
   }
 
   /**
@@ -213,28 +216,6 @@ export class MatchDurationService {
     return durations;
   }
 
-  /**
-   * Clear cached start times (e.g., on app restart or manual refresh)
-   */
-  public clearCache(): void {
-    this.matchStartTimes.clear();
-  }
-
-  /**
-   * Get cached start time for a match
-   * @param matchNo - Match identifier
-   * @returns Start timestamp in milliseconds, or null if not cached
-   */
-  public getStartTime(matchNo: string): number | null {
-    return this.matchStartTimes.get(matchNo) ?? null;
-  }
-
-  /**
-   * Manually set start time for a match (used for testing or manual entry)
-   */
-  public setStartTime(matchNo: string, timestamp: number): void {
-    this.matchStartTimes.set(matchNo, timestamp);
-  }
 }
 
 /**

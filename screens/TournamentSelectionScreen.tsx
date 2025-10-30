@@ -25,6 +25,7 @@ import { useTournamentLoading } from '../hooks/useTournamentLoading';
 import { EmptyTournamentState } from '../components/tournament/EmptyTournamentState';
 import { TournamentLoadingSkeleton } from '../components/tournament/TournamentLoadingSkeleton';
 import { errorTransformService } from '../services/ErrorTransformService';
+import { getVisApiBaseUrl } from '../utils/visApiConfig';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Removed local TournamentCard component - using unified component from entities/Tournament
@@ -102,7 +103,7 @@ const TournamentSelectionScreen: React.FC = () => {
         const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
         const config = {
-          baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+          baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
           timeoutMs: 30000, // Increased timeout for large tournament list response
           maxRetries: 1,
           retryDelayMs: 500,
@@ -350,16 +351,16 @@ const TournamentSelectionScreen: React.FC = () => {
         
         const { VisApiClient } = await import('../services/api/VisApiClient');
         const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-        
+
         const config = {
-          baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+          baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
           timeoutMs: 10000,
           maxRetries: 1,
           retryDelayMs: 1000,
           exponentialBackoff: false,
           enableLogging: true
         };
-        
+
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
         
         // Making API call with tournamentType: BPT

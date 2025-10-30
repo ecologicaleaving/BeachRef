@@ -25,6 +25,7 @@ import { errorTransformService } from '../services/ErrorTransformService';
 import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
 import { TournamentCacheWarmingService } from '../services/cache/TournamentCacheWarmingService';
 import { isStale, CacheTTL } from '../utils/cacheUtils';
+import { getVisApiBaseUrl } from '../utils/visApiConfig';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -1245,7 +1246,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000,
         maxRetries: 3,
         retryDelayMs: 1000,
@@ -1349,16 +1350,16 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
+
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000, // Increase to 30 seconds for match list requests (can be large)
         maxRetries: 3,
         retryDelayMs: 1000,
         enableLogging: true,
         headers: {}
       };
-      
+
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
       
       let allMatches: BeachMatchCore[] = [];

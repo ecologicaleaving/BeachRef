@@ -21,10 +21,11 @@ import { BeachMatchCore, MatchStatus, canReadyToStartMatchGoLive, getEnhancedMat
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
-import { FallbackTournamentService } from '../services/FallbackTournamentService';
+import { errorTransformService } from '../services/ErrorTransformService';
 import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
 import { TournamentCacheWarmingService } from '../services/cache/TournamentCacheWarmingService';
 import { isStale, CacheTTL } from '../utils/cacheUtils';
+import { getVisApiBaseUrl } from '../utils/visApiConfig';
 // Dynamic imports for VisApiClient will be done in the function
 import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
@@ -255,9 +256,22 @@ const ExpandedFiltersView: React.FC<{
 
       {/* Court Filter - REMOVED: Now in top bar as dropdown */}
 
-      {/* Save Button */}
-      <View style={styles.saveButtonContainer}>
-        <TouchableOpacity 
+      {/* US5: Action Buttons (Reset + Save & Close) */}
+      <View style={styles.filterActionsContainer}>
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={() => {
+            // US5: Reset all filters to default values
+            setGenderFilter('All');
+            setCourtFilter('All');
+            setRefereeFilter('All');
+            // Keep panel open for further adjustments
+          }}
+        >
+          <Text style={styles.resetButtonText}>Reset</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.saveButton}
           onPress={() => {
             // Save the filter settings (they're already applied in real-time)
@@ -1232,7 +1246,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000,
         maxRetries: 3,
         retryDelayMs: 1000,
@@ -1336,16 +1350,16 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       const { VisApiClient } = await import('../services/api/VisApiClient');
       const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
+
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000, // Increase to 30 seconds for match list requests (can be large)
         maxRetries: 3,
         retryDelayMs: 1000,
         enableLogging: true,
         headers: {}
       };
-      
+
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
       
       let allMatches: BeachMatchCore[] = [];
@@ -1664,8 +1678,10 @@ const TournamentDetailScreenContent: React.FC = () => {
           tournaments = apiResponse.tournaments || [];
 
         } catch (apiError) {
-          // Fallback to sample tournaments
-          tournaments = await FallbackTournamentService.getTournaments();
+          // US3 & US4: Transform error to user-friendly message
+          const transformedError = errorTransformService.transformError(apiError);
+          console.error('[TournamentDetailScreen] API error:', transformedError.message);
+          // Don't set tournaments - let it remain empty array
         }
 
         // Find the tournament with matching visNo
@@ -1741,8 +1757,8 @@ const TournamentDetailScreenContent: React.FC = () => {
   return (
     <View style={styles.container}>
       <NavigationHeader
-        title={activeTab === 'schedule' ? 'Schedule & Results' : 'Officials'}
-        subtitle={tournament?.name}
+        title={tournament?.name}
+        subtitle={activeTab === 'schedule' ? 'Schedule & Results' : 'Officials'}
         showBackButton={true}
         onBackPress={() => router.back()}
         onHomePress={() => router.push('/')}
@@ -1888,17 +1904,22 @@ const TournamentDetailScreenContent: React.FC = () => {
                       return null;
                     })()}
 
+                    {/* US5: Refresh button (replaces Reset button) */}
                     <TouchableOpacity
-                      style={styles.resetFiltersButton}
+                      style={styles.refreshButton}
                       onPress={() => {
-                        setCourtFilter('All');
-                        setGenderFilter('All');
-                        setStatusFilter('All');
-                        setRefereeFilter('All');
-                        setShowRefereeDropdown(false);
+                        // US5: Trigger data refresh while preserving filters
+                        onRefresh();
                       }}
+                      disabled={refreshing}
                     >
-                      <Text style={styles.resetFiltersText}>Reset</Text>
+                      <Icon name="refresh-cw" size={18} color={refreshing ? '#9CA3AF' : '#3B82F6'} />
+                      <Text style={[
+                        styles.refreshButtonText,
+                        refreshing && styles.refreshButtonTextDisabled
+                      ]}>
+                        {refreshing ? 'Refreshing...' : 'Refresh'}
+                      </Text>
                     </TouchableOpacity>
 
                   </View>
@@ -2443,17 +2464,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  resetFiltersButton: {
+  // US5: Refresh button (replaces resetFiltersButton)
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
   },
 
-  resetFiltersText: {
+  refreshButtonText: {
     fontSize: 14,
-    color: '#DC2626',
+    color: '#3B82F6',
     fontWeight: '500',
+  },
+
+  refreshButtonTextDisabled: {
+    color: '#9CA3AF',
   },
   
   // Expanded Filters
@@ -2739,8 +2770,10 @@ const styles = StyleSheet.create({
 
   // Removed unused default switch styles - now handled by TournamentCard component
 
-  // Save button styles for filters panel
-  saveButtonContainer: {
+  // US5: Filter action buttons container (Reset + Save & Close)
+  filterActionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
@@ -2749,7 +2782,24 @@ const styles = StyleSheet.create({
     zIndex: 1,
     position: 'relative',
   },
+  resetButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  resetButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   saveButton: {
+    flex: 1,
     backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,

@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Home } from 'lucide-react-native';
+import { Home, Filter, RefreshCw } from 'lucide-react-native';
 import { GlobalStatusBar } from './GlobalStatusBar';
 import { WhistleLogo } from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
@@ -23,6 +23,8 @@ interface NavigationHeaderProps {
   onBackPress?: () => void;
   showRefreshButton?: boolean;
   onRefreshPress?: () => void;
+  showFilterButton?: boolean;
+  onFilterPress?: () => void;
   rightComponent?: React.ReactNode;
   backgroundColor?: string;
   titleColor?: string;
@@ -37,6 +39,10 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   subtitle,
   showHomeButton = true,
   onHomePress,
+  showRefreshButton = false,
+  onRefreshPress,
+  showFilterButton = false,
+  onFilterPress,
   rightComponent,
   backgroundColor = '#1B365D',
   titleColor = '#FFFFFF',
@@ -123,6 +129,24 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         )}
 
         <View style={styles.rightSection}>
+          {showFilterButton && onFilterPress && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onFilterPress}
+              activeOpacity={0.7}
+            >
+              <Filter size={20} color={titleColor} />
+            </TouchableOpacity>
+          )}
+          {showRefreshButton && onRefreshPress && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onRefreshPress}
+              activeOpacity={0.7}
+            >
+              <RefreshCw size={20} color={titleColor} />
+            </TouchableOpacity>
+          )}
           {rightComponent}
           {showBurgerMenu && (
             <BurgerButton
@@ -183,6 +207,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  iconButton: {
+    padding: 8,
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   logoButton: {
     padding: 4,

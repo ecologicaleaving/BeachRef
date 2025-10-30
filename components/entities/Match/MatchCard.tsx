@@ -1,28 +1,23 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
 // Removed Animated imports to fix render issues
 import { useRouter } from 'expo-router';
 import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
-import { LiveIndicator } from '../../Status/LiveIndicator';
 import { colors, designTokens } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
-import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
-import {
-  formatMatchTimeForUser,
-  formatMatchTimeDetailed
-} from '../../../utils/matchTimeFormatter';
+import { formatMatchTimeForUser } from '../../../utils/matchTimeFormatter';
 import {
   subscribeToTimezonePreferenceChanges,
   getCurrentTimezonePreference
 } from '../../../utils/dateFormatters';
+import { useMatchDuration } from '../../../hooks/useMatchDuration';
 // Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
@@ -84,6 +79,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
     return unsubscribe;
   }, []);
+
+  // US2 - Match Duration: Use hook for auto-updating duration (synced with 5s polling)
+  // Cast to any for compatibility - BeachMatchCore has runtime compatibility with BeachMatch
+  const { formattedDuration } = useMatchDuration(match as any, {
+    updateInterval: 5000, // 5 seconds, synced with live score polling
+    enableAutoUpdate: true
+  });
 
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
@@ -357,206 +359,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return null; // Don't show anything for normal results (ResultType = 0)
   };
 
-  // State for live elapsed time
-  const [liveElapsedTime, setLiveElapsedTime] = useState<string | null>(null);
-
-  // Calculate and update live elapsed time for running matches
-  useEffect(() => {
-    if (!isMatchLive(match)) {
-      setLiveElapsedTime(null);
-      return;
-    }
-
-    const calculateLiveElapsed = () => {
-      // Try actualStartTime first
-      if (match.actualStartTime) {
-        try {
-          const startTime = new Date(match.actualStartTime).getTime();
-          const now = Date.now();
-
-          if (!isNaN(startTime) && now > startTime) {
-            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-
-            if (hours > 0) {
-              setLiveElapsedTime(`${hours}h ${minutes}m`);
-            } else if (totalMinutes > 0) {
-              setLiveElapsedTime(`${totalMinutes}m`);
-            } else {
-              setLiveElapsedTime('< 1m');
-            }
-            return;
-          }
-        } catch (error) {
-          // Continue to fallback
-        }
-      }
-
-      // Fallback: use scheduled time if actualStartTime is not available
-      const scheduled = (match as any).scheduled;
-      if (scheduled?.epochMs) {
-        try {
-          const startTime = scheduled.epochMs;
-          const now = Date.now();
-
-          if (!isNaN(startTime) && now > startTime) {
-            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-
-            if (hours > 0) {
-              setLiveElapsedTime(`${hours}h ${minutes}m`);
-            } else if (totalMinutes > 0) {
-              setLiveElapsedTime(`${totalMinutes}m`);
-            } else {
-              setLiveElapsedTime('< 1m');
-            }
-            return;
-          }
-        } catch (error) {
-          // Skip if calculation fails
-        }
-      }
-
-      setLiveElapsedTime(null);
-    };
-
-    // Calculate immediately
-    calculateLiveElapsed();
-
-    // Update every minute for live matches
-    const interval = setInterval(calculateLiveElapsed, 60000);
-
-    return () => clearInterval(interval);
-  }, [match.actualStartTime, match.status, (match as any)?.rawStatus]);
-
-  // Get match duration (from master branch logic) - check multiple sources
-  const getMatchDuration = (match: BeachMatchCore): string | null => {
-    const matchWithDuration = match as any;
-
-    // For LIVE matches, return live elapsed time if available
-    if (isMatchLive(match) && liveElapsedTime) {
-      return liveElapsedTime;
-    }
-
-    // First try to get duration from match result (calculated from start/end time)
-    if (match.result?.duration && typeof match.result.duration === 'number') {
-      const totalMinutes = match.result.duration;
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
-      }
-    }
-    
-    // Check for Duration field (can be in "h:mm:ss" format or seconds)
-    const durationField = matchWithDuration.Duration;
-    if (durationField) {
-      // Try to parse as "h:mm:ss" format first (e.g., "0:39:00" = 39 minutes)
-      if (typeof durationField === 'string' && durationField.includes(':')) {
-        const parts = durationField.split(':');
-        if (parts.length === 3) {
-          const hours = parseInt(parts[0]) || 0;
-          const mins = parseInt(parts[1]) || 0;
-          const secs = parseInt(parts[2]) || 0;
-          const totalMinutes = hours * 60 + mins + Math.floor(secs / 60);
-
-          if (totalMinutes > 0) {
-            if (hours > 0) {
-              return `${hours}h ${mins}m`;
-            } else {
-              return `${totalMinutes}m`;
-            }
-          }
-        }
-      }
-      // Fallback: try parsing as seconds
-      else if (!isNaN(parseInt(durationField))) {
-        const totalMinutes = Math.floor(parseInt(durationField) / 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (totalMinutes > 0) {
-          if (hours > 0) {
-            return `${hours}h ${minutes}m`;
-          } else {
-            return `${minutes}m`;
-          }
-        }
-      }
-    }
-    
-    // Check for calculated time from start/end times
-    if (match.actualStartTime && match.actualEndTime) {
-      try {
-        const startTime = new Date(match.actualStartTime).getTime();
-        const endTime = new Date(match.actualEndTime).getTime();
-        
-        if (!isNaN(startTime) && !isNaN(endTime) && endTime > startTime) {
-          const totalMinutes = Math.round((endTime - startTime) / (1000 * 60));
-          const hours = Math.floor(totalMinutes / 60);
-          const minutes = totalMinutes % 60;
-          
-          if (totalMinutes > 0) {
-            if (hours > 0) {
-              return `${hours}h ${minutes}m`;
-            } else {
-              return `${minutes}m`;
-            }
-          }
-        }
-      } catch (error) {
-        // Skip if date parsing fails
-      }
-    }
-    
-    // Fallback: try to get duration from individual set fields using utility
-    try {
-      const durationResult = calculateTotalDuration(
-        matchWithDuration.DurationSet1,
-        matchWithDuration.DurationSet2,
-        matchWithDuration.DurationSet3
-      );
-      
-      if (durationResult && durationResult !== 'N/A' && durationResult !== '0m') {
-        return durationResult;
-      }
-    } catch (error) {
-      // Skip if calculateTotalDuration fails
-    }
-    
-    // Try legacy format for individual set durations if available
-    let totalSeconds = 0;
-    let hasAnyDuration = false;
-    
-    // Check legacy set duration fields in seconds format
-    [matchWithDuration.DurationSet1, matchWithDuration.DurationSet2, matchWithDuration.DurationSet3]
-      .forEach((duration) => {
-        if (duration && !isNaN(parseInt(duration))) {
-          totalSeconds += parseInt(duration);
-          hasAnyDuration = true;
-        }
-      });
-    
-    if (hasAnyDuration && totalSeconds > 0) {
-      const totalMinutes = Math.floor(totalSeconds / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
-      }
-    }
-    
-    
-    return null;
-  };
+  // US2 - Match Duration: Removed manual liveElapsedTime calculation and getMatchDuration function
+  // Now handled by useMatchDuration hook which updates every 5 seconds and uses MatchDurationService
 
   // Check if this is a qualification match
   const isQualificationMatch = (match: BeachMatchCore): boolean => {
@@ -1247,16 +1051,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   </View>
                 )}
 
-                {/* Duration below set scores */}
-                {(() => {
-                  const totalDuration = getMatchDuration(match);
-
-                  return totalDuration ? (
-                    <View style={styles.durationAndResultContainer}>
-                      <Text style={styles.durationText}>({totalDuration})</Text>
-                    </View>
-                  ) : null;
-                })()}
+                {/* Duration below set scores - US2: Using hook's formattedDuration */}
+                {formattedDuration && formattedDuration !== '--' && (
+                  <View style={styles.durationAndResultContainer}>
+                    <Text style={styles.durationText}>({formattedDuration})</Text>
+                  </View>
+                )}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>

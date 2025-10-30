@@ -38,7 +38,7 @@ export interface MatchResult {
   /** Set scores array [set1_team1, set1_team2, set2_team1, set2_team2, ...] */
   readonly setScores: readonly number[];
   /** Detailed set scores (alias for compatibility) */
-  readonly sets?: readonly Array<{ set: number; a: number; b: number }>;
+  readonly sets?: ReadonlyArray<{ set: number; a: number; b: number }>;
   /** Match duration in minutes */
   readonly duration?: number;
   /** Winner team number (1 or 2) */

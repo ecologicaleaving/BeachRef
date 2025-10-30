@@ -12,6 +12,7 @@ import { BeachMatchCore } from '../../types/match-v2';
 import { VisApiClient } from '../api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG, GetBeachMatchListRequest, GetBeachTournamentRequest } from '../../types/api-v2';
 import { VisResponseParser } from '../parsing/VisResponseParser';
+import { getVisApiBaseUrl } from '../../utils/visApiConfig';
 
 interface RecentTournament {
   tournamentNo: string;
@@ -196,7 +197,7 @@ export class TournamentCacheWarmingService {
   private static async fetchTournamentMatches(tournamentNo: string): Promise<BeachMatchCore[] | null> {
     try {
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000,
         maxRetries: 2, // Fewer retries for background warming
         retryDelayMs: 1000,

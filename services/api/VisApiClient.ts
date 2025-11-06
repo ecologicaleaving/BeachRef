@@ -38,6 +38,8 @@ import {
 import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiRequest, NetworkType, RequestSource } from '../../types/audit';
+import { errorTransformService } from '../ErrorTransformService';
+import { APIErrorState } from '../../types';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
@@ -855,11 +857,12 @@ export class VisApiClient implements IVisApiClient {
    */
   private async executeRequest(endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
     let lastError: Error | null = null;
-    
+    let transformedError: APIErrorState | null = null;
+
     for (let attempt = 1; attempt <= this.retryConfig.maxAttempts; attempt++) {
       try {
         const response = await this.makeHttpRequest(xmlRequest);
-        
+
           // Request successful
         return {
           success: true,
@@ -868,12 +871,15 @@ export class VisApiClient implements IVisApiClient {
           durationMs: 0, // Will be set by caller
           sizeBytes: response.length
         } as VisApiSuccessResponse;
-        
+
       } catch (error) {
         lastError = error as Error;
-        
+
+        // Transform error to user-friendly message (US3 - API Error Handling)
+        transformedError = errorTransformService.transformError(error);
+
         // Track error for retry logic
-        
+
         // Don't retry on last attempt
         if (attempt < this.retryConfig.maxAttempts) {
           const delay = this.calculateRetryDelay(attempt);
@@ -881,8 +887,16 @@ export class VisApiClient implements IVisApiClient {
         }
       }
     }
-    
-    throw lastError || new Error(`Request failed after ${this.retryConfig.maxAttempts} attempts`);
+
+    // Throw transformed error with user-friendly message
+    const finalError = lastError || new Error(`Request failed after ${this.retryConfig.maxAttempts} attempts`);
+    const userFriendlyError = transformedError || errorTransformService.transformError(finalError);
+
+    // Attach transformed error state to the Error object for components to access
+    const enrichedError = finalError as Error & { apiErrorState?: APIErrorState };
+    enrichedError.apiErrorState = userFriendlyError;
+
+    throw enrichedError;
   }
 
   /**
@@ -1258,8 +1272,8 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, and timezone data
-    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3';
+    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, timezone data, and match personnel
+    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -1687,6 +1701,132 @@ export class VisApiClient implements IVisApiClient {
       }).join('\n');
     } catch (error) {
       return xml; // Return original if formatting fails
+    }
+  }
+
+  /**
+   * Parse AuxiliaryPersons field from GetEvent response
+   *
+   * AuxiliaryPersons contains HTML-entity-encoded XML with complete official roster
+   * for an event. Maps Personnel IDs to names, federations, and role codes.
+   *
+   * @param auxiliaryPersonsXml - HTML-entity-encoded XML string from GetEvent
+   * @returns Array of AuxiliaryPerson objects or empty array if parsing fails
+   *
+   * @example
+   * Input: "&lt;AuxiliaryPersons&gt;&lt;AuxiliaryPerson No=&quot;3&quot; FirstName=&quot;John&quot;.../&gt;&lt;/AuxiliaryPersons&gt;"
+   * Output: [{ No: 3, FirstName: "John", LastName: "Doe", NationalityCode: "US", Functions: 2, Gender: 0 }]
+   *
+   * @see specs/006-match-officials-display/INVESTIGATION_REPORT.md
+   */
+  parseAuxiliaryPersons(auxiliaryPersonsXml: string): any[] {
+    try {
+      if (!auxiliaryPersonsXml || auxiliaryPersonsXml.trim() === '') {
+        return [];
+      }
+
+      // HTML entity decode
+      const decoded = auxiliaryPersonsXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#xD;&#xA;/g, '\n')
+        .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+
+      // Parse XML using fast-xml-parser (already imported in this file)
+      const XMLParser = require('fast-xml-parser').XMLParser;
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        parseAttributeValue: true,
+        ignoreDeclaration: true,
+        ignorePiTags: true
+      });
+
+      const result = parser.parse(decoded);
+
+      // Extract AuxiliaryPersons array
+      const auxPersons = result?.AuxiliaryPersons?.AuxiliaryPerson;
+
+      if (!auxPersons) {
+        return [];
+      }
+
+      // Normalize to array (single person returns object, multiple returns array)
+      const personArray = Array.isArray(auxPersons) ? auxPersons : [auxPersons];
+
+      return personArray.map((person: any) => ({
+        No: person.No,
+        FirstName: person.FirstName || '',
+        LastName: person.LastName || '',
+        NationalityCode: person.NationalityCode || '',
+        Functions: person.Functions || 0,
+        Gender: person.Gender || 0
+      }));
+
+    } catch (error) {
+      console.error('[VisApiClient] Failed to parse AuxiliaryPersons XML:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Parse Personnel field from BeachMatch response
+   *
+   * Personnel contains HTML-entity-encoded XML with scorer and line judge IDs
+   * that map to AuxiliaryPersons. IDs are tournament-local scope.
+   *
+   * @param personnelXml - HTML-entity-encoded XML string from BeachMatch.Personnel
+   * @returns PersonnelData object with scorer/line judge IDs or empty object if parsing fails
+   *
+   * @example
+   * Input: "&lt;Personnel Scorer=&quot;19&quot; AssistantScorer=&quot;26&quot; LineJudge1=&quot;3&quot; LineJudge2=&quot;10&quot; /&gt;"
+   * Output: { Scorer: 19, AssistantScorer: 26, LineJudge1: 3, LineJudge2: 10 }
+   *
+   * @see specs/006-match-officials-display/INVESTIGATION_REPORT.md
+   */
+  parsePersonnelField(personnelXml: string): any {
+    try {
+      if (!personnelXml || personnelXml.trim() === '') {
+        return {};
+      }
+
+      // HTML entity decode
+      const decoded = personnelXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#xD;&#xA;/g, '\n')
+        .replace(/&amp;/g, '&'); // Must be last
+
+      // Parse XML
+      const XMLParser = require('fast-xml-parser').XMLParser;
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        parseAttributeValue: true,
+        ignoreDeclaration: true,
+        ignorePiTags: true
+      });
+
+      const result = parser.parse(decoded);
+      const personnel = result?.Personnel || {};
+
+      // Extract numeric IDs (validation: ID-only mapping, ignore Functions codes)
+      return {
+        Scorer: personnel.Scorer || undefined,
+        AssistantScorer: personnel.AssistantScorer || undefined,
+        LineJudge1: personnel.LineJudge1 || undefined,
+        LineJudge2: personnel.LineJudge2 || undefined,
+        LineJudge3: personnel.LineJudge3 || undefined,
+        LineJudge4: personnel.LineJudge4 || undefined
+      };
+
+    } catch (error) {
+      console.error('[VisApiClient] Failed to parse Personnel field XML:', error);
+      return {};
     }
   }
 }

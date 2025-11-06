@@ -98,7 +98,7 @@ export class PerformanceDashboard {
   private readonly snapshots: PerformanceSnapshot[] = [];
   private readonly alerts: PerformanceAlert[] = [];
   private intervalId?: NodeJS.Timeout;
-  private alertListeners: Array<(alert: PerformanceAlert) => void> = [];
+  private alertListeners: ((alert: PerformanceAlert) => void)[] = [];
 
   constructor(repositoryFactory: RepositoryFactory, config: DashboardConfig) {
     this.repositoryFactory = repositoryFactory;

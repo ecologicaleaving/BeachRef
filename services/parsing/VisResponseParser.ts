@@ -546,6 +546,9 @@ export class VisResponseParser {
       Referee2Name: this.extractXmlAttribute(matchXml, 'Referee2Name'),
       Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
       Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode'),
+      // T046: Add Challenge Referee fields (specs/006-match-officials-display)
+      RefereeChallengeName: this.extractXmlAttribute(matchXml, 'RefereeChallengeName'),
+      RefereeChallengeFederationCode: this.extractXmlAttribute(matchXml, 'RefereeChallengeFederationCode'),
       // Add tournament location fields for timezone conversion
       tournamentCity: tournamentLocation?.city,
       tournamentCountry: tournamentLocation?.country,
@@ -554,7 +557,12 @@ export class VisResponseParser {
       tournamentName: tournamentLocation?.name,
       // Add ResultType (numeric code) and ResultTypeText (mapped string) from VIS API
       resultType: resultType,
-      resultTypeText: resultTypeText
+      resultTypeText: resultTypeText,
+      // T046: Add Personnel and EventNo for match officials display (specs/006-match-officials-display)
+      Personnel: this.extractXmlAttribute(matchXml, 'Personnel'),
+      EventNo: this.extractXmlAttribute(matchXml, 'EventNo'),
+      // T046: Parse Personnel XML to extract official reference IDs
+      ...this.parsePersonnel(this.extractXmlAttribute(matchXml, 'Personnel'))
     } as any;
 
 
@@ -621,11 +629,11 @@ export class VisResponseParser {
    */
   private static parseMatchReferees(matchXml: string): readonly RefereeAssignment[] {
     const referees: RefereeAssignment[] = [];
-    
+
     // VIS API returns referee names in attributes: Referee1Name, Referee2Name
     const referee1Name = this.extractXmlAttribute(matchXml, 'Referee1Name');
     const referee2Name = this.extractXmlAttribute(matchXml, 'Referee2Name');
-    
+
     if (referee1Name) {
       referees.push({
         refereeId: 'ref1',
@@ -635,7 +643,7 @@ export class VisResponseParser {
         status: 'ASSIGNED'
       });
     }
-    
+
     if (referee2Name) {
       referees.push({
         refereeId: 'ref2',
@@ -645,8 +653,49 @@ export class VisResponseParser {
         status: 'ASSIGNED'
       });
     }
-    
+
+    // T046: Add Challenge Referee (specs/006-match-officials-display)
+    const refereeChallengeName = this.extractXmlAttribute(matchXml, 'RefereeChallengeName');
+    if (refereeChallengeName) {
+      referees.push({
+        refereeId: 'challenge',
+        refereeName: refereeChallengeName,
+        function: 'Challenge Referee',
+        federationCode: this.extractXmlAttribute(matchXml, 'RefereeChallengeFederationCode'),
+        status: 'ASSIGNED'
+      });
+    }
+
     return referees;
+  }
+
+  /**
+   * Parse Personnel XML field to extract match officials (T046)
+   * Personnel field contains HTML-encoded XML with official reference IDs
+   */
+  private static parsePersonnel(personnelXml: string): {
+    scorerNo?: string;
+    assistantScorerNo?: string;
+    lineJudge1No?: string;
+    lineJudge2No?: string;
+  } {
+    if (!personnelXml) return {};
+
+    // Decode HTML entities
+    const decoded = personnelXml
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&');
+
+    // Extract official reference numbers from Personnel XML
+    // Example: <Personnel AssistantScorer="10" LineJudge1="3" LineJudge2="9" Scorer="12" />
+    return {
+      scorerNo: this.extractXmlAttribute(decoded, 'Scorer'),
+      assistantScorerNo: this.extractXmlAttribute(decoded, 'AssistantScorer'),
+      lineJudge1No: this.extractXmlAttribute(decoded, 'LineJudge1'),
+      lineJudge2No: this.extractXmlAttribute(decoded, 'LineJudge2')
+    };
   }
 
   /**

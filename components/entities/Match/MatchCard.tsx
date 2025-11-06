@@ -18,6 +18,8 @@ import {
   getCurrentTimezonePreference
 } from '../../../utils/dateFormatters';
 import { useMatchDuration } from '../../../hooks/useMatchDuration';
+import { getSupportingOfficialsSync } from '../../../utils/matchOfficialsSync';
+import { getChallengeRefereeSync } from '../../../utils/challengeRefereeSync';
 // Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
@@ -40,6 +42,7 @@ export interface MatchCardProps {
     endDate?: string; // Tournament end date for live detection
   }; // Tournament location data for timezone detection
   liveScoreRefresh?: number; // For triggering score age reset on live score updates
+  highlightedOfficial?: string; // T037: Official name to highlight when filter is active
 }
 
 /**
@@ -53,9 +56,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   tournamentTimezone,
   tournamentData,
   liveScoreRefresh,
+  highlightedOfficial,
 }) => {
   const router = useRouter();
   const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
+  const [personnelExpanded, setPersonnelExpanded] = useState(false); // State for expandable personnel panel
 
   // Load timezone preference and subscribe to changes
   useEffect(() => {
@@ -500,7 +505,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
 
   return (
-    <View>
+    <View style={styles.cardWrapper}>
       <TouchableOpacity
         style={[
           styles.matchCard,
@@ -692,7 +697,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
 
           <View style={styles.rightBadgeContainer}>
-{(() => {
+            {(() => {
               // Use tournamentGenderText for display, fallback to raw value then 'M'
               const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
               const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
@@ -1129,17 +1134,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               // Try to use new format refereeAssignments first
               if (match.refereeAssignments && match.refereeAssignments.length > 0) {
                 match.refereeAssignments.forEach((referee, index) => {
-                  // Determine referee position based on function or index
+                  // Determine referee position based on function or index (T033)
                   let position = '';
+                  let isChallenge = false;
                   if (referee.function?.includes('1st') || referee.function?.includes('Referee 1')) {
-                    position = '1°';
+                    position = 'R1';
                   } else if (referee.function?.includes('2nd') || referee.function?.includes('Referee 2')) {
-                    position = '2°';
+                    position = 'R2';
                   } else if (referee.function?.includes('Challenge') || referee.function?.includes('CR')) {
                     position = 'CR';
+                    isChallenge = true;
                   } else {
                     // Fallback to index-based
-                    position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
+                    position = index === 0 ? 'R1' : index === 1 ? 'R2' : 'CR';
+                    isChallenge = index > 1;
                   }
 
                   // Format referee name as "Surname, FirstInitial."
@@ -1157,13 +1165,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   refereeRows.push(
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>{position}</Text>
+                        <View style={[
+                          styles.refereePositionBadge,
+                          isChallenge ? styles.refereePositionBadgeChallenge : styles.refereePositionBadgePrimary
+                        ]}>
+                          <Text style={styles.refereePositionText}>{position}</Text>
+                        </View>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{referee.federationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && referee.refereeName === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(referee.refereeName)}
+                        </Text>
                       </View>
                     </View>
                   );
@@ -1181,18 +1199,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   return fullName; // Fallback to original if parsing fails
                 };
 
-                // Fallback to legacy BeachMatch format
+                // Fallback to legacy BeachMatch format (T033: Enhanced abbreviations)
                 if (rawMatch.Referee1Name) {
                   refereeRows.push(
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>1°</Text>
+                        <View style={[styles.refereePositionBadge, styles.refereePositionBadgePrimary]}>
+                          <Text style={styles.refereePositionText}>R1</Text>
+                        </View>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{rawMatch.Referee1FederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && rawMatch.Referee1Name === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(rawMatch.Referee1Name)}
+                        </Text>
                       </View>
                     </View>
                   );
@@ -1202,34 +1227,109 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   refereeRows.push(
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>2°</Text>
+                        <View style={[styles.refereePositionBadge, styles.refereePositionBadgePrimary]}>
+                          <Text style={styles.refereePositionText}>R2</Text>
+                        </View>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{rawMatch.Referee2FederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && rawMatch.Referee2Name === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(rawMatch.Referee2Name)}
+                        </Text>
                       </View>
                     </View>
                   );
                 }
+              }
 
-                // Check for challenge referee in legacy format
-                if (rawMatch.ChallengeRefereeName) {
+              // IMPORTANT: Challenge Referee and Personnel lookup - ALWAYS execute regardless of referee data format
+              // Check for challenge referee (specs/006-match-officials-display - T026, T033)
+              // Use getChallengeRefereeSync to look up name from GetEventRefereeList
+              const challengeReferee = getChallengeRefereeSync(rawMatch);
+              console.log('[MatchCard] Challenge Referee lookup:', {
+                matchNo: rawMatch.No,
+                noEvent: rawMatch.NoEvent,
+                eventNo: rawMatch.EventNo, // Alias for backward compatibility
+                noRefereeChallenge: rawMatch.NoRefereeChallenge,
+                result: challengeReferee
+              });
+
+              if (challengeReferee) {
+                const rawMatch = match as any;
+                const supportingOfficials = getSupportingOfficialsSync(rawMatch);
+                const hasPersonnel = supportingOfficials.length > 0;
+
+                refereeRows.push(
+                  <View key="challenge-referee" style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <View style={[styles.refereePositionBadge, styles.refereePositionBadgeChallenge]}>
+                        <Text style={styles.refereePositionTextChallenge}>CR</Text>
+                      </View>
+                      <FlagImage
+                        countryCode={challengeReferee.federationCode}
+                        style={styles.refereeFlag}
+                      />
+                      <Text style={styles.refereeCountryCode}>{challengeReferee.federationCode}</Text>
+                      <Text style={styles.challengeRefereeName}>
+                        {challengeReferee.name}
+                      </Text>
+                      {hasPersonnel && (
+                        <TouchableOpacity
+                          style={styles.toggleButtonInline}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            setPersonnelExpanded(!personnelExpanded);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.toggleButtonText}>
+                            {personnelExpanded ? '▲' : '▼'}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              }
+
+              // T046: Add supporting officials from Personnel field using getSupportingOfficialsSync
+              // This function parses Personnel XML and maps IDs to names via cached AuxiliaryPersons
+              const supportingOfficials = getSupportingOfficialsSync(rawMatch);
+              console.log('[MatchCard] Supporting officials lookup:', {
+                matchNo: rawMatch.No,
+                noEvent: rawMatch.NoEvent,
+                eventNo: rawMatch.EventNo, // Alias for backward compatibility
+                personnelField: rawMatch.Personnel ? 'present' : 'missing',
+                officialsCount: supportingOfficials.length,
+                officials: supportingOfficials
+              });
+
+              // Only show personnel officials when panel is expanded
+              if (personnelExpanded) {
+                supportingOfficials.forEach((official) => {
                   refereeRows.push(
-                    <View key="challenge-referee" style={styles.refereeRow}>
+                    <View key={`${official.role}-${official.name}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>CR</Text>
+                        <View style={[styles.personnelPositionBadge, styles.personnelPositionBadgeSecondary]}>
+                          <Text style={styles.personnelPositionText}>{official.role}</Text>
+                        </View>
                         <FlagImage
-                          countryCode={rawMatch.ChallengeRefereeFederationCode}
+                          countryCode={official.federationCode}
                           style={styles.refereeFlag}
                         />
-                        <Text style={styles.refereeCountryCode}>{rawMatch.ChallengeRefereeFederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
+                        <Text style={styles.refereeCountryCode}>{official.federationCode}</Text>
+                        <Text style={styles.refereeName}>
+                          {official.name}
+                        </Text>
                       </View>
                     </View>
                   );
-                }
+                });
               }
 
               return refereeRows;
@@ -1243,13 +1343,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
 // Exact styles from master branch MatchListV2
 const styles = StyleSheet.create({
+  cardWrapper: {
+    position: 'relative',
+    marginVertical: 4,
+    marginHorizontal: 16,
+  },
   matchCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    marginVertical: 4,
-    marginHorizontal: 16,
     ...shadowPresets.card,
     borderWidth: 1,
     borderColor: designTokens.neutrals.borderSubtle,
@@ -1293,6 +1396,27 @@ const styles = StyleSheet.create({
   rightBadgeContainer: {
     flex: 0.8,
     alignItems: 'flex-end',
+  },
+  toggleButtonInline: {
+    marginLeft: 8,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#3B82F6',
+    lineHeight: 16,
+    textAlign: 'center',
+  },
+  challengeRefereeName: {
+    fontSize: 15,
+    color: designTokens.neutrals.textPrimary,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'left',
   },
   timeCourtContent: {
     alignItems: 'flex-start',
@@ -1548,11 +1672,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  refereePosition: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: designTokens.neutrals.textPrimary,
+  // T033: Enhanced role abbreviation badges for compact display
+  refereePositionBadge: {
+    minWidth: 32,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
+  },
+  refereePositionBadgePrimary: {
+    backgroundColor: colors.primary,
+  },
+  refereePositionBadgeChallenge: {
+    backgroundColor: '#FFFFFF', // White background (inverted from primary)
+    borderWidth: 2,
+    borderColor: colors.primary, // Blue border
+  },
+  refereePositionText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  refereePositionTextChallenge: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.primary, // Blue text (inverted from primary)
+    letterSpacing: 0.5,
+  },
+  // Personnel officials badges (smaller than referee badges)
+  personnelPositionBadge: {
+    minWidth: 36,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  personnelPositionBadgeSecondary: {
+    backgroundColor: 'transparent', // No background for personnel
+  },
+  personnelPositionText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primary, // Dark blue text
+    letterSpacing: 0.3,
   },
   refereeFlag: {
     marginLeft: 8,
@@ -1571,9 +1738,57 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'left',
   },
+  // T037: Highlighted referee name when filter is active
+  refereeNameHighlighted: {
+    fontWeight: '700',
+    color: colors.primary,
+    backgroundColor: colors.primaryLight || '#EEF2FF',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   refereeNameClickable: {
     textDecorationLine: 'underline',
     color: colors.primary,
+  },
+  // Supporting Officials - Compact horizontal layout
+  supportingOfficialsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: designTokens.neutrals.borderSubtle,
+    gap: 8,
+  },
+  supportingOfficialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  supportingOfficialBadge: {
+    minWidth: 36,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 3,
+    backgroundColor: '#607D8B', // Blue-grey for supporting officials
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  supportingOfficialBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  supportingOfficialFlag: {
+    marginRight: 4,
+  },
+  supportingOfficialName: {
+    fontSize: 12,
+    color: designTokens.neutrals.textSecondary,
+    fontWeight: '500',
   },
   setScoresContainer: {
     flexDirection: 'row',

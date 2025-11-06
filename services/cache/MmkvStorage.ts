@@ -9,6 +9,7 @@
  */
 
 import { MMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 
 /**
  * MmkvStorage
@@ -20,7 +21,7 @@ import { MMKV } from 'react-native-mmkv';
  * - 500%+ faster reads
  * - 100%+ faster writes
  * - Memory-mapped for instant access
- * - Built-in encryption support
+ * - Built-in encryption support (native platforms only)
  *
  * **Migration Path:**
  * ```typescript
@@ -39,9 +40,16 @@ export class MmkvStorage {
 
   constructor(namespace: string = 'default', encryptionKey?: string) {
     this.namespace = namespace;
+
+    // MMKV encryption is only supported on native platforms (iOS/Android)
+    // Web platform doesn't support encryption
+    const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+    const key = encryptionKey || process.env.EXPO_PUBLIC_MMKV_KEY;
+
     this.storage = new MMKV({
       id: `beachref-${namespace}`,
-      encryptionKey: encryptionKey || process.env.EXPO_PUBLIC_MMKV_KEY,
+      // Only use encryption key on native platforms
+      ...(isNative && key ? { encryptionKey: key } : {}),
     });
   }
 
@@ -237,6 +245,93 @@ export class MmkvStorage {
    */
   getRawStorage(): MMKV {
     return this.storage;
+  }
+
+  // ========================================================================
+  // Domain-specific cache methods (specs/006-match-officials-display)
+  // ========================================================================
+
+  /**
+   * Cache AuxiliaryPersons for an event
+   *
+   * Stores official data from GetEvent with 120s TTL.
+   * Key format: `event:${eventNo}:auxiliaryPersons`
+   *
+   * @param eventNo Event number (tournament identifier)
+   * @param auxiliaryPersons Array of AuxiliaryPerson objects
+   * @param ttlSeconds Time-to-live in seconds (default: 120s)
+   *
+   * @example
+   * ```typescript
+   * await mmkvStorage.cacheAuxiliaryPersons('12345', [
+   *   { No: 3, FirstName: 'John', LastName: 'Doe', NationalityCode: 'US', Functions: 2, Gender: 0 }
+   * ]);
+   * ```
+   */
+  async cacheAuxiliaryPersons(
+    eventNo: string,
+    auxiliaryPersons: any[],
+    ttlSeconds: number = 120
+  ): Promise<void> {
+    try {
+      const key = `event:${eventNo}:auxiliaryPersons`;
+      const expiresAt = Date.now() + (ttlSeconds * 1000);
+
+      const cacheEntry = {
+        data: auxiliaryPersons,
+        expiresAt,
+        cachedAt: Date.now()
+      };
+
+      await this.setItem(key, JSON.stringify(cacheEntry));
+    } catch (error) {
+      console.error(`[MmkvStorage:${this.namespace}] Failed to cache AuxiliaryPersons for event ${eventNo}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get cached AuxiliaryPersons for an event
+   *
+   * Returns null if not found or expired (120s TTL).
+   * Key format: `event:${eventNo}:auxiliaryPersons`
+   *
+   * @param eventNo Event number (tournament identifier)
+   * @returns Array of AuxiliaryPerson objects or null if not found/expired
+   *
+   * @example
+   * ```typescript
+   * const officials = await mmkvStorage.getCachedAuxiliaryPersons('12345');
+   * if (officials) {
+   *   // Use cached data
+   * } else {
+   *   // Fetch from API
+   * }
+   * ```
+   */
+  async getCachedAuxiliaryPersons(eventNo: string): Promise<any[] | null> {
+    try {
+      const key = `event:${eventNo}:auxiliaryPersons`;
+      const cached = await this.getItem(key);
+
+      if (!cached) {
+        return null;
+      }
+
+      const cacheEntry = JSON.parse(cached);
+
+      // Check expiration (120s TTL)
+      if (Date.now() > cacheEntry.expiresAt) {
+        // Expired - remove from cache
+        await this.removeItem(key);
+        return null;
+      }
+
+      return cacheEntry.data;
+    } catch (error) {
+      console.error(`[MmkvStorage:${this.namespace}] Failed to get cached AuxiliaryPersons for event ${eventNo}:`, error);
+      return null;
+    }
   }
 }
 

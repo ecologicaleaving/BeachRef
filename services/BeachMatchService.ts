@@ -213,8 +213,8 @@ export class BeachMatchService {
   /**
    * Extract set scores from API response
    */
-  private extractSets(apiResponse: any): Array<{ set: number; a: number; b: number; durationSec?: number }> {
-    const sets: Array<{ set: number; a: number; b: number; durationSec?: number }> = [];
+  private extractSets(apiResponse: any): { set: number; a: number; b: number; durationSec?: number }[] {
+    const sets: { set: number; a: number; b: number; durationSec?: number }[] = [];
 
     // Extract set 1
     if (apiResponse.PointsTeamASet1 !== undefined && apiResponse.PointsTeamBSet1 !== undefined) {

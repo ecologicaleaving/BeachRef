@@ -28,7 +28,7 @@ describe('Tournament Classification Logic Preservation', () => {
 
   describe('VisApiService.classifyTournament', () => {
     it('should correctly classify FIVB tournaments', () => {
-      const testCases: Array<{ tournament: Tournament; expected: TournamentType }> = [
+      const testCases: { tournament: Tournament; expected: TournamentType }[] = [
         {
           tournament: { No: '1', Code: 'MFIVB2025', Name: 'FIVB World Tour Tournament', StartDate: '2025-01-15', EndDate: '2025-01-20', Version: '1' },
           expected: 'FIVB'
@@ -50,7 +50,7 @@ describe('Tournament Classification Logic Preservation', () => {
     });
 
     it('should correctly classify BPT tournaments', () => {
-      const testCases: Array<{ tournament: Tournament; expected: TournamentType }> = [
+      const testCases: { tournament: Tournament; expected: TournamentType }[] = [
         {
           tournament: { No: '1', Code: 'MBPT2025', Name: 'Beach Pro Tour Challenge', StartDate: '2025-01-15', EndDate: '2025-01-20', Version: '1' },
           expected: 'BPT'
@@ -76,7 +76,7 @@ describe('Tournament Classification Logic Preservation', () => {
     });
 
     it('should correctly classify CEV tournaments', () => {
-      const testCases: Array<{ tournament: Tournament; expected: TournamentType }> = [
+      const testCases: { tournament: Tournament; expected: TournamentType }[] = [
         {
           tournament: { No: '1', Code: 'MCEV2025', Name: 'CEV European Championship', StartDate: '2025-01-15', EndDate: '2025-01-20', Version: '1' },
           expected: 'CEV'
@@ -102,7 +102,7 @@ describe('Tournament Classification Logic Preservation', () => {
     });
 
     it('should classify unknown tournaments as LOCAL', () => {
-      const testCases: Array<{ tournament: Tournament; expected: TournamentType }> = [
+      const testCases: { tournament: Tournament; expected: TournamentType }[] = [
         {
           tournament: { No: '1', Code: 'MLOCAL2025', Name: 'Local Beach Tournament', StartDate: '2025-01-15', EndDate: '2025-01-20', Version: '1' },
           expected: 'LOCAL'

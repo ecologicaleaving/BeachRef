@@ -20,13 +20,17 @@ const VIS_API_PROXY = '/.netlify/functions/vis-api-proxy';
  * @returns The correct baseUrl to use for VIS API requests
  */
 export function getVisApiBaseUrl(): string {
+  // TEMP: Force direct API for local testing (may have CORS issues)
+  // TODO: Use netlify dev for proper local testing
+  return VIS_API_DIRECT;
+
   // For web platform, use the Netlify proxy to avoid CORS
-  if (Platform.OS === 'web') {
-    return VIS_API_PROXY;
-  }
+  // if (Platform.OS === 'web') {
+  //   return VIS_API_PROXY;
+  // }
 
   // For native platforms (iOS, Android), use direct connection
-  return VIS_API_DIRECT;
+  // return VIS_API_DIRECT;
 }
 
 /**

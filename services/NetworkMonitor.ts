@@ -6,7 +6,7 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
  */
 export class NetworkMonitor {
   private static instance: NetworkMonitor | null = null;
-  private listeners: Array<(isConnected: boolean) => void> = [];
+  private listeners: ((isConnected: boolean) => void)[] = [];
   private _isConnected: boolean = true;
   private unsubscribe: (() => void) | null = null;
 

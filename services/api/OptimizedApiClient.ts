@@ -275,7 +275,7 @@ export class OptimizedApiClient {
    * Batch API requests with performance monitoring
    */
   async batchRequest<T>(
-    requests: Array<{ url: string; options?: RequestInit & ApiRequestOptions }>,
+    requests: { url: string; options?: RequestInit & ApiRequestOptions }[],
     options?: { concurrency?: number; continueOnError?: boolean }
   ): Promise<BatchApiResponse<T>> {
     const startTime = performance.now();

@@ -21,17 +21,17 @@ export interface OfflineSyncResult {
   success: boolean;
   syncedCount: number;
   failedCount: number;
-  errors: Array<{
+  errors: {
     matchId: string;
     error: string;
-  }>;
+  }[];
 }
 
 class MatchResultOfflineService {
   private static instance: MatchResultOfflineService;
   private config: OfflineServiceConfig;
   private syncInProgress: boolean = false;
-  private syncListeners: Array<(result: OfflineSyncResult) => void> = [];
+  private syncListeners: ((result: OfflineSyncResult) => void)[] = [];
   private isOnline: boolean = true;
   private netInfoUnsubscribe?: () => void;
 

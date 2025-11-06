@@ -54,3 +54,6 @@ architecture/
 
 # Audit history (contains historical finding data)
 .audit-history/
+
+# Local Netlify folder
+.netlify

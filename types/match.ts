@@ -34,12 +34,55 @@ export interface BeachMatch {
   Referee2Name?: string;
   Referee1FederationCode?: string;
   Referee2FederationCode?: string;
+  // Challenge Referee fields (specs/006-match-officials-display)
+  NoRefereeChallenge?: string;
+  RefereeChallengeName?: string;
+  RefereeChallengeFederationCode?: string;
+  // Assistant Challenge Referee (bonus feature)
+  NoRefereeAssistantChallenge?: string;
+  RefereeAssistantChallengeName?: string;
+  RefereeAssistantChallengeFederationCode?: string;
+  // Reserve Referee (bonus feature)
+  NoRefereeReserve?: string;
+  RefereeReserveName?: string;
+  RefereeReserveFederationCode?: string;
+  /**
+   * Personnel field containing HTML-entity-encoded XML with scorer/line judge IDs
+   * Format: <Personnel Scorer="19" AssistantScorer="26" LineJudge1="3" LineJudge2="10" />
+   * Requires HTML entity decoding and XML parsing
+   */
+  Personnel?: string;
+  /**
+   * Event number for cross-reference to GetEvent AuxiliaryPersons
+   * Used to map Personnel IDs to official names
+   */
+  EventNo?: string;
+  /**
+   * Match officials - Reference IDs from Personnel field (T046)
+   * These are AuxiliaryPerson No values that need to be resolved to names
+   */
+  scorerNo?: string;
+  assistantScorerNo?: string;
+  lineJudge1No?: string;
+  lineJudge2No?: string;
+  // Referee assignment data
+  refereeAssignments?: any[]; // Referee assignments for this match (using any[] for flexibility)
   // Additional fields for multi-tournament filtering
   tournamentGender?: string;
   tournamentNo?: string;
   tournamentCode?: string;
   tournamentCountry?: string;
 }
+
+/**
+ * Set score structure for beach volleyball matches
+ * Represents the score for a single set with team points and set number
+ */
+export type SetScore = {
+  a: number;          // Team A points
+  b: number;          // Team B points
+  set: number;        // Set number (1, 2, or 3)
+};
 
 /**
  * Real-time match duration state for live matches

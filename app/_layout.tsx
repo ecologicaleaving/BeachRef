@@ -1,5 +1,21 @@
 // VIS API Optimization: Monitoring Setup (Phase 1)
 // Platform detection
+import { Stack, usePathname } from "expo-router";
+import React, { useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { Platform } from 'react-native';
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { preloadBrandAssets } from "../assets/brand";
+import { colors } from "../theme/tokens";
+import { queryClient } from "../lib/queryClient";
+import { asyncStoragePersister, migrateAsyncStorageData, handlePersistenceError } from "../lib/queryPersistence";
+import { enablePerformanceMonitoring } from "../lib/queryPerformance";
+import { QueryDevTools } from "../components/DevTools/QueryDevTools";
+import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
+import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
+import { useAnalytics } from "../hooks/useAnalytics";
+import { injectCSSVariables } from "../theme/css-variables";
+
 const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 // Initialize Sentry for production monitoring (T006) - only on native platforms
@@ -33,22 +49,6 @@ if (__DEV__ && !isWeb) {
     console.warn('[App] Network logger not available:', e);
   }
 }
-
-import { Stack, usePathname } from "expo-router";
-import React, { useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
-import { Platform } from 'react-native';
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { preloadBrandAssets } from "../assets/brand";
-import { colors } from "../theme/tokens";
-import { queryClient } from "../lib/queryClient";
-import { asyncStoragePersister, migrateAsyncStorageData, handlePersistenceError } from "../lib/queryPersistence";
-import { enablePerformanceMonitoring } from "../lib/queryPerformance";
-import { QueryDevTools } from "../components/DevTools/QueryDevTools";
-import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
-import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
-import { useAnalytics } from "../hooks/useAnalytics";
-import { injectCSSVariables } from "../theme/css-variables";
 
 export default function RootLayout() {
   const pathname = usePathname();

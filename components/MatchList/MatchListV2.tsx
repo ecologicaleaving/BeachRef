@@ -660,7 +660,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return unique;
   }, [activeMatches]);
 
-  // Extract unique referees
+  // Extract unique referees (T036: Enhanced with all official roles)
   const uniqueReferees = React.useMemo(() => {
     const refereeNames = new Set<string>();
     activeMatches.forEach(match => {
@@ -669,10 +669,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         if (referee.refereeName) refereeNames.add(referee.refereeName);
       });
 
-      // Extract from VIS API referee names (enhanced functionality)
+      // Extract from VIS API referee names (T036: Enhanced with Challenge Referee)
       const matchAny = match as any;
       if (matchAny.Referee1Name) refereeNames.add(matchAny.Referee1Name);
       if (matchAny.Referee2Name) refereeNames.add(matchAny.Referee2Name);
+      if (matchAny.RefereeChallengeName) refereeNames.add(matchAny.RefereeChallengeName);
+      if (matchAny.RefereeAssistantChallengeName) refereeNames.add(matchAny.RefereeAssistantChallengeName);
+      if (matchAny.RefereeReserveName) refereeNames.add(matchAny.RefereeReserveName);
     });
     return Array.from(refereeNames).sort();
   }, [activeMatches]);
@@ -732,11 +735,23 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         }
       }
 
-      // Referee filter - Enhanced to check both structured assignments and VIS API names
+      // Referee filter - T036: Enhanced to check ALL official roles
       if (effectiveRefereeFilter !== 'All') {
         const hasStructuredReferee = match.refereeAssignments?.some(ref => ref.refereeName === effectiveRefereeFilter);
         const matchAny = match as any;
-        const hasVISReferee = matchAny.Referee1Name === effectiveRefereeFilter || matchAny.Referee2Name === effectiveRefereeFilter;
+
+        // Check all primary referee fields (R1, R2, CR, AR, RR)
+        const hasVISReferee =
+          matchAny.Referee1Name === effectiveRefereeFilter ||
+          matchAny.Referee2Name === effectiveRefereeFilter ||
+          matchAny.RefereeChallengeName === effectiveRefereeFilter ||
+          matchAny.RefereeAssistantChallengeName === effectiveRefereeFilter ||
+          matchAny.RefereeReserveName === effectiveRefereeFilter;
+
+        // NOTE: Personnel field (Scorer, Assistant Scorer, Line Judges) would require
+        // async XML parsing and AuxiliaryPersons lookup - not feasible in synchronous filter.
+        // For full Personnel search, consider implementing server-side filtering or
+        // pre-processing match data to extract all official names during data fetch.
 
         if (!hasStructuredReferee && !hasVISReferee) return; // Skip this match
       }
@@ -1279,6 +1294,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           tournamentTimezone={tournamentTimezone}
           tournamentData={tournamentData}
           liveScoreRefresh={liveScoreRefresh}
+          highlightedOfficial={effectiveRefereeFilter !== 'All' ? effectiveRefereeFilter : undefined}
         />
       </View>
     );
@@ -1369,10 +1385,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           styles.filtersContainer,
           showRefereeDropdown && styles.filtersContainerExpanded
         ]}>
-        {/* Referee Filter - positioned FIRST */}
+        {/* Referee Filter - positioned FIRST (T038: Enhanced with All Roles indicator) */}
         {showRefereeFilter && uniqueReferees.length > 0 && (
           <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Referee:</Text>
+            <View style={styles.filterLabelContainer}>
+              <Text style={styles.filterLabel}>Referee:</Text>
+              <Text style={styles.filterHint}>All Roles</Text>
+            </View>
             <View style={styles.dropdownContainer}>
               <TouchableOpacity
                 style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
@@ -1718,6 +1737,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
+  },
+  // T038: All Roles filter indicator
+  filterLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  filterHint: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: designTokens.neutrals.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: designTokens.neutrals.bgSurface,
+    borderRadius: 4,
   },
   filterButtons: {
     flexDirection: 'row',

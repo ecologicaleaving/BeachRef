@@ -360,7 +360,7 @@ export class LocalStorageManager {
   /**
    * Get all offline keys with their timestamps (for LRU eviction)
    */
-  async getOfflineKeys(): Promise<Array<{key: string, timestamp: number, size: number}>> {
+  async getOfflineKeys(): Promise<{key: string, timestamp: number, size: number}[]> {
     try {
       const metadataStr = await AsyncStorage.getItem(LocalStorageManager.OFFLINE_METADATA_KEY);
       if (!metadataStr) return [];

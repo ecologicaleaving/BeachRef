@@ -157,12 +157,12 @@ export class StatusUpdateService {
   
   // Process batch status updates
   private processBatchUpdate(payload: {
-    updates: Array<{
+    updates: {
       id: string;
       status: StatusType;
       previousStatus?: StatusType;
       metadata?: Record<string, any>;
-    }>;
+    }[];
   }): void {
     const { updates } = payload;
     

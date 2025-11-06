@@ -141,7 +141,7 @@ export class AuditReportGenerator {
     findings: AuditFinding[],
     requests: ApiRequest[]
   ): string[] {
-    const recommendations: Array<{ text: string; priority: number; impact: number }> = [];
+    const recommendations: { text: string; priority: number; impact: number }[] = [];
 
     // Group findings by category
     const criticalFindings = findings.filter(f => f.severity === 'critical');

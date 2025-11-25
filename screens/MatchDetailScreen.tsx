@@ -26,9 +26,6 @@ import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
 import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
 import { useLiveScores } from '../hooks/useLiveScores';
-import { useMatchOfficials } from '../hooks/useMatchOfficials';
-import { OfficialList } from '../components/referee/OfficialList';
-import { OfficialErrorBoundary } from '../components/ErrorBoundary/OfficialErrorBoundary';
 import { BeachMatch } from '../types/match';
 
 
@@ -382,55 +379,6 @@ export default function MatchDetailScreen() {
 
     return result;
   }, [state.matchDTO, state.baseMatch, state.liveData, legacyData.legacyMatch, currentLiveScore]);
-
-  // Convert merged data to BeachMatch format for useMatchOfficials hook
-  // This conversion enables the two-step official retrieval (specs/006-match-officials-display - T023)
-  const beachMatchForOfficials: BeachMatch | null = useMemo(() => {
-    const mergedData = getMergedMatchData;
-    if (!mergedData?.data) return null;
-
-    try {
-      // Create minimal BeachMatch object with official-related fields
-      const baseMatch: BeachMatch = {
-        No: mergedData.type === 'dto'
-          ? mergedData.data.matchNo?.toString() || ''
-          : (mergedData.data as any).visNo || (mergedData.data as any).no || '',
-        EventNo: mergedData.type === 'dto'
-          ? mergedData.data.tournament?.eventNo
-          : (mergedData.data as any).tournamentNo || (mergedData.data as any).eventNo,
-        Personnel: mergedData.type === 'dto'
-          ? (mergedData.data as any).Personnel
-          : (mergedData.data as any).Personnel,
-        NoReferee1: mergedData.type === 'dto'
-          ? mergedData.data.officials?.firstReferee?.id
-          : (mergedData.data as any).referees?.[0]?.id,
-        Referee1Name: mergedData.type === 'dto'
-          ? mergedData.data.officials?.firstReferee?.name
-          : (mergedData.data as any).referees?.[0]?.name,
-        Referee1FederationCode: mergedData.type === 'dto'
-          ? mergedData.data.officials?.firstReferee?.federationCode
-          : (mergedData.data as any).referees?.[0]?.federation,
-        NoReferee2: mergedData.type === 'dto'
-          ? mergedData.data.officials?.secondReferee?.id
-          : (mergedData.data as any).referees?.[1]?.id,
-        Referee2Name: mergedData.type === 'dto'
-          ? mergedData.data.officials?.secondReferee?.name
-          : (mergedData.data as any).referees?.[1]?.name,
-        Referee2FederationCode: mergedData.type === 'dto'
-          ? mergedData.data.officials?.secondReferee?.federationCode
-          : (mergedData.data as any).referees?.[1]?.federation,
-      };
-
-      return baseMatch;
-    } catch (error) {
-      console.warn('[MatchDetailScreen] Failed to convert match data for officials:', error);
-      return null;
-    }
-  }, [getMergedMatchData]);
-
-  // Fetch complete official roster (two-step retrieval: Personnel → AuxiliaryPersons)
-  // Gracefully degrades to primary referees only if Personnel or EventNo missing
-  const { officials, loading: officialsLoading, hasOfficials } = useMatchOfficials(beachMatchForOfficials);
 
   // Complete data fetch for finished matches - one-time comprehensive fetch
   useEffect(() => {
@@ -1365,18 +1313,6 @@ export default function MatchDetailScreen() {
               )}
             </View>
           </Card>
-        )}
-
-        {/* Complete Official Roster (specs/006-match-officials-display - T023, T025) */}
-        {/* Two-step retrieval: Personnel field → AuxiliaryPersons mapping */}
-        {/* Error boundary prevents official failures from breaking match display */}
-        {hasOfficials && (
-          <OfficialErrorBoundary showErrorInDev={true}>
-            <Card style={styles.refereesCard}>
-              <Text style={styles.sectionTitle}>Complete Official Roster</Text>
-              <OfficialList officials={officials} loading={officialsLoading} />
-            </Card>
-          </OfficialErrorBoundary>
         )}
 
         {/* Set Durations (if available) */}

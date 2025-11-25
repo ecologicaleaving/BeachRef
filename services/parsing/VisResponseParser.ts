@@ -547,6 +547,7 @@ export class VisResponseParser {
       Referee1FederationCode: this.extractXmlAttribute(matchXml, 'Referee1FederationCode'),
       Referee2FederationCode: this.extractXmlAttribute(matchXml, 'Referee2FederationCode'),
       // T046: Add Challenge Referee fields (specs/006-match-officials-display)
+      NoRefereeChallenge: this.extractXmlAttribute(matchXml, 'NoRefereeChallenge'),
       RefereeChallengeName: this.extractXmlAttribute(matchXml, 'RefereeChallengeName'),
       RefereeChallengeFederationCode: this.extractXmlAttribute(matchXml, 'RefereeChallengeFederationCode'),
       // Add tournament location fields for timezone conversion
@@ -558,9 +559,11 @@ export class VisResponseParser {
       // Add ResultType (numeric code) and ResultTypeText (mapped string) from VIS API
       resultType: resultType,
       resultTypeText: resultTypeText,
-      // T046: Add Personnel and EventNo for match officials display (specs/006-match-officials-display)
+      // T046: Add Personnel and NoEvent for match officials display (specs/006-match-officials-display)
+      // Note: VIS API returns NoEvent (not EventNo) - this is the event/tournament ID
       Personnel: this.extractXmlAttribute(matchXml, 'Personnel'),
-      EventNo: this.extractXmlAttribute(matchXml, 'EventNo'),
+      NoEvent: this.extractXmlAttribute(matchXml, 'NoEvent'),
+      EventNo: this.extractXmlAttribute(matchXml, 'NoEvent'), // Alias for backward compatibility
       // T046: Parse Personnel XML to extract official reference IDs
       ...this.parsePersonnel(this.extractXmlAttribute(matchXml, 'Personnel'))
     } as any;

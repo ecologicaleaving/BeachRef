@@ -2,6 +2,9 @@
  * Match Duration Service
  * Calculates live match duration from VIS API data
  * Syncs with 5-second live score polling for real-time updates
+ *
+ * VIS API Duration fields contain positive 32-bit integers representing seconds.
+ * Example: DurationSet1 = "1530" means 25 minutes 30 seconds
  */
 
 import { BeachMatch, MatchDuration } from '../types';
@@ -17,9 +20,10 @@ const MATCH_STATUS = {
 } as const;
 
 /**
- * Set duration parsing regex (format: "MM:SS" or "MM")
+ * Legacy duration parsing regex (format: "MM:SS") for cached data
+ * @deprecated VIS API now returns integer seconds
  */
-const DURATION_REGEX = /^(\d{1,2}):?(\d{2})?$/;
+const LEGACY_DURATION_REGEX = /^(\d{1,3}):(\d{2})$/;
 
 /**
  * Match Duration Service
@@ -92,8 +96,14 @@ export class MatchDurationService {
   }
 
   /**
-   * Parse VIS API set duration string to minutes
-   * @param duration - Duration string from VIS API (e.g., "15:30", "15")
+   * Parse VIS API set duration to minutes
+   *
+   * VIS API returns Duration as positive 32-bit integer (seconds).
+   * Example: "1530" = 25 minutes 30 seconds = returns 26 minutes (rounded)
+   *
+   * Also handles legacy "mm:ss" format for backward compatibility with cached data.
+   *
+   * @param duration - Duration value (integer seconds or legacy "mm:ss" format)
    * @returns Minutes as number, or null if not available
    */
   private parseSetDuration(duration: string | undefined): number | null {
@@ -101,15 +111,27 @@ export class MatchDurationService {
       return null;
     }
 
-    const matchResult = duration.match(DURATION_REGEX);
-    if (!matchResult) {
+    const trimmed = duration.trim();
+
+    // Check if it's legacy "mm:ss" format (contains colon)
+    if (trimmed.includes(':')) {
+      const matchResult = trimmed.match(LEGACY_DURATION_REGEX);
+      if (!matchResult) {
+        return null;
+      }
+      const minutes = parseInt(matchResult[1] ?? '0', 10);
+      const seconds = matchResult[2] ? parseInt(matchResult[2], 10) : 0;
+      return minutes + Math.round(seconds / 60);
+    }
+
+    // Primary: Parse as integer seconds (VIS API format)
+    const seconds = parseInt(trimmed, 10);
+    if (isNaN(seconds) || seconds < 0) {
       return null;
     }
 
-    const minutes = parseInt(matchResult[1] ?? '0', 10);
-    const seconds = matchResult[2] ? parseInt(matchResult[2], 10) : 0;
-
-    return minutes + Math.round(seconds / 60);
+    // Convert seconds to minutes (rounded)
+    return Math.round(seconds / 60);
   }
 
   /**

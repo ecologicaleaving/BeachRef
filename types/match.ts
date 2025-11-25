@@ -55,8 +55,10 @@ export interface BeachMatch {
   /**
    * Event number for cross-reference to GetEvent AuxiliaryPersons
    * Used to map Personnel IDs to official names
+   * Note: VIS API returns NoEvent (not EventNo) - both are provided for compatibility
    */
-  EventNo?: string;
+  NoEvent?: string; // Official VIS API field name
+  EventNo?: string; // Alias for backward compatibility
   /**
    * Match officials - Reference IDs from Personnel field (T046)
    * These are AuxiliaryPerson No values that need to be resolved to names

@@ -1273,7 +1273,8 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
     // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, timezone data, and match personnel
-    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel';
+    // Note: VIS API returns NoEvent (not EventNo) for the event/tournament ID
+    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoRefereeChallenge RefereeChallengeName RefereeChallengeFederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel NoEvent';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">

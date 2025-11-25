@@ -14,6 +14,7 @@ interface Referee {
   federationCode: string;
   gender: string;
   level?: string;
+  role?: string; // "Referee" or "Challenge Referee"
 }
 
 interface TournamentInfo {
@@ -232,18 +233,24 @@ const RefereeCard = ({
           </Text>
         </View>
         <View style={styles.cardHeaderRight}>
-          {/* Always show basic R1/R2 totals */}
-          <View style={styles.roleTotals}>
-            <View style={styles.roleTotal}>
-              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
-              <Text style={styles.roleTotalLabel}>R1</Text>
+          {/* Show CR badge for Challenge Referee, R1/R2 stats for regular Referee */}
+          {referee?.role === 'Challenge Referee' ? (
+            <View style={styles.challengeRefereeBadge}>
+              <Text style={styles.challengeRefereeBadgeText}>CR</Text>
             </View>
-            <Text style={styles.roleTotalSeparator}>•</Text>
-            <View style={styles.roleTotal}>
-              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
-              <Text style={styles.roleTotalLabel}>R2</Text>
+          ) : (
+            <View style={styles.roleTotals}>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R1</Text>
+              </View>
+              <Text style={styles.roleTotalSeparator}>•</Text>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R2</Text>
+              </View>
             </View>
-          </View>
+          )}
           <View style={styles.cardActions}>
             <View style={styles.expandToggle}>
               <Text
@@ -321,7 +328,7 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
     try {
       const xml = `<Requests>
   <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Level Status">
     <Filter NoEvent="${tournamentNo}"/>
   </Request>
 </Requests>`;
@@ -370,6 +377,7 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
         const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
         const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
         const level = match.match(/Level="([^"]*)"/)?.[1] || '';
+        const role = match.match(/Role="([^"]*)"/)?.[1] || ''; // Parse Role field
 
         // Only add referee if they have at least a name
         if (firstName.trim() || lastName.trim()) {
@@ -379,7 +387,8 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
             lastName,
             federationCode,
             gender,
-            level
+            level,
+            role
           });
         }
       });
@@ -555,6 +564,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#D1D5DB',
     paddingHorizontal: 2,
+  },
+  challengeRefereeBadge: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  challengeRefereeBadgeText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 0.5,
   },
   cardActions: {
     flexDirection: 'row',

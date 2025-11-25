@@ -43,6 +43,7 @@ import { designTokens } from '../theme/tokens';
 import { FlagImage } from '../components/FlagImage';
 import { TournamentCard } from '../components/entities/Tournament';
 import { TournamentRefereeList } from '../components/referee/TournamentRefereeList';
+import { fetchEventRefereeList } from '../utils/challengeRefereeSync';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Separate component for expanded filters to prevent hooks issues
@@ -304,6 +305,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
   const [refereeDataFromAPI, setRefereeDataFromAPI] = useState<{name: string, federationCode: string}[]>([]);
   const [refereesLoading, setRefereesLoading] = useState(false);
+  // State to track when match officials data (Challenge Referee + Personnel) is loaded
+  // Triggers re-render so MatchCards can display cached official data (T046)
+  const [officialsDataLoaded, setOfficialsDataLoaded] = useState(0);
 
   // State to track if we need to load complete tournament data
   const [isMinimalTournament, setIsMinimalTournament] = useState(false);
@@ -1464,6 +1468,43 @@ const TournamentDetailScreenContent: React.FC = () => {
                 return finalMatch;
               });
 
+              // Fetch event referee list and auxiliary persons for match officials display
+              // Note: VIS API returns NoEvent (not EventNo) for the event/tournament ID
+              // (async, non-blocking - specs/006-match-officials-display)
+              if (matchesWithGender.length > 0) {
+                const firstMatch = matchesWithGender[0] as any;
+                // Check NoEvent first (official VIS API field name), then EventNo (alias), then legacy variations
+                const eventNo = firstMatch.NoEvent || firstMatch.EventNo || firstMatch.eventNo;
+                console.log('[TournamentDetail] First match NoEvent/EventNo:', eventNo, 'NoRefereeChallenge:', firstMatch.NoRefereeChallenge);
+                if (eventNo) {
+                  // Fetch both in parallel for Challenge Referee and Personnel display
+                  console.log('[TournamentDetail] Fetching event referee list and auxiliary persons for NoEvent:', eventNo);
+
+                  // Import fetchEventAuxiliaryPersons dynamically
+                  import('../utils/auxiliaryPersonsSync').then(module => {
+                    module.fetchEventAuxiliaryPersons(eventNo.toString())
+                      .then(() => {
+                        // Trigger re-render so MatchCards can display cached Personnel officials (T046)
+                        setOfficialsDataLoaded(prev => prev + 1);
+                      })
+                      .catch(err => {
+                        console.warn('[TournamentDetail] Failed to fetch auxiliary persons:', err);
+                      });
+                  });
+
+                  fetchEventRefereeList(eventNo.toString())
+                    .then(() => {
+                      // Trigger re-render so MatchCards can display cached Challenge Referee (T046)
+                      setOfficialsDataLoaded(prev => prev + 1);
+                    })
+                    .catch(err => {
+                      console.warn('[TournamentDetail] Failed to fetch event referee list:', err);
+                    });
+                } else {
+                  console.warn('[TournamentDetail] No NoEvent/EventNo found in first match');
+                }
+              }
+
               return matchesWithGender;
             }
           } catch (error) {
@@ -1530,9 +1571,33 @@ const TournamentDetailScreenContent: React.FC = () => {
 
           if (fallbackResponse.success && fallbackResponse.xmlData) {
             allMatches = VisResponseParser.parseBeachMatches(fallbackResponse.xmlData, tournament.visNo, tournamentTimezone, undefined, undefined, tournamentData);
+
+            // Fetch event referee list for Challenge Referee lookups using EventNo from first match
+            // (async, non-blocking - specs/006-match-officials-display)
+            if (allMatches.length > 0) {
+              const firstMatch = allMatches[0] as any;
+              const eventNo = firstMatch.EventNo || firstMatch.eventNo || firstMatch.NoEvent;
+              if (eventNo) {
+                fetchEventRefereeList(eventNo.toString()).catch(err => {
+                  console.warn('[TournamentDetail] Failed to fetch event referee list (fallback):', err);
+                });
+              }
+            }
           }
         } else if (matchResponse.success && matchResponse.xmlData) {
           allMatches = VisResponseParser.parseBeachMatches(matchResponse.xmlData, tournamentNo, tournamentTimezone, undefined, undefined, tournamentData);
+
+          // Fetch event referee list for Challenge Referee lookups using EventNo from first match
+          // (async, non-blocking - specs/006-match-officials-display)
+          if (allMatches.length > 0) {
+            const firstMatch = allMatches[0] as any;
+            const eventNo = firstMatch.EventNo || firstMatch.eventNo || firstMatch.NoEvent;
+            if (eventNo) {
+              fetchEventRefereeList(eventNo.toString()).catch(err => {
+                console.warn('[TournamentDetail] Failed to fetch event referee list (main):', err);
+              });
+            }
+          }
         }
       }
       
@@ -1904,23 +1969,25 @@ const TournamentDetailScreenContent: React.FC = () => {
                       return null;
                     })()}
 
-                    {/* US5: Refresh button (replaces Reset button) */}
-                    <TouchableOpacity
-                      style={styles.refreshButton}
-                      onPress={() => {
-                        // US5: Trigger data refresh while preserving filters
-                        onRefresh();
-                      }}
-                      disabled={refreshing}
-                    >
-                      <Icon name="refresh-cw" size={18} color={refreshing ? '#9CA3AF' : '#3B82F6'} />
-                      <Text style={[
-                        styles.refreshButtonText,
-                        refreshing && styles.refreshButtonTextDisabled
-                      ]}>
-                        {refreshing ? 'Refreshing...' : 'Refresh'}
-                      </Text>
-                    </TouchableOpacity>
+                    {/* US5: Refresh button (only for live tournaments) */}
+                    {getTournamentStatus() === 'LIVE NOW' && (
+                      <TouchableOpacity
+                        style={styles.refreshButton}
+                        onPress={() => {
+                          // US5: Trigger data refresh while preserving filters
+                          onRefresh();
+                        }}
+                        disabled={refreshing}
+                      >
+                        <Icon name="refresh-cw" size={18} color={refreshing ? '#9CA3AF' : '#3B82F6'} />
+                        <Text style={[
+                          styles.refreshButtonText,
+                          refreshing && styles.refreshButtonTextDisabled
+                        ]}>
+                          {refreshing ? 'Refreshing...' : 'Refresh'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
                   </View>
 
@@ -2783,7 +2850,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   resetButton: {
-    flex: 1,
+    flex: 0.3,  // 30% width
     backgroundColor: '#F3F4F6',
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -2799,7 +2866,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    flex: 1,
+    flex: 0.7,  // 70% width
     backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,

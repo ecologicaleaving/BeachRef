@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, Pressable, ScrollView, Platform } from 'react-native';
-import { BeachMatchCore, MatchStatus, MatchResult, MatchTeam, CourtInfo, canReadyToStartMatchGoLive, getEnhancedMatchStatus, mapVisMatchStatus } from '../../types/match-v2';
-import { BeachSetStatus } from '../../types/beach-live';
-import { MatchList, MatchCard } from '../entities/Match';
-import { useMatches, MatchesFilters } from '../../hooks/useMatches';
-import { MatchDTO } from '../../services/DualReadService';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { featureFlags } from '../../hooks/compatibility/FeatureFlags';
-import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { useRefereeScreenAnalytics } from '../../hooks/useAnalyticsCollection';
-import { TimezoneService, VISTimezoneFields } from '../../services/TimezoneService';
-import { formatMatchTimeForUser, isMatchToday as checkIfMatchToday } from '../../utils/matchTimeFormatter';
-import { DateTime } from 'luxon';
-import { designTokens, colors } from '../../theme/tokens';
+import { MatchesFilters, useMatches } from '../../hooks/useMatches';
+import { MatchDTO } from '../../services/DualReadService';
+import { VISTimezoneFields } from '../../services/TimezoneService';
+import { colors, designTokens } from '../../theme/tokens';
+import { BeachSetStatus } from '../../types/beach-live';
+import { BeachMatchCore, CourtInfo, MatchResult, MatchStatus, MatchTeam, canReadyToStartMatchGoLive, getEnhancedMatchStatus, mapVisMatchStatus } from '../../types/match-v2';
+import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
+import { isMatchToday as checkIfMatchToday, formatMatchTimeForUser } from '../../utils/matchTimeFormatter';
+import { MatchCard } from '../entities/Match';
 
 // Extended match type to include tournament-specific fields
 type ExtendedBeachMatch = BeachMatchCore & {
@@ -198,7 +197,7 @@ const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext)
 
     // Inject tournament context data for filtering
     tournamentGender: tournamentContext?.gender || (dto as any).tournamentGender,
-    
+
     // Ensure core fields override any conflicts from DTO
     id: beachMatchCore.id,
     visNo: beachMatchCore.visNo,
@@ -231,14 +230,13 @@ type MatchWithDurationFields = {
 };
 
 const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
-  
   // FIXED: Primary: Use total match duration from enhanced data (Duration field in seconds)
   const totalDurationSeconds = (match as any).Duration;
   if (totalDurationSeconds) {
     const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else {
@@ -251,41 +249,51 @@ const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
     const totalMinutes = match.result.duration;
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else {
       return `${minutes}m`;
     }
   }
-  
+
   // Fallback: Calculate from individual set durations
   // Handle both formats: seconds (integers) and "mm:ss" format (strings)
   const durationSet1 = (match as any).DurationSet1;
   const durationSet2 = (match as any).DurationSet2;
   const durationSet3 = (match as any).DurationSet3;
-  
+
   if (durationSet1 || durationSet2 || durationSet3) {
     // Check if durations are in "mm:ss" format (strings) or seconds (numbers)
-    const isStringFormat = typeof durationSet1 === 'string' && durationSet1.includes(':');
-    
+    // FIXED: Also handle "mm" format (strings without colon) by treating them as string format
+    const isStringFormat = (typeof durationSet1 === 'string') ||
+      (typeof durationSet2 === 'string') ||
+      (typeof durationSet3 === 'string');
+
     if (isStringFormat) {
-      // Use the utility function for "mm:ss" format
-      const totalDuration = calculateTotalDuration(durationSet1, durationSet2, durationSet3);
+      console.log('MatchListV2 Debug - String Format:', { durationSet1, durationSet2, durationSet3 });
+      // Use the utility function which now handles both "mm:ss" and "mm" formats
+      const totalDuration = calculateTotalDuration(
+        durationSet1?.toString(),
+        durationSet2?.toString(),
+        durationSet3?.toString()
+      );
+      console.log('MatchListV2 Debug - Calculated Total:', totalDuration);
       if (totalDuration) {
         return totalDuration;
       }
     } else {
+      console.log('MatchListV2 Debug - Number Format:', { durationSet1, durationSet2, durationSet3 });
       // Handle seconds format (integers) - ensure all three sets are included
-      const totalSeconds = (parseInt(durationSet1 || '0') + 
-                           parseInt(durationSet2 || '0') + 
-                           parseInt(durationSet3 || '0'));
-      
+      const totalSeconds = (parseInt(durationSet1 || '0') +
+        parseInt(durationSet2 || '0') +
+        parseInt(durationSet3 || '0'));
+
       if (totalSeconds > 0) {
         const totalMinutes = Math.floor(totalSeconds / 60);
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
-        
+
         if (hours > 0) {
           return `${hours}h ${minutes}m`;
         } else {
@@ -437,11 +445,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const loading = propLoading || (shouldUseHook ? hookLoading : false);
   const error = hookError?.message || null;
   // State for collapsible referees and dropdown
-  const [expandedReferees, setExpandedReferees] = useState<{[key: string]: boolean}>({});
+  const [expandedReferees, setExpandedReferees] = useState<{ [key: string]: boolean }>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
-  
+
   // State for collapsible date panels
-  const [expandedDates, setExpandedDates] = useState<{[key: string]: boolean}>({});
+  const [expandedDates, setExpandedDates] = useState<{ [key: string]: boolean }>({});
 
   // State for TBD matches panel
   const [tbdPanelExpanded, setTbdPanelExpanded] = useState<boolean>(false);
@@ -452,11 +460,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // State for live score refresh
   const [liveScoreRefresh, setLiveScoreRefresh] = useState<number>(0);
-  
-  
+
+
 
   // Date selector completely removed
-  
+
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>(() => {
     try {
       if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -488,7 +496,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       new_filter: court,
       is_external: !!externalCourtFilter
     });
-    
+
     if (onCourtFilterChange) {
       onCourtFilterChange(court);
     } else {
@@ -505,7 +513,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       new_filter: gender,
       is_external: !!externalGenderFilter
     });
-    
+
     if (onGenderFilterChange) {
       onGenderFilterChange(gender);
     } else {
@@ -533,7 +541,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       new_filter: referee,
       is_external: !!externalRefereeFilter
     });
-    
+
     if (onRefereeFilterChange) {
       onRefereeFilterChange(referee);
     } else {
@@ -653,10 +661,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       .map(match => match.court?.courtNumber)
       .filter((courtNumber): courtNumber is string => !!courtNumber)
       .map(courtNumber => String(courtNumber)); // Ensure all are strings
-    
+
     const unique = Array.from(new Set(courtNumbers)).sort();
-    
-    
+
+
     return unique;
   }, [activeMatches]);
 
@@ -804,7 +812,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       // Priority 1: First LIVE match (check both status and time-based logic)
       const isStatusRunning = match.status === MatchStatus.RUNNING;
       const isLikelyLive = matchTime.getTime() <= now.getTime() &&
-                          (now.getTime() - matchTime.getTime()) <= 75 * 60 * 1000; // Within 75 minutes of start time
+        (now.getTime() - matchTime.getTime()) <= 75 * 60 * 1000; // Within 75 minutes of start time
 
       if (isStatusRunning || isLikelyLive) {
         targetMatchIndex = i;
@@ -886,7 +894,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const allDates = groupedMatches.map(([date]) => date);
       const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
 
-      const initialExpanded: {[key: string]: boolean} = {};
+      const initialExpanded: { [key: string]: boolean } = {};
 
       // Check if today exists in the panels
       const todayExists = allDates.includes(today);
@@ -1044,10 +1052,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     if (isNaN(date.getTime())) {
       return 'TBD'; // fallback for invalid dates
     }
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
+      hour12: false
     });
   };
 
@@ -1057,13 +1065,13 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     if (isNaN(date.getTime())) {
       return dateString;
     }
-    
+
     const today = new Date();
-    
+
     // Always show actual date with weekday, month and day
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
-      month: 'long', 
+      month: 'long',
       day: 'numeric',
       year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
     });
@@ -1079,7 +1087,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       previous_status: statusFilter,
       matches_count_before: filteredMatches.length
     });
-    
+
     setEffectiveCourtFilter('All');
     setEffectiveGenderFilter('All');
     setEffectiveRefereeFilter('All');
@@ -1099,7 +1107,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         };
       } else {
         // If opening, close all others and open this one
-        const newState: {[key: string]: boolean} = {};
+        const newState: { [key: string]: boolean } = {};
         Object.keys(prev).forEach(key => {
           newState[key] = false;
         });
@@ -1161,7 +1169,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     if (matchDateTime) {
       const matchDate = new Date(matchDateTime);
       const now = new Date();
-      
+
       // If match was scheduled for the past and not explicitly cancelled/postponed, consider it completed
       if (matchDate < now && status === MatchStatus.SCHEDULED) {
         return { text: 'Final', color: designTokens.neutrals.textPrimary };
@@ -1219,21 +1227,21 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
         // If we also have set data, update the result
         if (liveScore.sets && liveScore.sets.length > 0) {
-        // Live score sets detail
-        // Create enhanced result from live score data
-        // FIXED: Only count FINISHED sets toward set totals, not in-progress sets
-        const finishedSets = liveScore.sets.filter((set: any) => set.status === BeachSetStatus.FINISHED);
+          // Live score sets detail
+          // Create enhanced result from live score data
+          // FIXED: Only count FINISHED sets toward set totals, not in-progress sets
+          const finishedSets = liveScore.sets.filter((set: any) => set.status === BeachSetStatus.FINISHED);
 
-        const liveResult = {
-          // Use matchPoints from teamA/teamB which represents sets won (more reliable than manual calculation)
-          team1Sets: liveScore.teamA?.matchPoints || 0,
-          team2Sets: liveScore.teamB?.matchPoints || 0,
-          winner: undefined, // Live matches don't have a winner yet
-          setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
-        };
+          const liveResult = {
+            // Use matchPoints from teamA/teamB which represents sets won (more reliable than manual calculation)
+            team1Sets: liveScore.teamA?.matchPoints || 0,
+            team2Sets: liveScore.teamB?.matchPoints || 0,
+            winner: undefined, // Live matches don't have a winner yet
+            setScores: liveScore.sets.flatMap((set: any) => [set.pointsTeamA, set.pointsTeamB])
+          };
 
-        // Update match with live result (status already updated above)
-        matchWithResult = {
+          // Update match with live result (status already updated above)
+          matchWithResult = {
             ...matchWithResult,
             result: liveResult
           };
@@ -1242,7 +1250,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
 
     return (
-      <View 
+      <View
         key={match.id}
         nativeID={`match-${match.id}`}
         onLayout={(event) => {
@@ -1385,105 +1393,105 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           styles.filtersContainer,
           showRefereeDropdown && styles.filtersContainerExpanded
         ]}>
-        {/* Referee Filter - positioned FIRST (T038: Enhanced with All Roles indicator) */}
-        {showRefereeFilter && uniqueReferees.length > 0 && (
-          <View style={styles.filterGroup}>
-            <View style={styles.filterLabelContainer}>
-              <Text style={styles.filterLabel}>Referee:</Text>
-              <Text style={styles.filterHint}>All Roles</Text>
-            </View>
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity
-                style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
-                onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
-              >
-                <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
-                  {effectiveRefereeFilter === 'All' ? 'ALL' : effectiveRefereeFilter.split(' ').pop()}
-                </Text>
-                <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
-                  {showRefereeDropdown ? '▲' : '▼'}
-                </Text>
-              </TouchableOpacity>
-              
-              {showRefereeDropdown && (
-                <>
-                  <Pressable
-                    style={styles.dropdownOverlay}
-                    onPress={() => setShowRefereeDropdown(false)}
-                  />
-                  <View style={styles.dropdownList}>
-                    <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                      <TouchableOpacity
-                        style={[styles.dropdownItem, effectiveRefereeFilter === 'All' && styles.dropdownItemActive]}
-                        onPress={() => {
-                          setEffectiveRefereeFilter('All');
-                          setShowRefereeDropdown(false);
-                        }}
-                      >
-                        <Text style={[styles.dropdownItemText, effectiveRefereeFilter === 'All' && styles.dropdownItemTextActive]}>
-                          ALL
-                        </Text>
-                      </TouchableOpacity>
-                      {uniqueReferees.map(referee => (
+          {/* Referee Filter - positioned FIRST (T038: Enhanced with All Roles indicator) */}
+          {showRefereeFilter && uniqueReferees.length > 0 && (
+            <View style={styles.filterGroup}>
+              <View style={styles.filterLabelContainer}>
+                <Text style={styles.filterLabel}>Referee:</Text>
+                <Text style={styles.filterHint}>All Roles</Text>
+              </View>
+              <View style={styles.dropdownContainer}>
+                <TouchableOpacity
+                  style={[styles.dropdownButton, showRefereeDropdown && styles.dropdownButtonActive]}
+                  onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
+                >
+                  <Text style={[styles.dropdownButtonText, showRefereeDropdown && styles.dropdownButtonTextActive]}>
+                    {effectiveRefereeFilter === 'All' ? 'ALL' : effectiveRefereeFilter.split(' ').pop()}
+                  </Text>
+                  <Text style={[styles.dropdownArrow, showRefereeDropdown && styles.dropdownArrowActive]}>
+                    {showRefereeDropdown ? '▲' : '▼'}
+                  </Text>
+                </TouchableOpacity>
+
+                {showRefereeDropdown && (
+                  <>
+                    <Pressable
+                      style={styles.dropdownOverlay}
+                      onPress={() => setShowRefereeDropdown(false)}
+                    />
+                    <View style={styles.dropdownList}>
+                      <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
                         <TouchableOpacity
-                          key={referee}
-                          style={[styles.dropdownItem, effectiveRefereeFilter === referee && styles.dropdownItemActive]}
+                          style={[styles.dropdownItem, effectiveRefereeFilter === 'All' && styles.dropdownItemActive]}
                           onPress={() => {
-                            setEffectiveRefereeFilter(referee);
+                            setEffectiveRefereeFilter('All');
                             setShowRefereeDropdown(false);
                           }}
                         >
-                          <Text style={[styles.dropdownItemText, effectiveRefereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
-                            {referee}
+                          <Text style={[styles.dropdownItemText, effectiveRefereeFilter === 'All' && styles.dropdownItemTextActive]}>
+                            ALL
                           </Text>
                         </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </>
-              )}
+                        {uniqueReferees.map(referee => (
+                          <TouchableOpacity
+                            key={referee}
+                            style={[styles.dropdownItem, effectiveRefereeFilter === referee && styles.dropdownItemActive]}
+                            onPress={() => {
+                              setEffectiveRefereeFilter(referee);
+                              setShowRefereeDropdown(false);
+                            }}
+                          >
+                            <Text style={[styles.dropdownItemText, effectiveRefereeFilter === referee && styles.dropdownItemTextActive]} numberOfLines={1}>
+                              {referee}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </>
+                )}
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {showGenderFilter && (
+          {showGenderFilter && (
+            <View style={styles.filterGroup}>
+              <Text style={styles.filterLabel}>Gender:</Text>
+              <View style={styles.filterButtons}>
+                {(['All', 'M', 'W'] as const).map(gender => (
+                  <TouchableOpacity
+                    key={gender}
+                    style={[styles.filterButton, effectiveGenderFilter === gender && styles.filterButtonActive]}
+                    onPress={() => setEffectiveGenderFilter(gender)}
+                  >
+                    <Text style={[styles.filterButtonText, effectiveGenderFilter === gender && styles.filterButtonTextActive]}>
+                      {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+
           <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Gender:</Text>
+            <Text style={styles.filterLabel}>Status:</Text>
             <View style={styles.filterButtons}>
-              {(['All', 'M', 'W'] as const).map(gender => (
+              {(['All', 'Scheduled', 'InProgress', 'Completed'] as const).map(status => (
                 <TouchableOpacity
-                  key={gender}
-                  style={[styles.filterButton, effectiveGenderFilter === gender && styles.filterButtonActive]}
-                  onPress={() => setEffectiveGenderFilter(gender)}
+                  key={status}
+                  style={[styles.filterButton, statusFilter === status && styles.filterButtonActive]}
+                  onPress={() => setStatusFilter(status)}
                 >
-                  <Text style={[styles.filterButtonText, effectiveGenderFilter === gender && styles.filterButtonTextActive]}>
-                    {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+                  <Text style={[styles.filterButtonText, statusFilter === status && styles.filterButtonTextActive]}>
+                    {status === 'InProgress' ? 'Live' : status}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
-        )}
 
-
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>Status:</Text>
-          <View style={styles.filterButtons}>
-            {(['All', 'Scheduled', 'InProgress', 'Completed'] as const).map(status => (
-              <TouchableOpacity
-                key={status}
-                style={[styles.filterButton, statusFilter === status && styles.filterButtonActive]}
-                onPress={() => setStatusFilter(status)}
-              >
-                <Text style={[styles.filterButtonText, statusFilter === status && styles.filterButtonTextActive]}>
-                  {status === 'InProgress' ? 'Live' : status}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {customFilters}
+          {customFilters}
         </View>
       )}
 
@@ -2170,7 +2178,7 @@ const styles = StyleSheet.create({
     color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
-  
+
   // Enhanced timeline date header styles
   timelineDateHeader: {
     backgroundColor: '#EFF6FF',
@@ -2198,7 +2206,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  
+
   // New collapsible panel styles
   dateHeaderContent: {
     flex: 1,
@@ -2226,7 +2234,7 @@ const styles = StyleSheet.create({
   matchesContainer: {
     marginBottom: 8,
   },
-  
+
   // Dropdown styles
   dropdownContainer: {
     position: 'relative',

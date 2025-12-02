@@ -4,7 +4,7 @@
  * Professional Referee Tool Visual Identity
  */
 
-import { Platform, PixelRatio } from 'react-native';
+import { PixelRatio } from 'react-native';
 
 export interface BrandAsset {
   uri: string;
@@ -29,13 +29,13 @@ export interface BrandAssetSet {
 export const brandAssets = {
   logo: {
     primary: {
-      // Using React Native's default icon as placeholder
-      light: require('../../assets/images/icon.png'),
-      dark: require('../../assets/images/icon.png'),
+      // Using new BeachRef logo
+      light: require('../../assets/images/beachref-logo.png'),
+      dark: require('../../assets/images/beachref-logo.png'),
     },
     symbol: {
-      light: require('../../assets/images/icon.png'),
-      dark: require('../../assets/images/icon.png'),
+      light: require('../../assets/images/beachref-logo.png'),
+      dark: require('../../assets/images/beachref-logo.png'),
     }
   },
   splash: {
@@ -55,7 +55,7 @@ export const brandAssets = {
  */
 export function getBrandAsset(assetPath: any): BrandAsset {
   const scale = PixelRatio.get();
-  
+
   // For React Native, assets are automatically selected based on @2x, @3x naming
   // This function provides metadata and fallback logic
   return {
@@ -78,14 +78,14 @@ export const assetConfig = {
     brandAssets.logo.symbol.light,
     brandAssets.logo.symbol.dark,
   ],
-  
+
   // Asset loading priorities
   priorities: {
     critical: ['logo.primary', 'logo.symbol'],
     high: ['splash.logo', 'icons.app'],
     normal: ['splash.background'],
   },
-  
+
   // Performance optimization settings
   caching: {
     maxCacheSize: 50 * 1024 * 1024, // 50MB cache limit
@@ -103,7 +103,7 @@ export async function preloadBrandAssets(): Promise<void> {
       // This is more relevant for remote assets
       return Promise.resolve(asset);
     });
-    
+
     await Promise.all(prefetchPromises);
     // console.log('✅ Brand assets preloaded successfully');
   } catch (error) {
@@ -120,7 +120,7 @@ export function getResponsiveBrandAsset(
 ): BrandAsset {
   const asset = brandAssets.logo.primary[assetKey];
   const scale = PixelRatio.get();
-  
+
   return {
     uri: asset,
     width: Math.min(maxWidth * scale, maxWidth),
@@ -135,13 +135,13 @@ export function getResponsiveBrandAsset(
 export function validateBrandAssets(): boolean {
   const requiredAssets = [
     'logo.primary.light',
-    'logo.primary.dark', 
+    'logo.primary.dark',
     'logo.symbol.light',
     'logo.symbol.dark',
     'splash.background',
     'splash.logo',
   ];
-  
+
   // In production, implement actual asset existence validation
   // For now, assume all assets exist since they're bundled
   // console.log('✅ All required brand assets are available');

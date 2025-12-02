@@ -63,6 +63,7 @@ export interface TimezoneConversionResult {
   debug?: {
     originalLocalDate?: string;
     originalLocalTime?: string;
+    scheduledDateTime?: string;
     detectedTimezone?: string;
     userTimezone?: string;
     fallbackReason?: string;
@@ -100,6 +101,9 @@ export function convertMatchTimeToUserTime(
   };
 
 
+  // Get explicit timezone if available (from parser's pre-validated timezone)
+  const explicitTimezone = tournamentData?.defaultTimeZone;
+
   // Method 1: Use LocalDate + LocalTime with tournament location-based timezone detection
   if (matchData.LocalDate && matchData.LocalTime) {
 
@@ -107,7 +111,8 @@ export function convertMatchTimeToUserTime(
       matchData.LocalDate,
       matchData.LocalTime,
       location,
-      userTz
+      userTz,
+      explicitTimezone // Pass explicit timezone to bypass detection if available
     );
 
     if (result) {
@@ -116,7 +121,7 @@ export function convertMatchTimeToUserTime(
         userDateTime: result.myTime,
         conversionMethod: 'local_detected',
         timezoneDetection: result.detection,
-        sourceFields: ['LocalDate', 'LocalTime', 'TournamentLocation'],
+        sourceFields: ['LocalDate', 'LocalTime', explicitTimezone ? 'ExplicitTimezone' : 'TournamentLocation'],
         reliable: result.detection.confidence === 'high',
         debug: {
           originalLocalDate: matchData.LocalDate,
@@ -145,7 +150,8 @@ export function convertMatchTimeToUserTime(
         localDate,
         localTime,
         location,
-        userTz
+        userTz,
+        explicitTimezone // Pass explicit timezone to bypass detection if available
       );
 
       if (result) {
@@ -154,7 +160,7 @@ export function convertMatchTimeToUserTime(
           userDateTime: result.myTime,
           conversionMethod: 'local_detected',
           timezoneDetection: result.detection,
-          sourceFields: ['scheduledDateTime', 'TournamentLocation'],
+          sourceFields: ['scheduledDateTime', explicitTimezone ? 'ExplicitTimezone' : 'TournamentLocation'],
           reliable: result.detection.confidence === 'high',
           debug: {
             originalLocalDate: localDate,

@@ -577,24 +577,38 @@ export function detectTournamentTimezone(location: TournamentLocation): Timezone
 }
 
 /**
- * Convert local tournament time to UTC using detected timezone
+ * Convert local tournament time to UTC using detected or explicit timezone
  *
  * @param localDate - Local date string (YYYY-MM-DD)
  * @param localTime - Local time string (HH:mm or HH:mm:ss)
  * @param tournamentLocation - Tournament location data
+ * @param explicitTimezone - Explicit timezone (optional, bypasses detection if provided)
  * @returns UTC ISO string or null if conversion fails
  */
 export function convertTournamentTimeToUTC(
   localDate: string,
   localTime: string,
-  tournamentLocation: TournamentLocation
+  tournamentLocation: TournamentLocation,
+  explicitTimezone?: string
 ): { utcIso: string; detection: TimezoneDetectionResult } | null {
   try {
     // Ensure time format includes seconds
     const normalizedTime = /^\d{2}:\d{2}$/.test(localTime) ? `${localTime}:00` : localTime;
 
-    // Detect timezone
-    const detection = detectTournamentTimezone(tournamentLocation);
+    // Use explicit timezone if provided, otherwise detect from location
+    let detection: TimezoneDetectionResult;
+    if (explicitTimezone && explicitTimezone !== 'UTC') {
+      // Use the explicit timezone (already validated by parser)
+      detection = {
+        timezone: explicitTimezone,
+        confidence: 'high',
+        source: 'city_country', // Treat as high confidence since it was pre-validated
+        detectedFrom: 'explicit_timezone_parameter'
+      };
+    } else {
+      // Fallback to location-based detection
+      detection = detectTournamentTimezone(tournamentLocation);
+    }
 
     // Parse local date/time in detected timezone
     const localDateTime = DateTime.fromISO(`${localDate}T${normalizedTime}`, {
@@ -655,13 +669,15 @@ export function convertUTCToUserTime(utcIso: string, userTimezone?: string): str
  * @param localTime - Tournament local time (HH:mm or HH:mm:ss)
  * @param tournamentLocation - Tournament location data
  * @param userTimezone - User's timezone (optional, defaults to browser)
+ * @param explicitTournamentTimezone - Explicit tournament timezone (optional, bypasses detection if provided)
  * @returns User's local time as HH:mm with timezone detection info
  */
 export function calculateMyTime(
   localDate: string,
   localTime: string,
   tournamentLocation: TournamentLocation,
-  userTimezone?: string
+  userTimezone?: string,
+  explicitTournamentTimezone?: string
 ): {
   myTime: string;
   utcTime: string;
@@ -669,7 +685,7 @@ export function calculateMyTime(
 } | null {
   try {
     // Step 1: Convert tournament local time to UTC
-    const utcResult = convertTournamentTimeToUTC(localDate, localTime, tournamentLocation);
+    const utcResult = convertTournamentTimeToUTC(localDate, localTime, tournamentLocation, explicitTournamentTimezone);
 
     if (!utcResult) {
       return null;

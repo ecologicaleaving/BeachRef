@@ -1,20 +1,20 @@
 // VIS API Optimization: Monitoring Setup (Phase 1)
 // Platform detection
-import { Stack, usePathname } from "expo-router";
-import React, { useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
-import { Platform } from 'react-native';
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { Stack, usePathname } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
+import { Platform } from 'react-native';
 import { preloadBrandAssets } from "../assets/brand";
-import { colors } from "../theme/tokens";
-import { queryClient } from "../lib/queryClient";
-import { asyncStoragePersister, migrateAsyncStorageData, handlePersistenceError } from "../lib/queryPersistence";
-import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { QueryDevTools } from "../components/DevTools/QueryDevTools";
-import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
-import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { useAnalytics } from "../hooks/useAnalytics";
+import { AssignmentStatusProvider } from "../hooks/useAssignmentStatus";
+import { queryClient } from "../lib/queryClient";
+import { enablePerformanceMonitoring } from "../lib/queryPerformance";
+import { asyncStoragePersister, handlePersistenceError, migrateAsyncStorageData } from "../lib/queryPersistence";
+import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { injectCSSVariables } from "../theme/css-variables";
+import { colors } from "../theme/tokens";
 
 const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
@@ -71,7 +71,7 @@ export default function RootLayout() {
           ) {
             ev.preventDefault();
           }
-        } catch {}
+        } catch { }
       };
       window.addEventListener('unhandledrejection', handler);
       return () => window.removeEventListener('unhandledrejection', handler);
@@ -86,18 +86,23 @@ export default function RootLayout() {
 
     // Initialize cache warmup service and brand assets on app start
     const initializeApp = async () => {
+      console.log('App initialization starting...');
       try {
         // Enable performance monitoring for TanStack Query
         enablePerformanceMonitoring(queryClient);
+        console.log('Performance monitoring enabled');
 
         // Migrate existing AsyncStorage data if needed
         await migrateAsyncStorageData();
+        console.log('AsyncStorage migration completed');
 
         // Initialize brand assets
         await preloadBrandAssets();
+        console.log('Brand assets preloaded');
 
         // Initialize tournament cache warming service
         TournamentCacheWarmingService.startBackgroundWarming();
+        console.log('Cache warming started');
 
         // Performance monitoring and data persistence handled by queryClient
 
@@ -105,6 +110,7 @@ export default function RootLayout() {
         // Handle initialization errors gracefully
         console.warn('App initialization warning:', error);
       }
+      console.log('App initialization completed');
     };
 
     initializeApp();
@@ -127,11 +133,11 @@ export default function RootLayout() {
       onError={handlePersistenceError}
     >
       <AssignmentStatusProvider>
-        <StatusBar 
-          style="light" 
+        <StatusBar
+          style="light"
           backgroundColor={colors.primary}
         />
-        <Stack screenOptions={{ 
+        <Stack screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.background }
         }}>

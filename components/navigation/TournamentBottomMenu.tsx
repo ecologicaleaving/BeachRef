@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter, usePathname } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { Calendar, Users } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { shadowPresets } from '../../theme/shadows';
+import { colors } from '../../theme/tokens';
 
 interface TournamentBottomMenuProps {
   activeTab?: 'schedule' | 'officials';
@@ -74,7 +75,7 @@ export const TournamentBottomMenu: React.FC<TournamentBottomMenuProps> = ({
           >
             <IconComponent
               size={20}
-              color={active ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)'}
+              color={active ? colors.accent : colors.textSecondary}
             />
           </TouchableOpacity>
         );
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
     paddingBottom: 12,
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeMenuItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
 });
 

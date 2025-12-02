@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { Filter, Home, RefreshCw } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  SafeAreaView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Home, Filter, RefreshCw } from 'lucide-react-native';
-import { GlobalStatusBar } from './GlobalStatusBar';
+import { DefaultTournamentService } from '../../services/DefaultTournamentService';
+import { colors } from '../../theme/tokens';
 import { WhistleLogo } from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
+import { GlobalStatusBar } from './GlobalStatusBar';
 import { GmailStyleSideMenu } from './GmailStyleSideMenu';
-import { DefaultTournamentService } from '../../services/DefaultTournamentService';
 
 interface NavigationHeaderProps {
   title: string;
@@ -44,7 +45,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showFilterButton = false,
   onFilterPress,
   rightComponent,
-  backgroundColor = '#1B365D',
+  backgroundColor = colors.primary,
   titleColor = '#FFFFFF',
   showStatusBar = true,
   onStatusPress,
@@ -87,12 +88,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       {showStatusBar && (
-        <GlobalStatusBar 
-          onStatusPress={onStatusPress} 
+        <GlobalStatusBar
+          onStatusPress={onStatusPress}
           compact={false}
         />
       )}
-      
+
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
           {showHomeButton && (
@@ -156,7 +157,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           )}
         </View>
       </View>
-      
+
       <GmailStyleSideMenu
         isVisible={sideMenuVisible}
         onClose={() => setSideMenuVisible(false)}
@@ -168,7 +169,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
   },
   container: {
     flexDirection: 'row',

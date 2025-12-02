@@ -1,30 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
   SectionList,
   StyleSheet,
-  ActivityIndicator,
+  Text,
   TouchableOpacity,
-  Alert,
-  RefreshControl,
-  Dimensions,
-  Pressable,
-  Switch,
-  Platform,
-  ScrollView,
+  View
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Icon } from '../components/Icons/MaterialCommunityIcons';
-import { TournamentCore } from '../types/tournament-v2';
-import { colors, designTokens } from '../theme/tokens';
-import NavigationHeader from '../components/navigation/NavigationHeader';
 import { TournamentCard } from '../components/entities/Tournament';
-import { DefaultTournamentService } from '../services/DefaultTournamentService';
-import { useTournamentLoading } from '../hooks/useTournamentLoading';
+import { Icon } from '../components/Icons/MaterialCommunityIcons';
+import NavigationHeader from '../components/navigation/NavigationHeader';
 import { EmptyTournamentState } from '../components/tournament/EmptyTournamentState';
 import { TournamentLoadingSkeleton } from '../components/tournament/TournamentLoadingSkeleton';
+import { useTournamentLoading } from '../hooks/useTournamentLoading';
 import { errorTransformService } from '../services/ErrorTransformService';
+import { colors, designTokens } from '../theme/tokens';
+import { TournamentCore } from '../types/tournament-v2';
 import { getVisApiBaseUrl } from '../utils/visApiConfig';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
@@ -61,8 +56,8 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   // Simplified state - season/month hierarchy
-  const [expandedSeasons, setExpandedSeasons] = useState<{[key: string]: boolean}>({});
-  const [expandedMonths, setExpandedMonths] = useState<{[key: string]: boolean}>({});
+  const [expandedSeasons, setExpandedSeasons] = useState<{ [key: string]: boolean }>({});
+  const [expandedMonths, setExpandedMonths] = useState<{ [key: string]: boolean }>({});
   const [hierarchyInitialized, setHierarchyInitialized] = useState<boolean>(false);
 
   // US5 - Filter Panel: Filter state and panel visibility
@@ -96,7 +91,7 @@ const TournamentSelectionScreen: React.FC = () => {
     try {
       // US1 - Loading States: Set loading state
       setLoading();
-      
+
       try {
         // Try VIS API first
         const { VisApiClient } = await import('../services/api/VisApiClient');
@@ -161,28 +156,28 @@ const TournamentSelectionScreen: React.FC = () => {
     setTimeout(async () => {
       try {
         let enhancedCount = 0;
-        
+
         // Process tournaments in small batches
         for (let i = 0; i < tournaments.length; i++) {
           const tournament = tournaments[i];
-          
+
           try {
             const tournamentResponse = await visApi.getBeachTournament({
               tournamentNo: tournament.visNo,
               includeLocation: false,
               includeVenue: false
             });
-            
+
             if (tournamentResponse.success && tournamentResponse.xmlData) {
               // Extract the real tournament number from response
               const tournamentNoMatch = tournamentResponse.xmlData.match(/<BeachTournament[^>]*No="([^"]*)"[^>]*>/);
               if (tournamentNoMatch) {
                 const realTournamentNo = tournamentNoMatch[1];
-                
+
                 // Update the tournament object in place
                 (tournament as any).tournamentNo = realTournamentNo;
                 enhancedCount++;
-                
+
                 // Update state incrementally so UI stays responsive
                 if (enhancedCount % 3 === 0) { // Update every 3 enhancements
                   setTournaments([...tournaments]); // Trigger re-render
@@ -193,21 +188,21 @@ const TournamentSelectionScreen: React.FC = () => {
             } else {
               (tournament as any).tournamentNo = tournament.visNo; // Fallback
             }
-            
+
             // Small delay to avoid overwhelming the API and keep UI responsive
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
           } catch (error) {
             (tournament as any).tournamentNo = tournament.visNo; // Fallback
           }
         }
-        
+
         // Final state update when all done
         const updatedTournaments = [...tournaments];
         setTournaments(updatedTournaments);
-        
+
         // No need to update categories - showing all tournaments
-        
+
       } catch (error) {
         // Silent error handling for background process
       }
@@ -219,7 +214,7 @@ const TournamentSelectionScreen: React.FC = () => {
     // Check tournament name for category indicators if visType is not helpful
     const name = (tournamentName || '').toUpperCase();
     const type = (visType || '').toUpperCase();
-    
+
     // Check name first for BPT categories
     if (name.includes('BPT') || name.includes('BEACH PRO TOUR') || name.includes('ELITE16')) {
       if (name.includes('ELITE') || name.includes('ELITE16')) return 'BPT ELITE';
@@ -227,22 +222,22 @@ const TournamentSelectionScreen: React.FC = () => {
       if (name.includes('FUTURES')) return 'BPT FUTURES';
       return 'BPT';
     }
-    
+
     // Check name for FIVB
     if (name.includes('FIVB') || name.includes('WORLD CHAMPIONSHIP') || name.includes('WORLD TOUR')) {
       return 'FIVB';
     }
-    
+
     // Check name for CEV
     if (name.includes('CEV') || name.includes('EUROPEAN') || name.includes('CONTINENTAL')) {
       return 'CEV';
     }
-    
+
     // Check name for NORCECA
     if (name.includes('NORCECA') || name.includes('NORTH AMERICAN') || name.includes('CENTRAL AMERICAN')) {
       return 'NORCECA';
     }
-    
+
     // Check visType as fallback
     if (type.includes('FIVB')) return 'FIVB';
     if (type.includes('BPT') || type.includes('BEACH PRO TOUR')) {
@@ -253,7 +248,7 @@ const TournamentSelectionScreen: React.FC = () => {
     }
     if (type.includes('CEV')) return 'CEV';
     if (type.includes('NORCECA')) return 'NORCECA';
-    
+
     return 'LOCAL';
   };
 
@@ -275,7 +270,7 @@ const TournamentSelectionScreen: React.FC = () => {
         const alternativeMatches = xmlData.match(alternativeRegex) || [];
         // Alternative Event matches
       }
-      
+
       eventMatches.forEach((eventMatch, index) => {
         const getValue = (tagName: string): string => {
           // Fix: Extract from attributes in self-closing tags
@@ -283,7 +278,7 @@ const TournamentSelectionScreen: React.FC = () => {
           const result = eventMatch.match(regex);
           return result ? result[1] : '';
         };
-        
+
         const visNo = getValue('No');
         const code = getValue('Code');
         const name = getValue('Name');
@@ -298,9 +293,9 @@ const TournamentSelectionScreen: React.FC = () => {
         const gender = getValue('Gender');
         const type = getValue('Type'); // Extract tournament type from VIS API
         const countryCode = getValue('CountryCode');
-        
+
         // Parse location data from VIS API
-        
+
         if (visNo && name) {
           const tournament: TournamentCore = {
             id: `tournament_${visNo}_${index}`,
@@ -326,15 +321,15 @@ const TournamentSelectionScreen: React.FC = () => {
             ...(venue && { venue }),
             ...(continent && { continent })
           } as any;
-          
+
           tournaments.push(tournament);
         }
       });
-      
+
     } catch (error) {
       // Silent error handling for XML parsing
     }
-    
+
     return tournaments;
   };
 
@@ -346,9 +341,9 @@ const TournamentSelectionScreen: React.FC = () => {
       try {
         // Starting tournament load - using unified loading state
         setLoading();
-        
+
         // DIRECT API CALL - Bypass broken cache system
-        
+
         const { VisApiClient } = await import('../services/api/VisApiClient');
         const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
 
@@ -362,20 +357,20 @@ const TournamentSelectionScreen: React.FC = () => {
         };
 
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-        
+
         // Making API call with tournamentType: BPT
         const response = await visApi.getEventList({
           tournamentType: 'BPT',
           maxResults: 50
         });
-        
+
         // API response received
-        
+
         if (response.success && response.xmlData) {
           try {
             // Parse manually
             const visTournaments = parseXMLDirectly(response.xmlData);
-            
+
             // Use VIS tournaments
             const finalTournaments = visTournaments;
 
@@ -395,14 +390,14 @@ const TournamentSelectionScreen: React.FC = () => {
           // US3 & US4: API returned no data - throw error to show proper message
           throw new Error('VIS API returned no data');
         }
-        
+
       } catch (error) {
         // US3 & US4: Transform error to user-friendly message
         const apiError = errorTransformService.transformError(error);
         setLoadingError(apiError);
       }
     };
-    
+
     runDirectApiCall();
   }, []); // Empty dependency array - run once on mount
 
@@ -425,14 +420,14 @@ const TournamentSelectionScreen: React.FC = () => {
 
   const handleTournamentPress = (tournament: TournamentCore) => {
     const merged = (tournament as any)._mergedTournaments;
-    
+
     // Ensure _mergedTournaments and tournamentNo are preserved in JSON serialization
     const tournamentWithMerged = {
       ...tournament,
       _mergedTournaments: merged,
       tournamentNo: (tournament as any).tournamentNo // Pass the real tournament number
     };
-    
+
     router.push({
       pathname: '/tournament-detail',
       params: { tournamentData: JSON.stringify(tournamentWithMerged) }
@@ -442,7 +437,7 @@ const TournamentSelectionScreen: React.FC = () => {
   // Generate dynamic categories based on actual tournament data
   const generateDynamicCategories = (tournaments: TournamentCore[]): string[] => {
     const categories = new Set<string>(['ALL']); // Always include ALL
-    
+
     tournaments.forEach(tournament => {
       // Use VIS API tournamentType if available
       if (tournament.tournamentType) {
@@ -450,7 +445,7 @@ const TournamentSelectionScreen: React.FC = () => {
       } else {
         // Fallback: Infer type from name
         const name = (tournament.name || tournament.title || '').toUpperCase();
-        
+
         if (name.includes('FIVB') || name.includes('WORLD CHAMPIONSHIP') || name.includes('WORLD TOUR')) {
           categories.add('FIVB');
         } else if (name.includes('BPT') || name.includes('BEACH PRO TOUR')) {
@@ -473,13 +468,13 @@ const TournamentSelectionScreen: React.FC = () => {
         }
       }
     });
-    
+
     // Sort categories by importance - prioritize the requested categories
     const categoryOrder = ['ALL', 'FIVB', 'BPT ELITE', 'BPT CHALLENGER', 'BPT FUTURES', 'BPT', 'CEV', 'NORCECA', 'LOCAL'];
     const sortedCategories = Array.from(categories).sort((a, b) => {
       const aIndex = categoryOrder.indexOf(a);
       const bIndex = categoryOrder.indexOf(b);
-      
+
       if (aIndex !== -1 && bIndex !== -1) {
         return aIndex - bIndex;
       } else if (aIndex !== -1) {
@@ -490,21 +485,21 @@ const TournamentSelectionScreen: React.FC = () => {
         return a.localeCompare(b);
       }
     });
-    
+
     return sortedCategories;
   };
 
   // Match tournament to category with flexible patterns
   const matchesTournamentCategory = (tournament: TournamentCore, category: string): boolean => {
     if (category === 'ALL') return true;
-    
+
     // Primary matching: Use VIS API tournamentType field (most reliable)
     if (tournament.tournamentType) {
       const tournamentType = tournament.tournamentType.toUpperCase();
-      
+
       // Direct type matching
       if (tournamentType === category) return true;
-      
+
       // Handle category variations
       switch (category) {
         case 'FIVB':
@@ -527,11 +522,11 @@ const TournamentSelectionScreen: React.FC = () => {
           if (tournamentType === category) return true;
       }
     }
-    
+
     // Fallback: Pattern-based matching in tournament name/title (for data without tournamentType)
     const name = (tournament.name || tournament.title || '').toUpperCase();
     const allText = name.trim();
-    
+
     switch (category) {
       case 'FIVB':
         return allText.includes('FIVB') || allText.includes('WORLD CHAMPIONSHIP') || allText.includes('WORLD TOUR');
@@ -549,7 +544,7 @@ const TournamentSelectionScreen: React.FC = () => {
         return allText.includes('NORCECA') || allText.includes('NORTH AMERICAN') || allText.includes('CENTRAL AMERICAN') || allText.includes('CARIBBEAN');
       case 'LOCAL':
         return allText.includes('NATIONAL') || allText.includes('DOMESTIC') || allText.includes('CHAMPIONSHIP') ||
-               allText.includes('REGIONAL') || allText.includes('LOCAL');
+          allText.includes('REGIONAL') || allText.includes('LOCAL');
       default:
         // For any other category, check if it appears in the tournament text
         return allText.includes(category);
@@ -835,7 +830,7 @@ const TournamentSelectionScreen: React.FC = () => {
 
     return sections;
   }, [tournaments, expandedSeasons, expandedMonths, activeStatusFilter, activeTypeFilter]);
-  
+
   // Initialize expanded seasons and months - 2025 season open, current month open
   useEffect(() => {
     if (tournaments.length > 0 && !hierarchyInitialized) {
@@ -845,13 +840,13 @@ const TournamentSelectionScreen: React.FC = () => {
       const currentMonthKey = getMonthKey(currentYear, currentMonth);
 
       // Initialize seasons - only 2025 expanded
-      const initialSeasons: {[key: string]: boolean} = {};
+      const initialSeasons: { [key: string]: boolean } = {};
       for (let year = 2001; year <= 2026; year++) {
         initialSeasons[getSeasonKey(year)] = year === 2025;
       }
 
       // Initialize months - only current month expanded if in 2025
-      const initialMonths: {[key: string]: boolean} = {};
+      const initialMonths: { [key: string]: boolean } = {};
       if (currentYear === 2025) {
         initialMonths[currentMonthKey] = true;
       }
@@ -861,7 +856,7 @@ const TournamentSelectionScreen: React.FC = () => {
       setHierarchyInitialized(true);
     }
   }, [tournaments.length, hierarchyInitialized]);
-  
+
   // Toggle season expansion (accordion - close others)
   const toggleSeasonExpansion = (seasonKey: string) => {
     setExpandedSeasons(prev => {
@@ -874,7 +869,7 @@ const TournamentSelectionScreen: React.FC = () => {
         };
       } else {
         // If opening, close all others and open this one
-        const newState: {[key: string]: boolean} = {};
+        const newState: { [key: string]: boolean } = {};
         Object.keys(prev).forEach(key => {
           newState[key] = false;
         });
@@ -898,7 +893,7 @@ const TournamentSelectionScreen: React.FC = () => {
         };
       } else {
         // If opening, close all others and open this one
-        const newState: {[key: string]: boolean} = {};
+        const newState: { [key: string]: boolean } = {};
         Object.keys(prev).forEach(key => {
           newState[key] = false;
         });
@@ -984,10 +979,10 @@ const TournamentSelectionScreen: React.FC = () => {
       const count = tournaments.filter(tournament => {
         if (!tournament.dates?.startDate) return false;
         if (tournament.status && tournament.status.toLowerCase().includes('cancelled')) return false;
-        
+
         return matchesTournamentCategory(tournament, category);
       }).length;
-      
+
       return { category, count };
     }).filter(item => item.count > 0 || item.category === 'ALL'); // Keep ALL even if 0, filter others
   };
@@ -995,10 +990,10 @@ const TournamentSelectionScreen: React.FC = () => {
   const renderCategoryDropdown = () => {
     const categoriesWithCounts = getCategoriesWithCounts();
     const selectedCategory = categoriesWithCounts.find(item => item.category === selectedType);
-    
+
     return (
       <View style={styles.filterRowContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.dropdownButton}
           onPress={() => setShowDropdown(!showDropdown)}
           accessibilityRole="button"
@@ -1013,14 +1008,14 @@ const TournamentSelectionScreen: React.FC = () => {
             {showDropdown ? '▲' : '▼'}
           </Text>
         </TouchableOpacity>
-        
+
         {showDropdown && (
-          <View 
+          <View
             style={styles.dropdownList}
             accessible={true}
             accessibilityLabel="Category selection dropdown"
           >
-            <ScrollView 
+            <ScrollView
               style={styles.dropdownScroll}
               showsVerticalScrollIndicator={false}
               nestedScrollEnabled={true}
@@ -1705,13 +1700,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   seasonHeader: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: colors.primary, // Dark Titanium
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginTop: 20, // Restore original margin
     marginBottom: 0,
     borderBottomWidth: 2,
-    borderBottomColor: '#1976D2',
+    borderBottomColor: colors.accent, // Gold border
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1725,8 +1720,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   expandedSeasonHeader: {
-    backgroundColor: '#BBDEFB',
-    borderColor: '#0D47A1',
+    backgroundColor: colors.secondary, // Medium Titanium
+    borderColor: colors.accent,
     shadowOpacity: 0.15,
   },
   seasonHeaderContent: {
@@ -1738,20 +1733,20 @@ const styles = StyleSheet.create({
   seasonHeaderText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1976D2',
+    color: '#FFFFFF', // White text on dark background
   },
   seasonContent: {
     paddingLeft: 16,
     marginBottom: 8,
   },
   monthHeader: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 8, // Restore original margin
     marginBottom: 0,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: designTokens.neutrals.borderSubtle,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1765,8 +1760,8 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   expandedMonthHeader: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
+    backgroundColor: designTokens.neutrals.bgPage,
+    borderColor: colors.secondary,
     shadowOpacity: 0.1,
   },
   monthHeaderContent: {
@@ -1778,7 +1773,7 @@ const styles = StyleSheet.create({
   monthHeaderText: {
     fontSize: 15,
     fontWeight: '600',
-    color: designTokens.neutrals.textPrimary,
+    color: colors.textPrimary,
   },
   tournamentCountText: {
     fontSize: 13,
@@ -1852,7 +1847,7 @@ const styles = StyleSheet.create({
   allTournamentsSectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1B365D',
+    color: colors.primary,
     letterSpacing: 0.5,
   },
   // LIVE tournaments section styles
@@ -1880,7 +1875,7 @@ const styles = StyleSheet.create({
   filterToggleLink: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#4A90A4',
+    color: colors.accent,
     textDecorationLine: 'underline',
   },
   expandableFiltersPanel: {
@@ -1912,17 +1907,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#1B365D',
+    borderColor: colors.primary,
     backgroundColor: 'transparent',
     flex: 1,
     alignItems: 'center',
     minWidth: 0,
   },
   activePeriodButton: {
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
   },
   periodButtonText: {
-    color: '#1B365D',
+    color: colors.primary,
     fontWeight: '600',
     fontSize: 13,
   },
@@ -1993,14 +1988,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FF6B35',
+    borderColor: colors.accent,
     backgroundColor: 'transparent',
     gap: 8,
   },
   resetButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FF6B35',
+    color: colors.accent,
   },
   saveCloseButton: {
     flex: 1,
@@ -2010,7 +2005,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
     gap: 8,
   },
   saveCloseButtonText: {

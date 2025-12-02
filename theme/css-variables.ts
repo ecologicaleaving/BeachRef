@@ -16,7 +16,7 @@ import { designTokens } from './tokens';
  * Following the primitive + semantic architecture from the design guide
  */
 export const generateCSSVariables = (): string => {
-  const { brandBlue, spacing } = designTokens;
+  const { brandBlue, spacing, neutrals } = designTokens;
 
   return `
     :root {
@@ -24,7 +24,7 @@ export const generateCSSVariables = (): string => {
       /* STEP 1: PRIMITIVE TOKENS (mattoni/building blocks)          */
       /* ============================================================ */
 
-      /* Brand blues */
+      /* Brand Scale (Zinc/Titanium) */
       --brandBlue-900: ${brandBlue[900]};
       --brandBlue-700: ${brandBlue[700]};
       --brandBlue-600: ${brandBlue[600]};
@@ -32,21 +32,22 @@ export const generateCSSVariables = (): string => {
       --brandBlue-300: ${brandBlue[300]};
 
       /* Neutrals */
-      --neutral-50: #FFFFFF;
-      --neutral-100: #F7FAFE;
-      --neutral-200: #E3ECF7;
-      --neutral-300: #CFE3FA;
-      --neutral-500: #90A4BF;
-      --neutral-700: #5F6E86;
-      --neutral-900: #0D1A2B;
+      --neutral-50: ${neutrals.bgPage};
+      --neutral-100: #F4F4F5;
+      --neutral-200: ${neutrals.borderSubtle};
+      --neutral-300: #D4D4D8;
+      --neutral-500: #71717A;
+      --neutral-700: ${brandBlue[700]};
+      --neutral-900: ${neutrals.textPrimary};
 
       /* Stati */
-      --red-500: #D92D20;
-      --red-50: #FEE4E2;
-      --info-500: #1F5AA6;
-      --info-50: #E9F2FF;
-      --green-500: #027A48;
-      --green-50: #EAF7F0;
+      --red-500: #B91C1C;
+      --red-50: #FEE2E2;
+      --info-500: ${brandBlue[600]};
+      --info-50: #F4F4F5;
+      --green-500: #15803D;
+      --green-50: #DCFCE7;
+      --amber-600: #D97706; /* Accent */
 
       /* ============================================================ */
       /* STEP 2: SEMANTIC TOKENS (ruoli UI/UI roles)                 */
@@ -54,40 +55,40 @@ export const generateCSSVariables = (): string => {
 
       /* Semantic: Page & Surfaces */
       --bg-page: var(--neutral-50);
-      --bg-surface: var(--neutral-100);
+      --bg-surface: ${neutrals.bgSurface};
       --border-subtle: var(--neutral-200);
 
       /* Semantic: Text */
       --text-primary: var(--neutral-900);
-      --text-secondary: var(--neutral-700);
+      --text-secondary: ${neutrals.textSecondary};
 
       /* Semantic: Links */
-      --link-default: var(--brandBlue-500);
-      --link-hover: var(--brandBlue-600);
+      --link-default: var(--amber-600);
+      --link-hover: #B45309;
 
       /* Semantic: Buttons - Primary */
-      --button-primary-bg: var(--brandBlue-500);
+      --button-primary-bg: var(--brandBlue-900);
       --button-primary-text: #FFFFFF;
-      --button-primary-hover: var(--brandBlue-600);
+      --button-primary-hover: var(--brandBlue-700);
 
       /* Semantic: Buttons - Secondary */
-      --button-secondary-bg: var(--neutral-50);
-      --button-secondary-text: var(--brandBlue-700);
+      --button-secondary-bg: #FFFFFF;
+      --button-secondary-text: var(--brandBlue-900);
       --button-secondary-border: var(--neutral-200);
-      --button-secondary-hover: #F0F6FF;
+      --button-secondary-hover: #F4F4F5;
 
       /* Semantic: Buttons - Destructive */
       --button-destructive-bg: var(--red-50);
-      --button-destructive-text: #B42318;
-      --button-destructive-border: #FAC5C3;
+      --button-destructive-text: var(--red-500);
+      --button-destructive-border: #FECACA;
 
       /* Semantic: States - LIVE */
       --state-live-text: var(--red-500);
       --state-live-bg: var(--red-50);
-      --state-live-dot: #EF4444;
+      --state-live-dot: #DC2626;
 
       /* Semantic: States - Scheduled */
-      --state-scheduled-text: var(--brandBlue-600);
+      --state-scheduled-text: var(--brandBlue-700);
       --state-scheduled-bg: var(--info-50);
 
       /* Semantic: States - Completed */
@@ -96,31 +97,31 @@ export const generateCSSVariables = (): string => {
 
       /* Semantic: Cards */
       --card-border: var(--neutral-200);
-      --card-border-active: var(--brandBlue-600);
+      --card-border-active: var(--amber-600);
       --card-border-hover: var(--neutral-300);
-      --card-bg-hover: #F0F6FF;
-      --card-shadow-sm: 0 1px 2px rgba(13,26,43,0.06);
-      --card-shadow-md: 0 4px 12px rgba(13,26,43,0.06);
+      --card-bg-hover: #FAFAFA;
+      --card-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --card-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
 
       /* Semantic: Alerts - Info */
-      --alert-info-text: var(--brandBlue-600);
-      --alert-info-bg: var(--info-50);
-      --alert-info-border: var(--brandBlue-600);
+      --alert-info-text: var(--brandBlue-900);
+      --alert-info-bg: #F4F4F5;
+      --alert-info-border: var(--brandBlue-900);
 
       /* Semantic: Alerts - Success */
       --alert-success-text: var(--green-500);
       --alert-success-bg: var(--green-50);
 
       /* Semantic: Alerts - Warning */
-      --alert-warning-text: #B54708;
-      --alert-warning-bg: #FFF4E5;
+      --alert-warning-text: #B45309;
+      --alert-warning-bg: #FEF3C7;
 
       /* Semantic: Alerts - Error */
-      --alert-error-text: #B42318;
+      --alert-error-text: var(--red-500);
       --alert-error-bg: var(--red-50);
 
       /* Semantic: Focus */
-      --focus-ring: var(--brandBlue-300);
+      --focus-ring: var(--amber-600);
 
       /* Spacing */
       --spacing-xs: ${spacing.xs}px;

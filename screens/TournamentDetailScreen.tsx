@@ -1,48 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Alert,
-  RefreshControl,
-  Switch,
   Platform,
   Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Icon } from '../components/Icons/FeatherIcons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { colors } from '../theme/tokens';
-import { shadowPresets } from '../theme/shadows';
-import { TournamentCore } from '../types/tournament-v2';
-import { BeachMatchCore, MatchStatus, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../types/match-v2';
-import { TournamentStorageService } from '../services/TournamentStorageService';
-import { TournamentOperationsService } from '../services/TournamentOperationsService';
 import { DefaultTournamentService } from '../services/DefaultTournamentService';
 import { errorTransformService } from '../services/ErrorTransformService';
-import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
+import { TournamentStorageService } from '../services/TournamentStorageService';
 import { TournamentCacheWarmingService } from '../services/cache/TournamentCacheWarmingService';
-import { isStale, CacheTTL } from '../utils/cacheUtils';
+import { TournamentMatchCache } from '../services/cache/TournamentMatchCache';
+import { shadowPresets } from '../theme/shadows';
+import { colors } from '../theme/tokens';
+import { BeachMatchCore, MatchStatus, canReadyToStartMatchGoLive, getEnhancedMatchStatus } from '../types/match-v2';
+import { TournamentCore } from '../types/tournament-v2';
+import { CacheTTL, isStale } from '../utils/cacheUtils';
 import { getVisApiBaseUrl } from '../utils/visApiConfig';
 // Dynamic imports for VisApiClient will be done in the function
-import { GetBeachMatchListRequest } from '../types/api-v2';
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
+import { GetBeachMatchListRequest } from '../types/api-v2';
 // DataTransformationService no longer needed - using BeachMatchCore directly
+import { FlagImage } from '../components/FlagImage';
+import { MatchListV2 } from '../components/MatchList/MatchListV2';
+import { TournamentCard } from '../components/entities/Tournament';
+import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
+import NavigationHeader from '../components/navigation/NavigationHeader';
+import { TournamentBottomMenu } from '../components/navigation/TournamentBottomMenu';
+import { TournamentRefereeList } from '../components/referee/TournamentRefereeList';
+import { featureFlags } from '../hooks/compatibility/FeatureFlags';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import { useLiveScores } from '../hooks/useLiveScores';
 import { useTournaments } from '../hooks/useTournaments';
-import { featureFlags } from '../hooks/compatibility/FeatureFlags';
-import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
-import NavigationHeader from '../components/navigation/NavigationHeader';
-import { TournamentBottomMenu } from '../components/navigation/TournamentBottomMenu';
-import { MatchListV2 } from '../components/MatchList/MatchListV2';
-import { LiveScoreCard } from '../components/live-score/LiveScoreCard';
 import { designTokens } from '../theme/tokens';
-import { FlagImage } from '../components/FlagImage';
-import { TournamentCard } from '../components/entities/Tournament';
-import { TournamentRefereeList } from '../components/referee/TournamentRefereeList';
 import { fetchEventRefereeList } from '../utils/challengeRefereeSync';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
@@ -59,7 +56,7 @@ const ExpandedFiltersView: React.FC<{
   setShowRefereeDropdown: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
   refereeNamesFromAPI: string[];
-  refereeDataFromAPI: {name: string, federationCode: string}[];
+  refereeDataFromAPI: { name: string, federationCode: string }[];
   getTournamentStatus: () => string;
 }> = ({
   matches,
@@ -76,216 +73,216 @@ const ExpandedFiltersView: React.FC<{
   refereeDataFromAPI,
   getTournamentStatus
 }) => {
-  // Memoize court numbers to prevent recalculation on every render
-  const courtNumbers = React.useMemo(() => {
-    return Array.from(new Set(matches?.map(m => m.court?.courtNumber) || []))
-      .filter(Boolean)
-      .sort();
-  }, [matches]);
+    // Memoize court numbers to prevent recalculation on every render
+    const courtNumbers = React.useMemo(() => {
+      return Array.from(new Set(matches?.map(m => m.court?.courtNumber) || []))
+        .filter(Boolean)
+        .sort();
+    }, [matches]);
 
-  // Memoize referee names from matches (for COMPLETED tournaments)
-  const refereeNamesFromMatches = React.useMemo(() => {
-    if (!matches || matches.length === 0) {
-      return [];
-    }
-    
-    const allReferees: string[] = [];
-    
-    
-    matches.forEach((match, index) => {
-      // Extract referees from Referee1Name and Referee2Name fields
-      if (match.Referee1Name && match.Referee1Name.trim()) {
-        allReferees.push(match.Referee1Name.trim());
+    // Memoize referee names from matches (for COMPLETED tournaments)
+    const refereeNamesFromMatches = React.useMemo(() => {
+      if (!matches || matches.length === 0) {
+        return [];
       }
-      if (match.Referee2Name && match.Referee2Name.trim()) {
-        allReferees.push(match.Referee2Name.trim());
-      }
-    });
-    
-    const uniqueReferees = Array.from(new Set(allReferees)).filter(Boolean).sort();
-    return uniqueReferees;
-  }, [matches]);
 
-  // Combined referee names using dual system
-  const refereeNames = React.useMemo(() => {
-    const tournamentStatus = getTournamentStatus();
+      const allReferees: string[] = [];
 
-    // For COMPLETED tournaments, always try to use match-extracted referees first
-    // But also try API referees as fallback
-    if (tournamentStatus === 'COMPLETED') {
 
-      if (refereeNamesFromMatches.length > 0) {
-        return refereeNamesFromMatches;
-      } else if (refereeNamesFromAPI.length > 0) {
-        return refereeNamesFromAPI;
+      matches.forEach((match, index) => {
+        // Extract referees from Referee1Name and Referee2Name fields
+        if (match.Referee1Name && match.Referee1Name.trim()) {
+          allReferees.push(match.Referee1Name.trim());
+        }
+        if (match.Referee2Name && match.Referee2Name.trim()) {
+          allReferees.push(match.Referee2Name.trim());
+        }
+      });
+
+      const uniqueReferees = Array.from(new Set(allReferees)).filter(Boolean).sort();
+      return uniqueReferees;
+    }, [matches]);
+
+    // Combined referee names using dual system
+    const refereeNames = React.useMemo(() => {
+      const tournamentStatus = getTournamentStatus();
+
+      // For COMPLETED tournaments, always try to use match-extracted referees first
+      // But also try API referees as fallback
+      if (tournamentStatus === 'COMPLETED') {
+
+        if (refereeNamesFromMatches.length > 0) {
+          return refereeNamesFromMatches;
+        } else if (refereeNamesFromAPI.length > 0) {
+          return refereeNamesFromAPI;
+        } else {
+          // As a last resort, return some test data to verify the dropdown works
+          return ['Test Referee 1', 'Test Referee 2'];
+        }
       } else {
-        // As a last resort, return some test data to verify the dropdown works
-        return ['Test Referee 1', 'Test Referee 2'];
+        // For LIVE tournaments, use both API referees AND match-extracted referees
+        // This ensures the dropdown includes all referees that appear in matches
+        const combined = [...refereeNamesFromAPI, ...refereeNamesFromMatches];
+        const uniqueCombined = Array.from(new Set(combined)).filter(Boolean).sort();
+
+        // If we have match-extracted referees, prioritize those (they're most accurate)
+        if (refereeNamesFromMatches.length > 0) {
+          return refereeNamesFromMatches;
+        } else if (uniqueCombined.length > 0) {
+          return uniqueCombined;
+        } else {
+          return refereeNamesFromAPI;
+        }
       }
-    } else {
-      // For LIVE tournaments, use both API referees AND match-extracted referees
-      // This ensures the dropdown includes all referees that appear in matches
-      const combined = [...refereeNamesFromAPI, ...refereeNamesFromMatches];
-      const uniqueCombined = Array.from(new Set(combined)).filter(Boolean).sort();
+    }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
 
-      // If we have match-extracted referees, prioritize those (they're most accurate)
-      if (refereeNamesFromMatches.length > 0) {
-        return refereeNamesFromMatches;
-      } else if (uniqueCombined.length > 0) {
-        return uniqueCombined;
-      } else {
-        return refereeNamesFromAPI;
-      }
-    }
-  }, [refereeNamesFromMatches, refereeNamesFromAPI, matches, getTournamentStatus]);
+    // Get federation code for a referee name
+    const getRefereeData = React.useCallback((refereeName: string) => {
+      return refereeDataFromAPI.find(ref => ref.name === refereeName);
+    }, [refereeDataFromAPI]);
 
-  // Get federation code for a referee name
-  const getRefereeData = React.useCallback((refereeName: string) => {
-    return refereeDataFromAPI.find(ref => ref.name === refereeName);
-  }, [refereeDataFromAPI]);
-
-  return (
-    <View style={styles.expandedFilters}>
-      {/* Referee Filter - MOVED TO TOP */}
-      <View style={[styles.filterGroup, styles.refereeFilterGroup]}>
-        <Text style={styles.filterLabel}>Referee:</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity
-            style={[
-              styles.dropdownButton,
-              showRefereeDropdown && styles.dropdownButtonActive
-            ]}
-            onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
-          >
-            <Text style={[
-              styles.dropdownButtonText,
-              showRefereeDropdown && styles.dropdownButtonTextActive
-            ]} numberOfLines={1}>
-              {refereeFilter === 'All' ? 'All Referees' : refereeFilter}
-            </Text>
-            <Text style={[
-              styles.dropdownArrow,
-              showRefereeDropdown && styles.dropdownArrowActive
-            ]}>
-              {showRefereeDropdown ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-
-          {showRefereeDropdown && (
-            <View style={styles.dropdownList}>
-              <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
-                <TouchableOpacity
-                  style={[
-                    styles.dropdownItem,
-                    refereeFilter === 'All' && styles.dropdownItemActive
-                  ]}
-                  onPress={() => {
-                    setRefereeFilter('All');
-                    setShowRefereeDropdown(false);
-                  }}
-                >
-                  <Text style={[
-                    styles.dropdownItemText,
-                    refereeFilter === 'All' && styles.dropdownItemTextActive
-                  ]}>
-                    All Referees
-                  </Text>
-                </TouchableOpacity>
-                {(() => {
-                  return refereeNames.map((referee) => {
-                    const refereeData = getRefereeData(referee);
-                    return (
-                      <TouchableOpacity
-                        key={referee}
-                        style={[
-                          styles.dropdownItem,
-                          refereeFilter === referee && styles.dropdownItemActive
-                        ]}
-                        onPress={() => {
-                          setRefereeFilter(referee);
-                          setShowRefereeDropdown(false);
-                        }}
-                      >
-                        <View style={styles.dropdownItemContent}>
-                          {refereeData?.federationCode && (
-                            <FlagImage
-                              countryCode={refereeData.federationCode}
-                              size="small"
-                              style={styles.dropdownFlag}
-                            />
-                          )}
-                          <Text style={[
-                            styles.dropdownItemText,
-                            refereeFilter === referee && styles.dropdownItemTextActive
-                          ]} numberOfLines={2}>
-                            {referee}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  });
-                })()}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Gender Filter */}
-      <View style={styles.filterGroup}>
-        <Text style={styles.filterLabel}>Gender:</Text>
-        <View style={styles.filterButtons}>
-          {['All', 'M', 'W'].map((gender) => (
+    return (
+      <View style={styles.expandedFilters}>
+        {/* Referee Filter - MOVED TO TOP */}
+        <View style={[styles.filterGroup, styles.refereeFilterGroup]}>
+          <Text style={styles.filterLabel}>Referee:</Text>
+          <View style={styles.dropdownContainer}>
             <TouchableOpacity
-              key={gender}
               style={[
-                styles.filterButton,
-                genderFilter === gender && styles.filterButtonActive
+                styles.dropdownButton,
+                showRefereeDropdown && styles.dropdownButtonActive
               ]}
-              onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+              onPress={() => setShowRefereeDropdown(!showRefereeDropdown)}
             >
               <Text style={[
-                styles.filterButtonText,
-                genderFilter === gender && styles.filterButtonTextActive
+                styles.dropdownButtonText,
+                showRefereeDropdown && styles.dropdownButtonTextActive
+              ]} numberOfLines={1}>
+                {refereeFilter === 'All' ? 'All Referees' : refereeFilter}
+              </Text>
+              <Text style={[
+                styles.dropdownArrow,
+                showRefereeDropdown && styles.dropdownArrowActive
               ]}>
-                {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+                {showRefereeDropdown ? '▲' : '▼'}
               </Text>
             </TouchableOpacity>
-          ))}
+
+            {showRefereeDropdown && (
+              <View style={styles.dropdownList}>
+                <ScrollView style={styles.dropdownScrollView} nestedScrollEnabled={true}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownItem,
+                      refereeFilter === 'All' && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setRefereeFilter('All');
+                      setShowRefereeDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      refereeFilter === 'All' && styles.dropdownItemTextActive
+                    ]}>
+                      All Referees
+                    </Text>
+                  </TouchableOpacity>
+                  {(() => {
+                    return refereeNames.map((referee) => {
+                      const refereeData = getRefereeData(referee);
+                      return (
+                        <TouchableOpacity
+                          key={referee}
+                          style={[
+                            styles.dropdownItem,
+                            refereeFilter === referee && styles.dropdownItemActive
+                          ]}
+                          onPress={() => {
+                            setRefereeFilter(referee);
+                            setShowRefereeDropdown(false);
+                          }}
+                        >
+                          <View style={styles.dropdownItemContent}>
+                            {refereeData?.federationCode && (
+                              <FlagImage
+                                countryCode={refereeData.federationCode}
+                                size="small"
+                                style={styles.dropdownFlag}
+                              />
+                            )}
+                            <Text style={[
+                              styles.dropdownItemText,
+                              refereeFilter === referee && styles.dropdownItemTextActive
+                            ]} numberOfLines={2}>
+                              {referee}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    });
+                  })()}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Gender Filter */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterLabel}>Gender:</Text>
+          <View style={styles.filterButtons}>
+            {['All', 'M', 'W'].map((gender) => (
+              <TouchableOpacity
+                key={gender}
+                style={[
+                  styles.filterButton,
+                  genderFilter === gender && styles.filterButtonActive
+                ]}
+                onPress={() => setGenderFilter(gender as 'All' | 'M' | 'W')}
+              >
+                <Text style={[
+                  styles.filterButtonText,
+                  genderFilter === gender && styles.filterButtonTextActive
+                ]}>
+                  {gender === 'All' ? 'All' : gender === 'M' ? 'Men' : 'Women'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Court Filter - REMOVED: Now in top bar as dropdown */}
+
+        {/* US5: Action Buttons (Reset + Save & Close) */}
+        <View style={styles.filterActionsContainer}>
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={() => {
+              // US5: Reset all filters to default values
+              setGenderFilter('All');
+              setCourtFilter('All');
+              setRefereeFilter('All');
+              // Keep panel open for further adjustments
+            }}
+          >
+            <Text style={styles.resetButtonText}>Reset</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => {
+              // Save the filter settings (they're already applied in real-time)
+              // Close the filters panel
+              setShowFilters(false);
+            }}
+          >
+            <Text style={styles.saveButtonText}>Save & Close</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      {/* Court Filter - REMOVED: Now in top bar as dropdown */}
-
-      {/* US5: Action Buttons (Reset + Save & Close) */}
-      <View style={styles.filterActionsContainer}>
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={() => {
-            // US5: Reset all filters to default values
-            setGenderFilter('All');
-            setCourtFilter('All');
-            setRefereeFilter('All');
-            // Keep panel open for further adjustments
-          }}
-        >
-          <Text style={styles.resetButtonText}>Reset</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={() => {
-            // Save the filter settings (they're already applied in real-time)
-            // Close the filters panel
-            setShowFilters(false);
-          }}
-        >
-          <Text style={styles.saveButtonText}>Save & Close</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
+    );
+  };
 
 const TournamentDetailScreenContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -300,10 +297,10 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Add loading guards to prevent excessive API calls
   const [loadMatchesInProgress, setLoadMatchesInProgress] = useState(false);
-  
+
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
-  const [refereeDataFromAPI, setRefereeDataFromAPI] = useState<{name: string, federationCode: string}[]>([]);
+  const [refereeDataFromAPI, setRefereeDataFromAPI] = useState<{ name: string, federationCode: string }[]>([]);
   const [refereesLoading, setRefereesLoading] = useState(false);
   // State to track when match officials data (Challenge Referee + Personnel) is loaded
   // Triggers re-render so MatchCards can display cached official data (T046)
@@ -313,7 +310,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const [isMinimalTournament, setIsMinimalTournament] = useState(false);
   const [completeTournamentData, setCompleteTournamentData] = useState<TournamentCore | null>(null);
   const [apiTournamentLocationData, setApiTournamentLocationData] = useState<any>(null);
-  
+
   const router = useRouter();
   const { tournamentData, tab, visNo } = useLocalSearchParams<{ tournamentData?: string; tab?: string; visNo?: string }>();
 
@@ -566,21 +563,21 @@ const TournamentDetailScreenContent: React.FC = () => {
     // Use the same logic as TournamentSelectionScreen for consistency
     const startDate = tournament.dates?.startDate;
     const endDate = tournament.dates?.endDate;
-    
+
     if (!startDate) {
       return 'SCHEDULED';
     }
-    
+
     const today = new Date().toISOString().split('T')[0];
     const startDateOnly = startDate.split('T')[0];
-    
+
     if (today < startDateOnly) {
       return 'SCHEDULED';
     }
-    
+
     if (endDate) {
       const endDateOnly = endDate.split('T')[0];
-      
+
       if (today > endDateOnly) {
         return 'COMPLETED';
       }
@@ -592,7 +589,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       const start = new Date(startDate);
       const weekAfter = new Date(start);
       weekAfter.setDate(start.getDate() + 7);
-      
+
       const now = new Date();
       if (now >= start && now <= weekAfter) {
         return 'LIVE NOW';
@@ -601,7 +598,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         return 'COMPLETED';
       }
     }
-    
+
     return 'SCHEDULED';
   }, [tournament.dates?.startDate, tournament.dates?.endDate]);
 
@@ -609,7 +606,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Only use tournament hook if feature flag is enabled
   // Avoid Supabase function calls on web (CORS); rely on provided tournament data
   const shouldUseTournamentHook = Platform.OS !== 'web' && featureFlags.shouldUseNewHook('TournamentDetailScreen', 'tournaments');
-  
+
   const {
     data: hookTournaments = [],
     isLoading: tournamentHookLoading,
@@ -674,7 +671,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Check if tournament can be set as default (only LIVE tournaments)
   const tournamentStatus = DefaultTournamentService.getTournamentStatus(
-    tournament.dates?.startDate, 
+    tournament.dates?.startDate,
     tournament.dates?.endDate
   );
   const canBeDefault = tournamentStatus === 'LIVE NOW';
@@ -682,10 +679,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Handle default switch toggle
   const handleDefaultToggle = async (value: boolean) => {
     if (!tournament.visNo) return;
-    
+
     try {
       const result = await DefaultTournamentService.toggleDefaultTournament(tournament);
-      
+
       if (result.success) {
         setIsDefault(result.isDefault);
 
@@ -702,7 +699,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       } else {
         // Show error message for why it couldn't be set as default
         Alert.alert(
-          'Cannot Set as Default', 
+          'Cannot Set as Default',
           result.reason || 'This tournament cannot be set as default.',
           [{ text: 'OK' }]
         );
@@ -713,7 +710,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   // Assignment status management
-  const { 
+  const {
     currentAssignmentStatus,
     statusCounts,
     isOnline,
@@ -790,12 +787,12 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Compact date formatting functions (moved from TournamentDateExtractor)
   const formatCompactDate = (dateStr?: string): string => {
     if (!dateStr) return '';
-    
+
     try {
       const date = new Date(dateStr);
       const day = date.getDate().toString().padStart(2, '0');
       const monthName = getMonthNameShort(date.getMonth());
-      
+
       return `${day} ${monthName}`;
     } catch {
       return dateStr;
@@ -806,16 +803,16 @@ const TournamentDetailScreenContent: React.FC = () => {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       const startDay = start.getDate().toString().padStart(2, '0');
       const endDay = end.getDate().toString().padStart(2, '0');
       const monthName = getMonthNameShort(start.getMonth());
-      
+
       // If same date, show as single date
       if (startDate === endDate) {
         return `${startDay} ${monthName}`;
       }
-      
+
       // Check if they're in the same month/year
       if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
         return `${startDay} - ${endDay} ${monthName}`;
@@ -842,11 +839,11 @@ const TournamentDetailScreenContent: React.FC = () => {
     const tournamentData = detailedTournament || tournament;
     const city = tournamentData.city;
     const country = tournamentData.country;
-    
+
     if (city && country) {
       return `${city}, ${country}`;
     }
-    
+
     // Only return location if we have explicit location data, city, or country
     // Don't show "Location not specified" or try to infer from title
     return tournamentData.location || city || country || null;
@@ -856,7 +853,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const getFunctionName = (functionCode: string): string => {
     const functionMap: { [key: string]: string } = {
       '1': 'Main Referee',
-      '2': 'Line Judge', 
+      '2': 'Line Judge',
       '3': 'Scorer',
       '4': 'Assistant/Volunteer',
       '5': 'Technical Official',
@@ -871,7 +868,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Parse XML content to extract useful information
   const parseAuxiliaryPersons = (xmlString?: string): string => {
     if (!xmlString) return '';
-    
+
     try {
       // Decode HTML entities
       const decoded = xmlString
@@ -880,41 +877,41 @@ const TournamentDetailScreenContent: React.FC = () => {
         .replace(/&quot;/g, '"')
         .replace(/&#xD;&#xA;/g, '')
         .replace(/&#xA;/g, '');
-      
+
       // Extract person information using regex
       const personMatches = decoded.match(/<AuxiliaryPerson[^>]*>/g);
       if (!personMatches) return '';
-      
+
       // Group by function to show function counts
-      const functionGroups: { [key: string]: Array<{name: string, nationality: string}> } = {};
-      
+      const functionGroups: { [key: string]: Array<{ name: string, nationality: string }> } = {};
+
       const persons = personMatches.map(match => {
         const firstNameMatch = match.match(/FirstName="([^"]*)"/);
         const lastNameMatch = match.match(/LastName="([^"]*)"/);
         const nationalityMatch = match.match(/NationalityCode="([^"]*)"/);
         const functionMatch = match.match(/Functions="([^"]*)"/);
-        
+
         const firstName = firstNameMatch ? firstNameMatch[1] : '';
         const lastName = lastNameMatch ? lastNameMatch[1] : '';
         const nationality = nationalityMatch ? nationalityMatch[1] : '';
         const functionCode = functionMatch ? functionMatch[1] : '';
-        
+
         const functionName = getFunctionName(functionCode);
-        
+
         // Group by function
         if (!functionGroups[functionName]) {
           functionGroups[functionName] = [];
         }
         functionGroups[functionName].push({ name: `${firstName} ${lastName}`, nationality });
-        
+
         return `${firstName} ${lastName} (${nationality}, ${functionName})`;
       });
-      
+
       // Create summary by function
       const functionSummary = Object.entries(functionGroups)
         .map(([funcName, people]) => `${people.length} ${funcName}${people.length > 1 ? 's' : ''}`)
         .join(', ');
-      
+
       return `${persons.length} people: ${functionSummary}. Examples: ${persons.slice(0, 2).join(', ')}${persons.length > 2 ? '...' : ''}`;
     } catch {
       return 'Personnel information available';
@@ -923,7 +920,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   const parseOfficialFunctions = (xmlString?: string): string => {
     if (!xmlString) return '';
-    
+
     try {
       // Decode HTML entities
       const decoded = xmlString
@@ -932,37 +929,37 @@ const TournamentDetailScreenContent: React.FC = () => {
         .replace(/&quot;/g, '"')
         .replace(/&#xD;&#xA;/g, '')
         .replace(/&#xA;/g, '');
-      
+
       // Try to extract official function information
       // This might have different XML structure - let's see what we get
-      
+
       // Look for common official XML patterns
-      const functionMatches = decoded.match(/<[^>]*Function[^>]*>/g) || 
-                             decoded.match(/<Official[^>]*>/g) ||
-                             decoded.match(/<[^>]*Code="[^"]*"[^>]*>/g);
-      
+      const functionMatches = decoded.match(/<[^>]*Function[^>]*>/g) ||
+        decoded.match(/<Official[^>]*>/g) ||
+        decoded.match(/<[^>]*Code="[^"]*"[^>]*>/g);
+
       if (functionMatches && functionMatches.length > 0) {
         // Extract function codes/names from the matches
         const functions = functionMatches.map(match => {
           const codeMatch = match.match(/Code="([^"]*)"/);
           const nameMatch = match.match(/Name="([^"]*)"/);
           const typeMatch = match.match(/Type="([^"]*)"/);
-          
+
           if (codeMatch) return `Function ${codeMatch[1]}`;
           if (nameMatch) return nameMatch[1];
           if (typeMatch) return typeMatch[1];
           return 'Official Function';
         });
-        
+
         return `${functions.length} official functions: ${functions.slice(0, 3).join(', ')}${functions.length > 3 ? '...' : ''}`;
       }
-      
+
       // Fallback: if it's just text content, show first part
       const textContent = decoded.replace(/<[^>]*>/g, '').trim();
       if (textContent) {
         return `Official functions: ${textContent.substring(0, 50)}${textContent.length > 50 ? '...' : ''}`;
       }
-      
+
       return 'Official functions available';
     } catch {
       return 'Official functions available';
@@ -974,25 +971,25 @@ const TournamentDetailScreenContent: React.FC = () => {
     const tournamentData = detailedTournament || tournament;
     const startDate = tournamentData?.dates?.startDateQualification || tournamentData?.dates?.startDate;
     const endDate = tournamentData?.dates?.endDateMainDraw || tournamentData?.dates?.endDate;
-    
+
     if (!startDate && !endDate) {
       return 'Dates TBD';
     }
-    
+
     if (startDate && endDate) {
       if (startDate === endDate) {
         return formatCompactDate(startDate);
       }
       return `${formatCompactDate(startDate)} - ${formatCompactDate(endDate)}`;
     }
-    
+
     // If only one date is available
     if (startDate) {
       return formatCompactDate(startDate);
     } else if (endDate) {
       return `until ${formatCompactDate(endDate)}`;
     }
-    
+
     return 'Dates TBD';
   };
 
@@ -1042,11 +1039,11 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Load referees using dual system: GetEventRefereeList for LIVE/SCHEDULED, matches for COMPLETED
   const loadRefereeList = async () => {
     if (!tournament.visNo) return;
-    
+
     setRefereesLoading(true);
     try {
       const tournamentStatus = getTournamentStatus();
-      
+
       if (tournamentStatus === 'COMPLETED') {
         // Referees will be extracted from matches - no API call needed
         setRefereeNamesFromAPI([]);
@@ -1065,7 +1062,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   const loadRefereesFromAPI = async () => {
     try {
       const NoEvent = tournament.visNo; // Use current tournament's event number
-      
+
       const xml = `<Requests>
   <Request Type="GetEventRefereeList"
            Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
@@ -1081,10 +1078,10 @@ const TournamentDetailScreenContent: React.FC = () => {
         },
         body: new URLSearchParams({ Request: xml })
       });
-      
+
       if (response.ok) {
         const xmlResponse = await response.text();
-        
+
         // Parse and store referee data
         const referees = parseRefereeXML(xmlResponse);
         const validReferees = referees.filter(ref => ref.firstName.trim() || ref.lastName.trim());
@@ -1116,10 +1113,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Parse referee XML response
   const parseRefereeXML = (xmlString: string) => {
     const referees: any[] = [];
-    
+
     // Extract referee data using regex (simple parsing)
     const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
-    
+
     if (refereeMatches) {
       refereeMatches.forEach(match => {
         const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
@@ -1127,7 +1124,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
         const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
         const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-        
+
         referees.push({
           noReferee,
           firstName,
@@ -1137,7 +1134,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         });
       });
     }
-    
+
     return referees;
   };
 
@@ -1338,7 +1335,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         (tournament as any).tournamentNo = tournament.visNo;
       }
     }
-    
+
     // Get all available tournament numbers (both men's and women's if available)
     const beachTournaments = (tournament as any).beachTournaments;
     const tournamentNo = (tournament as any).tournamentNo;
@@ -1349,7 +1346,7 @@ const TournamentDetailScreenContent: React.FC = () => {
       setLoadMatchesInProgress(false);
       return;
     }
-    
+
     setMatchesLoading(true);
     try {
       const { VisApiClient } = await import('../services/api/VisApiClient');
@@ -1365,9 +1362,9 @@ const TournamentDetailScreenContent: React.FC = () => {
       };
 
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-      
+
       let allMatches: BeachMatchCore[] = [];
-      
+
       // STEP 2 & 3: GetBeachTournament and GetBeachMatchList for each tournament in parallel
       if (beachTournaments && beachTournaments.length > 0) {
 
@@ -1600,7 +1597,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           }
         }
       }
-      
+
       // Parse the response asynchronously to avoid blocking UI
       if (allMatches.length > 0) {
         setTimeout(async () => {
@@ -1667,7 +1664,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
         // Helper function to extract XML attributes efficiently
         const extractAttribute = (xml: string, attribute: string): string | null => {
-          const regex = new RegExp(`${attribute}="([^"]*)"`,'i');
+          const regex = new RegExp(`${attribute}="([^"]*)"`, 'i');
           const match = xml.match(regex);
           return match ? match[1] : null;
         };
@@ -1699,7 +1696,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Pull-to-refresh function that preserves user filters
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    
+
     try {
       // Refresh tournament display data, matches, and referee list while preserving filters
       await Promise.all([
@@ -1707,7 +1704,7 @@ const TournamentDetailScreenContent: React.FC = () => {
         loadMatches(),
         loadRefereeList()
       ]);
-      
+
       // Refresh live scores if available
       if (refreshLiveScores) {
         refreshLiveScores();
@@ -1859,7 +1856,7 @@ const TournamentDetailScreenContent: React.FC = () => {
             {/* Use unified TournamentCard component without extra wrappers */}
             <TournamentCard
               tournament={detailedTournament || tournament}
-              onPress={() => {}} // No action needed since we're already on the detail screen
+              onPress={() => { }} // No action needed since we're already on the detail screen
               showDefaultToggle={true}
               showStatusBadge={true}
               compact={false}
@@ -2085,45 +2082,24 @@ const TournamentDetailScreenContent: React.FC = () => {
                     externalCourtFilter={courtFilter}
                     onCourtFilterChange={setCourtFilter}
                     externalGenderFilter={genderFilter}
-                  onGenderFilterChange={setGenderFilter}
-                  externalRefereeFilter={refereeFilter}
-                  onRefereeFilterChange={setRefereeFilter}
-                  onMatchesReady={handleMatchesReady}
-                  onMatchLayout={handleMatchLayout}
-                  enableTimelineView={true}
-                  showAllDays={true}
-                  liveScores={liveScores}
-                  getLiveScore={getLiveScore}
-                  // Hybrid hook features - provide tournament code for enhanced caching and real-time updates
-                  tournamentCode={enhancedTournament?.visNo}
-                  enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
-                  enableLiveScores={getTournamentStatus() === 'LIVE'}
-                  tournamentTimezone={(() => {
-                    try {
-                      // Use the comprehensive timezone detection system
-                      const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
-
-                      const tournamentLocation = {
-                        city: apiTournamentLocationData?.city || tournament?.city,
-                        country: apiTournamentLocationData?.country || tournament?.country,
-                        countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
-                        venue: apiTournamentLocationData?.venue || tournament?.venue,
-                        name: apiTournamentLocationData?.name || tournament?.name
-                      };
-
-                      const detectionResult = detectTournamentTimezone(tournamentLocation);
-
-                      return detectionResult.timezone;
-                    } catch (error) {
-                      return 'UTC'; // Fallback
-                    }
-                  })()}
-                  tournamentGender={enhancedTournament?.gender}
-                  tournamentData={(() => {
-                    // Get the detected timezone from the previous calculation
-                    const detectedTimezone = (() => {
+                    onGenderFilterChange={setGenderFilter}
+                    externalRefereeFilter={refereeFilter}
+                    onRefereeFilterChange={setRefereeFilter}
+                    onMatchesReady={handleMatchesReady}
+                    onMatchLayout={handleMatchLayout}
+                    enableTimelineView={true}
+                    showAllDays={true}
+                    liveScores={liveScores}
+                    getLiveScore={getLiveScore}
+                    // Hybrid hook features - provide tournament code for enhanced caching and real-time updates
+                    tournamentCode={enhancedTournament?.visNo}
+                    enableRealTime={getTournamentStatus() === 'LIVE' || getTournamentStatus() === 'SCHEDULED'}
+                    enableLiveScores={getTournamentStatus() === 'LIVE'}
+                    tournamentTimezone={(() => {
                       try {
+                        // Use the comprehensive timezone detection system
                         const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
+
                         const tournamentLocation = {
                           city: apiTournamentLocationData?.city || tournament?.city,
                           country: apiTournamentLocationData?.country || tournament?.country,
@@ -2131,37 +2107,58 @@ const TournamentDetailScreenContent: React.FC = () => {
                           venue: apiTournamentLocationData?.venue || tournament?.venue,
                           name: apiTournamentLocationData?.name || tournament?.name
                         };
+
                         const detectionResult = detectTournamentTimezone(tournamentLocation);
+
                         return detectionResult.timezone;
                       } catch (error) {
-                        return 'UTC';
+                        return 'UTC'; // Fallback
                       }
-                    })();
+                    })()}
+                    tournamentGender={enhancedTournament?.gender}
+                    tournamentData={(() => {
+                      // Get the detected timezone from the previous calculation
+                      const detectedTimezone = (() => {
+                        try {
+                          const { detectTournamentTimezone } = require('../utils/tournamentTimezoneMapping');
+                          const tournamentLocation = {
+                            city: apiTournamentLocationData?.city || tournament?.city,
+                            country: apiTournamentLocationData?.country || tournament?.country,
+                            countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                            venue: apiTournamentLocationData?.venue || tournament?.venue,
+                            name: apiTournamentLocationData?.name || tournament?.name
+                          };
+                          const detectionResult = detectTournamentTimezone(tournamentLocation);
+                          return detectionResult.timezone;
+                        } catch (error) {
+                          return 'UTC';
+                        }
+                      })();
 
-                    const tournamentDataForMatchList = {
-                      city: apiTournamentLocationData?.city || tournament?.city,
-                      country: apiTournamentLocationData?.country || tournament?.country,
-                      countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
-                      name: apiTournamentLocationData?.name || tournament?.name,
-                      venue: apiTournamentLocationData?.venue || tournament?.venue,
-                      defaultTimeZone: detectedTimezone,
-                      startDate: tournament?.dates?.startDate, // For live tournament detection
-                      endDate: tournament?.dates?.endDate, // For live tournament detection
-                    };
+                      const tournamentDataForMatchList = {
+                        city: apiTournamentLocationData?.city || tournament?.city,
+                        country: apiTournamentLocationData?.country || tournament?.country,
+                        countryCode: apiTournamentLocationData?.countryCode || tournament?.countryCode,
+                        name: apiTournamentLocationData?.name || tournament?.name,
+                        venue: apiTournamentLocationData?.venue || tournament?.venue,
+                        defaultTimeZone: detectedTimezone,
+                        startDate: tournament?.dates?.startDate, // For live tournament detection
+                        endDate: tournament?.dates?.endDate, // For live tournament detection
+                      };
 
 
-                    return tournamentDataForMatchList;
-                  })()}
-                  matchFilters={{
-                    // Use the tournament numbers from the existing complex loading logic
-                    tournamentCode: enhancedTournament?.visNo,
-                    // Add date range if available from enhanced tournament data
-                    dateRange: enhancedTournament?.dates ? {
-                      startDate: enhancedTournament.dates.startDate,
-                      endDate: enhancedTournament.dates.endDate
-                    } : undefined
-                  }}
-                />
+                      return tournamentDataForMatchList;
+                    })()}
+                    matchFilters={{
+                      // Use the tournament numbers from the existing complex loading logic
+                      tournamentCode: enhancedTournament?.visNo,
+                      // Add date range if available from enhanced tournament data
+                      dateRange: enhancedTournament?.dates ? {
+                        startDate: enhancedTournament.dates.startDate,
+                        endDate: enhancedTournament.dates.endDate
+                      } : undefined
+                    }}
+                  />
                 </View>
               </View>
             )}
@@ -2193,7 +2190,7 @@ const TournamentDetailScreenContent: React.FC = () => {
           </View>
         )}
       </ScrollView>
-      
+
       {/* Tournament Bottom Menu */}
       <TournamentBottomMenu
         activeTab={activeTab}
@@ -2220,7 +2217,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 20,
-    color: '#1B365D',
+    color: colors.primary,
     textAlign: 'center',
     marginBottom: 16,
     fontWeight: 'bold',
@@ -2273,7 +2270,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEEEE',
     padding: 4,
   },
-  
+
   // Tournament Summary Card - Compact version
   compactSummaryCard: {
     backgroundColor: '#FFFFFF',
@@ -2310,7 +2307,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1B365D',
+    color: colors.primary,
     flex: 1,
   },
   statusBadge: {
@@ -2323,20 +2320,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  
+
   // Status Integration Styles
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designTokens.spacing.xs,
   },
-  
+
   statusBadgeText: {
     color: designTokens.colors.background,
     fontSize: 11,
     fontWeight: 'bold',
   },
-  
+
   networkStatus: {
     width: 24,
     height: 24,
@@ -2344,22 +2341,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
+
   networkStatusText: {
     fontSize: 12,
   },
-  
+
   tournamentSelectButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     ...shadowPresets.small,
     elevation: 3,
   },
-  
+
   tournamentSelectButtonText: {
     fontSize: 18,
     color: '#FFFFFF',
@@ -2370,7 +2367,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5', // Match container background
     paddingTop: 8,
   },
-  
+
   // Sticky Filters Wrapper - Always present container
   stickyFiltersWrapper: {
     backgroundColor: '#FFFFFF',
@@ -2380,14 +2377,14 @@ const styles = StyleSheet.create({
     elevation: 3,
     ...shadowPresets.small,
   },
-  
+
   // Date Navigator Section
   dateNavigatorSection: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
   },
-  
+
   // Filter Controls Section
   filterControlsSection: {
     paddingHorizontal: 16,
@@ -2449,8 +2446,8 @@ const styles = StyleSheet.create({
   },
 
   courtDropdownButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
 
   courtDropdownButtonText: {
@@ -2527,7 +2524,7 @@ const styles = StyleSheet.create({
   },
 
   courtDropdownItemTextActive: {
-    color: '#3B82F6',
+    color: colors.accent,
     fontWeight: '600',
   },
 
@@ -2546,14 +2543,14 @@ const styles = StyleSheet.create({
 
   refreshButtonText: {
     fontSize: 14,
-    color: '#3B82F6',
+    color: colors.accent,
     fontWeight: '500',
   },
 
   refreshButtonTextDisabled: {
     color: '#9CA3AF',
   },
-  
+
   // Expanded Filters
   expandedFilters: {
     marginTop: 8,
@@ -2561,7 +2558,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
-  
+
   filterGroup: {
     marginBottom: 12,
   },
@@ -2570,20 +2567,20 @@ const styles = StyleSheet.create({
     zIndex: 9998,
     position: 'relative',
   },
-  
+
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: designTokens.neutrals.textPrimary,
     marginBottom: 6,
   },
-  
+
   filterButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  
+
   filterButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -2592,22 +2589,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  
+
   filterButtonActive: {
     backgroundColor: '#1F2937',
     borderColor: '#1F2937',
   },
-  
+
   filterButtonText: {
     fontSize: 13,
     color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
-  
+
   filterButtonTextActive: {
     color: '#FFFFFF',
   },
-  
+
   // In-card tab headers
   inCardTabHeaders: {
     flexDirection: 'row',
@@ -2616,14 +2613,14 @@ const styles = StyleSheet.create({
     padding: 2,
     marginTop: 16,
   },
-  
+
   // Placeholder when filters not available
   filtersPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 28,
   },
-  
+
   filtersPlaceholderText: {
     fontSize: 14,
     color: designTokens.neutrals.textSecondary,
@@ -2653,7 +2650,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTabHeader: {
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
   },
   tabHeaderText: {
     fontSize: 14,
@@ -2697,7 +2694,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1B365D',
+    color: colors.primary,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 8,
@@ -2768,8 +2765,8 @@ const styles = StyleSheet.create({
     maxWidth: 250,
   },
   dropdownButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   dropdownButtonText: {
     fontSize: 12,
@@ -2831,7 +2828,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dropdownItemTextActive: {
-    color: '#3B82F6',
+    color: colors.accent,
     fontWeight: '600',
   },
 
@@ -2889,7 +2886,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#7C3AED',
   },
-  
+
   debugButtonText: {
     fontSize: 14,
     color: '#FFFFFF',
@@ -2913,7 +2910,7 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1B365D',
+    color: colors.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -2940,7 +2937,7 @@ const styles = StyleSheet.create({
   refereesListTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1B365D',
+    color: colors.primary,
     letterSpacing: 0.5,
   },
 

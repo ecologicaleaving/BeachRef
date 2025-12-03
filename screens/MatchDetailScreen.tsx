@@ -26,6 +26,7 @@ import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
 import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
 import { useLiveScores } from '../hooks/useLiveScores';
+import { BeachMatch } from '../types/match';
 
 
 

@@ -36,8 +36,13 @@ export class UnifiedCacheManager {
   private static instance: UnifiedCacheManager | null = null;
   private static readonly METADATA_KEY = '@VisCacheMetadata';
   private static readonly MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB total limit
+  private static readonly MAX_MEMORY_CACHE_ITEMS = 50; // L1 cache size
 
   private strategies = new Map<string, CacheStrategy>();
+
+  // L1 Memory Cache (fast)
+  private memoryCache = new Map<string, CacheEntry<any>>();
+  private memoryCacheOrder: string[] = []; // For LRU eviction
 
   private constructor() {
     // Register default strategies
@@ -62,6 +67,7 @@ export class UnifiedCacheManager {
 
   /**
    * Get data from cache using strategy
+   * L1 (Memory) -> L2 (AsyncStorage) cache hierarchy
    */
   async get<T>(namespace: string, key: string): Promise<CacheOperationResult<T>> {
     try {
@@ -71,6 +77,17 @@ export class UnifiedCacheManager {
       }
 
       const fullKey = this.buildKey(strategy, key);
+
+      // L1: Check memory cache first (fast path)
+      const memoryEntry = this.memoryCache.get(fullKey);
+      if (memoryEntry && !this.isExpired(memoryEntry)) {
+        // Update LRU order
+        this.updateMemoryCacheAccess(fullKey);
+        const data = strategy.compression ? this.decompress(memoryEntry.data) : memoryEntry.data;
+        return { success: true, data };
+      }
+
+      // L2: Check AsyncStorage (slower)
       const cachedValue = await AsyncStorage.getItem(fullKey);
 
       if (!cachedValue) {
@@ -84,6 +101,9 @@ export class UnifiedCacheManager {
         await this.delete(namespace, key);
         return { success: true, data: undefined };
       }
+
+      // Promote to L1 memory cache for future fast access
+      this.setMemoryCache(fullKey, entry);
 
       // Decompress if needed
       const data = strategy.compression ? this.decompress(entry.data) : entry.data;
@@ -99,6 +119,7 @@ export class UnifiedCacheManager {
 
   /**
    * Set data in cache using strategy
+   * Updates both L1 (Memory) and L2 (AsyncStorage)
    */
   async set<T>(namespace: string, key: string, data: T): Promise<CacheOperationResult<void>> {
     try {
@@ -119,6 +140,11 @@ export class UnifiedCacheManager {
       };
 
       const fullKey = this.buildKey(strategy, key);
+
+      // Update L1 memory cache immediately (fast)
+      this.setMemoryCache(fullKey, entry);
+
+      // Update L2 AsyncStorage (slower, but persistent)
       await AsyncStorage.setItem(fullKey, JSON.stringify(entry));
       await this.updateMetadata(namespace, entry);
 
@@ -135,7 +161,7 @@ export class UnifiedCacheManager {
   }
 
   /**
-   * Delete item from cache
+   * Delete item from cache (both L1 and L2)
    */
   async delete(namespace: string, key: string): Promise<CacheOperationResult<void>> {
     try {
@@ -145,6 +171,11 @@ export class UnifiedCacheManager {
       }
 
       const fullKey = this.buildKey(strategy, key);
+
+      // Remove from L1 memory cache
+      this.removeFromMemoryCache(fullKey);
+
+      // Remove from L2 AsyncStorage
       await AsyncStorage.removeItem(fullKey);
       await this.removeFromMetadata(namespace, key);
 
@@ -354,6 +385,71 @@ export class UnifiedCacheManager {
       // Implement LRU eviction
       await this.cleanup();
     }
+  }
+
+  // Memory cache management methods
+
+  /**
+   * Set item in L1 memory cache with LRU eviction
+   */
+  private setMemoryCache(key: string, entry: CacheEntry<any>): void {
+    // Remove if already exists (to update LRU order)
+    if (this.memoryCache.has(key)) {
+      const index = this.memoryCacheOrder.indexOf(key);
+      if (index > -1) {
+        this.memoryCacheOrder.splice(index, 1);
+      }
+    }
+
+    // Add to cache and mark as most recently used
+    this.memoryCache.set(key, entry);
+    this.memoryCacheOrder.push(key);
+
+    // Enforce size limit with LRU eviction
+    while (this.memoryCacheOrder.length > UnifiedCacheManager.MAX_MEMORY_CACHE_ITEMS) {
+      const oldestKey = this.memoryCacheOrder.shift();
+      if (oldestKey) {
+        this.memoryCache.delete(oldestKey);
+      }
+    }
+  }
+
+  /**
+   * Update LRU order when accessing memory cache
+   */
+  private updateMemoryCacheAccess(key: string): void {
+    const index = this.memoryCacheOrder.indexOf(key);
+    if (index > -1) {
+      // Move to end (most recently used)
+      this.memoryCacheOrder.splice(index, 1);
+      this.memoryCacheOrder.push(key);
+    }
+  }
+
+  /**
+   * Remove item from L1 memory cache
+   */
+  private removeFromMemoryCache(key: string): void {
+    this.memoryCache.delete(key);
+    const index = this.memoryCacheOrder.indexOf(key);
+    if (index > -1) {
+      this.memoryCacheOrder.splice(index, 1);
+    }
+  }
+
+  /**
+   * Get memory cache stats for debugging
+   */
+  getMemoryCacheStats(): {
+    size: number;
+    maxSize: number;
+    hitRatio: number;
+  } {
+    return {
+      size: this.memoryCache.size,
+      maxSize: UnifiedCacheManager.MAX_MEMORY_CACHE_ITEMS,
+      hitRatio: 0 // Could track this with counters if needed
+    };
   }
 }
 

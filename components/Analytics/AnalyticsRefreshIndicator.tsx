@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { designTokens } from '../../theme/tokens';
 
 /**
  * Analytics Refresh Indicator Props Interface
@@ -234,13 +235,13 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 4,
   },
   infoValue: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
   },
   sourceContainer: {
     flexDirection: 'row',
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   compactText: {
     fontSize: 11,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
   },
   compactRefreshButton: {
     padding: 4,
@@ -300,6 +301,6 @@ const styles = StyleSheet.create({
   },
   compactRefreshIcon: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
   },
 });

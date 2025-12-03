@@ -6,7 +6,7 @@
 import React from 'react';
 import { Text, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../../theme/tokens';
+import { colors, designTokens } from '../../theme/tokens';
 
 // Platform-aware Icon wrapper to avoid web font timeouts
 export const Icon: React.FC<{
@@ -85,8 +85,8 @@ export const IconSizes = {
 // Common icon colors
 export const IconColors = {
   primary: colors.primary || '#FF6B35',
-  secondary: colors.textSecondary || '#6B7280',
-  muted: '#9CA3AF',
+  secondary: colors.textSecondary || designTokens.neutrals.textSecondary,
+  muted: designTokens.neutrals.textSecondary,
   white: '#FFFFFF',
   success: colors.success || '#10B981',
   error: colors.error || '#EF4444',

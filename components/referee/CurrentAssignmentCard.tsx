@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RefereeAssignment } from '../../types/RefereeAssignments';
+import { designTokens } from '../../theme/tokens';
 
 interface CurrentAssignmentCardProps {
   assignment: RefereeAssignment;
@@ -131,10 +132,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981', // High contrast green
   },
   statusUpcoming: {
-    backgroundColor: '#3B82F6', // Professional blue
+    backgroundColor: designTokens.linkTokens.default, // Professional blue
   },
   statusDefault: {
-    backgroundColor: '#6B7280', // Neutral gray
+    backgroundColor: designTokens.neutrals.textSecondary, // Neutral gray
   },
   statusText: {
     color: '#FFFFFF',
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 24, // Large for outdoor visibility
     fontWeight: '800',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 32,
     marginBottom: 16,
     textAlign: 'center',
@@ -166,13 +167,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   timeText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   venueInfo: {
     alignItems: 'flex-end',
@@ -180,13 +181,13 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   roundText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   roleIndicator: {
     marginTop: 16,
@@ -198,6 +199,6 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
 });

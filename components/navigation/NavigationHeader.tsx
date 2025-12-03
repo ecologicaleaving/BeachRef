@@ -1,24 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { Filter, Home, RefreshCw } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  SafeAreaView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Home } from 'lucide-react-native';
-import { GlobalStatusBar } from './GlobalStatusBar';
+import { DefaultTournamentService } from '../../services/DefaultTournamentService';
+import { colors } from '../../theme/tokens';
 import { WhistleLogo } from '../WhistleLogo';
 import { BurgerButton } from './BurgerButton';
+import { GlobalStatusBar } from './GlobalStatusBar';
 import { GmailStyleSideMenu } from './GmailStyleSideMenu';
-import { DefaultTournamentService } from '../../services/DefaultTournamentService';
 
 interface NavigationHeaderProps {
   title: string;
   subtitle?: string;
   showHomeButton?: boolean;
   onHomePress?: () => void;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
+  showRefreshButton?: boolean;
+  onRefreshPress?: () => void;
+  showFilterButton?: boolean;
+  onFilterPress?: () => void;
   rightComponent?: React.ReactNode;
   backgroundColor?: string;
   titleColor?: string;
@@ -33,8 +40,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   subtitle,
   showHomeButton = true,
   onHomePress,
+  showRefreshButton = false,
+  onRefreshPress,
+  showFilterButton = false,
+  onFilterPress,
   rightComponent,
-  backgroundColor = '#1B365D',
+  backgroundColor = colors.primary,
   titleColor = '#FFFFFF',
   showStatusBar = true,
   onStatusPress,
@@ -77,12 +88,12 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       {showStatusBar && (
-        <GlobalStatusBar 
-          onStatusPress={onStatusPress} 
+        <GlobalStatusBar
+          onStatusPress={onStatusPress}
           compact={false}
         />
       )}
-      
+
       <View style={[styles.container, { backgroundColor }]}>
         <View style={styles.leftSection}>
           {showHomeButton && (
@@ -119,6 +130,24 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         )}
 
         <View style={styles.rightSection}>
+          {showFilterButton && onFilterPress && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onFilterPress}
+              activeOpacity={0.7}
+            >
+              <Filter size={20} color={titleColor} />
+            </TouchableOpacity>
+          )}
+          {showRefreshButton && onRefreshPress && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onRefreshPress}
+              activeOpacity={0.7}
+            >
+              <RefreshCw size={20} color={titleColor} />
+            </TouchableOpacity>
+          )}
           {rightComponent}
           {showBurgerMenu && (
             <BurgerButton
@@ -128,7 +157,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           )}
         </View>
       </View>
-      
+
       <GmailStyleSideMenu
         isVisible={sideMenuVisible}
         onClose={() => setSideMenuVisible(false)}
@@ -140,7 +169,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#1B365D',
+    backgroundColor: colors.primary,
   },
   container: {
     flexDirection: 'row',
@@ -179,6 +208,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  iconButton: {
+    padding: 8,
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   logoButton: {
     padding: 4,

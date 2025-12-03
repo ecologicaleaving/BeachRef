@@ -12,26 +12,17 @@
 import {
   BeachMatchLiveDTO,
   BeachMatchLiveDTOParams,
-  BeachMatchStatus,
   VIS_STATUS_TO_BEACH_MATCH_STATUS,
   VIS_RESULT_TYPE_TO_RESULT_TYPE,
   createMinimalBeachMatchLiveDTO,
-  SetScore,
-  TeamSide,
-  Player,
-  Official
+  SetScore
 } from '../types/beach-match-live-dto';
 import { VisApiClient } from './api/VisApiClient';
 import {
-  GetBeachMatchRequest,
-  GetBeachTournamentRequest,
-  GetBeachMatchListRequest,
   isSuccessResponse,
   VisApiClientConfig,
-  RetryConfig,
   DEFAULT_RETRY_CONFIG
 } from '../types/api-v2';
-import { VisResponseParser } from './parsing/VisResponseParser';
 
 export class BeachMatchLiveDTOService {
   private static instance: BeachMatchLiveDTOService;

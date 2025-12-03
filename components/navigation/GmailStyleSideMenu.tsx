@@ -54,7 +54,7 @@ const SUBMENU_ITEMS: SubMenuItem[] = [
 
 const MAIN_MENU_ITEMS = [
   { icon: 'tournament', title: 'All Tournaments', route: '/tournament-selection', enabled: true },
-  { icon: 'whistle', title: 'All Referees', route: '/all-referees', enabled: true },
+  { icon: 'whistle', title: 'All Referees', route: '/all-referees', enabled: false },
   { icon: 'cog', title: 'Settings', route: '/settings', enabled: false },
 ];
 

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Animated, useEffect } from 'react-native';
 import { BeachMatch } from '../types/match';
+import { designTokens, colors, statusColors } from '../theme/tokens';
 
 interface LiveMatchIndicatorProps {
   match: BeachMatch;
@@ -40,10 +41,10 @@ const LiveMatchIndicator: React.FC<LiveMatchIndicatorProps> = ({
     
     if (isLive) {
       return {
-        color: '#F44336',
+        color: colors.error,
         text: 'LIVE',
         backgroundColor: '#FFEBEE',
-        borderColor: '#F44336',
+        borderColor: colors.error,
         shouldPulse: true,
       };
     }
@@ -52,10 +53,10 @@ const LiveMatchIndicator: React.FC<LiveMatchIndicatorProps> = ({
       case 'finished':
       case 'completed':
         return {
-          color: '#4CAF50',
+          color: colors.success,
           text: 'FIN',
           backgroundColor: '#E8F5E8',
-          borderColor: '#4CAF50',
+          borderColor: colors.success,
           shouldPulse: false,
         };
       case 'scheduled':
@@ -70,10 +71,10 @@ const LiveMatchIndicator: React.FC<LiveMatchIndicatorProps> = ({
       case 'inprogress':
       case 'running':
         return {
-          color: '#FF9800',
+          color: colors.warning,
           text: 'PLAY',
           backgroundColor: '#FFF3E0',
-          borderColor: '#FF9800',
+          borderColor: colors.warning,
           shouldPulse: true,
         };
       default:
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   },
   liveScoreLabel: {
     fontSize: 10,
-    color: '#F44336',
+    color: colors.error,
     fontWeight: '600',
   },
   badge: {
@@ -188,13 +189,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   liveBadge: {
-    backgroundColor: '#F44336',
+    backgroundColor: colors.error,
   },
   liveBadgeText: {
     color: '#FFFFFF',
   },
   playingBadge: {
-    backgroundColor: '#FF9800',
+    backgroundColor: colors.warning,
   },
   playingBadgeText: {
     color: '#FFFFFF',

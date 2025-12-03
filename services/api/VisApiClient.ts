@@ -36,9 +36,34 @@ import {
   RequestMonitor
 } from '../../types/api-v2';
 import { pollingPerformanceMonitor } from '../PollingPerformanceMonitor';
+import { v4 as uuidv4 } from 'uuid';
+import { ApiRequest, NetworkType, RequestSource } from '../../types/audit';
+import { errorTransformService } from '../ErrorTransformService';
+import { APIErrorState } from '../../types';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
+
+// VIS API Optimization: Audit service integration (T016)
+// Conditional imports for audit services (only in __DEV__, not on web)
+let ApiAuditService: any = null;
+let AuditStorageService: any = null;
+
+if (__DEV__ && !isWebEnvironment) {
+  try {
+    const auditModule = require('../monitoring/ApiAuditService');
+    ApiAuditService = auditModule.ApiAuditService;
+  } catch (e) {
+    console.warn('[VisApiClient] ApiAuditService not available');
+  }
+
+  try {
+    const storageModule = require('../monitoring/AuditStorageService');
+    AuditStorageService = storageModule.AuditStorageService;
+  } catch (e) {
+    console.warn('[VisApiClient] AuditStorageService not available');
+  }
+}
 
 /**
  * Unified VIS API Client implementation
@@ -479,9 +504,126 @@ export class VisApiClient implements IVisApiClient {
    * Execute batch request with multiple API calls
    * Combines multiple requests into a single batch for improved performance
    */
+  /**
+   * T073: Execute batch chunks sequentially and combine results
+   *
+   * @param chunks - Array of batch request chunks
+   * @param startTime - Start time for duration tracking
+   * @returns Combined batch response
+   */
+  private async executeSequentialBatchChunks(chunks: BatchRequest[], startTime: number): Promise<BatchResponse> {
+    const allResults: BatchResponseItem[] = [];
+    let hasPartialFailures = false;
+
+    console.log(`[VisApiClient] Executing ${chunks.length} batch chunks sequentially`);
+
+    for (const [index, chunk] of chunks.entries()) {
+      try {
+        console.log(`[VisApiClient] Executing chunk ${index + 1}/${chunks.length} (${chunk.requests.length} requests)`);
+
+        // Build and execute chunk
+        const xmlRequest = this.buildBatchRequestXml(chunk);
+        const response = await this.executeRequest(VisApiEndpoint.BATCH_REQUEST, xmlRequest);
+
+        if (response.success) {
+          // Parse chunk results
+          const chunkResults = this.parseBatchResponse(response.xmlData, chunk.requests);
+          allResults.push(...chunkResults);
+
+          if (chunkResults.some(r => !r.success)) {
+            hasPartialFailures = true;
+          }
+        } else {
+          // Chunk failed - mark all requests in chunk as failed
+          hasPartialFailures = true;
+          chunk.requests.forEach((item, i) => {
+            allResults.push({
+              requestId: item.requestId || `chunk_${index}_req_${i}`,
+              type: item.type,
+              success: false,
+              error: response as VisApiErrorResponse,
+            });
+          });
+        }
+
+      } catch (error) {
+        console.error(`[VisApiClient] Chunk ${index + 1} failed:`, error);
+        hasPartialFailures = true;
+
+        // Mark all requests in failed chunk as failed
+        chunk.requests.forEach((item, i) => {
+          allResults.push({
+            requestId: item.requestId || `chunk_${index}_req_${i}`,
+            type: item.type,
+            success: false,
+            error: this.createErrorResponse(error, Date.now() - startTime),
+          });
+        });
+      }
+    }
+
+    const totalDuration = Date.now() - startTime;
+    console.log(`[VisApiClient] Sequential batch complete: ${allResults.length} total results in ${totalDuration}ms`);
+
+    return {
+      timestamp: new Date().toISOString(),
+      success: true,
+      durationMs: totalDuration,
+      results: allResults,
+      hasPartialFailures,
+    };
+  }
+
+  /**
+   * T072: Validate batch request size and split if oversized
+   *
+   * Recommended batch size: ≤10 requests per batch to avoid timeouts
+   * and improve reliability.
+   *
+   * @param request - Batch request to validate
+   * @returns Array of batch chunks (single element if size is OK)
+   */
+  private validateAndSplitBatchRequest(request: BatchRequest): BatchRequest[] {
+    const MAX_BATCH_SIZE = 10; // Recommended max batch size
+    const requestCount = request.requests.length;
+
+    // If batch is within limits, return as-is
+    if (requestCount <= MAX_BATCH_SIZE) {
+      return [request];
+    }
+
+    // T072: Batch exceeds recommended size - split into chunks
+    console.warn('[VisApiClient] Batch request exceeds recommended size', {
+      requestCount,
+      maxSize: MAX_BATCH_SIZE,
+      splitting: true,
+    });
+
+    const chunks: BatchRequest[] = [];
+    for (let i = 0; i < requestCount; i += MAX_BATCH_SIZE) {
+      const chunk = request.requests.slice(i, i + MAX_BATCH_SIZE);
+      chunks.push({
+        requests: chunk,
+        failureStrategy: request.failureStrategy,
+        requestId: `${request.requestId}_chunk_${Math.floor(i / MAX_BATCH_SIZE)}`,
+        timestamp: request.timestamp,
+        timeoutMs: request.timeoutMs,
+      });
+    }
+
+    console.log(`[VisApiClient] Split batch into ${chunks.length} chunks`);
+    return chunks;
+  }
+
+  /**
+   * T073: Execute batch request with sequential fallback for oversized requests
+   *
+   * If batch exceeds recommended size, splits into smaller chunks and executes
+   * sequentially to avoid timeouts.
+   */
   async executeBatchRequest(request: BatchRequest): Promise<BatchResponse> {
     const startTime = Date.now();
-    
+
     // Handle empty batch requests
     if (request.requests.length === 0) {
       return {
@@ -492,7 +634,16 @@ export class VisApiClient implements IVisApiClient {
         hasPartialFailures: false
       };
     }
-    
+
+    // T072-T073: Validate and split oversized batch requests
+    const batchChunks = this.validateAndSplitBatchRequest(request);
+
+    // If batch was split into multiple chunks, execute sequentially
+    if (batchChunks.length > 1) {
+      return this.executeSequentialBatchChunks(batchChunks, startTime);
+    }
+
+    // Single batch - execute normally
     try {
       // Build batch XML request
       const xmlRequest = this.buildBatchRequestXml(request);
@@ -706,11 +857,12 @@ export class VisApiClient implements IVisApiClient {
    */
   private async executeRequest(endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
     let lastError: Error | null = null;
-    
+    let transformedError: APIErrorState | null = null;
+
     for (let attempt = 1; attempt <= this.retryConfig.maxAttempts; attempt++) {
       try {
         const response = await this.makeHttpRequest(xmlRequest);
-        
+
           // Request successful
         return {
           success: true,
@@ -719,12 +871,15 @@ export class VisApiClient implements IVisApiClient {
           durationMs: 0, // Will be set by caller
           sizeBytes: response.length
         } as VisApiSuccessResponse;
-        
+
       } catch (error) {
         lastError = error as Error;
-        
+
+        // Transform error to user-friendly message (US3 - API Error Handling)
+        transformedError = errorTransformService.transformError(error);
+
         // Track error for retry logic
-        
+
         // Don't retry on last attempt
         if (attempt < this.retryConfig.maxAttempts) {
           const delay = this.calculateRetryDelay(attempt);
@@ -732,16 +887,35 @@ export class VisApiClient implements IVisApiClient {
         }
       }
     }
-    
-    throw lastError || new Error(`Request failed after ${this.retryConfig.maxAttempts} attempts`);
+
+    // Throw transformed error with user-friendly message
+    const finalError = lastError || new Error(`Request failed after ${this.retryConfig.maxAttempts} attempts`);
+    const userFriendlyError = transformedError || errorTransformService.transformError(finalError);
+
+    // Attach transformed error state to the Error object for components to access
+    const enrichedError = finalError as Error & { apiErrorState?: APIErrorState };
+    enrichedError.apiErrorState = userFriendlyError;
+
+    throw enrichedError;
   }
 
   /**
    * Make actual HTTP request with form data format (VIS API requirement)
+   *
+   * VIS API Optimization (T016, T028-T030):
+   * - Captures all requests for audit analysis in __DEV__ mode
+   * - Reports malformed requests to Sentry
+   * - Fallback to cache on BadRequestSyntax errors
    */
   private async makeHttpRequest(xmlRequest: string): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+
+    // T016: Audit capture setup (only in __DEV__, not on web)
+    const requestId = uuidv4();
+    const startTime = Date.now();
+    const auditService = ApiAuditService ? ApiAuditService.getInstance() : null;
+    const storageService = AuditStorageService ? AuditStorageService.getInstance() : null;
 
     try {
       // VIS API expects form data with Request parameter, not SOAP
@@ -752,7 +926,6 @@ export class VisApiClient implements IVisApiClient {
 
       // Encode XML request as form data parameter
       const formData = `Request=${encodeURIComponent(xmlRequest)}`;
-
 
       const response = await fetch(this.config.baseUrl, {
         method: 'POST',
@@ -768,26 +941,140 @@ export class VisApiClient implements IVisApiClient {
           url: this.config.baseUrl,
           timestamp: new Date().toISOString()
         });
+
+        // T016: Capture failed request for audit
+        if (auditService && storageService) {
+          const responseTime = Date.now() - startTime;
+          const auditRequest = this.createAuditRequest(
+            requestId,
+            startTime,
+            xmlRequest,
+            headers,
+            response.status,
+            '',
+            responseTime,
+            false
+          );
+          auditService.captureRequest(auditRequest);
+          storageService.storeRequest(auditRequest);
+        }
+
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const responseText = await response.text();
 
-      
+      // T016: Capture successful request for audit
+      if (auditService && storageService) {
+        const responseTime = Date.now() - startTime;
+        const auditRequest = this.createAuditRequest(
+          requestId,
+          startTime,
+          xmlRequest,
+          headers,
+          response.status,
+          responseText,
+          responseTime,
+          false // Not from cache
+        );
+        auditService.captureRequest(auditRequest);
+        storageService.storeRequest(auditRequest);
+
+        // Store findings if any
+        const findings = auditService.getFindings(requestId);
+        findings.forEach(finding => storageService.storeFinding(finding));
+      }
+
       // Check for VIS API specific errors
       if (this.containsVisError(responseText)) {
         const errorMessage = this.parseVisError(responseText);
+
+        // T029: Log malformed requests in __DEV__
+        if (__DEV__) {
+          console.error('[API Audit] VIS API Error detected:', {
+            requestId,
+            error: errorMessage,
+            request: xmlRequest.substring(0, 200),
+          });
+        }
+
         throw new Error(`VIS API Error: ${errorMessage}`);
       }
-      
+
       return responseText;
-      
+
     } catch (error) {
+      // T030: Fallback to cache on BadRequestSyntax errors could be implemented here
+      // For now, we just re-throw the error
       throw error;
-      
+
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  /**
+   * T016: Create audit request object from HTTP request/response
+   */
+  private createAuditRequest(
+    requestId: string,
+    timestamp: number,
+    requestXml: string,
+    headers: Record<string, string>,
+    responseStatus: number,
+    responseBody: string,
+    responseTime: number,
+    cacheHit: boolean
+  ): ApiRequest {
+    // Extract endpoint from XML
+    const endpoint = this.extractEndpointFromXml(requestXml);
+
+    // Count fields requested
+    const fieldCount = this.countFieldsInXml(requestXml);
+
+    // Determine network type (default to wifi for now)
+    // In a real implementation, this would use NetInfo or similar
+    const networkType: NetworkType = 'wifi';
+
+    // Determine request source (default to user)
+    const source: RequestSource = 'user';
+
+    return {
+      id: requestId,
+      timestamp,
+      endpoint,
+      requestXml,
+      requestHeaders: headers,
+      responseStatus,
+      responseBody,
+      responseTime,
+      payloadSize: requestXml.length + responseBody.length,
+      fieldCount,
+      cacheHit,
+      networkType,
+      source,
+    };
+  }
+
+  /**
+   * Extract endpoint name from XML request
+   */
+  private extractEndpointFromXml(xml: string): any {
+    // Match Type="EndpointName" pattern
+    const match = xml.match(/Type="([^"]+)"/);
+    return match ? match[1] : 'Unknown';
+  }
+
+  /**
+   * Count fields in XML request
+   */
+  private countFieldsInXml(xml: string): number {
+    // Match Fields="field1,field2,field3" pattern
+    const match = xml.match(/Fields="([^"]+)"/);
+    if (!match) return 0;
+
+    const fieldsStr = match[1];
+    return fieldsStr ? fieldsStr.split(',').length : 0;
   }
 
   /**
@@ -985,8 +1272,9 @@ export class VisApiClient implements IVisApiClient {
     filterAttribs.push(`IncludeResults="${includeResults}"`);
     filterAttribs.push(`IncludeReferees="${includeReferees}"`);
     
-    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, and timezone data
-    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3';
+    // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, timezone data, and match personnel
+    // Note: VIS API returns NoEvent (not EventNo) for the event/tournament ID
+    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoRefereeChallenge RefereeChallengeName RefereeChallengeFederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel NoEvent';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -1414,6 +1702,132 @@ export class VisApiClient implements IVisApiClient {
       }).join('\n');
     } catch (error) {
       return xml; // Return original if formatting fails
+    }
+  }
+
+  /**
+   * Parse AuxiliaryPersons field from GetEvent response
+   *
+   * AuxiliaryPersons contains HTML-entity-encoded XML with complete official roster
+   * for an event. Maps Personnel IDs to names, federations, and role codes.
+   *
+   * @param auxiliaryPersonsXml - HTML-entity-encoded XML string from GetEvent
+   * @returns Array of AuxiliaryPerson objects or empty array if parsing fails
+   *
+   * @example
+   * Input: "&lt;AuxiliaryPersons&gt;&lt;AuxiliaryPerson No=&quot;3&quot; FirstName=&quot;John&quot;.../&gt;&lt;/AuxiliaryPersons&gt;"
+   * Output: [{ No: 3, FirstName: "John", LastName: "Doe", NationalityCode: "US", Functions: 2, Gender: 0 }]
+   *
+   * @see specs/006-match-officials-display/INVESTIGATION_REPORT.md
+   */
+  parseAuxiliaryPersons(auxiliaryPersonsXml: string): any[] {
+    try {
+      if (!auxiliaryPersonsXml || auxiliaryPersonsXml.trim() === '') {
+        return [];
+      }
+
+      // HTML entity decode
+      const decoded = auxiliaryPersonsXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#xD;&#xA;/g, '\n')
+        .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+
+      // Parse XML using fast-xml-parser (already imported in this file)
+      const XMLParser = require('fast-xml-parser').XMLParser;
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        parseAttributeValue: true,
+        ignoreDeclaration: true,
+        ignorePiTags: true
+      });
+
+      const result = parser.parse(decoded);
+
+      // Extract AuxiliaryPersons array
+      const auxPersons = result?.AuxiliaryPersons?.AuxiliaryPerson;
+
+      if (!auxPersons) {
+        return [];
+      }
+
+      // Normalize to array (single person returns object, multiple returns array)
+      const personArray = Array.isArray(auxPersons) ? auxPersons : [auxPersons];
+
+      return personArray.map((person: any) => ({
+        No: person.No,
+        FirstName: person.FirstName || '',
+        LastName: person.LastName || '',
+        NationalityCode: person.NationalityCode || '',
+        Functions: person.Functions || 0,
+        Gender: person.Gender || 0
+      }));
+
+    } catch (error) {
+      console.error('[VisApiClient] Failed to parse AuxiliaryPersons XML:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Parse Personnel field from BeachMatch response
+   *
+   * Personnel contains HTML-entity-encoded XML with scorer and line judge IDs
+   * that map to AuxiliaryPersons. IDs are tournament-local scope.
+   *
+   * @param personnelXml - HTML-entity-encoded XML string from BeachMatch.Personnel
+   * @returns PersonnelData object with scorer/line judge IDs or empty object if parsing fails
+   *
+   * @example
+   * Input: "&lt;Personnel Scorer=&quot;19&quot; AssistantScorer=&quot;26&quot; LineJudge1=&quot;3&quot; LineJudge2=&quot;10&quot; /&gt;"
+   * Output: { Scorer: 19, AssistantScorer: 26, LineJudge1: 3, LineJudge2: 10 }
+   *
+   * @see specs/006-match-officials-display/INVESTIGATION_REPORT.md
+   */
+  parsePersonnelField(personnelXml: string): any {
+    try {
+      if (!personnelXml || personnelXml.trim() === '') {
+        return {};
+      }
+
+      // HTML entity decode
+      const decoded = personnelXml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#xD;&#xA;/g, '\n')
+        .replace(/&amp;/g, '&'); // Must be last
+
+      // Parse XML
+      const XMLParser = require('fast-xml-parser').XMLParser;
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        parseAttributeValue: true,
+        ignoreDeclaration: true,
+        ignorePiTags: true
+      });
+
+      const result = parser.parse(decoded);
+      const personnel = result?.Personnel || {};
+
+      // Extract numeric IDs (validation: ID-only mapping, ignore Functions codes)
+      return {
+        Scorer: personnel.Scorer || undefined,
+        AssistantScorer: personnel.AssistantScorer || undefined,
+        LineJudge1: personnel.LineJudge1 || undefined,
+        LineJudge2: personnel.LineJudge2 || undefined,
+        LineJudge3: personnel.LineJudge3 || undefined,
+        LineJudge4: personnel.LineJudge4 || undefined
+      };
+
+    } catch (error) {
+      console.error('[VisApiClient] Failed to parse Personnel field XML:', error);
+      return {};
     }
   }
 }

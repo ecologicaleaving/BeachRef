@@ -4,16 +4,17 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  StyleSheet,
   Dimensions,
   TouchableOpacity,
   Modal,
   ScrollView,
   Switch,
 } from 'react-native';
+import { designTokens, colors } from '../../theme/tokens';
 import type {
   TouchTargetVisualizationData,
   TouchTargetValidationStatus,
@@ -76,9 +77,9 @@ export const TouchTargetVisualization: React.FC<TouchTargetVisualizationProps> =
   onTargetPress,
   onIssuePress,
   overlayOpacity = 0.3,
-  compliantColor = '#4CAF50',
-  nonCompliantColor = '#F44336',
-  warningColor = '#FF9800',
+  compliantColor = colors.success,
+  nonCompliantColor = colors.error,
+  warningColor = colors.warning,
   showDebugPanel = false,
   debugPanelPosition = 'bottom',
 }) => {
@@ -135,7 +136,7 @@ export const TouchTargetVisualization: React.FC<TouchTargetVisualizationProps> =
       case 'compliant': return compliantColor;
       case 'non-compliant': return nonCompliantColor;
       case 'warning': return warningColor;
-      default: return '#9E9E9E';
+      default: return designTokens.neutrals.textSecondary;
     }
   }, [compliantColor, nonCompliantColor, warningColor]);
   
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#F44336',
+    backgroundColor: colors.error,
     borderRadius: 10,
     minWidth: 20,
     height: 20,

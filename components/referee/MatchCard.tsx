@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { BeachMatch } from '../../types/match';
+import { designTokens } from '../../theme/tokens';
 
 interface RefereeFromDB {
   No: string;
@@ -285,14 +286,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   menSymbol: {
-    color: '#2563EB', // Blue for men
+    color: designTokens.linkTokens.default, // Blue for men
   },
   womenSymbol: {
     color: '#DC2626', // Red for women
   },
   courtInfo: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   timeInfo: {
     alignItems: 'flex-end',
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   teamsContainer: {
     marginBottom: 12,
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   winnerTeam: {
     backgroundColor: '#F0F9FF',
     borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderColor: designTokens.brandBlue[500], // Winner highlight
   },
   teamNameContainer: {
     flexDirection: 'row',
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   teamScore: {
@@ -357,12 +358,12 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   winnerText: {
-    color: '#0EA5E9',
+    color: designTokens.brandBlue[500], // Winner highlight
   },
   vsText: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginVertical: 4,
   },
@@ -372,7 +373,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     textTransform: 'uppercase',
   },

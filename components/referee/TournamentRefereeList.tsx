@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '../Typography/Text';
-import { colors } from '../../theme/tokens';
+import { colors, designTokens } from '../../theme/tokens';
 import { RefereeStatsService, RefereeStats, SeasonStats, CareerStats, RefereeMatch, EnhancedTournamentStats } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
 import { MatchRefereeCard } from './MatchRefereeCard';
@@ -14,6 +14,7 @@ interface Referee {
   federationCode: string;
   gender: string;
   level?: string;
+  role?: string; // "Referee" or "Challenge Referee"
 }
 
 interface TournamentInfo {
@@ -232,18 +233,24 @@ const RefereeCard = ({
           </Text>
         </View>
         <View style={styles.cardHeaderRight}>
-          {/* Always show basic R1/R2 totals */}
-          <View style={styles.roleTotals}>
-            <View style={styles.roleTotal}>
-              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
-              <Text style={styles.roleTotalLabel}>R1</Text>
+          {/* Show CR badge for Challenge Referee, R1/R2 stats for regular Referee */}
+          {referee?.role === 'Challenge Referee' ? (
+            <View style={styles.challengeRefereeBadge}>
+              <Text style={styles.challengeRefereeBadgeText}>CR</Text>
             </View>
-            <Text style={styles.roleTotalSeparator}>•</Text>
-            <View style={styles.roleTotal}>
-              <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
-              <Text style={styles.roleTotalLabel}>R2</Text>
+          ) : (
+            <View style={styles.roleTotals}>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{currentStats?.matchesAsFirst || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R1</Text>
+              </View>
+              <Text style={styles.roleTotalSeparator}>•</Text>
+              <View style={styles.roleTotal}>
+                <Text style={styles.roleTotalCount}>{currentStats?.matchesAsSecond || 0}</Text>
+                <Text style={styles.roleTotalLabel}>R2</Text>
+              </View>
             </View>
-          </View>
+          )}
           <View style={styles.cardActions}>
             <View style={styles.expandToggle}>
               <Text
@@ -321,7 +328,7 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
     try {
       const xml = `<Requests>
   <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
+           Fields="NoReferee FirstName LastName FederationCode Gender Role Level Status">
     <Filter NoEvent="${tournamentNo}"/>
   </Request>
 </Requests>`;
@@ -370,6 +377,7 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
         const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
         const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
         const level = match.match(/Level="([^"]*)"/)?.[1] || '';
+        const role = match.match(/Role="([^"]*)"/)?.[1] || ''; // Parse Role field
 
         // Only add referee if they have at least a name
         if (firstName.trim() || lastName.trim()) {
@@ -379,7 +387,8 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
             lastName,
             federationCode,
             gender,
-            level
+            level,
+            role
           });
         }
       });
@@ -542,12 +551,12 @@ const styles = StyleSheet.create({
   roleTotalCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 14,
   },
   roleTotalLabel: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     lineHeight: 10,
   },
@@ -555,6 +564,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#D1D5DB',
     paddingHorizontal: 2,
+  },
+  challengeRefereeBadge: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  challengeRefereeBadgeText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 0.5,
   },
   cardActions: {
     flexDirection: 'row',
@@ -698,7 +722,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   matchesList: {
@@ -731,7 +755,7 @@ const styles = StyleSheet.create({
   },
   matchTime: {
     fontSize: 11,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   teamsSection: {
@@ -755,12 +779,12 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     flex: 1,
   },
   vsText: {
     fontSize: 10,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginVertical: 2,
     fontWeight: '500',
@@ -775,7 +799,7 @@ const styles = StyleSheet.create({
   refereeSectionTitle: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -792,13 +816,13 @@ const styles = StyleSheet.create({
   refereeRole: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 4,
     minWidth: 20,
   },
   refereeName: {
     fontSize: 11,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     flex: 1,
   },
@@ -821,12 +845,12 @@ const styles = StyleSheet.create({
   matchCourt: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   matchRound: {
     fontSize: 11,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   matchDetails: {
     flexDirection: 'row',
@@ -858,7 +882,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     backgroundColor: '#F3F4F6',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     minWidth: 20,
     textAlign: 'center',
   },
@@ -889,7 +913,7 @@ const styles = StyleSheet.create({
   },
   noMatchesText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
 });

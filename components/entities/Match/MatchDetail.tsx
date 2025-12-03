@@ -12,7 +12,7 @@ import { StatusBadge } from '../../Status';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { determineMatchStatus } from '../../../utils/statusColors';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 
 export interface MatchDetailProps {
   match: BeachMatchCore;
@@ -369,7 +369,7 @@ const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: designTokens.neutrals.bgSurface,
   },
   headerSection: {
     flexDirection: 'row',
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   courtInfo: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusBadge: {
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: designTokens.neutrals.borderSubtle,
   },
   teamInfo: {
     flexDirection: 'row',
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   },
   teamPlayers: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   matchScore: {
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   matchScoreText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   matchScoreWinner: {
     color: colors.success,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   setScoresTitle: {
     fontSize: 16,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   setLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   setScoreContainer: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   setScoreText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   setScoreSeparator: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 4,
   },
   detailsSection: {
@@ -529,11 +529,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: designTokens.neutrals.borderSubtle,
   },
   detailLabel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 20,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 12,
   },
   actionIconPrimary: {
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     flex: 1,
   },
   actionButtonTextPrimary: {

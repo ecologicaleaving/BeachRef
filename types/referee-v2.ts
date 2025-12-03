@@ -16,6 +16,22 @@ export enum OfficialRole {
   REFEREE_2 = 'Referee2',
   /** Challenge referee */
   CHALLENGE_REFEREE = 'ChallengeReferee',
+  /** Assistant Challenge Referee (bonus feature) */
+  ASSISTANT_CHALLENGE_REFEREE = 'AssistantChallengeReferee',
+  /** Reserve Referee (bonus feature) */
+  RESERVE_REFEREE = 'ReserveReferee',
+  /** Match scorer */
+  SCORER = 'Scorer',
+  /** Assistant scorer */
+  ASSISTANT_SCORER = 'AssistantScorer',
+  /** Line judge 1 */
+  LINE_JUDGE_1 = 'LineJudge1',
+  /** Line judge 2 */
+  LINE_JUDGE_2 = 'LineJudge2',
+  /** Line judge 3 (optional) */
+  LINE_JUDGE_3 = 'LineJudge3',
+  /** Line judge 4 (optional) */
+  LINE_JUDGE_4 = 'LineJudge4',
   /** Technical official */
   TECHNICAL_OFFICIAL = 'TechnicalOfficial',
   /** Tournament director */

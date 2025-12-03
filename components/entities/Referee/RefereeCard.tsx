@@ -10,7 +10,7 @@ import { EventReferee, RefereeOfficial, getOfficialDisplayName, isActiveOfficial
 import { FlagImage } from '../../FlagImage';
 import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';
 
 export interface RefereeCardProps {
@@ -377,10 +377,10 @@ const styles = StyleSheet.create({
   cardSelection: {
     borderColor: colors.success,
     borderWidth: 2,
-    backgroundColor: '#F0FDF4',
+    backgroundColor: designTokens.badgeColors.completed.background,
   },
   cardInactive: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     opacity: 0.7,
   },
   cardHeader: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   refereeId: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   refereeIdCompact: {
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   genderMale: {
-    color: '#3B82F6',
+    color: designTokens.linkTokens.default,
   },
   genderFemale: {
     color: '#EC4899',
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   typeTextCompact: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   experienceText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   strongPoints: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   statusTextCompact: {
@@ -546,13 +546,13 @@ const styles = StyleSheet.create({
   },
   assignmentIcon: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginRight: 4,
   },
   assignmentCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   
   // Analytics variant card style
@@ -581,12 +581,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 10,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F9FAFB',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   roleItem: {
     alignItems: 'center',
@@ -614,12 +614,12 @@ const styles = StyleSheet.create({
   roleCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 1,
   },
   roleLabel: {
     fontSize: 9,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   roleSeparator: {
@@ -629,13 +629,13 @@ const styles = StyleSheet.create({
   },
   statisticsLoading: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     paddingVertical: 8,
   },
   statisticsEmpty: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     paddingVertical: 4,
     fontStyle: 'italic',
@@ -658,12 +658,12 @@ const styles = StyleSheet.create({
   roleTotalCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 14,
   },
   roleTotalLabel: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     lineHeight: 10,
   },

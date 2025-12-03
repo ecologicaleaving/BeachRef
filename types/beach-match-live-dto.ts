@@ -75,6 +75,8 @@ export interface BeachMatchLiveDTO {
   };
   score: {
     sets: Array<SetScore>;
+    currentSet?: number; // Current set number (1-3)
+    points?: { home: number; away: number } | null; // Current points in active set
     totalSets?: { home: number; away: number } | null;
     fastestServeKmh?: {
       home?: { p1?: number | null; p2?: number | null };

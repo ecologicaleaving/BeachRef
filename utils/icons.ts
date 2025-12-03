@@ -1,11 +1,11 @@
 /**
  * Icon System Utilities
  * Story 1.5: Outdoor-Optimized Iconography
- * 
+ *
  * High-contrast, outdoor-visible icon system for tournament referees
  */
 
-import { colors, statusColors } from '../theme/tokens';
+import { colors, statusColors, designTokens } from '../theme/tokens';
 import { calculateContrast } from './contrast';
 
 // Icon variant types for outdoor visibility
@@ -126,9 +126,9 @@ export const ICON_COLOR_THEMES = {
   // Accessibility theme for users with visual impairments
   accessibility: {
     primary: '#000000',    // Pure black for maximum contrast
-    secondary: '#333333',  // Dark gray
+    secondary: designTokens.neutrals.textPrimary,  // Dark gray
     accent: '#CC0000',     // High contrast red
-    muted: '#666666',      // Medium gray
+    muted: designTokens.neutrals.textSecondary,      // Medium gray
   },
 } as const;
 

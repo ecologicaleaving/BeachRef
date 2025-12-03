@@ -1,95 +1,122 @@
 /**
- * Design Tokens - Outdoor-Optimized Visual Design System
- * High Contrast (7:1 minimum) Color Palette for Tournament Referees
+ * Design Tokens - Professional Sport Tech Visual Design System
+ * "Titanium & Gold" Theme - Sober, Professional, High Contrast
  */
 
-import { DesignTokens, StatusColors, IconTokens } from '../types/theme';
-import { calculateContrast, validateWCAG } from '../utils/contrast';
+import { DesignTokens, IconTokens, StatusColors } from '../types/theme';
+import { calculateContrast } from '../utils/contrast';
 
-// FIVB Brand Color Palette (WCAG AAA compliant - 7:1 minimum contrast)
-export const colors = {
-  // FIVB Brand Colors - Professional Referee Tool (Adjusted for WCAG AAA compliance)
-  primary: '#1B365D',      // Navigation, headers, court numbers (FIVB Primary) - 12.12:1 ✅
-  secondary: '#2B5F75',    // Supporting elements, borders (FIVB Secondary darkened) - 8.40:1 ✅
-  accent: '#B8391A',       // Call-to-action buttons, active states (FIVB Accent darkened) - 4.75:1 ✅
-  success: '#0F4C75',      // Active/live match indicators (Deep Blue-Teal) - 9.09:1 ✅
-  warning: '#B8530A',      // Upcoming assignments, alerts (FIVB Warning darkened) - 7.90:1 ✅
-  error: '#8B1538',        // Cancelled matches, critical alerts (FIVB Error darkened) - 9.28:1 ✅
-  textPrimary: '#2C3E50',  // Primary text, headings (FIVB Text Primary) - 10.98:1 ✅
-  textSecondary: '#445566', // Secondary text, metadata (FIVB Text Secondary darkened) - 7.67:1 ✅
-  background: '#FFFFFF',   // Card backgrounds, primary surfaces (FIVB Background)
+// STEP 1: Unified Brand Scale (Zinc/Titanium)
+export const brandBlue = {
+  900: '#18181B',  // Zinc 950 - Main Header/Nav
+  700: '#3F3F46',  // Zinc 700 - Titles
+  600: '#52525B',  // Zinc 600 - Subtitles
+  500: '#71717A',  // Zinc 500 - Muted text
+  300: '#D4D4D8',  // Zinc 300 - Borders
 } as const;
 
-// Original FIVB Brand Colors (for backgrounds and decorative elements)
+// STEP 2: Rationalized Neutrals
+export const neutrals = {
+  bgPage: '#FAFAFA',        // Zinc 50
+  bgSurface: '#FFFFFF',
+  borderSubtle: '#E4E4E7',  // Zinc 200
+  textPrimary: '#18181B',   // Zinc 950
+  textSecondary: '#52525B', // Zinc 600
+} as const;
+
+// Base Colors (without statusColors to avoid circular dependency)
+const baseColors = {
+  primary: brandBlue[900],      // Dark Titanium
+  secondary: brandBlue[600],    // Medium Titanium
+  accent: '#D97706',            // Amber 600 (Professional Gold)
+  success: '#15803D',           // Green 700 (Sober Green)
+  warning: '#B45309',           // Amber 700
+  error: '#B91C1C',             // Red 700
+  textPrimary: neutrals.textPrimary,
+  textSecondary: neutrals.textSecondary,
+  background: neutrals.bgPage,
+} as const;
+
+// Legacy Brand Colors (Mapped to new theme)
 export const brandColors = {
-  // Original FIVB Specification Colors
-  fivbPrimary: '#1B365D',    // FIVB Primary Blue
-  fivbSecondary: '#4A90A4',  // FIVB Secondary Blue  
-  fivbAccent: '#FF6B35',     // FIVB Accent Orange
-  fivbSuccess: '#0F4C75',    // FIVB Success Blue-Teal (aligned with WCAG version)
-  fivbWarning: '#FF8C00',    // FIVB Warning Orange
-  fivbError: '#C41E3A',      // FIVB Error Red
-  // Brand color variants for different contexts
-  primaryLight: '#E8EDF5',   // Light variant of primary
-  secondaryLight: '#E8F2F5', // Light variant of secondary
-  accentLight: '#FFF0E8',    // Light variant of accent
+  fivbPrimary: '#18181B',
+  fivbSecondary: '#52525B',
+  fivbAccent: '#D97706',
+  fivbSuccess: '#15803D',
+  fivbWarning: '#B45309',
+  fivbError: '#B91C1C',
+  primaryLight: '#F4F4F5',
+  secondaryLight: '#F4F4F5',
+  accentLight: '#FEF3C7',
 } as const;
 
-// Status-Driven Color Coding System (WCAG AAA compliant - 7:1 minimum contrast)
-// Based on Epic 001 User Story 4 requirements - using only WCAG AAA compliant colors
+// STEP 3: Badge and Status Colors
+export const badgeColors = {
+  live: {
+    text: '#B91C1C',      // Red 700
+    background: '#FEE2E2', // Red 100
+    dot: '#DC2626',       // Red 600
+  },
+  scheduled: {
+    text: '#3F3F46',      // Zinc 700
+    background: '#F4F4F5', // Zinc 100
+  },
+  completed: {
+    text: '#15803D',      // Green 700
+    background: '#DCFCE7', // Green 100
+  },
+} as const;
+
 export const statusColors: StatusColors = {
-  // Current/Active: High-visibility - use primary blue for LIVE status
-  current: colors.primary,  // 12.12:1 contrast on white background ✅ (blue color for LIVE)
-  
-  // Upcoming: Professional blue - using existing secondary color
-  upcoming: colors.secondary,   // 8.40:1 contrast on white background ✅ (existing WCAG AAA color)
-  
-  // Completed: Success blue-teal - using existing success color
-  completed: colors.success,    // 9.09:1 contrast on white background ✅ (existing WCAG AAA color)
-  
-  // Cancelled/Changed: Clear warning indicators - using primary for high contrast
-  cancelled: colors.primary,    // 12.12:1 contrast on white background ✅ (existing WCAG AAA color)
-  
-  // Emergency/Urgent: Maximum visibility treatment - using existing error color
-  emergency: colors.error,      // 9.28:1 contrast on white background ✅ (existing WCAG AAA color)
+  current: badgeColors.live.text,
+  upcoming: badgeColors.scheduled.text,
+  completed: badgeColors.completed.text,
+  cancelled: baseColors.primary,
+  emergency: baseColors.error,
 } as const;
 
-// Icon System Tokens (WCAG AAA compliant - outdoor optimized)
+// Final Colors Object (including statusColors)
+export const colors = {
+  ...baseColors,
+  statusColors,
+} as const;
+
+// Icon System Tokens
 export const iconTokens: IconTokens = {
   sizes: {
-    small: 24,    // Non-interactive icons
-    medium: 32,   // Semi-interactive icons
-    large: 44,    // Interactive icons (touch target compliant)
+    small: 24,
+    medium: 32,
+    large: 44,
   },
   strokeWidths: {
-    small: 2,     // Consistent stroke width for small icons
-    medium: 2.5,  // Consistent stroke width for medium icons
-    large: 3,     // Consistent stroke width for large icons
+    small: 2,
+    medium: 2.5,
+    large: 3,
   },
   colors: {
-    primary: colors.textPrimary,      // 10.98:1 contrast - maximum visibility ✅
-    secondary: colors.secondary,      // 8.40:1 contrast - secondary actions ✅
-    accent: colors.accent,            // 4.75:1 contrast - attention elements ✅
-    muted: colors.textSecondary,      // 7.67:1 contrast - disabled/inactive ✅
-    emergency: colors.error,          // 9.28:1 contrast - emergency alerts ✅
+    primary: colors.textPrimary,
+    secondary: colors.secondary,
+    accent: colors.accent,
+    muted: colors.textSecondary,
+    emergency: colors.error,
   },
   accessibility: {
-    minimumContrastRatio: 7.0,        // WCAG AAA requirement
-    minimumTouchTarget: 44,           // iOS/Android accessibility guidelines
+    minimumContrastRatio: 7.0,
+    minimumTouchTarget: 44,
   },
 } as const;
 
-// Typography Scale (from referee-frontend-spec/branding-style-guide.md)
+// Typography Scale
 export const typography = {
   hero: {
     fontSize: 40,
-    fontWeight: 'bold' as const,
+    fontWeight: '700' as const,
     lineHeight: 48,
     letterSpacing: -0.5,
   },
   h1: {
     fontSize: 32,
-    fontWeight: 'bold' as const,
+    fontWeight: '700' as const,
     lineHeight: 40,
     letterSpacing: -0.25,
   },
@@ -101,13 +128,13 @@ export const typography = {
   },
   bodyLarge: {
     fontSize: 18,
-    fontWeight: 'normal' as const,
+    fontWeight: '400' as const,
     lineHeight: 28,
     letterSpacing: 0,
   },
   body: {
     fontSize: 16,
-    fontWeight: 'normal' as const,
+    fontWeight: '400' as const,
     lineHeight: 24,
     letterSpacing: 0,
   },
@@ -119,7 +146,75 @@ export const typography = {
   },
 } as const;
 
-// Spacing Scale (8px base unit)
+// STEP 4: Buttons, Links, and Focus Rings
+export const buttonTokens = {
+  primary: {
+    background: colors.primary,      // Zinc 950
+    backgroundHover: colors.secondary, // Zinc 600
+    text: '#FFFFFF',
+  },
+  secondary: {
+    background: '#FFFFFF',
+    backgroundHover: '#F4F4F5',
+    border: neutrals.borderSubtle,
+    text: colors.primary,
+  },
+  destructive: {
+    background: '#FEE2E2',
+    text: '#B91C1C',
+    border: '#FECACA',
+    backgroundHover: '#FECACA', // Added missing property
+  },
+} as const;
+
+export const linkTokens = {
+  default: colors.accent,    // Amber 600
+  hover: '#B45309',          // Amber 700
+} as const;
+
+export const focusRing = {
+  color: colors.accent,
+  width: 2,
+  style: 'solid' as const,
+} as const;
+
+// STEP 5: Card Borders and Shadows
+export const cardTokens = {
+  border: neutrals.borderSubtle,
+  borderActive: colors.accent,
+  backgroundHover: '#FAFAFA',
+  borderHover: '#D4D4D8',
+  shadow: {
+    sm: '0 1px 2px rgba(0,0,0,0.05)',
+    md: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+  },
+} as const;
+
+// STEP 6: Semantic Tokens for Messages/Alerts
+export const alertTokens = {
+  info: {
+    text: colors.primary,
+    background: '#F4F4F5',
+    border: colors.primary,
+  },
+  success: {
+    text: '#15803D',
+    background: '#DCFCE7',
+    border: '#15803D',
+  },
+  warning: {
+    text: '#B45309',
+    background: '#FEF3C7',
+    border: '#B45309',
+  },
+  error: {
+    text: '#B91C1C',
+    background: '#FEE2E2',
+    border: '#B91C1C',
+  },
+} as const;
+
+// Spacing Scale
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -127,9 +222,17 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  // Aliases and additional tokens required by SpacingToken interface
+  xsmall: 4,
+  extraSmall: 4,
+  small: 8,
+  medium: 16,
+  large: 24,
+  extraLarge: 32,
+  borderRadius: 8,
 } as const;
 
-// Contrast Validation (calculated at build time)
+// Contrast Validation
 export const contrast = {
   textPrimary: {
     onBackground: calculateContrast(colors.textPrimary, colors.background),
@@ -161,7 +264,6 @@ export const contrast = {
     onPrimary: calculateContrast(colors.error, colors.primary),
     onSecondary: calculateContrast(colors.error, colors.secondary),
   },
-  // Status Color Contrast Validation
   statusCurrent: {
     onBackground: calculateContrast(statusColors.current, colors.background),
     onPrimary: calculateContrast(statusColors.current, colors.primary),
@@ -189,21 +291,27 @@ export const contrast = {
   },
 };
 
-// Complete Design Token Export
 export const designTokens: DesignTokens = {
   colors,
   brandColors,
+  brandBlue,
+  neutrals,
   statusColors,
+  badgeColors,
+  buttonTokens,
+  linkTokens,
+  focusRing,
+  cardTokens,
+  alertTokens,
   iconTokens,
   typography,
   spacing,
   contrast,
 } as const;
 
-// Validate all color combinations meet 7:1 WCAG AAA requirements
 export const validateAllContrasts = (): boolean => {
   const results: boolean[] = [];
-  
+
   Object.values(contrast).forEach(colorContrast => {
     Object.values(colorContrast).forEach(contrastData => {
       results.push(contrastData.wcagAAA);
@@ -214,7 +322,7 @@ export const validateAllContrasts = (): boolean => {
   });
 
   const allPass = results.every(result => result);
-  
+
   if (allPass) {
     console.log('✅ All color combinations meet WCAG AAA (7:1) contrast requirements');
   } else {

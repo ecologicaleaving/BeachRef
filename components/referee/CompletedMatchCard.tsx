@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MatchResult } from '../../types/MatchResults';
 import { MatchResultsService } from '../../services/MatchResultsService';
 import { formatTime, formatDate } from '../../utils/dateFormatters';
+import { designTokens } from '../../theme/tokens';
 
 interface CompletedMatchCardProps {
   match: MatchResult;
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
     borderWidth: 2,
-    borderColor: '#6B7280', // Muted gray for completed matches
+    borderColor: designTokens.neutrals.textSecondary, // Muted gray for completed matches
     minHeight: 160, // Slightly smaller than live matches but still touch-friendly
   },
   pressed: {
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    backgroundColor: '#6B7280', // Muted gray background
+    backgroundColor: designTokens.neutrals.textSecondary, // Muted gray background
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderColor: designTokens.brandBlue[500], // Winner highlight
   },
   winnerText: {
     fontSize: 18,
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   loserText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -170,20 +171,20 @@ const styles = StyleSheet.create({
   matchPoints: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   setScores: {
     fontSize: 20, // Large but not as large as live matches
     fontWeight: '700',
-    color: '#6B7280', // Gray to indicate completed status
+    color: designTokens.neutrals.textSecondary, // Gray to indicate completed status
     textAlign: 'center',
     marginBottom: 6,
   },
   duration: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
   },
   refereesContainer: {
@@ -192,18 +193,18 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#6B7280',
+    borderLeftColor: designTokens.neutrals.textSecondary,
   },
   refereesLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   refereesText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     lineHeight: 22,
   },
   matchInfo: {
@@ -218,13 +219,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   timeText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   venueInfo: {
     alignItems: 'flex-end',
@@ -232,12 +233,12 @@ const styles = StyleSheet.create({
   courtText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   roundText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
   },
 });

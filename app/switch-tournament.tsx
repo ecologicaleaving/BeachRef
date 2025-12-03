@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { designTokens } from '../theme/tokens';
 
 export default function SwitchTournament() {
   return (
@@ -20,12 +21,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, ImageProps } from 'react-native';
+import { brandAssets } from '../assets/brand/BrandAssetManager';
 
 interface WhistleLogoProps extends Omit<ImageProps, 'source'> {
   size?: number;
@@ -7,16 +8,16 @@ interface WhistleLogoProps extends Omit<ImageProps, 'source'> {
   height?: number;
 }
 
-export const WhistleLogo: React.FC<WhistleLogoProps> = ({ 
+export const WhistleLogo: React.FC<WhistleLogoProps> = ({
   size = 100,
   width,
   height,
   style,
-  ...props 
+  ...props
 }) => {
   return (
     <Image
-      source={require('../assets/images/whistle-logo.jpeg')}
+      source={brandAssets.logo.primary.light}
       resizeMode="contain"
       style={[
         {

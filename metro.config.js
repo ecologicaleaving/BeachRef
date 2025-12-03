@@ -6,10 +6,29 @@ const config = getDefaultConfig(__dirname);
 // Temporarily enable package exports to fix TanStack Query import issues
 config.resolver.unstable_enablePackageExports = true;
 
+// Platform-specific module resolution
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Stub out native-only modules on web to prevent RCTNetworking errors
+  if (platform === 'web') {
+    if (moduleName === '@sentry/react-native' || moduleName === 'react-native-network-logger') {
+      return {
+        filePath: require.resolve('./empty-module-stub.js'),
+        type: 'sourceFile',
+      };
+    }
+  }
+
+  // Use default resolution for all other modules
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 // Alias fbjs to React 19 compatible replacement
 config.resolver.alias = {
   'fbjs': require.resolve('./fbjs-replacement'),
 };
+
+// Add source extensions to resolve .js files in ES modules (for fast-xml-parser)
+config.resolver.sourceExts = [...(config.resolver.sourceExts || []), 'js', 'jsx', 'json', 'ts', 'tsx'];
 
 // Configure transform options to handle modern JS syntax
 config.transformer.getTransformOptions = async (entryPoints, options, getDependenciesOf) => {

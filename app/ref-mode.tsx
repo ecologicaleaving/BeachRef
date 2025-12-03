@@ -12,7 +12,7 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { BottomTabNavigation } from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { createShadow } from '../theme/shadows';
-// import { designTokens } from '../theme/tokens';
+import { designTokens } from '../theme/tokens';
 
 interface Official {
   FederationCode: string;
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   activeMenuText: {
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   errorContainer: {
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
   },
   officialDetails: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   officialStatus: {

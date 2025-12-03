@@ -23,13 +23,13 @@ export class MatchStatusPollingManager {
   private static readonly POLLING_CONFIGS: Record<MatchPollingStatus, MatchStatusPollingConfig> = {
     [MatchPollingStatus.RUNNING]: {
       status: MatchPollingStatus.RUNNING,
-      intervalMs: 3000, // 3 seconds for running matches
+      intervalMs: 15000, // 15 seconds for running matches
       shouldPoll: true,
       fieldSelectionMode: FieldSelectionMode.SLIM // Use slim fields for frequent polling
     },
     [MatchPollingStatus.SCHEDULED]: {
       status: MatchPollingStatus.SCHEDULED,
-      intervalMs: 30000, // 30 seconds for scheduled matches
+      intervalMs: 60000, // 60 seconds (1 minute) for scheduled matches
       shouldPoll: true,
       fieldSelectionMode: FieldSelectionMode.FULL // Full fields less frequently
     },

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../Typography/Text';
 import { FlagImage } from '../FlagImage';
-import { colors, brandColors, statusColors } from '../../theme/tokens';
+import { colors, brandColors, statusColors, designTokens } from '../../theme/tokens';
 import { RefereeMatch } from '../../services/RefereeStatsService';
 
 interface MatchRefereeCardProps {
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
 
   refereeCountryCode: {
     fontSize: 8,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     minWidth: 20,
     textAlign: 'right',

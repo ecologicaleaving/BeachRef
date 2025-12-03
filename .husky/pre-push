@@ -1,0 +1,28 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running production audit (pre-push)..."
+echo "This is the same check that will run in CI/CD"
+echo ""
+
+# Run CI-level checks and capture exit code
+npm run audit:ci
+AUDIT_EXIT_CODE=$?
+
+# Check exit code
+if [ $AUDIT_EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ Push blocked: Critical or High severity issues found"
+  echo ""
+  echo "Your code would fail CI/CD checks. Please:"
+  echo "  1. Fix the Critical and High issues above"
+  echo "  2. Run 'npm run audit:ci' locally to verify"
+  echo "  3. Or use 'git push --no-verify' to skip (not recommended for production)"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ Audit passed - proceeding with push"
+echo "Your code will pass CI/CD checks"
+echo ""

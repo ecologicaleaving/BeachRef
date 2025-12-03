@@ -1,28 +1,25 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
 // Removed Animated imports to fix render issues
 import { useRouter } from 'expo-router';
 import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';
-import { LiveIndicator } from '../../Status/LiveIndicator';
-import { colors } from '../../../theme/tokens';
+import { colors, designTokens } from '../../../theme/tokens';
 import { shadowPresets, createTextShadow } from '../../../theme/shadows';
-import { calculateTotalDuration } from '../../../utils/MatchDurationFormatter';
-import {
-  formatMatchTimeForUser,
-  formatMatchTimeDetailed
-} from '../../../utils/matchTimeFormatter';
+import { formatMatchTimeForUser } from '../../../utils/matchTimeFormatter';
 import {
   subscribeToTimezonePreferenceChanges,
   getCurrentTimezonePreference
 } from '../../../utils/dateFormatters';
+import { useMatchDuration } from '../../../hooks/useMatchDuration';
+import { getSupportingOfficialsSync } from '../../../utils/matchOfficialsSync';
+import { getChallengeRefereeSync } from '../../../utils/challengeRefereeSync';
 // Simplified for now - animations disabled to fix render issues
 
 export interface MatchCardProps {
@@ -45,6 +42,7 @@ export interface MatchCardProps {
     endDate?: string; // Tournament end date for live detection
   }; // Tournament location data for timezone detection
   liveScoreRefresh?: number; // For triggering score age reset on live score updates
+  highlightedOfficial?: string; // T037: Official name to highlight when filter is active
 }
 
 /**
@@ -58,9 +56,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   tournamentTimezone,
   tournamentData,
   liveScoreRefresh,
+  highlightedOfficial,
 }) => {
   const router = useRouter();
   const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
+  const [personnelExpanded, setPersonnelExpanded] = useState(false); // State for expandable personnel panel
 
   // Load timezone preference and subscribe to changes
   useEffect(() => {
@@ -84,6 +84,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
     return unsubscribe;
   }, []);
+
+  // US2 - Match Duration: Use hook for auto-updating duration (synced with 5s polling)
+  // Cast to any for compatibility - BeachMatchCore has runtime compatibility with BeachMatch
+  const { formattedDuration } = useMatchDuration(match as any, {
+    updateInterval: 5000, // 5 seconds, synced with live score polling
+    enableAutoUpdate: true
+  });
 
   // Determine if match is live
   const isLive = variant === 'live' || match.status === MatchStatus.RUNNING;
@@ -357,178 +364,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return null; // Don't show anything for normal results (ResultType = 0)
   };
 
-  // State for live elapsed time
-  const [liveElapsedTime, setLiveElapsedTime] = useState<string | null>(null);
-
-  // Calculate and update live elapsed time for running matches
-  useEffect(() => {
-    if (!isMatchLive(match)) {
-      setLiveElapsedTime(null);
-      return;
-    }
-
-    const calculateLiveElapsed = () => {
-      if (match.actualStartTime) {
-        try {
-          const startTime = new Date(match.actualStartTime).getTime();
-          const now = Date.now();
-
-          if (!isNaN(startTime) && now > startTime) {
-            const totalMinutes = Math.floor((now - startTime) / (1000 * 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-
-            if (hours > 0) {
-              setLiveElapsedTime(`${hours}h ${minutes}m`);
-            } else if (totalMinutes > 0) {
-              setLiveElapsedTime(`${totalMinutes}m`);
-            } else {
-              setLiveElapsedTime('< 1m');
-            }
-            return;
-          }
-        } catch (error) {
-          // Skip if date parsing fails
-        }
-      }
-      setLiveElapsedTime(null);
-    };
-
-    // Calculate immediately
-    calculateLiveElapsed();
-
-    // Update every minute for live matches
-    const interval = setInterval(calculateLiveElapsed, 60000);
-
-    return () => clearInterval(interval);
-  }, [match.actualStartTime, match.status, (match as any)?.rawStatus]);
-
-  // Get match duration (from master branch logic) - check multiple sources
-  const getMatchDuration = (match: BeachMatchCore): string | null => {
-    const matchWithDuration = match as any;
-
-    // For LIVE matches, return live elapsed time if available
-    if (isMatchLive(match) && liveElapsedTime) {
-      return liveElapsedTime;
-    }
-
-    // First try to get duration from match result (calculated from start/end time)
-    if (match.result?.duration && typeof match.result.duration === 'number') {
-      const totalMinutes = match.result.duration;
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
-      }
-    }
-    
-    // Check for Duration field (can be in "h:mm:ss" format or seconds)
-    const durationField = matchWithDuration.Duration;
-    if (durationField) {
-      // Try to parse as "h:mm:ss" format first (e.g., "0:39:00" = 39 minutes)
-      if (typeof durationField === 'string' && durationField.includes(':')) {
-        const parts = durationField.split(':');
-        if (parts.length === 3) {
-          const hours = parseInt(parts[0]) || 0;
-          const mins = parseInt(parts[1]) || 0;
-          const secs = parseInt(parts[2]) || 0;
-          const totalMinutes = hours * 60 + mins + Math.floor(secs / 60);
-
-          if (totalMinutes > 0) {
-            if (hours > 0) {
-              return `${hours}h ${mins}m`;
-            } else {
-              return `${totalMinutes}m`;
-            }
-          }
-        }
-      }
-      // Fallback: try parsing as seconds
-      else if (!isNaN(parseInt(durationField))) {
-        const totalMinutes = Math.floor(parseInt(durationField) / 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (totalMinutes > 0) {
-          if (hours > 0) {
-            return `${hours}h ${minutes}m`;
-          } else {
-            return `${minutes}m`;
-          }
-        }
-      }
-    }
-    
-    // Check for calculated time from start/end times
-    if (match.actualStartTime && match.actualEndTime) {
-      try {
-        const startTime = new Date(match.actualStartTime).getTime();
-        const endTime = new Date(match.actualEndTime).getTime();
-        
-        if (!isNaN(startTime) && !isNaN(endTime) && endTime > startTime) {
-          const totalMinutes = Math.round((endTime - startTime) / (1000 * 60));
-          const hours = Math.floor(totalMinutes / 60);
-          const minutes = totalMinutes % 60;
-          
-          if (totalMinutes > 0) {
-            if (hours > 0) {
-              return `${hours}h ${minutes}m`;
-            } else {
-              return `${minutes}m`;
-            }
-          }
-        }
-      } catch (error) {
-        // Skip if date parsing fails
-      }
-    }
-    
-    // Fallback: try to get duration from individual set fields using utility
-    try {
-      const durationResult = calculateTotalDuration(
-        matchWithDuration.DurationSet1,
-        matchWithDuration.DurationSet2,
-        matchWithDuration.DurationSet3
-      );
-      
-      if (durationResult && durationResult !== 'N/A' && durationResult !== '0m') {
-        return durationResult;
-      }
-    } catch (error) {
-      // Skip if calculateTotalDuration fails
-    }
-    
-    // Try legacy format for individual set durations if available
-    let totalSeconds = 0;
-    let hasAnyDuration = false;
-    
-    // Check legacy set duration fields in seconds format
-    [matchWithDuration.DurationSet1, matchWithDuration.DurationSet2, matchWithDuration.DurationSet3]
-      .forEach((duration) => {
-        if (duration && !isNaN(parseInt(duration))) {
-          totalSeconds += parseInt(duration);
-          hasAnyDuration = true;
-        }
-      });
-    
-    if (hasAnyDuration && totalSeconds > 0) {
-      const totalMinutes = Math.floor(totalSeconds / 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${minutes}m`;
-      }
-    }
-    
-    
-    return null;
-  };
+  // US2 - Match Duration: Removed manual liveElapsedTime calculation and getMatchDuration function
+  // Now handled by useMatchDuration hook which updates every 5 seconds and uses MatchDurationService
 
   // Check if this is a qualification match
   const isQualificationMatch = (match: BeachMatchCore): boolean => {
@@ -668,38 +505,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
 
   return (
-    <View>
+    <View style={styles.cardWrapper}>
       <TouchableOpacity
         style={[
           styles.matchCard,
-          variant === 'live' && styles.liveCard,
+          isMatchLive(match) && styles.liveCard,
           isQualification && styles.qualificationCard,
         ]}
         onPress={() => {
-          // Call the existing onPress if provided
+          // Call the existing onPress if provided (only custom callbacks, no navigation)
           onPress?.(match);
-
-          // Navigate to match detail screen with correct VIS match number
-          // Priority: visNo (pure VIS match number) > extracted from matchCode > fallback
-          const visMatchNo = match.visNo || extractNumericFromString(match.matchCode) || extractNumericFromString(match.id) || 'unknown';
-          const tournamentNo = (match as any).tournamentNo || 'demo';
-
-          // Helper function to extract numeric part
-          function extractNumericFromString(str?: string): string | null {
-            if (!str) return null;
-            const numericMatch = str.match(/\d+/);
-            return numericMatch ? numericMatch[0] : null;
-          }
-
-
-          router.push({
-            pathname: '/match-detail',
-            params: {
-              matchNo: visMatchNo,  // Use VIS match number for direct polling
-              tournamentNo,
-              matchData: JSON.stringify(match)
-            }
-          });
         }}
         activeOpacity={0.7}
       >
@@ -777,8 +592,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             return startDateOnly <= today && today <= endDateOnly;
                           })();
 
-                          // Show My Time when: tournament is LIVE + has timezone + times are different
-                          const shouldShowMyTime = isTournamentLive && hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
+                          // Show My Time when: has timezone + times are different (always visible, not just for LIVE tournaments)
+                          const shouldShowMyTime = hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
                           const userTimeFormatted = shouldShowMyTime ? userTime : null;
 
                           return { localTime: displayTime, userTime: userTimeFormatted };
@@ -882,7 +697,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
 
           <View style={styles.rightBadgeContainer}>
-{(() => {
+            {(() => {
               // Use tournamentGenderText for display, fallback to raw value then 'M'
               const genderText = (match as any).tournamentGenderText || (match as any).tournamentGender || 'M';
               const matchNumber = (match as any).noInTournament || match.matchCode || match.visNo;
@@ -1230,7 +1045,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     {isMatchLive(match) && (
                       <Text style={{
                         fontSize: 10,
-                        color: '#333',
+                        color: designTokens.neutrals.textPrimary,
                         fontFamily: 'monospace',
                         marginLeft: 8,
                         alignSelf: 'center'
@@ -1241,16 +1056,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   </View>
                 )}
 
-                {/* Duration below set scores */}
-                {(() => {
-                  const totalDuration = getMatchDuration(match);
-
-                  return totalDuration ? (
-                    <View style={styles.durationAndResultContainer}>
-                      <Text style={styles.durationText}>({totalDuration})</Text>
-                    </View>
-                  ) : null;
-                })()}
+                {/* Duration below set scores - US2: Using hook's formattedDuration */}
+                {formattedDuration && formattedDuration !== '--' && (
+                  <View style={styles.durationAndResultContainer}>
+                    <Text style={styles.durationText}>({formattedDuration})</Text>
+                  </View>
+                )}
               </View>
             ) : (
               <Text style={styles.vsText}>vs</Text>
@@ -1323,17 +1134,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               // Try to use new format refereeAssignments first
               if (match.refereeAssignments && match.refereeAssignments.length > 0) {
                 match.refereeAssignments.forEach((referee, index) => {
-                  // Determine referee position based on function or index
+                  // Determine referee position based on function or index (T033)
                   let position = '';
+                  let isChallenge = false;
                   if (referee.function?.includes('1st') || referee.function?.includes('Referee 1')) {
-                    position = '1°';
+                    position = 'R1';
                   } else if (referee.function?.includes('2nd') || referee.function?.includes('Referee 2')) {
-                    position = '2°';
+                    position = 'R2';
                   } else if (referee.function?.includes('Challenge') || referee.function?.includes('CR')) {
                     position = 'CR';
+                    isChallenge = true;
                   } else {
                     // Fallback to index-based
-                    position = index === 0 ? '1°' : index === 1 ? '2°' : 'CR';
+                    position = index === 0 ? 'R1' : index === 1 ? 'R2' : 'CR';
+                    isChallenge = index > 1;
                   }
 
                   // Format referee name as "Surname, FirstInitial."
@@ -1351,13 +1165,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   refereeRows.push(
                     <View key={`assignment-${index}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>{position}</Text>
+                        <View style={[
+                          styles.refereePositionBadge,
+                          isChallenge ? styles.refereePositionBadgeChallenge : styles.refereePositionBadgePrimary
+                        ]}>
+                          <Text style={styles.refereePositionText}>{position}</Text>
+                        </View>
                         <FlagImage
                           countryCode={referee.federationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{referee.federationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(referee.refereeName)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && referee.refereeName === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(referee.refereeName)}
+                        </Text>
                       </View>
                     </View>
                   );
@@ -1375,18 +1199,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   return fullName; // Fallback to original if parsing fails
                 };
 
-                // Fallback to legacy BeachMatch format
+                // Fallback to legacy BeachMatch format (T033: Enhanced abbreviations)
                 if (rawMatch.Referee1Name) {
                   refereeRows.push(
                     <View key="referee1" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>1°</Text>
+                        <View style={[styles.refereePositionBadge, styles.refereePositionBadgePrimary]}>
+                          <Text style={styles.refereePositionText}>R1</Text>
+                        </View>
                         <FlagImage
                           countryCode={rawMatch.Referee1FederationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{rawMatch.Referee1FederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee1Name)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && rawMatch.Referee1Name === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(rawMatch.Referee1Name)}
+                        </Text>
                       </View>
                     </View>
                   );
@@ -1396,34 +1227,109 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   refereeRows.push(
                     <View key="referee2" style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>2°</Text>
+                        <View style={[styles.refereePositionBadge, styles.refereePositionBadgePrimary]}>
+                          <Text style={styles.refereePositionText}>R2</Text>
+                        </View>
                         <FlagImage
                           countryCode={rawMatch.Referee2FederationCode}
                           style={styles.refereeFlag}
                         />
                         <Text style={styles.refereeCountryCode}>{rawMatch.Referee2FederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.Referee2Name)}</Text>
+                        <Text style={[
+                          styles.refereeName,
+                          highlightedOfficial && rawMatch.Referee2Name === highlightedOfficial && styles.refereeNameHighlighted
+                        ]}>
+                          {formatRefereeName(rawMatch.Referee2Name)}
+                        </Text>
                       </View>
                     </View>
                   );
                 }
+              }
 
-                // Check for challenge referee in legacy format
-                if (rawMatch.ChallengeRefereeName) {
+              // IMPORTANT: Challenge Referee and Personnel lookup - ALWAYS execute regardless of referee data format
+              // Check for challenge referee (specs/006-match-officials-display - T026, T033)
+              // Use getChallengeRefereeSync to look up name from GetEventRefereeList
+              const challengeReferee = getChallengeRefereeSync(rawMatch);
+              console.log('[MatchCard] Challenge Referee lookup:', {
+                matchNo: rawMatch.No,
+                noEvent: rawMatch.NoEvent,
+                eventNo: rawMatch.EventNo, // Alias for backward compatibility
+                noRefereeChallenge: rawMatch.NoRefereeChallenge,
+                result: challengeReferee
+              });
+
+              if (challengeReferee) {
+                const rawMatch = match as any;
+                const supportingOfficials = getSupportingOfficialsSync(rawMatch);
+                const hasPersonnel = supportingOfficials.length > 0;
+
+                refereeRows.push(
+                  <View key="challenge-referee" style={styles.refereeRow}>
+                    <View style={styles.refereeContentRow}>
+                      <View style={[styles.refereePositionBadge, styles.refereePositionBadgeChallenge]}>
+                        <Text style={styles.refereePositionTextChallenge}>CR</Text>
+                      </View>
+                      <FlagImage
+                        countryCode={challengeReferee.federationCode}
+                        style={styles.refereeFlag}
+                      />
+                      <Text style={styles.refereeCountryCode}>{challengeReferee.federationCode}</Text>
+                      <Text style={styles.challengeRefereeName}>
+                        {challengeReferee.name}
+                      </Text>
+                      {hasPersonnel && (
+                        <TouchableOpacity
+                          style={styles.toggleButtonInline}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            setPersonnelExpanded(!personnelExpanded);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.toggleButtonText}>
+                            {personnelExpanded ? '▲' : '▼'}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              }
+
+              // T046: Add supporting officials from Personnel field using getSupportingOfficialsSync
+              // This function parses Personnel XML and maps IDs to names via cached AuxiliaryPersons
+              const supportingOfficials = getSupportingOfficialsSync(rawMatch);
+              console.log('[MatchCard] Supporting officials lookup:', {
+                matchNo: rawMatch.No,
+                noEvent: rawMatch.NoEvent,
+                eventNo: rawMatch.EventNo, // Alias for backward compatibility
+                personnelField: rawMatch.Personnel ? 'present' : 'missing',
+                officialsCount: supportingOfficials.length,
+                officials: supportingOfficials
+              });
+
+              // Only show personnel officials when panel is expanded
+              if (personnelExpanded) {
+                supportingOfficials.forEach((official) => {
                   refereeRows.push(
-                    <View key="challenge-referee" style={styles.refereeRow}>
+                    <View key={`${official.role}-${official.name}`} style={styles.refereeRow}>
                       <View style={styles.refereeContentRow}>
-                        <Text style={styles.refereePosition}>CR</Text>
+                        <View style={[styles.personnelPositionBadge, styles.personnelPositionBadgeSecondary]}>
+                          <Text style={styles.personnelPositionText}>{official.role}</Text>
+                        </View>
                         <FlagImage
-                          countryCode={rawMatch.ChallengeRefereeFederationCode}
+                          countryCode={official.federationCode}
                           style={styles.refereeFlag}
                         />
-                        <Text style={styles.refereeCountryCode}>{rawMatch.ChallengeRefereeFederationCode}</Text>
-                        <Text style={styles.refereeName}>{formatRefereeName(rawMatch.ChallengeRefereeName)}</Text>
+                        <Text style={styles.refereeCountryCode}>{official.federationCode}</Text>
+                        <Text style={styles.refereeName}>
+                          {official.name}
+                        </Text>
                       </View>
                     </View>
                   );
-                }
+                });
               }
 
               return refereeRows;
@@ -1437,16 +1343,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
 // Exact styles from master branch MatchListV2
 const styles = StyleSheet.create({
+  cardWrapper: {
+    position: 'relative',
+    marginVertical: 4,
+    marginHorizontal: 16,
+  },
   matchCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    marginVertical: 4,
-    marginHorizontal: 16,
     ...shadowPresets.card,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: designTokens.neutrals.borderSubtle,
     overflow: 'hidden',
   },
   womenTopBand: {
@@ -1488,6 +1397,27 @@ const styles = StyleSheet.create({
     flex: 0.8,
     alignItems: 'flex-end',
   },
+  toggleButtonInline: {
+    marginLeft: 8,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#3B82F6',
+    lineHeight: 16,
+    textAlign: 'center',
+  },
+  challengeRefereeName: {
+    fontSize: 15,
+    color: designTokens.neutrals.textPrimary,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'left',
+  },
   timeCourtContent: {
     alignItems: 'flex-start',
   },
@@ -1517,7 +1447,7 @@ const styles = StyleSheet.create({
   genderBadgeText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   menBadgeText: {
     // Same as base genderBadgeText
@@ -1535,7 +1465,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#DC2626', // Red color
+    backgroundColor: colors.error, // Red color
     marginRight: 6,
   },
   timeDisplayContainer: {
@@ -1551,32 +1481,32 @@ const styles = StyleSheet.create({
   userTime: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginTop: 1,
   },
   userTimeBelow: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#374151', // Più scuro del precedente #6B7280
+    color: designTokens.neutrals.textPrimary, // Più scuro del precedente #6B7280
     textAlign: 'center',
     marginTop: 2,
   },
   courtText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
   courtTextRight: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginLeft: 8,
   },
   courtTextCenter: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     marginRight: 8,
   },
@@ -1598,12 +1528,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 14,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
     textAlign: 'center',
   },
   liveStatusText: {
-    color: '#2563EB', // Blue color for LIVE status
+    color: designTokens.linkTokens.default, // Blue color for LIVE status
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1611,10 +1541,10 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#DC2626', // Red dot
+    backgroundColor: colors.error, // Red dot
   },
   inlineResultBadge: {
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.error,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1666,7 +1596,7 @@ const styles = StyleSheet.create({
   resultScore: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -1676,12 +1606,12 @@ const styles = StyleSheet.create({
   scoreSeparator: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 4,
   },
   vsText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   teamsContainer: {
@@ -1716,7 +1646,7 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: 13,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '600',
   },
   leftCountryCode: {
@@ -1731,7 +1661,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: designTokens.neutrals.borderSubtle,
   },
   refereeRow: {
     marginBottom: 4,
@@ -1742,11 +1672,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  refereePosition: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#374151',
+  // T033: Enhanced role abbreviation badges for compact display
+  refereePositionBadge: {
+    minWidth: 32,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
+  },
+  refereePositionBadgePrimary: {
+    backgroundColor: colors.primary,
+  },
+  refereePositionBadgeChallenge: {
+    backgroundColor: '#FFFFFF', // White background (inverted from primary)
+    borderWidth: 2,
+    borderColor: colors.primary, // Blue border
+  },
+  refereePositionText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  refereePositionTextChallenge: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.primary, // Blue text (inverted from primary)
+    letterSpacing: 0.5,
+  },
+  // Personnel officials badges (smaller than referee badges)
+  personnelPositionBadge: {
+    minWidth: 36,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  personnelPositionBadgeSecondary: {
+    backgroundColor: 'transparent', // No background for personnel
+  },
+  personnelPositionText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primary, // Dark blue text
+    letterSpacing: 0.3,
   },
   refereeFlag: {
     marginLeft: 8,
@@ -1754,20 +1727,68 @@ const styles = StyleSheet.create({
   },
   refereeCountryCode: {
     fontSize: 13,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '600',
     marginRight: 8,
   },
   refereeName: {
     fontSize: 15,
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
     flex: 1,
     textAlign: 'left',
   },
+  // T037: Highlighted referee name when filter is active
+  refereeNameHighlighted: {
+    fontWeight: '700',
+    color: colors.primary,
+    backgroundColor: colors.primaryLight || '#EEF2FF',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   refereeNameClickable: {
     textDecorationLine: 'underline',
     color: colors.primary,
+  },
+  // Supporting Officials - Compact horizontal layout
+  supportingOfficialsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: designTokens.neutrals.borderSubtle,
+    gap: 8,
+  },
+  supportingOfficialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  supportingOfficialBadge: {
+    minWidth: 36,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 3,
+    backgroundColor: '#607D8B', // Blue-grey for supporting officials
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  supportingOfficialBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  supportingOfficialFlag: {
+    marginRight: 4,
+  },
+  supportingOfficialName: {
+    fontSize: 12,
+    color: designTokens.neutrals.textSecondary,
+    fontWeight: '500',
   },
   setScoresContainer: {
     flexDirection: 'row',
@@ -1780,13 +1801,13 @@ const styles = StyleSheet.create({
   individualSet: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   currentSet: {
-    backgroundColor: '#374151', // Dark gray background for current set in live matches
+    backgroundColor: designTokens.neutrals.textPrimary, // Dark gray background for current set in live matches
     borderWidth: 1,
     borderColor: '#4B5563',
     paddingHorizontal: 8,
@@ -1796,7 +1817,7 @@ const styles = StyleSheet.create({
   setScore: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   currentSetScore: {
     fontSize: 13, // Slightly bigger font for current set (was 11, now 13 = ~18% increase)
@@ -1806,7 +1827,7 @@ const styles = StyleSheet.create({
   setScoreSeparator: {
     fontSize: 10,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginHorizontal: 3,
   },
   currentSetSeparator: {
@@ -1816,7 +1837,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeSetScore: {
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '700',
   },
   winningSetScore: {
@@ -1833,13 +1854,13 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
   },
   resultTypeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#DC2626', // Red color to indicate non-normal result
+    color: colors.error, // Red color to indicate non-normal result
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -1870,10 +1891,10 @@ const styles = StyleSheet.create({
   roundBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
   },
   courtBadge: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: designTokens.neutrals.bgSurface,
     marginRight: 4,
   },
   // Qualification match styles

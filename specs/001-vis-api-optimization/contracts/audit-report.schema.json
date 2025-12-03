@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beachref.app/schemas/audit-report.json",
+  "title": "Audit Report",
+  "description": "Aggregated API audit report with findings and recommendations",
+  "type": "object",
+  "required": [
+    "id",
+    "generatedAt",
+    "periodStart",
+    "periodEnd",
+    "totalRequests",
+    "malformedRequests",
+    "overFetchingInstances",
+    "averagePayloadSize",
+    "averageResponseTime",
+    "cacheHitRate",
+    "findings",
+    "recommendations",
+    "complianceScore"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this audit report"
+    },
+    "generatedAt": {
+      "type": "number",
+      "description": "Unix timestamp (ms) when report was generated",
+      "minimum": 0
+    },
+    "periodStart": {
+      "type": "number",
+      "description": "Unix timestamp (ms) for audit period start",
+      "minimum": 0
+    },
+    "periodEnd": {
+      "type": "number",
+      "description": "Unix timestamp (ms) for audit period end",
+      "minimum": 0
+    },
+    "totalRequests": {
+      "type": "number",
+      "description": "Total API requests captured during period",
+      "minimum": 0
+    },
+    "malformedRequests": {
+      "type": "number",
+      "description": "Count of requests with format/validation errors",
+      "minimum": 0
+    },
+    "overFetchingInstances": {
+      "type": "number",
+      "description": "Count of requests with excessive field selection",
+      "minimum": 0
+    },
+    "averagePayloadSize": {
+      "type": "number",
+      "description": "Average payload size in bytes (request + response)",
+      "minimum": 0
+    },
+    "averageResponseTime": {
+      "type": "number",
+      "description": "Average response time in milliseconds",
+      "minimum": 0
+    },
+    "cacheHitRate": {
+      "type": "number",
+      "description": "Cache hit rate as decimal (0-1)",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "findings": {
+      "type": "array",
+      "description": "All audit findings discovered",
+      "items": {
+        "$ref": "#/definitions/AuditFinding"
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "Prioritized fix recommendations",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "complianceScore": {
+      "type": "number",
+      "description": "Compliance score (0-100) based on findings severity",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "definitions": {
+    "AuditFinding": {
+      "type": "object",
+      "required": [
+        "id",
+        "apiRequestId",
+        "severity",
+        "category",
+        "issue",
+        "expectedFormat",
+        "actualFormat",
+        "recommendation",
+        "impactAssessment",
+        "timestamp",
+        "resolved"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "apiRequestId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to API Request that triggered this finding"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "warning", "info"],
+          "description": "Severity level of the issue"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "malformed",
+            "over-fetching",
+            "incorrect-parameter",
+            "missing-field",
+            "excessive-batch"
+          ],
+          "description": "Category of the issue"
+        },
+        "issue": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Specific problem description"
+        },
+        "expectedFormat": {
+          "type": "string",
+          "description": "Correct format per VIS API documentation"
+        },
+        "actualFormat": {
+          "type": "string",
+          "description": "What was actually sent/received"
+        },
+        "recommendation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Actionable fix guidance"
+        },
+        "impactAssessment": {
+          "type": "object",
+          "required": ["errorRate", "payloadIncrease", "affectedEndpoints"],
+          "properties": {
+            "errorRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Error rate as decimal (0-1)"
+            },
+            "payloadIncrease": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Additional bytes due to this issue"
+            },
+            "affectedEndpoints": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "GetEventList",
+                  "GetBeachTournamentList",
+                  "GetBeachTournament",
+                  "GetBeachMatchList",
+                  "GetBeachMatch",
+                  "GetBeachRoundList",
+                  "GetEventRefereeList"
+                ]
+              },
+              "description": "VIS API endpoints affected by this issue"
+            }
+          }
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Unix timestamp (ms) when finding was identified",
+          "minimum": 0
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "Whether the issue has been fixed"
+        }
+      }
+    }
+  }
+}

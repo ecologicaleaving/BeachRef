@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { designTokens } from '../../theme/tokens';
 
 interface RefereeFromDB {
   No: string;
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   listContainer: {
     padding: 16,
@@ -134,13 +135,13 @@ const styles = StyleSheet.create({
   },
   refereeFederation: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
     marginBottom: 2,
   },
   refereeNumber: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   selectButton: {

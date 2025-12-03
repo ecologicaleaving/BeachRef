@@ -32,9 +32,17 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
+
+# logs
+*.log
+logs/
+
+# builds
+build/
 
 app-example
 expo-go.apk
@@ -43,3 +51,9 @@ expo-go.apk
 docs/
 archive/
 architecture/
+
+# Audit history (contains historical finding data)
+.audit-history/
+
+# Local Netlify folder
+.netlify

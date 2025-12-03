@@ -12,6 +12,8 @@ import { BeachMatchCore } from '../../types/match-v2';
 import { VisApiClient } from '../api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG, GetBeachMatchListRequest, GetBeachTournamentRequest } from '../../types/api-v2';
 import { VisResponseParser } from '../parsing/VisResponseParser';
+import { getVisApiBaseUrl } from '../../utils/visApiConfig';
+import { cacheMmkvStorage } from './MmkvStorage';
 
 interface RecentTournament {
   tournamentNo: string;
@@ -32,12 +34,12 @@ export class TournamentCacheWarmingService {
    * Start background cache warming service
    */
   static startBackgroundWarming(): void {
-    // Initial warming after a short delay
+    // Initial warming immediately (no delay for faster startup)
     setTimeout(() => {
       this.warmFrequentTournaments().catch(error => {
         console.warn('Initial cache warming failed:', error);
       });
-    }, 2000);
+    }, 0); // Changed from 2000ms to 0ms for immediate execution
 
     // Set up periodic warming for live tournaments
     if (this.warmingInterval) {
@@ -124,12 +126,63 @@ export class TournamentCacheWarmingService {
         const status = this.determineTournamentStatus(matches);
         await TournamentMatchCache.cacheMatches(tournamentNo, matches, status);
         console.log(`✅ Successfully warmed cache for tournament ${tournamentNo} (${matches.length} matches)`);
+
+        // Non-blocking AuxiliaryPersons fetch for match officials (specs/006-match-officials-display - T015)
+        // Fire-and-forget: Don't block tournament display on official data
+        this.warmAuxiliaryPersonsForTournament(tournamentNo).catch(error => {
+          // Silent degradation - tournament data still works without officials
+          console.debug(`[TournamentCacheWarming] AuxiliaryPersons warming failed for ${tournamentNo}:`, error);
+        });
       }
 
     } catch (error) {
       console.warn(`Failed to warm tournament ${tournamentNo}:`, error);
     } finally {
       this.warmingInProgress.delete(tournamentNo);
+    }
+  }
+
+  /**
+   * Warm AuxiliaryPersons cache for a tournament (non-blocking)
+   *
+   * Fetches official data from GetEvent in background.
+   * Failures are silent - tournament display continues without official names.
+   *
+   * @param eventNo Event number (tournament identifier)
+   */
+  private static async warmAuxiliaryPersonsForTournament(eventNo: string): Promise<void> {
+    try {
+      // Check if already cached
+      const cached = await cacheMmkvStorage.getCachedAuxiliaryPersons(eventNo);
+      if (cached) {
+        return; // Already cached, skip fetch
+      }
+
+      const config = {
+        baseUrl: getVisApiBaseUrl(),
+        timeoutMs: 10000, // Shorter timeout for background fetch
+        maxRetries: 1,
+        retryDelayMs: 500,
+        exponentialBackoff: false,
+        enableLogging: false,
+        headers: {}
+      };
+
+      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+
+      const response = await visApi.getEvent({
+        eventNo,
+        fields: ['AuxiliaryPersons']
+      });
+
+      if (response?.AuxiliaryPersons) {
+        const auxiliaryPersons = visApi.parseAuxiliaryPersons(response.AuxiliaryPersons);
+        await cacheMmkvStorage.cacheAuxiliaryPersons(eventNo, auxiliaryPersons, 120);
+        console.debug(`[TournamentCacheWarming] Warmed AuxiliaryPersons for event ${eventNo} (${auxiliaryPersons.length} officials)`);
+      }
+    } catch (error) {
+      // Silent failure - don't log errors, just debug info
+      console.debug(`[TournamentCacheWarming] AuxiliaryPersons warming skipped for ${eventNo}`);
     }
   }
 
@@ -196,7 +249,7 @@ export class TournamentCacheWarmingService {
   private static async fetchTournamentMatches(tournamentNo: string): Promise<BeachMatchCore[] | null> {
     try {
       const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+        baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
         timeoutMs: 30000,
         maxRetries: 2, // Fewer retries for background warming
         retryDelayMs: 1000,

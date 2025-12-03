@@ -13,6 +13,7 @@ import { TournamentCore, TournamentStatus, GenderType, TournamentType } from '..
 import { TournamentCard } from './TournamentCard';
 import { useTournaments, TournamentsFilters } from '../../../hooks/useTournaments';
 import { TournamentDTO } from '../../../services/DualReadService';
+import { designTokens } from '../../../theme/tokens';
 import { NetworkStatus, OfflineBanner } from '../../offline';
 import { DataFreshness } from '../../DataFreshness';
 import { useNetworkStatus } from '../../../hooks/useNetworkStatus';
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 16,
     fontWeight: '500',
   },
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,

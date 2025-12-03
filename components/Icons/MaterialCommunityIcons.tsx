@@ -6,7 +6,7 @@
 import React from 'react';
 import { Text, Platform, ViewStyle } from 'react-native';
 import { MaterialCommunityIcons as MCIcons } from '@expo/vector-icons';
-import { colors } from '../../theme/tokens';
+import { colors, designTokens } from '../../theme/tokens';
 import { IconProps as BaseIconProps } from '../../types/props';
 
 // Platform-aware Icon wrapper to avoid web font timeouts
@@ -53,8 +53,8 @@ export const IconSizes = {
 // Common icon colors
 export const IconColors = {
   primary: colors.primary || '#FF6B35',
-  secondary: colors.textSecondary || '#6B7280',
-  muted: '#9CA3AF',
+  secondary: colors.textSecondary || designTokens.neutrals.textSecondary,
+  muted: designTokens.neutrals.textSecondary,
   white: '#FFFFFF',
   success: colors.success || '#10B981',
   error: colors.error || '#EF4444',

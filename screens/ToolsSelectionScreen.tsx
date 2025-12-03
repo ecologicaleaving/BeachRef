@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { colors } from '../theme/tokens';
+import { colors, designTokens } from '../theme/tokens';
 import { Tournament } from '../types/tournament';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   pageSubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
     paddingHorizontal: 24,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   toolDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     lineHeight: 20,
   },
   toolAction: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   tournamentInfoTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   tournamentName: {
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   },
   emptyDescription: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },

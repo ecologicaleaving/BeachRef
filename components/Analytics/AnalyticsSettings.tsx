@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
   Switch,
   Alert,
   Text,
@@ -13,6 +13,7 @@ import { Button } from '../Foundation/Button';
 import { Container } from '../Foundation/Container';
 import { useAnalyticsSettings } from '../../hooks/useAnalyticsSettings';
 import type { AnalyticsCustomization } from './AnalyticsDashboard';
+import { designTokens } from '../../theme/tokens';
 
 /**
  * Analytics Settings Props Interface
@@ -437,12 +438,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 4,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 16,
   },
   subsection: {
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
   subsectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 12,
   },
   optionButton: {
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
     fontWeight: '500',
   },
   selectedOptionText: {
@@ -480,7 +481,7 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   toggleItem: {
@@ -498,11 +499,11 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: designTokens.neutrals.textPrimary,
   },
   toggleDescription: {
     fontSize: 14,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   buttonGroup: {
@@ -526,7 +527,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 2,
   },
   loadingContainer: {
@@ -537,7 +538,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 12,
   },
   errorContainer: {

@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginTop: 16,
     textAlign: 'center',
   },
@@ -592,19 +592,19 @@ const styles = StyleSheet.create({
   },
   errorSubtext: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   emptyText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 16,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
   },
   section: {
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#111827',
+    color: designTokens.neutrals.textPrimary,
   },
   liveIndicator: {
     flexDirection: 'row',
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
   },
   debugText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: designTokens.neutrals.textPrimary,
     marginBottom: 8,
   },
   segmentedControl: {
@@ -804,7 +804,7 @@ const styles = StyleSheet.create({
   segmentText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#6B7280',
+    color: designTokens.neutrals.textSecondary,
   },
   activeSegmentText: {
     color: '#1F2937',

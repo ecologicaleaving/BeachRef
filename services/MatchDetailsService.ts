@@ -581,8 +581,8 @@ export class MatchDetailsService {
   /**
    * Parse sets data from match response
    */
-  private parseSetsFromMatchData(data: any): Array<{ set: number; a: number; b: number; durationSec?: number }> {
-    const sets: Array<{ set: number; a: number; b: number; durationSec?: number }> = [];
+  private parseSetsFromMatchData(data: any): { set: number; a: number; b: number; durationSec?: number }[] {
+    const sets: { set: number; a: number; b: number; durationSec?: number }[] = [];
 
     for (let i = 1; i <= 3; i++) {
       const pointsA = data[`PointsTeamASet${i}`];
@@ -605,7 +605,7 @@ export class MatchDetailsService {
   /**
    * Parse closed sets from status data
    */
-  private parseClosedSetsFromStatusData(data: any): Array<{ set: number; a: number; b: number }> {
+  private parseClosedSetsFromStatusData(data: any): { set: number; a: number; b: number }[] {
     return this.parseSetsFromMatchData(data).map(set => ({ set: set.set, a: set.a, b: set.b }));
   }
 }

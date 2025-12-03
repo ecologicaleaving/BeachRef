@@ -122,11 +122,11 @@ export class MatchProcessingService {
   /**
    * Extract unique referees from matches
    */
-  static extractReferees(matches: BeachMatch[]): Array<{
+  static extractReferees(matches: BeachMatch[]): {
     No: string;
     Name: string;
     FederationCode?: string;
-  }> {
+  }[] {
     const refereeMap = new Map<string, {
       No: string;
       Name: string;

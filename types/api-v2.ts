@@ -48,6 +48,15 @@ export interface VisApiRequestBase {
   readonly timestamp?: string;
   /** Request timeout in ms */
   readonly timeoutMs?: number;
+  /** Audit metadata (VIS API Optimization - T011) */
+  readonly _audit?: {
+    /** Request source for tracking (user/polling/prefetch/cache-refresh) */
+    readonly source?: 'user' | 'polling' | 'prefetch' | 'cache-refresh';
+    /** Field selection mode (slim/default/full) */
+    readonly fieldMode?: 'slim' | 'default' | 'full';
+    /** Whether to capture for audit analysis (__DEV__ only) */
+    readonly captureForAudit?: boolean;
+  };
 }
 
 /**
@@ -485,7 +494,21 @@ export interface IVisApiClient {
    * @returns Promise with XML response containing referee list
    */
   getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse>;
-  
+
+  /**
+   * Alias for getBeachMatchList - fetch matches for a tournament
+   * @param request - GetBeachMatchList request parameters
+   * @returns Promise with XML response
+   */
+  fetchMatchesForTournament?(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
+
+  /**
+   * Alias for getEventList - get tournaments
+   * @param request - GetEventList request parameters
+   * @returns Promise with XML response
+   */
+  getTournaments?(request: GetEventListRequest): Promise<VisApiResponse>;
+
   /**
    * Test API connectivity
    * @returns Promise with connection status

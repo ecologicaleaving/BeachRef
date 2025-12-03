@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NetworkState, ConnectionQuality, ConnectionStrategy } from '../../services/NetworkStateManager';
 import { useNetworkState } from '../../hooks/useNetworkState';
+import { designTokens, colors } from '../../theme/tokens';
 
 interface NetworkQualityIndicatorProps {
   networkState?: NetworkState | null;
@@ -55,17 +56,17 @@ const NetworkQualityIndicator: React.FC<NetworkQualityIndicatorProps> = ({
   const getQualityColor = (level: string) => {
     switch (level) {
       case 'excellent':
-        return '#4CAF50';
+        return colors.success;
       case 'good':
         return '#8BC34A';
       case 'fair':
-        return '#FF9800';
+        return colors.warning;
       case 'poor':
-        return '#F44336';
+        return colors.error;
       case 'offline':
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
       default:
-        return '#9E9E9E';
+        return designTokens.neutrals.textSecondary;
     }
   };
 
@@ -77,7 +78,7 @@ const NetworkQualityIndicator: React.FC<NetworkQualityIndicatorProps> = ({
         style={[
           styles.qualityBar,
           {
-            backgroundColor: i < bars ? getQualityColor(connectionQuality.level) : '#E0E0E0',
+            backgroundColor: i < bars ? getQualityColor(connectionQuality.level) : designTokens.neutrals.borderSubtle,
             height: (i + 1) * 3 + 2, // Progressive height
           },
         ]}
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: designTokens.neutrals.bgSurface,
     borderRadius: 16,
   },
   header: {
@@ -234,21 +235,21 @@ const styles = StyleSheet.create({
   networkType: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   cellularGen: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   ssid: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   carrier: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginTop: 2,
   },
   qualityIndicator: {
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
   },
   details: {
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: designTokens.neutrals.borderSubtle,
     paddingTop: 12,
   },
   detailRow: {
@@ -288,13 +289,13 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   metrics: {
     flexDirection: 'row',
@@ -306,13 +307,13 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     marginBottom: 4,
   },
   metricValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: designTokens.neutrals.textPrimary,
   },
   statusIndicator: {
     flexDirection: 'row',
@@ -327,11 +328,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
   },
   loadingText: {
     fontSize: 14,
-    color: '#666666',
+    color: designTokens.neutrals.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

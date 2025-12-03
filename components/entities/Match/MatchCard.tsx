@@ -592,8 +592,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             return startDateOnly <= today && today <= endDateOnly;
                           })();
 
-                          // Show My Time when: tournament is LIVE + has timezone + times are different
-                          const shouldShowMyTime = isTournamentLive && hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
+                          // Show My Time when: has timezone + times are different (always visible, not just for LIVE tournaments)
+                          const shouldShowMyTime = hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
                           const userTimeFormatted = shouldShowMyTime ? userTime : null;
 
                           return { localTime: displayTime, userTime: userTimeFormatted };

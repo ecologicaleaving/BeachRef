@@ -75,7 +75,7 @@ export const TournamentBottomMenu: React.FC<TournamentBottomMenuProps> = ({
           >
             <IconComponent
               size={20}
-              color={active ? colors.accent : colors.textSecondary}
+              color={active ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)'}
             />
           </TouchableOpacity>
         );

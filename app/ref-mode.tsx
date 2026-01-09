@@ -11,7 +11,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { BottomTabNavigation } from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
-import { createShadow } from '../theme/shadows';
 import { designTokens } from '../theme/tokens';
 
 interface Official {

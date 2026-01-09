@@ -1,18 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { Text, StyleSheet, Animated } from 'react-native';
 import { designTokens } from '../../theme/tokens';
-import { Assignment } from '../../types/assignments';
 
 interface UrgentNotificationsProps {
   level: 'immediate' | 'urgent' | 'normal';
   message: string;
-  assignment?: Assignment;
 }
 
 export const UrgentNotifications: React.FC<UrgentNotificationsProps> = ({
   level,
   message,
-  assignment,
 }) => {
   const pulseAnimation = React.useRef(new Animated.Value(1)).current;
 

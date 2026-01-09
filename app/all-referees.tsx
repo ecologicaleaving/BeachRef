@@ -38,18 +38,16 @@ interface TournamentInfo {
 }
 
 // Exact RefereeCard component from tournament-ref screen
-const RefereeCard = ({ 
-  referee, 
-  tournamentNo, 
-  expanded, 
-  onToggle,
-  tournamentInfo 
-}: { 
-  referee: Referee; 
+const RefereeCard = ({
+  referee,
+  tournamentNo,
+  expanded,
+  onToggle
+}: {
+  referee: Referee;
   tournamentNo: string;
   expanded: boolean;
   onToggle: () => void;
-  tournamentInfo: TournamentInfo | null;
 }) => {
   const [activeTab, setActiveTab] = useState<StatsTab>('Current');
   const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
@@ -556,7 +554,7 @@ function AllRefereesScreenContent() {
     return [];
   };
 
-  const loadInactiveRefereesBatch = async (inactiveReferees: (Referee & { totalMatches: number; isActive: boolean })[], currentActive: (Referee & { totalMatches: number; isActive?: boolean })[]) => {
+  const loadInactiveRefereesBatch = async (inactiveReferees: (Referee & { totalMatches: number; isActive: boolean })[]) => {
     if (inactiveReferees.length === 0) return;
     
     

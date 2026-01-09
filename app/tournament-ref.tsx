@@ -8,8 +8,6 @@ import { colors, designTokens } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 import { FlagImage } from '../components/FlagImage';
-import { DefaultTournamentService } from '../services/DefaultTournamentService';
-import { RefereeCard as CanonicalRefereeCard } from '../components/entities/Referee/RefereeCard';
 
 interface Referee {
   RefereeId: string; // 6-digit NoReferee from VIS API
@@ -30,18 +28,16 @@ interface RefereeStats {
 
 type StatsTab = 'Current' | 'Season' | 'Career';
 
-const RefereeCard = ({ 
-  referee, 
-  tournamentNo, 
-  expanded, 
-  onToggle,
-  tournamentInfo 
-}: { 
-  referee: Referee; 
+const RefereeCard = ({
+  referee,
+  tournamentNo,
+  expanded,
+  onToggle
+}: {
+  referee: Referee;
   tournamentNo: string;
   expanded: boolean;
   onToggle: () => void;
-  tournamentInfo: TournamentInfo | null;
 }) => {
   const [activeTab, setActiveTab] = useState<StatsTab>('Current');
   const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
@@ -470,45 +466,6 @@ function TournamentRefScreenContent() {
     }
   };
 
-  const parseEventRefereeFromXML = (xmlString: string, firstName: string, lastName: string): Referee | null => {
-    try {
-      // Look for all EventReferee elements in the response
-      const refereeMatches = xmlString.match(/<EventReferee[^>]*\/>/g);
-      if (!refereeMatches || refereeMatches.length === 0) {
-        return null;
-      }
-
-      // Find the specific referee by name
-      for (const refereeElement of refereeMatches) {
-        const firstNameAttr = refereeElement.match(/FirstName="([^"]*)"/)?.[1] || '';
-        const lastNameAttr = refereeElement.match(/LastName="([^"]*)"/)?.[1] || '';
-        
-        // Check if this is the referee we're looking for
-        if (firstNameAttr.toLowerCase() === firstName.toLowerCase() && 
-            lastNameAttr.toLowerCase() === lastName.toLowerCase()) {
-          
-          const noReferee = refereeElement.match(/NoReferee="([^"]*)"/)?.[1] || '';
-          const federationCode = refereeElement.match(/FederationCode="([^"]*)"/)?.[1] || '';
-          const gender = refereeElement.match(/Gender="([^"]*)"/)?.[1] || '';
-          const level = refereeElement.match(/Level="([^"]*)"/)?.[1] || '';
-          
-          return {
-            RefereeId: noReferee,
-            firstName: firstNameAttr,
-            lastName: lastNameAttr,
-            federationCode,
-            gender,
-            level
-          };
-        }
-      }
-
-      return null;
-    } catch (error) {
-      return null;
-    }
-  };
-
 
   const loadRefereesFromPassedMatchData = async (): Promise<void> => {
     try {
@@ -626,7 +583,7 @@ function TournamentRefScreenContent() {
       // First, create a mapping from referee names to NoReferee IDs from the original match data
       const nameToNoRefereeMap = new Map<string, string>();
       
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         
         // Check direct match fields for referee names and NoReferee IDs
         const referee1Name = match.Referee1Name || match.referee1Name || '';
@@ -795,7 +752,7 @@ function TournamentRefScreenContent() {
       // Collect all unique NoReferee IDs from match data
       const noRefereeIds = new Set<string>();
       
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         
         // Collect NoReferee IDs
         const noReferee1 = match.NoReferee1 || match.noReferee1 || '';

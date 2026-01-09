@@ -50,7 +50,6 @@ interface RefreshIntervalOption {
  * Following Story 4.3 AC4 requirements
  */
 export function AnalyticsSettings({
-  preferences: externalPreferences,
   onPreferencesChange: externalOnChange,
   onReset: externalOnReset,
   showAdvanced = true,
@@ -62,11 +61,9 @@ export function AnalyticsSettings({
     updateSettings,
     resetSettings,
     exportSettings,
-    importSettings,
   } = useAnalyticsSettings();
 
   const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
   // Time range options for analytics data (last 7 days, 30 days, season)
@@ -175,8 +172,8 @@ export function AnalyticsSettings({
   const handleExportSettings = useCallback(async () => {
     setIsExporting(true);
     try {
-      const settingsJson = await exportSettings();
-      
+      await exportSettings();
+
       // For demo purposes, show the exported settings
       // In production, this would save to file or share
       Alert.alert(

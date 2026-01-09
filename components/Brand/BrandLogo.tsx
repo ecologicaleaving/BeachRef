@@ -25,7 +25,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 }) => {
   // Get asset based on variant and theme
   const asset = brandAssets.logo[variant][theme];
-  const brandAsset = getBrandAsset(asset);
+  getBrandAsset(asset);
 
   // Calculate dimensions based on size
   const getDimensions = () => {

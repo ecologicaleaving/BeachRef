@@ -46,7 +46,7 @@ export const EnhancedCurrentAssignmentCard: React.FC<EnhancedCurrentAssignmentCa
     };
   }, [assignment.matchTime]);
   
-  const { minutesUntil, isUrgent, isImmediate } = timeCalculations;
+  const { isUrgent, isImmediate } = timeCalculations;
 
   const formatMatchTime = React.useCallback((timeStr: string) => {
     try {

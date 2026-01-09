@@ -59,7 +59,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   highlightedOfficial,
 }) => {
   const router = useRouter();
-  const [timezonePreference, setTimezonePreference] = useState<'user' | 'local'>('user');
+  const [, setTimezonePreference] = useState<'user' | 'local'>('user');
   const [personnelExpanded, setPersonnelExpanded] = useState(false); // State for expandable personnel panel
 
   // Load timezone preference and subscribe to changes
@@ -185,28 +185,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return `${hours}h`;
   };
 
-  // Navigate to referee profile
-  const handleRefereePress = (refereeName: string, federationCode?: string) => {
-    // Create a mock referee object for navigation
-    const refereeData = {
-      id: refereeName, // Use name as ID for now
-      firstName: refereeName.split(' ')[0] || refereeName,
-      lastName: refereeName.split(' ').slice(1).join(' ') || '',
-      federationCode: federationCode || 'UNK',
-      gender: 'M' as const, // Default gender
-      status: 'Active' as const,
-      type: 'Referee' as const,
-      noOfficial: refereeName, // Use name as identifier
-    };
-    
-    router.push({
-      pathname: '/referee-profile',
-      params: {
-        refereeData: JSON.stringify(refereeData)
-      }
-    });
-  };
-  
   // Format time display - returns object with local and user times
   const getTimeDisplay = (dateTimeString: string): { localTime: string; userTime: string | null } => {
     try {

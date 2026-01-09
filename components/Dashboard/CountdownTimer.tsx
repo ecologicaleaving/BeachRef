@@ -18,7 +18,6 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   size = 'medium',
   urgentThreshold = 15,
   immediateThreshold = 5,
-  showProgress = false,
   showSeconds = true,
   onUrgent,
   onImmediate,

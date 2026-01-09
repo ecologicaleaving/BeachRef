@@ -72,20 +72,6 @@ export const EnhancedAssignmentCard: React.FC<EnhancedAssignmentCardProps> = ({
     }
   };
 
-  const getStatusColor = () => {
-    switch (assignment.status) {
-      case 'current':
-        return designTokens.statusColors.current;
-      case 'upcoming':
-        return designTokens.statusColors.upcoming;
-      case 'completed':
-        return designTokens.statusColors.completed;
-      case 'cancelled':
-        return designTokens.statusColors.cancelled;
-      default:
-        return designTokens.colors.textSecondary;
-    }
-  };
 
   const handleResultEntry = () => {
     if (assignment.status === 'completed') {

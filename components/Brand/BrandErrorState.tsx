@@ -8,7 +8,6 @@ import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Text } from '../Typography/Text';
 import { Button } from '../Foundation/Button';
 import { colors, spacing } from '../../theme/tokens';
-import { getStatusColor } from '../../utils/colors';
 
 export interface BrandErrorStateProps {
   title?: string;

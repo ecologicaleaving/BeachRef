@@ -30,7 +30,6 @@ const AssignmentCard: React.FC<AssignmentCardProps> = React.memo(({
   variant,
   showCountdown = false,
   onPress,
-  onUpdate,
   isInteractive = false
 }) => {
   const cardVariant = variant || assignment.status;

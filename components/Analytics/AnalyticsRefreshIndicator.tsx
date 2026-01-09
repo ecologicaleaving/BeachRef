@@ -192,15 +192,6 @@ const formatTimestamp = (timestamp: string): string => {
   }
 };
 
-const getPerformanceStatus = (queryTime: number) => {
-  if (queryTime < 500) {
-    return { status: 'excellent', color: '#4caf50', label: 'Excellent' };
-  } else if (queryTime < 1000) {
-    return { status: 'good', color: '#ff9800', label: 'Good' };
-  } else {
-    return { status: 'slow', color: '#f44336', label: 'Slow' };
-  }
-};
 
 const getDataSourceInfo = (source: 'database' | 'cache') => {
   if (source === 'database') {

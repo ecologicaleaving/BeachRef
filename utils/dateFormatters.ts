@@ -251,8 +251,6 @@ export const formatTimeWithTimezoneSync = (
   try {
     const {
       tournamentTimezone = 'UTC',
-      showTimezoneIndicator = true,
-      cachedPreference = 'user',
       countryCode,
       city,
       tournamentName

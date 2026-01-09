@@ -22,7 +22,7 @@ import { BeachMatchCore } from '../types/match-v2';
  * @param tournamentTimezone - Optional tournament timezone for context
  * @returns Epoch timestamp in milliseconds, or null if extraction fails
  */
-export const toEpochMsSafe = (match: BeachMatchCore, tournamentTimezone?: string): number | null => {
+export const toEpochMsSafe = (match: BeachMatchCore): number | null => {
   // Priority 1: Enhanced UTC timestamp (highest accuracy)
   if (match.utcScheduledDateTime) {
     const utcTime = Date.parse(match.utcScheduledDateTime);

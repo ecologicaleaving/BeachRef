@@ -267,7 +267,7 @@ ${this.getNextSteps()}
   logMetrics(): void {
     if (!this.isProduction) {
       console.group('🚀 Production Monitoring Metrics');
-      Object.values(this.metrics).forEach(kpi => {
+      Object.values(this.metrics).forEach(() => {
       });
       console.groupEnd();
     }

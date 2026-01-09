@@ -4,8 +4,6 @@
  * Part of Enhanced Match Display System
  */
 
-import { BeachRoundType } from '../types/beach-live';
-
 /**
  * FIVB BeachRoundPhase enum values from VIS API
  */
@@ -60,8 +58,7 @@ export class RoundPhaseFormatter {
    */
   static formatRoundPhase(
     round: string,
-    phase?: string,
-    tournamentContext?: TournamentContext
+    phase?: string
   ): RoundPhaseInfo {
     const originalValue = String(round);
     

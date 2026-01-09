@@ -97,11 +97,8 @@ export function meetsWCAGAAA(ratio: number): boolean {
  * Generate contrast report for debugging
  */
 export function generateContrastReport(
-  foreground: string, 
-  background: string, 
-  description?: string
+  _foreground: string,
+  _background: string,
+  _description?: string
 ): void {
-  const contrast = calculateContrast(foreground, background);
-  const prefix = description ? `${description}: ` : '';
-  
 }

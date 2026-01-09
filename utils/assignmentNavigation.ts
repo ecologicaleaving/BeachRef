@@ -77,7 +77,7 @@ export class AssignmentNavigationHelper {
   }
 
   // Navigate to assignment preparation/management
-  navigateToAssignmentManagement(assignment: Assignment, context?: NavigationContext) {
+  navigateToAssignmentManagement(_assignment: Assignment, context?: NavigationContext) {
     if (!this.router) {
       // console.warn('AssignmentNavigationHelper: Router not initialized');
       return;

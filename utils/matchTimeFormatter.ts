@@ -6,13 +6,9 @@
 
 import {
   convertMatchTimeToUserTime,
-  getMatchTimeForUser,
-  getMatchTimeUTC,
-  isTimezoneConversionReliable,
   getTimezoneConversionMethod,
   VisBeachMatchData,
-  TournamentData,
-  TimezoneConversionResult
+  TournamentData
 } from './timezoneUtils';
 
 /**

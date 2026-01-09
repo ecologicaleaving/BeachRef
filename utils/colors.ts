@@ -3,12 +3,12 @@
  * WCAG AAA Compliant Color System for Tournament Referees
  */
 
-import { colors, brandColors, statusColors as tokenStatusColors } from '../theme/tokens';
+import { colors, brandColors } from '../theme/tokens';
 import { calculateContrast, getBestContrastColor } from './contrast';
-import { 
-  getStatusColor as getNewStatusColor, 
+import {
+  getStatusColor as getNewStatusColor,
   getStatusColorWithText,
-  TournamentStatus 
+  TournamentStatus
 } from './statusColors';
 
 /**

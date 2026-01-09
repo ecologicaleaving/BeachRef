@@ -6,10 +6,8 @@ import {
   StyleSheet,
   Switch,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { TournamentCore } from '../../../types/tournament-v2';
 import { FlagImage } from '../../FlagImage';
-import { StatusBadge } from '../../Status';
 import { DefaultTournamentService } from '../../../services/DefaultTournamentService';
 import { getStatusColorWithText, determineTournamentStatus } from '../../../utils/statusColors';
 import { colors, designTokens } from '../../../theme/tokens';
@@ -38,7 +36,6 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   // Log state changes
   useEffect(() => {
   }, [isDefault]);
-  const router = useRouter();
 
   // Check if this tournament is default on mount and listen for changes
   useEffect(() => {

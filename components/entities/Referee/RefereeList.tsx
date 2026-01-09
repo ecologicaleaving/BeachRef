@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -8,7 +8,7 @@ import {
   Text,
   RefreshControl,
 } from 'react-native';
-import { EventReferee, RefereeOfficial, isActiveOfficial } from '../../../types/referee-v2';
+import { EventReferee, RefereeOfficial } from '../../../types/referee-v2';
 import { RefereeCard } from './RefereeCard';
 import { ActionIcons, UtilityIcons } from '../../Icons/IconLibrary';
 import { colors, designTokens } from '../../../theme/tokens';

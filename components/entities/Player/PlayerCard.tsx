@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import { BeachLivePlayer } from '../../../types/beach-live';
 import { FlagImage } from '../../FlagImage';
-import { StatusBadge } from '../../Status';
 import { ActionIcons } from '../../Icons/IconLibrary';
 import { colors, designTokens } from '../../../theme/tokens';
 

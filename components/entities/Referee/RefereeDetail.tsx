@@ -35,7 +35,6 @@ export const RefereeDetail: React.FC<RefereeDetailProps> = ({
   onContactPress,
   onHistoryPress,
   showActions = true,
-  variant = 'default',
   assignmentCount = 0,
   recentAssignments = [],
 }) => {

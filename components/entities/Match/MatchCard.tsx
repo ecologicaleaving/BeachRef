@@ -553,22 +553,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           // Show userTime only when tournament is LIVE (using date-based logic like TournamentCard)
                           const hasTournamentTimezone = !!tournamentDataForConversion.defaultTimeZone;
 
-                          // Check if tournament is live using date comparison (same as TournamentCard)
-                          const isTournamentLive = (() => {
-                            if (!tournamentData?.startDate || !tournamentData?.endDate) return false;
-
-                            const now = new Date();
-                            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-                            const startDate = new Date(tournamentData.startDate);
-                            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-
-                            const endDate = new Date(tournamentData.endDate);
-                            const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-
-                            // Tournament is live if today is between start and end dates (inclusive)
-                            return startDateOnly <= today && today <= endDateOnly;
-                          })();
 
                           // Show My Time when: has timezone + times are different (always visible, not just for LIVE tournaments)
                           const shouldShowMyTime = hasTournamentTimezone && userTime && userTime !== displayTime && userTime.trim() !== '';
@@ -786,7 +770,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             const homeScore = setScore.home || 0;
                             const awayScore = setScore.away || 0;
                             const maxScore = Math.max(homeScore, awayScore);
-                            const minScore = Math.min(homeScore, awayScore);
 
                             // Current set if: scores are close OR match is explicitly in this set
                             if (maxScore < 21 || (maxScore >= 21 && Math.abs(homeScore - awayScore) < 2)) {
@@ -885,7 +868,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                             const team1Score = setScores[i];
                             const team2Score = setScores[i + 1];
                             const setNumber = Math.floor(i / 2) + 1;
-                            const isWinningSet = team1Score > team2Score ? 1 : team2Score > team1Score ? 2 : 0;
                             const isCurrentSet = isMatchLive(match) && setNumber === currentSetNumber;
 
                             sets.push(

@@ -1,5 +1,4 @@
 import { BeachMatch } from '../types/match';
-import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 
 export interface ProcessedMatch extends BeachMatch {
   tournamentGender?: string;

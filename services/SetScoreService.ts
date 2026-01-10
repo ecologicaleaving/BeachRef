@@ -5,7 +5,7 @@
  */
 
 import { BeachMatchCore, MatchResult } from '../types/match-v2';
-import { BeachLive, BeachLiveSet, isValidBeachLive } from '../types/beach-live';
+import { BeachLive, BeachLiveSet } from '../types/beach-live';
 import { IVisApiClient, GetBeachLiveRequest } from '../types/api-v2';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 

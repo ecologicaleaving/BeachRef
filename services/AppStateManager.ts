@@ -1,8 +1,7 @@
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetworkStateManager, { NetworkState, ConnectionQuality } from './NetworkStateManager';
+import NetworkStateManager, { NetworkState } from './NetworkStateManager';
 import { RealtimeFallbackService } from './RealtimeFallbackService';
-import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
 
 export enum AppLifecycleState {
   FOREGROUND_ACTIVE = 'FOREGROUND_ACTIVE',

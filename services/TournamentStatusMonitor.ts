@@ -1,4 +1,3 @@
-import { Tournament } from '../types/tournament';
 import { BeachMatch } from '../types/match';
 import { supabase } from './supabase';
 

@@ -1,5 +1,4 @@
 import { BeachMatch } from '../types/match';
-import { Tournament } from '../types/tournament';
 import { supabase } from './supabase';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { AppState } from 'react-native';

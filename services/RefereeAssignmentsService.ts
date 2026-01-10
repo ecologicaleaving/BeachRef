@@ -4,7 +4,7 @@ import { RefereeAssignment, RefereeAssignmentStatus, RefereeProfile } from '../t
 import { VisApiClient } from './api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
-import { TournamentRefereeData, EventReferee, RefereeOfficial, getOfficialDisplayName, isActiveOfficial, OfficialStatus, OfficialType } from '../types/referee-v2';
+import { TournamentRefereeData, getOfficialDisplayName, isActiveOfficial, OfficialStatus, OfficialType } from '../types/referee-v2';
 
 export class RefereeAssignmentsService {
   private static readonly REFEREE_PROFILE_KEY = '@referee_profile';

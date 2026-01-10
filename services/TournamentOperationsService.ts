@@ -1,6 +1,5 @@
 import { VisApiClient } from './api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
-import { TournamentCore } from '../types/tournament-v2';
 import { RefereeAssignmentsService } from './RefereeAssignmentsService';
 import { RefereeProfile } from '../types/RefereeAssignments';
 import { TournamentRefereeData } from '../types/referee-v2';

@@ -1,4 +1,4 @@
-import { NetworkStateManager, NetworkState, ConnectionQuality } from './NetworkStateManager';
+import { NetworkStateManager } from './NetworkStateManager';
 import { AppStateManager, AppLifecycleState } from './AppStateManager';
 import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
 import AsyncStorage from '@react-native-async-storage/async-storage';

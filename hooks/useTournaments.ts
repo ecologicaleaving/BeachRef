@@ -1,6 +1,5 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
-import { supabase } from '../services/supabase';
 import { queryKeys, cacheStrategies } from '../lib/queryClient';
 import { TournamentDTO } from '../services/DualReadService';
 

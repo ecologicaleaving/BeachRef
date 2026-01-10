@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '../services/supabase';
-import { queryKeys, cacheStrategies, createQueryOptions } from '../lib/queryClient';
+import { queryKeys, cacheStrategies } from '../lib/queryClient';
 import { MatchDTO } from '../services/DualReadService';
 
 export interface MatchesFilters {

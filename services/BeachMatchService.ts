@@ -33,7 +33,7 @@ export class BeachMatchService {
    */
   public async getMatch(
     matchNo: number,
-    params?: Partial<BeachMatchBootstrapParams>
+    _params?: Partial<BeachMatchBootstrapParams>
   ): Promise<BeachMatchDTO> {
     const cacheKey = `beach_match_${matchNo}`;
 

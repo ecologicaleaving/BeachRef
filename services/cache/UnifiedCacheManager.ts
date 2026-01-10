@@ -9,8 +9,7 @@ import {
   CacheStrategy,
   CacheEntry,
   CacheMetadata,
-  CacheStrategies,
-  CacheStrategyFactory
+  CacheStrategies
 } from './CacheStrategy';
 
 export interface CacheOperationResult<T> {

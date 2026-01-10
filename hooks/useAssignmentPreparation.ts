@@ -70,9 +70,10 @@ export const useAssignmentPreparation = () => {
       }>;
 
       // Process each pending item
-      for (const item of syncItems) {
+      for (const _item of syncItems) {
         try {
           // In a real implementation, this would sync with API
+          // TODO: Use _item to sync specific data
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
           // console.error('Failed to sync item:', error);
@@ -266,7 +267,7 @@ export const useAssignmentPreparation = () => {
   const addPerformanceNote = useCallback(async (
     assignmentId: string,
     noteText: string,
-    assignment?: Assignment
+    _assignment?: Assignment
   ) => {
     try {
       const performanceNote: AssignmentNote = {

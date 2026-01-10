@@ -479,7 +479,7 @@ export function useOfflineCapabilities(): {
   lastOnline: string | null;
   offlineDuration: number;
 } {
-  const { isOnline, lastStateChange, connectionHistory } = useNetworkState();
+  const { isOnline, connectionHistory } = useNetworkState();
 
   const lastOnlineEntry = connectionHistory
     .slice()
@@ -537,7 +537,7 @@ function getEstimatedBandwidth(type: ConnectionType, quality: ConnectionQuality)
   return estimates[type]?.[quality] || 0;
 }
 
-function getConnectionStrength(type: ConnectionType, quality: ConnectionQuality): number {
+function getConnectionStrength(_type: ConnectionType, quality: ConnectionQuality): number {
   const strengthMap = {
     excellent: 1.0,
     good: 0.8,

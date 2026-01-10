@@ -104,8 +104,8 @@ export const AssignmentStatusProvider: React.FC<{ children: React.ReactNode }> =
       setSyncStatus(online ? 'synced' : 'offline');
     });
 
-    const unsubscribeSyncCompleted = statusManager.subscribeToSyncEvents(({ syncedCount }) => {
-      // console.log(`AssignmentStatusContext: Sync completed for ${syncedCount} items`);
+    const unsubscribeSyncCompleted = statusManager.subscribeToSyncEvents(() => {
+      // console.log(`AssignmentStatusContext: Sync completed`);
       setSyncStatus('synced');
       setPendingSyncCount(0);
       refreshStatuses();

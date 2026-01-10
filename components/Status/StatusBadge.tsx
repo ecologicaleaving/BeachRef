@@ -75,7 +75,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = React.memo(({
   textStyle,
 }) => {
   const statusColorInfo = getStatusColorWithText(status);
-  const statusTheme = statusColorThemes.badge[status];
   const sizeConfig = SIZE_CONFIG[size];
   const displayLabel = label || STATUS_LABELS[status];
   const displayIcon = icon || STATUS_ICONS[status];

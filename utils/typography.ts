@@ -30,12 +30,11 @@ export function getResponsiveTypography(variant: TypographyVariant, options?: {
   hierarchy?: InformationHierarchy;
 }) {
   const baseTypography = typography[variant];
-  const { width, height } = Dimensions.get('window');
+  const { width } = Dimensions.get('window');
   const pixelRatio = PixelRatio.get();
-  
+
   // Device size categories for responsive scaling
   const isSmallDevice = width < 375;
-  const isMediumDevice = width >= 375 && width < 414;
   const isLargeDevice = width >= 414;
   
   // Base scaling factors
@@ -87,8 +86,7 @@ export function getResponsiveTypography(variant: TypographyVariant, options?: {
  */
 export function getOptimizedLineHeight(fontSize: number, variant: TypographyVariant): number {
   const baseLineHeight = typography[variant].lineHeight;
-  const ratio = baseLineHeight / typography[variant].fontSize;
-  
+
   // Outdoor readability optimizations
   if (variant === 'hero' || variant === 'h1') {
     // Headings need tighter line height (1.2-1.3)

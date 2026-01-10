@@ -4,8 +4,7 @@
  */
 
 import { TextStyle } from 'react-native';
-import { typography, colors } from '../theme/tokens';
-import { getResponsiveTypography, type EmphasisLevel, type InformationHierarchy } from './typography';
+import { colors } from '../theme/tokens';
 
 /**
  * Scanning context types for different referee scenarios

@@ -7,8 +7,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useLiveIndicatorAnimation } from '../../utils/statusAnimations';
-import { colors, spacing } from '../../theme/tokens';
-import { createShadow } from '../../theme/shadows';
+import { colors } from '../../theme/tokens';
 
 export interface LiveIndicatorProps {
   isLive: boolean;

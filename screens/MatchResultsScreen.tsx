@@ -38,14 +38,12 @@ const MatchResultsScreenContent: React.FC = () => {
   const [genderFilter, setGenderFilter] = useState<'all' | 'men' | 'women'>('all');
   
   // Assignment status management
-  const { 
+  const {
     currentAssignmentStatus,
-    allStatuses,
     statusCounts,
     isOnline,
     syncStatus,
     updateAssignmentStatus,
-    getAssignmentsByStatus,
     refreshStatuses
   } = useAssignmentStatus();
 

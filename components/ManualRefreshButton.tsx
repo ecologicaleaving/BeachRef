@@ -140,7 +140,7 @@ export const CompactRefreshButton: React.FC<{
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
-    if (disabled || isRefreshing || loading) return;
+    if (disabled || isRefreshing) return;
 
     setIsRefreshing(true);
     try {

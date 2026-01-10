@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Animated, useEffect } from 'react-native';
+import React, { useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { BeachMatch } from '../types/match';
-import { designTokens, colors, statusColors } from '../theme/tokens';
+import { colors } from '../theme/tokens';
 
 interface LiveMatchIndicatorProps {
   match: BeachMatch;

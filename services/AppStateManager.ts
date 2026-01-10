@@ -118,7 +118,7 @@ export class AppStateManager {
   /**
    * Update lifecycle state and trigger appropriate actions
    */
-  private updateLifecycleState(newState: AppLifecycleState, reason: string): void {
+  private updateLifecycleState(newState: AppLifecycleState, _reason: string): void {
     if (newState === this.currentState) return;
 
     const previousState = this.currentState;

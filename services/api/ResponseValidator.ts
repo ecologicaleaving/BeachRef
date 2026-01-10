@@ -6,7 +6,6 @@
 
 import {
   ApiResponse,
-  ApiSuccessResponse,
   ApiErrorResponse,
   ValidationResult,
   ValidationError,
@@ -16,7 +15,7 @@ import {
   RefereeResponseDTO,
   ApiError
 } from '../../types/api-responses';
-import { ErrorClassifier, ErrorSeverity, ErrorCategory } from '../error/ErrorClassifier';
+import { ErrorClassifier } from '../error/ErrorClassifier';
 
 /**
  * Main response validation service

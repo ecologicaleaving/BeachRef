@@ -855,7 +855,7 @@ export class VisApiClient implements IVisApiClient {
   /**
    * Execute HTTP request with retry logic and error handling
    */
-  private async executeRequest(endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
+  private async executeRequest(_endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
     let lastError: Error | null = null;
     let transformedError: APIErrorState | null = null;
 
@@ -1075,54 +1075,6 @@ export class VisApiClient implements IVisApiClient {
 
     const fieldsStr = match[1];
     return fieldsStr ? fieldsStr.split(',').length : 0;
-  }
-
-  /**
-   * Create mock response for web development environment
-   */
-  private createMockResponse(): string {
-    // Mock tournament data for development in web environment
-    return `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <GetEventListResponse xmlns="http://www.fivb.org/vis/2009/XmlRequest">
-      <GetEventListResult>
-        <Events>
-          <Event>
-            <No>DEV001</No>
-            <Name>Development Tournament - Beach Volleyball</Name>
-            <Code>DEVBVB</Code>
-            <StartDate>2025-08-21T00:00:00</StartDate>
-            <EndDate>2025-08-23T23:59:59</EndDate>
-            <Status>Running</Status>
-            <Country>DEV</Country>
-            <City>Development City</City>
-            <BeachTournament>
-              <No>DEV001</No>
-              <Gender>W</Gender>
-              <NoOfCourts>4</NoOfCourts>
-            </BeachTournament>
-          </Event>
-          <Event>
-            <No>DEV002</No>
-            <Name>Test Tournament - Beach Volleyball Men</Name>
-            <Code>TESTBVB</Code>
-            <StartDate>2025-08-25T00:00:00</StartDate>
-            <EndDate>2025-08-27T23:59:59</EndDate>
-            <Status>Scheduled</Status>
-            <Country>TEST</Country>
-            <City>Test City</City>
-            <BeachTournament>
-              <No>DEV002</No>
-              <Gender>M</Gender>
-              <NoOfCourts>6</NoOfCourts>
-            </BeachTournament>
-          </Event>
-        </Events>
-      </GetEventListResult>
-    </GetEventListResponse>
-  </soap:Body>
-</soap:Envelope>`;
   }
 
   /**

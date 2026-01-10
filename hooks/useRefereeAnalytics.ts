@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { AnalyticsService } from '../services/AnalyticsService';
 import RefereeAnalyticsExportService, { ExportFormat, ExportConfig } from '../services/RefereeAnalyticsExportService';
 import { queryKeys, createQueryOptions } from '../lib/queryClient';

@@ -353,16 +353,14 @@ export const useCacheAwareData = <T>(
       if (!staleWhileRevalidate || !data) {
         setLoading(true);
       }
-      
-      const startTime = Date.now();
+
       const result = await fetchMethod();
-      const fetchTime = Date.now() - startTime;
-      
+
       if (!mountedRef.current) return;
-      
+
       // Update cache
       globalCache.set(cacheKey, result, ttl, { priority, source: 'api' });
-      
+
       setData(result);
       setCacheHit(false);
       setCacheMetadata({
@@ -370,8 +368,11 @@ export const useCacheAwareData = <T>(
         isStale: false,
         accessCount: 1
       });
-      
+
       if (enablePerformanceTracking) {
+        // TODO: Track fetch performance metrics
+        // const startTime = Date.now();
+        // const fetchTime = Date.now() - startTime;
         // console.debug(`Data fetched for key: ${cacheKey}`, {
         //   fetchTime,
         //   dataSize: JSON.stringify(result).length

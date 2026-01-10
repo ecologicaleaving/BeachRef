@@ -114,7 +114,6 @@ function getStatusBasedCacheTime(matchNo: number, useAdaptivePolling: boolean): 
   }
 
   const status = matchStatusPollingManager.getMatchStatus(matchNo);
-  const pollingConfig = matchStatusPollingManager.getPollingConfig(status);
 
   switch (status) {
     case MatchPollingStatus.RUNNING:

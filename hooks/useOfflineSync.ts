@@ -312,14 +312,12 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
       setSyncMessage('Syncing all data...');
     }
 
-    const startTime = Date.now();
-
     try {
-      const result = await syncManager.current.forceSyncAll();
-      
+      await syncManager.current.forceSyncAll();
+
       // Invalidate TanStack Query cache to force fresh data
       await queryClient.invalidateQueries();
-      
+
       // Update sync status
       setSyncStatus(prev => ({
         ...prev,
@@ -330,6 +328,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
       // Performance tracking
       if (currentConfig.enablePerformanceTracking) {
+        // TODO: Track sync performance metrics
       }
 
       if (currentConfig.enableVisualIndicators) {

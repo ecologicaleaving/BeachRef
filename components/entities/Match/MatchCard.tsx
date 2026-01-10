@@ -58,7 +58,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   liveScoreRefresh,
   highlightedOfficial,
 }) => {
-  const router = useRouter();
   const [, setTimezonePreference] = useState<'user' | 'local'>('user');
   const [personnelExpanded, setPersonnelExpanded] = useState(false); // State for expandable personnel panel
 
@@ -847,7 +846,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                               // If both teams have scores and the set isn't decisively won (e.g., 21+ vs <19), this might be current
                               if (team1Score > 0 || team2Score > 0) {
                                 const maxScore = Math.max(team1Score, team2Score);
-                                const minScore = Math.min(team1Score, team2Score);
 
                                 // Current set if: scores are close OR match is explicitly in this set
                                 if (maxScore < 21 || (maxScore >= 21 && Math.abs(team1Score - team2Score) < 2)) {

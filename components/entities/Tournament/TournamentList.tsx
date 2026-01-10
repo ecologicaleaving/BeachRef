@@ -114,8 +114,6 @@ export const TournamentList: React.FC<TournamentListProps> = ({
     isLoading: loading,
     isRefetching: refreshing,
     error: hookError,
-    source,
-    performance,
     forceRefresh,
   } = tournamentsQuery;
 

@@ -133,7 +133,7 @@ export function getResponsiveBrandAsset(
  * Brand asset validation
  */
 export function validateBrandAssets(): boolean {
-  const requiredAssets = [
+  const _requiredAssets = [
     'logo.primary.light',
     'logo.primary.dark',
     'logo.symbol.light',
@@ -144,6 +144,7 @@ export function validateBrandAssets(): boolean {
 
   // In production, implement actual asset existence validation
   // For now, assume all assets exist since they're bundled
+  // TODO: Use _requiredAssets to validate asset existence
   // console.log('✅ All required brand assets are available');
   return true;
 }

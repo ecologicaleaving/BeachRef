@@ -93,16 +93,10 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
   useEffect(() => {
     if (!tournamentNo || !isConnected) return;
 
-
     // Listen for cache invalidation events (triggered by real-time updates)
-    const handleCacheInvalidation = () => {
-      debouncedRefresh(tournamentNo);
-    };
+    // TODO: Implement event listener when event system is available
+    // For now, we rely on the real-time service's cache invalidation
 
-    // Add event listener for cache invalidation
-    // Note: This would be enhanced with a proper event system
-    // For now, we'll rely on the real-time service's cache invalidation
-    
     return () => {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
@@ -158,14 +152,15 @@ export const useRealtimeTournament = (tournament: Tournament | null, enabled: bo
   } = useRealtimeSubscription(tournamentNo, enabled);
 
   // Fetch tournament details
-  const fetchTournamentData = useCallback(async (tournamentNumber: string) => {
+  const fetchTournamentData = useCallback(async (_tournamentNumber: string) => {
     try {
       setLoading(true);
       setError(null);
 
       // For now, we'll use the existing tournament data
       // In the future, this could be enhanced to fetch fresh tournament details
-      
+      // TODO: Use _tournamentNumber to fetch specific tournament data from API
+
       setTournamentData(tournament);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load tournament';

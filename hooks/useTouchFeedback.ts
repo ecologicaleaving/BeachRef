@@ -255,7 +255,7 @@ export const useTouchFeedback = (
     } catch (error) {
       // console.warn('useTouchFeedback: Audio feedback failed', error);
     }
-  }, [config.audioEnabled, config.audioType, config.audioVolume, config.enablePerformanceTracking, config.onAudioFeedback]);
+  }, [config.audioEnabled, config.audioType, config.enablePerformanceTracking, config.onAudioFeedback]);
   
   // Touch event handlers
   const onPressIn = useCallback(() => {

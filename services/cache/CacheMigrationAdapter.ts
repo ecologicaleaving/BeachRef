@@ -7,7 +7,7 @@
 import { Tournament } from '../../types/tournament';
 import { TournamentRefereeData } from '../../types/referee-v2';
 import { CachedData } from '../../types/cache';
-import { UnifiedCacheManager, CacheOperationResult } from './UnifiedCacheManager';
+import { UnifiedCacheManager } from './UnifiedCacheManager';
 import { CacheStrategies } from './CacheStrategy';
 
 export interface UserPreferences {
@@ -24,7 +24,7 @@ export interface UserPreferences {
 export class LocalStorageManagerAdapter {
   private cacheManager = UnifiedCacheManager.getInstance();
 
-  constructor(private maxAgeDays: number = 7) {}
+  constructor(private _maxAgeDays: number = 7) {}
 
   /**
    * Get item from cache (LocalStorageManager compatible)
@@ -47,7 +47,7 @@ export class LocalStorageManagerAdapter {
   /**
    * Set item in cache (LocalStorageManager compatible)
    */
-  async set(key: string, data: any, ttl: number): Promise<void> {
+  async set(key: string, data: any, _ttl: number): Promise<void> {
     const result = await this.cacheManager.set('general', key, data);
 
     if (!result.success) {
@@ -99,9 +99,10 @@ export class LocalStorageManagerAdapter {
   /**
    * Get keys matching a pattern (simplified implementation)
    */
-  async getKeysByPattern(pattern: string): Promise<string[]> {
+  async getKeysByPattern(_pattern: string): Promise<string[]> {
     // This is a simplified implementation - the full pattern matching
     // would require additional metadata tracking
+    // TODO: Use _pattern to filter keys
     return [];
   }
 
@@ -139,8 +140,6 @@ export class LocalStorageManagerAdapter {
  * Maintains the same interface but uses UnifiedCacheManager internally
  */
 export class TournamentStorageServiceAdapter {
-  private cacheManager = UnifiedCacheManager.getInstance();
-
   // Tournament selection methods - use user preferences namespace
 
   static async saveSelectedTournament(tournament: Tournament): Promise<void> {

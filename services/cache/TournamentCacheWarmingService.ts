@@ -7,10 +7,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TournamentMatchCache } from './TournamentMatchCache';
-import { TournamentStorageService } from '../TournamentStorageService';
 import { BeachMatchCore } from '../../types/match-v2';
 import { VisApiClient } from '../api/VisApiClient';
-import { DEFAULT_RETRY_CONFIG, GetBeachMatchListRequest, GetBeachTournamentRequest } from '../../types/api-v2';
+import { DEFAULT_RETRY_CONFIG, GetBeachMatchListRequest } from '../../types/api-v2';
 import { VisResponseParser } from '../parsing/VisResponseParser';
 import { getVisApiBaseUrl } from '../../utils/visApiConfig';
 import { cacheMmkvStorage } from './MmkvStorage';

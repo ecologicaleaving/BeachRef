@@ -7,8 +7,6 @@
  * Tasks: T048-T051
  */
 
-import { CacheEntry } from '../../types/audit';
-
 /**
  * Cache metrics for monitoring
  */

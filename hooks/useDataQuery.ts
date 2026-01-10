@@ -445,7 +445,7 @@ export function useRefereesQuery(
  * Get performance statistics for all queries
  */
 export function useQueryPerformanceStats() {
-  const [stats, setStats] = useState<Record<string, {
+  const [stats] = useState<Record<string, {
     averageQueryTime: number;
     fallbackRate: number;
     cacheHitRate: number;
@@ -461,14 +461,15 @@ export function useQueryPerformanceStats() {
 /**
  * Debug hook for monitoring query behavior
  */
-export function useQueryDebugger(queryKey: string | (string | number)[]) {
-  const [debugInfo, setDebugInfo] = useState({
+export function useQueryDebugger(_queryKey: string | (string | number)[]) {
+  const [debugInfo] = useState({
     lastQuery: null as any,
     queryHistory: [] as any[],
     configHistory: [] as any[]
   });
 
   // Development-only debugging information
+  // TODO: Use _queryKey to track specific query debugging
   if (process.env.NODE_ENV === 'development') {
     return debugInfo;
   }

@@ -131,10 +131,11 @@ export const useCurrentAssignment = (): CurrentAssignmentState & {
     }
   };
 
-  const updateAssignmentStatus = async (assignmentId: string, status: string) => {
+  const updateAssignmentStatus = async (_assignmentId: string, _status: string) => {
     try {
       // In a real implementation, this would call the assignment update API
-      
+      // TODO: Use _assignmentId and _status to update assignment
+
       // Refresh assignments after status update
       await refreshAssignments();
     } catch (error) {

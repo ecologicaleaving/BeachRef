@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CacheResult, CacheTier } from '../types/cache';
 import { useNetworkStatus } from './useNetworkStatus';
 
@@ -18,7 +18,7 @@ interface OfflineStatusHookResult {
  * Helps components understand when they're displaying cached/offline data
  */
 export function useOfflineStatus(): OfflineStatusHookResult {
-  const { isConnected, isOffline } = useNetworkStatus();
+  const { isOffline } = useNetworkStatus();
   const [lastDataSource, setLastDataSource] = useState<CacheTier | null>(null);
 
   /**
@@ -33,7 +33,7 @@ export function useOfflineStatus(): OfflineStatusHookResult {
       };
     }
 
-    const { source, timestamp } = cacheResult;
+    const { source } = cacheResult;
     const isOfflineData = source === 'offline' || source === 'localStorage' || (isOffline && source !== 'api');
     const isStale = source === 'localStorage' || source === 'offline';
     

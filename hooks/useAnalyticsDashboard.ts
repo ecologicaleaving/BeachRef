@@ -105,7 +105,6 @@ export function useAnalyticsDashboard(
     data: refereeAnalytics,
     isLoading: refereeLoading,
     error: refereeError,
-    refetch: refetchReferee,
     performance: refereePerformance,
     source: refereeSource,
     refreshAnalytics: refreshRefereeAnalytics,

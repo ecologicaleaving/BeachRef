@@ -249,8 +249,9 @@ export const HOOK_PERFORMANCE_GUIDELINES = {
 /**
  * Development-only hook usage tracker
  */
-export function trackHookUsage(hookName: string, component: string) {
+export function trackHookUsage(hookName: string, _component: string) {
   if (process.env.NODE_ENV === 'development') {
+    // TODO: Use _component parameter for more detailed tracking
 
     if (HookMigrationHelper.isLegacyDataHook(hookName) ||
         HookMigrationHelper.isLegacyNetworkHook(hookName)) {

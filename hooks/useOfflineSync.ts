@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { NetworkMonitor } from '../services/NetworkMonitor';
 import { SyncManager } from '../services/SyncManager';
 import { queryClient } from '../lib/queryClient';
-import { supabase } from '../services/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FilterOptions } from '../types/cache';
 

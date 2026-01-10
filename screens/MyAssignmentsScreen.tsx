@@ -48,12 +48,10 @@ const MyAssignmentsScreenContent: React.FC = () => {
   } = useCurrentAssignment();
 
   const {
-    preparations,
     getPreparation,
     savePreparation,
     updateAssignmentStatus: updatePreparationStatus,
     detectScheduleConflicts,
-    isOffline: preparationOffline,
     syncPending,
     lastSyncTime,
     syncPendingData,

@@ -20,8 +20,6 @@ interface NavigationHeaderProps {
   subtitle?: string;
   showHomeButton?: boolean;
   onHomePress?: () => void;
-  showBackButton?: boolean;
-  onBackPress?: () => void;
   showRefreshButton?: boolean;
   onRefreshPress?: () => void;
   showFilterButton?: boolean;

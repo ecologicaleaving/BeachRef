@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { colors, designTokens } from '../theme/tokens';
+import { designTokens } from '../theme/tokens';
 import { Tournament } from '../types/tournament';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
@@ -24,21 +24,6 @@ const ToolsSelectionScreenContent: React.FC = () => {
       return {} as Tournament;
     }
   }, [tournamentData]);
-
-  const tools = [
-    // Tools removed as per user request - only using tournament details and referee list
-  ];
-
-  const handleToolPress = (tool: typeof tools[0]) => {
-    if (tournament && tournament.No) {
-      router.push({
-        pathname: tool.route,
-        params: { tournamentData: JSON.stringify(tournament) }
-      });
-    } else {
-      router.push(tool.route);
-    }
-  };
 
   return (
     <View style={styles.container}>

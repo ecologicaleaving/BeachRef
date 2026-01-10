@@ -110,7 +110,6 @@ const transformMatchDTO = (dto: MatchDTO, tournamentContext?: TournamentContext)
       } else if (tournamentContext?.timezone && visFields.LocalDate && visFields.LocalTime) {
         // Priority 3: Use tournament timezone to properly convert local time
         // This fixes the issue where localTimeOffset is incorrect from VIS API
-        const localDateTime = `${visFields.LocalDate}T${visFields.LocalTime}`;
         // Keep scheduledDateTime as-is since it already contains correct local time
         // The display logic should use scheduledDateTime directly for local time display
         utcScheduledDateTime = dto.scheduledDateTime; // Use original scheduledDateTime
@@ -229,89 +228,6 @@ type MatchWithDurationFields = {
   DurationSet3?: string;
 };
 
-const getMatchDuration = (match: ExtendedBeachMatch): string | null => {
-  // FIXED: Primary: Use total match duration from enhanced data (Duration field in seconds)
-  const totalDurationSeconds = (match as any).Duration;
-  if (totalDurationSeconds) {
-    const totalMinutes = Math.floor(parseInt(totalDurationSeconds) / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  }
-
-  // Fallback: try to get duration from match result (calculated from start/end time)
-  if (match.result?.duration && typeof match.result.duration === 'number') {
-    const totalMinutes = match.result.duration;
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  }
-
-  // Fallback: Calculate from individual set durations
-  // Handle both formats: seconds (integers) and "mm:ss" format (strings)
-  const durationSet1 = (match as any).DurationSet1;
-  const durationSet2 = (match as any).DurationSet2;
-  const durationSet3 = (match as any).DurationSet3;
-
-  if (durationSet1 || durationSet2 || durationSet3) {
-    // Check if durations are in "mm:ss" format (strings) or seconds (numbers)
-    // FIXED: Also handle "mm" format (strings without colon) by treating them as string format
-    const isStringFormat = (typeof durationSet1 === 'string') ||
-      (typeof durationSet2 === 'string') ||
-      (typeof durationSet3 === 'string');
-
-    if (isStringFormat) {
-      console.log('MatchListV2 Debug - String Format:', { durationSet1, durationSet2, durationSet3 });
-      // Use the utility function which now handles both "mm:ss" and "mm" formats
-      const totalDuration = calculateTotalDuration(
-        durationSet1?.toString(),
-        durationSet2?.toString(),
-        durationSet3?.toString()
-      );
-      console.log('MatchListV2 Debug - Calculated Total:', totalDuration);
-      if (totalDuration) {
-        return totalDuration;
-      }
-    } else {
-      console.log('MatchListV2 Debug - Number Format:', { durationSet1, durationSet2, durationSet3 });
-      // Handle seconds format (integers) - ensure all three sets are included
-      const totalSeconds = (parseInt(durationSet1 || '0') +
-        parseInt(durationSet2 || '0') +
-        parseInt(durationSet3 || '0'));
-
-      if (totalSeconds > 0) {
-        const totalMinutes = Math.floor(totalSeconds / 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (hours > 0) {
-          return `${hours}h ${minutes}m`;
-        } else {
-          return `${minutes}m`;
-        }
-      }
-    }
-  }
-
-  // Final fallback: try legacy calculateTotalDuration function
-  const matchWithDuration = match as ExtendedBeachMatch & MatchWithDurationFields;
-  return calculateTotalDuration(
-    matchWithDuration.DurationSet1,
-    matchWithDuration.DurationSet2,
-    matchWithDuration.DurationSet3
-  );
-};
-
 interface MatchListV2Props {
   matches?: ExtendedBeachMatch[]; // Made optional to allow hook-based data fetching
   loading?: boolean;
@@ -360,7 +276,6 @@ interface MatchListV2Props {
 export const MatchListV2: React.FC<MatchListV2Props> = ({
   matches: propMatches,
   loading: propLoading = false,
-  title = "Matches",
   selectedReferee,
   emptyMessage = "No matches found",
   // New hook-based props
@@ -369,7 +284,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   matchFilters,
   enableRealTime = false,
   enableLiveScores = false,
-  showDateNavigator = true,
   showGenderFilter = true,
   showStatsInFilter = true,
   showCourtFilter = true,
@@ -385,7 +299,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   onMatchLayout,
   showAllDays = false,
   enableTimelineView = false,
-  liveScores,
   getLiveScore,
   tournamentTimezone,
   tournamentGender,
@@ -445,7 +358,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const loading = propLoading || (shouldUseHook ? hookLoading : false);
   const error = hookError?.message || null;
   // State for collapsible referees and dropdown
-  const [expandedReferees, setExpandedReferees] = useState<{ [key: string]: boolean }>({});
   const [showRefereeDropdown, setShowRefereeDropdown] = useState<boolean>(false);
 
   // State for collapsible date panels
@@ -692,7 +604,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   const { filteredMatches, tbdMatches } = React.useMemo(() => {
     // ALWAYS use enhanced matches if available, even if empty
     const matchesToFilter = enhancedMatches.length > 0 ? enhancedMatches : activeMatches;
-    const withSetScores = matchesToFilter.filter(m => m.result?.setScores && m.result.setScores.length > 0);
 
     const validMatches: typeof matchesToFilter = [];
     const tbdMatches: typeof matchesToFilter = [];
@@ -708,7 +619,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
         // Fallback to legacy method (but this is the buggy path)
         return m.scheduledDateTime.split('T')[0];
       }).sort();
-      const uniqueDates = [...new Set(dates)];
     }
 
     matchesToFilter.forEach(match => {

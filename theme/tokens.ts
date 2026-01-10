@@ -22,6 +22,7 @@ export const neutrals = {
   borderSubtle: '#E4E4E7',  // Zinc 200
   textPrimary: '#18181B',   // Zinc 950
   textSecondary: '#52525B', // Zinc 600
+  textTertiary: '#71717A',  // Zinc 500 - Muted text
 } as const;
 
 // Base Colors (without statusColors to avoid circular dependency)
@@ -34,6 +35,7 @@ const baseColors = {
   error: '#B91C1C',             // Red 700
   textPrimary: neutrals.textPrimary,
   textSecondary: neutrals.textSecondary,
+  textTertiary: neutrals.textTertiary,  // Muted text
   background: neutrals.bgPage,
 } as const;
 
@@ -126,6 +128,12 @@ export const typography = {
     lineHeight: 32,
     letterSpacing: 0,
   },
+  h3: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    lineHeight: 28,
+    letterSpacing: 0,
+  },
   bodyLarge: {
     fontSize: 18,
     fontWeight: '400' as const,
@@ -138,11 +146,22 @@ export const typography = {
     lineHeight: 24,
     letterSpacing: 0,
   },
+  bodySmall: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 20,
+    letterSpacing: 0,
+  },
   caption: {
     fontSize: 14,
     fontWeight: '500' as const,
     lineHeight: 20,
     letterSpacing: 0.25,
+  },
+  sizes: {
+    small: 14,
+    medium: 16,
+    large: 18,
   },
 } as const;
 

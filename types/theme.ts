@@ -15,12 +15,12 @@ export interface ColorToken {
   textDisabled?: string;
   background: string;
   // Additional color properties
-  statusColors: StatusColors; // Required - always present in design system
   surfacePrimary?: string;
   surfaceSecondary?: string;
   surfaceDisabled?: string;
   border?: string;
   text?: string;
+  textTertiary?: string;  // Tertiary text color for muted content
   shadows?: string;
 }
 
@@ -139,6 +139,7 @@ export interface NeutralColors {
   borderSubtle: string;
   textPrimary: string;
   textSecondary: string;
+  textTertiary?: string;  // Muted/tertiary text color
 }
 
 export interface BadgeColorSet {

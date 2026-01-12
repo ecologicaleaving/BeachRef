@@ -21,8 +21,6 @@ import { useFavoriteTournaments } from '../../hooks/useFavoriteTournaments';
 import { Icon } from '../Icons/MaterialCommunityIcons';
 import { colors } from '../../theme/tokens';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
-import { TournamentStorageService } from '../../services/TournamentStorageService';
-import { TimezoneToggle } from './TimezoneToggle';
 
 interface SubMenuItem {
   key: 'schedule' | 'ranking' | 'entryList' | 'officials';
@@ -36,13 +34,13 @@ interface TournamentMenuItemProps {
   isExpanded: boolean;
   onToggleExpand: () => void;
   onSubMenuPress: (route: string, tournament: TournamentCore) => void;
-  onToggleFavorite: () => void;
+  // onToggleFavorite removed - unused (TS6133)
 }
 
 interface GmailStyleSideMenuProps {
   isVisible: boolean;
   onClose: () => void;
-  currentTournament?: TournamentCore;
+  // currentTournament removed - unused (TS6133)
 }
 
 const SUBMENU_ITEMS: SubMenuItem[] = [
@@ -63,12 +61,11 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
   isExpanded,
   onToggleExpand,
   onSubMenuPress,
-  onToggleFavorite
 }) => {
   const expandAnimation = React.useRef(new Animated.Value(0)).current;
   const pressAnimation = React.useRef(new Animated.Value(1)).current;
   const [isPressed, setIsPressed] = useState(false);
-  const [isDefault, setIsDefault] = useState(false);
+  const [, setIsDefault] = useState(false); // Only setter used (TS6133)
 
   // Check if this tournament is default
   useEffect(() => {
@@ -117,10 +114,7 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
     outputRange: [0, SUBMENU_ITEMS.length * 44], // 44px per item
   });
 
-  const chevronRotation = expandAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '90deg'],
-  });
+  // chevronRotation removed - unused (TS6133)
 
   return (
     <View style={styles.tournamentItem}>
@@ -149,7 +143,7 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
 
       <Animated.View style={[styles.subMenuContainer, { height: subMenuHeight }]}>
         <View style={styles.subMenuItems}>
-          {SUBMENU_ITEMS.map((item, index) => (
+          {SUBMENU_ITEMS.map((item) => ( // index removed - unused (TS6133)
             <TouchableOpacity
               key={item.key}
               style={[
@@ -177,13 +171,12 @@ const TournamentMenuItem: React.FC<TournamentMenuItemProps> = ({
   );
 };
 
-const { width: screenWidth } = Dimensions.get('window');
+// screenWidth removed - unused (TS6133)
 const MENU_WIDTH = 320;
 
 export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
   isVisible,
   onClose,
-  currentTournament
 }) => {
   const router = useRouter();
   const slideAnim = React.useRef(new Animated.Value(-MENU_WIDTH)).current;
@@ -192,13 +185,13 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
   const gestureRef = useRef(null);
 
   const [defaultTournament, setDefaultTournament] = useState<TournamentCore | null>(null);
-  const [isLoadingDefault, setIsLoadingDefault] = useState(true);
-  const [defaultTournamentExpanded, setDefaultTournamentExpanded] = useState(true); // Always expanded
+  const [, setIsLoadingDefault] = useState(true); // Only setter used (TS6133)
+  // defaultTournamentExpanded, setDefaultTournamentExpanded removed - unused (TS6133)
 
   const [expandedTournaments, setExpandedTournaments] = useState<Set<string>>(new Set());
   const [favoritesExpanded, setFavoritesExpanded] = useState(true);
-  const [defaultExpanded, setDefaultExpanded] = useState(true);
-  const [defaultSubmenuExpanded, setDefaultSubmenuExpanded] = useState(false);
+  // defaultExpanded, setDefaultExpanded removed - unused (TS6133)
+  // defaultSubmenuExpanded, setDefaultSubmenuExpanded removed - unused (TS6133)
 
   useEffect(() => {
     if (isVisible) {

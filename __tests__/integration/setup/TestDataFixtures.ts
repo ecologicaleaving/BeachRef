@@ -155,7 +155,8 @@ export function createTestMatches(testId: string, tournamentCode: string): Match
       result: {
         team1Sets: 1,
         team2Sets: 0,
-        setScores: [
+        setScores: [21, 18],  // Flat array format
+        sets: [
           { set: 1, a: 21, b: 18 },
         ],
         duration: 2400, // 40 minutes
@@ -206,7 +207,8 @@ export function createTestMatches(testId: string, tournamentCode: string): Match
       result: {
         team1Sets: 2,
         team2Sets: 1,
-        setScores: [
+        setScores: [21, 17, 19, 21, 15, 13],  // Flat array format
+        sets: [
           { set: 1, a: 21, b: 17 },
           { set: 2, a: 19, b: 21 },
           { set: 3, a: 15, b: 13 },

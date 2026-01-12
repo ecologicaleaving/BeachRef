@@ -131,11 +131,19 @@ export interface MatchDTO {
   result?: {
     team1Sets: number;
     team2Sets: number;
-    setScores: Array<{ a: number; b: number }>;
+    setScores: Array<{ set: number; a: number; b: number }>;  // Include set number
+    sets?: Array<{ set: number; a: number; b: number }>;  // Alias for compatibility
     duration?: number;
     winner?: 1 | 2;
     forfeit?: boolean;
   };
+  refereeAssignments?: Array<{  // Add referee assignments array
+    refereeId: string;
+    refereeName: string;
+    function: string;
+    federationCode?: string;
+    status: 'ASSIGNED' | 'CONFIRMED' | 'DECLINED' | 'PENDING';
+  }>;
   // New timezone fields for enhanced timezone support
   beginDateTimeUtc?: string;
   endDateTimeUtc?: string;

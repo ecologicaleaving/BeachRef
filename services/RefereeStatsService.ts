@@ -259,9 +259,9 @@ export class RefereeStatsService {
    * Get season statistics for a referee using proper VIS API with Season + NoReferee filters
    */
   static async getSeasonStats(
-    refereeId: string, 
+    refereeId: string,
     season: string = RefereeStatsService.CURRENT_SEASON,
-    tournamentNo?: string
+    _tournamentNo?: string // TS6133 - unused parameter
   ): Promise<SeasonStats | null> {
     try {
       const cacheKey = `${RefereeStatsService.CACHE_PREFIX}_season_${refereeId}_${season}`;
@@ -444,7 +444,7 @@ export class RefereeStatsService {
   /**
    * Convert raw VIS match data to RefereeMatch format for UI display
    */
-  private static convertToRecentMatches(matches: any[], refereeId: string): RefereeMatch[] {
+  private static convertToRecentMatches(matches: any[], _refereeId: string): RefereeMatch[] { // TS6133 - unused parameter
     return matches.map(match => {
       // Determine which role this referee played in the match
       const refereeRole = match.refereeRole || 'first';
@@ -538,7 +538,7 @@ export class RefereeStatsService {
   /**
    * Get career statistics for a referee using proper VIS API with NoReferee filter only
    */
-  static async getCareerStats(refereeId: string, tournamentNo?: string): Promise<CareerStats | null> {
+  static async getCareerStats(refereeId: string, _tournamentNo?: string): Promise<CareerStats | null> { // TS6133
     try {
       const cacheKey = `${RefereeStatsService.CACHE_PREFIX}_career_${refereeId}`;
       
@@ -616,8 +616,7 @@ export class RefereeStatsService {
       const allTournaments = tournamentsResult.data;
       
       // Log first few tournaments for debugging
-      allTournaments.slice(0, 3).forEach(t => {
-      });
+      // Debug logging removed (TS6133)
       
       // Filter tournaments by season year
       const seasonTournaments = allTournaments.filter(tournament => {
@@ -627,8 +626,7 @@ export class RefereeStatsService {
       });
       
       if (seasonTournaments.length > 0) {
-        seasonTournaments.forEach(t => {
-        });
+        // Debug logging removed (TS6133)
       }
       return seasonTournaments;
     } catch (error) {
@@ -660,15 +658,13 @@ export class RefereeStatsService {
         
         
         // Log sample matches for debugging
-        matches.slice(0, 3).forEach((match, idx) => {
-        });
+        // Debug logging removed (TS6133)
 
         // Filter matches where this referee officiated
         const refereeMatches = RefereeStatsService.filterMatchesForReferee(matches, refereeId);
         
         if (refereeMatches.length > 0) {
-          refereeMatches.forEach((match, idx) => {
-          });
+          // Debug logging removed (TS6133)
         }
 
         if (refereeMatches.length > 0) {
@@ -715,8 +711,7 @@ export class RefereeStatsService {
     const filteredMatches = matches.filter(match => {
       const referee1 = (match.Referee1Name || match.Referee1 || '').trim().toLowerCase();
       const referee2 = (match.Referee2Name || match.Referee2 || '').trim().toLowerCase();
-      
-      
+
       // More precise name matching - check if both first and last names are present
       if (nameParts.length >= 2) {
         const firstName = nameParts[0];

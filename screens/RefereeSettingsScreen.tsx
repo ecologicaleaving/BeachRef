@@ -4,20 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   Alert,
   Switch,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../theme/tokens';
 import { TournamentStorageService, UserPreferences } from '../services/TournamentStorageService';
-import { VisApiClient } from '../services/api/VisApiClient';
 import { BeachMatch } from '../types/match';
-import { TournamentCore } from '../types/tournament-v2';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
 import { StatusIndicator } from '../components/Status/StatusIndicator';
 import NavigationHeader from '../components/navigation/NavigationHeader';
@@ -43,13 +39,13 @@ interface RefereeProfile {
 
 const RefereeSettingsScreenContent: React.FC = () => {
   const router = useRouter();
-  const { tournamentData, autoCourtMonitor } = useLocalSearchParams<{ tournamentData: string; autoCourtMonitor?: string }>();
+  const { tournamentData } = useLocalSearchParams<{ tournamentData: string; autoCourtMonitor?: string }>(); // autoCourtMonitor removed (TS6133)
 
   // Parse tournament data from route params
   const tournament: Tournament = React.useMemo(() => {
     try {
       const parsed = JSON.parse(tournamentData || '{}') as Tournament;
-      const merged = (parsed as any)._mergedTournaments;
+      // merged variable removed (TS6133) - was: const merged = (parsed as any)._mergedTournaments;
       return parsed;
     } catch {
       return {} as Tournament;
@@ -86,16 +82,13 @@ const RefereeSettingsScreenContent: React.FC = () => {
   const [showRefereeMatches, setShowRefereeMatches] = useState(false);
 
   // Assignment status management
-  const { 
+  const {
     currentAssignmentStatus,
-    allStatuses,
     statusCounts,
     isOnline,
     syncStatus,
-    updateAssignmentStatus,
-    getAssignmentsByStatus,
     refreshStatuses
-  } = useAssignmentStatus();
+  } = useAssignmentStatus(); // Removed unused: allStatuses, updateAssignmentStatus, getAssignmentsByStatus (TS6133)
 
   // Additional status notification preferences
   const [statusNotifications, setStatusNotifications] = useState({
@@ -299,10 +292,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
         setLoadingReferees(false);
         return;
       }
-      
-      // Quick sample check for referee data availability
-      const sampleMatch = matches[0];
-      
+
       // Extract unique referees from matches
       const refereeMap = new Map<string, RefereeFromDB>();
       
@@ -439,18 +429,10 @@ const RefereeSettingsScreenContent: React.FC = () => {
         }
       } catch (genderSearchError) {
       }
-      
-      
-      // Show breakdown by source and gender
-      const originalMatches = allMatches.filter(m => m.sourceType === 'original').length;
-      const femaleMatches = allMatches.filter(m => m.sourceType === 'female').length;
-      const maleMatches = allMatches.filter(m => m.tournamentGender === 'M').length;
-      const womenMatches = allMatches.filter(m => m.tournamentGender === 'W').length;
-      
-      // Debug: Show sample match referee fields and gender info
+
+      // Debug: Show sample match referee fields and gender info (unused variables removed - TS6133)
       if (allMatches.length > 0) {
-        const sampleMatch = allMatches[0];
-        //   Referee: sampleMatch.Referee,
+        //   Referee: allMatches[0].Referee,
         //   Referee1: sampleMatch.Referee1,
         //   Referee2: sampleMatch.Referee2,
         //   Referee1Name: sampleMatch.Referee1Name,
@@ -529,11 +511,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       });
 
       
-      // Show breakdown of referee matches by source
-      const originalRefereeMatches = refereeMatches.filter(m => m.sourceType === 'original').length;
-      const femaleRefereeMatches = refereeMatches.filter(m => m.sourceType === 'female').length;
-      
-      // DEBUG MODE: If no matches found, show debugging info and all matches temporarily
+      // DEBUG MODE: If no matches found, show debugging info and all matches temporarily (unused variables removed - TS6133)
       if (refereeMatches.length === 0 && allMatches.length > 0) {
         
         // Show referee name variations for debugging
@@ -553,15 +531,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
           if (match.Referee2) allRefereeNames.add(match.Referee2);
           if (match.Referee) allRefereeNames.add(match.Referee);
         });
-        
-        
-        // Show similar name matches
-        const similarNames = Array.from(allRefereeNames).filter(name => 
-          name.toLowerCase().includes(surname.toLowerCase()) ||
-          referee.Name.toLowerCase().includes(name.toLowerCase())
-        );
-        
-        // TEMPORARY: Show all matches for debugging
+
+        // TEMPORARY: Show all matches for debugging (similarNames removed - TS6133)
         setRefereeMatches(allMatches); // Show all matches for debugging
         
         // Set default to last day of tournament using multiple date field fallbacks
@@ -1018,28 +989,9 @@ const RefereeSettingsScreenContent: React.FC = () => {
     }
   };
 
-  // Handle date tab change for court matches
-  const handleCourtDateChange = (date: string) => {
-    setSelectedDate(date);
-  };
-
   // Get unique dates for court matches
   const getCourtUniqueDates = () => {
     return [...new Set(courtMatches.map(match => match.LocalDate || 'Unknown Date'))];
-  };
-
-  // Format date as weekday and day number
-  const formatCourtDateWithoutYear = (dateStr: string) => {
-    if (dateStr === 'Unknown Date') return dateStr;
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return dateStr;
-    }
   };
 
   // Format match date for referee matches

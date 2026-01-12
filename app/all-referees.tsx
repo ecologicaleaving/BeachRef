@@ -513,8 +513,7 @@ function AllRefereesScreenContent() {
       
       // Add them in batches
       await loadInactiveRefereesBatch(
-        inactiveReferees.map(ref => ({ ...ref, totalMatches: 0, isActive: false })), 
-        []
+        inactiveReferees.map(ref => ({ ...ref, totalMatches: 0, isActive: false }))
       );
       
     } catch (error) {
@@ -705,7 +704,6 @@ function AllRefereesScreenContent() {
               tournamentNo={defaultTournamentNo}
               expanded={expandedRefereeId === referee.RefereeId}
               onToggle={() => handleCardToggle(referee.RefereeId)}
-              tournamentInfo={null}
             />
           ))}
         </ScrollView>

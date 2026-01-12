@@ -48,7 +48,6 @@ const ExpandedFiltersView: React.FC<{
   matches: BeachMatchCore[];
   genderFilter: 'All' | 'M' | 'W';
   setGenderFilter: (filter: 'All' | 'M' | 'W') => void;
-  courtFilter: string;
   setCourtFilter: (filter: string) => void;
   refereeFilter: string;
   setRefereeFilter: (filter: string) => void;
@@ -62,7 +61,6 @@ const ExpandedFiltersView: React.FC<{
   matches,
   genderFilter,
   setGenderFilter,
-  courtFilter,
   setCourtFilter,
   refereeFilter,
   setRefereeFilter,
@@ -73,13 +71,6 @@ const ExpandedFiltersView: React.FC<{
   refereeDataFromAPI,
   getTournamentStatus
 }) => {
-    // Memoize court numbers to prevent recalculation on every render
-    const courtNumbers = React.useMemo(() => {
-      return Array.from(new Set(matches?.map(m => m.court?.courtNumber) || []))
-        .filter(Boolean)
-        .sort();
-    }, [matches]);
-
     // Memoize referee names from matches (for COMPLETED tournaments)
     const refereeNamesFromMatches = React.useMemo(() => {
       if (!matches || matches.length === 0) {
@@ -284,15 +275,13 @@ const ExpandedFiltersView: React.FC<{
   };
 
 const TournamentDetailScreenContent: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [detailedTournament, setDetailedTournament] = useState<TournamentCore | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [matches, setMatches] = useState<BeachMatchCore[] | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
-  // Removed tab system - showing ranking by default
-  const [hasRankingData, setHasRankingData] = useState(false); // Will be true when ranking API is implemented
+  // Removed tab system - showing ranking by default (hasRankingData removed - TS6133)
   const [refreshing, setRefreshing] = useState(false);
-  const [isDefault, setIsDefault] = useState(false);
+  const [, setIsDefault] = useState(false); // Only setter used (TS6133 fix)
 
   // Add loading guards to prevent excessive API calls
   const [loadMatchesInProgress, setLoadMatchesInProgress] = useState(false);
@@ -300,10 +289,10 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Referee list state (for LIVE/SCHEDULED tournaments)
   const [refereeNamesFromAPI, setRefereeNamesFromAPI] = useState<string[]>([]);
   const [refereeDataFromAPI, setRefereeDataFromAPI] = useState<{ name: string, federationCode: string }[]>([]);
-  const [refereesLoading, setRefereesLoading] = useState(false);
+  const [, setRefereesLoading] = useState(false); // Only setter used (TS6133 fix)
   // State to track when match officials data (Challenge Referee + Personnel) is loaded
   // Triggers re-render so MatchCards can display cached official data (T046)
-  const [officialsDataLoaded, setOfficialsDataLoaded] = useState(0);
+  const [, setOfficialsDataLoaded] = useState(0); // Only setter used (TS6133 fix)
 
   // State to track if we need to load complete tournament data
   const [isMinimalTournament, setIsMinimalTournament] = useState(false);
@@ -325,9 +314,8 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Filter states for external control of MatchListV2 - preserved during refresh
   // Date filtering disabled - showing all days in timeline
-  const [courtFilter, setCourtFilter] = useState<string>('All');
+  const [, setCourtFilter] = useState<string>('All'); // Only setter used (TS6133 fix)
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
-  const [statusFilter, setStatusFilter] = useState<string>('All');
   const [refereeFilter, setRefereeFilter] = useState<string>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [showRefereeDropdown, setShowRefereeDropdown] = useState(false);
@@ -393,7 +381,7 @@ const TournamentDetailScreenContent: React.FC = () => {
   };
 
   // Auto-scroll logic with priority: 1) LIVE matches, 2) Last SCHEDULED match, 3) Stay at top
-  const attemptAutoScroll = (matches: any[], forceRetry: boolean = false) => {
+  const attemptAutoScroll = (matches: any[], _forceRetry: boolean = false) => {
     if (hasAutoScrolled.current || !scrollViewRef.current || matches.length === 0) {
       return;
     }
@@ -608,9 +596,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   const {
     data: hookTournaments = [],
-    isLoading: tournamentHookLoading,
     error: tournamentHookError,
-    forceRefresh: refreshTournamentData
   } = useTournaments(
     (tournament?.visNo && shouldUseTournamentHook) ? {
       tournamentCode: tournament.visNo,
@@ -673,7 +659,6 @@ const TournamentDetailScreenContent: React.FC = () => {
     tournament.dates?.startDate,
     tournament.dates?.endDate
   );
-  const canBeDefault = tournamentStatus === 'LIVE NOW';
 
   // Handle default switch toggle
   const handleDefaultToggle = async (value: boolean) => {
@@ -1993,7 +1978,6 @@ const TournamentDetailScreenContent: React.FC = () => {
                       matches={matches}
                       genderFilter={genderFilter}
                       setGenderFilter={setGenderFilter}
-                      courtFilter={courtFilter}
                       setCourtFilter={setCourtFilter}
                       refereeFilter={refereeFilter}
                       setRefereeFilter={setRefereeFilter}

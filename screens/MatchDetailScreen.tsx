@@ -5,28 +5,23 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MatchResultsService } from '../services/MatchResultsService';
 import { MatchResult } from '../types/MatchResults';
 import { BeachMatchCore, MatchStatus } from '../types/match-v2';
-import { BeachMatchLiveDTO, isBeachMatchLiveDTO } from '../types/beach-match-live-dto';
+import { BeachMatchLiveDTO } from '../types/beach-match-live-dto';
 import { BeachLive, BeachSetStatus } from '../types/beach-live';
-import { formatTime, formatDateLong } from '../utils/dateFormatters';
+import { formatDateLong } from '../utils/dateFormatters';
 import { FlagImage } from '../components/FlagImage';
 import { RoundPhaseDisplay } from '../components/Typography/RoundPhaseDisplay';
 import { LiveIndicator } from '../components/Status/LiveIndicator';
 import { Card } from '../components/Foundation/Container';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors, spacing, typography } from '../theme/tokens';
-import { shadowPresets } from '../theme/shadows';
 import { BeachMatchService } from '../services/BeachMatchService';
 import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
 import { useLiveScores } from '../hooks/useLiveScores';
-import { BeachMatch } from '../types/match';
 
 
 
@@ -84,16 +79,15 @@ export default function MatchDetailScreen() {
   });
 
 
-  // Legacy state for backward compatibility during transition
-  const [legacyData, setLegacyData] = useState<LegacyMatchData>({
+  // Legacy state for backward compatibility during transition (setLegacyData removed - unused TS6133)
+  const [legacyData] = useState<LegacyMatchData>({
     legacyMatch: null
   });
 
 
-  // Service instances
-  let beachMatchService, dtoService;
+  // Service instances (beachMatchService removed - unused TS6133)
+  let dtoService;
   try {
-    beachMatchService = useRef(BeachMatchService.getInstance());
     dtoService = useRef(BeachMatchLiveDTOService.getInstance());
   } catch (error) {
     throw error;
@@ -188,10 +182,7 @@ export default function MatchDetailScreen() {
     }
   }, [matchNo, tournamentNo, loadMatchDetail]);
 
-  const handleRefresh = () => {
-    loadMatchDetail();
-  };
-
+  // handleRefresh removed - unused (TS6133)
 
   // Auto-start live polling based on match status (same as Tournament Detail)
   useEffect(() => {
@@ -557,11 +548,7 @@ export default function MatchDetailScreen() {
     return '';
   };
 
-  // New helper for DTO system
-  const isMatchLiveNew = (): boolean => {
-    const mergedData = getMergedMatchData;
-    return mergedData?.isLive || false;
-  };
+  // isMatchLiveNew removed - unused (TS6133)
 
   // Get unified status text - supports both legacy and new DTO system
   const getStatusText = (): string => {

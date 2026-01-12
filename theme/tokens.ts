@@ -33,9 +33,11 @@ const baseColors = {
   success: '#15803D',           // Green 700 (Sober Green)
   warning: '#B45309',           // Amber 700
   error: '#B91C1C',             // Red 700
+  text: neutrals.textPrimary,   // Alias for textPrimary (TS2339 fix)
   textPrimary: neutrals.textPrimary,
   textSecondary: neutrals.textSecondary,
   textTertiary: neutrals.textTertiary,  // Muted text
+  border: neutrals.borderSubtle, // Border color (TS2339 fix)
   background: neutrals.bgPage,
 } as const;
 

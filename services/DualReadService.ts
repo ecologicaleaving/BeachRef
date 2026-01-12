@@ -58,11 +58,14 @@ export interface TournamentDTO {
 export interface RefereeDTO {
   id: string;
   refereeId: string;
+  visRefereeNo?: string;  // VIS API referee number (TS2339 fix)
   name: string;
   firstName: string;
   lastName: string;
   federationCode: string;
+  federation?: string;  // Federation name (TS2339 fix)
   gender: 'M' | 'W';
+  birthdate?: string;  // Birth date in ISO format (TS2339 fix)
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'RESTRICTED';
   type: 'REFEREE' | 'TECHNICAL' | 'ADMINISTRATIVE';
   role?: 'Referee1' | 'Referee2' | 'ChallengeReferee' | 'TechnicalOfficial' | 'TournamentDirector' | 'MatchCommissioner';

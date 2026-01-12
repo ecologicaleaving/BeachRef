@@ -8,7 +8,6 @@ import { VISTimezoneFields } from '../../services/TimezoneService';
 import { colors, designTokens } from '../../theme/tokens';
 import { BeachSetStatus } from '../../types/beach-live';
 import { BeachMatchCore, CourtInfo, MatchResult, MatchStatus, MatchTeam, canReadyToStartMatchGoLive, getEnhancedMatchStatus, mapVisMatchStatus } from '../../types/match-v2';
-import { calculateTotalDuration } from '../../utils/MatchDurationFormatter';
 import { isMatchToday as checkIfMatchToday, formatMatchTimeForUser } from '../../utils/matchTimeFormatter';
 import { MatchCard } from '../entities/Match';
 
@@ -608,19 +607,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const validMatches: typeof matchesToFilter = [];
     const tbdMatches: typeof matchesToFilter = [];
 
-    // Show date range of input matches
-    if (matchesToFilter.length > 0) {
-      const dates = matchesToFilter.map(m => {
-        // Use timezone-safe date from scheduled structure if available
-        const scheduled = (m as any).scheduled;
-        if (scheduled?.dateTournament) {
-          return scheduled.dateTournament;
-        }
-        // Fallback to legacy method (but this is the buggy path)
-        return m.scheduledDateTime.split('T')[0];
-      }).sort();
-    }
-
     matchesToFilter.forEach(match => {
       // Check if this is a TBD match (missing data)
       const hasNoScheduledTime = !match.scheduledDateTime || match.scheduledDateTime.trim() === '';
@@ -635,7 +621,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
 
       // For valid matches, apply normal filtering
-      const matchDate = new Date(match.scheduledDateTime);
 
       // Gender filter - IMPLEMENTED: Use tournament gender from tournament context
       if (effectiveGenderFilter !== 'All') {
@@ -830,7 +815,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     // AUTOSCROLL: Match layouts available
 
     let targetMatchId: string | null = null;
-    let scrollReason = '';
 
     // Priority 1: First LIVE match
     const liveMatches = filteredMatches.filter(match => isMatchLive(match));
@@ -838,7 +822,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     if (liveMatches.length > 0) {
       targetMatchId = liveMatches[0].id;
-      scrollReason = 'LIVE match';
       // AUTOSCROLL: Target = LIVE match
     } else {
       // Priority 2: First match of today (chronologically first, appears last in "Today" panel)
@@ -876,7 +859,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           return timeStrA.localeCompare(timeStrB); // Ascending order for autoscroll
         });
         targetMatchId = sortedTodayMatches[0].id;
-        scrollReason = 'Today first match';
         // AUTOSCROLL: Target = Today first match
       }
     }
@@ -907,14 +889,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
     }
   }, [filteredMatches]);
-
-  // Trigger pending autoscroll when position becomes available
-  const triggerPendingAutoscroll = useCallback(() => {
-    if (pendingAutoscrollRef.current) {
-      // AUTOSCROLL: Triggering pending autoscroll
-      setTimeout(() => scrollToFirstLiveMatch(), 100);
-    }
-  }, [scrollToFirstLiveMatch]);
 
   // Auto-scroll effect - trigger when matches change and live matches OR today's matches exist
   useEffect(() => {
@@ -955,19 +929,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     }
 
   }, [filteredMatches, scrollToFirstLiveMatch]);
-
-  // Format time from ISO string
-  const formatTime = (isoDateTime: string): string => {
-    const date = new Date(isoDateTime);
-    if (isNaN(date.getTime())) {
-      return 'TBD'; // fallback for invalid dates
-    }
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  };
 
   // Format date for section headers - consistent date format (no "Today"/"Tomorrow" labels)
   const formatDateHeader = (dateString: string): string => {
@@ -1073,39 +1034,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return false;
   };
 
-  // Get status display text and color
-  const getStatusDisplay = (status: MatchStatus, matchDateTime?: string): { text: string; color: string } => {
-    // Check if match date/time has passed and force "Completed" status
-    if (matchDateTime) {
-      const matchDate = new Date(matchDateTime);
-      const now = new Date();
-
-      // If match was scheduled for the past and not explicitly cancelled/postponed, consider it completed
-      if (matchDate < now && status === MatchStatus.SCHEDULED) {
-        return { text: 'Final', color: designTokens.neutrals.textPrimary };
-      }
-    }
-
-    switch (status) {
-      case MatchStatus.SCHEDULED:
-        return { text: 'Scheduled', color: designTokens.neutrals.textSecondary };
-      case MatchStatus.RUNNING:
-        return { text: 'Live', color: '#10B981' };
-      case MatchStatus.FINISHED:
-        return { text: 'Final', color: designTokens.neutrals.textPrimary };
-      case MatchStatus.INTERRUPTED:
-        return { text: 'Interrupted', color: '#F59E0B' };
-      case MatchStatus.CANCELLED:
-        return { text: 'Cancelled', color: colors.error };
-      case MatchStatus.POSTPONED:
-        return { text: 'Postponed', color: '#F59E0B' };
-      case MatchStatus.TBD:
-        return { text: 'TBD', color: designTokens.neutrals.textSecondary };
-      default:
-        return { text: status, color: designTokens.neutrals.textSecondary };
-    }
-  };
-
   // Render individual match card using unified component
   const renderMatch = useCallback((match: BeachMatchCore) => {
     // Merge live scores with match result for live matches
@@ -1140,7 +1068,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           // Live score sets detail
           // Create enhanced result from live score data
           // FIXED: Only count FINISHED sets toward set totals, not in-progress sets
-          const finishedSets = liveScore.sets.filter((set: any) => set.status === BeachSetStatus.FINISHED);
 
           const liveResult = {
             // Use matchPoints from teamA/teamB which represents sets won (more reliable than manual calculation)
@@ -1167,27 +1094,6 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           // Track position for auto-scroll functionality
           const yPosition = event.nativeEvent.layout.y;
           matchLayoutsRef.current[match.id] = yPosition;
-
-          const isLive = isMatchLive(match);
-
-          // Convert tournament time to user's timezone using new system
-          const matchTime = formatMatchTimeForUser({
-            scheduledDateTime: match.scheduledDateTime, // Local time according to user clarification
-          }, {
-            showTimezoneIndicator: false,
-            tournamentData: tournamentData || {
-              defaultTimeZone: tournamentTimezone,
-            }
-          });
-
-          // Check if match is today in user's timezone
-          const isToday = checkIfMatchToday({
-            scheduledDateTime: match.scheduledDateTime, // Local time according to user clarification
-          }, {
-            tournamentData: tournamentData || {
-              defaultTimeZone: tournamentTimezone,
-            }
-          });
 
           // Match layout rendered
 

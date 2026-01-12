@@ -79,6 +79,7 @@ export interface RefereeAssignmentDTO {
   id: string;
   matchId: string;
   matchNo: string;
+  matchCode?: string;  // Match code within tournament (for assignment tracking)
   refereeId: string;
   position: 'R1' | 'R2' | 'CR';
   status: 'ASSIGNED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';

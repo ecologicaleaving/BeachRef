@@ -66,6 +66,7 @@ export interface TypographyScale {
   body: TypographyToken;
   bodySmall?: TypographyToken;
   caption: TypographyToken;
+  fontFamily?: string;  // Default font family (TS2339 fix)
   sizes?: {
     small: number;
     medium: number;

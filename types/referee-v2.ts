@@ -71,6 +71,8 @@ export enum OfficialType {
  * Maps directly to GetEventOfficialList response fields
  */
 export interface RefereeOfficial {
+  /** Unique identifier (alias for noOfficial) - TS2339 fix */
+  readonly id?: string;
   /** Federation code (e.g., 'ITA', 'USA') */
   readonly federationCode: string;
   /** Official's first name */
@@ -94,6 +96,8 @@ export interface RefereeOfficial {
  * Maps directly to GetEventRefereeList response fields
  */
 export interface EventReferee {
+  /** Unique identifier (alias for RefereeId) - TS2339 fix */
+  readonly id?: string;
   /** Federation code (e.g., 'ITA', 'USA') */
   readonly federationCode: string;
   /** Referee's first name */

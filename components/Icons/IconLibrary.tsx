@@ -226,6 +226,17 @@ export const ActionIcons = {
       {...props}
     />
   )),
+
+  Tournament: React.memo((props: CommonIconProps) => (
+    <Icon
+      category="navigation"
+      name="tournaments"
+      theme="default"
+      colorKey="primary"
+      accessibilityLabel="Tournament"
+      {...props}
+    />
+  )),
 };
 
 /**

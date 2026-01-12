@@ -88,8 +88,7 @@ const ExpandedFiltersView: React.FC<{
 
       const allReferees: string[] = [];
 
-
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         // Extract referees from Referee1Name and Referee2Name fields
         if (match.Referee1Name && match.Referee1Name.trim()) {
           allReferees.push(match.Referee1Name.trim());

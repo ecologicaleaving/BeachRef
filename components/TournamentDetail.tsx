@@ -10,9 +10,8 @@ import {
 } from 'react-native';
 import { Text, H2Text, BodyText, CaptionText } from './Typography';
 import { BeachMatch } from '../types/match';
-import { TournamentCore, GenderType as CoreGenderType , TournamentType, GenderType } from '../types/tournament-v2';
-import { BeachMatchCore } from '../types/match-v2';
-import { designTokens, colors } from '../theme/tokens';
+import { TournamentCore, GenderType as CoreGenderType } from '../types/tournament-v2';
+import { colors } from '../theme/tokens';
 
 import { useRealtimeMatches } from '../hooks/useRealtimeData';
 import { useTournamentDetailStatus } from '../hooks/useTournamentDetailStatus';
@@ -113,15 +112,15 @@ const DropdownModal: React.FC<DropdownModalProps> = ({
 const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack }) => {
   const [activeTab, setActiveTab] = useState<TabType>('playing');
   const [allMatches, setAllMatches] = useState<BeachMatch[]>([]); // Matches from all related tournaments
-  
+
   // Ranking data state
-  const [rankingData, setRankingData] = useState<any[]>([]);
-  const [hasRankingData, setHasRankingData] = useState<boolean>(false); // Will be true when ranking API is implemented
-  
+  const [rankingData] = useState<any[]>([]);
+  const [hasRankingData] = useState<boolean>(false); // Will be true when ranking API is implemented
+
   // Gender switching states
   const [relatedTournaments, setRelatedTournaments] = useState<TournamentCore[]>([tournament]);
   const [currentTournament, setCurrentTournament] = useState<TournamentCore>(tournament);
-  const [loadingRelated, setLoadingRelated] = useState<boolean>(false);
+  const [, setLoadingRelated] = useState<boolean>(false);
   
   // Repository selection with feature flags for A/B testing
   const tournamentRepository = useTournamentRepository({
@@ -163,7 +162,6 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   
   // Tournament detail status with real-time updates
   const {
-    tournament: tournamentWithStatus,
     statusEvents,
     scheduleChanges,
     courtChanges,
@@ -197,10 +195,10 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
 
   // Repository-based data fetching with fallback to legacy API
-  const { data: repositoryMatches, loading: repositoryMatchesLoading, error: repositoryMatchesError } = useRepositoryData(
+  const { data: repositoryMatches } = useRepositoryData(
     async () => {
       if (!matchRepository.repository) return null;
-      const allMatchPromises = relatedTournaments.map(tournament => 
+      const allMatchPromises = relatedTournaments.map(tournament =>
         matchRepository.repository!.getMatchesByTournamentAsync(tournament.visNo)
       );
       const allMatchesArrays = await Promise.all(allMatchPromises);
@@ -271,7 +269,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
   }, [relatedTournaments, matchRepository.implementation, transformedMatches.data]);
 
   // Repository-based related tournaments loading
-  const { data: repositoryRelatedTournaments, loading: relatedTournamentsLoading } = useRepositoryData(
+  const { data: repositoryRelatedTournaments } = useRepositoryData(
     async () => {
       if (!tournamentRepository.repository) return null;
       const relatedTournaments = await tournamentRepository.repository.findRelatedTournamentsAsync(tournament.visNo);
@@ -318,7 +316,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
 
   // Cache-aware tournament data fetching for performance
-  const { data: cachedTournamentData, cacheHit } = useCacheAwareData(
+  const { cacheHit } = useCacheAwareData(
     `tournament-detail-${tournament.id}`,
     async () => {
       if (!tournamentRepository.repository) return tournament;
@@ -454,54 +452,44 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
 
   // Filter matches based on selected filters and active tab
   const filteredMatches = useMemo(() => {
-    
+
     const filtered = matchesToFilter.filter(match => {
       let keepMatch = true;
-      let filterReason = '';
-      
+
       // Tab filter - only apply for match tabs, not info or ranking tabs
       if (activeTab !== 'info' && activeTab !== 'ranking') {
         const matchStatus = getMatchStatus(match);
         if (activeTab === 'playing' && matchStatus !== 'playing') {
           keepMatch = false;
-          filterReason = `Status is ${matchStatus}, not playing`;
         }
         if (activeTab === 'schedule' && matchStatus !== 'scheduled') {
           keepMatch = false;
-          filterReason = `Status is ${matchStatus}, not scheduled`;
         }
         if (activeTab === 'results' && matchStatus !== 'completed') {
           keepMatch = false;
-          filterReason = `Status is ${matchStatus}, not completed`;
         }
       }
-      
+
       // Court filter
       if (keepMatch && selectedCourt && match.Court !== selectedCourt) {
         keepMatch = false;
-        filterReason = `Court ${match.Court} doesn't match selected court ${selectedCourt}`;
       }
-      
+
       // Referee filter
       if (keepMatch && selectedReferee) {
         const hasSelectedReferee = match.Referee1Name === selectedReferee || match.Referee2Name === selectedReferee;
         if (!hasSelectedReferee) {
           keepMatch = false;
-          filterReason = `Referees (${match.Referee1Name}, ${match.Referee2Name}) don't match selected referee ${selectedReferee}`;
         }
       }
-      
+
       // Gender filter - when using allMatches, filter by the selected gender
       if (keepMatch && selectedGender && matchesToFilter === allMatches) {
         if (match.tournamentGender !== selectedGender) {
           keepMatch = false;
-          filterReason = `Tournament gender ${match.tournamentGender} doesn't match selected gender ${selectedGender}`;
         }
       }
-      
-      // Log detailed information for each match
-      const statusForDisplay = activeTab !== 'info' ? getMatchStatus(match) : 'N/A';
-      
+
       return keepMatch;
     });
 

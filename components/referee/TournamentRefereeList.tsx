@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Text } from '../Typography/Text';
 import { colors, designTokens } from '../../theme/tokens';
-import { RefereeStatsService, RefereeStats, SeasonStats, CareerStats, RefereeMatch, EnhancedTournamentStats } from '../../services/RefereeStatsService';
+import { RefereeStatsService, RefereeStats, RefereeMatch } from '../../services/RefereeStatsService';
 import { FlagImage } from '../FlagImage';
 import { MatchRefereeCard } from './MatchRefereeCard';
 
@@ -50,33 +49,12 @@ const RefereeCard = ({
   onToggle: () => void;
   tournamentInfo: TournamentInfo | null;
 }) => {
-  const router = useRouter();
-
   const handleRefereePress = () => {
     // Open stats panel instead of navigating to profile
     onToggle();
   };
 
-  const handleProfilePress = () => {
-    router.push({
-      pathname: '/referee-profile',
-      params: {
-        refereeData: JSON.stringify({
-          RefereeId: referee.RefereeId,
-          firstName: referee.firstName,
-          lastName: referee.lastName,
-          federationCode: referee.federationCode,
-          gender: referee.gender,
-          level: referee.level
-        })
-      }
-    });
-  };
-
-  const [activeTab, setActiveTab] = useState<StatsTab>('Tournament Stats');
   const [currentStats, setCurrentStats] = useState<RefereeStats | null>(null);
-  const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
-  const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
   const [recentMatches, setRecentMatches] = useState<RefereeMatch[] | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
@@ -87,12 +65,12 @@ const RefereeCard = ({
     }
   }, [referee?.RefereeId]);
 
-  // Load stats when card is expanded or tab changes
+  // Load stats when card is expanded
   useEffect(() => {
     if (expanded && referee?.RefereeId) {
       loadRefereeStats();
     }
-  }, [expanded, referee?.RefereeId, activeTab]);
+  }, [expanded, referee?.RefereeId]);
 
   const loadCurrentStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) return;
@@ -134,7 +112,7 @@ const RefereeCard = ({
         setRecentMatches(null);
       }
     } catch (error) {
-      console.error(`Error loading ${activeTab} stats for referee ${referee.RefereeId}:`, error);
+      console.error(`Error loading tournament stats for referee ${referee.RefereeId}:`, error);
       // Set empty stats on error to prevent indefinite loading
       setCurrentStats(null);
       setRecentMatches(null);
@@ -286,7 +264,6 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
   tournamentNo,
   tournamentName,
   tournamentData,
-  matchData,
   showHeader = true,
   headerTitle,
   onRefresh

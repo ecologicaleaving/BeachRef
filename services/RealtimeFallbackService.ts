@@ -2,7 +2,7 @@ import { BeachMatch } from '../types/match';
 import { VisApiClient, DEFAULT_RETRY_CONFIG } from './api/VisApiClient';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
-import NetworkStateManager, { ConnectionStrategy, NetworkState, ConnectionQuality } from './NetworkStateManager';
+import NetworkStateManager, { NetworkState, ConnectionQuality } from './NetworkStateManager';
 
 export enum FallbackMode {
   PURE_WEBSOCKET = 'PURE_WEBSOCKET',           // WebSocket only, no polling
@@ -29,7 +29,6 @@ export class RealtimeFallbackService {
   private static isInitialized = false;
   private static circuitBreaker = ConnectionCircuitBreaker.getInstance('realtime-fallback');
   private static networkStateManager: NetworkStateManager;
-  private static networkChangeListener: (() => void) | null = null;
   private static visApiClient = new VisApiClient({
     baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
     timeoutMs: 10000,
@@ -41,15 +40,7 @@ export class RealtimeFallbackService {
       'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
     }
   }, DEFAULT_RETRY_CONFIG);
-  
-  // Enhanced polling configuration with network awareness
-  private static readonly WIFI_FAST_INTERVAL = 10000;     // 10 seconds for Wi-Fi
-  private static readonly WIFI_NORMAL_INTERVAL = 20000;   // 20 seconds for Wi-Fi
-  private static readonly CELLULAR_FAST_INTERVAL = 20000; // 20 seconds for cellular
-  private static readonly CELLULAR_NORMAL_INTERVAL = 40000; // 40 seconds for cellular
-  private static readonly SLOW_CONNECTION_INTERVAL = 60000; // 1 minute for poor connections
-  private static readonly OFFLINE_INTERVAL = 120000;     // 2 minutes for offline mode
-  
+
   // Fallback mode tracking
   private static currentMode = FallbackMode.SMART_POLLING;
   private static modeHistory: Array<{ mode: FallbackMode; timestamp: number; reason: string }> = [];
@@ -76,7 +67,7 @@ export class RealtimeFallbackService {
     });
 
     // Listen for network state changes
-    this.networkChangeListener = this.networkStateManager.addNetworkChangeListener(
+    this.networkStateManager.addNetworkChangeListener(
       (networkState: NetworkState, connectionQuality: ConnectionQuality) => {
         this.handleNetworkStateChange(networkState, connectionQuality);
       }
@@ -108,12 +99,7 @@ export class RealtimeFallbackService {
   /**
    * Handle network state changes
    */
-  private static handleNetworkStateChange(networkState: NetworkState, connectionQuality: ConnectionQuality): void {
-    //   type: networkState.type,
-    //   quality: connectionQuality.score,
-    //   level: connectionQuality.level,
-    // });
-
+  private static handleNetworkStateChange(_networkState: NetworkState, connectionQuality: ConnectionQuality): void {
     // Track connection quality history
     this.connectionQualityHistory.push(connectionQuality.score);
     if (this.connectionQualityHistory.length > 20) {
@@ -188,17 +174,16 @@ export class RealtimeFallbackService {
       this.modeHistory.shift();
     }
 
-    const oldMode = this.currentMode;
     this.currentMode = newMode;
 
     // Adjust existing polling intervals based on new mode
-    this.adjustAllPollingIntervals(oldMode, newMode);
+    this.adjustAllPollingIntervals(newMode);
   }
 
   /**
    * Adjust all existing polling intervals based on mode change
    */
-  private static adjustAllPollingIntervals(oldMode: FallbackMode, newMode: FallbackMode): void {
+  private static adjustAllPollingIntervals(newMode: FallbackMode): void {
     if (this.pollingIntervals.size === 0) return;
 
 
@@ -294,24 +279,18 @@ export class RealtimeFallbackService {
     this.initialize();
 
     if (!this.circuitBreaker.canExecute()) {
-      const recommendation = this.circuitBreaker.getRecommendation();
-      // console.warn(`Cannot start polling fallback: ${recommendation.reason}`);
       return false;
     }
 
     // Clear any existing polling for this tournament
     this.stopPollingFallback(tournamentNo);
 
-    const pollingInterval = hasLiveMatches 
-      ? this.AGGRESSIVE_POLLING_INTERVAL 
-      : this.DEFAULT_POLLING_INTERVAL;
-
-
     try {
       // Perform initial poll
       await this.performPollingUpdate(tournamentNo, onUpdate);
 
       // Set up recurring polling
+      const pollingInterval = this.getAdaptivePollingInterval(hasLiveMatches);
       const intervalId = setInterval(async () => {
         try {
           await this.performPollingUpdate(tournamentNo, onUpdate);
@@ -378,17 +357,14 @@ export class RealtimeFallbackService {
   /**
    * Handle polling errors and implement backoff
    */
-  private static handlePollingError(tournamentNo: string, error: any): void {
+  private static handlePollingError(tournamentNo: string, _error: any): void {
     const currentErrorCount = this.errorCounts.get(tournamentNo) || 0;
     const newErrorCount = currentErrorCount + 1;
     this.errorCounts.set(tournamentNo, newErrorCount);
 
-    // console.warn(`Polling error #${newErrorCount} for tournament ${tournamentNo}:`, error);
-
     // Implement exponential backoff for errors
     if (newErrorCount >= 3) {
-      // console.warn(`Too many polling errors for ${tournamentNo}, slowing down polling`);
-      this.adjustPollingInterval(tournamentNo, this.SLOW_POLLING_INTERVAL);
+      this.adjustPollingInterval(tournamentNo, 60000); // 1 minute slow polling
     }
 
     if (newErrorCount >= 5) {
@@ -516,8 +492,7 @@ export class RealtimeFallbackService {
    * Graceful shutdown of all polling
    */
   static stopAllPolling(): void {
-    
-    for (const [tournamentNo, intervalId] of this.pollingIntervals.entries()) {
+    for (const [, intervalId] of this.pollingIntervals.entries()) {
       clearInterval(intervalId);
     }
 

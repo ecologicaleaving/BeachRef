@@ -27,6 +27,13 @@ if (__DEV__ && Platform.OS === 'web') {
 export function QueryDevTools() {
   // TEMPORARY FIX: Disable DevTools completely during migration
   // TODO: Re-enable once QueryClient initialization is stable
+  // Note: Hooks must be called unconditionally, even if component returns null early
+
+  // Call hooks unconditionally at the top (React Hooks rules)
+  // This is required even though the component is currently disabled
+  const queryClient = useQueryClient();
+
+  // Early return - component is temporarily disabled
   if (true) {
     return null;
   }
@@ -37,17 +44,12 @@ export function QueryDevTools() {
   }
 
   // Check if we have a QueryClient available
-  try {
-    const queryClient = useQueryClient();
-    if (!queryClient) {
-      console.warn('QueryDevTools: No QueryClient available');
-      return null;
-    }
-    return <ReactQueryDevtools initialIsOpen={false} />;
-  } catch (error) {
-    console.warn('QueryDevTools: Error accessing QueryClient:', error);
+  if (!queryClient) {
+    console.warn('QueryDevTools: No QueryClient available');
     return null;
   }
+
+  return <ReactQueryDevtools initialIsOpen={false} />;
 }
 
 /**

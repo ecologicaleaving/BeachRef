@@ -439,8 +439,8 @@ export class PerformanceDashboard {
       return alerts;
     }
 
-    const current = this.snapshots[this.snapshots.length - 1];
-    const previous = this.snapshots[this.snapshots.length - 2];
+    const current = this.snapshots[this.snapshots.length - 1]!;
+    const previous = this.snapshots[this.snapshots.length - 2]!
 
     // Check tournament regressions
     if (current.metrics.tournament?.new && previous.metrics.tournament.new) {

@@ -64,7 +64,7 @@ const ConnectionModeToggle: React.FC<ConnectionModeToggleProps> = ({
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const currentModeInfo = CONNECTION_MODES.find(mode => mode.strategy === currentMode) || CONNECTION_MODES[1];
+  const currentModeInfo = CONNECTION_MODES.find(mode => mode.strategy === currentMode) || CONNECTION_MODES[1]!;
 
   const handleModeSelect = (mode: ConnectionStrategy) => {
     onModeChange(mode);

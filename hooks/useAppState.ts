@@ -349,8 +349,8 @@ export function useAppStateAnalytics(): {
   // Calculate transition frequencies
   const transitionCounts = new Map<string, number>();
   for (let i = 1; i < stateHistory.length; i++) {
-    const prev = stateHistory[i - 1];
-    const current = stateHistory[i];
+    const prev = stateHistory[i - 1]!;
+    const current = stateHistory[i]!;
     const key = `${prev.currentState}->${current.currentState}`;
     transitionCounts.set(key, (transitionCounts.get(key) || 0) + 1);
   }

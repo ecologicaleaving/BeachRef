@@ -342,7 +342,7 @@ const RefModeScreen: React.FC = () => {
         return [];
       }
 
-      const officialListXml = officialListMatch[1];
+      const officialListXml = officialListMatch[1]!;
       const officialMatches = officialListXml.match(/<EventOfficial[^>]*\/>/g) || [];
       
       return officialMatches.map(match => {
@@ -379,7 +379,7 @@ const RefModeScreen: React.FC = () => {
         return [];
       }
 
-      const refereeListXml = refereeListMatch[1];
+      const refereeListXml = refereeListMatch[1]!;
       const refereeMatches = refereeListXml.match(/<EventReferee[^>]*\/>/g) || [];
       
       return refereeMatches.map(match => {

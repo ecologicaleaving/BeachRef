@@ -325,9 +325,9 @@ export const useAssignmentPreparation = () => {
     const conflictWindow = 30 * 60 * 1000; // 30 minutes
 
     for (let i = 0; i < assignments.length; i++) {
-      const current = assignments[i];
+      const current = assignments[i]!;
       for (let j = i + 1; j < assignments.length; j++) {
-        const other = assignments[j];
+        const other = assignments[j]!;
         if (Math.abs(current.matchTime.getTime() - other.matchTime.getTime()) < conflictWindow) {
           if (!conflicts.find(c => c.id === current.id)) {
             conflicts.push(current);

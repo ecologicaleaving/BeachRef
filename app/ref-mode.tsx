@@ -309,11 +309,11 @@ const RefModeScreen: React.FC = () => {
       const refereeElements = xmlDoc.getElementsByTagName('Referee');
       
       if (refereeElements.length > 0) {
-        const referee = refereeElements[0];
-        
+        const referee = refereeElements[0]!;
+
         return {
-          Conclusion: referee!.getAttribute('Conclusion') || '',
-          FederationCode: referee!.getAttribute('FederationCode') || '',
+          Conclusion: referee.getAttribute('Conclusion') || '',
+          FederationCode: referee.getAttribute('FederationCode') || '',
           FirstName: referee.getAttribute('FirstName') || '',
           Gender: referee.getAttribute('Gender') || '',
           LastName: referee.getAttribute('LastName') || '',

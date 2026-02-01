@@ -224,12 +224,12 @@ export class PerformanceDashboard {
         alertsBySeverity,
         averageResponseTime: {
           tournament: {
-            legacy: tournamentLegacyTimes?.length > 0 ? tournamentLegacyTimes.reduce((a, b) => a + b, 0) / tournamentLegacyTimes.length : undefined,
-            new: tournamentNewTimes?.length > 0 ? tournamentNewTimes.reduce((a, b) => a + b, 0) / tournamentNewTimes.length : undefined
+            legacy: tournamentLegacyTimes?.length > 0 ? tournamentLegacyTimes.reduce((a: number, b: number) => a + b, 0) / tournamentLegacyTimes.length : undefined,
+            new: tournamentNewTimes?.length > 0 ? tournamentNewTimes.reduce((a: number, b: number) => a + b, 0) / tournamentNewTimes.length : undefined
           },
           match: {
-            legacy: matchLegacyTimes?.length > 0 ? matchLegacyTimes.reduce((a, b) => a + b, 0) / matchLegacyTimes.length : undefined,
-            new: matchNewTimes?.length > 0 ? matchNewTimes.reduce((a, b) => a + b, 0) / matchNewTimes.length : undefined
+            legacy: matchLegacyTimes?.length > 0 ? matchLegacyTimes.reduce((a: number, b: number) => a + b, 0) / matchLegacyTimes.length : undefined,
+            new: matchNewTimes?.length > 0 ? matchNewTimes.reduce((a: number, b: number) => a + b, 0) / matchNewTimes.length : undefined
           }
         },
         improvementMetrics: {

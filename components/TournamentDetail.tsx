@@ -227,7 +227,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       // Use repository data if available, otherwise fall back to legacy API
       if (matchRepository.implementation === 'new' && transformedMatches.data) {
         const combinedMatches = transformedMatches.data.map((match: BeachMatch, index: number) => {
-          const tournament = relatedTournaments[index % relatedTournaments.length];
+          const tournament = relatedTournaments[index % relatedTournaments.length]!;
           const gender = tournament.gender; // TournamentCore has structured gender field
           
           return {
@@ -250,7 +250,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
       
       // Flatten all matches and add tournament info for filtering
       const combinedMatches = allMatchesArrays.flatMap((tournamentMatches, index) => {
-        const tournament = relatedTournaments[index];
+        const tournament = relatedTournaments[index]!;
         const gender = tournament.gender; // Use structured gender from TournamentCore
         
         return tournamentMatches.map(match => ({

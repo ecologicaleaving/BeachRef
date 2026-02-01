@@ -700,7 +700,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // Find the most relevant match to scroll to
     for (let i = 0; i < filteredMatches.length; i++) {
-      const match = filteredMatches[i];
+      const match = filteredMatches[i]!;
       const matchTime = new Date(match.scheduledDateTime);
 
       // Priority 1: First LIVE match (check both status and time-based logic)

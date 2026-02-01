@@ -250,7 +250,9 @@
       "mcp__chrome-devtools__navigate_page_history",
       "SlashCommand(/speckit.specify use chrome-devtool mcp to look at the matchcard with the newly implemented challenge ref and auxiliary officials, propose me a different, professional and clean layout)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json \"use chrome-devtool mcp to look at the matchcard with the newly implemented challenge ref and auxiliary officials, propose me a different, professional and clean layout\" -ShortName \"match-card-layout-redesign\")",
-      "mcp__chrome-devtools__new_page"
+      "mcp__chrome-devtools__new_page",
+      "Bash(do echo \"File: $file\")",
+      "Bash(do echo \"\")"
     ],
     "deny": [],
     "ask": [],

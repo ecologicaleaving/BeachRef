@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: VIS API - GetTournamentTeamList
+  description: |
+    API contract for retrieving beach volleyball tournament team registrations from the
+    Volleyball Information System (VIS) API.
+
+    Endpoint ID: 73001
+    Official Documentation: https://www.fivb.org/VisSDK/VisWebService/#GetTournamentTeamList.html
+  version: 1.0.0
+  contact:
+    name: VIS API Documentation
+    url: https://www.fivb.org/VisSDK/VisWebService/
+
+servers:
+  - url: https://www.fivb-beach.com/vis/visrest2011
+    description: VIS Production API
+
+paths:
+  /GetTournamentTeamList:
+    post:
+      summary: Get Tournament Team List
+      description: |
+        Retrieves the complete list of teams registered in a beach volleyball tournament,
+        including both main draw and qualification teams.
+      operationId: getTournamentTeamList
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/GetTournamentTeamListRequest'
+            example: |
+              <GetTournamentTeamList>
+                <TournamentNo>12345</TournamentNo>
+                <Fields>
+                  <Field>No</Field>
+                  <Field>Player1Name</Field>
+                  <Field>Player2Name</Field>
+                  <Field>Player1No</Field>
+                  <Field>Player2No</Field>
+                  <Field>Seed</Field>
+                  <Field>PhaseCode</Field>
+                  <Field>CountryCode</Field>
+                  <Field>Status</Field>
+                  <Field>IsWildCard</Field>
+                  <Field>IsReserve</Field>
+                  <Field>Gender</Field>
+                </Fields>
+              </GetTournamentTeamList>
+      responses:
+        '200':
+          description: Successful response with team list
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetTournamentTeamListResponse'
+              example: |
+                <BeachTeams>
+                  <BeachTeam>
+                    <No>1</No>
+                    <Player1Name>SMITH John</Player1Name>
+                    <Player2Name>DOE Jane</Player2Name>
+                    <Player1No>12345</Player1No>
+                    <Player2No>67890</Player2No>
+                    <Seed>1</Seed>
+                    <PhaseCode>MD</PhaseCode>
+                    <CountryCode>USA</CountryCode>
+                    <Status>Confirmed</Status>
+                    <IsWildCard>false</IsWildCard>
+                    <IsReserve>false</IsReserve>
+                    <Gender>M</Gender>
+                  </BeachTeam>
+                </BeachTeams>
+        '400':
+          description: Bad request (invalid tournament number or malformed request)
+        '404':
+          description: Tournament not found
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    GetTournamentTeamListRequest:
+      type: object
+      required:
+        - TournamentNo
+      properties:
+        TournamentNo:
+          type: integer
+          description: Unique tournament identifier (VIS No)
+          example: 12345
+        Fields:
+          type: array
+          description: |
+            Optional: List of field names to include in response for payload optimization.
+            If omitted, all fields are returned.
+          items:
+            type: string
+            enum:
+              - No
+              - Player1Name
+              - Player2Name
+              - Player1No
+              - Player2No
+              - Seed
+              - PhaseCode
+              - CountryCode
+              - Status
+              - IsWildCard
+              - IsReserve
+              - Gender
+              - TeamName
+              - DrawPosition
+              - PoolCode
+              - FinalRank
+          example:
+            - No
+            - Player1Name
+            - Player2Name
+            - Seed
+            - PhaseCode
+
+    GetTournamentTeamListResponse:
+      type: object
+      properties:
+        BeachTeams:
+          type: object
+          properties:
+            BeachTeam:
+              type: array
+              items:
+                $ref: '#/components/schemas/BeachTeam'
+
+    BeachTeam:
+      type: object
+      description: Beach volleyball team registration details
+      properties:
+        No:
+          type: integer
+          description: Unique team number within tournament
+          example: 1
+        Player1Name:
+          type: string
+          description: First player full name (format "LASTNAME Firstname")
+          example: "SMITH John"
+        Player2Name:
+          type: string
+          description: Second player full name (format: "LASTNAME Firstname")
+          example: "DOE Jane"
+        Player1No:
+          type: integer
+          description: VIS player ID for first player
+          example: 12345
+        Player2No:
+          type: integer
+          description: VIS player ID for second player
+          example: 67890
+        Seed:
+          type: integer
+          nullable: true
+          description: Team seed number (null if unseeded)
+          example: 1
+        PhaseCode:
+          type: string
+          description: |
+            Tournament phase identifier:
+            - "MD" or "1" = Main Draw
+            - "Q" or "2" = Qualification
+          example: "MD"
+        CountryCode:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+          pattern: '^[A-Z]{2}$'
+          example: "USA"
+        Status:
+          type: string
+          description: |
+            Team entry status:
+            - "Confirmed" = Active team
+            - "Withdrawn" = Team withdrew
+            - "Reserve" = Reserve/alternate team
+          enum:
+            - Confirmed
+            - Withdrawn
+            - Reserve
+          example: "Confirmed"
+        IsWildCard:
+          type: boolean
+          description: True if team received wild card entry
+          example: false
+        IsReserve:
+          type: boolean
+          description: True if team is a reserve/alternate team
+          example: false
+        Gender:
+          type: string
+          description: Team gender category
+          enum:
+            - M
+            - W
+          example: "M"
+        TeamName:
+          type: string
+          description: Optional team name (if applicable)
+          example: "USA 1"
+        DrawPosition:
+          type: integer
+          description: Position in tournament draw
+          example: 1
+        PoolCode:
+          type: string
+          description: Pool assignment code (for pool play tournaments)
+          example: "A"
+        FinalRank:
+          type: integer
+          nullable: true
+          description: Final tournament ranking (null if tournament incomplete)
+          example: 1
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: VIS API uses HTTP Basic Authentication
+
+security:
+  - basicAuth: []
+
+tags:
+  - name: Tournament
+    description: Tournament-related endpoints
+  - name: Teams
+    description: Team registration and management

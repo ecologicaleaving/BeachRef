@@ -10,12 +10,13 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
 
 import { StatusBadge } from './StatusBadge';
-import { 
-  getStatusColorWithText, 
-  TournamentStatus, 
-  statusColorThemes 
+import {
+  getStatusColorWithText,
+  TournamentStatus,
+  statusColorThemes
 } from '../../utils/statusColors';
 import { spacing, colors } from '../../theme/tokens';
+import { H2Text, BodyText, CaptionText } from '../Typography/Text';
 
 export interface StatusCardProps {
   status: TournamentStatus;

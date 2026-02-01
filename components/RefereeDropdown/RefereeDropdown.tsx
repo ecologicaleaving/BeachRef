@@ -162,16 +162,6 @@ const styles = StyleSheet.create({
   selectedRefereeInfo: {
     flex: 1,
   },
-  selectedRefereeName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1B365D',
-  },
-  selectedRefereeCode: {
-    fontSize: 14,
-    color: designTokens.neutrals.textSecondary,
-    marginTop: 2,
-  },
   placeholderText: {
     fontSize: 16,
     color: designTokens.neutrals.textSecondary,

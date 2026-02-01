@@ -122,7 +122,7 @@ export class SetScoreService {
             enhancedMatches[matchIndex] = {
               ...enhancedMatches[matchIndex],
               result: {
-                ...enhancedMatches[matchIndex].result!,
+                ...enhancedMatches[matchIndex]?.result!,
                 setScores,
                 totalDurationSeconds,
                 setDurations
@@ -219,9 +219,9 @@ export class SetScoreService {
         for (let i = 0; i < allElements.length; i++) {
           const element = allElements[i];
           const attributes = {};
-          for (let j = 0; j < element.attributes.length; j++) {
+          for (let j = 0; j < element!.attributes.length; j++) {
             const attr = element.attributes[j];
-            attributes[attr.name] = attr.value;
+            attributes[attr?.name] = attr.value;
           }
         }
       } catch (xmlParseError) {
@@ -433,17 +433,17 @@ export class SetScoreService {
         const setElement = setElements[i];
         
         // Extract all attributes
-        const no = parseInt(setElement.getAttribute('No') || '0');
-        const pointsTeamA = parseInt(setElement.getAttribute('PointsTeamA') || '0');
-        const pointsTeamB = parseInt(setElement.getAttribute('PointsTeamB') || '0');
-        const durationSeconds = parseInt(setElement.getAttribute('Duration') || '0');
-        const beginTimeOffset = parseInt(setElement.getAttribute('BeginTimeOffset') || '0');
+        const no = parseInt(setElement.getAttribute('No' ?? '0') || '0');
+        const pointsTeamA = parseInt(setElement.getAttribute('PointsTeamA' ?? '0') || '0');
+        const pointsTeamB = parseInt(setElement.getAttribute('PointsTeamB' ?? '0') || '0');
+        const durationSeconds = parseInt(setElement.getAttribute('Duration' ?? '0') || '0');
+        const beginTimeOffset = parseInt(setElement.getAttribute('BeginTimeOffset' ?? '0') || '0');
         
         // Optional attributes
-        const nbTimeoutTeamA = this.parseOptionalInt(setElement.getAttribute('NbTimeoutTeamA'));
-        const nbTimeoutTeamB = this.parseOptionalInt(setElement.getAttribute('NbTimeoutTeamB'));
-        const nbChallengeRequestedTeamA = this.parseOptionalInt(setElement.getAttribute('NbChallengeRequestedTeamA'));
-        const nbChallengeRequestedTeamB = this.parseOptionalInt(setElement.getAttribute('NbChallengeRequestedTeamB'));
+        const nbTimeoutTeamA = this?.parseOptionalInt(setElement.getAttribute('NbTimeoutTeamA'));
+        const nbTimeoutTeamB = this?.parseOptionalInt(setElement.getAttribute('NbTimeoutTeamB'));
+        const nbChallengeRequestedTeamA = this?.parseOptionalInt(setElement.getAttribute('NbChallengeRequestedTeamA'));
+        const nbChallengeRequestedTeamB = this?.parseOptionalInt(setElement.getAttribute('NbChallengeRequestedTeamB'));
         
         // Format duration
         const durationFormatted = this.formatDurationSeconds(durationSeconds);
@@ -485,7 +485,7 @@ export class SetScoreService {
       for (let i = 0; i < teamElements.length; i++) {
         const teamElement = teamElements[i];
         
-        const no = teamElement.getAttribute('No') || '';
+        const no = teamElement!.getAttribute('No') || '';
         const name = teamElement.getAttribute('Name') || '';
         const federationCode = teamElement.getAttribute('FederationCode') || '';
         const noPlayer1 = teamElement.getAttribute('NoPlayer1') || undefined;

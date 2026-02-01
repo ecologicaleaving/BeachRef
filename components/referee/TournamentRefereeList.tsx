@@ -485,11 +485,6 @@ const styles = StyleSheet.create({
   refereeMainInfo: {
     flex: 1,
   },
-  refereeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-  },
   refereeLastName: {
     fontSize: 16,
     fontWeight: '500',

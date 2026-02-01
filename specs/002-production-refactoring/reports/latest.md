@@ -1,11 +1,11 @@
 # Production Audit Report
 
-**Date**: 10/31/2025, 07:56:14 AM | **Status**: ❌ FAIL | **Exit Code**: 1
+**Date**: 02/01/2026, 04:59:49 PM | **Status**: ❌ FAIL | **Exit Code**: 1
 
 ## Summary
 
-- **Total Findings**: 3560 (🆕 0 new, ✅ 0 resolved)
-- **Critical**: 3560 ❌ (blocks deployment)
+- **Total Findings**: 2903 (🆕 11 new, ✅ 0 resolved)
+- **Critical**: 2903 ❌ (blocks deployment)
 - **High**: 0 ✅
 - **Medium**: 0 ✅
 - **Low**: 0 ✅
@@ -13,46 +13,86 @@
 
 ## Trend Analysis
 
-**Compared to**: run-2025-10-31-03-18-47
+**Compared to**: run-2026-02-01-14-30-22
 
-- **Total Findings**: ➡️ 0
-- **Critical**: ➡️ 0
+- **Total Findings**: 📉 -248
+- **Critical**: 📉 -248
 - **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 0%
+- **New Finding Rate**: 0.4%
 
-**Summary**: same number of findings | 0% resolved, 0% new
+**Summary**: 248 fewer findings | severity: -248 Critical | 0% resolved, 0.4% new
 
 ## Findings
-### 🔴 Critical (3560)
+### 🔴 Critical (2903)
 
-#### typescript-error (Rule: `typescript:2353`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:116`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:158`
 **Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'refereeName' does not exist in type 'RefereeAssignmentDTO'.
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:158`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:210`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type '{ set: number; a: number; b: number; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:166`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'refereeName' does not exist in type 'RefereeAssignmentDTO'.
-
----
-
-#### typescript-error (Rule: `typescript:2353`)
-
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:221`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'refereeName' does not exist in type 'RefereeAssignmentDTO'.
-
----
-
-#### typescript-error (Rule: `typescript:2353`)
-
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:249`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:251`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'function' does not exist in type 'RefereeAssignmentDTO'.
 
@@ -60,15 +100,23 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:258`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:260`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'function' does not exist in type 'RefereeAssignmentDTO'.
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:272`
+**Status**: 📌 Existing
+**Message**: Type '"F"' is not assignable to type '"M" | "W"'.
+
+---
+
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:278`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:280`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'function' does not exist in type 'RefereeAssignmentDTO'.
 
@@ -76,7 +124,7 @@
 
 #### typescript-error (Rule: `typescript:2739`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:285`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:287`
 **Status**: 📌 Existing
 **Message**: Type '{ id: string; visRefereeNo: string; firstName: string; lastName: string; gender: "M"; federation: string; birthdate: string; assignments: never[]; }' is missing the following properties from type 'RefereeDTO': refereeId, name, federationCode, status, type
 
@@ -84,7 +132,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:305`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:307`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'string'.
 
@@ -92,7 +140,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:317`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:319`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'string'.
 
@@ -100,18 +148,9 @@
 
 #### typescript-error (Rule: `typescript:2532`)
 
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:335`
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:337`
 **Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `__tests__/integration/setup/TestDataFixtures.ts:339`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -126,10 +165,35 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
+**Location**: `__tests__/integration/setup/TestDataFixtures.ts:343`
+**Status**: 📌 Existing
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2551`)
+
+**Location**: `__tests__/integration/setup/TestEnvironmentSetup.ts:98`
+**Status**: 📌 Existing
+**Message**: Property 'tournamentCode' does not exist on type 'EventDTO'. Did you mean 'tournamentId'?
+
+---
+
+#### typescript-error (Rule: `typescript:2345`)
+
 **Location**: `__tests__/integration/setup/TestEnvironmentSetup.ts:112`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `__tests__/integration/setup/TestEnvironmentSetup.ts:115`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types '"M" | "W"' and '"F"' have no overlap.
 
 ---
 
@@ -204,7 +268,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/_layout.tsx:117`
+**Location**: `app/_layout.tsx:123`
 **Status**: 📌 Existing
 **Message**: Type 'Persister' is not assignable to type 'import("C:/Users/KreshOS/Documents/00-Progetti/BeachRef/node_modules/@tanstack/query-persist-client-core/build/modern/persist").Persister'.
   The types returned by 'restoreClient()' are incompatible between these types.
@@ -221,32 +285,24 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/_layout.tsx:127`
+**Location**: `app/_layout.tsx:133`
 **Status**: 📌 Existing
 **Message**: Type '(error: Error) => void' is not assignable to type '() => unknown'.
   Target signature provides too few arguments. Expected 1 or more, but got 0.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:6196`)
 
-**Location**: `app/all-referees.tsx:46`
+**Location**: `app/all-referees.tsx:32`
 **Status**: 📌 Existing
-**Message**: 'tournamentInfo' is declared but its value is never read.
+**Message**: 'TournamentInfo' is declared but never used.
 
 ---
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/all-referees.tsx:107`
-**Status**: 📌 Existing
-**Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `app/all-referees.tsx:115`
+**Location**: `app/all-referees.tsx:105`
 **Status**: 📌 Existing
 **Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
 
@@ -254,41 +310,35 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/all-referees.tsx:120`
+**Location**: `app/all-referees.tsx:113`
+**Status**: 📌 Existing
+**Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
+
+---
+
+#### typescript-error (Rule: `typescript:2345`)
+
+**Location**: `app/all-referees.tsx:118`
 **Status**: 📌 Existing
 **Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<CareerStats | null>'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/all-referees.tsx:559`
+**Location**: `app/all-referees.tsx:649`
 **Status**: 📌 Existing
-**Message**: 'currentActive' is declared but its value is never read.
+**Message**: Type '{ title: string; showBackButton: boolean; onBackPress: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/all-referees.tsx:826`
+**Location**: `app/analytics-dashboard.tsx:25`
 **Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/all-referees.tsx:831`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/all-referees.tsx:919`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
+**Message**: Type '{ title: string; showBackButton: boolean; rightComponent: null; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
@@ -303,17 +353,18 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/ref-mode.tsx:14`
+**Location**: `app/analytics-settings.tsx:16`
 **Status**: 📌 Existing
-**Message**: 'createShadow' is declared but its value is never read.
+**Message**: Type '{ title: string; showBackButton: boolean; rightComponent: null; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `app/ref-mode.tsx:69`
+**Location**: `app/ref-mode.tsx:68`
 **Status**: 📌 Existing
 **Message**: Expected 1-2 arguments, but got 0.
 
@@ -321,152 +372,24 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `app/ref-mode.tsx:72`
+**Location**: `app/ref-mode.tsx:71`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'eventNo' does not exist in type 'GetBeachMatchListRequest'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `app/ref-mode.tsx:92`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/ref-mode.tsx:150`
+**Location**: `app/ref-mode.tsx:149`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Property 'exponentialBackoff' is missing in type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' but required in type 'VisApiClientConfig'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `app/ref-mode.tsx:255`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:316`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:317`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:318`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:319`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:320`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:321`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:322`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:323`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:324`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:325`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:326`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:327`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:328`
-**Status**: 📌 Existing
-**Message**: 'referee' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:347`
-**Status**: 📌 Existing
-**Message**: 'officialListXml' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/ref-mode.tsx:349`
+**Location**: `app/ref-mode.tsx:348`
 **Status**: 📌 Existing
 **Message**: Type '{ FederationCode: string | undefined; FirstName: string | undefined; Gender: string | undefined; LastName: string | undefined; NoPortraitPhoto: string | undefined; NoOfficial: string | undefined; Role: string | undefined; Signatures: string | undefined; Status: string | undefined; Type: string | undefined; }[]' is not assignable to type 'Official[]'.
   Type '{ FederationCode: string | undefined; FirstName: string | undefined; Gender: string | undefined; LastName: string | undefined; NoPortraitPhoto: string | undefined; NoOfficial: string | undefined; Role: string | undefined; Signatures: string | undefined; Status: string | undefined; Type: string | undefined; }' is not assignable to type 'Official'.
@@ -476,23 +399,24 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/ref-mode.tsx:384`
-**Status**: 📌 Existing
-**Message**: 'refereeListXml' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/ref-mode.tsx:386`
+**Location**: `app/ref-mode.tsx:385`
 **Status**: 📌 Existing
 **Message**: Type '{ Conclusion: string | undefined; FederationCode: string | undefined; FirstName: string | undefined; Gender: string | undefined; LastName: string | undefined; NoPortraitPhoto: string | undefined; ... 6 more ...; WeakPoints: string | undefined; }[]' is not assignable to type 'Referee[]'.
   Type '{ Conclusion: string | undefined; FederationCode: string | undefined; FirstName: string | undefined; Gender: string | undefined; LastName: string | undefined; NoPortraitPhoto: string | undefined; ... 6 more ...; WeakPoints: string | undefined; }' is not assignable to type 'Referee'.
     Types of property 'Conclusion' are incompatible.
       Type 'string | undefined' is not assignable to type 'string'.
         Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `app/ref-mode.tsx:427`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; subtitle: string; showBackButton: boolean; onBackPress: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
@@ -512,29 +436,36 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `app/referee-profile.tsx:89`
 **Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
+**Message**: Argument of type '{ refereeIds: (string | undefined)[]; } | undefined' is not assignable to parameter of type 'RefereeAnalyticsFilters | undefined'.
+  Type '{ refereeIds: (string | undefined)[]; }' is not assignable to type 'RefereeAnalyticsFilters'.
+    Types of property 'refereeIds' are incompatible.
+      Type '(string | undefined)[]' is not assignable to type 'string[]'.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2353`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/referee-profile.tsx:91`
+**Location**: `app/referee-profile.tsx:147`
 **Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'enabled' does not exist in type 'AnalyticsConfig'.
+**Message**: Type '{ title: string; onBackPress: () => void; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'onBackPress' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `app/referee-profile.tsx:349`
+**Location**: `app/referee-profile.tsx:348`
 **Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
+**Message**: Type '{ refereeId: string | undefined; enableComparisons: false; enableExport: true; }' is not assignable to type 'RefereeAnalyticsDashboardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'refereeId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -554,49 +485,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/referee-profile.tsx:364`
-**Status**: 📌 Existing
-**Message**: Property 'Tournament' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'DefaultTournamentService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:12`
-**Status**: 📌 Existing
-**Message**: 'CanonicalRefereeCard' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:6196`)
 
-**Location**: `app/tournament-ref.tsx:23`
+**Location**: `app/tournament-ref.tsx:21`
 **Status**: 📌 Existing
 **Message**: 'RefereeStats' is declared but never used.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:38`
-**Status**: 📌 Existing
-**Message**: 'tournamentInfo' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/tournament-ref.tsx:71`
+**Location**: `app/tournament-ref.tsx:67`
 **Status**: 📌 Existing
 **Message**: Argument of type 'RefereeStats | null' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
   Type 'RefereeStats' is not assignable to type 'SetStateAction<SeasonStats | null>'.
@@ -606,7 +505,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/tournament-ref.tsx:93`
+**Location**: `app/tournament-ref.tsx:89`
 **Status**: 📌 Existing
 **Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
 
@@ -614,7 +513,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/tournament-ref.tsx:101`
+**Location**: `app/tournament-ref.tsx:97`
 **Status**: 📌 Existing
 **Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SeasonStats | null>'.
 
@@ -622,7 +521,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `app/tournament-ref.tsx:106`
+**Location**: `app/tournament-ref.tsx:102`
 **Status**: 📌 Existing
 **Message**: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<CareerStats | null>'.
 
@@ -630,7 +529,15 @@
 
 #### typescript-error (Rule: `typescript:2538`)
 
-**Location**: `app/tournament-ref.tsx:383`
+**Location**: `app/tournament-ref.tsx:379`
+**Status**: 📌 Existing
+**Message**: Type 'undefined' cannot be used as an index type.
+
+---
+
+#### typescript-error (Rule: `typescript:2538`)
+
+**Location**: `app/tournament-ref.tsx:393`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' cannot be used as an index type.
 
@@ -638,31 +545,15 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `app/tournament-ref.tsx:397`
+**Location**: `app/tournament-ref.tsx:393`
 **Status**: 📌 Existing
 **Message**: 'attr' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `app/tournament-ref.tsx:397`
-**Status**: 📌 Existing
-**Message**: 'attr' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:473`
-**Status**: 📌 Existing
-**Message**: 'parseEventRefereeFromXML' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `app/tournament-ref.tsx:524`
+**Location**: `app/tournament-ref.tsx:481`
 **Status**: 📌 Existing
 **Message**: Parameter 'match' implicitly has an 'any' type.
 
@@ -670,39 +561,15 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `app/tournament-ref.tsx:629`
+**Location**: `app/tournament-ref.tsx:586`
 **Status**: 📌 Existing
 **Message**: Parameter 'match' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:629`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `app/tournament-ref.tsx:629`
-**Status**: 📌 Existing
-**Message**: Parameter 'index' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `app/tournament-ref.tsx:798`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `app/tournament-ref.tsx:852`
+**Location**: `app/tournament-ref.tsx:809`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'nameToIdFromAPI'.
 
@@ -710,7 +577,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `app/tournament-ref.tsx:853`
+**Location**: `app/tournament-ref.tsx:810`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'nameToIdFromAPI'.
 
@@ -718,73 +585,27 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `app/tournament-ref.tsx:909`
+**Location**: `app/tournament-ref.tsx:866`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'resolvedId'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/tournament-ref.tsx:1140`
+**Location**: `app/tournament-ref.tsx:955`
 **Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
+**Message**: Type '{ title: string; showBackButton: boolean; showLogo: false; showStatusBar: false; showRefreshButton: false; onBackPress: () => void; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/tournament-ref.tsx:1189`
+**Location**: `app/tournament-ref.tsx:985`
 **Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/tournament-ref.tsx:1194`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/tournament-ref.tsx:1252`
-**Status**: 📌 Existing
-**Message**: Property 'border' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/tournament-ref.tsx:1295`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/tournament-ref.tsx:1306`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `app/tournament-ref.tsx:1333`
-**Status**: 📌 Existing
-**Message**: Property 'textTertiary' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `assets/brand/BrandAssetManager.ts:7`
-**Status**: 📌 Existing
-**Message**: 'Platform' is declared but its value is never read.
+**Message**: Type '{ key: string | number; referee: Referee; tournamentNo: string; expanded: boolean; onToggle: () => void; tournamentInfo: TournamentInfo | null; }' is not assignable to type 'IntrinsicAttributes & { referee: Referee; tournamentNo: string; expanded: boolean; onToggle: () => void; }'.
+  Property 'tournamentInfo' does not exist on type 'IntrinsicAttributes & { referee: Referee; tournamentNo: string; expanded: boolean; onToggle: () => void; }'. Did you mean 'tournamentNo'?
 
 ---
 
@@ -792,7 +613,7 @@
 
 **Location**: `assets/brand/BrandAssetManager.ts:136`
 **Status**: 📌 Existing
-**Message**: 'requiredAssets' is declared but its value is never read.
+**Message**: '_requiredAssets' is declared but its value is never read.
 
 ---
 
@@ -807,43 +628,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsRefreshIndicator.tsx:195`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:109`
 **Status**: 📌 Existing
-**Message**: 'getPerformanceStatus' is declared but its value is never read.
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsSettings.tsx:53`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:109`
 **Status**: 📌 Existing
-**Message**: 'externalPreferences' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:65`
-**Status**: 📌 Existing
-**Message**: 'importSettings' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:69`
-**Status**: 📌 Existing
-**Message**: 'isImporting' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:69`
-**Status**: 📌 Existing
-**Message**: 'setIsImporting' is declared but its value is never read.
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -867,42 +666,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsSettings.tsx:115`
-**Status**: 📌 Existing
-**Message**: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:115`
-**Status**: 📌 Existing
-**Message**: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:132`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:129`
 **Status**: 📌 Existing
 **Message**: Type '{ refreshInterval: number; timeRange?: { start: string; end: string; }; showTournamentAnalytics?: boolean; showRefereeAnalytics?: boolean; showPerformanceMetrics?: boolean; widgetLayout?: "grid" | "list"; }' is not assignable to type 'AnalyticsCustomization'.
   Property 'timeRange' is optional in type '{ refreshInterval: number; timeRange?: { start: string; end: string; }; showTournamentAnalytics?: boolean; showRefereeAnalytics?: boolean; showPerformanceMetrics?: boolean; widgetLayout?: "list" | "grid"; }' but required in type 'AnalyticsCustomization'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Analytics/AnalyticsSettings.tsx:178`
-**Status**: 📌 Existing
-**Message**: 'settingsJson' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsSettings.tsx:239`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:236`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; onPress: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
   Property 'title' does not exist on type 'IntrinsicAttributes & ButtonProps'.
@@ -911,7 +684,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsSettings.tsx:382`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:379`
 **Status**: 📌 Existing
 **Message**: Type '({ marginVertical: number; } | { backgroundColor: string; })[]' is not assignable to type 'ViewStyle'.
   Types of property 'filter' are incompatible.
@@ -921,7 +694,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Analytics/AnalyticsSettings.tsx:389`
+**Location**: `components/Analytics/AnalyticsSettings.tsx:386`
 **Status**: 📌 Existing
 **Message**: Type '({ marginVertical: number; } | { backgroundColor: string; })[]' is not assignable to type 'ViewStyle'.
   Types of property 'filter' are incompatible.
@@ -938,14 +711,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Analytics/AnalyticsWidget.tsx:390`
-**Status**: 📌 Existing
-**Message**: Property 'textTertiary' does not exist on type 'NeutralColors'.
-
----
-
 #### typescript-error (Rule: `typescript:2717`)
 
 **Location**: `components/Analytics/GAProvider.tsx:6`
@@ -954,17 +719,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:33`
-**Status**: 📌 Existing
-**Message**: 'onUpdate' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:52`
+**Location**: `components/Assignment/AssignmentCard.tsx:51`
 **Status**: 📌 Existing
 **Message**: Type '{ size: "medium"; theme: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'theme' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
@@ -973,7 +730,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:59`
+**Location**: `components/Assignment/AssignmentCard.tsx:58`
 **Status**: 📌 Existing
 **Message**: Type '{ size: "medium"; theme: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'theme' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
@@ -982,7 +739,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:66`
+**Location**: `components/Assignment/AssignmentCard.tsx:65`
 **Status**: 📌 Existing
 **Message**: Type '{ size: "medium"; theme: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'theme' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
@@ -991,7 +748,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:73`
+**Location**: `components/Assignment/AssignmentCard.tsx:72`
 **Status**: 📌 Existing
 **Message**: Type '{ size: "medium"; theme: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'theme' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
@@ -1000,63 +757,23 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:185`
-**Status**: 📌 Existing
-**Message**: Property 'fontFamily' does not exist on type 'TypographyScale'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:267`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:267`
+**Location**: `components/Assignment/AssignmentCard.tsx:266`
 **Status**: 📌 Existing
 **Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:279`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:290`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:290`
+**Location**: `components/Assignment/AssignmentCard.tsx:289`
 **Status**: 📌 Existing
 **Message**: Property 'h2' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:290`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:290`
+**Location**: `components/Assignment/AssignmentCard.tsx:289`
 **Status**: 📌 Existing
 **Message**: Property 'h3' does not exist on type '{ small: number; medium: number; large: number; }'.
 
@@ -1064,7 +781,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:292`
+**Location**: `components/Assignment/AssignmentCard.tsx:291`
 **Status**: 📌 Existing
 **Message**: Property 'lineHeights' does not exist on type 'TypographyScale'.
 
@@ -1072,81 +789,33 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:292`
+**Location**: `components/Assignment/AssignmentCard.tsx:291`
 **Status**: 📌 Existing
 **Message**: Property 'lineHeights' does not exist on type 'TypographyScale'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:304`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:304`
+**Location**: `components/Assignment/AssignmentCard.tsx:303`
 **Status**: 📌 Existing
 **Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:310`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:310`
+**Location**: `components/Assignment/AssignmentCard.tsx:309`
 **Status**: 📌 Existing
 **Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:321`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Assignment/AssignmentCard.tsx:321`
+**Location**: `components/Assignment/AssignmentCard.tsx:320`
 **Status**: 📌 Existing
 **Message**: Property 'body' does not exist on type '{ small: number; medium: number; large: number; }'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCard.tsx:330`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:164`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/Assignment/AssignmentCardVariants.tsx:178`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.sizes' is possibly 'undefined'.
 
 ---
 
@@ -1158,17 +827,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:75`
-**Status**: 📌 Existing
-**Message**: 'getStatusColor' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:118`
+**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:104`
 **Status**: 📌 Existing
 **Message**: Type '{ targetDate: Date; size: "small"; showMessage: boolean; }' is not assignable to type 'IntrinsicAttributes & CountdownTimerProps'.
   Property 'targetDate' does not exist on type 'IntrinsicAttributes & CountdownTimerProps'. Did you mean 'targetTime'?
@@ -1177,7 +838,7 @@
 
 #### typescript-error (Rule: `typescript:2741`)
 
-**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:129`
+**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:115`
 **Status**: 📌 Existing
 **Message**: Property 'variant' is missing in type '{ type: AssignmentStatus; size: "medium"; showIcon: true; showText: false; }' but required in type 'StatusIndicatorProps'.
 
@@ -1185,60 +846,63 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:189`
+**Location**: `components/Assignment/EnhancedAssignmentCard.tsx:175`
 **Status**: 📌 Existing
 **Message**: Type '{ size: "small"; theme: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'theme' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Brand/BrandErrorState.tsx:11`
+**Location**: `components/Brand/BrandErrorState.tsx:71`
 **Status**: 📌 Existing
-**Message**: 'getStatusColor' is declared but its value is never read.
+**Message**: Type '"#18181B"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Brand/BrandErrorState.tsx:72`
+**Location**: `components/Brand/BrandErrorState.tsx:79`
 **Status**: 📌 Existing
-**Message**: Type '"#0D1A2B"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
+**Message**: Type '"#52525B"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Brand/BrandErrorState.tsx:80`
+**Location**: `components/Brand/BrandErrorState.tsx:90`
 **Status**: 📌 Existing
-**Message**: Type '"#5F6E86"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/Brand/BrandErrorState.tsx:91`
-**Status**: 📌 Existing
-**Message**: Type '({ width: "100%"; minHeight: number; justifyContent: "center"; } | { backgroundColor: "#1F5AA6" | "#B8530A" | "#8B1538"; })[]' is not assignable to type 'ViewStyle'.
+**Message**: Type '({ width: "100%"; minHeight: number; justifyContent: "center"; } | { backgroundColor: "#52525B" | "#B45309" | "#B91C1C"; })[]' is not assignable to type 'ViewStyle'.
   Types of property 'filter' are incompatible.
-    Type '{ <S extends { width: "100%"; minHeight: number; justifyContent: "center"; } | { backgroundColor: "#1F5AA6" | "#B8530A" | "#8B1538"; }>(predicate: (value: { width: "100%"; minHeight: number; justifyContent: "center"; } | { ...; }, index: number, array: ({ ...; } | { ...; })[]) => value is S, thisArg?: any): S[]; (pr...' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
+    Type '{ <S extends { width: "100%"; minHeight: number; justifyContent: "center"; } | { backgroundColor: "#52525B" | "#B45309" | "#B91C1C"; }>(predicate: (value: { width: "100%"; minHeight: number; justifyContent: "center"; } | { ...; }, index: number, array: ({ ...; } | { ...; })[]) => value is S, thisArg?: any): S[]; (pr...' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Brand/BrandErrorState.tsx:140`
+**Location**: `components/Brand/BrandErrorState.tsx:139`
 **Status**: 📌 Existing
-**Message**: Type '"#0D1A2B"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
+**Message**: Type '"#18181B"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Brand/BrandErrorState.tsx:148`
+**Location**: `components/Brand/BrandErrorState.tsx:147`
 **Status**: 📌 Existing
-**Message**: Type '"#5F6E86"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
+**Message**: Type '"#52525B"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/Brand/BrandHeader.tsx:41`
+**Status**: 📌 Existing
+**Message**: Type '{ backgroundColor: StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"; }' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Types of property 'backgroundColor' are incompatible.
+    Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'ColorValue | undefined'.
+      Type 'StatusColors' is not assignable to type 'ColorValue | undefined'.
 
 ---
 
@@ -1246,8 +910,19 @@
 
 **Location**: `components/Brand/BrandHeader.tsx:58`
 **Status**: 📌 Existing
-**Message**: Type '"#FFFFFF" | "#0B2545" | "#1F5AA6" | "#0D1A2B" | "#5F6E86" | "#B8391A" | "#0F4C75" | "#B8530A" | "#8B1538"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
-  Type '"#FFFFFF"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
+  Type 'StatusColors' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/Brand/BrandHeader.tsx:59`
+**Status**: 📌 Existing
+**Message**: Type '{ color: StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"; }' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Types of property 'color' are incompatible.
+    Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'ColorValue | undefined'.
+      Type 'StatusColors' is not assignable to type 'ColorValue | undefined'.
 
 ---
 
@@ -1255,8 +930,19 @@
 
 **Location**: `components/Brand/BrandHeader.tsx:67`
 **Status**: 📌 Existing
-**Message**: Type '"#FFFFFF" | "#0B2545" | "#1F5AA6" | "#0D1A2B" | "#5F6E86" | "#B8391A" | "#0F4C75" | "#B8530A" | "#8B1538"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
-  Type '"#FFFFFF"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
+  Type 'StatusColors' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/Brand/BrandHeader.tsx:69`
+**Status**: 📌 Existing
+**Message**: Type '{ color: StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"; opacity: number; }' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Types of property 'color' are incompatible.
+    Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'ColorValue | undefined'.
+      Type 'StatusColors' is not assignable to type 'ColorValue | undefined'.
 
 ---
 
@@ -1264,47 +950,7 @@
 
 **Location**: `components/Brand/BrandLoadingState.tsx:86`
 **Status**: 📌 Existing
-**Message**: Type '"#5F6E86"' is not assignable to type '"error" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary"'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Brand/BrandLogo.tsx:28`
-**Status**: 📌 Existing
-**Message**: 'brandAsset' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/connection/ConnectionModeToggle.tsx:96`
-**Status**: 📌 Existing
-**Message**: 'currentModeInfo' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/connection/ConnectionModeToggle.tsx:102`
-**Status**: 📌 Existing
-**Message**: 'currentModeInfo' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/connection/ConnectionModeToggle.tsx:105`
-**Status**: 📌 Existing
-**Message**: 'currentModeInfo' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/connection/ConnectionModeToggle.tsx:108`
-**Status**: 📌 Existing
-**Message**: 'currentModeInfo' is possibly 'undefined'.
+**Message**: Type '"#52525B"' is not assignable to type '"error" | "text" | "warning" | "background" | "success" | "textPrimary" | "textSecondary" | "accent" | "primary" | "secondary" | "statusColors" | "textTertiary" | "border"'.
 
 ---
 
@@ -1386,14 +1032,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Dashboard/CountdownTimer.tsx:21`
-**Status**: 📌 Existing
-**Message**: 'showProgress' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `components/Dashboard/CurrentAssignmentCard.tsx:43`
@@ -1412,11 +1050,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Dashboard/EnhancedCurrentAssignmentCard.tsx:49`
+**Location**: `components/Dashboard/EnhancedCurrentAssignmentCard.tsx:101`
 **Status**: 📌 Existing
-**Message**: 'minutesUntil' is declared but its value is never read.
+**Message**: Type '{ level: "immediate" | "urgent" | "normal"; message: string; assignment: Assignment; }' is not assignable to type 'IntrinsicAttributes & UrgentNotificationsProps'.
+  Property 'assignment' does not exist on type 'IntrinsicAttributes & UrgentNotificationsProps'.
 
 ---
 
@@ -1500,49 +1139,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Dashboard/UrgentNotifications.tsx:2`
-**Status**: 📌 Existing
-**Message**: 'View' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Dashboard/UrgentNotifications.tsx:15`
-**Status**: 📌 Existing
-**Message**: 'assignment' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:7030`)
 
-**Location**: `components/Dashboard/UrgentNotifications.tsx:19`
+**Location**: `components/Dashboard/UrgentNotifications.tsx:16`
 **Status**: 📌 Existing
 **Message**: Not all code paths return a value.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:58`
-**Status**: 📌 Existing
-**Message**: 'timezonePreference' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:184`
-**Status**: 📌 Existing
-**Message**: 'handleRefereePress' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:221`
+**Location**: `components/entities/Match/MatchCard.tsx:202`
 **Status**: 📌 Existing
 **Message**: Type '{ city?: string; country?: string; countryCode?: string; name?: string; venue?: string; defaultTimeZone?: string; startDate?: string; endDate?: string; } | { defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData | undefined'.
   Type '{ defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -1554,7 +1161,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:720`
+**Location**: `components/entities/Match/MatchCard.tsx:685`
 **Status**: 📌 Existing
 **Message**: Type '{ countryCode: string | undefined; size: "large"; style: { marginBottom: number; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -1563,17 +1170,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:806`
-**Status**: 📌 Existing
-**Message**: 'minScore' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:833`
+**Location**: `components/entities/Match/MatchCard.tsx:797`
 **Status**: 📌 Existing
 **Message**: Type '{ fontSize: number; fontWeight: "600"; color: string; }' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
 
@@ -1581,7 +1180,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:834`
+**Location**: `components/entities/Match/MatchCard.tsx:798`
 **Status**: 📌 Existing
 **Message**: Type 'false | { fontSize: number; fontWeight: "700"; color: string; }' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type '{ fontSize: number; fontWeight: "700"; color: string; }' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
@@ -1590,31 +1189,31 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:838`
+**Location**: `components/entities/Match/MatchCard.tsx:802`
 **Status**: 📌 Existing
-**Message**: Property 'setScoreText' does not exist on type '{ matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; backgroundColor: ColorValue | undefined; ... 168 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 83 more ...; qualificationGenderBadge: { ...; }; }'. Did you mean 'setScore'?
+**Message**: Property 'setScoreText' does not exist on type '{ cardWrapper: { position: "relative"; marginVertical: number; marginHorizontal: number; }; matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; ... 169 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 100 more ...; qualifi...'. Did you mean 'setScore'?
 
 ---
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:839`
+**Location**: `components/entities/Match/MatchCard.tsx:803`
 **Status**: 📌 Existing
-**Message**: Property 'currentSetScoreText' does not exist on type '{ matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; backgroundColor: ColorValue | undefined; ... 168 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 83 more ...; qualificationGenderBadge: { ...; }; }'. Did you mean 'currentSetScore'?
+**Message**: Property 'currentSetScoreText' does not exist on type '{ cardWrapper: { position: "relative"; marginVertical: number; marginHorizontal: number; }; matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; ... 169 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 100 more ...; qualifi...'. Did you mean 'currentSetScore'?
 
 ---
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:845`
+**Location**: `components/entities/Match/MatchCard.tsx:809`
 **Status**: 📌 Existing
-**Message**: Property 'liveIndicatorText' does not exist on type '{ matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; backgroundColor: ColorValue | undefined; ... 168 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 83 more ...; qualificationGenderBadge: { ...; }; }'. Did you mean 'liveIndicator'?
+**Message**: Property 'liveIndicatorText' does not exist on type '{ cardWrapper: { position: "relative"; marginVertical: number; marginHorizontal: number; }; matchCard: { borderWidth: number; borderColor: string; overflow: "hidden"; backfaceVisibility?: "visible" | "hidden" | undefined; ... 169 more ...; translateY?: AnimatableNumericValue | undefined; }; ... 100 more ...; qualifi...'. Did you mean 'liveIndicator'?
 
 ---
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:882`
+**Location**: `components/entities/Match/MatchCard.tsx:846`
 **Status**: 📌 Existing
 **Message**: 'team1Score' is possibly 'undefined'.
 
@@ -1622,7 +1221,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:882`
+**Location**: `components/entities/Match/MatchCard.tsx:846`
 **Status**: 📌 Existing
 **Message**: 'team2Score' is possibly 'undefined'.
 
@@ -1630,24 +1229,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:883`
-**Status**: 📌 Existing
-**Message**: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
-  Type 'undefined' is not assignable to type 'number'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:884`
-**Status**: 📌 Existing
-**Message**: 'minScore' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:884`
+**Location**: `components/entities/Match/MatchCard.tsx:847`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
   Type 'undefined' is not assignable to type 'number'.
@@ -1656,7 +1238,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:887`
+**Location**: `components/entities/Match/MatchCard.tsx:850`
 **Status**: 📌 Existing
 **Message**: 'team1Score' is possibly 'undefined'.
 
@@ -1664,55 +1246,15 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:887`
+**Location**: `components/entities/Match/MatchCard.tsx:850`
 **Status**: 📌 Existing
 **Message**: 'team2Score' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:905`
-**Status**: 📌 Existing
-**Message**: 'isWinningSet' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:905`
-**Status**: 📌 Existing
-**Message**: 'team1Score' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:905`
-**Status**: 📌 Existing
-**Message**: 'team2Score' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:905`
-**Status**: 📌 Existing
-**Message**: 'team2Score' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:905`
-**Status**: 📌 Existing
-**Message**: 'team1Score' is possibly 'undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:1067`
+**Location**: `components/entities/Match/MatchCard.tsx:1029`
 **Status**: 📌 Existing
 **Message**: Type '{ countryCode: string | undefined; size: "large"; style: { marginBottom: number; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -1721,17 +1263,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Match/MatchCard.tsx:1151`
-**Status**: 📌 Existing
-**Message**: 'firstName' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:1161`
+**Location**: `components/entities/Match/MatchCard.tsx:1131`
 **Status**: 📌 Existing
 **Message**: Type '{ countryCode: string | undefined; style: { marginLeft: number; marginRight: number; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -1740,11 +1274,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Match/MatchCard.tsx:1178`
+**Location**: `components/entities/Match/MatchCard.tsx:1702`
 **Status**: 📌 Existing
-**Message**: 'firstName' is possibly 'undefined'.
+**Message**: Property 'primaryLight' does not exist on type '{ readonly statusColors: StatusColors; readonly primary: "#18181B"; readonly secondary: "#52525B"; readonly accent: "#D97706"; readonly success: "#15803D"; readonly warning: "#B45309"; ... 6 more ...; readonly background: "#FAFAFA"; }'.
 
 ---
 
@@ -1800,7 +1334,7 @@
 
 **Location**: `components/entities/Match/MatchDetail.tsx:148`
 **Status**: 📌 Existing
-**Message**: Property 'LiveScore' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'LiveScore' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -1808,7 +1342,7 @@
 
 **Location**: `components/entities/Match/MatchDetail.tsx:170`
 **Status**: 📌 Existing
-**Message**: Property 'Results' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Results' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -1816,7 +1350,7 @@
 
 **Location**: `components/entities/Match/MatchDetail.tsx:180`
 **Status**: 📌 Existing
-**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2028,20 +1562,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Match/MatchList.tsx:1`
-**Status**: 📌 Existing
-**Message**: 'useState' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/entities/Match/MatchList.tsx:28`
 **Status**: 📌 Existing
-**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 2 | 1 | undefined; forfeit: boolean | undefined; } | undefined' is not assignable to type 'MatchResult | undefined'.
-  Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 2 | 1 | undefined; forfeit: boolean | undefined; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 1 | 2 | undefined; forfeit: boolean | undefined; } | undefined' is not assignable to type 'MatchResult | undefined'.
+  Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 1 | 2 | undefined; forfeit: boolean | undefined; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
     Types of property 'duration' are incompatible.
       Type 'number | undefined' is not assignable to type 'number'.
         Type 'undefined' is not assignable to type 'number'.
@@ -2134,7 +1660,7 @@
 
 **Location**: `components/entities/Match/MatchList.tsx:292`
 **Status**: 📌 Existing
-**Message**: Property 'Match' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Match' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2171,17 +1697,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Player/PlayerCard.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'StatusBadge' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2430`)
 
-**Location**: `components/entities/Player/PlayerCard.tsx:15`
+**Location**: `components/entities/Player/PlayerCard.tsx:14`
 **Status**: 📌 Existing
 **Message**: Interface 'PlayerInfo' incorrectly extends interface 'Partial<BeachLivePlayer>'.
   Types of property 'position' are incompatible.
@@ -2190,25 +1708,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/entities/Player/PlayerCard.tsx:66`
-**Status**: 📌 Existing
-**Message**: 'firstName' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Player/PlayerCard.tsx:162`
+**Location**: `components/entities/Player/PlayerCard.tsx:161`
 **Status**: 📌 Existing
-**Message**: Property 'Serve' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Serve' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2559`)
 
-**Location**: `components/entities/Player/PlayerCard.tsx:187`
+**Location**: `components/entities/Player/PlayerCard.tsx:186`
 **Status**: 📌 Existing
 **Message**: Type '(false | { width: number; height: number; marginRight: number; })[]' has no properties in common with type 'ImageStyle'.
 
@@ -2218,7 +1728,7 @@
 
 **Location**: `components/entities/Player/PlayerDetail.tsx:232`
 **Status**: 📌 Existing
-**Message**: Property 'Stats' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Stats' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2226,7 +1736,7 @@
 
 **Location**: `components/entities/Player/PlayerDetail.tsx:241`
 **Status**: 📌 Existing
-**Message**: Property 'Team' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Team' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2234,7 +1744,7 @@
 
 **Location**: `components/entities/Player/PlayerDetail.tsx:250`
 **Status**: 📌 Existing
-**Message**: Property 'History' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'History' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2242,7 +1752,7 @@
 
 **Location**: `components/entities/Player/PlayerDetail.tsx:268`
 **Status**: 📌 Existing
-**Message**: Property 'Contact' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Contact' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2250,7 +1760,7 @@
 
 **Location**: `components/entities/Player/PlayerDetail.tsx:310`
 **Status**: 📌 Existing
-**Message**: Property 'Serve' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Serve' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2269,7 +1779,7 @@
 
 **Location**: `components/entities/Player/PlayerList.tsx:173`
 **Status**: 📌 Existing
-**Message**: Property 'Player' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Player' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2306,20 +1816,16 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `components/entities/Referee/RefereeCard.tsx:64`
 **Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
-#### typescript-error (Rule: `typescript:2353`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:66`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'enabled' does not exist in type 'AnalyticsConfig'.
+**Message**: Argument of type '{ refereeIds: (string | undefined)[]; } | undefined' is not assignable to parameter of type 'RefereeAnalyticsFilters | undefined'.
+  Type '{ refereeIds: (string | undefined)[]; }' is not assignable to type 'RefereeAnalyticsFilters'.
+    Types of property 'refereeIds' are incompatible.
+      Type '(string | undefined)[]' is not assignable to type 'string[]'.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -2375,7 +1881,7 @@
 
 **Location**: `components/entities/Referee/RefereeCard.tsx:169`
 **Status**: 📌 Existing
-**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2384,33 +1890,6 @@
 **Location**: `components/entities/Referee/RefereeCard.tsx:196`
 **Status**: 📌 Existing
 **Message**: Parameter 'stats' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:196`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:199`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:200`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
 
 ---
 
@@ -2430,15 +1909,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:298`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
 #### typescript-error (Rule: `typescript:7006`)
 
 **Location**: `components/entities/Referee/RefereeCard.tsx:303`
@@ -2447,26 +1917,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeCard.tsx:303`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Referee/RefereeDetail.tsx:38`
-**Status**: 📌 Existing
-**Message**: 'variant' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2678`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:72`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:71`
 **Status**: 📌 Existing
 **Message**: Type '"Referee"' is not comparable to type 'OfficialRole'.
 
@@ -2474,7 +1927,7 @@
 
 #### typescript-error (Rule: `typescript:2678`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:74`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:73`
 **Status**: 📌 Existing
 **Message**: Type '"Technical"' is not comparable to type 'OfficialRole'.
 
@@ -2482,7 +1935,7 @@
 
 #### typescript-error (Rule: `typescript:2678`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:76`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:75`
 **Status**: 📌 Existing
 **Message**: Type '"Administrative"' is not comparable to type 'OfficialRole'.
 
@@ -2490,41 +1943,25 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:184`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:183`
 **Status**: 📌 Existing
-**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:203`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:202`
 **Status**: 📌 Existing
-**Message**: Property 'Contact' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Contact' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Referee/RefereeDetail.tsx:212`
+**Location**: `components/entities/Referee/RefereeDetail.tsx:211`
 **Status**: 📌 Existing
-**Message**: Property 'History' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Referee/RefereeList.tsx:1`
-**Status**: 📌 Existing
-**Message**: 'useState' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Referee/RefereeList.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'isActiveOfficial' is declared but its value is never read.
+**Message**: Property 'History' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2645,7 +2082,7 @@
 
 **Location**: `components/entities/Referee/RefereeList.tsx:293`
 **Status**: 📌 Existing
-**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2698,20 +2135,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/entities/Referee/RefereeStatsModal.tsx:40`
 **Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
-#### typescript-error (Rule: `typescript:2353`)
-
-**Location**: `components/entities/Referee/RefereeStatsModal.tsx:42`
-**Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'enabled' does not exist in type 'AnalyticsConfig'.
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -2723,15 +2152,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Referee/RefereeStatsModal.tsx:60`
-**Status**: 📌 Existing
-**Message**: Property 'id' does not exist on type 'RefereeOfficial | EventReferee'.
-  Property 'id' does not exist on type 'RefereeOfficial'.
-
----
-
 #### typescript-error (Rule: `typescript:2559`)
 
 **Location**: `components/entities/Referee/RefereeStatsModal.tsx:104`
@@ -2740,33 +2160,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentCard.tsx:12`
-**Status**: 📌 Existing
-**Message**: 'StatusBadge' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:6192`)
 
-**Location**: `components/entities/Tournament/TournamentCard.tsx:14`
+**Location**: `components/entities/Tournament/TournamentCard.tsx:12`
 **Status**: 📌 Existing
 **Message**: All imports in import declaration are unused.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentCard.tsx:41`
-**Status**: 📌 Existing
-**Message**: 'router' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:7030`)
 
-**Location**: `components/entities/Tournament/TournamentCard.tsx:44`
+**Location**: `components/entities/Tournament/TournamentCard.tsx:41`
 **Status**: 📌 Existing
 **Message**: Not all code paths return a value.
 
@@ -2774,7 +2178,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Tournament/TournamentCard.tsx:303`
+**Location**: `components/entities/Tournament/TournamentCard.tsx:300`
 **Status**: 📌 Existing
 **Message**: Property 'countryName' does not exist on type 'TournamentCore'.
 
@@ -2790,17 +2194,9 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Tournament/TournamentDetail.tsx:62`
-**Status**: 📌 Existing
-**Message**: Property 'Tournament' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
 **Location**: `components/entities/Tournament/TournamentDetail.tsx:68`
 **Status**: 📌 Existing
-**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Referee' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2808,7 +2204,7 @@
 
 **Location**: `components/entities/Tournament/TournamentDetail.tsx:74`
 **Status**: 📌 Existing
-**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Assignment' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -2861,33 +2257,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:1`
-**Status**: 📌 Existing
-**Message**: 'useState' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:1`
-**Status**: 📌 Existing
-**Message**: 'useEffect' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:7`
-**Status**: 📌 Existing
-**Message**: 'Alert' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:41`
+**Location**: `components/entities/Tournament/TournamentList.tsx:40`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -2896,7 +2268,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:103`
+**Location**: `components/entities/Tournament/TournamentList.tsx:102`
 **Status**: 📌 Existing
 **Message**: Type '{ status: "UPCOMING" | "ACTIVE" | "COMPLETED" | "CANCELLED" | undefined; }' is not assignable to type 'TournamentsFilters' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'status' are incompatible.
@@ -2907,7 +2279,7 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:109`
+**Location**: `components/entities/Tournament/TournamentList.tsx:108`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'enableRealTimeUpdates' does not exist in type 'TournamentsConfig'.
 
@@ -2915,7 +2287,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:116`
+**Location**: `components/entities/Tournament/TournamentList.tsx:115`
 **Status**: 📌 Existing
 **Message**: Property 'isRefetching' does not exist on type 'TournamentsQueryResult'.
 
@@ -2923,48 +2295,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:118`
+**Location**: `components/entities/Tournament/TournamentList.tsx:135`
 **Status**: 📌 Existing
-**Message**: 'source' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:119`
-**Status**: 📌 Existing
-**Message**: 'performance' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:139`
-**Status**: 📌 Existing
-**Message**: 'isOnline' is declared but its value is never read.
+**Message**: 'networkStatus' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:140`
-**Status**: 📌 Existing
-**Message**: Argument of type 'TournamentCore[]' is not assignable to parameter of type 'CacheResult<any>'.
-  Type 'TournamentCore[]' is missing the following properties from type 'CacheResult<any>': data, source, fromCache, timestamp
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:141`
-**Status**: 📌 Existing
-**Message**: 'dataFreshness' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:141`
+**Location**: `components/entities/Tournament/TournamentList.tsx:136`
 **Status**: 📌 Existing
 **Message**: Argument of type 'TournamentCore[]' is not assignable to parameter of type 'CacheResult<any>'.
   Type 'TournamentCore[]' is missing the following properties from type 'CacheResult<any>': data, source, fromCache, timestamp
@@ -2973,7 +2312,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:177`
+**Location**: `components/entities/Tournament/TournamentList.tsx:172`
 **Status**: 📌 Existing
 **Message**: Type '{ data: TournamentCore[]; }' is not assignable to type 'IntrinsicAttributes & DataFreshnessProps'.
   Property 'data' does not exist on type 'IntrinsicAttributes & DataFreshnessProps'.
@@ -2982,33 +2321,17 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/entities/Tournament/TournamentList.tsx:190`
-**Status**: 📌 Existing
-**Message**: Property 'Tournament' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/entities/Tournament/TournamentList.tsx:197`
+**Location**: `components/entities/Tournament/TournamentList.tsx:192`
 **Status**: 📌 Existing
 **Message**: Property 'Refresh' does not exist on type '{ Help: MemoExoticComponent<(props: CommonIconProps) => Element>; Info: MemoExoticComponent<(props: CommonIconProps) => Element>; External: MemoExoticComponent<...>; }'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/FlagImage.tsx:44`
+**Location**: `components/ErrorBoundary/OfficialErrorBoundary.tsx:90`
 **Status**: 📌 Existing
-**Message**: 'isLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Foundation/Button.tsx:17`
-**Status**: 📌 Existing
-**Message**: 'getColor' is declared but its value is never read.
+**Message**: Property 'errorLight' does not exist on type '{ readonly statusColors: StatusColors; readonly primary: "#18181B"; readonly secondary: "#52525B"; readonly accent: "#D97706"; readonly success: "#15803D"; readonly warning: "#B45309"; ... 6 more ...; readonly background: "#FAFAFA"; }'.
 
 ---
 
@@ -3027,14 +2350,6 @@
 **Message**: Type '(ViewStyle | undefined)[]' is not assignable to type 'ViewStyle'.
   Types of property 'filter' are incompatible.
     Type '{ <S extends ViewStyle | undefined>(predicate: (value: ViewStyle | undefined, index: number, array: (ViewStyle | undefined)[]) => value is S, thisArg?: any): S[]; (predicate: (value: ViewStyle | undefined, index: number, array: (ViewStyle | undefined)[]) => unknown, thisArg?: any): (ViewStyle | undefined)[]; }' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Foundation/Container.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'getTextColor' is declared but its value is never read.
 
 ---
 
@@ -3140,11 +2455,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/Hierarchy/ContextSensitiveDisplay.tsx:9`
+**Location**: `components/Hierarchy/ContextSensitiveDisplay.tsx:33`
 **Status**: 📌 Existing
-**Message**: 'AssignmentStatus' is declared but its value is never read.
+**Message**: Property '_assignment' does not exist on type 'ContextSensitiveDisplayProps'.
 
 ---
 
@@ -3152,7 +2467,7 @@
 
 **Location**: `components/Hierarchy/ContextSensitiveDisplay.tsx:33`
 **Status**: 📌 Existing
-**Message**: 'assignment' is declared but its value is never read.
+**Message**: '_assignment' is declared but its value is never read.
 
 ---
 
@@ -3204,11 +2519,19 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/Hierarchy/InformationArchitecture.tsx:54`
+**Status**: 📌 Existing
+**Message**: Property '_priority' does not exist on type 'HierarchyContainerProps'.
+
+---
+
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `components/Hierarchy/InformationArchitecture.tsx:54`
 **Status**: 📌 Existing
-**Message**: 'priority' is declared but its value is never read.
+**Message**: '_priority' is declared but its value is never read.
 
 ---
 
@@ -3236,11 +2559,27 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/Hierarchy/InformationArchitecture.tsx:59`
+**Status**: 📌 Existing
+**Message**: Property '_style' does not exist on type 'HierarchyContainerProps'.
+
+---
+
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `components/Hierarchy/InformationArchitecture.tsx:59`
 **Status**: 📌 Existing
-**Message**: 'style' is declared but its value is never read.
+**Message**: '_style' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/Hierarchy/InformationArchitecture.tsx:78`
+**Status**: 📌 Existing
+**Message**: Property '_title' does not exist on type 'InfoGroupProps'.
 
 ---
 
@@ -3248,7 +2587,7 @@
 
 **Location**: `components/Hierarchy/InformationArchitecture.tsx:78`
 **Status**: 📌 Existing
-**Message**: 'title' is declared but its value is never read.
+**Message**: '_title' is declared but its value is never read.
 
 ---
 
@@ -3275,14 +2614,6 @@
 **Location**: `components/Hierarchy/ScanOptimizedLayout.tsx:106`
 **Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because expression of type '[CODE]' can't be used to index type '{ baseLayout: { width: "100%"; paddingHorizontal: number; }; 'z-pattern': { flexDirection: "column"; alignItems: "stretch"; }; 'f-pattern': { flexDirection: "column"; alignItems: "flex-start"; }; layered: { ...; }; ... 26 more ...; supportingContent: { ...; }; }'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Hierarchy/TertiaryInformation.tsx:9`
-**Status**: 📌 Existing
-**Message**: 'InfoGroup' is declared but its value is never read.
 
 ---
 
@@ -3660,38 +2991,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/live-score/ScoreDisplay.tsx:64`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2305`)
-
-**Location**: `components/LiveMatchIndicator.tsx:2`
-**Status**: 📌 Existing
-**Message**: Module '"react-native"' has no exported member 'useEffect'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/LiveMatchIndicator.tsx:4`
-**Status**: 📌 Existing
-**Message**: 'designTokens' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/LiveMatchIndicator.tsx:4`
-**Status**: 📌 Existing
-**Message**: 'statusColors' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `components/LiveMatchIndicator.tsx:115`
@@ -3716,60 +3015,20 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2304`)
+#### typescript-error (Rule: `typescript:6192`)
 
-**Location**: `components/ManualRefreshButton.tsx:143`
+**Location**: `components/MatchList/MatchListV2.tsx:10`
 **Status**: 📌 Existing
-**Message**: Cannot find name 'loading'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/ManualRefreshButton.tsx:207`
-**Status**: 📌 Existing
-**Message**: Property 'textTertiary' does not exist on type 'NeutralColors'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:2`
-**Status**: 📌 Existing
-**Message**: 'Modal' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:5`
-**Status**: 📌 Existing
-**Message**: 'MatchList' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'TimezoneService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'DateTime' is declared but its value is never read.
+**Message**: All imports in import declaration are unused.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:39`
+**Location**: `components/MatchList/MatchListV2.tsx:36`
 **Status**: 📌 Existing
-**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 2 | 1 | undefined; forfeit: boolean | undefined; } | undefined' is not assignable to type 'MatchResult | undefined'.
-  Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 2 | 1 | undefined; forfeit: boolean | undefined; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 1 | 2 | undefined; forfeit: boolean | undefined; } | undefined' is not assignable to type 'MatchResult | undefined'.
+  Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 1 | 2 | undefined; forfeit: boolean | undefined; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
     Types of property 'duration' are incompatible.
       Type 'number | undefined' is not assignable to type 'number'.
         Type 'undefined' is not assignable to type 'number'.
@@ -3778,7 +3037,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:49`
+**Location**: `components/MatchList/MatchListV2.tsx:46`
 **Status**: 📌 Existing
 **Message**: Type '{ teamNumber: 1; teamName: string; player1Name: string; player2Name: string; countryCode: string | undefined; ranking: number | undefined; }' is not assignable to type 'MatchTeam' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -3789,7 +3048,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:58`
+**Location**: `components/MatchList/MatchListV2.tsx:55`
 **Status**: 📌 Existing
 **Message**: Type '{ teamNumber: 2; teamName: string; player1Name: string; player2Name: string; countryCode: string | undefined; ranking: number | undefined; }' is not assignable to type 'MatchTeam' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -3800,7 +3059,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:68`
+**Location**: `components/MatchList/MatchListV2.tsx:65`
 **Status**: 📌 Existing
 **Message**: Type '{ courtNumber: string; courtName: string | undefined; surface: string | undefined; location: string | undefined; }' is not assignable to type 'CourtInfo' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'courtName' are incompatible.
@@ -3811,7 +3070,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:85`
+**Location**: `components/MatchList/MatchListV2.tsx:82`
 **Status**: 📌 Existing
 **Message**: Type '{ BeginDateTimeUtc: string | undefined; EndDateTimeUtc: string | undefined; UtcDate: string | undefined; UtcTime: string | undefined; LocalDate: string | undefined; LocalTime: string | undefined; LocalTimeOffset: string | undefined; TimeZone: string | undefined; }' is not assignable to type 'VISTimezoneFields' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'BeginDateTimeUtc' are incompatible.
@@ -3820,17 +3079,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:114`
-**Status**: 📌 Existing
-**Message**: 'localDateTime' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:160`
+**Location**: `components/MatchList/MatchListV2.tsx:156`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -3839,7 +3090,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:165`
+**Location**: `components/MatchList/MatchListV2.tsx:161`
 **Status**: 📌 Existing
 **Message**: Type '{ id: string; visNo: string; version: number; lastUpdated: string; tournamentId: string; matchCode: string; round: string; phaseCode: string | undefined; status: MatchStatus; rawStatus: any; ... 13 more ...; timezoneConversionAccuracy: "high" | ... 1 more ... | "low"; }' is not assignable to type 'BeachMatchCore' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'phaseCode' are incompatible.
@@ -3848,41 +3099,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:6196`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:233`
+**Location**: `components/MatchList/MatchListV2.tsx:223`
 **Status**: 📌 Existing
-**Message**: 'getMatchDuration' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:355`
-**Status**: 📌 Existing
-**Message**: 'title' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:364`
-**Status**: 📌 Existing
-**Message**: 'showDateNavigator' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:380`
-**Status**: 📌 Existing
-**Message**: 'liveScores' is declared but its value is never read.
+**Message**: 'MatchWithDurationFields' is declared but never used.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:400`
+**Location**: `components/MatchList/MatchListV2.tsx:319`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentCode: string; eventId: number; round?: string; status?: "SCHEDULED" | "RUNNING" | "COMPLETED" | "CANCELLED"; date?: string; dateRange?: { startDate: string; endDate: string; }; }' is not assignable to type 'MatchesFilters' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournamentCode' are incompatible.
@@ -3893,7 +3120,7 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:409`
+**Location**: `components/MatchList/MatchListV2.tsx:328`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'enableRealTimeUpdates' does not exist in type 'MatchesConfig'.
 
@@ -3901,7 +3128,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:431`
+**Location**: `components/MatchList/MatchListV2.tsx:350`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ timezone: string | undefined; gender: "M" | "W" | "MIXED" | undefined; }' is not assignable to parameter of type 'TournamentContext' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'timezone' are incompatible.
@@ -3910,25 +3137,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:440`
-**Status**: 📌 Existing
-**Message**: 'expandedReferees' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:440`
-**Status**: 📌 Existing
-**Message**: 'setExpandedReferees' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:604`
+**Location**: `components/MatchList/MatchListV2.tsx:522`
 **Status**: 📌 Existing
 **Message**: Argument of type 'BeachMatchCore[]' is not assignable to parameter of type 'SetStateAction<ExtendedBeachMatch[]>'.
   Type 'BeachMatchCore[]' is not assignable to type 'ExtendedBeachMatch[]'.
@@ -3941,7 +3152,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:608`
+**Location**: `components/MatchList/MatchListV2.tsx:526`
 **Status**: 📌 Existing
 **Message**: Argument of type 'BeachMatchCore[]' is not assignable to parameter of type 'SetStateAction<ExtendedBeachMatch[]>'.
   Type 'BeachMatchCore[]' is not assignable to type 'ExtendedBeachMatch[]'.
@@ -3949,36 +3160,12 @@
       Type 'BeachMatchCore' is not assignable to type '{ tournamentGender?: "M" | "W"; tournamentNo?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
         Types of property 'tournamentGender' are incompatible.
           Type 'string' is not assignable to type '"M" | "W"'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:684`
-**Status**: 📌 Existing
-**Message**: 'withSetScores' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:700`
-**Status**: 📌 Existing
-**Message**: 'uniqueDates' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:717`
-**Status**: 📌 Existing
-**Message**: 'matchDate' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:748`
+**Location**: `components/MatchList/MatchListV2.tsx:665`
 **Status**: 📌 Existing
 **Message**: Property 'IN_PROGRESS' does not exist on type 'typeof MatchStatus'.
 
@@ -3986,7 +3173,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:748`
+**Location**: `components/MatchList/MatchListV2.tsx:665`
 **Status**: 📌 Existing
 **Message**: Property 'WARMUP' does not exist on type 'typeof MatchStatus'.
 
@@ -3994,63 +3181,23 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:749`
+**Location**: `components/MatchList/MatchListV2.tsx:666`
 **Status**: 📌 Existing
 **Message**: Property 'COMPLETED' does not exist on type 'typeof MatchStatus'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:787`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:790`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:800`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:805`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:805`
+**Location**: `components/MatchList/MatchListV2.tsx:722`
 **Status**: 📌 Existing
 **Message**: Property 'COMPLETED' does not exist on type 'typeof MatchStatus'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:805`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:825`
+**Location**: `components/MatchList/MatchListV2.tsx:742`
 **Status**: 📌 Existing
 **Message**: Argument of type 'BeachMatchCore[]' is not assignable to parameter of type 'ExtendedBeachMatch[]'.
   Type 'BeachMatchCore' is not assignable to type 'ExtendedBeachMatch' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -4062,149 +3209,46 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:847`
+**Location**: `components/MatchList/MatchListV2.tsx:764`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:853`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:877`
+**Location**: `components/MatchList/MatchListV2.tsx:794`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:900`
+**Location**: `components/MatchList/MatchListV2.tsx:860`
 **Status**: 📌 Existing
-**Message**: 'scrollReason' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:907`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:945`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:979`
-**Status**: 📌 Existing
-**Message**: 'triggerPendingAutoscroll' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1027`
-**Status**: 📌 Existing
-**Message**: 'formatTime' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1144`
-**Status**: 📌 Existing
-**Message**: 'getStatusDisplay' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1210`
-**Status**: 📌 Existing
-**Message**: 'finishedSets' is declared but its value is never read.
+**Message**: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:1223`
+**Location**: `components/MatchList/MatchListV2.tsx:1082`
 **Status**: 📌 Existing
 **Message**: Type '{ team1Sets: any; team2Sets: any; winner: undefined; setScores: any; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'winner' are incompatible.
-    Type 'undefined' is not assignable to type '2 | 1'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1238`
-**Status**: 📌 Existing
-**Message**: 'isLive' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1241`
-**Status**: 📌 Existing
-**Message**: 'matchTime' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1245`
-**Status**: 📌 Existing
-**Message**: Type '{ city?: string; country?: string; countryCode?: string; name?: string; venue?: string; defaultTimeZone?: string; startDate?: string; endDate?: string; } | { defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData | undefined'.
-  Type '{ defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-    Types of property 'defaultTimeZone' are incompatible.
-      Type 'string | undefined' is not assignable to type 'string'.
-        Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1251`
-**Status**: 📌 Existing
-**Message**: 'isToday' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchList/MatchListV2.tsx:1254`
-**Status**: 📌 Existing
-**Message**: Type '{ city?: string; country?: string; countryCode?: string; name?: string; venue?: string; defaultTimeZone?: string; startDate?: string; endDate?: string; } | { defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData | undefined'.
-  Type '{ defaultTimeZone: string | undefined; }' is not assignable to type 'TournamentData' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-    Types of property 'defaultTimeZone' are incompatible.
-      Type 'string | undefined' is not assignable to type 'string'.
-        Type 'undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type '1 | 2'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:1272`
+**Location**: `components/MatchList/MatchListV2.tsx:1110`
 **Status**: 📌 Existing
-**Message**: Type '{ match: BeachMatchCore; showStatusBadge: true; showReferee: true; showDuration: true; compact: false; variant: "default" | "live"; tournamentTimezone: string | undefined; tournamentData: { ...; } | undefined; liveScoreRefresh: number; }' is not assignable to type 'MatchCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ match: BeachMatchCore; showStatusBadge: true; showReferee: true; showDuration: true; compact: false; variant: "default" | "live"; tournamentTimezone: string | undefined; tournamentData: { ...; } | undefined; liveScoreRefresh: number; highlightedOfficial: string | undefined; }' is not assignable to type 'MatchCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournamentTimezone' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
       Type 'undefined' is not assignable to type 'string'.
@@ -4213,80 +3257,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchList/MatchListV2.tsx:1499`
+**Location**: `components/MatchList/MatchListV2.tsx:1341`
 **Status**: 📌 Existing
 **Message**: Type '{ children: Element[]; style: (false | { backgroundColor: string; paddingHorizontal: number; paddingVertical: number; marginTop: number; marginBottom: number; borderBottomWidth: number; ... 10 more ...; elevation: number; } | { ...; } | { ...; })[]; nativeID: string; onPress: () => void; activeOpacity: number; }' is not assignable to type 'IntrinsicAttributes & TouchableOpacityProps & RefAttributes<View>'.
   Property 'nativeID' does not exist on type 'IntrinsicAttributes & TouchableOpacityProps & RefAttributes<View>'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:15`
-**Status**: 📌 Existing
-**Message**: 'TextStyle' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:19`
-**Status**: 📌 Existing
-**Message**: 'EnhancedMatchResult' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:20`
-**Status**: 📌 Existing
-**Message**: 'SetScore' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:21`
-**Status**: 📌 Existing
-**Message**: 'ResultValidationError' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:41`
-**Status**: 📌 Existing
-**Message**: 'showQuickActions' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:42`
-**Status**: 📌 Existing
-**Message**: 'onScoreUpdate' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:43`
-**Status**: 📌 Existing
-**Message**: 'onSubmit' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:44`
-**Status**: 📌 Existing
-**Message**: 'onSpecialResult' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:68`
+**Location**: `components/MatchResult/MatchResultCard.tsx:59`
 **Status**: 📌 Existing
 **Message**: Property 'Sync' does not exist on type '{ Current: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Upcoming: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Completed: MemoExoticComponent<...>; Cancelled: MemoExoticComponent<...>; Emergency: MemoExoticComponent<...>; }'.
 
@@ -4294,43 +3274,75 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:80`
+**Location**: `components/MatchResult/MatchResultCard.tsx:71`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:88`
-**Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:96`
-**Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:104`
-**Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:111`
+**Location**: `components/MatchResult/MatchResultCard.tsx:73`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:79`
+**Status**: 📌 Existing
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:81`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:87`
+**Status**: 📌 Existing
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:89`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:95`
+**Status**: 📌 Existing
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+  Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:97`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:102`
 **Status**: 📌 Existing
 **Message**: Property 'Time' does not exist on type '{ List: MemoExoticComponent<(props: CommonIconProps) => Element>; Grid: MemoExoticComponent<(props: CommonIconProps) => Element>; Details: MemoExoticComponent<...>; Stats: MemoExoticComponent<...>; }'.
 
@@ -4338,9 +3350,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:123`
+**Location**: `components/MatchResult/MatchResultCard.tsx:114`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4350,9 +3362,21 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:124`
+**Location**: `components/MatchResult/MatchResultCard.tsx:115`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:119`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4364,7 +3388,31 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:128`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:133`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:134`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4374,25 +3422,13 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:137`
+**Location**: `components/MatchResult/MatchResultCard.tsx:135`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:142`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -4400,11 +3436,11 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:143`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -4412,7 +3448,7 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:144`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4422,9 +3458,21 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:152`
+**Location**: `components/MatchResult/MatchResultCard.tsx:145`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:158`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4434,45 +3482,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:153`
+**Location**: `components/MatchResult/MatchResultCard.tsx:160`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:154`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:167`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:169`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4482,7 +3494,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:170`
+**Location**: `components/MatchResult/MatchResultCard.tsx:161`
 **Status**: 📌 Existing
 **Message**: Property 'Warning' does not exist on type '{ Help: MemoExoticComponent<(props: CommonIconProps) => Element>; Info: MemoExoticComponent<(props: CommonIconProps) => Element>; External: MemoExoticComponent<...>; }'.
 
@@ -4490,9 +3502,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:176`
+**Location**: `components/MatchResult/MatchResultCard.tsx:167`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4502,9 +3514,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:177`
+**Location**: `components/MatchResult/MatchResultCard.tsx:168`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4514,9 +3526,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:191`
+**Location**: `components/MatchResult/MatchResultCard.tsx:182`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4526,7 +3538,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:192`
+**Location**: `components/MatchResult/MatchResultCard.tsx:183`
 **Status**: 📌 Existing
 **Message**: Property 'Sync' does not exist on type '{ Current: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Upcoming: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Completed: MemoExoticComponent<...>; Cancelled: MemoExoticComponent<...>; Emergency: MemoExoticComponent<...>; }'.
 
@@ -4534,9 +3546,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:197`
+**Location**: `components/MatchResult/MatchResultCard.tsx:188`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4546,9 +3558,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:209`
+**Location**: `components/MatchResult/MatchResultCard.tsx:200`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4558,9 +3570,21 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:210`
+**Location**: `components/MatchResult/MatchResultCard.tsx:201`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:202`
+**Status**: 📌 Existing
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4572,19 +3596,7 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:211`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:220`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4594,13 +3606,61 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:221`
+**Location**: `components/MatchResult/MatchResultCard.tsx:212`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
         Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:214`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:216`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:217`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:218`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -4608,7 +3668,19 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:223`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:224`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4620,11 +3692,11 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:225`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -4632,35 +3704,11 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:226`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
         Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:227`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:232`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -4668,11 +3716,11 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:233`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -4680,7 +3728,7 @@
 
 **Location**: `components/MatchResult/MatchResultCard.tsx:234`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4690,9 +3738,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:235`
+**Location**: `components/MatchResult/MatchResultCard.tsx:237`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4702,45 +3750,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:242`
+**Location**: `components/MatchResult/MatchResultCard.tsx:244`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:243`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:246`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCard.tsx:253`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4750,7 +3762,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:254`
+**Location**: `components/MatchResult/MatchResultCard.tsx:245`
 **Status**: 📌 Existing
 **Message**: Property 'Weather' does not exist on type '{ Help: MemoExoticComponent<(props: CommonIconProps) => Element>; Info: MemoExoticComponent<(props: CommonIconProps) => Element>; External: MemoExoticComponent<...>; }'.
 
@@ -4758,9 +3770,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:259`
+**Location**: `components/MatchResult/MatchResultCard.tsx:250`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4770,9 +3782,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:275`
+**Location**: `components/MatchResult/MatchResultCard.tsx:266`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -4782,9 +3794,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:276`
+**Location**: `components/MatchResult/MatchResultCard.tsx:267`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -4792,9 +3804,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:275`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'ViewStyle'.
+
+---
+
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:290`
+**Location**: `components/MatchResult/MatchResultCard.tsx:281`
 **Status**: 📌 Existing
 **Message**: Property 'shadowColor' does not exist on type 'ColorToken'.
 
@@ -4802,7 +3822,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:291`
+**Location**: `components/MatchResult/MatchResultCard.tsx:282`
 **Status**: 📌 Existing
 **Message**: Property 'shadows' does not exist on type 'DesignTokens'.
 
@@ -4810,7 +3830,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:292`
+**Location**: `components/MatchResult/MatchResultCard.tsx:283`
 **Status**: 📌 Existing
 **Message**: Property 'shadows' does not exist on type 'DesignTokens'.
 
@@ -4818,7 +3838,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:293`
+**Location**: `components/MatchResult/MatchResultCard.tsx:284`
 **Status**: 📌 Existing
 **Message**: Property 'shadows' does not exist on type 'DesignTokens'.
 
@@ -4826,72 +3846,64 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:294`
+**Location**: `components/MatchResult/MatchResultCard.tsx:285`
 **Status**: 📌 Existing
 **Message**: Property 'shadows' does not exist on type 'DesignTokens'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:289`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'ViewStyle'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:355`
+**Location**: `components/MatchResult/MatchResultCard.tsx:346`
 **Status**: 📌 Existing
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCard.tsx:404`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:444`
+**Location**: `components/MatchResult/MatchResultCard.tsx:435`
 **Status**: 📌 Existing
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCard.tsx:503`
+**Location**: `components/MatchResult/MatchResultCard.tsx:494`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:15`
-**Status**: 📌 Existing
-**Message**: 'ViewStyle' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:16`
-**Status**: 📌 Existing
-**Message**: 'TextStyle' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:60`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:78`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:76`
 **Status**: 📌 Existing
 **Message**: Type '{ completed: true; homeScore?: number; awayScore?: number; }' is not assignable to type 'SetScore'.
   Property 'homeScore' is optional in type '{ completed: true; homeScore?: number; awayScore?: number; }' but required in type 'SetScore'.
@@ -4900,7 +3912,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:104`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:102`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ specialResult: SpecialResult; specialResultNotes: string | undefined; status: "Finished"; resultStatus: "submitted"; lastModified: Date; matchType: MatchType; ... 34 more ...; round: string; }' is not assignable to parameter of type 'EnhancedMatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'specialResultNotes' are incompatible.
@@ -4911,12 +3923,24 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:110`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:108`
 **Status**: 📌 Existing
 **Message**: Type '{ matchResult: EnhancedMatchResult; variant: "beach"; onPress: ((matchResult: EnhancedMatchResult) => void) | undefined; }' is not assignable to type 'MatchResultCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'onPress' are incompatible.
     Type '((matchResult: EnhancedMatchResult) => void) | undefined' is not assignable to type '(matchResult: EnhancedMatchResult) => void'.
       Type 'undefined' is not assignable to type '(matchResult: EnhancedMatchResult) => void'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:117`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -4934,19 +3958,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:121`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:122`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:120`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -4958,9 +3970,21 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:123`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:121`
 **Status**: 📌 Existing
 **Message**: Property 'Beach' does not exist on type '{ Current: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Upcoming: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Completed: MemoExoticComponent<...>; Cancelled: MemoExoticComponent<...>; Emergency: MemoExoticComponent<...>; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:122`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -4978,7 +4002,19 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:126`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:130`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:131`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -4992,11 +4028,11 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:132`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -5014,31 +4050,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:134`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:135`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:139`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:137`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5050,7 +4062,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:155`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:153`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5062,7 +4074,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:156`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:154`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5074,7 +4086,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:157`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:155`
 **Status**: 📌 Existing
 **Message**: Property 'Weather' does not exist on type '{ Help: MemoExoticComponent<(props: CommonIconProps) => Element>; Info: MemoExoticComponent<(props: CommonIconProps) => Element>; External: MemoExoticComponent<...>; }'.
 
@@ -5082,13 +4094,25 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:158`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:156`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
         Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:158`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -5106,19 +4130,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:162`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:166`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:164`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5130,7 +4142,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:169`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:167`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5142,7 +4154,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:173`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:171`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5154,7 +4166,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:176`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:174`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5166,13 +4178,25 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:180`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:178`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
         Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:184`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -5188,29 +4212,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:188`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:192`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:190`
 **Status**: 📌 Existing
-**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:193`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:191`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5222,7 +4234,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:198`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:196`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5234,15 +4246,15 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:208`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:206`
 **Status**: 📌 Existing
-**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:209`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:207`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5252,25 +4264,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:244`
-**Status**: 📌 Existing
-**Message**: 'setStatistics' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:259`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:274`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:272`
 **Status**: 📌 Existing
 **Message**: Type '{ completed: true; homeScore?: number; awayScore?: number; }' is not assignable to type 'SetScore'.
   Property 'homeScore' is optional in type '{ completed: true; homeScore?: number; awayScore?: number; }' but required in type 'SetScore'.
@@ -5279,7 +4275,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:297`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:295`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ specialResult: SpecialResult; specialResultNotes: string | undefined; status: "Finished"; resultStatus: "submitted"; lastModified: Date; matchType: MatchType; ... 34 more ...; round: string; }' is not assignable to parameter of type 'EnhancedMatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'specialResultNotes' are incompatible.
@@ -5290,12 +4286,24 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:303`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:301`
 **Status**: 📌 Existing
 **Message**: Type '{ matchResult: EnhancedMatchResult; variant: "indoor"; onPress: ((matchResult: EnhancedMatchResult) => void) | undefined; }' is not assignable to type 'MatchResultCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'onPress' are incompatible.
     Type '((matchResult: EnhancedMatchResult) => void) | undefined' is not assignable to type '(matchResult: EnhancedMatchResult) => void'.
       Type 'undefined' is not assignable to type '(matchResult: EnhancedMatchResult) => void'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:310`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -5313,19 +4321,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:314`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:315`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:313`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5337,9 +4333,21 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:316`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:314`
 **Status**: 📌 Existing
 **Message**: Property 'Indoor' does not exist on type '{ Current: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Upcoming: MemoExoticComponent<(props: Omit<StatusIconProps, "status">) => Element>; Completed: MemoExoticComponent<...>; Cancelled: MemoExoticComponent<...>; Emergency: MemoExoticComponent<...>; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:315`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -5357,7 +4365,19 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:319`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:323`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:324`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5371,11 +4391,11 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:325`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -5393,37 +4413,37 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:327`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:328`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:332`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:330`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
         Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:346`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:347`
+**Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -5443,6 +4463,18 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:349`
 **Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:350`
+**Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -5453,31 +4485,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:350`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:351`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:352`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5491,6 +4499,18 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:353`
 **Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:354`
+**Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -5502,18 +4522,6 @@
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:355`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:356`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5527,6 +4535,18 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:357`
 **Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
+    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'cursor' are incompatible.
+        Type 'string' is not assignable to type 'CursorValue | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:358`
+**Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -5539,35 +4559,23 @@
 
 **Location**: `components/MatchResult/MatchResultCardVariants.tsx:359`
 **Status**: 📌 Existing
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
+  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
+    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'userSelect' are incompatible.
+        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:365`
+**Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
         Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:360`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:361`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
 
 ---
 
@@ -5583,29 +4591,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:369`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:373`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:371`
 **Status**: 📌 Existing
-**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:374`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:372`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
@@ -5617,7 +4613,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:379`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:377`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
@@ -5629,43 +4625,27 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:386`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:384`
 **Status**: 📌 Existing
-**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:387`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:385`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
         Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:416`
-**Status**: 📌 Existing
-**Message**: 'quickResult' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:416`
-**Status**: 📌 Existing
-**Message**: 'setQuickResult' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:443`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:441`
 **Status**: 📌 Existing
 **Message**: Type '{ specialResult: SpecialResult; specialResultNotes: string | undefined; status: "Finished"; resultStatus: "submitted"; lastModified: Date; matchType: MatchType; ... 34 more ...; round: string; }' is not assignable to type 'EnhancedMatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'specialResultNotes' are incompatible.
@@ -5676,15 +4656,15 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:460`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:458`
 **Status**: 📌 Existing
-**Message**: Property 'Fast' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Fast' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:468`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:466`
 **Status**: 📌 Existing
 **Message**: Property 'Close' does not exist on type '{ Help: MemoExoticComponent<(props: CommonIconProps) => Element>; Info: MemoExoticComponent<(props: CommonIconProps) => Element>; External: MemoExoticComponent<...>; }'.
 
@@ -5692,72 +4672,112 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:474`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:472`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; marginBottom: number; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
-  Type '{ color: string; marginBottom: number; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:479`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:477`
 **Status**: 📌 Existing
 **Message**: Type '{ color: string; marginHorizontal: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
   Type '{ color: string; marginHorizontal: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:515`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:513`
 **Status**: 📌 Existing
-**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Alert' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:558`
-**Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
-    Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:614`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:556`
 **Status**: 📌 Existing
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/MatchResultCardVariants.tsx:685`
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:612`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:644`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:683`
+**Status**: 📌 Existing
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:766`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:864`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:868`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/MatchResultCardVariants.tsx:879`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/QuickActions.tsx:17`
 **Status**: 📌 Existing
-**Message**: 'ViewStyle' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_ViewStyle'. Did you mean 'ViewStyle'?
 
 ---
 
@@ -5769,19 +4789,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:20`
-**Status**: 📌 Existing
-**Message**: 'QuickActionProps' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/MatchResult/QuickActions.tsx:107`
 **Status**: 📌 Existing
-**Message**: Type '"Stop"' is not assignable to type '"Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
+**Message**: Type '"Stop"' is not assignable to type '"Tournament" | "Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
 
 ---
 
@@ -5789,7 +4801,7 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:114`
 **Status**: 📌 Existing
-**Message**: Type '"Pause"' is not assignable to type '"Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
+**Message**: Type '"Pause"' is not assignable to type '"Tournament" | "Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
 
 ---
 
@@ -5797,7 +4809,7 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:121`
 **Status**: 📌 Existing
-**Message**: Type '"Alert"' is not assignable to type '"Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
+**Message**: Type '"Alert"' is not assignable to type '"Tournament" | "Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
 
 ---
 
@@ -5805,7 +4817,7 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:128`
 **Status**: 📌 Existing
-**Message**: Type '"Weather"' is not assignable to type '"Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
+**Message**: Type '"Weather"' is not assignable to type '"Tournament" | "Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
 
 ---
 
@@ -5813,19 +4825,7 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:135`
 **Status**: 📌 Existing
-**Message**: Type '"More"' is not assignable to type '"Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:147`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '"More"' is not assignable to type '"Tournament" | "Edit" | "Delete" | "Add" | "Refresh" | "Filter" | "Search" | "Close" | "Profile"'.
 
 ---
 
@@ -5840,85 +4840,12 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/MatchResult/QuickActions.tsx:161`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
 **Location**: `components/MatchResult/QuickActions.tsx:166`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:182`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:183`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:185`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:186`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:188`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '{ color: string; flex: number; textAlign: "right"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; flex: number; textAlign: "right"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -5934,95 +4861,10 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:203`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:208`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:214`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:220`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:233`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:234`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:236`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:237`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ color: string; marginBottom: number; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginBottom: number; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6030,11 +4872,10 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:243`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ color: string; marginBottom: number; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginBottom: number; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6042,11 +4883,10 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:249`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ borderWidth: number; borderColor: string | undefined; borderRadius: number; padding: number; marginBottom: number; minHeight: number; textAlignVertical: "top"; backgroundColor: string | undefined; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ borderWidth: number; borderColor: string | undefined; borderRadius: number; padding: number; marginBottom: number; minHeight: number; textAlignVertical: "top"; backgroundColor: string | undefined; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6054,115 +4894,42 @@
 
 **Location**: `components/MatchResult/QuickActions.tsx:264`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ color: string; textAlign: "right"; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; textAlign: "right"; marginBottom: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:269`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:271`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:277`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:282`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:283`
-**Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/QuickActions.tsx:291`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:16`
 **Status**: 📌 Existing
-**Message**: 'ViewStyle' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_ViewStyle'. Did you mean 'ViewStyle'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:17`
 **Status**: 📌 Existing
-**Message**: 'TextStyle' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_TextStyle'. Did you mean 'TextStyle'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:23`
 **Status**: 📌 Existing
-**Message**: 'needsSync' is declared but its value is never read.
+**Message**: '"../../utils/matchResults"' has no exported member named '_needsSync'. Did you mean 'needsSync'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:24`
 **Status**: 📌 Existing
-**Message**: 'getResultStatusText' is declared but its value is never read.
+**Message**: '"../../utils/matchResults"' has no exported member named '_getResultStatusText'. Did you mean 'getResultStatusText'?
 
 ---
 
@@ -6178,8 +4945,16 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:228`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:230`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -6203,7 +4978,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:264`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6215,7 +4990,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:265`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6227,7 +5002,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:267`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6239,7 +5014,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:268`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6251,7 +5026,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:271`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6263,7 +5038,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:277`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6275,7 +5050,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:278`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6287,7 +5062,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:282`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6299,7 +5074,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:288`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6311,7 +5086,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:289`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6323,7 +5098,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:292`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6335,7 +5110,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:296`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6347,7 +5122,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:309`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6359,7 +5134,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:310`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6371,7 +5146,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:316`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6383,7 +5158,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:317`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6395,7 +5170,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:320`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6407,7 +5182,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:324`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6419,7 +5194,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:326`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6431,7 +5206,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:327`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6443,7 +5218,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:328`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6455,7 +5230,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:332`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6467,7 +5242,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:350`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6479,7 +5254,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:351`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6491,7 +5266,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:353`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6503,7 +5278,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:354`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6515,7 +5290,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:357`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6535,7 +5310,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:378`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6555,7 +5330,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:384`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6567,7 +5342,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:389`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6579,7 +5354,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:392`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6591,7 +5366,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:397`
 **Status**: 📌 Existing
-**Message**: Property 'Undo' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Undo' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -6599,7 +5374,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:402`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6611,7 +5386,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:407`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6623,7 +5398,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:408`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6635,7 +5410,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:417`
 **Status**: 📌 Existing
-**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Submit' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -6643,7 +5418,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:423`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6655,7 +5430,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:431`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6667,7 +5442,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:435`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6679,7 +5454,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:450`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6691,7 +5466,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:451`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6703,7 +5478,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:452`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6715,7 +5490,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:453`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6727,7 +5502,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:457`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6739,7 +5514,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:459`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6751,7 +5526,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:463`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6763,7 +5538,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:467`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -6775,7 +5550,7 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:474`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -6787,10 +5562,10 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:540`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -6798,10 +5573,18 @@
 
 **Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:572`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; textAlign: "center"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; textAlign: "center"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; textAlign: "center"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:611`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -6812,67 +5595,31 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ResultSubmissionWorkflow.tsx:641`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:15`
 **Status**: 📌 Existing
-**Message**: 'ViewStyle' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_ViewStyle'. Did you mean 'ViewStyle'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:16`
 **Status**: 📌 Existing
-**Message**: 'TextStyle' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:108`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:125`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:128`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:128`
-**Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: '"react-native"' has no exported member named '_TextStyle'. Did you mean 'TextStyle'?
 
 ---
 
@@ -6880,67 +5627,7 @@
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:135`
 **Status**: 📌 Existing
-**Message**: Property 'Minus' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:143`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:146`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:158`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:166`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:166`
-**Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Property 'Minus' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -6948,31 +5635,7 @@
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:173`
 **Status**: 📌 Existing
-**Message**: Property 'Plus' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:186`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:188`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Property 'Plus' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -6988,71 +5651,10 @@
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:195`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:196`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:207`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:209`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:210`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:212`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '{ marginLeft: number; flex: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Type '{ marginLeft: number; flex: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -7064,123 +5666,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/MatchResult/ScoreEntry.tsx:218`
+**Location**: `components/MatchResult/ScoreEntry.tsx:216`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:224`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:226`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:227`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:239`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:240`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:244`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:245`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:264`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:265`
-**Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -7192,18 +5682,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/MatchResult/ScoreEntry.tsx:279`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `components/MatchResult/ScoreEntry.tsx:286`
@@ -7212,11 +5690,35 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ScoreEntry.tsx:294`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ScoreEntry.tsx:313`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/ScoreEntry.tsx:407`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:15`
 **Status**: 📌 Existing
-**Message**: 'ViewStyle' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_ViewStyle'. Did you mean 'ViewStyle'?
 
 ---
 
@@ -7230,25 +5732,25 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:18`
-**Status**: 📌 Existing
-**Message**: 'ResultStatus' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/MatchResult/SyncStatusIndicator.tsx:19`
-**Status**: 📌 Existing
-**Message**: 'getResultStatusText' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:88`
 **Status**: 📌 Existing
 **Message**: 'syncPending' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/SyncStatusIndicator.tsx:126`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/SyncStatusIndicator.tsx:136`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -7273,7 +5775,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:202`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7285,7 +5787,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:203`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7297,7 +5799,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:204`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7309,7 +5811,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:212`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7321,7 +5823,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:220`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7333,7 +5835,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:221`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7345,7 +5847,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:222`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7357,7 +5859,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:224`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7369,7 +5871,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:226`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7381,7 +5883,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:227`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7393,7 +5895,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:230`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7405,7 +5907,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:239`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7417,7 +5919,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:240`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7438,7 +5940,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:250`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & CommonIconProps'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & CommonIconProps'.
   Property 'width' does not exist on type 'IntrinsicAttributes & CommonIconProps'.
 
 ---
@@ -7447,7 +5949,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:253`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7459,7 +5961,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:254`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7471,7 +5973,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:265`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7483,7 +5985,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:266`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7495,7 +5997,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:267`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7507,7 +6009,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:268`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7519,7 +6021,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:270`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7531,7 +6033,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:272`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7543,7 +6045,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:273`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7555,7 +6057,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:276`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7567,7 +6069,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:284`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -7579,7 +6081,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:288`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -7591,7 +6093,7 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:291`
 **Status**: 📌 Existing
-**Message**: Property 'ChevronRight' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'ChevronRight' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -7610,7 +6112,23 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/SyncStatusIndicator.tsx:413`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/MatchResult/SyncStatusIndicator.tsx:414`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -7618,10 +6136,18 @@
 
 **Location**: `components/MatchResult/SyncStatusIndicator.tsx:431`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/navigation/BottomTabNavigation.tsx:58`
+**Status**: 📌 Existing
+**Message**: Property '_currentAssignmentStatus' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
@@ -7629,7 +6155,15 @@
 
 **Location**: `components/navigation/BottomTabNavigation.tsx:58`
 **Status**: 📌 Existing
-**Message**: 'currentAssignmentStatus' is declared but its value is never read.
+**Message**: '_currentAssignmentStatus' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/navigation/BottomTabNavigation.tsx:59`
+**Status**: 📌 Existing
+**Message**: Property '_statusCounts' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
@@ -7637,7 +6171,7 @@
 
 **Location**: `components/navigation/BottomTabNavigation.tsx:59`
 **Status**: 📌 Existing
-**Message**: 'statusCounts' is declared but its value is never read.
+**Message**: '_statusCounts' is declared but its value is never read.
 
 ---
 
@@ -7649,129 +6183,26 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:24`
+**Location**: `components/navigation/GmailStyleSideMenu.tsx:14`
 **Status**: 📌 Existing
-**Message**: 'TournamentStorageService' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_Dimensions'. Did you mean 'Dimensions'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:25`
+**Location**: `components/navigation/GmailStyleSideMenu.tsx:408`
 **Status**: 📌 Existing
-**Message**: 'TimezoneToggle' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:66`
-**Status**: 📌 Existing
-**Message**: 'onToggleFavorite' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:71`
-**Status**: 📌 Existing
-**Message**: 'isDefault' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:120`
-**Status**: 📌 Existing
-**Message**: 'chevronRotation' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:152`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:180`
-**Status**: 📌 Existing
-**Message**: 'screenWidth' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:186`
-**Status**: 📌 Existing
-**Message**: 'currentTournament' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:195`
-**Status**: 📌 Existing
-**Message**: 'isLoadingDefault' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:196`
-**Status**: 📌 Existing
-**Message**: 'defaultTournamentExpanded' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:196`
-**Status**: 📌 Existing
-**Message**: 'setDefaultTournamentExpanded' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:200`
-**Status**: 📌 Existing
-**Message**: 'defaultExpanded' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:200`
-**Status**: 📌 Existing
-**Message**: 'setDefaultExpanded' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:201`
-**Status**: 📌 Existing
-**Message**: 'defaultSubmenuExpanded' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/navigation/GmailStyleSideMenu.tsx:201`
-**Status**: 📌 Existing
-**Message**: 'setDefaultSubmenuExpanded' is declared but its value is never read.
+**Message**: Type '{ key: string; tournament: TournamentCore; isExpanded: boolean; onToggleExpand: () => void; onSubMenuPress: (route: string, tournament: TournamentCore) => void; onToggleFavorite: () => Promise<...>; }' is not assignable to type 'IntrinsicAttributes & TournamentMenuItemProps'.
+  Property 'onToggleFavorite' does not exist on type 'IntrinsicAttributes & TournamentMenuItemProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/navigation/NavigationHeader.tsx:90`
+**Location**: `components/navigation/NavigationHeader.tsx:89`
 **Status**: 📌 Existing
 **Message**: Type '{ onStatusPress: (() => void) | undefined; compact: false; }' is not assignable to type 'GlobalStatusBarProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'onStatusPress' are incompatible.
@@ -7780,11 +6211,28 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `components/navigation/NavigationHeader.tsx:162`
+**Status**: 📌 Existing
+**Message**: Type '{ isVisible: boolean; onClose: () => void; currentTournament: any; }' is not assignable to type 'IntrinsicAttributes & GmailStyleSideMenuProps'.
+  Property 'currentTournament' does not exist on type 'IntrinsicAttributes & GmailStyleSideMenuProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/navigation/SideMenu.tsx:30`
+**Status**: 📌 Existing
+**Message**: Property '_icon' does not exist on type 'MenuItemProps'.
+
+---
+
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `components/navigation/SideMenu.tsx:30`
 **Status**: 📌 Existing
-**Message**: 'icon' is declared but its value is never read.
+**Message**: '_icon' is declared but its value is never read.
 
 ---
 
@@ -7817,19 +6265,27 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `components/referee/RefereeList.tsx:24`
 **Status**: 📌 Existing
-**Message**: 'onBack' is declared but its value is never read.
+**Message**: Property '_onBack' does not exist on type 'RefereeListProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `components/referee/TournamentRefereeList.tsx:6`
+**Location**: `components/referee/RefereeList.tsx:24`
 **Status**: 📌 Existing
-**Message**: 'EnhancedTournamentStats' is declared but its value is never read.
+**Message**: '_onBack' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6196`)
+
+**Location**: `components/referee/TournamentRefereeList.tsx:27`
+**Status**: 📌 Existing
+**Message**: 'StatsTab' is declared but never used.
 
 ---
 
@@ -7841,57 +6297,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:59`
-**Status**: 📌 Existing
-**Message**: 'handleProfilePress' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:75`
-**Status**: 📌 Existing
-**Message**: 'setActiveTab' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:77`
-**Status**: 📌 Existing
-**Message**: 'seasonStats' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:77`
-**Status**: 📌 Existing
-**Message**: 'setSeasonStats' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:78`
-**Status**: 📌 Existing
-**Message**: 'careerStats' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:78`
-**Status**: 📌 Existing
-**Message**: 'setCareerStats' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/referee/TournamentRefereeList.tsx:124`
+**Location**: `components/referee/TournamentRefereeList.tsx:103`
 **Status**: 📌 Existing
 **Message**: Property 'stats' does not exist on type '{}'.
 
@@ -7899,47 +6307,15 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/referee/TournamentRefereeList.tsx:125`
+**Location**: `components/referee/TournamentRefereeList.tsx:104`
 **Status**: 📌 Existing
 **Message**: Property 'recentMatches' does not exist on type '{}'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:282`
-**Status**: 📌 Existing
-**Message**: 'matchData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:505`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:510`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:638`
-**Status**: 📌 Existing
-**Message**: Property 'text' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }'.
-
----
-
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `components/referee/TournamentRefereeList.tsx:799`
+**Location**: `components/referee/TournamentRefereeList.tsx:800`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -8287,7 +6663,7 @@
 
 **Location**: `components/RefereeAnalytics/RefereeAnalyticsWithSync.tsx:149`
 **Status**: 📌 Existing
-**Message**: Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -8295,7 +6671,7 @@
 
 **Location**: `components/RefereeAnalytics/RefereeAnalyticsWithSync.tsx:171`
 **Status**: 📌 Existing
-**Message**: Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+**Message**: Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -8392,30 +6768,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/LiveIndicator.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'spacing' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/LiveIndicator.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'createShadow' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/ProfessionalStatusBadge.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'StyleSheet' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `components/Status/ProfessionalStatusBadge.tsx:76`
@@ -8427,19 +6779,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/ProfessionalStatusIcon.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'designTokens' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/Status/ProfessionalStatusIcon.tsx:16`
 **Status**: 📌 Existing
-**Message**: 'getAccessibilityPattern' is declared but its value is never read.
+**Message**: '"../../utils/statusIndicators"' has no exported member named '_getAccessibilityPattern'. Did you mean 'getAccessibilityPattern'?
 
 ---
 
@@ -8459,17 +6803,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusBadge.tsx:78`
-**Status**: 📌 Existing
-**Message**: 'statusTheme' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Status/StatusBadge.tsx:129`
+**Location**: `components/Status/StatusBadge.tsx:128`
 **Status**: 📌 Existing
 **Message**: Type 'ViewStyle | undefined' is not assignable to type 'ViewStyle'.
   Type 'undefined' is not assignable to type 'ViewStyle'.
@@ -8478,7 +6814,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/Status/StatusBadge.tsx:138`
+**Location**: `components/Status/StatusBadge.tsx:137`
 **Status**: 📌 Existing
 **Message**: Type 'TextStyle | undefined' is not assignable to type 'TextStyle'.
   Type 'undefined' is not assignable to type 'TextStyle'.
@@ -8493,27 +6829,67 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2552`)
 
-**Location**: `components/Status/StatusCard.tsx:11`
+**Location**: `components/Status/StatusCard.tsx:108`
 **Status**: 📌 Existing
-**Message**: 'Text' is declared but its value is never read.
+**Message**: Cannot find name 'H2Text'. Did you mean 'Text'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2552`)
 
-**Location**: `components/Status/StatusContext.tsx:10`
+**Location**: `components/Status/StatusCard.tsx:110`
 **Status**: 📌 Existing
-**Message**: 'createStatusIndicatorContext' is declared but its value is never read.
+**Message**: Cannot find name 'H2Text'. Did you mean 'Text'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `components/Status/StatusContext.tsx:68`
+**Location**: `components/Status/StatusCard.tsx:112`
 **Status**: 📌 Existing
-**Message**: 'event' is declared but its value is never read.
+**Message**: Cannot find name 'BodyText'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/Status/StatusCard.tsx:114`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'BodyText'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/Status/StatusCard.tsx:119`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'BodyText'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/Status/StatusCard.tsx:121`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'BodyText'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/Status/StatusCard.tsx:131`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'CaptionText'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `components/Status/StatusCard.tsx:133`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'CaptionText'.
 
 ---
 
@@ -8525,27 +6901,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusHelpSystem.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'StatusIndicatorSize' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/Status/StatusHelpSystem.tsx:14`
 **Status**: 📌 Existing
-**Message**: 'getStatusText' is declared but its value is never read.
+**Message**: '"../../utils/statusIndicators"' has no exported member named '_getStatusText'. Did you mean 'getStatusText'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/Status/StatusHelpSystem.tsx:15`
 **Status**: 📌 Existing
-**Message**: 'getStatusCategory' is declared but its value is never read.
+**Message**: '"../../utils/statusIndicators"' has no exported member named '_getStatusCategory'. Did you mean 'getStatusCategory'?
 
 ---
 
@@ -8562,14 +6930,6 @@
 **Location**: `components/Status/StatusHelpSystem.tsx:306`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'IconSize'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusIcon.tsx:17`
-**Status**: 📌 Existing
-**Message**: 'spacing' is declared but its value is never read.
 
 ---
 
@@ -8596,31 +6956,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; marginLeft: number; }' is not assignable to type 'StyleProp<TextStyle>'.
   Type '{ color: string; fontSize: number; fontWeight: string; marginLeft: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusIndicatorVariants.tsx:9`
-**Status**: 📌 Existing
-**Message**: 'StyleSheet' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusIndicatorVariants.tsx:12`
-**Status**: 📌 Existing
-**Message**: 'ProfessionalStatusIcon' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusIndicatorVariants.tsx:14`
-**Status**: 📌 Existing
-**Message**: 'getStatusSize' is declared but its value is never read.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -8629,14 +6965,6 @@
 **Location**: `components/Status/StatusIndicatorVariants.tsx:325`
 **Status**: 📌 Existing
 **Message**: 'variant' is specified more than once, so this usage will be overwritten.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Status/StatusSizeSystem.tsx:8`
-**Status**: 📌 Existing
-**Message**: 'React' is declared but its value is never read.
 
 ---
 
@@ -8652,7 +6980,7 @@
 
 **Location**: `components/StorageManager.tsx:23`
 **Status**: 📌 Existing
-**Message**: Property 'isOnline' does not exist on type 'OfflineSyncResult'.
+**Message**: Property '_isOnline' does not exist on type 'OfflineSyncResult'.
 
 ---
 
@@ -8660,7 +6988,7 @@
 
 **Location**: `components/StorageManager.tsx:23`
 **Status**: 📌 Existing
-**Message**: 'isOnline' is declared but its value is never read.
+**Message**: '_isOnline' is declared but its value is never read.
 
 ---
 
@@ -8676,7 +7004,7 @@
 
 **Location**: `components/StorageManager.tsx:25`
 **Status**: 📌 Existing
-**Message**: Property 'lastSyncTime' does not exist on type 'OfflineSyncResult'.
+**Message**: Property '_lastSyncTime' does not exist on type 'OfflineSyncResult'.
 
 ---
 
@@ -8684,7 +7012,7 @@
 
 **Location**: `components/StorageManager.tsx:25`
 **Status**: 📌 Existing
-**Message**: 'lastSyncTime' is declared but its value is never read.
+**Message**: '_lastSyncTime' is declared but its value is never read.
 
 ---
 
@@ -8709,22 +7037,6 @@
 **Location**: `components/StorageManager.tsx:289`
 **Status**: 📌 Existing
 **Message**: Property 'queueSize' does not exist on type 'OfflineSyncResult'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/StorageManager.tsx:289`
-**Status**: 📌 Existing
-**Message**: Property 'isOnline' does not exist on type 'OfflineSyncResult'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/StorageManager.tsx:289`
-**Status**: 📌 Existing
-**Message**: 'isOnline' is declared but its value is never read.
 
 ---
 
@@ -8799,11 +7111,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/TouchTarget/TouchTargetVisualization.tsx:11`
 **Status**: 📌 Existing
-**Message**: 'Dimensions' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_Dimensions'. Did you mean 'Dimensions'?
 
 ---
 
@@ -8823,14 +7135,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TouchTarget/TouchTargetVisualization.tsx:287`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2430`)
 
 **Location**: `components/TouchTarget/types.ts:20`
@@ -8841,113 +7145,33 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'TournamentType' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'GenderType' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:14`
-**Status**: 📌 Existing
-**Message**: 'BeachMatchCore' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:15`
-**Status**: 📌 Existing
-**Message**: 'designTokens' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2307`)
 
-**Location**: `components/TournamentDetail.tsx:21`
+**Location**: `components/TournamentDetail.tsx:20`
 **Status**: 📌 Existing
 **Message**: Cannot find module '../hooks/useDataTransformation' or its corresponding type declarations.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:118`
-**Status**: 📌 Existing
-**Message**: 'setRankingData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:119`
-**Status**: 📌 Existing
-**Message**: 'setHasRankingData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:124`
-**Status**: 📌 Existing
-**Message**: 'loadingRelated' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `components/TournamentDetail.tsx:141`
+**Location**: `components/TournamentDetail.tsx:140`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'componentName' does not exist in type 'UsePerformanceMonitoringOptions'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:166`
-**Status**: 📌 Existing
-**Message**: 'tournamentWithStatus' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2739`)
 
-**Location**: `components/TournamentDetail.tsx:178`
+**Location**: `components/TournamentDetail.tsx:176`
 **Status**: 📌 Existing
 **Message**: Type 'TournamentCore' is missing the following properties from type 'Tournament': No, Name
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:200`
-**Status**: 📌 Existing
-**Message**: 'repositoryMatchesLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:200`
-**Status**: 📌 Existing
-**Message**: 'repositoryMatchesError' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `components/TournamentDetail.tsx:204`
+**Location**: `components/TournamentDetail.tsx:202`
 **Status**: 📌 Existing
 **Message**: Property 'getMatchesByTournamentAsync' does not exist on type 'IMatchRepository'. Did you mean 'getByTournamentAsync'?
 
@@ -8955,39 +7179,15 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `components/TournamentDetail.tsx:212`
+**Location**: `components/TournamentDetail.tsx:210`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'fallbackToLegacy' does not exist in type 'UseRepositoryDataOptions'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:233`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:238`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:239`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `components/TournamentDetail.tsx:249`
+**Location**: `components/TournamentDetail.tsx:247`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
@@ -8995,7 +7195,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `components/TournamentDetail.tsx:254`
+**Location**: `components/TournamentDetail.tsx:252`
 **Status**: 📌 Existing
 **Message**: Parameter 'tournamentMatches' implicitly has an 'any' type.
 
@@ -9003,55 +7203,23 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `components/TournamentDetail.tsx:254`
+**Location**: `components/TournamentDetail.tsx:252`
 **Status**: 📌 Existing
 **Message**: Parameter 'index' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:256`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `components/TournamentDetail.tsx:258`
+**Location**: `components/TournamentDetail.tsx:256`
 **Status**: 📌 Existing
 **Message**: Parameter 'match' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:261`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentDetail.tsx:262`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:274`
-**Status**: 📌 Existing
-**Message**: 'relatedTournamentsLoading' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/TournamentDetail.tsx:277`
+**Location**: `components/TournamentDetail.tsx:275`
 **Status**: 📌 Existing
 **Message**: Property 'findRelatedTournamentsAsync' does not exist on type 'ITournamentRepository'.
 
@@ -9059,7 +7227,7 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `components/TournamentDetail.tsx:283`
+**Location**: `components/TournamentDetail.tsx:281`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'fallbackToLegacy' does not exist in type 'UseRepositoryDataOptions'.
 
@@ -9067,25 +7235,33 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `components/TournamentDetail.tsx:309`
+**Location**: `components/TournamentDetail.tsx:307`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2561`)
 
-**Location**: `components/TournamentDetail.tsx:321`
+**Location**: `components/TournamentDetail.tsx:328`
 **Status**: 📌 Existing
-**Message**: 'cachedTournamentData' is declared but its value is never read.
+**Message**: Object literal may only specify known properties, but 'enableStaleWhileRevalidate' does not exist in type 'UseCacheAwareDataOptions'. Did you mean to write 'staleWhileRevalidate'?
 
 ---
 
-#### typescript-error (Rule: `typescript:2561`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `components/TournamentDetail.tsx:330`
+**Location**: `components/TournamentDetail.tsx:335`
 **Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, but 'enableStaleWhileRevalidate' does not exist in type 'UseCacheAwareDataOptions'. Did you mean to write 'staleWhileRevalidate'?
+**Message**: Property 'trackMetric' does not exist on type '[REDACTED]'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentDetail.tsx:336`
+**Status**: 📌 Existing
+**Message**: Property 'trackMetric' does not exist on type '[REDACTED]'.
 
 ---
 
@@ -9097,49 +7273,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentDetail.tsx:338`
-**Status**: 📌 Existing
-**Message**: Property 'trackMetric' does not exist on type '[REDACTED]'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `components/TournamentDetail.tsx:339`
-**Status**: 📌 Existing
-**Message**: Property 'trackMetric' does not exist on type '[REDACTED]'.
-
----
-
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `components/TournamentDetail.tsx:394`
+**Location**: `components/TournamentDetail.tsx:392`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'GenderType' and '"Mixed"' have no overlap.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:460`
-**Status**: 📌 Existing
-**Message**: 'filterReason' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentDetail.tsx:503`
-**Status**: 📌 Existing
-**Message**: 'statusForDisplay' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/TournamentDetail.tsx:695`
+**Location**: `components/TournamentDetail.tsx:683`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -9148,7 +7292,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/TournamentDetail.tsx:701`
+**Location**: `components/TournamentDetail.tsx:689`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -9157,7 +7301,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentDetail.tsx:1006`
+**Location**: `components/TournamentDetail.tsx:994`
 **Status**: 📌 Existing
 **Message**: Type '"compact"' is not assignable to type '"default" | "minimal" | "elevated"'.
 
@@ -9165,7 +7309,7 @@
 
 #### typescript-error (Rule: `typescript:2561`)
 
-**Location**: `components/TournamentDetail.tsx:1011`
+**Location**: `components/TournamentDetail.tsx:999`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, but 'Status' does not exist in type 'TournamentCore'. Did you mean to write 'status'?
 
@@ -9207,7 +7351,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:92`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9219,7 +7363,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:93`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9231,7 +7375,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:102`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9243,7 +7387,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:103`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9255,7 +7399,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:105`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9267,7 +7411,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:106`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9279,7 +7423,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:109`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9291,7 +7435,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:113`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9303,7 +7447,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:117`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9315,7 +7459,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:127`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9327,7 +7471,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:129`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9339,7 +7483,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:130`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9351,7 +7495,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:131`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9363,7 +7507,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:135`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9375,7 +7519,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:136`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9387,7 +7531,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:137`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9399,7 +7543,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:141`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9411,7 +7555,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:142`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9423,7 +7567,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:143`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9435,7 +7579,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:151`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9447,7 +7591,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:152`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9468,7 +7612,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:158`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9480,7 +7624,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:160`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9492,7 +7636,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:166`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9504,7 +7648,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:167`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9524,7 +7668,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:173`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9536,7 +7680,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:175`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9548,7 +7692,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:177`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9560,7 +7704,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:178`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9572,7 +7716,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:179`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9584,7 +7728,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:188`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9604,7 +7748,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:194`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9616,7 +7760,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:202`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9628,7 +7772,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:203`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9640,7 +7784,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:204`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9652,7 +7796,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:217`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9664,7 +7808,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:218`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9676,7 +7820,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:219`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9688,7 +7832,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:220`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9700,7 +7844,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:223`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9712,7 +7856,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:224`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9724,7 +7868,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:225`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9736,7 +7880,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:229`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9748,7 +7892,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:230`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9760,7 +7904,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:231`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9772,7 +7916,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:235`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9784,7 +7928,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:236`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9796,7 +7940,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:237`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9808,7 +7952,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:245`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9828,7 +7972,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:251`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9840,7 +7984,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:252`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9852,7 +7996,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:260`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9864,7 +8008,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:268`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9876,7 +8020,7 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:278`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9888,10 +8032,10 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:304`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -9899,10 +8043,10 @@
 
 **Location**: `components/TournamentInfo/CourtInformation.tsx:426`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -9950,7 +8094,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:152`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9962,7 +8106,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:153`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -9974,7 +8118,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:154`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -9986,7 +8130,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:158`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10006,7 +8150,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:169`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10018,7 +8162,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:172`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10030,7 +8174,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:185`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10042,7 +8186,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:191`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10054,7 +8198,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:192`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10074,7 +8218,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:198`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10086,7 +8230,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:199`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10098,7 +8242,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:200`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10110,7 +8254,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:203`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10122,7 +8266,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:205`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10134,7 +8278,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:206`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10146,7 +8290,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:209`
 **Status**: 📌 Existing
-**Message**: Property 'Phone' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 5 more ...; Profile: MemoExoticComponent<...>; }'.
+**Message**: Property 'Phone' does not exist on type '{ Edit: MemoExoticComponent<(props: CommonIconProps) => Element>; Delete: MemoExoticComponent<(props: CommonIconProps) => Element>; ... 6 more ...; Tournament: MemoExoticComponent<...>; }'.
 
 ---
 
@@ -10154,7 +8298,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:216`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10166,7 +8310,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:218`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10178,7 +8322,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:224`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10190,7 +8334,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:225`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10202,7 +8346,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:226`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10214,7 +8358,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:228`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10226,7 +8370,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:236`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10238,7 +8382,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:238`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10250,7 +8394,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:244`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10262,7 +8406,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:246`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10274,7 +8418,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:247`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10286,7 +8430,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:249`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10298,7 +8442,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:256`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10310,7 +8454,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:257`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10330,7 +8474,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:270`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10342,7 +8486,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:272`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10354,7 +8498,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:279`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10366,7 +8510,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:280`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10378,7 +8522,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:286`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10390,7 +8534,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:291`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10402,7 +8546,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:294`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10414,7 +8558,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:308`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10434,7 +8578,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:314`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10446,7 +8590,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:319`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10466,7 +8610,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:325`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10478,7 +8622,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:326`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10490,7 +8634,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:334`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10502,7 +8646,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:344`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10514,7 +8658,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:350`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10526,7 +8670,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:351`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10538,7 +8682,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:357`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10550,7 +8694,7 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:358`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10562,166 +8706,10 @@
 
 **Location**: `components/TournamentInfo/EmergencyInformation.tsx:485`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:91`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:93`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:115`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:116`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:118`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:123`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:125`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:145`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:147`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:152`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:166`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:168`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/ResponsiveLayout.tsx:199`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -10729,8 +8717,16 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:56`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:56`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -10738,8 +8734,16 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:61`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:61`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -10747,8 +8751,16 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:63`
 **Status**: 📌 Existing
-**Message**: Type '{ fill: string; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ fill: any; width: number; height: number; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'fill' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:63`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -10781,7 +8793,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:79`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10793,7 +8805,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:80`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10805,7 +8817,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:84`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10817,7 +8829,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:87`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10829,7 +8841,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:88`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10841,7 +8853,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:94`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10853,7 +8865,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:117`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10865,7 +8877,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:117`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10877,7 +8889,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:118`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10897,7 +8909,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:132`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10909,7 +8921,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:133`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10921,7 +8933,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:134`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10933,7 +8945,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:142`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10945,7 +8957,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:143`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10957,7 +8969,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:145`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -10969,7 +8981,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:153`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10981,7 +8993,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:154`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -10993,7 +9005,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:155`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11005,7 +9017,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:161`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11017,7 +9029,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:162`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11037,7 +9049,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:168`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11049,7 +9061,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:170`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11061,7 +9073,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:175`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11073,7 +9085,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:176`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11085,7 +9097,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:177`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11097,7 +9109,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:188`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11109,7 +9121,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:189`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11121,7 +9133,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:193`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11133,7 +9145,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:198`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11153,7 +9165,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:216`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11165,7 +9177,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:217`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11177,7 +9189,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:224`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11197,7 +9209,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:230`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11209,7 +9221,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:231`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11221,7 +9233,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:239`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11233,7 +9245,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:247`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11245,7 +9257,7 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:253`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11257,11 +9269,35 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:254`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
         Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:309`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:332`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:333`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -11272,7 +9308,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -11280,10 +9316,58 @@
 
 **Location**: `components/TournamentInfo/ScheduleOverview.tsx:438`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:448`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:454`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/ScheduleOverview.tsx:459`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentHeader.tsx:42`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentHeader.tsx:44`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentHeader.tsx:46`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -11291,7 +9375,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:59`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -11300,7 +9384,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:67`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -11309,7 +9393,7 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:75`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
 
 ---
@@ -11318,176 +9402,8 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:83`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:94`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:96`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:100`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:101`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:104`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:109`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:118`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:120`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:121`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-  Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:123`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:135`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:143`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:144`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:151`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
@@ -11501,49 +9417,12 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:157`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:158`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:161`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:168`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '{ color: string; marginTop: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginTop: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -11559,11 +9438,10 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:174`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ color: string; marginLeft: number; flex: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginLeft: number; flex: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -11571,23 +9449,10 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:182`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:189`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '{ color: string; marginLeft: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginLeft: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -11603,23 +9468,10 @@
 
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:195`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:204`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
+**Message**: Type '{ color: string; marginLeft: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginLeft: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -11633,37 +9485,36 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:210`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
-  Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
-    Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'cursor' are incompatible.
-        Type 'string' is not assignable to type 'CursorValue | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `components/TournamentInfo/TournamentHeader.tsx:211`
-**Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
 **Location**: `components/TournamentInfo/TournamentHeader.tsx:214`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
-  Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
-    Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'userSelect' are incompatible.
-        Type 'string' is not assignable to type '"text" | "all" | "auto" | "none" | "contain" | undefined'.
+**Message**: Type '{ color: string; marginTop: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'StyleProp<TextStyle>'.
+  Type '{ color: string; marginTop: number; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+    Types of property 'fontWeight' are incompatible.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentHeader.tsx:350`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentHeader.tsx:356`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:41`
+**Status**: 📌 Existing
+**Message**: Property '_emergencyProcedures' does not exist on type 'TournamentInfoPanelProps'.
 
 ---
 
@@ -11671,7 +9522,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:41`
 **Status**: 📌 Existing
-**Message**: 'emergencyProcedures' is declared but its value is never read.
+**Message**: '_emergencyProcedures' is declared but its value is never read.
 
 ---
 
@@ -11690,7 +9541,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:144`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11702,7 +9553,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:145`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11714,7 +9565,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:154`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11726,7 +9577,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:155`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11738,7 +9589,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:156`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11750,7 +9601,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:158`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11762,7 +9613,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:159`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11782,7 +9633,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:181`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11794,7 +9645,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:182`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11806,7 +9657,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:183`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11818,7 +9669,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:184`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11830,7 +9681,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:185`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11850,7 +9701,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:191`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11862,7 +9713,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:195`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11882,7 +9733,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:201`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11894,7 +9745,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:206`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11906,8 +9757,16 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:208`
 **Status**: 📌 Existing
-**Message**: Type '{ width: number; height: number; fill: string; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+**Message**: Type '{ width: number; height: number; fill: any; }' is not assignable to type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
   Property 'width' does not exist on type 'IntrinsicAttributes & Omit<StatusIconProps, "status">'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:210`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
 
 ---
 
@@ -11915,7 +9774,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:212`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11927,7 +9786,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:227`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11935,19 +9794,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:229`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:230`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11959,7 +9810,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:231`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -11971,7 +9822,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:232`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11983,7 +9834,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:239`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -11995,7 +9846,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:241`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12007,7 +9858,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:242`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12019,7 +9870,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:245`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12031,7 +9882,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:252`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12043,7 +9894,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:253`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12055,7 +9906,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:263`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12067,7 +9918,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:264`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12079,7 +9930,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:265`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12091,7 +9942,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:272`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12099,19 +9950,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:273`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:277`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12123,7 +9966,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:278`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12135,7 +9978,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:279`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12147,7 +9990,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:282`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12167,7 +10010,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:294`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12179,7 +10022,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:296`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12191,7 +10034,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:297`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12203,7 +10046,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:311`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12211,19 +10054,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:312`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:315`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12235,7 +10070,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:321`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12247,7 +10082,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:322`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12259,7 +10094,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:323`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12271,7 +10106,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:326`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12283,7 +10118,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:329`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12295,7 +10130,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:341`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12307,7 +10142,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:342`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12319,7 +10154,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:343`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12339,7 +10174,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:349`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12351,7 +10186,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:352`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12372,7 +10207,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:358`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12384,7 +10219,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:359`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12396,7 +10231,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:364`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12408,7 +10243,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:365`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12420,7 +10255,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:367`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12432,7 +10267,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:378`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12444,7 +10279,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:415`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12456,7 +10291,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:425`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12468,7 +10303,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:432`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12480,7 +10315,7 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:433`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12496,6 +10331,14 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:546`
+**Status**: 📌 Existing
+**Message**: Property 'statusColors' does not exist on type 'ColorToken'.
+
+---
+
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:569`
@@ -12503,7 +10346,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12511,10 +10354,10 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:581`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12525,7 +10368,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12536,7 +10379,7 @@
 **Message**: Type '{ color: string; textTransform: "capitalize"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; textTransform: "capitalize"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12544,10 +10387,10 @@
 
 **Location**: `components/TournamentInfo/TournamentInfoPanel.tsx:652`
 **Status**: 📌 Existing
-**Message**: Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
-  Type '{ color: string; fontStyle: "italic"; fontSize?: number; fontWeight?: string; lineHeight?: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
+**Message**: Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
+  Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12558,7 +10401,7 @@
 **Message**: Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12569,7 +10412,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -12674,7 +10517,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:132`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12686,7 +10529,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:133`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12698,7 +10541,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:135`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12710,7 +10553,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:136`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'ViewStyle' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12722,7 +10565,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:139`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12734,7 +10577,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:140`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12746,7 +10589,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:143`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12758,7 +10601,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:144`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12770,7 +10613,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:149`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12782,7 +10625,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:150`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12794,7 +10637,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:156`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12814,7 +10657,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:159`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12834,7 +10677,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:174`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12854,7 +10697,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:196`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12866,7 +10709,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:197`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12894,7 +10737,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:200`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12906,7 +10749,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:201`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -12918,7 +10761,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:202`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12954,7 +10797,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:204`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -12974,7 +10817,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:210`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13002,7 +10845,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:218`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13014,7 +10857,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:219`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13026,7 +10869,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:220`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13062,7 +10905,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:222`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13074,7 +10917,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:223`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13086,7 +10929,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:224`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13098,7 +10941,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:232`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13118,7 +10961,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:238`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13130,7 +10973,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:254`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13142,7 +10985,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:256`
 **Status**: 📌 Existing
-**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+**Message**: Type 'false | TextStyle | ViewStyle | ImageStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
   Type 'TextStyle' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13154,7 +10997,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:270`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13166,7 +11009,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:271`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13186,7 +11029,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:277`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13198,7 +11041,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:279`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13210,7 +11053,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:280`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13222,7 +11065,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:285`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13242,7 +11085,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:291`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13254,7 +11097,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:299`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13274,7 +11117,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:305`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13286,7 +11129,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:306`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13298,7 +11141,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:314`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13310,7 +11153,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:322`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13322,7 +11165,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:330`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13334,7 +11177,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:334`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<ViewStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<ViewStyle>'.
   Type 'TextStyle' is not assignable to type 'StyleProp<ViewStyle>'.
     Type 'TextStyle' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
@@ -13346,7 +11189,7 @@
 
 **Location**: `components/TournamentInfo/WeatherAlerts.tsx:335`
 **Status**: 📌 Existing
-**Message**: Type 'TextStyle | ViewStyle | ImageStyle | undefined' is not assignable to type 'StyleProp<TextStyle>'.
+**Message**: Type 'TextStyle | ViewStyle | ImageStyle' is not assignable to type 'StyleProp<TextStyle>'.
   Type 'ViewStyle' is not assignable to type 'StyleProp<TextStyle>'.
     Type 'ViewStyle' is not assignable to type 'TextStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'userSelect' are incompatible.
@@ -13361,15 +11204,7 @@
 **Message**: Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `components/TournamentInfo/WeatherAlerts.tsx:548`
-**Status**: 📌 Existing
-**Message**: 'designTokens.typography.bodySmall' is possibly 'undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -13380,7 +11215,7 @@
 **Message**: Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle | ViewStyle | ImageStyle'.
   Type '{ color: string; fontStyle: "italic"; fontSize: number; fontWeight: string; lineHeight: number; letterSpacing?: number; }' is not assignable to type 'TextStyle'.
     Types of property 'fontWeight' are incompatible.
-      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "600" | "normal" | "500" | 700 | "100" | "200" | "300" | "400" | "700" | "800" | "900" | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
+      Type 'string' is not assignable to type '500 | 100 | 300 | "bold" | 400 | "medium" | 200 | "light" | 900 | 600 | "700" | "600" | "400" | "500" | "normal" | "100" | "200" | "300" | "800" | "900" | 700 | 800 | "ultralight" | "thin" | ... 6 more ... | undefined'.
 
 ---
 
@@ -13565,19 +11400,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `components/Typography/MatchCard.tsx:12`
+**Location**: `components/Typography/MatchCard.tsx:70`
 **Status**: 📌 Existing
-**Message**: 'createShadow' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `components/Typography/MatchCard.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'getStatusColor' is declared but its value is never read.
+**Message**: Argument of type 'string | number | undefined' is not assignable to parameter of type 'string | number'.
+  Type 'undefined' is not assignable to type 'string | number'.
 
 ---
 
@@ -13590,18 +11418,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `components/Typography/MatchCard.tsx:72`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | number | undefined' is not assignable to parameter of type 'string | number'.
-  Type 'undefined' is not assignable to type 'string | number'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/Typography/MatchCard.tsx:176`
+**Location**: `components/Typography/MatchCard.tsx:175`
 **Status**: 📌 Existing
 **Message**: Type '{ federationCode: string | undefined; teamName: string; size: "medium"; style: { marginLeft: 8; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'federationCode' are incompatible.
@@ -13612,7 +11431,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/Typography/MatchCard.tsx:215`
+**Location**: `components/Typography/MatchCard.tsx:214`
 **Status**: 📌 Existing
 **Message**: Type '{ federationCode: string | undefined; teamName: string; size: "medium"; style: { marginLeft: 8; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'federationCode' are incompatible.
@@ -13623,12 +11442,20 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `components/Typography/MatchCard.tsx:268`
+**Location**: `components/Typography/MatchCard.tsx:267`
 **Status**: 📌 Existing
 **Message**: Type '{ round: string; phase: string | undefined; emphasis: "medium"; color: "textSecondary"; }' is not assignable to type 'RoundPhaseDisplayProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'phase' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
       Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2554`)
+
+**Location**: `components/Typography/RoundPhaseDisplay.tsx:66`
+**Status**: 📌 Existing
+**Message**: Expected 1-2 arguments, but got 3.
 
 ---
 
@@ -13665,11 +11492,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `components/VisTournamentList.tsx:4`
 **Status**: 📌 Existing
-**Message**: 'FlatList' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_FlatList'. Did you mean 'FlatList'?
 
 ---
 
@@ -13738,8 +11565,8 @@
 
 **Location**: `hooks/compatibility/CacheServiceCompatibility.ts:67`
 **Status**: 📌 Existing
-**Message**: Conversion of type '{ tournamentNo: string; referees: { federationCode: string; firstName: string; lastName: string; gender: "M" | "W" | "F"; RefereeId: string; status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "RESTRICTED"; type: "REFEREE" | ... 1 more ... | "ADMINISTRATIVE"; }[]; }' to type 'TournamentRefereeData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  Type '{ tournamentNo: string; referees: { federationCode: string; firstName: string; lastName: string; gender: "M" | "W" | "F"; RefereeId: string; status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "RESTRICTED"; type: "REFEREE" | ... 1 more ... | "ADMINISTRATIVE"; }[]; }' is missing the following properties from type 'TournamentRefereeData': officials, eventNo, timestamp, expiresAt
+**Message**: Conversion of type '{ tournamentNo: string; referees: { federationCode: string; firstName: string; lastName: string; gender: "M" | "W"; RefereeId: string; status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "RESTRICTED"; type: "REFEREE" | ... 1 more ... | "ADMINISTRATIVE"; }[]; }' to type 'TournamentRefereeData' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ tournamentNo: string; referees: { federationCode: string; firstName: string; lastName: string; gender: "M" | "W"; RefereeId: string; status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "RESTRICTED"; type: "REFEREE" | ... 1 more ... | "ADMINISTRATIVE"; }[]; }' is missing the following properties from type 'TournamentRefereeData': officials, eventNo, timestamp, expiresAt
 
 ---
 
@@ -14063,14 +11890,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/index.ts:252`
-**Status**: 📌 Existing
-**Message**: 'component' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `hooks/useAnalytics.ts:160`
@@ -14191,25 +12010,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `hooks/useAnalyticsDashboard.ts:108`
-**Status**: 📌 Existing
-**Message**: Property 'refetch' does not exist on type 'RefereeAnalyticsQueryResult'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useAnalyticsDashboard.ts:108`
-**Status**: 📌 Existing
-**Message**: 'refetchReferee' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useAnalyticsDashboard.ts:122`
+**Location**: `hooks/useAnalyticsDashboard.ts:121`
 **Status**: 📌 Existing
 **Message**: Argument of type 'readonly ["analytics", "dashboard", { timeRange?: { start: string; end: string; }; config?: any; } | undefined]' is not assignable to parameter of type 'unknown[]'.
   The type 'readonly ["analytics", "dashboard", { timeRange?: { start: string; end: string; }; config?: any; } | undefined]' is 'readonly' and cannot be assigned to the mutable type 'unknown[]'.
@@ -14218,7 +12021,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useAnalyticsDashboard.ts:157`
+**Location**: `hooks/useAnalyticsDashboard.ts:156`
 **Status**: 📌 Existing
 **Message**: Argument of type 'readonly ["analytics", "dashboard", { timeRange?: { start: string; end: string; }; config?: any; } | undefined]' is not assignable to parameter of type 'unknown[]'.
   The type 'readonly ["analytics", "dashboard", { timeRange?: { start: string; end: string; }; config?: any; } | undefined]' is 'readonly' and cannot be assigned to the mutable type 'unknown[]'.
@@ -14269,22 +12072,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAppState.ts:354`
-**Status**: 📌 Existing
-**Message**: 'prev' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAppState.ts:354`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2532`)
 
 **Location**: `hooks/useAppState.ts:374`
@@ -14301,91 +12088,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:73`
-**Status**: 📌 Existing
-**Message**: 'item' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:269`
-**Status**: 📌 Existing
-**Message**: 'assignment' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:330`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:330`
-**Status**: 📌 Existing
-**Message**: 'other' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:331`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:332`
-**Status**: 📌 Existing
-**Message**: Argument of type 'Assignment | undefined' is not assignable to parameter of type 'Assignment'.
-  Type 'undefined' is not assignable to type 'Assignment'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:334`
-**Status**: 📌 Existing
-**Message**: 'other' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `hooks/useAssignmentPreparation.ts:335`
-**Status**: 📌 Existing
-**Message**: Argument of type 'Assignment | undefined' is not assignable to parameter of type 'Assignment'.
-  Type 'undefined' is not assignable to type 'Assignment'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useAssignmentStatus.tsx:107`
-**Status**: 📌 Existing
-**Message**: 'syncedCount' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useCacheAwareData.ts:359`
-**Status**: 📌 Existing
-**Message**: 'fetchTime' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `hooks/useCacheAwareData.ts:424`
+**Location**: `hooks/useCacheAwareData.ts:425`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'Timeout'.
 
@@ -14393,7 +12098,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `hooks/useCacheAwareData.ts:457`
+**Location**: `hooks/useCacheAwareData.ts:458`
 **Status**: 📌 Existing
 **Message**: Type '{ data: T | null; loading: boolean; error: Error | null; cacheHit: boolean; refresh: () => Promise<void>; invalidate: () => void; optimisticUpdate: (optimisticData: T) => void; cacheMetadata: { ...; } | undefined; }' is not assignable to type 'UseCacheAwareDataResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'cacheMetadata' are incompatible.
@@ -14540,22 +12245,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useCurrentAssignment.ts:134`
-**Status**: 📌 Existing
-**Message**: 'assignmentId' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useCurrentAssignment.ts:134`
-**Status**: 📌 Existing
-**Message**: 'status' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `hooks/useDataQuery.ts:313`
@@ -14604,30 +12293,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useDataQuery.ts:448`
-**Status**: 📌 Existing
-**Message**: 'setStats' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useDataQuery.ts:464`
-**Status**: 📌 Existing
-**Message**: 'queryKey' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useDataQuery.ts:465`
-**Status**: 📌 Existing
-**Message**: 'setDebugInfo' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `hooks/useDateNavigation.ts:32`
@@ -14670,11 +12335,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `hooks/useLiveScores.ts:117`
+**Location**: `hooks/useLiveScores.ts:162`
 **Status**: 📌 Existing
-**Message**: 'pollingConfig' is declared but its value is never read.
+**Message**: Expected 1 arguments, but got 0.
 
 ---
 
@@ -14686,17 +12351,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2554`)
-
-**Location**: `hooks/useLiveScores.ts:164`
-**Status**: 📌 Existing
-**Message**: Expected 1 arguments, but got 0.
-
----
-
 #### typescript-error (Rule: `typescript:2673`)
 
-**Location**: `hooks/useLiveScores.ts:186`
+**Location**: `hooks/useLiveScores.ts:185`
 **Status**: 📌 Existing
 **Message**: Constructor of class 'ConnectionCircuitBreaker' is private and only accessible within the class declaration.
 
@@ -14704,7 +12361,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useLiveScores.ts:192`
+**Location**: `hooks/useLiveScores.ts:191`
 **Status**: 📌 Existing
 **Message**: Argument of type 'VisApiClient' is not assignable to parameter of type 'IVisApiClient'.
   Property 'getBeachMatchStatus' is missing in type 'VisApiClient' but required in type 'IVisApiClient'.
@@ -14713,7 +12370,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useLiveScores.ts:200`
+**Location**: `hooks/useLiveScores.ts:199`
 **Status**: 📌 Existing
 **Message**: Argument of type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { liveScore: BeachLive | null; error: Error | null; isLoading: false; lastUpdated: Date | null; matchNo?: number; isPolling?: boolean; }; }' is not assignable to parameter of type 'SetStateAction<Record<number, LiveScoreState>>'.
   Type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { liveScore: BeachLive | null; error: Error | null; isLoading: false; lastUpdated: Date | null; matchNo?: number; isPolling?: boolean; }; }' is not assignable to type '(prevState: Record<number, LiveScoreState>) => Record<number, LiveScoreState>'.
@@ -14727,7 +12384,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useLiveScores.ts:226`
+**Location**: `hooks/useLiveScores.ts:225`
 **Status**: 📌 Existing
 **Message**: Argument of type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: true; isPolling: true; error: null; matchNo?: number; liveScore?: BeachLive | null; lastUpdated?: Date | null; }; }' is not assignable to parameter of type 'SetStateAction<Record<number, LiveScoreState>>'.
   Type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: true; isPolling: true; error: null; matchNo?: number; liveScore?: BeachLive | null; lastUpdated?: Date | null; }; }' is not assignable to type '(prevState: Record<number, LiveScoreState>) => Record<number, LiveScoreState>'.
@@ -14741,7 +12398,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `hooks/useLiveScores.ts:255`
+**Location**: `hooks/useLiveScores.ts:254`
 **Status**: 📌 Existing
 **Message**: Type '{ isLoading: false; isPolling: false; matchNo?: number; liveScore?: BeachLive | null; error?: Error | null; lastUpdated?: Date | null; }' is not assignable to type 'LiveScoreState'.
   Property 'matchNo' is optional in type '{ isLoading: false; isPolling: false; matchNo?: number; liveScore?: BeachLive | null; error?: Error | null; lastUpdated?: Date | null; }' but required in type 'LiveScoreState'.
@@ -14750,7 +12407,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useLiveScores.ts:347`
+**Location**: `hooks/useLiveScores.ts:346`
 **Status**: 📌 Existing
 **Message**: Argument of type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: true; isPolling: true; error: null; matchNo?: number; liveScore?: BeachLive | null; lastUpdated?: Date | null; }; }' is not assignable to parameter of type 'SetStateAction<Record<number, LiveScoreState>>'.
   Type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: true; isPolling: true; error: null; matchNo?: number; liveScore?: BeachLive | null; lastUpdated?: Date | null; }; }' is not assignable to type '(prevState: Record<number, LiveScoreState>) => Record<number, LiveScoreState>'.
@@ -14764,7 +12421,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useLiveScores.ts:369`
+**Location**: `hooks/useLiveScores.ts:368`
 **Status**: 📌 Existing
 **Message**: Argument of type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: false; isPolling: false; matchNo?: number; liveScore?: BeachLive | null; error?: Error | null; lastUpdated?: Date | null; }; }' is not assignable to parameter of type 'SetStateAction<Record<number, LiveScoreState>>'.
   Type '(prev: Record<number, LiveScoreState>) => { [x: number]: LiveScoreState | { isLoading: false; isPolling: false; matchNo?: number; liveScore?: BeachLive | null; error?: Error | null; lastUpdated?: Date | null; }; }' is not assignable to type '(prevState: Record<number, LiveScoreState>) => Record<number, LiveScoreState>'.
@@ -14776,59 +12433,51 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useMatches.ts:4`
+**Location**: `hooks/useMatches.ts:176`
 **Status**: 📌 Existing
-**Message**: 'createQueryOptions' is declared but its value is never read.
+**Message**: Cannot find name 'supabase'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useMatches.ts:246`
+**Location**: `hooks/useMatches.ts:179`
 **Status**: 📌 Existing
-**Message**: Property 'first_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
+**Message**: Cannot find name 'supabase'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useMatches.ts:246`
+**Location**: `hooks/useMatches.ts:238`
 **Status**: 📌 Existing
-**Message**: Property 'last_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
+**Message**: Parameter 'row' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useMatches.ts:247`
+**Location**: `hooks/useMatches.ts:241`
 **Status**: 📌 Existing
-**Message**: Property 'first_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
+**Message**: Parameter 'mr' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useMatches.ts:247`
+**Location**: `hooks/useMatches.ts:242`
 **Status**: 📌 Existing
-**Message**: Property 'last_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
+**Message**: Parameter 'mr' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useMatches.ts:248`
+**Location**: `hooks/useMatches.ts:243`
 **Status**: 📌 Existing
-**Message**: Property 'first_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `hooks/useMatches.ts:248`
-**Status**: 📌 Existing
-**Message**: Property 'last_name' does not exist on type '{ id: any; vis_referee_no: any; first_name: any; last_name: any; federation: any; }[]'.
+**Message**: Parameter 'mr' implicitly has an 'any' type.
 
 ---
 
@@ -14966,57 +12615,33 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useNetworkState.ts:482`
+**Location**: `hooks/useOfflineSync.ts:144`
 **Status**: 📌 Existing
-**Message**: 'lastStateChange' is declared but its value is never read.
+**Message**: Cannot find name 'supabase'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useNetworkState.ts:540`
+**Location**: `hooks/useOfflineSync.ts:151`
 **Status**: 📌 Existing
-**Message**: 'type' is declared but its value is never read.
+**Message**: Parameter 'acc' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `hooks/useOfflineStatus.ts:1`
+**Location**: `hooks/useOfflineSync.ts:151`
 **Status**: 📌 Existing
-**Message**: 'useEffect' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useOfflineStatus.ts:21`
-**Status**: 📌 Existing
-**Message**: 'isConnected' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useOfflineStatus.ts:36`
-**Status**: 📌 Existing
-**Message**: 'timestamp' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18047`)
-
-**Location**: `hooks/useOfflineSync.ts:145`
-**Status**: 📌 Existing
-**Message**: 'supabase' is possibly 'null'.
+**Message**: Parameter 'status' implicitly has an 'any' type.
 
 ---
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `hooks/useOfflineSync.ts:289`
+**Location**: `hooks/useOfflineSync.ts:288`
 **Status**: 📌 Existing
 **Message**: Argument of type '(prev: SyncStatus) => { isSyncing: boolean; pendingTasks: number; lastSyncTime: number | undefined; isOnline: boolean; syncProgress?: { current: number; total: number; currentTask?: string; }; connectionQuality: "excellent" | ... 2 more ... | "offline"; syncErrors: string[]; conflictCount: number; dataFreshness?: { ...' is not assignable to parameter of type 'SetStateAction<SyncStatus>'.
   Type '(prev: SyncStatus) => { isSyncing: boolean; pendingTasks: number; lastSyncTime: number | undefined; isOnline: boolean; syncProgress?: { current: number; total: number; currentTask?: string; }; connectionQuality: "excellent" | ... 2 more ... | "offline"; syncErrors: string[]; conflictCount: number; dataFreshness?: { ...' is not assignable to type '(prevState: SyncStatus) => SyncStatus'.
@@ -15027,43 +12652,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useOfflineSync.ts:316`
+**Location**: `hooks/useOfflineSync.ts:454`
 **Status**: 📌 Existing
-**Message**: 'startTime' is declared but its value is never read.
+**Message**: Cannot find name 'supabase'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useOfflineSync.ts:319`
+**Location**: `hooks/useOfflineSync.ts:465`
 **Status**: 📌 Existing
-**Message**: 'result' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18047`)
-
-**Location**: `hooks/useOfflineSync.ts:456`
-**Status**: 📌 Existing
-**Message**: 'supabase' is possibly 'null'.
-
----
-
-#### typescript-error (Rule: `typescript:18047`)
-
-**Location**: `hooks/useOfflineSync.ts:467`
-**Status**: 📌 Existing
-**Message**: 'supabase' is possibly 'null'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/usePartialData.ts:1`
-**Status**: 📌 Existing
-**Message**: 'useCallback' is declared but its value is never read.
+**Message**: Cannot find name 'supabase'.
 
 ---
 
@@ -15174,17 +12775,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useRealtimeData.ts:3`
-**Status**: 📌 Existing
-**Message**: 'TournamentCore' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2459`)
 
-**Location**: `hooks/useRealtimeData.ts:4`
+**Location**: `hooks/useRealtimeData.ts:3`
 **Status**: 📌 Existing
 **Message**: Module '"../services/api/VisApiClient"' declares 'DEFAULT_RETRY_CONFIG' locally, but it is not exported.
 
@@ -15192,7 +12785,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `hooks/useRealtimeData.ts:17`
+**Location**: `hooks/useRealtimeData.ts:16`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 0.
 
@@ -15200,7 +12793,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `hooks/useRealtimeData.ts:50`
+**Location**: `hooks/useRealtimeData.ts:49`
 **Status**: 📌 Existing
 **Message**: Property 'invalidateMatchCache' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -15208,7 +12801,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `hooks/useRealtimeData.ts:51`
+**Location**: `hooks/useRealtimeData.ts:50`
 **Status**: 📌 Existing
 **Message**: Property 'fetchMatchesForTournament' does not exist on type 'VisApiClient'.
 
@@ -15216,7 +12809,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `hooks/useRealtimeData.ts:54`
+**Location**: `hooks/useRealtimeData.ts:53`
 **Status**: 📌 Existing
 **Message**: Property 'fetchMatchesForTournament' does not exist on type 'VisApiClient'.
 
@@ -15224,23 +12817,15 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `hooks/useRealtimeData.ts:74`
+**Location**: `hooks/useRealtimeData.ts:73`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'Timeout'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useRealtimeData.ts:99`
-**Status**: 📌 Existing
-**Message**: 'handleCacheInvalidation' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useRealtimeData.ts:146`
+**Location**: `hooks/useRealtimeData.ts:139`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'Tournament'.
 
@@ -15248,23 +12833,15 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useRealtimeData.ts:147`
+**Location**: `hooks/useRealtimeData.ts:140`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'Tournament'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useRealtimeData.ts:162`
-**Status**: 📌 Existing
-**Message**: 'tournamentNumber' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useRealtimeData.ts:208`
+**Location**: `hooks/useRealtimeData.ts:202`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'Tournament'.
 
@@ -15275,14 +12852,6 @@
 **Location**: `hooks/useRealtimeSubscription.ts:2`
 **Status**: 📌 Existing
 **Message**: Module '"../services/RealtimeSubscriptionService"' declares 'ConnectionState' locally, but it is not exported.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `hooks/useRefereeAnalytics.ts:2`
-**Status**: 📌 Existing
-**Message**: 'useEffect' is declared but its value is never read.
 
 ---
 
@@ -15454,6 +13023,30 @@
 **Status**: 📌 Existing
 **Message**: Type '(referee: RefereeFromDB, tournamentNo: string) => Promise<void>' is not assignable to type '(referee: RefereeFromDB) => Promise<void>'.
   Target signature provides too few arguments. Expected 2 or more, but got 1.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `hooks/useReferees.ts:103`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'supabase'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `hooks/useReferees.ts:104`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'supabase'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `hooks/useReferees.ts:132`
+**Status**: 📌 Existing
+**Message**: Parameter 'row' implicitly has an 'any' type.
 
 ---
 
@@ -15771,11 +13364,27 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `hooks/useTournaments.ts:1`
+**Location**: `hooks/useTournaments.ts:86`
 **Status**: 📌 Existing
-**Message**: 'UseQueryResult' is declared but its value is never read.
+**Message**: Cannot find name 'supabase'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `hooks/useTournaments.ts:87`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'supabase'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `hooks/useTournaments.ts:125`
+**Status**: 📌 Existing
+**Message**: Parameter 'row' implicitly has an 'any' type.
 
 ---
 
@@ -16243,97 +13852,25 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:8`
-**Status**: 📌 Existing
-**Message**: 'TouchableOpacity' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'Alert' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'MatchResultsService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:16`
-**Status**: 📌 Existing
-**Message**: 'isBeachMatchLiveDTO' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:6192`)
 
-**Location**: `screens/MatchDetailScreen.tsx:17`
+**Location**: `screens/MatchDetailScreen.tsx:14`
 **Status**: 📌 Existing
 **Message**: All imports in import declaration are unused.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:18`
-**Status**: 📌 Existing
-**Message**: 'formatTime' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:25`
-**Status**: 📌 Existing
-**Message**: 'shadowPresets' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/MatchDetailScreen.tsx:38`
+**Location**: `screens/MatchDetailScreen.tsx:34`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'BeachMatchDTO'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:87`
-**Status**: 📌 Existing
-**Message**: 'setLegacyData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:93`
-**Status**: 📌 Existing
-**Message**: 'beachMatchService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:190`
-**Status**: 📌 Existing
-**Message**: 'handleRefresh' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:318`
+**Location**: `screens/MatchDetailScreen.tsx:310`
 **Status**: 📌 Existing
 **Message**: Property 'closedSets' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16341,7 +13878,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:319`
+**Location**: `screens/MatchDetailScreen.tsx:311`
 **Status**: 📌 Existing
 **Message**: Property 'closedSets' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16349,7 +13886,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:319`
+**Location**: `screens/MatchDetailScreen.tsx:311`
 **Status**: 📌 Existing
 **Message**: Parameter 'set' implicitly has an 'any' type.
 
@@ -16357,7 +13894,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:325`
+**Location**: `screens/MatchDetailScreen.tsx:317`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16365,7 +13902,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:325`
+**Location**: `screens/MatchDetailScreen.tsx:317`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16373,7 +13910,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:325`
+**Location**: `screens/MatchDetailScreen.tsx:317`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16381,7 +13918,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:326`
+**Location**: `screens/MatchDetailScreen.tsx:318`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16389,7 +13926,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:326`
+**Location**: `screens/MatchDetailScreen.tsx:318`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16397,7 +13934,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchDetailScreen.tsx:332`
+**Location**: `screens/MatchDetailScreen.tsx:324`
 **Status**: 📌 Existing
 **Message**: Type '{ state: BeachMatchStatus; resultType?: ResultType; resultText?: string; }' is not assignable to type '"Scheduled" | "Finished" | "Cancelled" | "Running" | MatchStatus'.
 
@@ -16405,7 +13942,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:334`
+**Location**: `screens/MatchDetailScreen.tsx:326`
 **Status**: 📌 Existing
 **Message**: Property 'result' does not exist on type 'BeachMatchCore | MatchResult'.
   Property 'result' does not exist on type 'MatchResult'.
@@ -16414,7 +13951,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:354`
+**Location**: `screens/MatchDetailScreen.tsx:346`
 **Status**: 📌 Existing
 **Message**: Property 'closedSets' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16422,7 +13959,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:355`
+**Location**: `screens/MatchDetailScreen.tsx:347`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16430,7 +13967,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:355`
+**Location**: `screens/MatchDetailScreen.tsx:347`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16438,7 +13975,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:356`
+**Location**: `screens/MatchDetailScreen.tsx:348`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16446,7 +13983,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:357`
+**Location**: `screens/MatchDetailScreen.tsx:349`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16454,7 +13991,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:358`
+**Location**: `screens/MatchDetailScreen.tsx:350`
 **Status**: 📌 Existing
 **Message**: Property 'points' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16462,23 +13999,15 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `screens/MatchDetailScreen.tsx:454`
+**Location**: `screens/MatchDetailScreen.tsx:446`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'includeMatchEvents' does not exist in type 'BeachMatchLiveDTOParams'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchDetailScreen.tsx:560`
-**Status**: 📌 Existing
-**Message**: 'isMatchLiveNew' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:605`
+**Location**: `screens/MatchDetailScreen.tsx:593`
 **Status**: 📌 Existing
 **Message**: Property 'status' does not exist on type 'never'.
 
@@ -16486,7 +14015,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:614`
+**Location**: `screens/MatchDetailScreen.tsx:602`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16494,7 +14023,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:615`
+**Location**: `screens/MatchDetailScreen.tsx:603`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16502,7 +14031,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:713`
+**Location**: `screens/MatchDetailScreen.tsx:701`
 **Status**: 📌 Existing
 **Message**: Parameter 's' implicitly has an 'any' type.
 
@@ -16510,7 +14039,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchDetailScreen.tsx:725`
+**Location**: `screens/MatchDetailScreen.tsx:713`
 **Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
@@ -16519,7 +14048,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchDetailScreen.tsx:726`
+**Location**: `screens/MatchDetailScreen.tsx:714`
 **Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
@@ -16528,7 +14057,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:765`
+**Location**: `screens/MatchDetailScreen.tsx:753`
 **Status**: 📌 Existing
 **Message**: Property 'data' does not exist on type 'never'.
 
@@ -16536,7 +14065,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:766`
+**Location**: `screens/MatchDetailScreen.tsx:754`
 **Status**: 📌 Existing
 **Message**: Parameter 'set' implicitly has an 'any' type.
 
@@ -16544,7 +14073,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:843`
+**Location**: `screens/MatchDetailScreen.tsx:831`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16552,7 +14081,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchDetailScreen.tsx:844`
+**Location**: `screens/MatchDetailScreen.tsx:832`
 **Status**: 📌 Existing
 **Message**: Property 'currentSet' does not exist on type 'BeachMatchLiveDTO'.
 
@@ -16560,34 +14089,34 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchDetailScreen.tsx:863`
+**Location**: `screens/MatchDetailScreen.tsx:851`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; subtitle: string; showHomeButton: true; onHomePress: () => void; showStatusBar: false; showLogo: false; showBurgerMenu: true; useBackButton: boolean; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'. Did you mean 'showBackButton'?
+  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchDetailScreen.tsx:897`
+**Location**: `screens/MatchDetailScreen.tsx:885`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; subtitle: string; showHomeButton: true; onHomePress: () => void; showStatusBar: false; showLogo: false; showBurgerMenu: true; useBackButton: boolean; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'. Did you mean 'showBackButton'?
+  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/MatchDetailScreen.tsx:922`
+**Location**: `screens/MatchDetailScreen.tsx:910`
 **Status**: 📌 Existing
 **Message**: Type '{ title: any; subtitle: string | undefined; showHomeButton: true; onHomePress: () => void; showStatusBar: false; showLogo: false; showBurgerMenu: true; useBackButton: boolean; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'. Did you mean 'showBackButton'?
+  Property 'useBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2741`)
 
-**Location**: `screens/MatchDetailScreen.tsx:930`
+**Location**: `screens/MatchDetailScreen.tsx:918`
 **Status**: 📌 Existing
 **Message**: Property 'isLive' is missing in type '{}' but required in type 'LiveIndicatorProps'.
 
@@ -16595,7 +14124,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/MatchDetailScreen.tsx:1263`
+**Location**: `screens/MatchDetailScreen.tsx:1251`
 **Status**: 📌 Existing
 **Message**: Type '{ countryCode: string | undefined; size: "large"; style: { marginLeft: 8; }; }' is not assignable to type 'FlagImageProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
@@ -16606,7 +14135,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:1319`
+**Location**: `screens/MatchDetailScreen.tsx:1307`
 **Status**: 📌 Existing
 **Message**: Parameter 'set' implicitly has an 'any' type.
 
@@ -16614,7 +14143,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:1360`
+**Location**: `screens/MatchDetailScreen.tsx:1348`
 **Status**: 📌 Existing
 **Message**: Parameter 'set' implicitly has an 'any' type.
 
@@ -16622,31 +14151,15 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/MatchDetailScreen.tsx:1360`
+**Location**: `screens/MatchDetailScreen.tsx:1348`
 **Status**: 📌 Existing
 **Message**: Parameter 'set' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchResultsScreen.tsx:43`
-**Status**: 📌 Existing
-**Message**: 'allStatuses' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MatchResultsScreen.tsx:48`
-**Status**: 📌 Existing
-**Message**: 'getAssignmentsByStatus' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:7030`)
 
-**Location**: `screens/MatchResultsScreen.tsx:91`
+**Location**: `screens/MatchResultsScreen.tsx:89`
 **Status**: 📌 Existing
 **Message**: Not all code paths return a value.
 
@@ -16654,7 +14167,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/MatchResultsScreen.tsx:100`
+**Location**: `screens/MatchResultsScreen.tsx:98`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'SetStateAction<Timeout | null>'.
 
@@ -16662,7 +14175,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/MatchResultsScreen.tsx:136`
+**Location**: `screens/MatchResultsScreen.tsx:134`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | number' is not assignable to parameter of type 'SetStateAction<string | null>'.
   Type 'number' is not assignable to type 'SetStateAction<string | null>'.
@@ -16671,7 +14184,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:385`
+**Location**: `screens/MatchResultsScreen.tsx:383`
 **Status**: 📌 Existing
 **Message**: Property 'gender' does not exist on type 'MatchResult'.
 
@@ -16679,7 +14192,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:386`
+**Location**: `screens/MatchResultsScreen.tsx:384`
 **Status**: 📌 Existing
 **Message**: Property 'category' does not exist on type 'MatchResult'.
 
@@ -16687,7 +14200,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:400`
+**Location**: `screens/MatchResultsScreen.tsx:398`
 **Status**: 📌 Existing
 **Message**: Property 'start' does not exist on type 'MatchResult'.
 
@@ -16695,7 +14208,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:400`
+**Location**: `screens/MatchResultsScreen.tsx:398`
 **Status**: 📌 Existing
 **Message**: Property 'scheduledTime' does not exist on type 'MatchResult'.
 
@@ -16703,7 +14216,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:401`
+**Location**: `screens/MatchResultsScreen.tsx:399`
 **Status**: 📌 Existing
 **Message**: Property 'start' does not exist on type 'MatchResult'.
 
@@ -16711,7 +14224,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/MatchResultsScreen.tsx:401`
+**Location**: `screens/MatchResultsScreen.tsx:399`
 **Status**: 📌 Existing
 **Message**: Property 'scheduledTime' does not exist on type 'MatchResult'.
 
@@ -16719,7 +14232,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchResultsScreen.tsx:444`
+**Location**: `screens/MatchResultsScreen.tsx:437`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; onStatusPress: () => void; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/MatchResultsScreen.tsx:442`
 **Status**: 📌 Existing
 **Message**: Type '"results"' is not assignable to type 'TabRoute'.
 
@@ -16727,7 +14249,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchResultsScreen.tsx:510`
+**Location**: `screens/MatchResultsScreen.tsx:451`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: true; onStatusPress: () => void; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/MatchResultsScreen.tsx:508`
 **Status**: 📌 Existing
 **Message**: Type 'AssignmentStatus' is not assignable to type 'StatusType'.
   Type '"emergency"' is not assignable to type 'StatusType'.
@@ -16736,80 +14267,64 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MatchResultsScreen.tsx:556`
+**Location**: `screens/MatchResultsScreen.tsx:554`
 **Status**: 📌 Existing
 **Message**: Type '"results"' is not assignable to type 'TabRoute'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `screens/MyAssignmentsScreen.tsx:10`
 **Status**: 📌 Existing
-**Message**: 'Modal' is declared but its value is never read.
+**Message**: '"react-native"' has no exported member named '_Modal'. Did you mean 'Modal'?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/MyAssignmentsScreen.tsx:63`
+**Status**: 📌 Existing
+**Message**: Property '_allStatuses' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:12`
+**Location**: `screens/MyAssignmentsScreen.tsx:63`
 **Status**: 📌 Existing
-**Message**: 'useFocusEffect' is declared but its value is never read.
+**Message**: '_allStatuses' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/MyAssignmentsScreen.tsx:68`
+**Status**: 📌 Existing
+**Message**: Property '_getAssignmentsByStatus' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:37`
+**Location**: `screens/MyAssignmentsScreen.tsx:68`
 **Status**: 📌 Existing
-**Message**: 'setTimelineView' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MyAssignmentsScreen.tsx:51`
-**Status**: 📌 Existing
-**Message**: 'preparations' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MyAssignmentsScreen.tsx:56`
-**Status**: 📌 Existing
-**Message**: 'preparationOffline' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MyAssignmentsScreen.tsx:65`
-**Status**: 📌 Existing
-**Message**: 'allStatuses' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/MyAssignmentsScreen.tsx:70`
-**Status**: 📌 Existing
-**Message**: 'getAssignmentsByStatus' is declared but its value is never read.
+**Message**: '_getAssignmentsByStatus' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:143`
+**Location**: `screens/MyAssignmentsScreen.tsx:139`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: true; showRefreshButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; showRefreshButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:152`
+**Location**: `screens/MyAssignmentsScreen.tsx:150`
 **Status**: 📌 Existing
 **Message**: Type '"assignments"' is not assignable to type 'TabRoute'.
 
@@ -16817,16 +14332,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:165`
+**Location**: `screens/MyAssignmentsScreen.tsx:161`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: true; showRefreshButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; showRefreshButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:180`
+**Location**: `screens/MyAssignmentsScreen.tsx:178`
 **Status**: 📌 Existing
 **Message**: Type '"assignments"' is not assignable to type 'TabRoute'.
 
@@ -16834,16 +14349,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:193`
+**Location**: `screens/MyAssignmentsScreen.tsx:188`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: true; showStatusBar: false; showRefreshButton: false; onRefresh: () => void; onStatusPress: () => void; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; showRefreshButton: false; onRefresh: () => void; onStatusPress: () => void; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:306`
+**Location**: `screens/MyAssignmentsScreen.tsx:304`
 **Status**: 📌 Existing
 **Message**: Type '{ assignments: Assignment[]; currentAssignmentId: string | undefined; onAssignmentPress: (assignment: Assignment) => void; view: TimelineView; showFilters: true; showConflicts: true; enableExpansion: true; }' is not assignable to type 'AssignmentTimelineProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'currentAssignmentId' are incompatible.
@@ -16854,7 +14369,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:363`
+**Location**: `screens/MyAssignmentsScreen.tsx:361`
 **Status**: 📌 Existing
 **Message**: Type '{ assignment: Assignment; onStatusUpdate: (assignmentId: string, newStatus: any) => Promise<void>; onPreparationUpdate: (preparation: any) => Promise<void>; preparation: AssignmentPreparation | undefined; visible: boolean; onClose: () => void; }' is not assignable to type 'AssignmentStatusManagerProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'preparation' are incompatible.
@@ -16865,33 +14380,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/MyAssignmentsScreen.tsx:376`
+**Location**: `screens/MyAssignmentsScreen.tsx:374`
 **Status**: 📌 Existing
 **Message**: Type '"assignments"' is not assignable to type 'TabRoute'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeDashboardScreen.tsx:15`
-**Status**: 📌 Existing
-**Message**: 'CurrentAssignmentCard' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeDashboardScreen.tsx:46`
-**Status**: 📌 Existing
-**Message**: 'assignmentsLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeDashboardScreen.tsx:47`
-**Status**: 📌 Existing
-**Message**: 'assignmentsError' is declared but its value is never read.
 
 ---
 
@@ -16938,10 +14429,10 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/RefereeDashboardScreen.tsx:270`
+**Location**: `screens/RefereeDashboardScreen.tsx:269`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
@@ -16955,10 +14446,10 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/RefereeDashboardScreen.tsx:289`
+**Location**: `screens/RefereeDashboardScreen.tsx:288`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: false; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; onRefresh: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
@@ -16972,10 +14463,18 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/RefereeDashboardScreen.tsx:308`
+**Location**: `screens/RefereeDashboardScreen.tsx:306`
 **Status**: 📌 Existing
-**Message**: Type '{ title: string; showBackButton: false; onStatusPress: () => void; onRefresh: () => void; showStatusBar: false; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
-  Property 'onRefresh' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+**Message**: Type '{ title: string; showBackButton: boolean; onStatusPress: () => void; onRefresh: () => void; showStatusBar: false; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeDashboardScreen.tsx:364`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'EnhancedCurrentAssignmentCard'.
 
 ---
 
@@ -16998,49 +14497,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:7`
+**Location**: `screens/RefereeSettingsScreen.tsx:45`
 **Status**: 📌 Existing
-**Message**: 'TextInput' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'SafeAreaView' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:18`
-**Status**: 📌 Existing
-**Message**: 'VisApiClient' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:20`
-**Status**: 📌 Existing
-**Message**: 'TournamentCore' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:46`
-**Status**: 📌 Existing
-**Message**: 'autoCourtMonitor' is declared but its value is never read.
+**Message**: Cannot find name 'Tournament'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:49`
+**Location**: `screens/RefereeSettingsScreen.tsx:47`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'Tournament'.
 
@@ -17054,52 +14521,20 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:52`
+**Location**: `screens/RefereeSettingsScreen.tsx:149`
 **Status**: 📌 Existing
-**Message**: 'merged' is declared but its value is never read.
+**Message**: Argument of type 'string | number' is not assignable to parameter of type 'SetStateAction<string | null>'.
+  Type 'number' is not assignable to type 'SetStateAction<string | null>'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:55`
+**Location**: `screens/RefereeSettingsScreen.tsx:178`
 **Status**: 📌 Existing
-**Message**: Cannot find name 'Tournament'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:91`
-**Status**: 📌 Existing
-**Message**: 'allStatuses' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:95`
-**Status**: 📌 Existing
-**Message**: 'updateAssignmentStatus' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:96`
-**Status**: 📌 Existing
-**Message**: 'getAssignmentsByStatus' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:156`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | number' is not assignable to parameter of type 'SetStateAction<string | null>'.
-  Type 'number' is not assignable to type 'SetStateAction<string | null>'.
+**Message**: Cannot find name 'VisApiService'.
 
 ---
 
@@ -17113,41 +14548,15 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:192`
+**Location**: `screens/RefereeSettingsScreen.tsx:189`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:196`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:218`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:219`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:226`
+**Location**: `screens/RefereeSettingsScreen.tsx:219`
 **Status**: 📌 Existing
 **Message**: 'a' is possibly 'undefined'.
 
@@ -17155,7 +14564,7 @@
 
 #### typescript-error (Rule: `typescript:2769`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:226`
+**Location**: `screens/RefereeSettingsScreen.tsx:219`
 **Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 3, '(that: string, locales?: LocalesArgument, options?: CollatorOptions | undefined): number', gave the following error.
@@ -17172,7 +14581,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:229`
+**Location**: `screens/RefereeSettingsScreen.tsx:222`
 **Status**: 📌 Existing
 **Message**: Argument of type '(string | undefined)[]' is not assignable to parameter of type 'SetStateAction<string[]>'.
   Type '(string | undefined)[]' is not assignable to type 'string[]'.
@@ -17183,39 +14592,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:295`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:304`
-**Status**: 📌 Existing
-**Message**: 'sampleMatch' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:309`
-**Status**: 📌 Existing
-**Message**: Parameter 'match' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:381`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:382`
+**Location**: `screens/RefereeSettingsScreen.tsx:288`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
@@ -17223,7 +14600,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:385`
+**Location**: `screens/RefereeSettingsScreen.tsx:299`
 **Status**: 📌 Existing
 **Message**: Parameter 'match' implicitly has an 'any' type.
 
@@ -17231,7 +14608,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:401`
+**Location**: `screens/RefereeSettingsScreen.tsx:371`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
@@ -17239,15 +14616,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:406`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:422`
+**Location**: `screens/RefereeSettingsScreen.tsx:372`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
@@ -17255,71 +14624,47 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:428`
+**Location**: `screens/RefereeSettingsScreen.tsx:375`
 **Status**: 📌 Existing
 **Message**: Parameter 'match' implicitly has an 'any' type.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:445`
+**Location**: `screens/RefereeSettingsScreen.tsx:391`
 **Status**: 📌 Existing
-**Message**: 'originalMatches' is declared but its value is never read.
+**Message**: Cannot find name 'VisApiService'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:445`
+**Location**: `screens/RefereeSettingsScreen.tsx:396`
 **Status**: 📌 Existing
-**Message**: Property 'sourceType' does not exist on type 'BeachMatch'.
+**Message**: Cannot find name 'VisApiService'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:446`
+**Location**: `screens/RefereeSettingsScreen.tsx:412`
 **Status**: 📌 Existing
-**Message**: 'femaleMatches' is declared but its value is never read.
+**Message**: Cannot find name 'VisApiService'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:446`
+**Location**: `screens/RefereeSettingsScreen.tsx:418`
 **Status**: 📌 Existing
-**Message**: Property 'sourceType' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:447`
-**Status**: 📌 Existing
-**Message**: 'maleMatches' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:448`
-**Status**: 📌 Existing
-**Message**: 'womenMatches' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:452`
-**Status**: 📌 Existing
-**Message**: 'sampleMatch' is declared but its value is never read.
+**Message**: Parameter 'match' implicitly has an 'any' type.
 
 ---
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:480`
+**Location**: `screens/RefereeSettingsScreen.tsx:462`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17327,7 +14672,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:480`
+**Location**: `screens/RefereeSettingsScreen.tsx:462`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17335,7 +14680,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:481`
+**Location**: `screens/RefereeSettingsScreen.tsx:463`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -17343,7 +14688,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:481`
+**Location**: `screens/RefereeSettingsScreen.tsx:463`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -17351,7 +14696,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:482`
+**Location**: `screens/RefereeSettingsScreen.tsx:464`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
@@ -17359,7 +14704,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:482`
+**Location**: `screens/RefereeSettingsScreen.tsx:464`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
@@ -17367,7 +14712,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:487`
+**Location**: `screens/RefereeSettingsScreen.tsx:469`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1No' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17375,7 +14720,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:487`
+**Location**: `screens/RefereeSettingsScreen.tsx:469`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1No' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17383,7 +14728,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:488`
+**Location**: `screens/RefereeSettingsScreen.tsx:470`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2No' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -17391,65 +14736,23 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:488`
+**Location**: `screens/RefereeSettingsScreen.tsx:470`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2No' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:493`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:494`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:533`
+**Location**: `screens/RefereeSettingsScreen.tsx:519`
 **Status**: 📌 Existing
-**Message**: 'originalRefereeMatches' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:533`
-**Status**: 📌 Existing
-**Message**: Property 'sourceType' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:534`
-**Status**: 📌 Existing
-**Message**: 'femaleRefereeMatches' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:534`
-**Status**: 📌 Existing
-**Message**: Property 'sourceType' does not exist on type 'BeachMatch'.
+**Message**: 'surname' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:552`
+**Location**: `screens/RefereeSettingsScreen.tsx:530`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17457,7 +14760,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:552`
+**Location**: `screens/RefereeSettingsScreen.tsx:530`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -17465,7 +14768,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:553`
+**Location**: `screens/RefereeSettingsScreen.tsx:531`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -17473,7 +14776,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:553`
+**Location**: `screens/RefereeSettingsScreen.tsx:531`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -17481,7 +14784,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:554`
+**Location**: `screens/RefereeSettingsScreen.tsx:532`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
@@ -17489,47 +14792,215 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:554`
+**Location**: `screens/RefereeSettingsScreen.tsx:532`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:540`
+**Status**: 📌 Existing
+**Message**: Property 'Date' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:540`
+**Status**: 📌 Existing
+**Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:540`
+**Status**: 📌 Existing
+**Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:544`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'setSelectedDate'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:551`
+**Status**: 📌 Existing
+**Message**: Property 'Date' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:552`
+**Status**: 📌 Existing
+**Message**: Property 'Date' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `screens/RefereeSettingsScreen.tsx:559`
 **Status**: 📌 Existing
-**Message**: 'similarNames' is declared but its value is never read.
+**Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:560`
+**Location**: `screens/RefereeSettingsScreen.tsx:562`
 **Status**: 📌 Existing
-**Message**: 'name' is of type 'unknown'.
+**Message**: Cannot find name 'setSelectedDate'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:560`
+**Location**: `screens/RefereeSettingsScreen.tsx:577`
 **Status**: 📌 Existing
-**Message**: 'surname' is possibly 'undefined'.
+**Message**: Cannot find name 'VisApiService'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
+#### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:561`
+**Location**: `screens/RefereeSettingsScreen.tsx:579`
 **Status**: 📌 Existing
-**Message**: 'name' is of type 'unknown'.
+**Message**: Parameter 't' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:600`
+**Status**: 📌 Existing
+**Message**: Parameter 't' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:601`
+**Status**: 📌 Existing
+**Message**: Parameter 't' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:616`
+**Status**: 📌 Existing
+**Message**: Parameter 't' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:854`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:855`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:859`
+**Status**: 📌 Existing
+**Message**: Parameter 'match' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:876`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:877`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:882`
+**Status**: 📌 Existing
+**Message**: Parameter 'match' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:895`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:900`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:901`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'VisApiService'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:904`
+**Status**: 📌 Existing
+**Message**: Parameter 'match' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:980`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'selectedDate'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:982`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'setSelectedDate'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:569`
+**Location**: `screens/RefereeSettingsScreen.tsx:1021`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -17537,7 +15008,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:569`
+**Location**: `screens/RefereeSettingsScreen.tsx:1021`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -17545,7 +15016,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:569`
+**Location**: `screens/RefereeSettingsScreen.tsx:1021`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
@@ -17553,185 +15024,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:573`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'setSelectedDate'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:580`
-**Status**: 📌 Existing
-**Message**: Property 'Date' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:581`
-**Status**: 📌 Existing
-**Message**: Property 'Date' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:588`
-**Status**: 📌 Existing
-**Message**: Property 'Date' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:591`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'setSelectedDate'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:606`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:608`
-**Status**: 📌 Existing
-**Message**: Parameter 't' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:629`
-**Status**: 📌 Existing
-**Message**: Parameter 't' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:630`
-**Status**: 📌 Existing
-**Message**: Parameter 't' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:645`
-**Status**: 📌 Existing
-**Message**: Parameter 't' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:883`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:884`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:888`
-**Status**: 📌 Existing
-**Message**: Parameter 'match' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:905`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:906`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:911`
-**Status**: 📌 Existing
-**Message**: Parameter 'match' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:924`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:929`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:930`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'VisApiService'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:933`
-**Status**: 📌 Existing
-**Message**: Parameter 'match' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:988`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:989`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1009`
+**Location**: `screens/RefereeSettingsScreen.tsx:1030`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -17739,63 +15032,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1011`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'setSelectedDate'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1022`
-**Status**: 📌 Existing
-**Message**: 'handleCourtDateChange' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1023`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'setSelectedDate'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1032`
-**Status**: 📌 Existing
-**Message**: 'formatCourtDateWithoutYear' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1069`
-**Status**: 📌 Existing
-**Message**: Property 'Date' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1069`
-**Status**: 📌 Existing
-**Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1069`
-**Status**: 📌 Existing
-**Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1078`
+**Location**: `screens/RefereeSettingsScreen.tsx:1031`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -17803,15 +15040,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1079`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'selectedDate'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1090`
+**Location**: `screens/RefereeSettingsScreen.tsx:1042`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setSelectedDate'.
 
@@ -17819,7 +15048,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1106`
+**Location**: `screens/RefereeSettingsScreen.tsx:1058`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setSelectedDate'.
 
@@ -17827,7 +15056,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1111`
+**Location**: `screens/RefereeSettingsScreen.tsx:1063`
 **Status**: 📌 Existing
 **Message**: 'renderDateNavigator' is declared but its value is never read.
 
@@ -17835,7 +15064,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1114`
+**Location**: `screens/RefereeSettingsScreen.tsx:1066`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -17843,7 +15072,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1136`
+**Location**: `screens/RefereeSettingsScreen.tsx:1088`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -17851,7 +15080,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1136`
+**Location**: `screens/RefereeSettingsScreen.tsx:1088`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -17859,7 +15088,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1136`
+**Location**: `screens/RefereeSettingsScreen.tsx:1088`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
@@ -17867,7 +15096,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1186`
+**Location**: `screens/RefereeSettingsScreen.tsx:1138`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -17875,33 +15104,15 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1188`
+**Location**: `screens/RefereeSettingsScreen.tsx:1140`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1199`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1200`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1215`
+**Location**: `screens/RefereeSettingsScreen.tsx:1167`
 **Status**: 📌 Existing
 **Message**: 'getSimpleTimeWithUserTime' is declared but its value is never read.
 
@@ -17909,7 +15120,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1235`
+**Location**: `screens/RefereeSettingsScreen.tsx:1187`
 **Status**: 📌 Existing
 **Message**: 'getTournamentTimezone' is declared but its value is never read.
 
@@ -17917,24 +15128,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1272`
+**Location**: `screens/RefereeSettingsScreen.tsx:1224`
 **Status**: 📌 Existing
 **Message**: 'formatTimeWithLocal' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/RefereeSettingsScreen.tsx:1430`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1692`
+**Location**: `screens/RefereeSettingsScreen.tsx:1644`
 **Status**: 📌 Existing
 **Message**: 'renderProfileSection' is declared but its value is never read.
 
@@ -17942,7 +15144,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1754`
+**Location**: `screens/RefereeSettingsScreen.tsx:1706`
 **Status**: 📌 Existing
 **Message**: 'renderAssignmentStatusSection' is declared but its value is never read.
 
@@ -17950,7 +15152,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1762`
+**Location**: `screens/RefereeSettingsScreen.tsx:1714`
 **Status**: 📌 Existing
 **Message**: Type 'AssignmentStatus' is not assignable to type 'StatusType'.
   Type '"emergency"' is not assignable to type 'StatusType'.
@@ -17959,7 +15161,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1809`
+**Location**: `screens/RefereeSettingsScreen.tsx:1761`
 **Status**: 📌 Existing
 **Message**: 'renderPreferencesSection' is declared but its value is never read.
 
@@ -17967,15 +15169,24 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1875`
+**Location**: `screens/RefereeSettingsScreen.tsx:1827`
 **Status**: 📌 Existing
 **Message**: 'renderAppSection' is declared but its value is never read.
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:1846`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; onStatusPress: () => void; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1931`
+**Location**: `screens/RefereeSettingsScreen.tsx:1883`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -17983,7 +15194,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1931`
+**Location**: `screens/RefereeSettingsScreen.tsx:1883`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -17991,7 +15202,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1931`
+**Location**: `screens/RefereeSettingsScreen.tsx:1883`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
@@ -17999,7 +15210,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1936`
+**Location**: `screens/RefereeSettingsScreen.tsx:1888`
 **Status**: 📌 Existing
 **Message**: 'uniqueDates' is declared but its value is never read.
 
@@ -18007,7 +15218,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1941`
+**Location**: `screens/RefereeSettingsScreen.tsx:1893`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -18015,7 +15226,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1944`
+**Location**: `screens/RefereeSettingsScreen.tsx:1896`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -18023,7 +15234,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1944`
+**Location**: `screens/RefereeSettingsScreen.tsx:1896`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -18031,7 +15242,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1944`
+**Location**: `screens/RefereeSettingsScreen.tsx:1896`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
@@ -18039,7 +15250,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1954`
+**Location**: `screens/RefereeSettingsScreen.tsx:1906`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -18047,7 +15258,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1954`
+**Location**: `screens/RefereeSettingsScreen.tsx:1906`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -18055,7 +15266,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1954`
+**Location**: `screens/RefereeSettingsScreen.tsx:1906`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
@@ -18063,7 +15274,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1961`
+**Location**: `screens/RefereeSettingsScreen.tsx:1913`
 **Status**: 📌 Existing
 **Message**: Property 'Time' does not exist on type 'BeachMatch'.
 
@@ -18071,7 +15282,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:1962`
+**Location**: `screens/RefereeSettingsScreen.tsx:1914`
 **Status**: 📌 Existing
 **Message**: Property 'Time' does not exist on type 'BeachMatch'.
 
@@ -18079,7 +15290,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2005`
+**Location**: `screens/RefereeSettingsScreen.tsx:1957`
 **Status**: 📌 Existing
 **Message**: Property 'matchesContainer' does not exist on type '{ container: { flex: number; backgroundColor: string; }; centerContainer: { flex: number; justifyContent: "center"; alignItems: "center"; }; scrollView: { flex: number; }; scrollContent: { paddingBottom: number; }; ... 148 more ...; matchItem: { ...; }; }'. Did you mean 'noMatchesContainer'?
 
@@ -18087,7 +15298,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2015`
+**Location**: `screens/RefereeSettingsScreen.tsx:1967`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
@@ -18095,15 +15306,24 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2016`
+**Location**: `screens/RefereeSettingsScreen.tsx:1968`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'selectedDate'.
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/RefereeSettingsScreen.tsx:1986`
+**Status**: 📌 Existing
+**Message**: Type '{ title: any; showBackButton: boolean; showStatusBar: false; onStatusPress: () => void; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2580`
+**Location**: `screens/RefereeSettingsScreen.tsx:2532`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -18111,7 +15331,7 @@
 
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2625`
+**Location**: `screens/RefereeSettingsScreen.tsx:2577`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -18119,7 +15339,7 @@
 
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2720`
+**Location**: `screens/RefereeSettingsScreen.tsx:2672`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -18127,7 +15347,7 @@
 
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:2728`
+**Location**: `screens/RefereeSettingsScreen.tsx:2680`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -18135,7 +15355,7 @@
 
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:3028`
+**Location**: `screens/RefereeSettingsScreen.tsx:2980`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
 
@@ -18143,224 +15363,81 @@
 
 #### typescript-error (Rule: `typescript:1117`)
 
-**Location**: `screens/RefereeSettingsScreen.tsx:3035`
+**Location**: `screens/RefereeSettingsScreen.tsx:2987`
 **Status**: 📌 Existing
 **Message**: An object literal cannot have multiple properties with the same name.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/ToolsSelectionScreen.tsx:10`
-**Status**: 📌 Existing
-**Message**: 'colors' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:7034`)
-
-**Location**: `screens/ToolsSelectionScreen.tsx:28`
-**Status**: 📌 Existing
-**Message**: Variable 'tools' implicitly has type 'any[]' in some locations where its type cannot be determined.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/ToolsSelectionScreen.tsx:32`
-**Status**: 📌 Existing
-**Message**: 'handleToolPress' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:7005`)
-
-**Location**: `screens/ToolsSelectionScreen.tsx:32`
-**Status**: 📌 Existing
-**Message**: Variable 'tools' implicitly has an 'any[]' type.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'Switch' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:22`
-**Status**: 📌 Existing
-**Message**: 'TournamentOperationsService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:37`
-**Status**: 📌 Existing
-**Message**: 'BottomTabNavigation' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:67`
-**Status**: 📌 Existing
-**Message**: 'courtFilter' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:79`
-**Status**: 📌 Existing
-**Message**: 'courtNumbers' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:94`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:96`
-**Status**: 📌 Existing
-**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:96`
-**Status**: 📌 Existing
-**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:97`
-**Status**: 📌 Existing
-**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:99`
-**Status**: 📌 Existing
-**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:99`
-**Status**: 📌 Existing
-**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:100`
-**Status**: 📌 Existing
-**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:290`
-**Status**: 📌 Existing
-**Message**: 'isLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:290`
-**Status**: 📌 Existing
-**Message**: 'setIsLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:296`
-**Status**: 📌 Existing
-**Message**: 'hasRankingData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:296`
-**Status**: 📌 Existing
-**Message**: 'setHasRankingData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:298`
-**Status**: 📌 Existing
-**Message**: 'isDefault' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:306`
-**Status**: 📌 Existing
-**Message**: 'refereesLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:330`
-**Status**: 📌 Existing
-**Message**: 'statusFilter' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:330`
-**Status**: 📌 Existing
-**Message**: 'setStatusFilter' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:350`
+**Location**: `screens/ToolsSelectionScreen.tsx:32`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; rightComponent: Element; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:84`
+**Status**: 📌 Existing
+**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:84`
+**Status**: 📌 Existing
+**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:85`
+**Status**: 📌 Existing
+**Message**: Property 'Referee1Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:87`
+**Status**: 📌 Existing
+**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:87`
+**Status**: 📌 Existing
+**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:88`
+**Status**: 📌 Existing
+**Message**: Property 'Referee2Name' does not exist on type 'BeachMatchCore'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:338`
 **Status**: 📌 Existing
 **Message**: Type 'BeachMatchCore[] | null' is not assignable to type 'any[]'.
   Type 'null' is not assignable to type 'any[]'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:396`
-**Status**: 📌 Existing
-**Message**: 'forceRetry' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:402`
+**Location**: `screens/TournamentDetailScreen.tsx:390`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
 
@@ -18368,7 +15445,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:461`
+**Location**: `screens/TournamentDetailScreen.tsx:449`
 **Status**: 📌 Existing
 **Message**: 'matchRelativeY' is possibly 'undefined'.
 
@@ -18376,7 +15453,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:490`
+**Location**: `screens/TournamentDetailScreen.tsx:478`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
 
@@ -18384,7 +15461,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:573`
+**Location**: `screens/TournamentDetailScreen.tsx:561`
 **Status**: 📌 Existing
 **Message**: 'today' is possibly 'undefined'.
 
@@ -18392,7 +15469,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:573`
+**Location**: `screens/TournamentDetailScreen.tsx:561`
 **Status**: 📌 Existing
 **Message**: 'startDateOnly' is possibly 'undefined'.
 
@@ -18400,7 +15477,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:580`
+**Location**: `screens/TournamentDetailScreen.tsx:568`
 **Status**: 📌 Existing
 **Message**: 'today' is possibly 'undefined'.
 
@@ -18408,7 +15485,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:580`
+**Location**: `screens/TournamentDetailScreen.tsx:568`
 **Status**: 📌 Existing
 **Message**: 'endDateOnly' is possibly 'undefined'.
 
@@ -18416,7 +15493,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:583`
+**Location**: `screens/TournamentDetailScreen.tsx:571`
 **Status**: 📌 Existing
 **Message**: 'today' is possibly 'undefined'.
 
@@ -18424,7 +15501,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:583`
+**Location**: `screens/TournamentDetailScreen.tsx:571`
 **Status**: 📌 Existing
 **Message**: 'startDateOnly' is possibly 'undefined'.
 
@@ -18432,7 +15509,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:583`
+**Location**: `screens/TournamentDetailScreen.tsx:571`
 **Status**: 📌 Existing
 **Message**: 'today' is possibly 'undefined'.
 
@@ -18440,31 +15517,15 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:583`
+**Location**: `screens/TournamentDetailScreen.tsx:571`
 **Status**: 📌 Existing
 **Message**: 'endDateOnly' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:611`
-**Status**: 📌 Existing
-**Message**: 'tournamentHookLoading' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:613`
-**Status**: 📌 Existing
-**Message**: 'refreshTournamentData' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:616`
+**Location**: `screens/TournamentDetailScreen.tsx:602`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ tournamentCode: string; includeDetails: boolean; } | undefined' is not assignable to parameter of type 'TournamentsFilters | undefined'.
   Object literal may only specify known properties, and 'tournamentCode' does not exist in type 'TournamentsFilters'.
@@ -18473,15 +15534,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:676`
+**Location**: `screens/TournamentDetailScreen.tsx:658`
 **Status**: 📌 Existing
-**Message**: 'canBeDefault' is declared but its value is never read.
+**Message**: 'tournamentStatus' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:679`
+**Location**: `screens/TournamentDetailScreen.tsx:664`
 **Status**: 📌 Existing
 **Message**: 'handleDefaultToggle' is declared but its value is never read.
 
@@ -18489,63 +15550,71 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:679`
+**Location**: `screens/TournamentDetailScreen.tsx:664`
 **Status**: 📌 Existing
 **Message**: 'value' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:714`
+**Location**: `screens/TournamentDetailScreen.tsx:699`
 **Status**: 📌 Existing
-**Message**: 'statusCounts' is declared but its value is never read.
+**Message**: Property '_statusCounts' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:715`
+**Location**: `screens/TournamentDetailScreen.tsx:699`
 **Status**: 📌 Existing
-**Message**: 'isOnline' is declared but its value is never read.
+**Message**: '_statusCounts' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:700`
+**Status**: 📌 Existing
+**Message**: Property '_isOnline' does not exist on type 'AssignmentStatusContextType'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:716`
+**Location**: `screens/TournamentDetailScreen.tsx:700`
+**Status**: 📌 Existing
+**Message**: '_isOnline' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:701`
 **Status**: 📌 Existing
 **Message**: 'syncStatus' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:757`
+**Location**: `screens/TournamentDetailScreen.tsx:744`
 **Status**: 📌 Existing
-**Message**: 'liveScoresLoading' is declared but its value is never read.
+**Message**: Property '_isPolling' does not exist on type 'UseLiveScoresReturn'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:758`
+**Location**: `screens/TournamentDetailScreen.tsx:744`
 **Status**: 📌 Existing
-**Message**: 'liveScoresOnline' is declared but its value is never read.
+**Message**: '_isPolling' is declared but its value is never read.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:759`
-**Status**: 📌 Existing
-**Message**: 'isPolling' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:762`
+**Location**: `screens/TournamentDetailScreen.tsx:747`
 **Status**: 📌 Existing
 **Message**: 'liveScoreStats' is declared but its value is never read.
 
@@ -18553,7 +15622,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:771`
+**Location**: `screens/TournamentDetailScreen.tsx:756`
 **Status**: 📌 Existing
 **Message**: 'formatDate' is declared but its value is never read.
 
@@ -18561,7 +15630,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:801`
+**Location**: `screens/TournamentDetailScreen.tsx:786`
 **Status**: 📌 Existing
 **Message**: 'formatCompactDateRange' is declared but its value is never read.
 
@@ -18569,7 +15638,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:836`
+**Location**: `screens/TournamentDetailScreen.tsx:821`
 **Status**: 📌 Existing
 **Message**: 'getLocation' is declared but its value is never read.
 
@@ -18577,7 +15646,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:868`
+**Location**: `screens/TournamentDetailScreen.tsx:853`
 **Status**: 📌 Existing
 **Message**: 'parseAuxiliaryPersons' is declared but its value is never read.
 
@@ -18585,7 +15654,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:898`
+**Location**: `screens/TournamentDetailScreen.tsx:883`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -18594,7 +15663,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:904`
+**Location**: `screens/TournamentDetailScreen.tsx:889`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -18603,7 +15672,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:920`
+**Location**: `screens/TournamentDetailScreen.tsx:905`
 **Status**: 📌 Existing
 **Message**: 'parseOfficialFunctions' is declared but its value is never read.
 
@@ -18611,7 +15680,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:968`
+**Location**: `screens/TournamentDetailScreen.tsx:953`
 **Status**: 📌 Existing
 **Message**: 'getDateRange' is declared but its value is never read.
 
@@ -18619,7 +15688,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:997`
+**Location**: `screens/TournamentDetailScreen.tsx:982`
 **Status**: 📌 Existing
 **Message**: 'getStatusColor' is declared but its value is never read.
 
@@ -18627,7 +15696,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1147`
+**Location**: `screens/TournamentDetailScreen.tsx:1132`
 **Status**: 📌 Existing
 **Message**: 'cacheKey' is declared but its value is never read.
 
@@ -18635,7 +15704,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1150`
+**Location**: `screens/TournamentDetailScreen.tsx:1135`
 **Status**: 📌 Existing
 **Message**: Argument of type 'Tournament' is not assignable to parameter of type '{ cachedAt: string; }'.
   Property 'cachedAt' is missing in type 'Tournament' but required in type '{ cachedAt: string; }'.
@@ -18644,7 +15713,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1152`
+**Location**: `screens/TournamentDetailScreen.tsx:1137`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setTournamentData'.
 
@@ -18652,7 +15721,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1160`
+**Location**: `screens/TournamentDetailScreen.tsx:1145`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setTournamentData'.
 
@@ -18660,7 +15729,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1175`
+**Location**: `screens/TournamentDetailScreen.tsx:1160`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseURL: string; timeout: number; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Type '{ baseURL: string; timeout: number; }' is missing the following properties from type 'VisApiClientConfig': baseUrl, timeoutMs, maxRetries, retryDelayMs, and 2 more.
@@ -18669,7 +15738,7 @@
 
 #### typescript-error (Rule: `typescript:2561`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1178`
+**Location**: `screens/TournamentDetailScreen.tsx:1163`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, but 'TournamentNo' does not exist in type 'GetBeachTournamentRequest'. Did you mean to write 'tournamentNo'?
 
@@ -18677,7 +15746,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1179`
+**Location**: `screens/TournamentDetailScreen.tsx:1164`
 **Status**: 📌 Existing
 **Message**: Property 'data' does not exist on type 'VisApiSuccessResponse'.
 
@@ -18685,7 +15754,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1187`
+**Location**: `screens/TournamentDetailScreen.tsx:1172`
 **Status**: 📌 Existing
 **Message**: Property 'countryName' does not exist on type 'TournamentCore'.
 
@@ -18693,7 +15762,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1194`
+**Location**: `screens/TournamentDetailScreen.tsx:1179`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ countryCode: any; countryName: any; country: any; city: any; location: any; code: string; name: string; title?: string; gender: GenderType; tournamentType: TournamentType; ... 16 more ...; lastUpdated: string; }' is not assignable to parameter of type 'Tournament'.
   Type '{ countryCode: any; countryName: any; country: any; city: any; location: any; code: string; name: string; title?: string; gender: GenderType; tournamentType: TournamentType; ... 16 more ...; lastUpdated: string; }' is missing the following properties from type 'Tournament': No, Name
@@ -18702,7 +15771,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1195`
+**Location**: `screens/TournamentDetailScreen.tsx:1180`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setTournamentData'.
 
@@ -18710,7 +15779,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1205`
+**Location**: `screens/TournamentDetailScreen.tsx:1190`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'cached'.
 
@@ -18718,7 +15787,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1207`
+**Location**: `screens/TournamentDetailScreen.tsx:1192`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'setTournamentData'.
 
@@ -18726,7 +15795,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1207`
+**Location**: `screens/TournamentDetailScreen.tsx:1192`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'cached'.
 
@@ -18734,7 +15803,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1208`
+**Location**: `screens/TournamentDetailScreen.tsx:1193`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'cached'.
 
@@ -18742,7 +15811,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1257`
+**Location**: `screens/TournamentDetailScreen.tsx:1242`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Property 'exponentialBackoff' is missing in type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' but required in type 'VisApiClientConfig'.
@@ -18751,7 +15820,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1267`
+**Location**: `screens/TournamentDetailScreen.tsx:1252`
 **Status**: 📌 Existing
 **Message**: 'formattedXml' is declared but its value is never read.
 
@@ -18759,7 +15828,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1279`
+**Location**: `screens/TournamentDetailScreen.tsx:1264`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -18768,23 +15837,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1289`
+**Location**: `screens/TournamentDetailScreen.tsx:1274`
 **Status**: 📌 Existing
 **Message**: 'formattedContent' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1315`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1363`
+**Location**: `screens/TournamentDetailScreen.tsx:1348`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Property 'exponentialBackoff' is missing in type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' but required in type 'VisApiClientConfig'.
@@ -18793,7 +15854,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1371`
+**Location**: `screens/TournamentDetailScreen.tsx:1356`
 **Status**: 📌 Existing
 **Message**: Parameter 'beachTournament' implicitly has an 'any' type.
 
@@ -18801,7 +15862,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1377`
+**Location**: `screens/TournamentDetailScreen.tsx:1362`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'GetBeachTournamentRequest'.
 
@@ -18809,7 +15870,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1386`
+**Location**: `screens/TournamentDetailScreen.tsx:1371`
 **Status**: 📌 Existing
 **Message**: 'formattedTournamentXml' is declared but its value is never read.
 
@@ -18817,24 +15878,16 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1438`
+**Location**: `screens/TournamentDetailScreen.tsx:1423`
 **Status**: 📌 Existing
 **Message**: Argument of type '"M" | "W"' is not assignable to parameter of type 'GenderType | undefined'.
   Type '"M"' is not assignable to type 'GenderType | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1446`
-**Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1490`
+**Location**: `screens/TournamentDetailScreen.tsx:1512`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'GetBeachTournamentRequest'.
 
@@ -18842,7 +15895,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1498`
+**Location**: `screens/TournamentDetailScreen.tsx:1520`
 **Status**: 📌 Existing
 **Message**: 'formattedFallbackXml' is declared but its value is never read.
 
@@ -18850,7 +15903,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1507`
+**Location**: `screens/TournamentDetailScreen.tsx:1529`
 **Status**: 📌 Existing
 **Message**: Property 'DefaultTimeZone' does not exist on type 'TournamentLocation'.
 
@@ -18858,7 +15911,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1532`
+**Location**: `screens/TournamentDetailScreen.tsx:1554`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'TournamentLocation | undefined'.
   Type 'string' is not assignable to type 'TournamentLocation'.
@@ -18867,7 +15920,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1535`
+**Location**: `screens/TournamentDetailScreen.tsx:1569`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'TournamentLocation | undefined'.
   Type 'string' is not assignable to type 'TournamentLocation'.
@@ -18876,7 +15929,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1578`
+**Location**: `screens/TournamentDetailScreen.tsx:1624`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
 
@@ -18884,7 +15937,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1607`
+**Location**: `screens/TournamentDetailScreen.tsx:1653`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string | null'.
   Type 'undefined' is not assignable to type 'string | null'.
@@ -18893,7 +15946,7 @@
 
 #### typescript-error (Rule: `typescript:2538`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1611`
+**Location**: `screens/TournamentDetailScreen.tsx:1657`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' cannot be used as an index type.
 
@@ -18901,7 +15954,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1676`
+**Location**: `screens/TournamentDetailScreen.tsx:1722`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseURL: string; timeout: number; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Type '{ baseURL: string; timeout: number; }' is missing the following properties from type 'VisApiClientConfig': baseUrl, timeoutMs, maxRetries, retryDelayMs, and 2 more.
@@ -18910,7 +15963,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1677`
+**Location**: `screens/TournamentDetailScreen.tsx:1723`
 **Status**: 📌 Existing
 **Message**: Property 'getTournaments' does not exist on type 'VisApiClient'.
 
@@ -18918,15 +15971,80 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1737`
+**Location**: `screens/TournamentDetailScreen.tsx:1783`
 **Status**: 📌 Existing
 **Message**: 'handleStatusPress' is declared but its value is never read.
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1808`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; subtitle: string; showBackButton: boolean; onBackPress: () => void; onHomePress: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1902`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1902`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1902`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1918`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1924`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1931`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1937`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1971`
+**Location**: `screens/TournamentDetailScreen.tsx:2018`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"InProgress"' have no overlap.
 
@@ -18934,7 +16052,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1971`
+**Location**: `screens/TournamentDetailScreen.tsx:2018`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Scheduled"' have no overlap.
 
@@ -18942,7 +16060,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1979`
+**Location**: `screens/TournamentDetailScreen.tsx:2026`
 **Status**: 📌 Existing
 **Message**: Type '{ key: string; matchNo: number; beachLive: BeachLive | undefined; loading: boolean; error: Error | undefined; fallbackMatch: any; onRefresh: () => void; style: { marginBottom: number; }; }' is not assignable to type 'LiveScoreCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'beachLive' are incompatible.
@@ -18953,7 +16071,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2002`
+**Location**: `screens/TournamentDetailScreen.tsx:2049`
 **Status**: 📌 Existing
 **Message**: Type 'BeachMatchCore[]' is not assignable to type 'ExtendedBeachMatch[]'.
   Type 'BeachMatchCore' is not assignable to type 'ExtendedBeachMatch' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -18963,9 +16081,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:2065`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'courtFilter'.
+
+---
+
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2029`
+**Location**: `screens/TournamentDetailScreen.tsx:2076`
 **Status**: 📌 Existing
 **Message**: Type '(matchNo: number) => BeachLive | null' is not assignable to type '(matchNumber: string | number) => any'.
   Types of parameters 'matchNo' and 'matchNumber' are incompatible.
@@ -18976,7 +16102,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2032`
+**Location**: `screens/TournamentDetailScreen.tsx:2079`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"COMPLETED" | "SCHEDULED" | "LIVE NOW"' and '"LIVE"' have no overlap.
 
@@ -18984,24 +16110,15 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2033`
+**Location**: `screens/TournamentDetailScreen.tsx:2080`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"COMPLETED" | "SCHEDULED" | "LIVE NOW"' and '"LIVE"' have no overlap.
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:2054`
-**Status**: 📌 Existing
-**Message**: Type '"M" | "W" | "F" | "MIXED" | GenderType' is not assignable to type '"M" | "W" | "MIXED"'.
-  Type '"F"' is not assignable to type '"M" | "W" | "MIXED"'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2088`
+**Location**: `screens/TournamentDetailScreen.tsx:2135`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentCode: string; dateRange: { startDate: string; endDate: string; } | undefined; }' is not assignable to type 'MatchesFilters' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'dateRange' are incompatible.
@@ -19012,7 +16129,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2110`
+**Location**: `screens/TournamentDetailScreen.tsx:2157`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentNo: string; tournamentName: string | undefined; tournamentData: string; matchData: string | undefined; showHeader: false; onRefresh: () => Promise<void>; }' is not assignable to type 'TournamentRefereeListProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournamentName' are incompatible.
@@ -19023,47 +16140,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:7`
-**Status**: 📌 Existing
-**Message**: 'ActivityIndicator' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:9`
-**Status**: 📌 Existing
-**Message**: 'Alert' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:11`
-**Status**: 📌 Existing
-**Message**: 'Dimensions' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:13`
-**Status**: 📌 Existing
-**Message**: 'Switch' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:23`
-**Status**: 📌 Existing
-**Message**: 'DefaultTournamentService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:81`
+**Location**: `screens/TournamentSelectionScreen.tsx:76`
 **Status**: 📌 Existing
 **Message**: 'formatMonthName' is declared but its value is never read.
 
@@ -19071,7 +16148,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:95`
+**Location**: `screens/TournamentSelectionScreen.tsx:90`
 **Status**: 📌 Existing
 **Message**: 'forceRefresh' is declared but its value is never read.
 
@@ -19079,7 +16156,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:95`
+**Location**: `screens/TournamentSelectionScreen.tsx:90`
 **Status**: 📌 Existing
 **Message**: 'isInitial' is declared but its value is never read.
 
@@ -19087,31 +16164,55 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:171`
+**Location**: `screens/TournamentSelectionScreen.tsx:166`
 **Status**: 📌 Existing
 **Message**: 'tournament' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2779`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:191`
+**Location**: `screens/TournamentSelectionScreen.tsx:186`
 **Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
+**Message**: The left-hand side of an assignment expression may not be an optional property access.
 
 ---
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:194`
+**Location**: `screens/TournamentSelectionScreen.tsx:186`
 **Status**: 📌 Existing
 **Message**: 'tournament' is possibly 'undefined'.
 
 ---
 
+#### typescript-error (Rule: `typescript:2779`)
+
+**Location**: `screens/TournamentSelectionScreen.tsx:189`
+**Status**: 📌 Existing
+**Message**: The left-hand side of an assignment expression may not be an optional property access.
+
+---
+
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:201`
+**Location**: `screens/TournamentSelectionScreen.tsx:189`
+**Status**: 📌 Existing
+**Message**: 'tournament' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2779`)
+
+**Location**: `screens/TournamentSelectionScreen.tsx:196`
+**Status**: 📌 Existing
+**Message**: The left-hand side of an assignment expression may not be an optional property access.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `screens/TournamentSelectionScreen.tsx:196`
 **Status**: 📌 Existing
 **Message**: 'tournament' is possibly 'undefined'.
 
@@ -19119,7 +16220,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:275`
+**Location**: `screens/TournamentSelectionScreen.tsx:270`
 **Status**: 📌 Existing
 **Message**: 'alternativeMatches' is declared but its value is never read.
 
@@ -19127,7 +16228,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:284`
+**Location**: `screens/TournamentSelectionScreen.tsx:279`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -19136,7 +16237,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:443`
+**Location**: `screens/TournamentSelectionScreen.tsx:438`
 **Status**: 📌 Existing
 **Message**: 'generateDynamicCategories' is declared but its value is never read.
 
@@ -19144,33 +16245,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:695`
+**Location**: `screens/TournamentSelectionScreen.tsx:690`
 **Status**: 📌 Existing
 **Message**: 'handleRefresh' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:711`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:711`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:2769`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:776`
+**Location**: `screens/TournamentSelectionScreen.tsx:771`
 **Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 2, '(o: {}): string[]', gave the following error.
@@ -19184,7 +16267,7 @@
 
 #### typescript-error (Rule: `typescript:2532`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:777`
+**Location**: `screens/TournamentSelectionScreen.tsx:772`
 **Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
 
@@ -19192,33 +16275,15 @@
 
 #### typescript-error (Rule: `typescript:2532`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:777`
+**Location**: `screens/TournamentSelectionScreen.tsx:772`
 **Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:819`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:825`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:844`
+**Location**: `screens/TournamentSelectionScreen.tsx:839`
 **Status**: 📌 Existing
 **Message**: 'currentSeasonKey' is declared but its value is never read.
 
@@ -19226,7 +16291,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1073`
+**Location**: `screens/TournamentSelectionScreen.tsx:1068`
 **Status**: 📌 Existing
 **Message**: Type 'TournamentCore | undefined' is not assignable to type 'TournamentCore'.
   Type 'undefined' is not assignable to type 'TournamentCore'.
@@ -19235,18 +16300,37 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1074`
+**Location**: `screens/TournamentSelectionScreen.tsx:1069`
 **Status**: 📌 Existing
 **Message**: Argument of type 'TournamentCore | undefined' is not assignable to parameter of type 'TournamentCore'.
   Type 'undefined' is not assignable to type 'TournamentCore'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1087`
+**Location**: `screens/TournamentSelectionScreen.tsx:1184`
 **Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/TournamentSelectionScreen.tsx:1198`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `screens/TournamentSelectionScreen.tsx:1217`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
 
 ---
 
@@ -19310,41 +16394,25 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `scripts/audit/checkers/security-scanner.ts:14`
-**Status**: 📌 Existing
-**Message**: 'sanitizeFindingMessage' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
 **Location**: `scripts/audit/checkers/security-scanner.ts:67`
 **Status**: 📌 Existing
 **Message**: 'match' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `scripts/audit/reporters/console-reporter.ts:9`
-**Status**: 📌 Existing
-**Message**: 'Severity' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `scripts/audit/reporters/console-reporter.ts:11`
 **Status**: 📌 Existing
-**Message**: 'getSeverityEmoji' is declared but its value is never read.
+**Message**: '"../utils/severity-classifier"' has no exported member named '_getSeverityEmoji'. Did you mean 'getSeverityEmoji'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `scripts/audit/reporters/console-reporter.ts:12`
 **Status**: 📌 Existing
-**Message**: 'getSeverityColor' is declared but its value is never read.
+**Message**: '"../utils/severity-classifier"' has no exported member named '_getSeverityColor'. Did you mean 'getSeverityColor'?
 
 ---
 
@@ -19402,11 +16470,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `scripts/audit/tracking/audit-history-manager.ts:17`
 **Status**: 📌 Existing
-**Message**: 'HistoricalFinding' is declared but its value is never read.
+**Message**: '"../types"' has no exported member named '_HistoricalFinding'. Did you mean 'HistoricalFinding'?
 
 ---
 
@@ -19452,9 +16520,98 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `scripts/setup-supabase.ts:25`
+**Location**: `scripts/fix-possibly-undefined.ts:32`
 **Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
+**Message**: 'FIX_PATTERNS' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `scripts/fix-possibly-undefined.ts:96`
+**Status**: 📌 Existing
+**Message**: 'file' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `scripts/fix-possibly-undefined.ts:175`
+**Status**: 🆕 New
+**Message**: 'varName' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `scripts/fix-ts6133.ts:51`
+**Status**: 📌 Existing
+**Message**: 'file' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2345`)
+
+**Location**: `scripts/fix-ts6133.ts:52`
+**Status**: 📌 Existing
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2345`)
+
+**Location**: `scripts/fix-ts6133.ts:53`
+**Status**: 📌 Existing
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `scripts/fix-ts6133.ts:54`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `scripts/fix-ts6133.ts:75`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `scripts/fix-ts6133.ts:85`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `scripts/fix-ts6133.ts:110`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `scripts/fix-ts6133.ts:120`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
 
 ---
 
@@ -19823,17 +16980,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/api/ResponseValidator.ts:9`
-**Status**: 📌 Existing
-**Message**: 'ApiSuccessResponse' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2395`)
 
-**Location**: `services/api/ResponseValidator.ts:13`
+**Location**: `services/api/ResponseValidator.ts:12`
 **Status**: 📌 Existing
 **Message**: Individual declarations in merged declaration 'ResponseValidator' must be all exported or all local.
 
@@ -19841,33 +16990,25 @@
 
 #### typescript-error (Rule: `typescript:2440`)
 
-**Location**: `services/api/ResponseValidator.ts:13`
+**Location**: `services/api/ResponseValidator.ts:12`
 **Status**: 📌 Existing
 **Message**: Import declaration conflicts with local declaration of 'ResponseValidator'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/api/ResponseValidator.ts:19`
-**Status**: 📌 Existing
-**Message**: 'ErrorSeverity' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/api/ResponseValidator.ts:19`
-**Status**: 📌 Existing
-**Message**: 'ErrorCategory' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2395`)
 
-**Location**: `services/api/ResponseValidator.ts:24`
+**Location**: `services/api/ResponseValidator.ts:23`
 **Status**: 📌 Existing
 **Message**: Individual declarations in merged declaration 'ResponseValidator' must be all exported or all local.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/api/ResponseValidator.ts:344`
+**Status**: 📌 Existing
+**Message**: Type 'unknown' is not assignable to type 'string | number'.
 
 ---
 
@@ -19897,9 +17038,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/api/ResponseValidator.ts:348`
+**Location**: `services/api/ResponseValidator.ts:354`
 **Status**: 📌 Existing
-**Message**: Type 'unknown' is not assignable to type 'string | number'.
+**Message**: Type 'unknown' is not assignable to type 'string'.
 
 ---
 
@@ -19913,9 +17054,9 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/api/ResponseValidator.ts:356`
+**Location**: `services/api/ResponseValidator.ts:360`
 **Status**: 📌 Existing
-**Message**: Type 'unknown' is not assignable to type 'string'.
+**Message**: Type 'unknown' is not assignable to type 'string | undefined'.
 
 ---
 
@@ -19929,15 +17070,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/api/ResponseValidator.ts:362`
-**Status**: 📌 Existing
-**Message**: Type 'unknown' is not assignable to type 'string | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `services/api/ResponseValidator.ts:513`
+**Location**: `services/api/ResponseValidator.ts:512`
 **Status**: 📌 Existing
 **Message**: Type 'unknown' is not assignable to type 'string | number'.
 
@@ -19945,9 +17078,17 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/api/ResponseValidator.ts:514`
+**Location**: `services/api/ResponseValidator.ts:513`
 **Status**: 📌 Existing
 **Message**: Type '{}' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/api/ResponseValidator.ts:515`
+**Status**: 📌 Existing
+**Message**: Type 'unknown' is not assignable to type 'string'.
 
 ---
 
@@ -19983,17 +17124,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `services/api/ResponseValidator.ts:520`
-**Status**: 📌 Existing
-**Message**: Type 'unknown' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/api/ResponseValidator.ts:556`
+**Location**: `services/api/ResponseValidator.ts:555`
 **Status**: 📌 Existing
 **Message**: Type '{ success: false; error: ApiError; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Type '{ success: false; error: ApiError; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiErrorResponse' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -20005,7 +17138,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/api/ResponseValidator.ts:577`
+**Location**: `services/api/ResponseValidator.ts:576`
 **Status**: 📌 Existing
 **Message**: Type '{ success: false; error: ApiError; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Type '{ success: false; error: ApiError; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiErrorResponse' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -20017,7 +17150,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/api/ResponseValidator.ts:585`
+**Location**: `services/api/ResponseValidator.ts:584`
 **Status**: 📌 Existing
 **Message**: Type '{ success: true; data: NonNullable<T>; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Type '{ success: true; data: NonNullable<T>; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiSuccessResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -20029,7 +17162,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/api/ResponseValidator.ts:594`
+**Location**: `services/api/ResponseValidator.ts:593`
 **Status**: 📌 Existing
 **Message**: Type '{ success: true; data: T; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Type '{ success: true; data: T; timestamp: string; requestId: string | undefined; }' is not assignable to type 'ApiSuccessResponse<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -20134,14 +17267,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/api/VisApiClient.ts:858`
-**Status**: 📌 Existing
-**Message**: 'endpoint' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:7006`)
 
 **Location**: `services/api/VisApiClient.ts:985`
@@ -20152,15 +17277,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/api/VisApiClient.ts:1083`
-**Status**: 📌 Existing
-**Message**: 'createMockResponse' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/api/VisApiClient.ts:1132`
+**Location**: `services/api/VisApiClient.ts:1084`
 **Status**: 📌 Existing
 **Message**: 'filters' is declared but its value is never read.
 
@@ -20168,7 +17285,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1217`
+**Location**: `services/api/VisApiClient.ts:1169`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetBeachTournamentRequest'.
 
@@ -20176,7 +17293,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1217`
+**Location**: `services/api/VisApiClient.ts:1169`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetBeachTournamentRequest'.
 
@@ -20184,7 +17301,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1218`
+**Location**: `services/api/VisApiClient.ts:1170`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetBeachTournamentRequest'.
 
@@ -20192,7 +17309,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1231`
+**Location**: `services/api/VisApiClient.ts:1183`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetEventRequest'.
 
@@ -20200,7 +17317,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1231`
+**Location**: `services/api/VisApiClient.ts:1183`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetEventRequest'.
 
@@ -20208,7 +17325,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/api/VisApiClient.ts:1232`
+**Location**: `services/api/VisApiClient.ts:1184`
 **Status**: 📌 Existing
 **Message**: Property 'fields' does not exist on type 'GetEventRequest'.
 
@@ -20216,15 +17333,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/api/VisApiClient.ts:1523`
-**Status**: 📌 Existing
-**Message**: 'responseXml' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/api/VisApiClient.ts:1523`
+**Location**: `services/api/VisApiClient.ts:1476`
 **Status**: 📌 Existing
 **Message**: 'responseXml' is possibly 'undefined'.
 
@@ -20232,7 +17341,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/api/VisApiClient.ts:1525`
+**Location**: `services/api/VisApiClient.ts:1478`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ requestId: string | undefined; type: VisApiEndpoint; success: boolean; data: string | undefined; error: { timestamp: string; success: false; errorCode: string; error: string; durationMs: number; } | undefined; }' is not assignable to parameter of type 'BatchResponseItem' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'requestId' are incompatible.
@@ -20243,17 +17352,17 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/api/VisApiClient.ts:1677`
+**Location**: `services/api/VisApiClient.ts:1630`
 **Status**: 📌 Existing
 **Message**: 'formatXml' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/api/VisApiIntegrationService.ts:12`
 **Status**: 📌 Existing
-**Message**: 'VisApiResponse' is declared but its value is never read.
+**Message**: '"../../types/api-v2"' has no exported member named '_VisApiResponse'. Did you mean 'VisApiResponse'?
 
 ---
 
@@ -20424,33 +17533,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/AppStateManager.ts:3`
-**Status**: 📌 Existing
-**Message**: 'ConnectionQuality' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/AppStateManager.ts:5`
-**Status**: 📌 Existing
-**Message**: 'ConnectionCircuitBreaker' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/AppStateManager.ts:122`
-**Status**: 📌 Existing
-**Message**: 'reason' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/AppStateManager.ts:130`
+**Location**: `services/AppStateManager.ts:129`
 **Status**: 📌 Existing
 **Message**: Type '{ previousState: AppLifecycleState; currentState: AppLifecycleState; timestamp: number; networkState: NetworkState | undefined; activeConnections: number; }' is not assignable to type 'AppStateEvent' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'networkState' are incompatible.
@@ -20461,7 +17546,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/AppStateManager.ts:235`
+**Location**: `services/AppStateManager.ts:234`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'Timeout'.
 
@@ -20469,7 +17554,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/AppStateManager.ts:248`
+**Location**: `services/AppStateManager.ts:247`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'Timeout'.
 
@@ -20477,7 +17562,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/AppStateManager.ts:264`
+**Location**: `services/AppStateManager.ts:263`
 **Status**: 📌 Existing
 **Message**: Type 'number' is not assignable to type 'Timeout'.
 
@@ -20485,7 +17570,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/AppStateManager.ts:276`
+**Location**: `services/AppStateManager.ts:275`
 **Status**: 📌 Existing
 **Message**: 'activeConnections' is declared but its value is never read.
 
@@ -20493,7 +17578,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/AppStateManager.ts:301`
+**Location**: `services/AppStateManager.ts:300`
 **Status**: 📌 Existing
 **Message**: 'connectionId' is declared but its value is never read.
 
@@ -20501,7 +17586,7 @@
 
 #### typescript-error (Rule: `typescript:2532`)
 
-**Location**: `services/AppStateManager.ts:500`
+**Location**: `services/AppStateManager.ts:499`
 **Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
 
@@ -20509,7 +17594,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/AppStateManager.ts:537`
+**Location**: `services/AppStateManager.ts:536`
 **Status**: 📌 Existing
 **Message**: Property 'removeEventListener' does not exist on type 'AppStateStatic'.
 
@@ -20537,89 +17622,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/AssignmentStatusService.ts:269`
-**Status**: 📌 Existing
-**Message**: 'id' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:15`
-**Status**: 📌 Existing
-**Message**: 'BeachMatchStatus' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:20`
-**Status**: 📌 Existing
-**Message**: 'TeamSide' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:21`
-**Status**: 📌 Existing
-**Message**: 'Player' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:22`
-**Status**: 📌 Existing
-**Message**: 'Official' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:26`
-**Status**: 📌 Existing
-**Message**: 'GetBeachMatchRequest' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:27`
-**Status**: 📌 Existing
-**Message**: 'GetBeachTournamentRequest' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:28`
-**Status**: 📌 Existing
-**Message**: 'GetBeachMatchListRequest' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:31`
-**Status**: 📌 Existing
-**Message**: 'RetryConfig' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:34`
-**Status**: 📌 Existing
-**Message**: 'VisResponseParser' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:177`
+**Location**: `services/BeachMatchLiveDTOService.ts:168`
 **Status**: 📌 Existing
 **Message**: Property 'xmlData' does not exist on type 'VisApiResponse'.
   Property 'xmlData' does not exist on type 'VisApiErrorResponse'.
@@ -20628,7 +17633,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:178`
+**Location**: `services/BeachMatchLiveDTOService.ts:169`
 **Status**: 📌 Existing
 **Message**: Property 'xmlData' does not exist on type 'VisApiResponse'.
   Property 'xmlData' does not exist on type 'VisApiErrorResponse'.
@@ -20637,7 +17642,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:269`
+**Location**: `services/BeachMatchLiveDTOService.ts:260`
 **Status**: 📌 Existing
 **Message**: Property 'winnerRoundRank' does not exist on type '{ winnerRank?: number | null; loserRank?: number | null; }'. Did you mean 'winnerRank'?
 
@@ -20645,7 +17650,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:383`
+**Location**: `services/BeachMatchLiveDTOService.ts:374`
 **Status**: 📌 Existing
 **Message**: 'scoreA' is possibly 'undefined'.
 
@@ -20653,7 +17658,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:383`
+**Location**: `services/BeachMatchLiveDTOService.ts:374`
 **Status**: 📌 Existing
 **Message**: 'scoreB' is possibly 'undefined'.
 
@@ -20661,7 +17666,7 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:385`
+**Location**: `services/BeachMatchLiveDTOService.ts:376`
 **Status**: 📌 Existing
 **Message**: 'scoreB' is possibly 'undefined'.
 
@@ -20669,141 +17674,43 @@
 
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:385`
+**Location**: `services/BeachMatchLiveDTOService.ts:376`
 **Status**: 📌 Existing
 **Message**: 'scoreA' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:502`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:504`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:505`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:508`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:509`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:526`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:528`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:529`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:532`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:533`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:542`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:551`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `services/BeachMatchLiveDTOService.ts:611`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  Overload 1 of 2, '(matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null', gave the following error.
+    Argument of type 'RegExp | undefined' is not assignable to parameter of type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
+      Type 'undefined' is not assignable to type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
+  Overload 2 of 2, '(regexp: string | RegExp): RegExpMatchArray | null', gave the following error.
+    Argument of type 'RegExp | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `services/BeachMatchLiveDTOService.ts:612`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  Overload 1 of 2, '(matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null', gave the following error.
+    Argument of type 'RegExp | undefined' is not assignable to parameter of type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
+      Type 'undefined' is not assignable to type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
+  Overload 2 of 2, '(regexp: string | RegExp): RegExpMatchArray | null', gave the following error.
+    Argument of type 'RegExp | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `services/BeachMatchLiveDTOService.ts:620`
-**Status**: 📌 Existing
-**Message**: No overload matches this call.
-  Overload 1 of 2, '(matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null', gave the following error.
-    Argument of type 'RegExp | undefined' is not assignable to parameter of type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
-      Type 'undefined' is not assignable to type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
-  Overload 2 of 2, '(regexp: string | RegExp): RegExpMatchArray | null', gave the following error.
-    Argument of type 'RegExp | undefined' is not assignable to parameter of type 'string | RegExp'.
-      Type 'undefined' is not assignable to type 'string | RegExp'.
-
----
-
-#### typescript-error (Rule: `typescript:2769`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:621`
-**Status**: 📌 Existing
-**Message**: No overload matches this call.
-  Overload 1 of 2, '(matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null', gave the following error.
-    Argument of type 'RegExp | undefined' is not assignable to parameter of type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
-      Type 'undefined' is not assignable to type '{ [Symbol.match](string: string): RegExpMatchArray | null; }'.
-  Overload 2 of 2, '(regexp: string | RegExp): RegExpMatchArray | null', gave the following error.
-    Argument of type 'RegExp | undefined' is not assignable to parameter of type 'string | RegExp'.
-      Type 'undefined' is not assignable to type 'string | RegExp'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:629`
 **Status**: 📌 Existing
 **Message**: 'patternA' is possibly 'undefined'.
 
@@ -20811,7 +17718,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:869`
+**Location**: `services/BeachMatchLiveDTOService.ts:860`
 **Status**: 📌 Existing
 **Message**: Property 'xmlData' does not exist on type 'VisApiResponse'.
   Property 'xmlData' does not exist on type 'VisApiErrorResponse'.
@@ -20820,7 +17727,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:870`
+**Location**: `services/BeachMatchLiveDTOService.ts:861`
 **Status**: 📌 Existing
 **Message**: Property 'xmlData' does not exist on type 'VisApiResponse'.
   Property 'xmlData' does not exist on type 'VisApiErrorResponse'.
@@ -20829,7 +17736,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:939`
+**Location**: `services/BeachMatchLiveDTOService.ts:930`
 **Status**: 📌 Existing
 **Message**: 'statisticsPattern' is declared but its value is never read.
 
@@ -20837,44 +17744,9 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/BeachMatchLiveDTOService.ts:954`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:968`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:970`
+**Location**: `services/BeachMatchLiveDTOService.ts:961`
 **Status**: 📌 Existing
 **Message**: Argument of type 'any' is not assignable to parameter of type 'never'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/BeachMatchLiveDTOService.ts:1067`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/BeachMatchService.ts:36`
-**Status**: 📌 Existing
-**Message**: 'params' is declared but its value is never read.
 
 ---
 
@@ -20927,51 +17799,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/CacheMigrationAdapter.ts:10`
-**Status**: 📌 Existing
-**Message**: 'CacheOperationResult' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:6138`)
 
 **Location**: `services/cache/CacheMigrationAdapter.ts:27`
 **Status**: 📌 Existing
-**Message**: Property 'maxAgeDays' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/CacheMigrationAdapter.ts:50`
-**Status**: 📌 Existing
-**Message**: 'ttl' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/CacheMigrationAdapter.ts:102`
-**Status**: 📌 Existing
-**Message**: 'pattern' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/CacheMigrationAdapter.ts:142`
-**Status**: 📌 Existing
-**Message**: 'cacheManager' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/CachePerformanceMonitor.ts:10`
-**Status**: 📌 Existing
-**Message**: 'CacheEntry' is declared but its value is never read.
+**Message**: Property '_maxAgeDays' is declared but its value is never read.
 
 ---
 
@@ -21010,22 +17842,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/TournamentCacheWarmingService.ts:10`
-**Status**: 📌 Existing
-**Message**: 'TournamentStorageService' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/TournamentCacheWarmingService.ts:13`
-**Status**: 📌 Existing
-**Message**: 'GetBeachTournamentRequest' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `services/cache/TournamentCacheWarmingService.ts:48`
@@ -21034,25 +17850,43 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/cache/TournamentCacheWarmingService.ts:174`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'fields' does not exist in type 'GetEventRequest'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/cache/TournamentCacheWarmingService.ts:177`
+**Status**: 📌 Existing
+**Message**: Property 'AuxiliaryPersons' does not exist on type 'VisApiResponse'.
+  Property 'AuxiliaryPersons' does not exist on type 'VisApiErrorResponse'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/cache/TournamentCacheWarmingService.ts:178`
+**Status**: 📌 Existing
+**Message**: Property 'AuxiliaryPersons' does not exist on type 'VisApiResponse'.
+  Property 'AuxiliaryPersons' does not exist on type 'VisApiErrorResponse'.
+
+---
+
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/cache/TournamentCacheWarmingService.ts:222`
+**Location**: `services/cache/TournamentCacheWarmingService.ts:273`
 **Status**: 📌 Existing
 **Message**: Argument of type 'undefined' is not assignable to parameter of type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/cache/UnifiedCacheManager.ts:13`
-**Status**: 📌 Existing
-**Message**: 'CacheStrategyFactory' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:94`
+**Location**: `services/cache/UnifiedCacheManager.ts:93`
 **Status**: 📌 Existing
 **Message**: Type '{ success: true; data: undefined; }' is not assignable to type 'CacheOperationResult<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'data' are incompatible.
@@ -21063,7 +17897,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:102`
+**Location**: `services/cache/UnifiedCacheManager.ts:101`
 **Status**: 📌 Existing
 **Message**: Type '{ success: true; data: undefined; }' is not assignable to type 'CacheOperationResult<T>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'data' are incompatible.
@@ -21074,7 +17908,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:370`
+**Location**: `services/cache/UnifiedCacheManager.ts:369`
 **Status**: 📌 Existing
 **Message**: 'namespace' is declared but its value is never read.
 
@@ -21082,7 +17916,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:370`
+**Location**: `services/cache/UnifiedCacheManager.ts:369`
 **Status**: 📌 Existing
 **Message**: 'key' is declared but its value is never read.
 
@@ -21090,7 +17924,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:374`
+**Location**: `services/cache/UnifiedCacheManager.ts:373`
 **Status**: 📌 Existing
 **Message**: 'namespace' is declared but its value is never read.
 
@@ -21098,7 +17932,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/cache/UnifiedCacheManager.ts:378`
+**Location**: `services/cache/UnifiedCacheManager.ts:377`
 **Status**: 📌 Existing
 **Message**: 'removedKeys' is declared but its value is never read.
 
@@ -21158,22 +17992,6 @@
 **Location**: `services/ConnectionCircuitBreaker.ts:502`
 **Status**: 📌 Existing
 **Message**: 'canExecute' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/ConnectionCircuitBreaker.ts:568`
-**Status**: 📌 Existing
-**Message**: 'serviceId' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/ConnectionDiagnostics.ts:3`
-**Status**: 📌 Existing
-**Message**: 'ConnectionCircuitBreaker' is declared but its value is never read.
 
 ---
 
@@ -21507,15 +18325,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:8`
-**Status**: 📌 Existing
-**Message**: 'FilterOptions' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/DualReadService.ts:179`
+**Location**: `services/DualReadService.ts:185`
 **Status**: 📌 Existing
 **Message**: 'circuitBreaker' is declared but its value is never read.
 
@@ -21523,7 +18333,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:209`
+**Location**: `services/DualReadService.ts:215`
 **Status**: 📌 Existing
 **Message**: Expected 1-2 arguments, but got 0.
 
@@ -21531,7 +18341,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:261`
+**Location**: `services/DualReadService.ts:267`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21539,7 +18349,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:304`
+**Location**: `services/DualReadService.ts:310`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21547,7 +18357,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:337`
+**Location**: `services/DualReadService.ts:343`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21555,7 +18365,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:518`
+**Location**: `services/DualReadService.ts:524`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21563,7 +18373,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:560`
+**Location**: `services/DualReadService.ts:566`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21571,7 +18381,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:590`
+**Location**: `services/DualReadService.ts:596`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21579,7 +18389,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:639`
+**Location**: `services/DualReadService.ts:645`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21587,7 +18397,7 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:680`
+**Location**: `services/DualReadService.ts:686`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21595,23 +18405,15 @@
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:710`
+**Location**: `services/DualReadService.ts:716`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/DualReadService.ts:791`
-**Status**: 📌 Existing
-**Message**: 'count' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:865`
+**Location**: `services/DualReadService.ts:871`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21619,18 +18421,18 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/DualReadService.ts:1039`
+**Location**: `services/DualReadService.ts:1045`
 **Status**: 📌 Existing
 **Message**: Type '{ id: any; visNo: any; tournamentCode: any; matchCode: string; round: any; phaseCode: any; status: any; court: { courtNumber: any; courtName: any; }; scheduledDateTime: any; actualStartTime: any; team1: { ...; }; team2: { ...; }; result: { ...; } | undefined; }' is not assignable to type 'MatchDTO' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'result' are incompatible.
-    Type '{ team1Sets: any; team2Sets: any; setScores: any; winner: any; forfeit: any; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; set: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; }'.
-      Type 'undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; set: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; }'.
+    Type '{ team1Sets: any; team2Sets: any; setScores: any; winner: any; forfeit: any; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { set: number; a: number; b: number; }[]; sets?: { set: number; a: number; b: number; }[]; duration?: number; winner?: 1 | 2; forfeit?: boolean; }'.
+      Type 'undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { set: number; a: number; b: number; }[]; sets?: { set: number; a: number; b: number; }[]; duration?: number; winner?: 1 | 2; forfeit?: boolean; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2739`)
 
-**Location**: `services/DualReadService.ts:1121`
+**Location**: `services/DualReadService.ts:1127`
 **Status**: 📌 Existing
 **Message**: Type '{ id: any; visNo: any; tournamentId: any; tournamentCode: any; matchCode: any; matchNo: any; round: any; team1: { teamNumber: number; teamName: any; player1Name: any; player2Name: any; countryCode: any; }; ... 5 more ...; result: { ...; } | undefined; }' is missing the following properties from type 'BeachMatchCore': version, lastUpdated
 
@@ -21638,7 +18440,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/DualReadService.ts:1131`
+**Location**: `services/DualReadService.ts:1137`
 **Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
@@ -21647,7 +18449,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/DualReadService.ts:1132`
+**Location**: `services/DualReadService.ts:1138`
 **Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
@@ -21656,16 +18458,16 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/DualReadService.ts:1141`
+**Location**: `services/DualReadService.ts:1147`
 **Status**: 📌 Existing
-**Message**: Type '{ a: number; b: number; }[]' is not assignable to type '{ a: number; b: number; set: number; }[]'.
-  Property 'set' is missing in type '{ a: number; b: number; }' but required in type '{ a: number; b: number; set: number; }'.
+**Message**: Type '{ a: number; b: number; }[]' is not assignable to type '{ set: number; a: number; b: number; }[]'.
+  Property 'set' is missing in type '{ a: number; b: number; }' but required in type '{ set: number; a: number; b: number; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `services/DualReadService.ts:1147`
+**Location**: `services/DualReadService.ts:1153`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
 
@@ -21673,15 +18475,15 @@
 
 #### typescript-error (Rule: `typescript:2412`)
 
-**Location**: `services/DualReadService.ts:1216`
+**Location**: `services/DualReadService.ts:1222`
 **Status**: 📌 Existing
-**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: never[]; winner: number | undefined; forfeit: boolean; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { a: number; b: number; set: number; }[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; } | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: never[]; winner: number | undefined; forfeit: boolean; } | undefined' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: { set: number; a: number; b: number; }[]; sets?: { set: number; a: number; b: number; }[]; duration?: number; winner?: 1 | 2; forfeit?: boolean; } | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
 
 ---
 
 #### typescript-error (Rule: `typescript:6234`)
 
-**Location**: `services/DualReadService.ts:1374`
+**Location**: `services/DualReadService.ts:1380`
 **Status**: 📌 Existing
 **Message**: This expression is not callable because it is a 'get' accessor. Did you mean to use it without '()'?
   Type 'Boolean' has no call signatures.
@@ -21690,7 +18492,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:1434`
+**Location**: `services/DualReadService.ts:1440`
 **Status**: 📌 Existing
 **Message**: 'type' is declared but its value is never read.
 
@@ -21698,7 +18500,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/DualReadService.ts:1434`
+**Location**: `services/DualReadService.ts:1440`
 **Status**: 📌 Existing
 **Message**: 'filters' is declared but its value is never read.
 
@@ -22002,14 +18804,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/IntegrationTestSuite.ts:826`
-**Status**: 📌 Existing
-**Message**: 'executionId' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/IntegrationTestSuite.ts:827`
@@ -22109,22 +18903,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/live-score/LiveScorePollingService.ts:696`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/live-score/LiveScorePollingService.ts:742`
-**Status**: 📌 Existing
-**Message**: 'name' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `services/live-score/LiveScorePollingService.ts:746`
@@ -22167,27 +18945,27 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/MatchDetailsService.ts:17`
 **Status**: 📌 Existing
-**Message**: 'BeachMatchPollingParams' is declared but its value is never read.
+**Message**: '"../types/match-details-dto"' has no exported member named '_BeachMatchPollingParams'. Did you mean 'BeachMatchPollingParams'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/MatchDetailsService.ts:18`
 **Status**: 📌 Existing
-**Message**: 'BeachMatchLiveFeedParams' is declared but its value is never read.
+**Message**: '"../types/match-details-dto"' has no exported member named '_BeachMatchLiveFeedParams'. Did you mean 'BeachMatchLiveFeedParams'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/MatchDetailsService.ts:25`
 **Status**: 📌 Existing
-**Message**: 'extractClosedSets' is declared but its value is never read.
+**Message**: '"../types/match-details-dto"' has no exported member named '_extractClosedSets'. Did you mean 'extractClosedSets'?
 
 ---
 
@@ -22245,12 +19023,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2412`)
+#### typescript-error (Rule: `typescript:2779`)
 
 **Location**: `services/MatchDetailsService.ts:436`
 **Status**: 📌 Existing
-**Message**: Type 'number | undefined' is not assignable to type 'number' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
-  Type 'undefined' is not assignable to type 'number'.
+**Message**: The left-hand side of an assignment expression may not be an optional property access.
 
 ---
 
@@ -22284,25 +19061,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6192`)
-
-**Location**: `services/MatchProcessingService.ts:2`
-**Status**: 📌 Existing
-**Message**: All imports in import declaration are unused.
-
----
-
-#### typescript-error (Rule: `typescript:2459`)
-
-**Location**: `services/MatchProcessingService.ts:2`
-**Status**: 📌 Existing
-**Message**: Module '"./api/VisApiClient"' declares 'DEFAULT_RETRY_CONFIG' locally, but it is not exported.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:25`
+**Location**: `services/MatchProcessingService.ts:24`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -22310,7 +19071,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:25`
+**Location**: `services/MatchProcessingService.ts:24`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -22318,9 +19079,17 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:25`
+**Location**: `services/MatchProcessingService.ts:24`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/MatchProcessingService.ts:35`
+**Status**: 📌 Existing
+**Message**: Property 'Time' does not exist on type 'BeachMatch'.
 
 ---
 
@@ -22334,15 +19103,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:37`
-**Status**: 📌 Existing
-**Message**: Property 'Time' does not exist on type 'BeachMatch'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/MatchProcessingService.ts:56`
+**Location**: `services/MatchProcessingService.ts:55`
 **Status**: 📌 Existing
 **Message**: Property 'Date' does not exist on type 'BeachMatch'.
 
@@ -22350,7 +19111,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:56`
+**Location**: `services/MatchProcessingService.ts:55`
 **Status**: 📌 Existing
 **Message**: Property 'MatchDate' does not exist on type 'BeachMatch'.
 
@@ -22358,23 +19119,15 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:56`
+**Location**: `services/MatchProcessingService.ts:55`
 **Status**: 📌 Existing
 **Message**: Property 'StartDate' does not exist on type 'BeachMatch'.
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/MatchProcessingService.ts:78`
-**Status**: 📌 Existing
-**Message**: 'court' is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/MatchProcessingService.ts:80`
+**Location**: `services/MatchProcessingService.ts:79`
 **Status**: 📌 Existing
 **Message**: Type '(string | undefined)[]' is not assignable to type 'string[]'.
   Type 'string | undefined' is not assignable to type 'string'.
@@ -22384,10 +19137,10 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/MatchProcessingService.ts:95`
+**Location**: `services/MatchProcessingService.ts:94`
 **Status**: 📌 Existing
-**Message**: Type '{ tournamentGender: string; tournamentNo: string; tournamentCode: string | undefined; tournamentCountry: string | undefined; sourceType: "opposite_gender" | "original"; sourceTournament: string; ... 37 more ...; refereeAssignments?: any[]; }[]' is not assignable to type 'ProcessedMatch[]'.
-  Type '{ tournamentGender: string; tournamentNo: string; tournamentCode: string | undefined; tournamentCountry: string | undefined; sourceType: "opposite_gender" | "original"; sourceTournament: string; ... 37 more ...; refereeAssignments?: any[]; }' is not assignable to type 'ProcessedMatch' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ tournamentGender: string; tournamentNo: string; tournamentCode: string | undefined; tournamentCountry: string | undefined; sourceType: "opposite_gender" | "original"; sourceTournament: string; ... 51 more ...; refereeAssignments?: any[]; }[]' is not assignable to type 'ProcessedMatch[]'.
+  Type '{ tournamentGender: string; tournamentNo: string; tournamentCode: string | undefined; tournamentCountry: string | undefined; sourceType: "opposite_gender" | "original"; sourceTournament: string; ... 51 more ...; refereeAssignments?: any[]; }' is not assignable to type 'ProcessedMatch' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
     Types of property 'tournamentCode' are incompatible.
       Type 'string | undefined' is not assignable to type 'string'.
         Type 'undefined' is not assignable to type 'string'.
@@ -22396,7 +19149,15 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `services/MatchProcessingService.ts:111`
+**Location**: `services/MatchProcessingService.ts:110`
+**Status**: 📌 Existing
+**Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
+
+---
+
+#### typescript-error (Rule: `typescript:2551`)
+
+**Location**: `services/MatchProcessingService.ts:110`
 **Status**: 📌 Existing
 **Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
 
@@ -22405,14 +19166,6 @@
 #### typescript-error (Rule: `typescript:2551`)
 
 **Location**: `services/MatchProcessingService.ts:111`
-**Status**: 📌 Existing
-**Message**: Property 'Referee1' does not exist on type 'BeachMatch'. Did you mean 'NoReferee1'?
-
----
-
-#### typescript-error (Rule: `typescript:2551`)
-
-**Location**: `services/MatchProcessingService.ts:112`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -22420,7 +19173,7 @@
 
 #### typescript-error (Rule: `typescript:2551`)
 
-**Location**: `services/MatchProcessingService.ts:112`
+**Location**: `services/MatchProcessingService.ts:111`
 **Status**: 📌 Existing
 **Message**: Property 'Referee2' does not exist on type 'BeachMatch'. Did you mean 'NoReferee2'?
 
@@ -22428,7 +19181,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:113`
+**Location**: `services/MatchProcessingService.ts:112`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
@@ -22436,7 +19189,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchProcessingService.ts:113`
+**Location**: `services/MatchProcessingService.ts:112`
 **Status**: 📌 Existing
 **Message**: Property 'Referee' does not exist on type 'BeachMatch'.
 
@@ -22444,7 +19197,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/MatchProcessingService.ts:139`
+**Location**: `services/MatchProcessingService.ts:138`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ No: string; Name: string; FederationCode: string | undefined; }' is not assignable to parameter of type '{ No: string; Name: string; FederationCode?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'FederationCode' are incompatible.
@@ -22455,7 +19208,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/MatchProcessingService.ts:148`
+**Location**: `services/MatchProcessingService.ts:147`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ No: string; Name: string; FederationCode: string | undefined; }' is not assignable to parameter of type '{ No: string; Name: string; FederationCode?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'FederationCode' are incompatible.
@@ -22466,7 +19219,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/MatchProcessingService.ts:164`
+**Location**: `services/MatchProcessingService.ts:163`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string | null'.
   Type 'undefined' is not assignable to type 'string | null'.
@@ -22537,17 +19290,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/MatchResultsService.ts:4`
-**Status**: 📌 Existing
-**Message**: 'VisApiClient' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/MatchResultsService.ts:80`
+**Location**: `services/MatchResultsService.ts:79`
 **Status**: 📌 Existing
 **Message**: Type '{ no: string; tournamentNo: string; teamAName: string; teamBName: string; status: "Scheduled" | "Finished" | "Cancelled" | "Running"; matchPointsA: number; matchPointsB: number; pointsTeamASet1: number; ... 17 more ...; round: string; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'referee1No' are incompatible.
@@ -22558,7 +19303,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/MatchResultsService.ts:232`
+**Location**: `services/MatchResultsService.ts:231`
 **Status**: 📌 Existing
 **Message**: Property 'getMatchesFromSupabase' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -22566,7 +19311,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `services/MatchResultsService.ts:243`
+**Location**: `services/MatchResultsService.ts:242`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'VisApiService'.
 
@@ -22574,7 +19319,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/MatchResultsService.ts:423`
+**Location**: `services/MatchResultsService.ts:422`
 **Status**: 📌 Existing
 **Message**: Type '{ winner: string; loser: string; setsWon: string; winnerCountryCode: string | undefined; loserCountryCode: string | undefined; }' is not assignable to type '{ winner: string; loser: string; setsWon: string; winnerCountryCode?: string; loserCountryCode?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'winnerCountryCode' are incompatible.
@@ -22583,19 +19328,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/MetricsCollector.ts:9`
 **Status**: 📌 Existing
-**Message**: 'MetricsTimeWindow' is declared but its value is never read.
+**Message**: '"../types/monitoring"' has no exported member named '_MetricsTimeWindow'. Did you mean 'MetricsTimeWindow'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/MetricsCollector.ts:11`
 **Status**: 📌 Existing
-**Message**: 'SyncExecutionHistory' is declared but its value is never read.
+**Message**: '"../types/monitoring"' has no exported member named '_SyncExecutionHistory'. Did you mean 'SyncExecutionHistory'?
 
 ---
 
@@ -22605,14 +19350,6 @@
 **Status**: 📌 Existing
 **Message**: Type 'Record<ErrorType, number> | {}' is not assignable to type 'Record<ErrorType, number>'.
   Type '{}' is missing the following properties from type 'Record<ErrorType, number>': NETWORK, AUTH, API, DATABASE, and 3 more.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/MetricsCollector.ts:228`
-**Status**: 📌 Existing
-**Message**: 'avgResponseTime' is declared but its value is never read.
 
 ---
 
@@ -22712,14 +19449,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/MigrationMonitoringService.ts:5`
-**Status**: 📌 Existing
-**Message**: 'ValidationReport' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `services/MigrationMonitoringService.ts:250`
@@ -22780,14 +19509,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationMonitoringService.ts:524`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/MigrationMonitoringService.ts:573`
@@ -22801,14 +19522,6 @@
 **Location**: `services/MigrationMonitoringService.ts:605`
 **Status**: 📌 Existing
 **Message**: Expected 1 arguments, but got 2.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationMonitoringService.ts:611`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
 
 ---
 
@@ -22836,35 +19549,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationMonitoringService.ts:662`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `services/MigrationMonitoringService.ts:670`
 **Status**: 📌 Existing
 **Message**: Property 'getCurrentConfiguration' does not exist on type 'DualReadService'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationMonitoringService.ts:686`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationMonitoringService.ts:729`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
 
 ---
 
@@ -23088,14 +19777,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:220`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `services/MigrationRollbackService.ts:259`
@@ -23179,30 +19860,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:608`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:612`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/MigrationRollbackService.ts:641`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2554`)
 
 **Location**: `services/MigrationRollbackService.ts:647`
@@ -23246,38 +19903,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:745`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:747`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:778`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `services/MigrationRollbackService.ts:780`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/MigrationRollbackService.ts:788`
@@ -23305,19 +19930,19 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/monitoring/ApiAuditService.ts:18`
 **Status**: 📌 Existing
-**Message**: 'NetworkType' is declared but its value is never read.
+**Message**: '"../../types/audit"' has no exported member named '_NetworkType'. Did you mean 'NetworkType'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/monitoring/ApiAuditService.ts:19`
 **Status**: 📌 Existing
-**Message**: 'RequestSource' is declared but its value is never read.
+**Message**: '"../../types/audit"' has no exported member named '_RequestSource'. Did you mean 'RequestSource'?
 
 ---
 
@@ -23329,11 +19954,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/monitoring/AuditReportGenerator.ts:16`
 **Status**: 📌 Existing
-**Message**: 'Severity' is declared but its value is never read.
+**Message**: '"../../types/audit"' has no exported member named '_Severity'. Did you mean 'Severity'?
 
 ---
 
@@ -23362,14 +19987,6 @@
 **Status**: 📌 Existing
 **Message**: Type 'AuditReport | undefined' is not assignable to type 'AuditReport | null'.
   Type 'undefined' is not assignable to type 'AuditReport | null'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/monitoring/FieldSelectionValidator.ts:18`
-**Status**: 📌 Existing
-**Message**: 'getFieldCount' is declared but its value is never read.
 
 ---
 
@@ -23408,19 +20025,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:227`
-**Status**: 📌 Existing
-**Message**: 'a' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:227`
-**Status**: 📌 Existing
-**Message**: 'b' is possibly 'undefined'.
+**Status**: 🆕 New
+**Message**: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
+      Types of parameters 'a' and 'previousValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number'.
+      Types of parameters 'b' and 'currentValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -23432,19 +20051,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:228`
-**Status**: 📌 Existing
-**Message**: 'a' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:228`
-**Status**: 📌 Existing
-**Message**: 'b' is possibly 'undefined'.
+**Status**: 🆕 New
+**Message**: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
+      Types of parameters 'a' and 'previousValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number'.
+      Types of parameters 'b' and 'currentValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -23467,19 +20088,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:231`
-**Status**: 📌 Existing
-**Message**: 'a' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:231`
-**Status**: 📌 Existing
-**Message**: 'b' is possibly 'undefined'.
+**Status**: 🆕 New
+**Message**: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
+      Types of parameters 'a' and 'previousValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number'.
+      Types of parameters 'b' and 'currentValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -23491,19 +20114,21 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:18048`)
+#### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:232`
-**Status**: 📌 Existing
-**Message**: 'a' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:232`
-**Status**: 📌 Existing
-**Message**: 'b' is possibly 'undefined'.
+**Status**: 🆕 New
+**Message**: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
+      Types of parameters 'a' and 'previousValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number'.
+      Types of parameters 'b' and 'currentValue' are incompatible.
+        Type 'number | undefined' is not assignable to type 'number'.
+          Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -23555,70 +20180,6 @@
 **Status**: 📌 Existing
 **Message**: Type 'PerformanceComparison | null' is not assignable to type 'PerformanceComparison'.
   Type 'null' is not assignable to type 'PerformanceComparison'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:446`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:446`
-**Status**: 📌 Existing
-**Message**: 'previous' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:448`
-**Status**: 📌 Existing
-**Message**: 'previous' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:449`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:458`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:458`
-**Status**: 📌 Existing
-**Message**: 'previous' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:460`
-**Status**: 📌 Existing
-**Message**: 'previous' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/monitoring/PerformanceDashboard.ts:461`
-**Status**: 📌 Existing
-**Message**: 'current' is possibly 'undefined'.
 
 ---
 
@@ -23775,27 +20336,27 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/parsing/VisResponseParser.ts:11`
 **Status**: 📌 Existing
-**Message**: 'TournamentType' is declared but its value is never read.
+**Message**: '"../../types/tournament-v2"' has no exported member named '_TournamentType'. Did you mean 'TournamentType'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/parsing/VisResponseParser.ts:12`
 **Status**: 📌 Existing
-**Message**: 'TournamentStatus' is declared but its value is never read.
+**Message**: '"../../types/tournament-v2"' has no exported member named '_TournamentStatus'. Did you mean 'TournamentStatus'?
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/parsing/VisResponseParser.ts:24`
 **Status**: 📌 Existing
-**Message**: 'MatchStatus' is declared but its value is never read.
+**Message**: '"../../types/match-v2"' has no exported member named '_MatchStatus'. Did you mean 'MatchStatus'?
 
 ---
 
@@ -23843,7 +20404,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/parsing/VisResponseParser.ts:573`
+**Location**: `services/parsing/VisResponseParser.ts:584`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -23852,7 +20413,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/parsing/VisResponseParser.ts:574`
+**Location**: `services/parsing/VisResponseParser.ts:585`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -23861,9 +20422,9 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/parsing/VisResponseParser.ts:609`
+**Location**: `services/parsing/VisResponseParser.ts:620`
 **Status**: 📌 Existing
-**Message**: Type '{ teamNumber: 2 | 1; teamName: string; player1Name: string; player2Name: string; countryCode: string | undefined; ranking: number | undefined; }' is not assignable to type 'MatchTeam' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ teamNumber: 1 | 2; teamName: string; player1Name: string; player2Name: string; countryCode: string | undefined; ranking: number | undefined; }' is not assignable to type 'MatchTeam' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'countryCode' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
       Type 'undefined' is not assignable to type 'string'.
@@ -23872,7 +20433,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/parsing/VisResponseParser.ts:630`
+**Location**: `services/parsing/VisResponseParser.ts:641`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ refereeId: string; refereeName: string; function: string; federationCode: string | undefined; status: "ASSIGNED"; }' is not assignable to parameter of type 'RefereeAssignment' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'federationCode' are incompatible.
@@ -23883,7 +20444,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/parsing/VisResponseParser.ts:640`
+**Location**: `services/parsing/VisResponseParser.ts:651`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ refereeId: string; refereeName: string; function: string; federationCode: string | undefined; status: "ASSIGNED"; }' is not assignable to parameter of type 'RefereeAssignment' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'federationCode' are incompatible.
@@ -23892,29 +20453,33 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
+#### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/parsing/VisResponseParser.ts:699`
+**Location**: `services/parsing/VisResponseParser.ts:663`
 **Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/parsing/VisResponseParser.ts:700`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
+**Message**: Argument of type '{ refereeId: string; refereeName: string; function: string; federationCode: string | undefined; status: "ASSIGNED"; }' is not assignable to parameter of type 'RefereeAssignment' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'federationCode' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/parsing/VisResponseParser.ts:737`
+**Location**: `services/parsing/VisResponseParser.ts:696`
 **Status**: 📌 Existing
-**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 2 | 1 | undefined; forfeit: boolean; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ scorerNo: string | undefined; assistantScorerNo: string | undefined; lineJudge1No: string | undefined; lineJudge2No: string | undefined; }' is not assignable to type '{ scorerNo?: string; assistantScorerNo?: string; lineJudge1No?: string; lineJudge2No?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'scorerNo' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/parsing/VisResponseParser.ts:789`
+**Status**: 📌 Existing
+**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration: number | undefined; winner: 1 | 2 | undefined; forfeit: boolean; }' is not assignable to type 'MatchResult' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'duration' are incompatible.
     Type 'number | undefined' is not assignable to type 'number'.
       Type 'undefined' is not assignable to type 'number'.
@@ -23923,7 +20488,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `services/parsing/VisResponseParser.ts:764`
+**Location**: `services/parsing/VisResponseParser.ts:816`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ refereeId: string; refereeName: string; function: string; federationCode: string | undefined; status: "ASSIGNED"; }' is not assignable to parameter of type 'RefereeAssignment' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'federationCode' are incompatible.
@@ -23932,68 +20497,25 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/parsing/VisResponseParser.ts:783`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/parsing/VisResponseParser.ts:792`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `services/parsing/VisResponseParser.ts:890`
+**Location**: `services/parsing/VisResponseParser.ts:942`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'noReferee' does not exist in type 'EventReferee'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/parsing/VisResponseParser.ts:998`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:18048`)
 
-**Location**: `services/parsing/VisResponseParser.ts:1006`
+**Location**: `services/parsing/VisResponseParser.ts:1058`
 **Status**: 📌 Existing
 **Message**: 'hours' is possibly 'undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/parsing/VisResponseParser.ts:1039`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/parsing/VisResponseParser.ts:1040`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:7015`)
 
-**Location**: `services/parsing/VisResponseParser.ts:1075`
+**Location**: `services/parsing/VisResponseParser.ts:1127`
 **Status**: 📌 Existing
 **Message**: Element implicitly has an 'any' type because index expression is not of type 'number'.
 
@@ -24028,22 +20550,6 @@
 **Location**: `services/realtime/ConnectionPoolManager.ts:160`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/realtime/RealtimeMigrationAdapter.ts:9`
-**Status**: 📌 Existing
-**Message**: 'BeachMatch' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/realtime/RealtimeMigrationAdapter.ts:61`
-**Status**: 📌 Existing
-**Message**: 'payload' is declared but its value is never read.
 
 ---
 
@@ -24112,14 +20618,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/realtime/SubscriptionManager.ts:8`
-**Status**: 📌 Existing
-**Message**: 'BeachMatch' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:18047`)
 
 **Location**: `services/realtime/SubscriptionManager.ts:90`
@@ -24152,121 +20650,17 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:5`
-**Status**: 📌 Existing
-**Message**: 'ConnectionStrategy' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:32`
-**Status**: 📌 Existing
-**Message**: 'networkChangeListener' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:46`
-**Status**: 📌 Existing
-**Message**: 'WIFI_FAST_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:47`
-**Status**: 📌 Existing
-**Message**: 'WIFI_NORMAL_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:48`
-**Status**: 📌 Existing
-**Message**: 'CELLULAR_FAST_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:49`
-**Status**: 📌 Existing
-**Message**: 'CELLULAR_NORMAL_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:50`
-**Status**: 📌 Existing
-**Message**: 'SLOW_CONNECTION_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:51`
-**Status**: 📌 Existing
-**Message**: 'OFFLINE_INTERVAL' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:111`
-**Status**: 📌 Existing
-**Message**: 'networkState' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:201`
-**Status**: 📌 Existing
-**Message**: 'oldMode' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeFallbackService.ts:226`
+**Location**: `services/RealtimeFallbackService.ts:211`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:297`
-**Status**: 📌 Existing
-**Message**: 'recommendation' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/RealtimeFallbackService.ts:306`
-**Status**: 📌 Existing
-**Message**: Property 'AGGRESSIVE_POLLING_INTERVAL' does not exist on type 'typeof RealtimeFallbackService'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/RealtimeFallbackService.ts:307`
-**Status**: 📌 Existing
-**Message**: Property 'DEFAULT_POLLING_INTERVAL' does not exist on type 'typeof RealtimeFallbackService'.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeFallbackService.ts:324`
+**Location**: `services/RealtimeFallbackService.ts:303`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
 
@@ -24274,7 +20668,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RealtimeFallbackService.ts:361`
+**Location**: `services/RealtimeFallbackService.ts:340`
 **Status**: 📌 Existing
 **Message**: Property 'invalidateMatchCache' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -24282,41 +20676,17 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RealtimeFallbackService.ts:362`
+**Location**: `services/RealtimeFallbackService.ts:341`
 **Status**: 📌 Existing
 **Message**: Property 'fetchMatchesForTournament' does not exist on type 'VisApiClient'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:381`
-**Status**: 📌 Existing
-**Message**: 'error' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2551`)
-
-**Location**: `services/RealtimeFallbackService.ts:391`
-**Status**: 📌 Existing
-**Message**: Property 'SLOW_POLLING_INTERVAL' does not exist on type 'typeof RealtimeFallbackService'. Did you mean 'pollingIntervals'?
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeFallbackService.ts:420`
+**Location**: `services/RealtimeFallbackService.ts:396`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeFallbackService.ts:520`
-**Status**: 📌 Existing
-**Message**: 'tournamentNo' is declared but its value is never read.
 
 ---
 
@@ -24394,15 +20764,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:2`
-**Status**: 📌 Existing
-**Message**: 'Tournament' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeSubscriptionService.ts:48`
+**Location**: `services/RealtimeSubscriptionService.ts:47`
 **Status**: 📌 Existing
 **Message**: 'CONNECTION_TIMEOUT' is declared but its value is never read.
 
@@ -24410,23 +20772,15 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:68`
+**Location**: `services/RealtimeSubscriptionService.ts:67`
 **Status**: 📌 Existing
 **Message**: 'callback' is declared but its value is never read.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RealtimeSubscriptionService.ts:182`
-**Status**: 📌 Existing
-**Message**: 'tournamentNo' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:242`
+**Location**: `services/RealtimeSubscriptionService.ts:241`
 **Status**: 📌 Existing
 **Message**: Argument of type 'BeachMatch | undefined' is not assignable to parameter of type 'BeachMatch'.
   Type 'undefined' is not assignable to type 'BeachMatch'.
@@ -24435,7 +20789,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:284`
+**Location**: `services/RealtimeSubscriptionService.ts:283`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -24443,7 +20797,7 @@
 
 #### typescript-error (Rule: `typescript:2412`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:309`
+**Location**: `services/RealtimeSubscriptionService.ts:308`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' is not assignable to type 'number' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
 
@@ -24451,7 +20805,7 @@
 
 #### typescript-error (Rule: `typescript:18046`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:329`
+**Location**: `services/RealtimeSubscriptionService.ts:328`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
 
@@ -24459,7 +20813,7 @@
 
 #### typescript-error (Rule: `typescript:18046`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:332`
+**Location**: `services/RealtimeSubscriptionService.ts:331`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
 
@@ -24467,7 +20821,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:372`
+**Location**: `services/RealtimeSubscriptionService.ts:371`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
 
@@ -24475,7 +20829,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:415`
+**Location**: `services/RealtimeSubscriptionService.ts:414`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -24483,7 +20837,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:497`
+**Location**: `services/RealtimeSubscriptionService.ts:496`
 **Status**: 📌 Existing
 **Message**: Type '{ active: boolean; retrying: boolean; lastRetryAttempt: number | undefined; retriesRemaining: number | undefined; fallbackActive: boolean; circuitBreakerState: CircuitState | undefined; }' is not assignable to type '{ active: boolean; retrying: boolean; lastRetryAttempt?: number; retriesRemaining?: number; fallbackActive: boolean; circuitBreakerState?: CircuitState; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'lastRetryAttempt' are incompatible.
@@ -24494,7 +20848,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:531`
+**Location**: `services/RealtimeSubscriptionService.ts:530`
 **Status**: 📌 Existing
 **Message**: Property 'invalidateMatchCache' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -24502,7 +20856,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:540`
+**Location**: `services/RealtimeSubscriptionService.ts:539`
 **Status**: 📌 Existing
 **Message**: 'tournamentNo' is declared but its value is never read.
 
@@ -24510,7 +20864,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:616`
+**Location**: `services/RealtimeSubscriptionService.ts:615`
 **Status**: 📌 Existing
 **Message**: 'matches' is declared but its value is never read.
 
@@ -24652,22 +21006,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeAssignmentsService.ts:7`
-**Status**: 📌 Existing
-**Message**: 'EventReferee' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeAssignmentsService.ts:7`
-**Status**: 📌 Existing
-**Message**: 'RefereeOfficial' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `services/RefereeAssignmentsService.ts:203`
@@ -24725,14 +21063,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/RefereeIdResolver.ts:93`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:6192`)
 
 **Location**: `services/RefereeStatsService.ts:10`
@@ -24746,30 +21076,6 @@
 **Location**: `services/RefereeStatsService.ts:202`
 **Status**: 📌 Existing
 **Message**: 'getVisApiClient' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:264`
-**Status**: 📌 Existing
-**Message**: 'tournamentNo' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:447`
-**Status**: 📌 Existing
-**Message**: 'refereeId' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:541`
-**Status**: 📌 Existing
-**Message**: 'tournamentNo' is declared but its value is never read.
 
 ---
 
@@ -24789,11 +21095,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeStatsService.ts:619`
+**Location**: `services/RefereeStatsService.ts:623`
 **Status**: 📌 Existing
-**Message**: 't' is declared but its value is never read.
+**Message**: Property 'startDate' does not exist on type 'TournamentCore'.
 
 ---
 
@@ -24805,25 +21111,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `services/RefereeStatsService.ts:625`
-**Status**: 📌 Existing
-**Message**: Property 'startDate' does not exist on type 'TournamentCore'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:630`
-**Status**: 📌 Existing
-**Message**: 't' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:643`
+**Location**: `services/RefereeStatsService.ts:641`
 **Status**: 📌 Existing
 **Message**: 'aggregateRefereeStats' is declared but its value is never read.
 
@@ -24831,7 +21121,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeStatsService.ts:656`
+**Location**: `services/RefereeStatsService.ts:654`
 **Status**: 📌 Existing
 **Message**: Property 'success' does not exist on type 'CacheResult<BeachMatch[]>'.
 
@@ -24839,39 +21129,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:663`
-**Status**: 📌 Existing
-**Message**: 'match' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:663`
-**Status**: 📌 Existing
-**Message**: 'idx' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:670`
-**Status**: 📌 Existing
-**Message**: 'match' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:670`
-**Status**: 📌 Existing
-**Message**: 'idx' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/RefereeStatsService.ts:715`
+**Location**: `services/RefereeStatsService.ts:711`
 **Status**: 📌 Existing
 **Message**: 'filteredMatches' is declared but its value is never read.
 
@@ -24879,7 +21137,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:749`
+**Location**: `services/RefereeStatsService.ts:744`
 **Status**: 📌 Existing
 **Message**: 'referee2' is declared but its value is never read.
 
@@ -24887,7 +21145,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:782`
+**Location**: `services/RefereeStatsService.ts:777`
 **Status**: 📌 Existing
 **Message**: 'calculateStats' is declared but its value is never read.
 
@@ -24895,7 +21153,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:819`
+**Location**: `services/RefereeStatsService.ts:814`
 **Status**: 📌 Existing
 **Message**: 'calculateStatsFromMatches' is declared but its value is never read.
 
@@ -24903,7 +21161,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:853`
+**Location**: `services/RefereeStatsService.ts:848`
 **Status**: 📌 Existing
 **Message**: 'getCurrentTournamentNumber' is declared but its value is never read.
 
@@ -24911,23 +21169,15 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeStatsService.ts:857`
+**Location**: `services/RefereeStatsService.ts:852`
 **Status**: 📌 Existing
 **Message**: Property 'success' does not exist on type 'CacheResult<TournamentCore[]>'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/RefereeStatsService.ts:860`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/RefereeStatsService.ts:969`
+**Location**: `services/RefereeStatsService.ts:964`
 **Status**: 📌 Existing
 **Message**: Type '{ season: string; totalMatches: number; matchesAsFirst: number; matchesAsSecond: number; menMatches: number; womenMatches: number; tournaments: number; averageRating: undefined; }' is not assignable to type 'SeasonStats' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'averageRating' are incompatible.
@@ -24937,7 +21187,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/RefereeStatsService.ts:985`
+**Location**: `services/RefereeStatsService.ts:980`
 **Status**: 📌 Existing
 **Message**: Type '{ yearsActive: number; totalMatches: number; matchesAsFirst: number; matchesAsSecond: number; menMatches: number; womenMatches: number; totalTournaments: number; averageRating: undefined; specializations: never[]; achievements: never[]; seasonsActive: never[]; }' is not assignable to type 'CareerStats' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'averageRating' are incompatible.
@@ -24947,23 +21197,24 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeStatsService.ts:1012`
+**Location**: `services/RefereeStatsService.ts:1007`
 **Status**: 📌 Existing
 **Message**: Property 'success' does not exist on type 'CacheResult<TournamentCore[]>'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RefereeStatsService.ts:1019`
+**Location**: `services/RefereeStatsService.ts:1014`
 **Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
+**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:1178`
+**Location**: `services/RefereeStatsService.ts:1173`
 **Status**: 📌 Existing
 **Message**: 'audit' is declared but its value is never read.
 
@@ -24971,7 +21222,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:1342`
+**Location**: `services/RefereeStatsService.ts:1337`
 **Status**: 📌 Existing
 **Message**: 'careerStartDate' is declared but its value is never read.
 
@@ -24979,25 +21230,9 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RefereeStatsService.ts:1343`
+**Location**: `services/RefereeStatsService.ts:1338`
 **Status**: 📌 Existing
 **Message**: 'careerEndDate' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/ResourceOptimizationManager.ts:1`
-**Status**: 📌 Existing
-**Message**: 'NetworkState' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/ResourceOptimizationManager.ts:1`
-**Status**: 📌 Existing
-**Message**: 'ConnectionQuality' is declared but its value is never read.
 
 ---
 
@@ -25033,14 +21268,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/SetScoreService.ts:8`
-**Status**: 📌 Existing
-**Message**: 'isValidBeachLive' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2459`)
 
 **Location**: `services/SetScoreService.ts:10`
@@ -25066,27 +21293,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `services/SetScoreService.ts:125`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
 #### typescript-error (Rule: `typescript:2353`)
 
 **Location**: `services/SetScoreService.ts:127`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'totalDurationSeconds' does not exist in type 'MatchResult'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/SetScoreService.ts:222`
-**Status**: 📌 Existing
-**Message**: 'element' is possibly 'undefined'.
 
 ---
 
@@ -25098,20 +21309,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:7053`)
+#### typescript-error (Rule: `typescript:2538`)
 
 **Location**: `services/SetScoreService.ts:224`
-**Status**: 📌 Existing
-**Message**: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
-  No index signature with a parameter of type 'string' was found on type '{}'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/SetScoreService.ts:224`
-**Status**: 📌 Existing
-**Message**: 'attr' is possibly 'undefined'.
+**Status**: 🆕 New
+**Message**: Type 'undefined' cannot be used as an index type.
 
 ---
 
@@ -25157,60 +21359,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:348`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:349`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:360`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:361`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:379`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `services/SetScoreService.ts:379`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `services/SetScoreService.ts:396`
@@ -25227,11 +21375,27 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2869`)
+
+**Location**: `services/SetScoreService.ts:436`
+**Status**: 🆕 New
+**Message**: Right operand of ?? is unreachable because the left operand is never nullish.
+
+---
+
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `services/SetScoreService.ts:437`
 **Status**: 📌 Existing
 **Message**: 'setElement' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2869`)
+
+**Location**: `services/SetScoreService.ts:437`
+**Status**: 🆕 New
+**Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
 
@@ -25243,6 +21407,14 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2869`)
+
+**Location**: `services/SetScoreService.ts:438`
+**Status**: 🆕 New
+**Message**: Right operand of ?? is unreachable because the left operand is never nullish.
+
+---
+
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `services/SetScoreService.ts:439`
@@ -25251,11 +21423,27 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2869`)
+
+**Location**: `services/SetScoreService.ts:439`
+**Status**: 🆕 New
+**Message**: Right operand of ?? is unreachable because the left operand is never nullish.
+
+---
+
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `services/SetScoreService.ts:440`
 **Status**: 📌 Existing
 **Message**: 'setElement' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2869`)
+
+**Location**: `services/SetScoreService.ts:440`
+**Status**: 🆕 New
+**Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
 
@@ -25299,14 +21487,6 @@
   Types of property 'nbTimeoutTeamA' are incompatible.
     Type 'number | undefined' is not assignable to type 'number'.
       Type 'undefined' is not assignable to type 'number'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `services/SetScoreService.ts:488`
-**Status**: 📌 Existing
-**Message**: 'teamElement' is possibly 'undefined'.
 
 ---
 
@@ -25377,14 +21557,6 @@
   Types of property 'player1Name' are incompatible.
     Type 'string | undefined' is not assignable to type 'string'.
       Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/StatusUpdateService.ts:76`
-**Status**: 📌 Existing
-**Message**: 'error' is declared but its value is never read.
 
 ---
 
@@ -25499,25 +21671,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentOperationsService.ts:3`
-**Status**: 📌 Existing
-**Message**: 'TournamentCore' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusMonitor.ts:1`
-**Status**: 📌 Existing
-**Message**: 'Tournament' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/TournamentStatusMonitor.ts:113`
+**Location**: `services/TournamentStatusMonitor.ts:112`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -25526,7 +21682,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/TournamentStatusMonitor.ts:129`
+**Location**: `services/TournamentStatusMonitor.ts:128`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -25535,7 +21691,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/TournamentStatusMonitor.ts:198`
+**Location**: `services/TournamentStatusMonitor.ts:197`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentNo: string; totalMatches: number; completedMatches: number; inProgressMatches: number; scheduledMatches: number; completionPercentage: number; estimatedCompletionDate: Date | undefined; lastUpdateTime: Date; }' is not assignable to type 'TournamentProgress' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'estimatedCompletionDate' are incompatible.
@@ -25546,7 +21702,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/TournamentStatusMonitor.ts:233`
+**Location**: `services/TournamentStatusMonitor.ts:232`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -25555,7 +21711,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/TournamentStatusMonitor.ts:235`
+**Location**: `services/TournamentStatusMonitor.ts:234`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -25564,7 +21720,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/TournamentStatusMonitor.ts:274`
+**Location**: `services/TournamentStatusMonitor.ts:273`
 **Status**: 📌 Existing
 **Message**: 'context' is declared but its value is never read.
 
@@ -25572,7 +21728,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/TournamentStatusMonitor.ts:318`
+**Location**: `services/TournamentStatusMonitor.ts:317`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -25580,7 +21736,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/TournamentStatusMonitor.ts:405`
+**Location**: `services/TournamentStatusMonitor.ts:404`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -25588,7 +21744,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/TournamentStatusMonitor.ts:452`
+**Location**: `services/TournamentStatusMonitor.ts:451`
 **Status**: 📌 Existing
 **Message**: 'completedMatches' is declared but its value is never read.
 
@@ -25596,7 +21752,7 @@
 
 #### typescript-error (Rule: `typescript:2769`)
 
-**Location**: `services/TournamentStatusMonitor.ts:463`
+**Location**: `services/TournamentStatusMonitor.ts:462`
 **Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
@@ -25610,7 +21766,7 @@
 
 #### typescript-error (Rule: `typescript:2769`)
 
-**Location**: `services/TournamentStatusMonitor.ts:463`
+**Location**: `services/TournamentStatusMonitor.ts:462`
 **Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
@@ -25624,7 +21780,7 @@
 
 #### typescript-error (Rule: `typescript:2769`)
 
-**Location**: `services/TournamentStatusMonitor.ts:466`
+**Location**: `services/TournamentStatusMonitor.ts:465`
 **Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
@@ -25633,38 +21789,6 @@
   Overload 2 of 4, '(value: string | number): Date', gave the following error.
     Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
       Type 'undefined' is not assignable to type 'string | number'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:1`
-**Status**: 📌 Existing
-**Message**: 'Tournament' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:2`
-**Status**: 📌 Existing
-**Message**: 'BeachMatch' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2459`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:4`
-**Status**: 📌 Existing
-**Message**: Module '"./RealtimeSubscriptionService"' declares 'ConnectionState' locally, but it is not exported.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:4`
-**Status**: 📌 Existing
-**Message**: 'ConnectionState' is declared but its value is never read.
 
 ---
 
@@ -25724,27 +21848,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:554`
-**Status**: 📌 Existing
-**Message**: 'key' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:18047`)
 
 **Location**: `services/TournamentStatusSubscriptionService.ts:556`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `services/TournamentStatusSubscriptionService.ts:564`
-**Status**: 📌 Existing
-**Message**: 'key' is declared but its value is never read.
 
 ---
 
@@ -25833,6 +21941,31 @@
 **Location**: `services/TournamentTeamService.ts:303`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string' is not assignable to parameter of type 'EntityType'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `specs/006-match-officials-display/contracts/match-officials.ts:244`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:7022`)
+
+**Location**: `specs/006-match-officials-display/contracts/vis-api-fields.ts:67`
+**Status**: 📌 Existing
+**Message**: 'OFFICIAL_FIELD_SELECTIONS' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+
+---
+
+#### typescript-error (Rule: `typescript:2448`)
+
+**Location**: `specs/006-match-officials-display/contracts/vis-api-fields.ts:114`
+**Status**: 📌 Existing
+**Message**: Block-scoped variable 'OFFICIAL_FIELD_SELECTIONS' used before its declaration.
 
 ---
 
@@ -25986,22 +22119,6 @@
 **Location**: `supabase/functions/analytics-health/index.ts:2`
 **Status**: 📌 Existing
 **Message**: Cannot find module 'https://[REDACTED]@supabase/supabase-js@2' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/analytics-health/index.ts:51`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/analytics-health/index.ts:94`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
 
 ---
 
@@ -26542,14 +22659,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/deployment-orchestrator/index.ts:424`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2304`)
 
 **Location**: `supabase/functions/deployment-orchestrator/index.ts:430`
@@ -26608,14 +22717,6 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `supabase/functions/deployment-orchestrator/index.ts:533`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
 **Location**: `supabase/functions/deployment-orchestrator/index.ts:548`
 **Status**: 📌 Existing
 **Message**: 'matchCount' is declared but its value is never read.
@@ -26635,22 +22736,6 @@
 **Location**: `supabase/functions/deployment-orchestrator/index.ts:572`
 **Status**: 📌 Existing
 **Message**: 'supabase' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `supabase/functions/deployment-orchestrator/index.ts:579`
-**Status**: 📌 Existing
-**Message**: Property 'data' does not exist on type 'Response'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/deployment-orchestrator/index.ts:579`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
 
 ---
 
@@ -26739,363 +22824,6 @@
 **Location**: `supabase/functions/deployment-orchestrator/index.ts:750`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:1`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'std/http/server.ts' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:2`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'supabase' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:3`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:4`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:5`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:12`
-**Status**: 📌 Existing
-**Message**: Parameter 'req' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:20`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/live-score-sync/index.ts:21`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:1`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'supabase' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:89`
-**Status**: 📌 Existing
-**Message**: 'code' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:159`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:160`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:160`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:160`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:161`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/performance-monitor.ts:162`
-**Status**: 📌 Existing
-**Message**: 'metric' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:1`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'supabase' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:2`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:62`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:65`
-**Status**: 📌 Existing
-**Message**: 'CONCURRENT_LIMIT' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:66`
-**Status**: 📌 Existing
-**Message**: 'API_RATE_LIMIT' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:131`
-**Status**: 📌 Existing
-**Message**: 'batchResult' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:132`
-**Status**: 📌 Existing
-**Message**: 'batchResult' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:132`
-**Status**: 📌 Existing
-**Message**: Property 'value' does not exist on type 'PromiseSettledResult<{ totalMatches: number; updatedMatches: number; errors: string[]; }>'.
-  Property 'value' does not exist on type 'PromiseRejectedResult'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:133`
-**Status**: 📌 Existing
-**Message**: 'batchResult' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:133`
-**Status**: 📌 Existing
-**Message**: Property 'value' does not exist on type 'PromiseSettledResult<{ totalMatches: number; updatedMatches: number; errors: string[]; }>'.
-  Property 'value' does not exist on type 'PromiseRejectedResult'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:134`
-**Status**: 📌 Existing
-**Message**: 'batchResult' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:134`
-**Status**: 📌 Existing
-**Message**: Property 'value' does not exist on type 'PromiseSettledResult<{ totalMatches: number; updatedMatches: number; errors: string[]; }>'.
-  Property 'value' does not exist on type 'PromiseRejectedResult'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:136`
-**Status**: 📌 Existing
-**Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:136`
-**Status**: 📌 Existing
-**Message**: 'batchResult' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2339`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:136`
-**Status**: 📌 Existing
-**Message**: Property 'reason' does not exist on type 'PromiseSettledResult<{ totalMatches: number; updatedMatches: number; errors: string[]; }>'.
-  Property 'reason' does not exist on type 'PromiseFulfilledResult<{ totalMatches: number; updatedMatches: number; errors: string[]; }>'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:176`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:258`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:258`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:258`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:261`
-**Status**: 📌 Existing
-**Message**: 'match' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:263`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string' is not assignable to parameter of type 'never'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:275`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:277`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string' is not assignable to parameter of type 'never'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:333`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:337`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:384`
-**Status**: 📌 Existing
-**Message**: Type 'string | undefined' is not assignable to type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/live-score-sync/sync.ts:403`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/live-score-sync/tournament-hour-detector.ts:1`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'supabase' or its corresponding type declarations.
 
 ---
 
@@ -27208,27 +22936,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/index-backup.ts:6`
-**Status**: 📌 Existing
-**Message**: 'FIVBCredentials' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:5097`)
 
 **Location**: `supabase/functions/match-schedule-sync/index-backup.ts:6`
 **Status**: 📌 Existing
 **Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/index-backup.ts:7`
-**Status**: 📌 Existing
-**Message**: 'MatchSyncResult' is declared but its value is never read.
 
 ---
 
@@ -27248,19 +22960,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/index-backup.ts:51`
-**Status**: 📌 Existing
-**Message**: 'req' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:7006`)
 
 **Location**: `supabase/functions/match-schedule-sync/index-backup.ts:51`
 **Status**: 📌 Existing
-**Message**: Parameter 'req' implicitly has an 'any' type.
+**Message**: Parameter '_req' implicitly has an 'any' type.
 
 ---
 
@@ -27317,6 +23021,14 @@
 **Location**: `supabase/functions/match-schedule-sync/index-backup.ts:104`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `supabase/functions/match-schedule-sync/index-backup.ts:131`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'getFIVBCredentialsFromVault'.
 
 ---
 
@@ -27382,22 +23094,6 @@
 #### typescript-error (Rule: `typescript:5097`)
 
 **Location**: `supabase/functions/match-schedule-sync/index.ts:5`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/index.ts:6`
-**Status**: 📌 Existing
-**Message**: 'CacheManager' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/match-schedule-sync/index.ts:6`
 **Status**: 📌 Existing
 **Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
 
@@ -27885,22 +23581,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/sync.ts:569`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/match-schedule-sync/sync.ts:569`
-**Status**: 📌 Existing
-**Message**: 'count' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:18046`)
 
 **Location**: `supabase/functions/match-schedule-sync/sync.ts:599`
@@ -28089,14 +23769,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-admin/index.ts:255`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:18046`)
 
 **Location**: `supabase/functions/sync-admin/index.ts:269`
@@ -28226,1206 +23898,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:49`
-**Status**: 📌 Existing
-**Message**: 'escalationRequired' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18004`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:62`
-**Status**: 📌 Existing
-**Message**: No value exists in scope for the shorthand property 'escalation_required'. Either declare one or provide an initializer.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:83`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:86`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:161`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:225`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:226`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:226`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:253`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:402`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:403`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:431`
-**Status**: 📌 Existing
-**Message**: 'hours' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:431`
-**Status**: 📌 Existing
-**Message**: 'minutes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-alert-processor/alert-processor.ts:431`
-**Status**: 📌 Existing
-**Message**: 'seconds' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:4`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@0.168.0/http/server.ts' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:5`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@supabase/supabase-js@2' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:6`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:7`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:14`
-**Status**: 📌 Existing
-**Message**: Parameter 'req' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:25`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:26`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:94`
-**Status**: 📌 Existing
-**Message**: 'ruleError' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:135`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:136`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:143`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:145`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-alert-processor/index.ts:156`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:21`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:116`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:222`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:223`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:227`
-**Status**: 📌 Existing
-**Message**: Parameter 'email' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-alert-processor/notification-service.ts:227`
-**Status**: 📌 Existing
-**Message**: Parameter 'email' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:116`
-**Status**: 📌 Existing
-**Message**: 'aggregatedMetrics' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18004`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:122`
-**Status**: 📌 Existing
-**Message**: No value exists in scope for the shorthand property 'aggregated_metrics'. Either declare one or provide an initializer.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:240`
-**Status**: 📌 Existing
-**Message**: Parameter 'alert' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:340`
-**Status**: 📌 Existing
-**Message**: Parameter 'e' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:405`
-**Status**: 📌 Existing
-**Message**: Parameter 'alert' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:438`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:439`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:439`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:441`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:442`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:443`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:443`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:445`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:553`
-**Status**: 📌 Existing
-**Message**: 'hours' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:553`
-**Status**: 📌 Existing
-**Message**: 'minutes' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:553`
-**Status**: 📌 Existing
-**Message**: 'seconds' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:592`
-**Status**: 📌 Existing
-**Message**: 'executions' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:621`
-**Status**: 📌 Existing
-**Message**: 'errors' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:660`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:669`
-**Status**: 📌 Existing
-**Message**: Parameter 's' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:670`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:670`
-**Status**: 📌 Existing
-**Message**: Parameter 's' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:671`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:671`
-**Status**: 📌 Existing
-**Message**: Parameter 's' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:683`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:697`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:716`
-**Status**: 📌 Existing
-**Message**: Parameter 'acc' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:716`
-**Status**: 📌 Existing
-**Message**: Parameter 'exec' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:727`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:760`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:760`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:761`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:761`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:762`
-**Status**: 📌 Existing
-**Message**: Parameter 'sum' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:762`
-**Status**: 📌 Existing
-**Message**: Parameter 'd' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2532`)
-
-**Location**: `supabase/functions/sync-monitoring/dashboard-service.ts:785`
-**Status**: 📌 Existing
-**Message**: Object is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:4`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@0.168.0/http/server.ts' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:5`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@supabase/supabase-js@2' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:6`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:7006`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:14`
-**Status**: 📌 Existing
-**Message**: Parameter 'req' implicitly has an 'any' type.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:28`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:29`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2345`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:57`
-**Status**: 📌 Existing
-**Message**: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:106`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:107`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:114`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:116`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/sync-monitoring/index.ts:129`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:1`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@0.177.0/http/server.ts' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:2307`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:2`
-**Status**: 📌 Existing
-**Message**: Cannot find module 'https://[REDACTED]@supabase/supabase-js@2' or its corresponding type declarations.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:3`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:4`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:5`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:2375`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:159`
-**Status**: 📌 Existing
-**Message**: Type '{ vis_tournament_no: number; tournament_code: string; name: string; country: string | undefined; city: string | undefined; season: number | undefined; gender: "M" | "W" | undefined; type: "FIVB" | ... 2 more ... | "LOCAL"; start_qualification: string | undefined; start_main_draw: string | undefined; status: string; }' is not assignable to type 'TournamentMigrationData' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Types of property 'country' are incompatible.
-    Type 'string | undefined' is not assignable to type 'string'.
-      Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:221`
-**Status**: 📌 Existing
-**Message**: 'fetchTournamentDataFromVIS' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:222`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:223`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:224`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:251`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:258`
-**Status**: 📌 Existing
-**Message**: 'migrateTournamentData' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:357`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:407`
-**Status**: 📌 Existing
-**Message**: 'syncMatches' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:463`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:474`
-**Status**: 📌 Existing
-**Message**: 'syncReferees' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:523`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:569`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:587`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:588`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:642`
-**Status**: 📌 Existing
-**Message**: 'visAdapterUrl' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:642`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:643`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:651`
-**Status**: 📌 Existing
-**Message**: 'responseCache' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:689`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:721`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:753`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:761`
-**Status**: 📌 Existing
-**Message**: 'finalMetrics' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:795`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:796`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:802`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:803`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/index.ts:919`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:184`
-**Status**: 📌 Existing
-**Message**: 'visAdapterStart' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:185`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:186`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:192`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:206`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:226`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:232`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:243`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:265`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/monitoring.ts:378`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:5097`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:6`
-**Status**: 📌 Existing
-**Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:101`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:103`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:120`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:148`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:150`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:175`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:203`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18048`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:205`
-**Status**: 📌 Existing
-**Message**: 'batch' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:222`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2375`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:293`
-**Status**: 📌 Existing
-**Message**: Type '{ vis_tournament_no: number; tournament_code: string; name: string; country: string | undefined; city: string | undefined; season: number | undefined; gender: "M" | "W" | undefined; ... 4 more ...; updated_at: string; }' is not assignable to type 'TournamentRecord' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Types of property 'country' are incompatible.
-    Type 'string | undefined' is not assignable to type 'string'.
-      Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2375`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:313`
-**Status**: 📌 Existing
-**Message**: Type '{ vis_match_no: number; tournament_code: string; event_id: number; match_no: string; round_name: string; team1_player1: string | undefined; team1_player2: string | undefined; team2_player1: string | undefined; ... 11 more ...; updated_at: string; }' is not assignable to type 'MatchRecord' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Types of property 'team1_player1' are incompatible.
-    Type 'string | undefined' is not assignable to type 'string'.
-      Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2375`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:341`
-**Status**: 📌 Existing
-**Message**: Type '{ vis_referee_no: number; first_name: string; last_name: string; gender: "M" | "F"; federation: string; birthdate: string | undefined; updated_at: string; }' is not assignable to type 'RefereeRecord' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Types of property 'birthdate' are incompatible.
-    Type 'string | undefined' is not assignable to type 'string'.
-      Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2375`)
-
-**Location**: `supabase/functions/tournament-data-migration/sync-client.ts:466`
-**Status**: 📌 Existing
-**Message**: Type '{ tournament_code: string; event_no: number; event_name: string; gender: string | undefined; category: string | undefined; created_at: string; }' is not assignable to type 'EventRecord' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Types of property 'gender' are incompatible.
-    Type 'string | undefined' is not assignable to type 'string'.
-      Type 'undefined' is not assignable to type 'string'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:96`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:97`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:99`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'Deno'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:215`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2769`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:257`
-**Status**: 📌 Existing
-**Message**: No overload matches this call.
-  Overload 1 of 3, '(input: RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
-    Argument of type '{ method: "GET" | "POST"; headers: { Authorization: string; 'Content-Type': string; }; body: string | undefined; signal: AbortSignal; }' is not assignable to parameter of type 'RequestInit' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'body' are incompatible.
-        Type 'string | undefined' is not assignable to type 'BodyInit | null'.
-          Type 'undefined' is not assignable to type 'BodyInit | null'.
-  Overload 2 of 3, '(input: string | Request | URL, init?: RequestInit | undefined): Promise<Response>', gave the following error.
-    Argument of type '{ method: "GET" | "POST"; headers: { Authorization: string; 'Content-Type': string; }; body: string | undefined; signal: AbortSignal; }' is not assignable to parameter of type 'RequestInit' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'body' are incompatible.
-        Type 'string | undefined' is not assignable to type 'BodyInit | null'.
-          Type 'undefined' is not assignable to type 'BodyInit | null'.
-  Overload 3 of 3, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
-    Argument of type '{ method: "GET" | "POST"; headers: { Authorization: string; 'Content-Type': string; }; body: string | undefined; signal: AbortSignal; }' is not assignable to parameter of type 'RequestInit' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-      Types of property 'body' are incompatible.
-        Type 'string | undefined' is not assignable to type 'BodyInit | null'.
-          Type 'undefined' is not assignable to type 'BodyInit | null'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:284`
-**Status**: 📌 Existing
-**Message**: Type 'unknown' is not assignable to type 'Error'.
-
----
-
-#### typescript-error (Rule: `typescript:18046`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:285`
-**Status**: 📌 Existing
-**Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:2454`)
-
-**Location**: `supabase/functions/tournament-data-migration/vis-integration.ts:295`
-**Status**: 📌 Existing
-**Message**: Variable 'lastError' is used before being assigned.
-
----
-
 #### typescript-error (Rule: `typescript:2307`)
 
 **Location**: `supabase/functions/tournament-master-sync/auth.ts:4`
@@ -29498,14 +23970,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/index.ts:6`
-**Status**: 📌 Existing
-**Message**: 'FIVBCredentials' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:5097`)
 
 **Location**: `supabase/functions/tournament-master-sync/index.ts:6`
@@ -29514,27 +23978,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/index.ts:7`
-**Status**: 📌 Existing
-**Message**: 'SyncBatchResult' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:5097`)
 
 **Location**: `supabase/functions/tournament-master-sync/index.ts:7`
 **Status**: 📌 Existing
 **Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/index.ts:38`
-**Status**: 📌 Existing
-**Message**: 'req' is declared but its value is never read.
 
 ---
 
@@ -29542,7 +23990,7 @@
 
 **Location**: `supabase/functions/tournament-master-sync/index.ts:38`
 **Status**: 📌 Existing
-**Message**: Parameter 'req' implicitly has an 'any' type.
+**Message**: Parameter '_req' implicitly has an 'any' type.
 
 ---
 
@@ -29575,6 +24023,14 @@
 **Location**: `supabase/functions/tournament-master-sync/index.ts:75`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
+
+---
+
+#### typescript-error (Rule: `typescript:2304`)
+
+**Location**: `supabase/functions/tournament-master-sync/index.ts:100`
+**Status**: 📌 Existing
+**Message**: Cannot find name 'getFIVBCredentialsFromVault'.
 
 ---
 
@@ -29755,35 +24211,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/sync.ts:371`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/sync.ts:371`
-**Status**: 📌 Existing
-**Message**: 'count' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:18046`)
 
 **Location**: `supabase/functions/tournament-master-sync/sync.ts:401`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/tournament-master-sync/sync.ts:415`
-**Status**: 📌 Existing
-**Message**: 'data' is declared but its value is never read.
 
 ---
 
@@ -29848,14 +24280,6 @@
 **Location**: `supabase/functions/vis-adapter/index.ts:2`
 **Status**: 📌 Existing
 **Message**: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/vis-adapter/index.ts:3`
-**Status**: 📌 Existing
-**Message**: 'MatchTimeFields' is declared but its value is never read.
 
 ---
 
@@ -29940,10 +24364,10 @@
 
 **Location**: `supabase/functions/vis-adapter/index.ts:449`
 **Status**: 📌 Existing
-**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; winner: 2 | 1 | undefined; forfeit: false; }' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration?: number; winner?: 2 | 1; forfeit?: boolean; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ team1Sets: number; team2Sets: number; setScores: number[]; winner: 1 | 2 | undefined; forfeit: false; }' is not assignable to type '{ team1Sets: number; team2Sets: number; setScores: number[]; duration?: number; winner?: 1 | 2; forfeit?: boolean; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'winner' are incompatible.
-    Type '2 | 1 | undefined' is not assignable to type '2 | 1'.
-      Type 'undefined' is not assignable to type '2 | 1'.
+    Type '1 | 2 | undefined' is not assignable to type '1 | 2'.
+      Type 'undefined' is not assignable to type '1 | 2'.
 
 ---
 
@@ -30590,14 +25014,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `supabase/functions/vis-data-sync/sync-handlers.ts:1`
-**Status**: 📌 Existing
-**Message**: 'createClient' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2307`)
 
 **Location**: `supabase/functions/vis-data-sync/sync-handlers.ts:1`
@@ -31092,40 +25508,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `theme/tokens.ts:7`
-**Status**: 📌 Existing
-**Message**: 'validateWCAG' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2741`)
-
-**Location**: `theme/tokens.ts:296`
-**Status**: 📌 Existing
-**Message**: Property 'statusColors' is missing in type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly success: "#0F4C75"; readonly warning: "#B8530A"; readonly error: "#8B1538"; readonly textPrimary: "#0D1A2B"; readonly textSecondary: "#5F6E86"; readonly background: "#FFFFFF"; }' but required in type 'ColorToken'.
-
----
-
-#### typescript-error (Rule: `typescript:2322`)
-
-**Location**: `theme/tokens.ts:302`
-**Status**: 📌 Existing
-**Message**: Type '{ readonly primary: { readonly background: "#2D79D8"; readonly backgroundHover: "#1F5AA6"; readonly text: "#FFFFFF"; }; readonly secondary: { readonly background: "#FFFFFF"; readonly backgroundHover: "#F0F6FF"; readonly border: "#E3ECF7"; readonly text: "#173D77"; }; readonly destructive: { ...; }; }' is not assignable to type 'ButtonTokens'.
-  Types of property 'destructive' are incompatible.
-    Property 'backgroundHover' is missing in type '{ readonly background: "#FEE4E2"; readonly text: "#B42318"; readonly border: "#FAC5C3"; }' but required in type 'ButtonColorSet'.
-
----
-
-#### typescript-error (Rule: `typescript:2740`)
-
-**Location**: `theme/tokens.ts:309`
-**Status**: 📌 Existing
-**Message**: Type '{ readonly xs: 4; readonly sm: 8; readonly md: 16; readonly lg: 24; readonly xl: 32; readonly xxl: 48; }' is missing the following properties from type 'SpacingToken': xsmall, extraSmall, small, medium, and 3 more.
-
----
-
 #### typescript-error (Rule: `typescript:2312`)
 
 **Location**: `types/api-responses.ts:312`
@@ -31199,20 +25581,20 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/assignmentNavigation.ts:80`
-**Status**: 📌 Existing
-**Message**: 'assignment' is declared but its value is never read.
-
----
-
 #### typescript-error (Rule: `typescript:2322`)
 
 **Location**: `utils/assignmentNavigation.ts:135`
 **Status**: 📌 Existing
 **Message**: Type 'NavigationContext | undefined' is not assignable to type 'NavigationContext | null'.
   Type 'undefined' is not assignable to type 'NavigationContext | null'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `utils/auxiliaryPersonsSync.ts:81`
+**Status**: 📌 Existing
+**Message**: Type 'string' is not assignable to type 'number'.
 
 ---
 
@@ -31227,19 +25609,57 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `utils/cachePerformanceMonitor.ts:261`
+**Location**: `utils/colors.ts:18`
 **Status**: 📌 Existing
-**Message**: 'formatBytes' is declared but its value is never read.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `utils/colors.ts:6`
+**Location**: `utils/colors.ts:37`
 **Status**: 📌 Existing
-**Message**: 'tokenStatusColors' is declared but its value is never read.
+**Message**: Argument of type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to parameter of type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `utils/colors.ts:127`
+**Status**: 📌 Existing
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `utils/colors.ts:140`
+**Status**: 📌 Existing
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `utils/colors.ts:179`
+**Status**: 📌 Existing
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `utils/colors.ts:188`
+**Status**: 📌 Existing
+**Message**: Type 'string | StatusColors' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
@@ -31270,75 +25690,46 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `utils/contrast.ts:104`
+**Location**: `utils/contrastValidator.ts:66`
 **Status**: 📌 Existing
-**Message**: 'contrast' is declared but its value is never read.
+**Message**: Argument of type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to parameter of type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `utils/contrast.ts:105`
+**Location**: `utils/contrastValidator.ts:81`
 **Status**: 📌 Existing
-**Message**: 'prefix' is declared but its value is never read.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `utils/contrastValidator.ts:63`
+**Location**: `utils/contrastValidator.ts:82`
 **Status**: 📌 Existing
-**Message**: 'description' is declared but its value is never read.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `utils/contrastValidator.ts:198`
+**Location**: `utils/contrastValidator.ts:99`
 **Status**: 📌 Existing
-**Message**: 'result' is declared but its value is never read.
+**Message**: Expected 2 arguments, but got 3.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `utils/contrastValidator.ts:209`
+**Location**: `utils/contrastValidator.ts:105`
 **Status**: 📌 Existing
-**Message**: 'index' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/contrastValidator.ts:211`
-**Status**: 📌 Existing
-**Message**: 'status' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/dateFormatters.ts:254`
-**Status**: 📌 Existing
-**Message**: 'showTimezoneIndicator' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/dateFormatters.ts:255`
-**Status**: 📌 Existing
-**Message**: 'cachedPreference' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/ErrorHandler.ts:13`
-**Status**: 📌 Existing
-**Message**: 'error' is declared but its value is never read.
+**Message**: Expected 2 arguments, but got 3.
 
 ---
 
@@ -31354,7 +25745,7 @@
 
 **Location**: `utils/icons.ts:161`
 **Status**: 📌 Existing
-**Message**: Property 'primary' does not exist on type '{ readonly primary: "#0B2545"; readonly secondary: "#1F5AA6"; readonly accent: "#B8391A"; readonly muted: "#5F6E86"; } | { readonly current: string; readonly upcoming: string; readonly completed: string; readonly cancelled: string; readonly emergency: string; } | { ...; } | { ...; }'.
+**Message**: Property 'primary' does not exist on type '{ readonly primary: "#18181B"; readonly secondary: "#52525B"; readonly accent: "#D97706"; readonly muted: "#52525B"; } | { readonly current: string; readonly upcoming: string; readonly completed: string; readonly cancelled: string; readonly emergency: string; } | { ...; } | { ...; }'.
   Property 'primary' does not exist on type '{ readonly current: string; readonly upcoming: string; readonly completed: string; readonly cancelled: string; readonly emergency: string; }'.
 
 ---
@@ -31367,21 +25758,62 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
+#### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `utils/MatchDurationFormatter.ts:29`
+**Location**: `utils/matchOfficialsSync.ts:49`
 **Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
+**Message**: Type '{ Scorer: number | undefined; AssistantScorer: number | undefined; LineJudge1: number | undefined; LineJudge2: number | undefined; LineJudge3: number | undefined; LineJudge4: number | undefined; }' is not assignable to type 'PersonnelData' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'Scorer' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2345`)
+#### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `utils/MatchDurationFormatter.ts:30`
+**Location**: `utils/matchOfficialsSync.ts:133`
 **Status**: 📌 Existing
-**Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
+**Message**: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `utils/matchOfficialsSync.ts:133`
+**Status**: 📌 Existing
+**Message**: 'personnelData.Scorer' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `utils/matchOfficialsSync.ts:145`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `utils/matchOfficialsSync.ts:145`
+**Status**: 📌 Existing
+**Message**: 'personnelData.AssistantScorer' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `utils/matchOfficialsSync.ts:165`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `utils/matchOfficialsSync.ts:165`
+**Status**: 📌 Existing
+**Message**: 'lj.id' is possibly 'undefined'.
 
 ---
 
@@ -31403,49 +25835,25 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `utils/matchSorting.ts:25`
+**Location**: `utils/matchSorting.ts:96`
 **Status**: 📌 Existing
-**Message**: 'tournamentTimezone' is declared but its value is never read.
+**Message**: Expected 1 arguments, but got 2.
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2554`)
 
-**Location**: `utils/matchTimeFormatter.ts:9`
+**Location**: `utils/matchSorting.ts:97`
 **Status**: 📌 Existing
-**Message**: 'getMatchTimeForUser' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/matchTimeFormatter.ts:10`
-**Status**: 📌 Existing
-**Message**: 'getMatchTimeUTC' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/matchTimeFormatter.ts:11`
-**Status**: 📌 Existing
-**Message**: 'isTimezoneConversionReliable' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/matchTimeFormatter.ts:15`
-**Status**: 📌 Existing
-**Message**: 'TimezoneConversionResult' is declared but its value is never read.
+**Message**: Expected 1 arguments, but got 2.
 
 ---
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `utils/matchTimeFormatter.ts:90`
+**Location**: `utils/matchTimeFormatter.ts:86`
 **Status**: 📌 Existing
 **Message**: Type '{ userTime: string; utcTime: string; conversionMethod: string; reliable: boolean; sourceFields: string[]; timezoneDetection: string | undefined; }' is not assignable to type '{ userTime: string; utcTime: string; conversionMethod: string; reliable: boolean; sourceFields: string[]; timezoneDetection?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'timezoneDetection' are incompatible.
@@ -31456,7 +25864,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `utils/matchTimeFormatter.ts:131`
+**Location**: `utils/matchTimeFormatter.ts:127`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -31465,7 +25873,16 @@
 
 #### typescript-error (Rule: `typescript:2412`)
 
-**Location**: `utils/matchTimeFormatter.ts:220`
+**Location**: `utils/matchTimeFormatter.ts:216`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2412`)
+
+**Location**: `utils/matchTimeFormatter.ts:217`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
   Type 'undefined' is not assignable to type 'string'.
@@ -31481,18 +25898,9 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2412`)
-
-**Location**: `utils/matchTimeFormatter.ts:225`
-**Status**: 📌 Existing
-**Message**: Type 'string | undefined' is not assignable to type 'string' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
-  Type 'undefined' is not assignable to type 'string'.
-
----
-
 #### typescript-error (Rule: `typescript:2532`)
 
-**Location**: `utils/matchTimeFormatter.ts:226`
+**Location**: `utils/matchTimeFormatter.ts:222`
 **Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
 
@@ -31500,7 +25908,7 @@
 
 #### typescript-error (Rule: `typescript:2379`)
 
-**Location**: `utils/matchTimeFormatter.ts:236`
+**Location**: `utils/matchTimeFormatter.ts:232`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ showTimezoneIndicator: boolean | undefined; tournamentData: TournamentData; }' is not assignable to parameter of type 'MatchTimeFormatOptions' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'showTimezoneIndicator' are incompatible.
@@ -31566,46 +25974,6 @@
   Types of property 'context' are incompatible.
     Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, unknown>'.
       Type 'undefined' is not assignable to type 'Record<string, unknown>'.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/productionMonitoring.ts:270`
-**Status**: 📌 Existing
-**Message**: 'kpi' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/RoundPhaseFormatter.ts:7`
-**Status**: 📌 Existing
-**Message**: 'BeachRoundType' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/RoundPhaseFormatter.ts:64`
-**Status**: 📌 Existing
-**Message**: 'tournamentContext' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/scanningPatterns.ts:7`
-**Status**: 📌 Existing
-**Message**: 'typography' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6192`)
-
-**Location**: `utils/scanningPatterns.ts:8`
-**Status**: 📌 Existing
-**Message**: All imports in import declaration are unused.
 
 ---
 
@@ -31796,12 +26164,30 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2345`)
+
+**Location**: `utils/textEmphasis.ts:249`
+**Status**: 📌 Existing
+**Message**: Argument of type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to parameter of type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2345`)
+
+**Location**: `utils/textEmphasis.ts:257`
+**Status**: 📌 Existing
+**Message**: Argument of type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to parameter of type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
+
+---
+
 #### typescript-error (Rule: `typescript:2375`)
 
 **Location**: `utils/textEmphasis.ts:307`
 **Status**: 📌 Existing
-**Message**: Type '{ fontSize: number; fontWeight: "normal" | "700"; color: "#0D1A2B" | "#B8530A"; letterSpacing: number; backgroundColor: "transparent" | "#FFF3CD"; borderColor: "#B8530A" | "transparent"; ... 193 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Type '{ fontSize: number; fontWeight: "normal" | "700"; color: "#0D1A2B" | "#B8530A"; letterSpacing: number; backgroundColor: "transparent" | "#FFF3CD"; borderColor: "#B8530A" | "transparent"; ... 193 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ fontSize: number; fontWeight: "700" | "normal"; color: "#18181B" | "#B45309"; letterSpacing: number; backgroundColor: "transparent" | "#FFF3CD"; borderColor: "#B45309" | "transparent"; ... 193 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Type '{ fontSize: number; fontWeight: "700" | "normal"; color: "#18181B" | "#B45309"; letterSpacing: number; backgroundColor: "transparent" | "#FFF3CD"; borderColor: "#B45309" | "transparent"; ... 193 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
     Types of property 'cursor' are incompatible.
       Type 'string' is not assignable to type 'CursorValue | undefined'.
 
@@ -31811,19 +26197,20 @@
 
 **Location**: `utils/textEmphasis.ts:377`
 **Status**: 📌 Existing
-**Message**: Type '{ fontSize: 28; fontWeight: "900"; color: "#8B1538"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#8B1538"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-  Type '{ fontSize: 28; fontWeight: "900"; color: "#8B1538"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#8B1538"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
-    Type '{ fontSize: 28; fontWeight: "900"; color: "#8B1538"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#8B1538"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ fontSize: 28; fontWeight: "900"; color: "#B91C1C"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#B91C1C"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Type '{ fontSize: 28; fontWeight: "900"; color: "#B91C1C"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#B91C1C"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'TextStyle & ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+    Type '{ fontSize: 28; fontWeight: "900"; color: "#B91C1C"; backgroundColor: "#FFEBEE"; borderLeftWidth: 4; borderLeftColor: "#B91C1C"; paddingLeft: 12; marginBottom: 8; fontFamily?: string | undefined; ... 190 more ...; includeFontPadding?: boolean | undefined; }' is not assignable to type 'ViewStyle' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'cursor' are incompatible.
         Type 'string' is not assignable to type 'CursorValue | undefined'.
 
 ---
 
-#### typescript-error (Rule: `typescript:2353`)
+#### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `utils/timezoneUtils.ts:162`
+**Location**: `utils/textEmphasis.ts:415`
 **Status**: 📌 Existing
-**Message**: Object literal may only specify known properties, and 'scheduledDateTime' does not exist in type '{ originalLocalDate?: string; originalLocalTime?: string; detectedTimezone?: string; userTimezone?: string; fallbackReason?: string; }'.
+**Message**: Type 'StatusColors | "#18181B" | "#52525B" | "#71717A" | "#FAFAFA" | "#E4E4E7" | "#D97706" | "#15803D" | "#B45309" | "#B91C1C"' is not assignable to type 'string'.
+  Type 'StatusColors' is not assignable to type 'string'.
 
 ---
 
@@ -31988,45 +26375,103 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:6133`)
+#### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `utils/typography.ts:33`
+**Location**: `utils/typography.ts:76`
 **Status**: 📌 Existing
-**Message**: 'height' is declared but its value is never read.
+**Message**: Property 'fontSize' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'fontSize' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:77`
+**Status**: 📌 Existing
+**Message**: Property 'fontWeight' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'fontWeight' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:78`
+**Status**: 📌 Existing
+**Message**: Property 'lineHeight' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'lineHeight' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:79`
+**Status**: 📌 Existing
+**Message**: Property 'letterSpacing' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'letterSpacing' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:88`
+**Status**: 📌 Existing
+**Message**: Property 'lineHeight' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'lineHeight' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
 
 ---
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `utils/typography.ts:38`
-**Status**: 📌 Existing
-**Message**: 'isMediumDevice' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/typography.ts:90`
-**Status**: 📌 Existing
-**Message**: 'ratio' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:6133`)
-
-**Location**: `utils/typography.ts:106`
+**Location**: `utils/typography.ts:104`
 **Status**: 📌 Existing
 **Message**: 'fontSize' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:108`
+**Status**: 📌 Existing
+**Message**: Property 'letterSpacing' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'letterSpacing' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `utils/typography.ts:153`
+**Status**: 📌 Existing
+**Message**: Property 'fontSize' does not exist on type '{ readonly fontSize: 40; readonly fontWeight: "700"; readonly lineHeight: 48; readonly letterSpacing: -0.5; } | { readonly fontSize: 32; readonly fontWeight: "700"; readonly lineHeight: 40; readonly letterSpacing: -0.25; } | ... 6 more ... | { ...; }'.
+  Property 'fontSize' does not exist on type '{ readonly small: 14; readonly medium: 16; readonly large: 18; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:7053`)
+
+**Location**: `utils/typography.ts:273`
+**Status**: 📌 Existing
+**Message**: Element implicitly has an 'any' type because expression of type '"body" | "caption" | "h1" | "h2" | "h3" | "hero" | "bodyLarge" | "bodySmall" | "sizes"' can't be used to index type '{ hero: number; h1: number; h2: number; bodyLarge: number; body: number; caption: number; }'.
+  Property 'h3' does not exist on type '{ hero: number; h1: number; h2: number; bodyLarge: number; body: number; caption: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `utils/visApiConfig.ts:15`
+**Status**: 📌 Existing
+**Message**: 'VIS_API_PROXY' is declared but its value is never read.
 
 ---
 
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (46.0s) - 3560 findings
+- ✅ **TypeScript Checker** (46.3s) - 2903 findings
+- ✅ **ESLint Checker** (13.3s) - 0 findings
+- ✅ **Complexity Checker** (0.5s) - 0 findings
 
 ---
 
-**Audit Run ID**: `run-2025-10-31-07-56-14`
-**Duration**: 46.0s
-**Generated**: 2025-10-31T06:56:14.846Z
+**Audit Run ID**: `run-2026-02-01-16-59-49`
+**Duration**: 60.2s
+**Generated**: 2026-02-01T15:59:49.046Z

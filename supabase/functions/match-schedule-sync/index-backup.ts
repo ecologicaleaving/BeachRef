@@ -3,8 +3,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { FIVBAuthenticator, getFIVBCredentialsFromVault, type FIVBCredentials } from '../_shared/auth.ts'
-import { MatchSynchronizer, type FIVBMatch, type MatchSyncResult, type ActiveTournament } from './sync.ts'
+import { FIVBAuthenticator} from '../_shared/auth.ts'
+import { MatchSynchronizer, type FIVBMatch, type ActiveTournament} from './sync.ts'
 import { CacheManager } from './cache.ts'
 
 interface SyncResult {
@@ -48,7 +48,7 @@ const BATCH_SIZE = 100;
 const CONCURRENCY_LIMIT = 5;
 const MAX_PROCESSING_TIME = 10 * 60 * 1000; // 10 minutes
 
-serve(async (req) => {
+serve(async (_req) => {
   try {
     console.log('Match Schedule Sync: Starting execution');
     const startTime = Date.now();

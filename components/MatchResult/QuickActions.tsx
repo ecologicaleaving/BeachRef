@@ -14,10 +14,10 @@ import {
   TextInput,
   Alert,
   StyleSheet, 
-  ViewStyle, 
+  _ViewStyle, 
   TextStyle 
 } from 'react-native';
-import { QuickActionProps, SpecialResult } from '../../types/MatchResults';
+import { SpecialResult} from '../../types/MatchResults';
 import { getSpecialResultText } from '../../utils/matchResults';
 import { designTokens } from '../../theme/tokens';
 import { ActionIcons, UtilityIcons } from '../Icons/IconLibrary';
@@ -298,7 +298,7 @@ const QuickActions: React.FC<QuickActionsProps> = React.memo(({
   );
 });
 
-const getStyles = (): StyleSheet.NamedStyles<any> => {
+const getStyles = () => {
   return StyleSheet.create({
     modalOverlay: {
       flex: 1,

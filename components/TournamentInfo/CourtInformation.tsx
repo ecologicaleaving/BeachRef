@@ -281,7 +281,7 @@ const CourtInformation: React.FC<CourtInformationProps> = React.memo(({
   );
 });
 
-const getStyles = (): StyleSheet.NamedStyles<any> => {
+const getStyles = () => {
   return StyleSheet.create({
     container: {
       backgroundColor: designTokens.colors.surfacePrimary,

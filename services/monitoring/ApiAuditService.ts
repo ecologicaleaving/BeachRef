@@ -15,8 +15,8 @@ import {
   VisApiEndpoint,
   Severity,
   FindingCategory,
-  NetworkType,
-  RequestSource,
+  _NetworkType,
+  _RequestSource,
 } from '../../types/audit';
 
 // Platform detection

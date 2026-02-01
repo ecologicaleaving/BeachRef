@@ -8,7 +8,7 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
+  _Dimensions,
   TouchableOpacity,
   Modal,
   ScrollView,
@@ -284,7 +284,7 @@ export const TouchTargetVisualization: React.FC<TouchTargetVisualizationProps> =
             {selectedTarget.issues.length > 0 && (
               <View style={styles.issuesSection}>
                 <Text style={styles.issuesTitle}>Issues:</Text>
-                {selectedTarget.issues.map((issue, index) => (
+                {selectedTarget.issues.map((issue, _index) => (
                   <TouchableOpacity
                     key={issue.id}
                     style={styles.issueItem}

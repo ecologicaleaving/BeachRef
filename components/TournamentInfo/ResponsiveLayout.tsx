@@ -202,7 +202,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = React.memo(({
   );
 });
 
-const getStyles = (dimensions: ScreenDimensions): StyleSheet.NamedStyles<any> => {
+const getStyles = (dimensions: ScreenDimensions) => {
   const { densityFactor, orientation, isTablet } = dimensions;
   
   // Adaptive spacing based on density

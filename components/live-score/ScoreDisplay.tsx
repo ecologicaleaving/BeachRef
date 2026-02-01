@@ -61,7 +61,7 @@ export const ScoreDisplay: React.FC<ScoreDisplayProps> = React.memo(({
   }[] => {
     if (hasLiveData) {
       // Use live data
-      return sets!.map((set, index) => ({
+      return sets!.map((set, _index) => ({
         setNumber: set.no,
         teamAScore: set.pointsTeamA,
         teamBScore: set.pointsTeamB,

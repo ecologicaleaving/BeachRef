@@ -1,6 +1,6 @@
 import { NetworkStateManager, NetworkState, ConnectionQuality, ConnectionStrategy } from './NetworkStateManager';
 import { AppStateManager, AppLifecycleState } from './AppStateManager';
-import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
+import { CircuitState} from './ConnectionCircuitBreaker';
 import { RealtimeFallbackService } from './RealtimeFallbackService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

@@ -6,7 +6,6 @@ import {
   StyleSheet,
 } from 'react-native';
 // Removed Animated imports to fix render issues
-import { useRouter } from 'expo-router';
 import { BeachMatchCore, MatchStatus } from '../../../types/match-v2';
 import { FlagImage } from '../../FlagImage';
 import { RoundPhaseDisplay } from '../../Typography/RoundPhaseDisplay';

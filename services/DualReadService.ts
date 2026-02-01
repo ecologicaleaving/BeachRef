@@ -5,7 +5,7 @@ import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
 import { SetScoreService } from './SetScoreService';
 // CacheService import removed to prevent circular dependency
 // Note: This was causing a circular dependency with CacheServiceCompatibility
-import { FilterOptions } from '../types/cache';
+
 import { MatchStatus } from '../types/match-v2';
 
 export type ReadStrategy = 'db_first' | 'api_first' | 'db_only' | 'api_only';
@@ -794,7 +794,7 @@ export class DualReadService {
   private async getMatchesFromDB(filters?: any): Promise<MatchDTO[]> {
     try {
       // First, test if the table exists by doing a simple count query
-      const { count, error: countError } = await this.supabase
+      const { error: countError} = await this.supabase
         .from('matches')
         .select('*', { count: 'exact', head: true });
 

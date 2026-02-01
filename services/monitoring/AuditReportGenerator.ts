@@ -13,7 +13,7 @@ import {
   ApiRequest,
   AuditFinding,
   AuditReport,
-  Severity,
+  _Severity,
 } from '../../types/audit';
 
 /**

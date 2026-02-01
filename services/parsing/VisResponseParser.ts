@@ -8,8 +8,8 @@ import {
   TournamentCore, 
   TournamentDates, 
   GenderType, 
-  TournamentType, 
-  TournamentStatus,
+  _TournamentType, 
+  _TournamentStatus,
   generateTournamentId,
   mapVisTournamentType,
   mapVisTournamentStatus
@@ -21,7 +21,7 @@ import {
   CourtInfo,
   RefereeAssignment,
   MatchResult,
-  MatchStatus,
+  _MatchStatus,
   generateMatchId,
   mapVisMatchStatus,
   calculateMatchDuration,
@@ -565,7 +565,7 @@ export class VisResponseParser {
       NoEvent: this.extractXmlAttribute(matchXml, 'NoEvent'),
       EventNo: this.extractXmlAttribute(matchXml, 'NoEvent'), // Alias for backward compatibility
       // T046: Parse Personnel XML to extract official reference IDs
-      ...this.parsePersonnel(this.extractXmlAttribute(matchXml, 'Personnel'))
+      ...this.parsePersonnel(this.extractXmlAttribute(matchXml, 'Personnel') ?? '')
     } as any;
 
 
@@ -748,8 +748,8 @@ export class VisResponseParser {
           // Convert "1h 25m" format to minutes
           const hourMatch = totalDurationStr.match(/(\d+)h/);
           const minuteMatch = totalDurationStr.match(/(\d+)m/);
-          const hours = hourMatch ? parseInt(hourMatch[1]) : 0;
-          const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0;
+          const hours = hourMatch ? parseInt(hourMatch[1] ?? '0') : 0;
+          const minutes = minuteMatch ? parseInt(minuteMatch[1] ?? '0') : 0;
           let totalPlayingTime = hours * 60 + minutes;
           
           // Add break time between sets (1 minute per set break)
@@ -1047,7 +1047,7 @@ export class VisResponseParser {
     const numericMatch = cleanTz.match(/^([+-]?)(\d{1,2})$/);
     if (numericMatch) {
       const [, sign, hours] = numericMatch;
-      const hourOffset = parseInt(hours, 10);
+      const hourOffset = parseInt(hours ?? '0', 10);
 
       // Handle invalid offsets (24+ hours)
       if (hourOffset >= 24) {
@@ -1088,8 +1088,8 @@ export class VisResponseParser {
     }
 
     const [, sign, hours, minutes] = offsetMatch;
-    const offsetHours = parseInt(hours, 10);
-    const offsetMinutes = parseInt(minutes, 10);
+    const offsetHours = parseInt(hours ?? '0', 10);
+    const offsetMinutes = parseInt(minutes ?? '0', 10);
 
     // Convert to total offset in hours
     const totalOffset = (offsetHours + offsetMinutes / 60) * (sign === '+' ? 1 : -1);

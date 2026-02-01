@@ -12,11 +12,11 @@ import {
   TouchableOpacity, 
   Animated,
   StyleSheet, 
-  ViewStyle, 
+  _ViewStyle, 
   TextStyle 
 } from 'react-native';
-import { EnhancedMatchResult, ResultStatus } from '../../types/MatchResults';
-import { needsSync, getResultStatusText } from '../../utils/matchResults';
+import { EnhancedMatchResult} from '../../types/MatchResults';
+import { needsSync} from '../../utils/matchResults';
 import { designTokens } from '../../theme/tokens';
 import { StatusIcons, ActionIcons, UtilityIcons } from '../Icons/IconLibrary';
 
@@ -306,7 +306,7 @@ const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = React.memo(({
   }
 });
 
-const getStyles = (variant: string): StyleSheet.NamedStyles<any> => {
+const getStyles = (variant: string) => {
   return StyleSheet.create({
     // Compact variant styles
     compactContainer: {

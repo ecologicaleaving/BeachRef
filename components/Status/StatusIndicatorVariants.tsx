@@ -6,12 +6,12 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { View, Animated, ViewStyle} from 'react-native';
 import { StatusIndicatorProps, StatusIndicatorSize } from '../../types/status';
 import { StatusIndicator } from './StatusIndicator';
-import { ProfessionalStatusIcon } from './ProfessionalStatusIcon';
+
 import { designTokens } from '../../theme/tokens';
-import { getStatusColor, getStatusSize } from '../../utils/statusIndicators';
+import { getStatusColor} from '../../utils/statusIndicators';
 
 // Inline Status Badge - Small indicators for lists and cards
 export interface InlineStatusBadgeProps extends Omit<StatusIndicatorProps, 'variant'> {

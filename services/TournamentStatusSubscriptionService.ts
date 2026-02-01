@@ -1,7 +1,7 @@
-import { Tournament } from '../types/tournament';
-import { BeachMatch } from '../types/match';
+
+
 import { supabase } from './supabase';
-import { RealtimeSubscriptionService, ConnectionState } from './RealtimeSubscriptionService';
+import { RealtimeSubscriptionService} from './RealtimeSubscriptionService';
 import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
 import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
 import { matchStatusPollingManager } from './MatchStatusPollingManager';
@@ -551,7 +551,7 @@ export class TournamentStatusSubscriptionService {
     }
 
     // Remove all tournament subscriptions
-    for (const [key, subscription] of this.activeTournamentSubscriptions) {
+    for (const [_key, subscription] of this.activeTournamentSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
       } catch (error) {
@@ -561,7 +561,7 @@ export class TournamentStatusSubscriptionService {
     this.activeTournamentSubscriptions.clear();
 
     // Remove all match subscriptions  
-    for (const [key, subscription] of this.activeMatchSubscriptions) {
+    for (const [_key, subscription] of this.activeMatchSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
       } catch (error) {

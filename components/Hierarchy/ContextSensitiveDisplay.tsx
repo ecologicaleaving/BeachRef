@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { designTokens } from '../../theme/tokens';
-import { Assignment, AssignmentStatus } from '../../types/assignments';
+import { Assignment} from '../../types/assignments';
 import { InformationPriority } from './InformationArchitecture';
 
 // Context-sensitive display logic based on assignment status
@@ -30,7 +30,7 @@ interface ContextSensitiveDisplayProps {
 
 export const ContextSensitiveDisplay: React.FC<ContextSensitiveDisplayProps> = ({
   context,
-  assignment,
+  _assignment,
   children,
   priority = 'secondary',
   adaptiveLayout = true,

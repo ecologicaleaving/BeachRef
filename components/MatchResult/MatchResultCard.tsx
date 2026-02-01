@@ -6,19 +6,14 @@
  */
 
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ViewStyle, 
-  TextStyle 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet
 } from 'react-native';
-import { 
-  MatchResultCardProps, 
-  EnhancedMatchResult, 
-  SetScore,
-  ResultValidationError 
+import {
+  MatchResultCardProps
 } from '../../types/MatchResults';
 import { 
   formatMatchTime, 
@@ -38,10 +33,6 @@ const MatchResultCard: React.FC<MatchResultCardProps> = React.memo(({
   matchResult,
   variant,
   isEditable = false,
-  showQuickActions = false,
-  onScoreUpdate,
-  onSubmit,
-  onSpecialResult,
   onPress
 }) => {
   const cardVariant = variant || matchResult.matchType;
@@ -280,7 +271,7 @@ const MatchResultCard: React.FC<MatchResultCardProps> = React.memo(({
   );
 });
 
-const getStyles = (variant: string, isEditable: boolean): StyleSheet.NamedStyles<any> => {
+const getStyles = (variant: string, isEditable: boolean) => {
   const baseCard: ViewStyle = {
     backgroundColor: designTokens.colors.surfacePrimary,
     borderRadius: designTokens.spacing.borderRadius,

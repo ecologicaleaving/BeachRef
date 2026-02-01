@@ -1,6 +1,6 @@
 import { serve } from 'std/http/server.ts';
 import { VisClient } from './vis-client.ts';
-import { VISApiTimezoneEnhancer, MatchTimeFields, TournamentTimezoneContext } from './timezone-processor.ts';
+import { VISApiTimezoneEnhancer, TournamentTimezoneContext} from './timezone-processor.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.54.0';
 
 const corsHeaders = {

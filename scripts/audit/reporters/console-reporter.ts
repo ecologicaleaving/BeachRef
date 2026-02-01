@@ -6,10 +6,10 @@
  * Provides immediate feedback during audit execution.
  */
 
-import { AuditReport, CheckerResult, Severity } from '../types';
+import { AuditReport, CheckerResult} from '../types';
 import {
-  getSeverityEmoji,
-  getSeverityColor,
+  _getSeverityEmoji,
+  _getSeverityColor,
   countBySeverity,
 } from '../utils/severity-classifier';
 import {

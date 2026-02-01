@@ -6,7 +6,6 @@ import { MatchesFilters, useMatches } from '../../hooks/useMatches';
 import { MatchDTO } from '../../services/DualReadService';
 import { VISTimezoneFields } from '../../services/TimezoneService';
 import { colors, designTokens } from '../../theme/tokens';
-import { BeachSetStatus } from '../../types/beach-live';
 import { BeachMatchCore, CourtInfo, MatchResult, MatchStatus, MatchTeam, canReadyToStartMatchGoLive, getEnhancedMatchStatus, mapVisMatchStatus } from '../../types/match-v2';
 import { isMatchToday as checkIfMatchToday, formatMatchTimeForUser } from '../../utils/matchTimeFormatter';
 import { MatchCard } from '../entities/Match';
@@ -768,7 +767,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
-      groups[dateKey].push(match);
+      groups[dateKey]!.push(match);
 
       // Debug first few matches
       if (index < 5) {
@@ -821,7 +820,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     // AUTOSCROLL: Live matches found
 
     if (liveMatches.length > 0) {
-      targetMatchId = liveMatches[0].id;
+      targetMatchId = liveMatches[0]!.id;
       // AUTOSCROLL: Target = LIVE match
     } else {
       // Priority 2: First match of today (chronologically first, appears last in "Today" panel)
@@ -858,7 +857,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
           const timeStrB = scheduledB?.dateTimeTournament || b.scheduledDateTime;
           return timeStrA.localeCompare(timeStrB); // Ascending order for autoscroll
         });
-        targetMatchId = sortedTodayMatches[0].id;
+        targetMatchId = sortedTodayMatches[0]?.id;
         // AUTOSCROLL: Target = Today first match
       }
     }

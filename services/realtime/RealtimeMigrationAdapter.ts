@@ -6,7 +6,7 @@
 
 import { RealtimeOrchestrator } from './RealtimeOrchestrator';
 import { ConnectionState } from './ConnectionPoolManager';
-import { BeachMatch } from '../../types/match';
+
 
 // Re-export types for compatibility
 export { ConnectionState } from './ConnectionPoolManager';
@@ -58,7 +58,7 @@ export class RealtimeSubscriptionServiceAdapter {
     return await orchestrator.subscribe({
       tournamentNo,
       liveMatchesOnly: enableLiveMatches,
-      onUpdate: (payload) => {
+      onUpdate: (_payload) => {
         // Legacy behavior - notify connection state listeners
         this.notifyConnectionStateListeners(ConnectionState.CONNECTED);
       }

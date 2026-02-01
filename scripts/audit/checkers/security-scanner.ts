@@ -11,7 +11,7 @@ import * as path from 'path';
 import { Finding, FindingType, AuditChecker, Severity } from '../types';
 import { AUDIT_CONFIG } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
-import { sanitizeFilePath, sanitizeFindingMessage, containsPotentialSecrets } from '../utils/sanitizer';
+import { sanitizeFilePath, containsPotentialSecrets} from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
 
 export class SecurityScanner implements AuditChecker {

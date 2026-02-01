@@ -5,7 +5,7 @@
  */
 
 import { supabase } from '../supabase';
-import { BeachMatch } from '../../types/match';
+
 
 export interface SubscriptionConfig {
   tournamentNo: string;

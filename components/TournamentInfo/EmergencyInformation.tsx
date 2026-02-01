@@ -363,7 +363,7 @@ const EmergencyInformation: React.FC<EmergencyInformationProps> = React.memo(({
   );
 });
 
-const getStyles = (): StyleSheet.NamedStyles<any> => {
+const getStyles = () => {
   return StyleSheet.create({
     container: {
       backgroundColor: designTokens.colors.surfacePrimary,

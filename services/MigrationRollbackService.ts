@@ -217,7 +217,7 @@ export class MigrationRollbackService {
       if (this.currentExecution) {
         this.currentExecution.status = 'failed';
         this.currentExecution.endTime = new Date().toISOString();
-        this.logRollback('error', 'Rollback execution failed', { error: error.message });
+        this.logRollback('error', 'Rollback execution failed', { error: error instanceof Error ? error.message : String(error) });
       }
       
       throw error;
@@ -605,11 +605,11 @@ export class MigrationRollbackService {
 
       } catch (error) {
         step.retryCount++;
-        step.error = error.message;
-        
-        this.logRollback('error', `Rollback step failed: ${step.name}`, { 
-          stepId: step.id, 
-          error: error.message, 
+        step.error = error instanceof Error ? error.message : String(error);
+
+        this.logRollback('error', `Rollback step failed: ${step.name}`, {
+          stepId: step.id,
+          error: error instanceof Error ? error.message : String(error),
           retryCount: step.retryCount,
           maxRetries: step.maxRetries
         });
@@ -638,7 +638,7 @@ export class MigrationRollbackService {
    */
   private async checkDatabaseStatus(): Promise<'available' | 'unavailable' | 'degraded'> {
     try {
-      const { data, error } = await this.supabase
+      const { error} = await this.supabase
         .from('tournaments')
         .select('count')
         .limit(1);
@@ -742,9 +742,9 @@ export class MigrationRollbackService {
         name: 'Data Access',
         description: 'Verify data access is working',
         status: 'failed',
-        message: `Data access validation failed: ${error.message}`,
+        message: `Data access validation failed: ${error instanceof Error ? error.message : String(error)}`,
         critical: true,
-        metadata: { error: error.message }
+        metadata: { error: error instanceof Error ? error.message : String(error) }
       };
     }
   }
@@ -775,9 +775,9 @@ export class MigrationRollbackService {
         name: 'Service Availability',
         description: 'Verify core services are available',
         status: 'failed',
-        message: `Service availability check failed: ${error.message}`,
+        message: `Service availability check failed: ${error instanceof Error ? error.message : String(error)}`,
         critical: true,
-        metadata: { error: error.message }
+        metadata: { error: error instanceof Error ? error.message : String(error) }
       };
     }
   }

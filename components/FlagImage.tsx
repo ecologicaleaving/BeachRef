@@ -41,7 +41,7 @@ export const FlagImage: React.FC<FlagImageProps> = ({
   showPlaceholder = true,
 }) => {
   const [flagConfig, setFlagConfig] = useState<FlagConfig | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   // Use federationCode if provided, otherwise fallback to countryCode

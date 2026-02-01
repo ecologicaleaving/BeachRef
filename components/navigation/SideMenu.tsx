@@ -27,7 +27,7 @@ interface MenuItemProps {
   disabled?: boolean;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, title, onPress, disabled = false }) => (
+const MenuItem: React.FC<MenuItemProps> = ({ _icon, title, onPress, disabled = false }) => (
   <TouchableOpacity 
     style={[styles.menuItem, disabled && styles.menuItemDisabled]} 
     onPress={disabled ? undefined : onPress} 

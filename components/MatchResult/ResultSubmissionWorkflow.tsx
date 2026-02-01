@@ -13,15 +13,15 @@ import {
   Modal,
   Alert,
   StyleSheet, 
-  ViewStyle, 
-  TextStyle,
+  _ViewStyle, 
+  _TextStyle,
   ActivityIndicator 
 } from 'react-native';
 import { EnhancedMatchResult, ResultStatus } from '../../types/MatchResults';
 import { 
   validateMatchResult,
-  needsSync,
-  getResultStatusText,
+  _needsSync,
+  _getResultStatusText,
   formatMatchTime,
   calculateFinalScore,
   convertToSetScores
@@ -481,7 +481,7 @@ const ResultSubmissionWorkflow: React.FC<ResultSubmissionWorkflowProps> = React.
   );
 });
 
-const getStyles = (): StyleSheet.NamedStyles<any> => {
+const getStyles = () => {
   return StyleSheet.create({
     modalOverlay: {
       flex: 1,

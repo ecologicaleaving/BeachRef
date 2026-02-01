@@ -14,7 +14,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
   AuditHistory,
-  HistoricalFinding,
+  _HistoricalFinding,
   HistoricalRun,
   Finding,
   FindingStatus,

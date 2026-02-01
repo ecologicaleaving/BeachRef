@@ -345,8 +345,8 @@ export class SetScoreService {
     let match;
     
     while ((match = setRegex.exec(xmlData)) !== null) {
-      const teamAPoints = parseInt(match[1]);
-      const teamBPoints = parseInt(match[2]);
+      const teamAPoints = parseInt(match[1] ?? '0');
+      const teamBPoints = parseInt(match[2] ?? '0');
       scores.push(teamAPoints, teamBPoints);
     }
     
@@ -357,8 +357,8 @@ export class SetScoreService {
     // Pattern 2: Alternative order - PointsTeamB first
     const setRegex2 = /<Set[^>]*PointsTeamB\s*=\s*"(\d+)"[^>]*PointsTeamA\s*=\s*"(\d+)"[^>]*>/gi;
     while ((match = setRegex2.exec(xmlData)) !== null) {
-      const teamBPoints = parseInt(match[1]);
-      const teamAPoints = parseInt(match[2]);
+      const teamBPoints = parseInt(match[1] ?? '0');
+      const teamAPoints = parseInt(match[2] ?? '0');
       scores.push(teamAPoints, teamBPoints); // Keep TeamA first in our array
     }
     
@@ -376,7 +376,7 @@ export class SetScoreService {
         const pointsB = setElement.match(/PointsTeamB\s*=\s*"(\d+)"/i);
         
         if (pointsA && pointsB) {
-          scores.push(parseInt(pointsA[1]), parseInt(pointsB[1]));
+          scores.push(parseInt(pointsA[1] ?? '0'), parseInt(pointsB[1] ?? '0'));
         }
       }
     }

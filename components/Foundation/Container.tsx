@@ -7,7 +7,7 @@ import React from 'react';
 import { View, ViewProps, StyleSheet } from 'react-native';
 import { colors, spacing } from '../../theme/tokens';
 import { shadowPresets } from '../../theme/shadows';
-import { getColor, getTextColor } from '../../utils/colors';
+import { getColor} from '../../utils/colors';
 
 export type ContainerColor = keyof typeof colors;
 export type ContainerSpacing = keyof typeof spacing;

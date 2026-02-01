@@ -3,7 +3,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { FIVBAuthenticator, getFIVBCredentialsFromVault, type FIVBCredentials } from '../_shared/auth.ts'
-import { CacheManager } from './cache.ts'
+
 import { MatchSynchronizer, type FIVBMatch, type MatchSyncResult, type ActiveTournament } from './sync.ts'
 
 console.log("match-schedule-sync boot OK - ALL imports loaded");

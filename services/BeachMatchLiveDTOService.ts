@@ -490,14 +490,14 @@ export class BeachMatchLiveDTOService {
           };
 
           // Split team name into players (format: "Player1/Player2")
-          const playerNames = teamANameMatch[1].split('/');
+          const playerNames = (teamANameMatch[1] ?? '').split('/');
           if (playerNames.length >= 2) {
-            teamAData.player1Name = playerNames[0].trim();
-            teamAData.player2Name = playerNames[1].trim();
+            teamAData.player1Name = playerNames[0]?.trim() ?? '';
+            teamAData.player2Name = playerNames[1]?.trim() ?? '';
           } else {
             // Fallback: use team name for both players if no slash found
-            teamAData.player1Name = teamANameMatch[1].trim();
-            teamAData.player2Name = teamANameMatch[1].trim();
+            teamAData.player1Name = (teamANameMatch[1] ?? '').trim();
+            teamAData.player2Name = (teamANameMatch[1] ?? '').trim();
           }
 
           matchData.team1 = teamAData;
@@ -514,14 +514,14 @@ export class BeachMatchLiveDTOService {
           };
 
           // Split team name into players (format: "Player1/Player2")
-          const playerNames = teamBNameMatch[1].split('/');
+          const playerNames = (teamBNameMatch[1] ?? '').split('/');
           if (playerNames.length >= 2) {
-            teamBData.player1Name = playerNames[0].trim();
-            teamBData.player2Name = playerNames[1].trim();
+            teamBData.player1Name = playerNames[0]?.trim() ?? '';
+            teamBData.player2Name = playerNames[1]?.trim() ?? '';
           } else {
             // Fallback: use team name for both players if no slash found
-            teamBData.player1Name = teamBNameMatch[1].trim();
-            teamBData.player2Name = teamBNameMatch[1].trim();
+            teamBData.player1Name = (teamBNameMatch[1] ?? '').trim();
+            teamBData.player2Name = (teamBNameMatch[1] ?? '').trim();
           }
 
           matchData.team2 = teamBData;
@@ -530,7 +530,7 @@ export class BeachMatchLiveDTOService {
         // Extract status from BeachMatch attributes
         const statusMatch = matchXml.match(/Status="([^"]*)"/i);
         if (statusMatch) {
-          const statusValue = parseInt(statusMatch[1], 10);
+          const statusValue = parseInt(statusMatch[1] ?? '0', 10);
           if (!isNaN(statusValue)) {
             matchData.status = statusValue;
           }
@@ -539,7 +539,7 @@ export class BeachMatchLiveDTOService {
         // Extract result type from BeachMatch attributes
         const resultTypeMatch = matchXml.match(/ResultType="([^"]*)"/i);
         if (resultTypeMatch) {
-          const resultTypeValue = parseInt(resultTypeMatch[1], 10);
+          const resultTypeValue = parseInt(resultTypeMatch[1] ?? '0', 10);
           if (!isNaN(resultTypeValue)) {
             matchData.resultType = resultTypeValue;
           }
@@ -942,7 +942,7 @@ export class BeachMatchLiveDTOService {
         const team = teamMatch[1]; // 'A' or 'B'
         const statsXml = teamMatch[2];
 
-        const teamStats = this.parseTeamStatsFromXML(statsXml);
+        const teamStats = this.parseTeamStatsFromXML(statsXml ?? '');
         if (teamStats) {
           if (team === 'A') {
             result.team.home = teamStats;
@@ -956,7 +956,7 @@ export class BeachMatchLiveDTOService {
       let playerMatch;
       while ((playerMatch = playerStatsPattern.exec(xmlData)) !== null) {
         const playerStatsXml = playerMatch[1];
-        const playerStats = this.parsePlayerStatsFromXML(playerStatsXml);
+        const playerStats = this.parsePlayerStatsFromXML(playerStatsXml ?? '');
         if (playerStats) {
           result.players.push(playerStats);
         }
@@ -1055,7 +1055,7 @@ export class BeachMatchLiveDTOService {
       }
 
       if (playerNoMatch) {
-        const playerNo = parseInt(playerNoMatch[1], 10);
+        const playerNo = parseInt(playerNoMatch[1] ?? '0', 10);
         if (!isNaN(playerNo)) {
           stats.playerNo = playerNo;
         }

@@ -22,7 +22,7 @@ async function runMigration(migrationPath: string) {
     
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
     
-    const { data, error } = await supabase.rpc('exec_sql', { 
+    const { error} = await supabase.rpc('exec_sql', { 
       sql: migrationSQL 
     });
     

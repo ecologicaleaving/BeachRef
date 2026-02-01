@@ -12,7 +12,7 @@ import { Tournament } from '../types/tournament';
 import { TournamentStorageService } from '../services/TournamentStorageService';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
-import { DashboardCurrentCard as CurrentAssignmentCard, EnhancedCurrentAssignmentCard, AssignmentTimeline } from '../components/Dashboard';
+import { AssignmentTimeline} from '../components/Dashboard';
 import { useCurrentAssignment } from '../hooks/useCurrentAssignment';
 import { StatusIndicator } from '../components/Status';
 import { AssignmentStatusProvider, useAssignmentStatus } from '../hooks/useAssignmentStatus';
@@ -43,8 +43,8 @@ const RefereeDashboardScreenContent: React.FC = () => {
   const {
     currentAssignment,
     upcomingAssignments,
-    loading: assignmentsLoading,
-    error: assignmentsError,
+    loading: _assignmentsLoading,
+    error: _assignmentsError,
     refreshAssignments,
   } = useCurrentAssignment();
   

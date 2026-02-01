@@ -11,7 +11,7 @@ import {
   Switch,
   ScrollView,
   Easing,
-  Dimensions,
+  _Dimensions,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { BlurView } from 'expo-blur';

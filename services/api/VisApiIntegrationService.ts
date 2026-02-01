@@ -9,7 +9,7 @@ import {
   GetEventListRequest, 
   GetBeachMatchListRequest,
   GetBeachMatchRequest,
-  VisApiResponse,
+  _VisApiResponse,
   VisApiEndpoint 
 } from '../../types/api-v2';
 import { TournamentCore, GenderType } from '../../types/tournament-v2';

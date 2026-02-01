@@ -14,15 +14,15 @@ import {
   BeachMatchDTO,
   BeachMatchLiveDTO,
   BeachMatchBootstrapParams,
-  BeachMatchPollingParams,
-  BeachMatchLiveFeedParams,
+  _BeachMatchPollingParams,
+  _BeachMatchLiveFeedParams,
   BeachMatchPollingConfig,
   BEACH_MATCH_POLLING_INTERVALS,
   getPollingInterval,
   shouldPoll,
   isValidBeachMatchDTO,
   isValidBeachMatchLiveDTO,
-  extractClosedSets,
+  _extractClosedSets,
   mergePollingData
 } from '../types/match-details-dto';
 

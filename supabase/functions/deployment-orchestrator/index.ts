@@ -421,7 +421,7 @@ async function performPreDeploymentCheck(checkName: string, supabase: any): Prom
     switch (checkName) {
       case "Database connectivity check":
         // Test database connection
-        const { data, error } = await supabase.from('tournaments').select('id').limit(1);
+        const { error} = await supabase.from('tournaments').select('id').limit(1);
         if (error) throw error;
         break;
         
@@ -530,7 +530,7 @@ async function performSchemaCleanupCheck(checkName: string, supabase: any): Prom
         // Check essential tables
         const essentialTables = ['tournaments', 'matches', 'referees', 'match_referees'];
         for (const table of essentialTables) {
-          const { data, error } = await supabase.from(table).select('id').limit(1);
+          const { error} = await supabase.from(table).select('id').limit(1);
           if (error) throw new Error(`Essential table ${table} check failed: ${error.message}`);
         }
         break;
@@ -576,7 +576,7 @@ async function performPostDeploymentCheck(checkName: string, supabase: any): Pro
     switch (checkName) {
       case "End-to-end analytics workflow validation":
         // Test complete analytics workflow
-        const { data, error } = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/analytics-query?startDate=2024-09-10&endDate=2024-09-11`);
+        const { error} = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/analytics-query?startDate=2024-09-10&endDate=2024-09-11`);
         if (error) throw error;
         break;
         

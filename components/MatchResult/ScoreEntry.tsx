@@ -12,8 +12,8 @@ import {
   TouchableOpacity, 
   TextInput,
   StyleSheet, 
-  ViewStyle, 
-  TextStyle,
+  _ViewStyle, 
+  _TextStyle,
   Alert
 } from 'react-native';
 import { ScoreEntryProps, ResultValidationError } from '../../types/MatchResults';
@@ -105,7 +105,7 @@ const ScoreEntry: React.FC<ScoreEntryProps> = React.memo(({
     if (criticalErrors.length > 0) {
       Alert.alert(
         'Invalid Score',
-        criticalErrors[0].message,
+        criticalErrors[0]?.message ?? 'Invalid score entered',
         [{ text: 'OK' }]
       );
       return;
@@ -283,7 +283,7 @@ const ScoreEntry: React.FC<ScoreEntryProps> = React.memo(({
   );
 });
 
-const getStyles = (isCompleted: boolean, isEditable: boolean): StyleSheet.NamedStyles<any> => {
+const getStyles = (isCompleted: boolean, isEditable: boolean) => {
   return StyleSheet.create({
     container: {
       backgroundColor: designTokens.colors.surfacePrimary,

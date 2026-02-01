@@ -21,7 +21,7 @@ export const RefereeList: React.FC<RefereeListProps> = ({
   refereeList,
   loading,
   onRefereeSelect,
-  onBack,
+  _onBack,
 }) => {
   const renderRefereeItem = ({ item }: { item: RefereeFromDB }) => (
     <View style={styles.refereeCard}>

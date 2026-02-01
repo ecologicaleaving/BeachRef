@@ -703,7 +703,7 @@ const TournamentSelectionScreen: React.FC = () => {
   // Format month header for collapsible sections
   const formatMonthHeader = (monthKey: string): string => {
     const [year, month] = monthKey.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
+    const date = new Date(parseInt(year ?? '0'), parseInt(month ?? '0') - 1);
     return date.toLocaleDateString('en-US', { month: 'long' });
   };
 
@@ -811,13 +811,13 @@ const TournamentSelectionScreen: React.FC = () => {
         monthEntries.forEach(([monthKey, monthTournaments]) => {
           const isMonthExpanded = expandedMonths[monthKey] || false;
           const [year, month] = monthKey.split('-');
-          const monthNumber = parseInt(month) - 1; // Convert to 0-based month
+          const monthNumber = parseInt(month ?? '0') - 1; // Convert to 0-based month
 
           sections.push({
             id: monthKey,
             title: formatMonthHeader(monthKey),
             type: 'month',
-            year: parseInt(year),
+            year: parseInt(year ?? '0'),
             month: monthNumber,
             monthKey,
             data: isMonthExpanded ? monthTournaments : [], // Only include data if expanded
@@ -1079,7 +1079,7 @@ const TournamentSelectionScreen: React.FC = () => {
               style={styles.liveCarousel}
               nestedScrollEnabled={true}
             >
-              {liveTournaments.map((tournament, index) => (
+              {liveTournaments.map((tournament, _index) => (
                 <View key={tournament.id} style={styles.liveCarouselItem}>
                   <TournamentCard
                     tournament={tournament}

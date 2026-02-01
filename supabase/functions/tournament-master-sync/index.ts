@@ -3,8 +3,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { FIVBAuthenticator, getFIVBCredentialsFromVault, type FIVBCredentials } from './auth.ts'
-import { TournamentSynchronizer, type FIVBTournament, type SyncBatchResult } from './sync.ts'
+import { FIVBAuthenticator} from './auth.ts'
+import { TournamentSynchronizer, type FIVBTournament} from './sync.ts'
 
 // TypeScript interfaces now imported from sync.ts module
 
@@ -35,7 +35,7 @@ const retryConfig: RetryConfig = {
 
 // Remove duplicate interface - now imported from auth.ts
 
-serve(async (req) => {
+serve(async (_req) => {
   try {
     console.log('Tournament Master Sync: Starting execution');
     const startTime = Date.now();

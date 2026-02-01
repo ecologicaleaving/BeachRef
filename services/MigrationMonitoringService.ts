@@ -2,7 +2,7 @@ import { ErrorLogger } from './ErrorLogger';
 import { NetworkMonitor } from './NetworkStateManager';
 import { DataSyncService } from './DataSyncService';
 import { DualReadService } from './DualReadService';
-import { DataConsistencyValidator, ValidationReport } from './DataConsistencyValidator';
+import { DataConsistencyValidator} from './DataConsistencyValidator';
 import { MigrationRollbackService, SystemState } from './MigrationRollbackService';
 
 export interface MonitoringConfiguration {
@@ -521,7 +521,7 @@ export class MigrationMonitoringService {
         'system_failure',
         'error',
         'Health Check Failed',
-        `Health monitoring failed: ${error.message}`,
+        `Health monitoring failed: ${error instanceof Error ? error.message : String(error)}`,
         'MigrationMonitoringService'
       );
     }
@@ -608,7 +608,7 @@ export class MigrationMonitoringService {
         'data_inconsistency',
         'error',
         'Consistency Check Failed',
-        `Consistency validation failed: ${error.message}`,
+        `Consistency validation failed: ${error instanceof Error ? error.message : String(error)}`,
         'DataConsistencyValidator'
       );
     }
@@ -659,7 +659,7 @@ export class MigrationMonitoringService {
       return {
         name: 'Data Sync Service',
         status: 'unknown',
-        message: `Health check failed: ${error.message}`,
+        message: `Health check failed: ${error instanceof Error ? error.message : String(error)}`,
         lastUpdated: new Date().toISOString()
       };
     }
@@ -683,7 +683,7 @@ export class MigrationMonitoringService {
       return {
         name: 'Dual Read Service',
         status: 'failing',
-        message: `Service check failed: ${error.message}`,
+        message: `Service check failed: ${error instanceof Error ? error.message : String(error)}`,
         lastUpdated: new Date().toISOString()
       };
     }
@@ -726,7 +726,7 @@ export class MigrationMonitoringService {
       return {
         name: 'System Resources',
         status: 'unknown',
-        message: `Resource check failed: ${error.message}`,
+        message: `Resource check failed: ${error instanceof Error ? error.message : String(error)}`,
         lastUpdated: new Date().toISOString()
       };
     }

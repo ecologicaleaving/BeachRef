@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { colors, spacing } from '../../theme/tokens';
 import { shadowPresets } from '../../theme/shadows';
-import { getColor, getTextColor } from '../../utils/colors';
+import { getTextColor} from '../../utils/colors';
 import { Text } from '../Typography';
 
 const { width: screenWidth } = Dimensions.get('window');

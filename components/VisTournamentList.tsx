@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View,
-  FlatList,
+  _FlatList,
   StyleSheet,
   TouchableOpacity,
   Text,

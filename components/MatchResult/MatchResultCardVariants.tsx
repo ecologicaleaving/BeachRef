@@ -6,14 +6,12 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
   ScrollView,
-  StyleSheet, 
-  ViewStyle, 
-  TextStyle 
+  StyleSheet
 } from 'react-native';
 import { EnhancedMatchResult, SpecialResult } from '../../types/MatchResults';
 import MatchResultCard from './MatchResultCard';
@@ -54,10 +52,10 @@ export const BeachVolleyballResultCard: React.FC<BeachVolleyballResultCardProps>
     if (!isEditable) return;
 
     const newSets = [...sets];
-    newSets[setIndex] = { 
-      homeScore, 
-      awayScore, 
-      completed: newSets[setIndex].completed 
+    newSets[setIndex] = {
+      homeScore,
+      awayScore,
+      completed: newSets[setIndex]?.completed ?? false
     };
     setSets(newSets);
 
@@ -241,7 +239,7 @@ export const IndoorTournamentResultCard: React.FC<IndoorTournamentResultCardProp
 }) => {
   const [sets, setSets] = useState(convertToSetScores(matchResult));
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const [statistics, setStatistics] = useState({
+  const [statistics, ] = useState({
     duration: matchResult.durationSet1 || '',
     timeouts: 0,
     challenges: 0,
@@ -253,10 +251,10 @@ export const IndoorTournamentResultCard: React.FC<IndoorTournamentResultCardProp
     if (!isEditable) return;
 
     const newSets = [...sets];
-    newSets[setIndex] = { 
-      homeScore, 
-      awayScore, 
-      completed: newSets[setIndex].completed 
+    newSets[setIndex] = {
+      homeScore,
+      awayScore,
+      completed: newSets[setIndex]?.completed ?? false
     };
     setSets(newSets);
 
@@ -413,7 +411,7 @@ export const QuickResultEntryCard: React.FC<QuickResultEntryCardProps> = React.m
   onSubmit,
   onCancel
 }) => {
-  const [quickResult, setQuickResult] = useState<'home' | 'away' | null>(null);
+  const [_quickResult, ] = useState<'home' | 'away' | null>(null);
   const [showQuickActions, setShowQuickActions] = useState(false);
   
   const styles = getQuickStyles();

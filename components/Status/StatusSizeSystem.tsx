@@ -5,7 +5,7 @@
  * Consistent size system for status indicators with touch target compliance
  */
 
-import React from 'react';
+
 import { ViewStyle, TextStyle } from 'react-native';
 import { StatusIndicatorSize } from '../../types/status';
 import { designTokens } from '../../theme/tokens';

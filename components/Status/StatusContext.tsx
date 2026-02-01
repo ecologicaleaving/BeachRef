@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { StatusType, StatusUpdate, StatusIndicatorContext } from '../../types/status';
-import { StatusUpdateService, getGlobalStatusUpdateService, createStatusIndicatorContext } from '../../services/StatusUpdateService';
+import { StatusUpdateService, getGlobalStatusUpdateService} from '../../services/StatusUpdateService';
 
 // Status context value
 export interface StatusContextValue extends StatusIndicatorContext {
@@ -65,7 +65,7 @@ export const StatusProvider = React.memo<StatusProviderProps>(({
   React.useEffect(() => {
     if (!debugMode) return;
     
-    const unsubscribe = statusService.subscribeToGlobalEvents((event) => {
+    const unsubscribe = statusService.subscribeToGlobalEvents((_event) => {
     });
     
     return unsubscribe;

@@ -7,12 +7,12 @@
 
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { StatusType, StatusIndicatorSize } from '../../types/status';
+import { StatusType} from '../../types/status';
 import { AccessibilityStatusIndicator } from './AccessibilityStatusIndicator';
 import { designTokens } from '../../theme/tokens';
 import { 
-  getStatusText, 
-  getStatusCategory,
+  _getStatusText, 
+  _getStatusCategory,
   isAssignmentStatus,
   isMatchStatus,
   isSystemStatus,

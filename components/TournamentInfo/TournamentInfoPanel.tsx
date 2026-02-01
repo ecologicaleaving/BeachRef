@@ -38,7 +38,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
   refereeSchedule,
   courts,
   weatherAlerts = [],
-  emergencyProcedures,
+  _emergencyProcedures,
   isCollapsible = true,
   defaultCollapsed = false,
   onSectionToggle,
@@ -226,7 +226,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
     return (
       <View style={styles.sectionContent}>
         {upcomingMatches.length > 0 ? (
-          upcomingMatches.map((match, index) => (
+          upcomingMatches.map((match, _index) => (
             <View key={match.matchId} style={styles.scheduleItem}>
               <View style={styles.scheduleTimeContainer}>
                 <Text style={styles.scheduleTime}>
@@ -270,7 +270,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
 
     return (
       <View style={styles.sectionContent}>
-        {activeWeatherAlerts.slice(0, 3).map((alert, index) => (
+        {activeWeatherAlerts.slice(0, 3).map((alert, _index) => (
           <View
             key={alert.id}
             style={[
@@ -309,7 +309,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
   const renderCourtInformation = useCallback(() => {
     return (
       <View style={styles.sectionContent}>
-        {courts.slice(0, 4).map((court, index) => (
+        {courts.slice(0, 4).map((court, _index) => (
           <TouchableOpacity
             key={court.courtId}
             style={styles.courtItem}
@@ -441,7 +441,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
   );
 });
 
-const getStyles = (): StyleSheet.NamedStyles<any> => {
+const getStyles = () => {
   return StyleSheet.create({
     container: {
       flex: 1,

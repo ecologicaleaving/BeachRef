@@ -8,12 +8,12 @@
 import React from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { StatusIconProps } from '../../types/status';
-import { designTokens } from '../../theme/tokens';
+
 import { 
   getStatusColor, 
   getStatusSize,
   getStatusIconName,
-  getAccessibilityPattern,
+  _getAccessibilityPattern,
   shouldAnimateStatus,
   getStatusAnimationDuration,
 } from '../../utils/statusIndicators';

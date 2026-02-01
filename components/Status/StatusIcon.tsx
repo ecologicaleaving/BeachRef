@@ -14,7 +14,7 @@ import {
   TournamentStatus, 
   statusColorThemes 
 } from '../../utils/statusColors';
-import { spacing } from '../../theme/tokens';
+
 
 export interface StatusIconProps {
   status: TournamentStatus;

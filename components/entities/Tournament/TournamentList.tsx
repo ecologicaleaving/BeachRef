@@ -17,7 +17,7 @@ import { NetworkStatus, OfflineBanner } from '../../offline';
 import { DataFreshness } from '../../DataFreshness';
 import { useNetworkStatus } from '../../../hooks/useNetworkStatus';
 import { useIsOfflineData } from '../../../hooks/useOfflineStatus';
-import { useDataFreshness } from '../../../hooks/useDataFreshness';
+
 import { useAutoSync } from '../../../hooks/useSyncManager';
 import { SyncStatus } from '../../SyncStatus';
 import { StorageAlert } from '../../StorageAlert';
@@ -133,9 +133,7 @@ export const TournamentList: React.FC<TournamentListProps> = ({
 
   // Network and data freshness hooks
   const networkStatus = useNetworkStatus();
-  const isOnline = !networkStatus.isOffline;
   const isOfflineData = useIsOfflineData(tournaments);
-  const dataFreshness = useDataFreshness(tournaments);
   
   // Auto-sync and storage monitoring
   useAutoSync();

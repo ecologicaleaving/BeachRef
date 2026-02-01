@@ -252,7 +252,7 @@ async function testSystemConnectivity(supabase: any): Promise<any> {
   // Test database connectivity
   const dbStart = Date.now()
   try {
-    const { data, error } = await supabase
+    const { error} = await supabase
       .from('sync_status')
       .select('count(*)')
       .single()

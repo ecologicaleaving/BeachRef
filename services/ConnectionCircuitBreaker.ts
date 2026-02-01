@@ -565,7 +565,7 @@ export class ConnectionCircuitBreaker {
    * Cleanup all instances
    */
   static cleanupAll(): void {
-    for (const [serviceId, instance] of this.instances) {
+    for (const [_serviceId, instance] of this.instances) {
       instance.cleanup();
     }
     this.instances.clear();

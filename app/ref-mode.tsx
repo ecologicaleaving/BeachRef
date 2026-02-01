@@ -88,7 +88,7 @@ const RefModeScreen: React.FC = () => {
         refereePatterns.forEach(pattern => {
           let match;
           while ((match = pattern.exec(xmlData)) !== null) {
-            const refereeName = match[1].trim();
+            const refereeName = (match[1] ?? '').trim();
             if (refereeName && refereeName !== '' && refereeName !== 'TBD') {
               refereeNamesSet.add(refereeName);
             }

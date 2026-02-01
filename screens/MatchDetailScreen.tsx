@@ -19,7 +19,7 @@ import { LiveIndicator } from '../components/Status/LiveIndicator';
 import { Card } from '../components/Foundation/Container';
 import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { colors, spacing, typography } from '../theme/tokens';
-import { BeachMatchService } from '../services/BeachMatchService';
+
 import { BeachMatchLiveDTOService } from '../services/BeachMatchLiveDTOService';
 import { useLiveScores } from '../hooks/useLiveScores';
 

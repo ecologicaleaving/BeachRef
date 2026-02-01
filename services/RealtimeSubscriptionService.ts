@@ -178,7 +178,7 @@ export class RealtimeSubscriptionService {
    * Pause all active subscriptions (for battery optimization)
    */
   private static pauseAllSubscriptions(): void {
-    for (const [tournamentNo, subscription] of this.activeSubscriptions) {
+    for (const [_tournamentNo, subscription] of this.activeSubscriptions) {
       try {
         subscription.unsubscribe();
       } catch (error) {

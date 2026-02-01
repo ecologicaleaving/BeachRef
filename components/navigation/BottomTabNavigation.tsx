@@ -55,8 +55,8 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
 
   // Assignment status context for tab badges
   const { 
-    currentAssignmentStatus,
-    statusCounts,
+    _currentAssignmentStatus,
+    _statusCounts,
     isOnline,
     syncStatus,
   } = useAssignmentStatus();

@@ -73,7 +73,7 @@ export class StatusUpdateService {
         this.handleReconnect();
       };
       
-      this.websocket.onerror = (error) => {
+      this.websocket.onerror = (_error) => {
         // console.error('StatusUpdateService: WebSocket error', error);
         this.notifyGlobalSubscribers({
           type: 'error',

@@ -6,9 +6,9 @@ import {
   SyncMonitoringMetrics,
   PerformanceMetrics,
   SyncStatistics,
-  MetricsTimeWindow,
+  _MetricsTimeWindow,
   ErrorType,
-  SyncExecutionHistory,
+  _SyncExecutionHistory,
   SyncHealthSummary
 } from '../types/monitoring'
 
@@ -225,7 +225,7 @@ export class MetricsCollector {
     try {
       const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000).toISOString()
 
-      const [cacheHitRatio, avgResponseTime, apiCallReduction, errorRate, syncJobSuccessRate] = await Promise.all([
+      const [cacheHitRatio, _avgResponseTime, apiCallReduction, errorRate, syncJobSuccessRate] = await Promise.all([
         this.calculateCacheHitRatio(timeWindowHours),
         this.calculateAverageResponseTime(cutoffTime),
         this.calculateAPICallReduction(timeWindowHours),

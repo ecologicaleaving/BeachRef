@@ -20,9 +20,9 @@ export function StorageManager({ style }: { style?: any }) {
   // Use simplified offline sync hook for storage management
   const {
     queueSize,
-    isOnline,
+    _isOnline,
     syncInProgress,
-    lastSyncTime,
+    _lastSyncTime,
     clearOfflineQueue,
     getStorageInfo
   } = useOfflineSync();
@@ -286,7 +286,7 @@ export function StorageIndicator({
   onPress?: () => void; 
 }) {
   // Use the same hook for storage information
-  const { queueSize, isOnline } = useOfflineSync();
+  const { queueSize} = useOfflineSync();
   
   const storageInfo: StorageInfo = {
     totalSize: queueSize * 1024,

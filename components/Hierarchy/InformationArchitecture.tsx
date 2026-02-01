@@ -51,12 +51,12 @@ interface HierarchyContainerProps {
 }
 
 export const HierarchyContainer: React.FC<HierarchyContainerProps> = ({
-  priority,
+  _priority,
   children,
   visualWeight = 'standard',
   grouping = false,
   scanOptimized = true,
-  style,
+  _style,
 }) => {
   return (
     <View style={{ borderRadius: 8, marginVertical: 4 }}>
@@ -75,7 +75,7 @@ interface InfoGroupProps {
 }
 
 export const InfoGroup: React.FC<InfoGroupProps> = ({
-  title,
+  _title,
   priority,
   children,
   collapsible = false,

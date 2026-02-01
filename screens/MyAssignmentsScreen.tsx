@@ -7,9 +7,9 @@ import {
   RefreshControl, 
   ActivityIndicator,
   TouchableOpacity,
-  Modal,
+  _Modal,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+
 import { useRouter } from 'expo-router';
 import { Assignment } from '../types/assignments';
 import { useCurrentAssignment } from '../hooks/useCurrentAssignment';
@@ -34,7 +34,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
 
   // Enhanced state management
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
-  const [timelineView, setTimelineView] = useState<TimelineView>('daily');
+  const [timelineView, ] = useState<TimelineView>('daily');
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   
@@ -60,12 +60,12 @@ const MyAssignmentsScreenContent: React.FC = () => {
   // Assignment status management
   const { 
     currentAssignmentStatus,
-    allStatuses,
+    _allStatuses,
     statusCounts,
     isOnline,
     syncStatus,
     updateAssignmentStatus,
-    getAssignmentsByStatus,
+    _getAssignmentsByStatus,
     refreshStatuses
   } = useAssignmentStatus();
 

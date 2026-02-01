@@ -208,8 +208,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
       // Sort courts in specific order: CC, C1, C2, C3, C4, then others alphabetically
       const courtOrder = ['CC', 'C1', 'C2', 'C3', 'C4'];
       const courts = allCourts.sort((a, b) => {
-        const aIndex = courtOrder.indexOf(a);
-        const bIndex = courtOrder.indexOf(b);
+        const aIndex = courtOrder.indexOf(a ?? '');
+        const bIndex = courtOrder.indexOf(b ?? '');
         
         if (aIndex !== -1 && bIndex !== -1) {
           return aIndex - bIndex;
@@ -472,8 +472,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
         // Also try partial name matches (surname only)
         const refereeNameParts = referee.Name.split(' ');
         const surname = refereeNameParts[refereeNameParts.length - 1];
-        const surnameMatch1 = match.Referee1Name && match.Referee1Name.includes(surname);
-        const surnameMatch2 = match.Referee2Name && match.Referee2Name.includes(surname);
+        const surnameMatch1 = match.Referee1Name && match.Referee1Name.includes(surname ?? '');
+        const surnameMatch2 = match.Referee2Name && match.Referee2Name.includes(surname ?? '');
         
         const isAssigned = referee1Match || referee2Match || generalRefereeMatch || 
                           referee1NameMatch || referee2NameMatch || 
@@ -956,8 +956,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
         const getTimeNumber = (timeStr: string) => {
           const parts = timeStr.split(':');
           if (parts.length < 2) return 0;
-          const hours = parseInt(parts[0]) || 0;
-          const minutes = parseInt(parts[1]) || 0;
+          const hours = parseInt(parts[0] ?? '0') || 0;
+          const minutes = parseInt(parts[1] ?? '0') || 0;
           return hours * 60 + minutes;
         };
         
@@ -1148,8 +1148,8 @@ const RefereeSettingsScreenContent: React.FC = () => {
       const getTimeNumber = (timeStr: string) => {
         const parts = timeStr.split(':');
         if (parts.length !== 2) return 0;
-        const hours = parseInt(parts[0]) || 0;
-        const minutes = parseInt(parts[1]) || 0;
+        const hours = parseInt(parts[0] ?? '0') || 0;
+        const minutes = parseInt(parts[1] ?? '0') || 0;
         return hours * 60 + minutes;
       };
       
@@ -1379,7 +1379,7 @@ const RefereeSettingsScreenContent: React.FC = () => {
       
       durations.forEach(duration => {
         // Duration is in seconds, convert to integer
-        const seconds = parseInt(duration) || 0;
+        const seconds = parseInt(duration ?? '0') || 0;
         totalSeconds += seconds;
       });
       

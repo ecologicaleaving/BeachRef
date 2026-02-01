@@ -566,7 +566,7 @@ export class MatchSynchronizer {
       const existingSet = new Set((existingMatches || []).map((m: any) => m.no));
       
       // Perform batch upsert operation
-      const { data, error, count } = await this.supabase
+      const { error} = await this.supabase
         .from('matches')
         .upsert(dbMatches, { 
           onConflict: 'no',

@@ -15,7 +15,7 @@ import {
   FieldMode,
   UseCase,
 } from '../../types/audit';
-import { validateFieldCount, getFieldCount } from '../../types/field-selection';
+import { validateFieldCount} from '../../types/field-selection';
 
 /**
  * FieldSelectionValidator

@@ -48,7 +48,7 @@ async function testDatabaseConnectivity(supabase: any): Promise<{ success: boole
   
   try {
     // Simple query to test database connectivity
-    const { data, error } = await supabase
+    const { error} = await supabase
       .from('referees')
       .select('id')
       .limit(1);
@@ -91,7 +91,7 @@ async function testQueryPerformance(supabase: any): Promise<{ duration: number; 
       LIMIT 10
     `;
 
-    const { data, error } = await supabase.rpc('exec_raw_query', {
+    const { error} = await supabase.rpc('exec_raw_query', {
       query_text: query,
       query_params: [startDate.toISOString(), endDate.toISOString()]
     });

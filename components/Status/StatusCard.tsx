@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { Text, H2Text, BodyText, CaptionText } from '../Typography';
+
 import { StatusBadge } from './StatusBadge';
 import { 
   getStatusColorWithText, 

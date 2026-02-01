@@ -823,7 +823,7 @@ export class IntegrationTestSuite {
    * Stop all active metrics collectors
    */
   private stopAllMetricsCollectors(): void {
-    for (const [executionId, interval] of this.metricsCollectors.entries()) {
+    for (const [_executionId, interval] of this.metricsCollectors.entries()) {
       clearInterval(interval);
     }
     this.metricsCollectors.clear();

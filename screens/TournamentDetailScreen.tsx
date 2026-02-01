@@ -696,8 +696,8 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Assignment status management
   const {
     currentAssignmentStatus,
-    statusCounts,
-    isOnline,
+    _statusCounts,
+    _isOnline,
     syncStatus
   } = useAssignmentStatus();
 
@@ -739,9 +739,9 @@ const TournamentDetailScreenContent: React.FC = () => {
   // Live scores hook with automatic lifecycle management
   const {
     liveScores,
-    isLoading: liveScoresLoading,
-    isOnline: liveScoresOnline,
-    isPolling,
+    isLoading: _liveScoresLoading,
+    isOnline: _liveScoresOnline,
+    _isPolling,
     getLiveScore,
     refreshLiveScores,
     statistics: liveScoreStats
@@ -1428,7 +1428,7 @@ const TournamentDetailScreenContent: React.FC = () => {
               const legacyFieldsMap = extractAllLegacyFields(matchResponse.xmlData);
 
               // Add gender information to each match and apply legacy fields
-              const matchesWithGender = matchesCore.map((match, index) => {
+              const matchesWithGender = matchesCore.map((match, _index) => {
                 const legacyFields = legacyFieldsMap[match.visNo];
 
 

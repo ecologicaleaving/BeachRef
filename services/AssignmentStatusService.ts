@@ -266,7 +266,7 @@ class AssignmentStatusManager extends EventEmitter {
     }
 
     // Update all states sync status
-    for (const [id, state] of this.statusStates.entries()) {
+    for (const [_id, state] of this.statusStates.entries()) {
       if (state.syncStatus === 'pending' && isOnline) {
         state.syncStatus = 'synced';
       } else if (!isOnline && state.syncStatus === 'synced') {

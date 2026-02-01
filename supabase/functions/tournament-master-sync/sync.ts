@@ -368,7 +368,7 @@ export class TournamentSynchronizer {
       const existingSet = new Set((existingTournaments || []).map((t: any) => t.no));
       
       // Perform batch upsert operation
-      const { data, error, count } = await this.supabase
+      const { error} = await this.supabase
         .from('tournaments')
         .upsert(dbTournaments, { 
           onConflict: 'no',
@@ -412,7 +412,7 @@ export class TournamentSynchronizer {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - maxAge);
       
-      const { data, error, count } = await this.supabase
+      const { error, count} = await this.supabase
         .from('tournaments')
         .delete({ count: 'exact' })
         .lt('last_synced', cutoffDate.toISOString());

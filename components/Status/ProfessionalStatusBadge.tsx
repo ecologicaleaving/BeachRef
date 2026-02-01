@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View} from 'react-native';
 import { StatusBadgeProps } from '../../types/status';
 import { StatusIndicator } from './StatusIndicator';
 

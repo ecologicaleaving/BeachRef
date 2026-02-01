@@ -127,6 +127,14 @@ const FEDERATION_TO_COUNTRY_MAP: Record<string, string> = {
   'HON': 'HN',  // Honduras
   'BIZ': 'BZ',  // Belize
 
+  // Additional missing flags (2026-02-01)
+  'BDI': 'BI',  // Burundi
+  'CPV': 'CV',  // Cape Verde
+  'PYF': 'PF',  // French Polynesia
+  'COK': 'CK',  // Cook Islands
+  'AGO': 'AO',  // Angola
+  'GMB': 'GM',  // Gambia
+
   // Special federation cases (use 3-letter code)
   'ENG': 'ENG', // England
   'NIR': 'NIR', // Northern Ireland
@@ -220,6 +228,8 @@ const KNOWN_WORKING_FLAGS = new Set([
   'CU', 'CR', 'GT', 'PR', 'VU', 'DO', 'RW',  // Cuba, Costa Rica, Guatemala, Puerto Rico, Vanuatu, Dominican Republic, Rwanda
   // Additional flags (2025-10-29) - ISO codes
   'NA', 'BW', 'MZ', 'NI', 'SV', 'PA', 'HN', 'BZ',  // Namibia, Botswana, Mozambique, Nicaragua, El Salvador, Panama, Honduras, Belize
+  // Additional flags (2026-02-01) - ISO codes
+  'BI', 'CV', 'PF', 'CK', 'AO', 'GM',  // Burundi, Cape Verde, French Polynesia, Cook Islands, Angola, Gambia
   // Special codes that work
   'ENG',  // England
 ]);

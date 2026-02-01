@@ -90,7 +90,7 @@ export class RefereeIdResolver {
 
         const { data, error } = await q;
         if (!error && data && data.length > 0) {
-          const idStr = String(data[0].id);
+          const idStr = String(data[0]!.id);
           this.cacheByNameFed.set(key, idStr);
           // Resolved referee ID by name and federation
           return idStr;

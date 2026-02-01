@@ -693,7 +693,7 @@ export class LiveScorePollingService {
   private extractXmlValue(xml: string, tagName: string): string | undefined {
     const regex = new RegExp(`<${tagName}[^>]*>([^<]*)<\/${tagName}>`, 'i');
     const match = xml.match(regex);
-    return match ? match[1].trim() : undefined;
+    return match ? match[1]?.trim() : undefined;
   }
 
   /**
@@ -739,7 +739,7 @@ export class LiveScorePollingService {
     while ((attributeMatch = attributePattern.exec(attributeSection)) !== null) {
       const name = attributeMatch[1];
       const value = (attributeMatch[3] ?? attributeMatch[4] ?? attributeMatch[5] ?? '').trim();
-      const lowerName = name.toLowerCase();
+      const lowerName = (name ?? '').toLowerCase();
       const canonical = ATTRIBUTE_ALIAS_TO_CANONICAL[lowerName] || lowerName;
       const aliasNames = ATTRIBUTE_CANONICAL_TO_ALIASES[canonical] || [canonical];
 

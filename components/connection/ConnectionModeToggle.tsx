@@ -99,7 +99,7 @@ const ConnectionModeToggle: React.FC<ConnectionModeToggleProps> = ({
         onPress={() => setIsModalVisible(true)}
         disabled={disabled}
       >
-        <Text style={styles.toggleIcon}>{currentModeInfo.icon}</Text>
+        <Text style={styles?.toggleIcon}>{currentModeInfo.icon}</Text>
         <View style={styles.toggleInfo}>
           <Text style={[styles.toggleText, disabled && styles.toggleTextDisabled]}>
             {currentModeInfo.name}

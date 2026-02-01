@@ -847,7 +847,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                                 const maxScore = Math.max(team1Score, team2Score);
 
                                 // Current set if: scores are close OR match is explicitly in this set
-                                if (maxScore < 21 || (maxScore >= 21 && Math.abs(team1Score - team2Score) < 2)) {
+                                if (maxScore < 21 || (maxScore >= 21 && Math?.abs(team1Score - team2Score) < 2)) {
                                   return setNum;
                                 }
                               }
@@ -1113,7 +1113,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     if (nameParts.length >= 2) {
                       const surname = nameParts[0]; // First word is surname
                       const firstName = nameParts[nameParts.length - 1]; // Last word is first name
-                      const firstInitial = firstName.charAt(0).toUpperCase();
+                      const firstInitial = firstName!.charAt(0).toUpperCase();
                       return `${surname}, ${firstInitial}.`;
                     }
                     return fullName; // Fallback to original if parsing fails
@@ -1150,7 +1150,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   if (nameParts.length >= 2) {
                     const surname = nameParts[0]; // First word is surname
                     const firstName = nameParts[nameParts.length - 1]; // Last word is first name
-                    const firstInitial = firstName.charAt(0).toUpperCase();
+                    const firstInitial = firstName!.charAt(0).toUpperCase();
                     return `${surname}, ${firstInitial}.`;
                   }
                   return fullName; // Fallback to original if parsing fails

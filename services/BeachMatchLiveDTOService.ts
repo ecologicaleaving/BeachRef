@@ -617,7 +617,7 @@ export class BeachMatchLiveDTOService {
               set1AScore = scoreA;
               set1BScore = scoreB;
               if (__DEV__) {
-                console.log(`[BeachMatchLiveDTOService] Set 1 scores found with pattern ${patternA.source}: ${scoreA}-${scoreB}`);
+                console?.log(`[BeachMatchLiveDTOService] Set 1 scores found with pattern ${patternA.source}: ${scoreA}-${scoreB}`);
               }
               break;
             }

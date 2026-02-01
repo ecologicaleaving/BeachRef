@@ -390,7 +390,7 @@ function TournamentRefScreenContent() {
           const attributes = matchNode.attributes;
           for (let i = 0; i < attributes.length; i++) {
             const attr = attributes[i];
-            match[attr.name] = attr.value;
+            match[attr?.name] = attr.value;
           }
           
           matches.push(match);

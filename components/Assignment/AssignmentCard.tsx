@@ -286,7 +286,7 @@ const getStyles = (variant: string) => {
     },
     teamsText: {
       ...baseText,
-      fontSize: variant === 'current' ? designTokens.typography.sizes.h2 : designTokens.typography.sizes.h3,
+      fontSize: variant === 'current' ? designTokens.typography.sizes?.h2 : designTokens.typography.sizes.h3,
       fontWeight: variant === 'current' ? '700' : '600',
       lineHeight: variant === 'current' ? designTokens.typography.lineHeights.h2 : designTokens.typography.lineHeights.h3,
     },

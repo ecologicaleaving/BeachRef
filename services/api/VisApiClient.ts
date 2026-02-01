@@ -1473,7 +1473,7 @@ export class VisApiClient implements IVisApiClient {
       const requestType = originalRequest?.type || VisApiEndpoint.GET_EVENT_LIST;
       
       // Determine if response is successful (contains expected data elements)
-      const isSuccess = responseXml.includes('<') && !responseXml.includes('<Error');
+      const isSuccess = (responseXml ?? '').includes('<') && !responseXml.includes('<Error');
       
       results.push({
         requestId,

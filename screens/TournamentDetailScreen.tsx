@@ -446,7 +446,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     // Scroll to target if position is available
     if (targetMatchId && matchPositions.current[targetMatchId] !== undefined) {
       const matchRelativeY = matchPositions.current[targetMatchId];
-      const absoluteY = matchListOffset.current + matchRelativeY;
+      const absoluteY = matchListOffset?.current + matchRelativeY;
 
       // Add extra offset for SCHEDULED matches (to show more context)
       const extraOffset = scrollReason.includes('SCHEDULED') ? 175 : 0;
@@ -1297,7 +1297,7 @@ const TournamentDetailScreenContent: React.FC = () => {
               const validTournaments = tournaments.filter(t => t.no && t.gender);
               if (validTournaments.length > 0) {
                 (tournament as any).beachTournaments = validTournaments;
-                (tournament as any).tournamentNo = validTournaments[0].no;
+                (tournament as any).tournamentNo = validTournaments[0]!.no;
               } else {
                 (tournament as any).beachTournaments = [];
                 (tournament as any).tournamentNo = tournament.visNo;

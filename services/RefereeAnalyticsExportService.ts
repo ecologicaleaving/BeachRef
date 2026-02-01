@@ -274,7 +274,7 @@ export class RefereeAnalyticsExportService {
 
     // Group data if specified
     if (template.groupBy) {
-      processedData = this.groupData(processedData, template.groupBy);
+      processedData = this?.groupData(processedData, template.groupBy);
     }
 
     const exportData = {

@@ -74,7 +74,7 @@ export class MatchProcessingService {
     const courts = matches
       .map(match => match.Court)
       .filter(Boolean)
-      .filter(court => court.trim() !== '');
+      .filter(court => (court ?? '').trim() !== '');
     
     return [...new Set(courts)].sort();
   }

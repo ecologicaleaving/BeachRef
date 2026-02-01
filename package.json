@@ -21,6 +21,7 @@
     "audit": "tsx scripts/audit/run-audit.ts",
     "audit:ci": "tsx scripts/audit/run-audit.ts --ci --fail-on=critical,high",
     "audit:watch": "tsx scripts/audit/run-audit.ts --watch",
+    "fix-undefined": "tsx scripts/fix-possibly-undefined.ts",
     "prepare": "husky"
   },
   "dependencies": {

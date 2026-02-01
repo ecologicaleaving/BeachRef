@@ -224,12 +224,12 @@ export class PerformanceDashboard {
         alertsBySeverity,
         averageResponseTime: {
           tournament: {
-            legacy: tournamentLegacyTimes.length > 0 ? tournamentLegacyTimes.reduce((a, b) => a + b, 0) / tournamentLegacyTimes.length : undefined,
-            new: tournamentNewTimes.length > 0 ? tournamentNewTimes.reduce((a, b) => a + b, 0) / tournamentNewTimes.length : undefined
+            legacy: tournamentLegacyTimes?.length > 0 ? tournamentLegacyTimes.reduce((a, b) => a + b, 0) / tournamentLegacyTimes.length : undefined,
+            new: tournamentNewTimes?.length > 0 ? tournamentNewTimes.reduce((a, b) => a + b, 0) / tournamentNewTimes.length : undefined
           },
           match: {
-            legacy: matchLegacyTimes.length > 0 ? matchLegacyTimes.reduce((a, b) => a + b, 0) / matchLegacyTimes.length : undefined,
-            new: matchNewTimes.length > 0 ? matchNewTimes.reduce((a, b) => a + b, 0) / matchNewTimes.length : undefined
+            legacy: matchLegacyTimes?.length > 0 ? matchLegacyTimes.reduce((a, b) => a + b, 0) / matchLegacyTimes.length : undefined,
+            new: matchNewTimes?.length > 0 ? matchNewTimes.reduce((a, b) => a + b, 0) / matchNewTimes.length : undefined
           }
         },
         improvementMetrics: {
@@ -443,7 +443,7 @@ export class PerformanceDashboard {
     const previous = this.snapshots[this.snapshots.length - 2];
 
     // Check tournament regressions
-    if (current.metrics.tournament.new && previous.metrics.tournament.new) {
+    if (current.metrics.tournament?.new && previous.metrics.tournament.new) {
       const regressionAlerts = this.detectMetricRegressions(
         previous.metrics.tournament.new,
         current.metrics.tournament.new,
@@ -455,7 +455,7 @@ export class PerformanceDashboard {
     }
 
     // Check match regressions
-    if (current.metrics.match.new && previous.metrics.match.new) {
+    if (current.metrics.match?.new && previous.metrics.match.new) {
       const regressionAlerts = this.detectMetricRegressions(
         previous.metrics.match.new,
         current.metrics.match.new,

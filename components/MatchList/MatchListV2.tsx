@@ -719,7 +719,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       }
 
       // Priority 3: Track FIRST closed/completed match in list (most recent, appears at top)
-      if (match.status === MatchStatus.COMPLETED || match.status === MatchStatus.FINISHED) {
+      if (match.status === MatchStatus?.COMPLETED || match.status === MatchStatus.FINISHED) {
         if (firstClosedIndex === -1) {
           firstClosedIndex = i; // First closed match in inverted list = most recent
         }

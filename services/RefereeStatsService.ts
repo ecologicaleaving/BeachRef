@@ -852,7 +852,7 @@ export class RefereeStatsService {
       if (tournamentsResult.success && tournamentsResult.data && tournamentsResult.data.length > 0) {
         const tournaments = tournamentsResult.data;
         // Use the first available tournament as representative
-        return tournaments[0].visNo;
+        return tournaments[0]!.visNo;
       }
     } catch (error) {
       console.error('Could not get tournament from cache:', error);
@@ -1011,7 +1011,7 @@ export class RefereeStatsService {
       const tournaments = tournamentsResult.data;
       
       // Try to resolve using the first available tournament
-      return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0].visNo);
+      return await RefereeStatsService.resolveRefereeIdFromTournament(refereeId, tournaments[0]?.visNo);
     } catch (error) {
       console.error('❌ Error resolving referee ID from tournaments:', error);
       return null;

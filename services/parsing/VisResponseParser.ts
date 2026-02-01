@@ -832,7 +832,7 @@ export class VisResponseParser {
   private static extractXmlValue(xml: string, tagName: string): string | undefined {
     const regex = new RegExp(`<${tagName}[^>]*>([^<]*)<\/${tagName}>`, 'i');
     const match = xml.match(regex);
-    return match ? match[1].trim() : undefined;
+    return match ? match[1]?.trim() : undefined;
   }
 
   /**
@@ -841,7 +841,7 @@ export class VisResponseParser {
   private static extractXmlAttribute(xml: string, attributeName: string): string | undefined {
     const regex = new RegExp(`${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
     const match = xml.match(regex);
-    return match ? match[1].trim() : undefined;
+    return match ? match[1]?.trim() : undefined;
   }
 
   /**

@@ -251,7 +251,7 @@ const RefModeScreen: React.FC = () => {
       
       const numbers = [];
       for (let i = 0; i < refereeElements.length; i++) {
-        const no = refereeElements[i].getAttribute('No');
+        const no = refereeElements[i]!.getAttribute('No');
         if (no) {
           numbers.push(no);
         }

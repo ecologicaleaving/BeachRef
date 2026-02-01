@@ -62,7 +62,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       if (nameParts.length > 1) {
         const firstName = nameParts[0];
         const lastName = nameParts[nameParts.length - 1];
-        return `${firstName.charAt(0)}. ${lastName}`;
+        return `${firstName!.charAt(0)}. ${lastName}`;
       }
     }
     return player.name;

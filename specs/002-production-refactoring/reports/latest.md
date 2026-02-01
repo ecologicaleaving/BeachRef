@@ -1,30 +1,30 @@
 # Production Audit Report
 
-**Date**: 02/01/2026, 05:46:36 PM | **Status**: ✅ PASS | **Exit Code**: 0
+**Date**: 02/01/2026, 06:48:29 PM | **Status**: ✅ PASS | **Exit Code**: 0
 
 ## Summary
 
-- **Total Findings**: 2890 (🆕 2 new, ✅ 0 resolved)
+- **Total Findings**: 2882 (🆕 0 new, ✅ 0 resolved)
 - **Critical**: 0 ✅
 - **High**: 0 ✅
-- **Medium**: 2890 ⚠️
+- **Medium**: 2882 ⚠️
 - **Low**: 0 ✅
 - **Manual Review Required**: 0 findings
 
 ## Trend Analysis
 
-**Compared to**: run-2026-02-01-17-27-53
+**Compared to**: run-2026-02-01-17-53-57
 
-- **Total Findings**: 📉 -2
+- **Total Findings**: ➡️ 0
 - **Critical**: ➡️ 0
 - **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 0.1%
+- **New Finding Rate**: 0%
 
-**Summary**: 2 fewer findings | 0% resolved, 0.1% new
+**Summary**: same number of findings | 0% resolved, 0% new
 
 ## Findings
-### 🟡 Medium (2890)
+### 🟡 Medium (2882)
 
 #### typescript-error (Rule: `typescript:2322`)
 
@@ -15898,62 +15898,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1902`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1902`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1902`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1918`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1924`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1931`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:1937`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
-
----
-
 #### typescript-error (Rule: `typescript:2367`)
 
 **Location**: `screens/TournamentDetailScreen.tsx:2018`
@@ -15990,14 +15934,6 @@
     Type 'BeachMatchCore' is not assignable to type '{ tournamentGender?: "M" | "W"; tournamentNo?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
       Types of property 'tournamentGender' are incompatible.
         Type 'string' is not assignable to type '"M" | "W"'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `screens/TournamentDetailScreen.tsx:2065`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'courtFilter'.
 
 ---
 
@@ -16179,7 +16115,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1068`
+**Location**: `screens/TournamentSelectionScreen.tsx:1066`
 **Status**: 📌 Existing
 **Message**: Type 'TournamentCore | undefined' is not assignable to type 'TournamentCore'.
   Type 'undefined' is not assignable to type 'TournamentCore'.
@@ -16188,7 +16124,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1069`
+**Location**: `screens/TournamentSelectionScreen.tsx:1067`
 **Status**: 📌 Existing
 **Message**: Argument of type 'TournamentCore | undefined' is not assignable to parameter of type 'TournamentCore'.
   Type 'undefined' is not assignable to type 'TournamentCore'.
@@ -16197,7 +16133,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1184`
+**Location**: `screens/TournamentSelectionScreen.tsx:1182`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
   Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
@@ -16206,7 +16142,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1198`
+**Location**: `screens/TournamentSelectionScreen.tsx:1196`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
   Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
@@ -16215,7 +16151,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentSelectionScreen.tsx:1217`
+**Location**: `screens/TournamentSelectionScreen.tsx:1215`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; showBackButton: boolean; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
   Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
@@ -16409,7 +16345,7 @@
 #### typescript-error (Rule: `typescript:2532`)
 
 **Location**: `scripts/fix-optional-chaining-assign.ts:143`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Object is possibly 'undefined'.
 
 ---
@@ -18922,7 +18858,7 @@
 #### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/MatchDetailsService.ts:436`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type 'number | undefined' is not assignable to type 'number' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
   Type 'undefined' is not assignable to type 'number'.
 
@@ -26363,12 +26299,12 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (40.0s) - 2890 findings
-- ✅ **ESLint Checker** (13.3s) - 0 findings
-- ✅ **Complexity Checker** (0.4s) - 0 findings
+- ✅ **TypeScript Checker** (42.4s) - 2882 findings
+- ✅ **ESLint Checker** (17.1s) - 0 findings
+- ✅ **Complexity Checker** (0.7s) - 0 findings
 
 ---
 
-**Audit Run ID**: `run-2026-02-01-17-46-36`
-**Duration**: 53.7s
-**Generated**: 2026-02-01T16:46:36.709Z
+**Audit Run ID**: `run-2026-02-01-18-48-29`
+**Duration**: 60.2s
+**Generated**: 2026-02-01T17:48:29.925Z

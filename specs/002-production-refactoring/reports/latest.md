@@ -1,30 +1,30 @@
 # Production Audit Report
 
-**Date**: 02/01/2026, 04:59:49 PM | **Status**: ❌ FAIL | **Exit Code**: 1
+**Date**: 02/01/2026, 05:27:53 PM | **Status**: ✅ PASS | **Exit Code**: 0
 
 ## Summary
 
-- **Total Findings**: 2903 (🆕 11 new, ✅ 0 resolved)
-- **Critical**: 2903 ❌ (blocks deployment)
+- **Total Findings**: 2892 (🆕 0 new, ✅ 0 resolved)
+- **Critical**: 0 ✅
 - **High**: 0 ✅
-- **Medium**: 0 ✅
+- **Medium**: 2892 ⚠️
 - **Low**: 0 ✅
 - **Manual Review Required**: 0 findings
 
 ## Trend Analysis
 
-**Compared to**: run-2026-02-01-14-30-22
+**Compared to**: run-2026-02-01-17-26-11
 
-- **Total Findings**: 📉 -248
-- **Critical**: 📉 -248
+- **Total Findings**: ➡️ 0
+- **Critical**: ➡️ 0
 - **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 0.4%
+- **New Finding Rate**: 0%
 
-**Summary**: 248 fewer findings | severity: -248 Critical | 0% resolved, 0.4% new
+**Summary**: same number of findings | 0% resolved, 0% new
 
 ## Findings
-### 🔴 Critical (2903)
+### 🟡 Medium (2892)
 
 #### typescript-error (Rule: `typescript:2322`)
 
@@ -6313,14 +6313,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:1117`)
-
-**Location**: `components/referee/TournamentRefereeList.tsx:800`
-**Status**: 📌 Existing
-**Message**: An object literal cannot have multiple properties with the same name.
-
----
-
 #### typescript-error (Rule: `typescript:2339`)
 
 **Location**: `components/RefereeAnalytics/RefereeAnalyticsDashboard.tsx:56`
@@ -6683,22 +6675,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:1117`)
-
-**Location**: `components/RefereeDropdown/RefereeDropdown.tsx:231`
-**Status**: 📌 Existing
-**Message**: An object literal cannot have multiple properties with the same name.
-
----
-
-#### typescript-error (Rule: `typescript:1117`)
-
-**Location**: `components/RefereeDropdown/RefereeDropdown.tsx:240`
-**Status**: 📌 Existing
-**Message**: An object literal cannot have multiple properties with the same name.
-
----
-
 #### typescript-error (Rule: `typescript:2345`)
 
 **Location**: `components/SimpleTournamentList.tsx:31`
@@ -6826,70 +6802,6 @@
 **Location**: `components/Status/StatusBar.tsx:46`
 **Status**: 📌 Existing
 **Message**: 'animated' is declared but its value is never read.
-
----
-
-#### typescript-error (Rule: `typescript:2552`)
-
-**Location**: `components/Status/StatusCard.tsx:108`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'H2Text'. Did you mean 'Text'?
-
----
-
-#### typescript-error (Rule: `typescript:2552`)
-
-**Location**: `components/Status/StatusCard.tsx:110`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'H2Text'. Did you mean 'Text'?
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:112`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'BodyText'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:114`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'BodyText'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:119`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'BodyText'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:121`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'BodyText'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:131`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'CaptionText'.
-
----
-
-#### typescript-error (Rule: `typescript:2304`)
-
-**Location**: `components/Status/StatusCard.tsx:133`
-**Status**: 📌 Existing
-**Message**: Cannot find name 'CaptionText'.
 
 ---
 
@@ -16537,7 +16449,7 @@
 #### typescript-error (Rule: `typescript:6133`)
 
 **Location**: `scripts/fix-possibly-undefined.ts:175`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: 'varName' is declared but its value is never read.
 
 ---
@@ -20028,7 +19940,7 @@
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:227`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
     Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
@@ -20054,7 +19966,7 @@
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:228`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
     Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
@@ -20091,7 +20003,7 @@
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:231`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
     Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
@@ -20117,7 +20029,7 @@
 #### typescript-error (Rule: `typescript:2769`)
 
 **Location**: `services/monitoring/PerformanceDashboard.ts:232`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: No overload matches this call.
   Overload 1 of 3, '(callbackfn: (previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined, initialValue: number | undefined): number | undefined', gave the following error.
     Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number | undefined, currentValue: number | undefined, currentIndex: number, array: (number | undefined)[]) => number | undefined'.
@@ -21312,7 +21224,7 @@
 #### typescript-error (Rule: `typescript:2538`)
 
 **Location**: `services/SetScoreService.ts:224`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Type 'undefined' cannot be used as an index type.
 
 ---
@@ -21378,7 +21290,7 @@
 #### typescript-error (Rule: `typescript:2869`)
 
 **Location**: `services/SetScoreService.ts:436`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
@@ -21394,7 +21306,7 @@
 #### typescript-error (Rule: `typescript:2869`)
 
 **Location**: `services/SetScoreService.ts:437`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
@@ -21410,7 +21322,7 @@
 #### typescript-error (Rule: `typescript:2869`)
 
 **Location**: `services/SetScoreService.ts:438`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
@@ -21426,7 +21338,7 @@
 #### typescript-error (Rule: `typescript:2869`)
 
 **Location**: `services/SetScoreService.ts:439`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
@@ -21442,7 +21354,7 @@
 #### typescript-error (Rule: `typescript:2869`)
 
 **Location**: `services/SetScoreService.ts:440`
-**Status**: 🆕 New
+**Status**: 📌 Existing
 **Message**: Right operand of ?? is unreachable because the left operand is never nullish.
 
 ---
@@ -26466,12 +26378,12 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (46.3s) - 2903 findings
-- ✅ **ESLint Checker** (13.3s) - 0 findings
-- ✅ **Complexity Checker** (0.5s) - 0 findings
+- ✅ **TypeScript Checker** (48.2s) - 2892 findings
+- ✅ **ESLint Checker** (23.3s) - 0 findings
+- ✅ **Complexity Checker** (0.7s) - 0 findings
 
 ---
 
-**Audit Run ID**: `run-2026-02-01-16-59-49`
-**Duration**: 60.2s
-**Generated**: 2026-02-01T15:59:49.046Z
+**Audit Run ID**: `run-2026-02-01-17-27-53`
+**Duration**: 72.3s
+**Generated**: 2026-02-01T16:27:53.574Z

@@ -433,7 +433,7 @@ export class MatchDetailsService {
           // Update last sequence number
           if (playByPlayData.events && playByPlayData.events.length > 0) {
             const lastEvent = playByPlayData.events[playByPlayData.events.length - 1];
-            config?.lastSequenceNumber = lastEvent.rally;
+            config.lastSequenceNumber = lastEvent.rally;
           }
 
           // Call play-by-play callback

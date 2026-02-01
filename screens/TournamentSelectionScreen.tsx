@@ -183,17 +183,17 @@ const TournamentSelectionScreen: React.FC = () => {
                   setTournaments([...tournaments]); // Trigger re-render
                 }
               } else {
-                (tournament as any)?.tournamentNo = tournament.visNo;
+                (tournament as any).tournamentNo = tournament.visNo;
               }
             } else {
-              (tournament as any)?.tournamentNo = tournament.visNo; // Fallback
+              (tournament as any).tournamentNo = tournament.visNo; // Fallback
             }
 
             // Small delay to avoid overwhelming the API and keep UI responsive
             await new Promise(resolve => setTimeout(resolve, 300));
 
           } catch (error) {
-            (tournament as any)?.tournamentNo = tournament.visNo; // Fallback
+            (tournament as any).tournamentNo = tournament.visNo; // Fallback
           }
         }
 

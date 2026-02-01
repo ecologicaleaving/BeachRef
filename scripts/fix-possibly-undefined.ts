@@ -156,33 +156,57 @@ function applyFix(error: UndefinedError): { fixed: boolean; strategy: string } {
   const prevLine1 = lines[error.line - 2] ?? '';
   const prevLine2 = lines[error.line - 3] ?? '';
   const prevLine3 = lines[error.line - 4] ?? '';
+  const prevLine4 = lines[error.line - 5] ?? '';
+  const prevLine5 = lines[error.line - 6] ?? '';
 
-  // Strategy 1: Variable used after array access post length check
-  // Pattern: if (arr.length > 0) { const item = arr[0]; ... item.something ... }
-  const isVariableFromArrayAccess = prevLine1.match(/const (\w+) = (\w+)\[/) ||
-                                     prevLine2.match(/const (\w+) = (\w+)\[/) ||
-                                     prevLine3.match(/const (\w+) = (\w+)\[/);
+  // Check if we're in a safe context (after length check or in loop)
   const isAfterLengthCheck = prevLine1.includes('.length >') ||
                               prevLine2.includes('.length >') ||
                               prevLine3.includes('.length >') ||
+                              prevLine4.includes('.length >') ||
+                              prevLine5.includes('.length >') ||
                               prevLine3.includes('for (let i = 0; i <') ||
                               prevLine3.includes('for (const ');
 
-  if (isVariableFromArrayAccess && isAfterLengthCheck) {
-    const varMatch = targetLine.match(/(\w+)\.(getAttribute|[\w]+)/);
-    if (varMatch) {
-      const varName = varMatch[1];
-      const method = varMatch[2];
-      // Don't add ! if already has optional chaining or non-null assertion
-      if (!targetLine.includes('?.') && !targetLine.includes(`${varName}!`)) {
-        newLine = targetLine.replace(`${varName}.${method}`, `${varName}!.${method}`);
-        strategy = 'variable-after-length-check';
+  // Strategy 1A: Fix the variable assignment itself (const item = arr[0] → const item = arr[0]!)
+  // Pattern: const item = arr[0]; (within if (arr.length > 0) block)
+  const isVariableAssignment = targetLine.match(/const (\w+) = (\w+)\[(\d+)\];/);
+  if (isVariableAssignment && isAfterLengthCheck) {
+    const [, varName, arrayName, index] = isVariableAssignment;
+    if (!targetLine.includes('!')) {
+      newLine = targetLine.replace(`${arrayName}[${index}]`, `${arrayName}[${index}]!`);
+      strategy = 'array-assignment-non-null';
+    }
+  }
+
+  // Strategy 1B: Variable used after array access post length check
+  // Pattern: if (arr.length > 0) { const item = arr[0]; ... item.something ... }
+  if (newLine === targetLine) {
+    const varAssignmentMatch = prevLine1.match(/const (\w+) = (\w+)\[/) ||
+                                prevLine2.match(/const (\w+) = (\w+)\[/) ||
+                                prevLine3.match(/const (\w+) = (\w+)\[/) ||
+                                prevLine4.match(/const (\w+) = (\w+)\[/) ||
+                                prevLine5.match(/const (\w+) = (\w+)\[/);
+
+    if (varAssignmentMatch && isAfterLengthCheck) {
+      const assignedVarName = varAssignmentMatch[1];
+
+      // Check if this line uses that variable
+      const varUsageMatch = targetLine.match(new RegExp(`(${assignedVarName})\\.(\\w+)`));
+      if (varUsageMatch) {
+        const varName = varUsageMatch[1];
+        const method = varUsageMatch[2];
+        // Don't add ! if already has optional chaining or non-null assertion
+        if (!targetLine.includes('?.') && !targetLine.includes(`${varName}!`)) {
+          newLine = targetLine.replace(`${varName}.${method}`, `${varName}!.${method}`);
+          strategy = 'variable-after-length-check';
+        }
       }
     }
   }
 
   // Strategy 2: Array access within for loop or after length check
-  else if (targetLine.match(/(\w+)\[i\]/) || targetLine.match(/(\w+)\[0\]/) || targetLine.match(/(\w+)\[1\]/)) {
+  if (newLine === targetLine && (targetLine.match(/(\w+)\[i\]/) || targetLine.match(/(\w+)\[0\]/) || targetLine.match(/(\w+)\[1\]/))) {
     const inForLoop = prevLine1.includes('for (let i = 0;') ||
                       prevLine2.includes('for (let i = 0;') ||
                       prevLine3.includes('for (let i = 0;');
@@ -202,7 +226,7 @@ function applyFix(error: UndefinedError): { fixed: boolean; strategy: string } {
   }
 
   // Strategy 3: String method calls on possibly undefined
-  else if (targetLine.match(/\.(?:trim|toLowerCase|toUpperCase|split|includes|startsWith|endsWith)\(/)) {
+  if (newLine === targetLine && targetLine.match(/\.(?:trim|toLowerCase|toUpperCase|split|includes|startsWith|endsWith)\(/)) {
     const methodMatch = targetLine.match(/(\w+)(\.(?:trim|toLowerCase|toUpperCase|split|includes|startsWith|endsWith)\()/);
     if (methodMatch) {
       const varName = methodMatch[1];
@@ -215,7 +239,7 @@ function applyFix(error: UndefinedError): { fixed: boolean; strategy: string } {
   }
 
   // Strategy 4: parseInt with possibly undefined
-  else if (targetLine.includes('parseInt(')) {
+  if (newLine === targetLine && targetLine.includes('parseInt(')) {
     newLine = targetLine.replace(/parseInt\(([^)]+)\)/g, (match, arg) => {
       if (arg.includes('??')) return match;
       return `parseInt(${arg} ?? '0')`;
@@ -230,8 +254,19 @@ function applyFix(error: UndefinedError): { fixed: boolean; strategy: string } {
   //   ...
   // }
 
-  // Strategy 6: Property access - use optional chaining
-  else if (targetLine.includes('.')) {
+  // Strategy 6: Find with || fallback - add ! to array access fallback
+  // Pattern: const item = arr.find(...) || arr[0]; → const item = arr.find(...) || arr[0]!;
+  if (newLine === targetLine && targetLine.match(/const \w+ = .+\.find\(.+\) \|\| \w+\[/)) {
+    const fallbackMatch = targetLine.match(/\|\| (\w+\[\d+\]);/);
+    if (fallbackMatch && !targetLine.includes('!')) {
+      const fallback = fallbackMatch[1];
+      newLine = targetLine.replace(`|| ${fallback};`, `|| ${fallback}!;`);
+      strategy = 'find-fallback-non-null';
+    }
+  }
+
+  // Strategy 7: Property access - use optional chaining
+  if (newLine === targetLine && targetLine.includes('.')) {
     if (!targetLine.includes('?.') && !targetLine.includes('!.')) {
       const beforeError = targetLine.substring(0, error.column - 1);
       const lastDot = beforeError.lastIndexOf('.');

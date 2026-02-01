@@ -1,30 +1,30 @@
 # Production Audit Report
 
-**Date**: 02/01/2026, 05:27:53 PM | **Status**: ✅ PASS | **Exit Code**: 0
+**Date**: 02/01/2026, 05:46:36 PM | **Status**: ✅ PASS | **Exit Code**: 0
 
 ## Summary
 
-- **Total Findings**: 2892 (🆕 0 new, ✅ 0 resolved)
+- **Total Findings**: 2890 (🆕 2 new, ✅ 0 resolved)
 - **Critical**: 0 ✅
 - **High**: 0 ✅
-- **Medium**: 2892 ⚠️
+- **Medium**: 2890 ⚠️
 - **Low**: 0 ✅
 - **Manual Review Required**: 0 findings
 
 ## Trend Analysis
 
-**Compared to**: run-2026-02-01-17-26-11
+**Compared to**: run-2026-02-01-17-27-53
 
-- **Total Findings**: ➡️ 0
+- **Total Findings**: 📉 -2
 - **Critical**: ➡️ 0
 - **High**: ➡️ 0
 - **Resolution Rate**: 0%
-- **New Finding Rate**: 0%
+- **New Finding Rate**: 0.1%
 
-**Summary**: same number of findings | 0% resolved, 0% new
+**Summary**: 2 fewer findings | 0% resolved, 0.1% new
 
 ## Findings
-### 🟡 Medium (2892)
+### 🟡 Medium (2890)
 
 #### typescript-error (Rule: `typescript:2322`)
 
@@ -16082,14 +16082,6 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2779`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:186`
-**Status**: 📌 Existing
-**Message**: The left-hand side of an assignment expression may not be an optional property access.
-
----
-
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `screens/TournamentSelectionScreen.tsx:186`
@@ -16098,27 +16090,11 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2779`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:189`
-**Status**: 📌 Existing
-**Message**: The left-hand side of an assignment expression may not be an optional property access.
-
----
-
 #### typescript-error (Rule: `typescript:18048`)
 
 **Location**: `screens/TournamentSelectionScreen.tsx:189`
 **Status**: 📌 Existing
 **Message**: 'tournament' is possibly 'undefined'.
-
----
-
-#### typescript-error (Rule: `typescript:2779`)
-
-**Location**: `screens/TournamentSelectionScreen.tsx:196`
-**Status**: 📌 Existing
-**Message**: The left-hand side of an assignment expression may not be an optional property access.
 
 ---
 
@@ -16427,6 +16403,14 @@
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `scripts/fix-optional-chaining-assign.ts:143`
+**Status**: 🆕 New
+**Message**: Object is possibly 'undefined'.
 
 ---
 
@@ -18935,11 +18919,12 @@
 
 ---
 
-#### typescript-error (Rule: `typescript:2779`)
+#### typescript-error (Rule: `typescript:2412`)
 
 **Location**: `services/MatchDetailsService.ts:436`
-**Status**: 📌 Existing
-**Message**: The left-hand side of an assignment expression may not be an optional property access.
+**Status**: 🆕 New
+**Message**: Type 'number | undefined' is not assignable to type 'number' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+  Type 'undefined' is not assignable to type 'number'.
 
 ---
 
@@ -26378,12 +26363,12 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (48.2s) - 2892 findings
-- ✅ **ESLint Checker** (23.3s) - 0 findings
-- ✅ **Complexity Checker** (0.7s) - 0 findings
+- ✅ **TypeScript Checker** (40.0s) - 2890 findings
+- ✅ **ESLint Checker** (13.3s) - 0 findings
+- ✅ **Complexity Checker** (0.4s) - 0 findings
 
 ---
 
-**Audit Run ID**: `run-2026-02-01-17-27-53`
-**Duration**: 72.3s
-**Generated**: 2026-02-01T16:27:53.574Z
+**Audit Run ID**: `run-2026-02-01-17-46-36`
+**Duration**: 53.7s
+**Generated**: 2026-02-01T16:46:36.709Z

@@ -314,7 +314,7 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   // Filter states for external control of MatchListV2 - preserved during refresh
   // Date filtering disabled - showing all days in timeline
-  const [, setCourtFilter] = useState<string>('All'); // Only setter used (TS6133 fix)
+  const [courtFilter, setCourtFilter] = useState<string>('All');
   const [genderFilter, setGenderFilter] = useState<'All' | 'M' | 'W'>('All');
   const [refereeFilter, setRefereeFilter] = useState<string>('All');
   const [showFilters, setShowFilters] = useState(false);

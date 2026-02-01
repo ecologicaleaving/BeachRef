@@ -831,25 +831,23 @@ const TournamentSelectionScreen: React.FC = () => {
     return sections;
   }, [tournaments, expandedSeasons, expandedMonths, activeStatusFilter, activeTypeFilter]);
 
-  // Initialize expanded seasons and months - 2025 season open, current month open
+  // Initialize expanded seasons and months - current year season open, current month open
   useEffect(() => {
     if (tournaments.length > 0 && !hierarchyInitialized) {
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth();
-      const currentSeasonKey = getSeasonKey(2025); // Always expand 2025
+      const currentSeasonKey = getSeasonKey(currentYear); // Always expand current year
       const currentMonthKey = getMonthKey(currentYear, currentMonth);
 
-      // Initialize seasons - only 2025 expanded
+      // Initialize seasons - only current year expanded
       const initialSeasons: { [key: string]: boolean } = {};
       for (let year = 2001; year <= 2026; year++) {
-        initialSeasons[getSeasonKey(year)] = year === 2025;
+        initialSeasons[getSeasonKey(year)] = year === currentYear;
       }
 
-      // Initialize months - only current month expanded if in 2025
+      // Initialize months - always expand current month in current year
       const initialMonths: { [key: string]: boolean } = {};
-      if (currentYear === 2025) {
-        initialMonths[currentMonthKey] = true;
-      }
+      initialMonths[currentMonthKey] = true;
 
       setExpandedSeasons(initialSeasons);
       setExpandedMonths(initialMonths);

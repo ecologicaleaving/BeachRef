@@ -23,12 +23,19 @@ export class TournamentMatchCache {
 
   /**
    * Get cached matches for a tournament
+   *
+   * ✨ ENHANCED: Now includes year in cache key to fix João Pessoa bug
+   *
    * @param tournamentNo - Tournament number
+   * @param year - Year filter (optional, uses current year if not provided)
    * @returns Cached matches or null if not found/expired
    */
-  static async getCachedMatches(tournamentNo: string): Promise<BeachMatchCore[] | null> {
+  static async getCachedMatches(tournamentNo: string, year?: number): Promise<BeachMatchCore[] | null> {
     const startTime = Date.now();
-    const cacheKey = `matches_${tournamentNo}`;
+
+    // ✨ FIX: Include year in cache key to avoid João Pessoa bug
+    const yearToUse = year || new Date().getFullYear();
+    const cacheKey = `matches_${tournamentNo}_${yearToUse}`;
 
     try {
       const result = await this.cacheManager.get<CachedMatchData>(this.NAMESPACE, cacheKey);
@@ -43,7 +50,7 @@ export class TournamentMatchCache {
       // Check if cache is stale based on tournament status
       const ttl = getMatchCacheTTL(cached.tournamentStatus);
       if (isStale(cached, ttl)) {
-        console.log(`📦 Match cache for tournament ${tournamentNo} is stale, TTL: ${ttl}ms`);
+        console.log(`📦 Match cache for tournament ${tournamentNo} year ${yearToUse} is stale, TTL: ${ttl}ms`);
         CachePerformanceMonitor.recordCacheMiss(cacheKey, Date.now() - startTime);
         return null;
       }
@@ -52,6 +59,7 @@ export class TournamentMatchCache {
       const dataSize = JSON.stringify(cached.matches).length;
 
       CachePerformanceMonitor.recordCacheHit(cacheKey, responseTime, dataSize);
+      console.log(`📦 ✅ Cache HIT for tournament ${tournamentNo} year ${yearToUse}`);
       return cached.matches;
     } catch (error) {
       CachePerformanceMonitor.recordCacheError(cacheKey, Date.now() - startTime);
@@ -62,17 +70,31 @@ export class TournamentMatchCache {
 
   /**
    * Cache matches for a tournament with status-aware TTL
+   *
+   * ✨ ENHANCED: Now includes year in cache key to fix João Pessoa bug
+   *
    * @param tournamentNo - Tournament number
    * @param matches - Match data to cache
    * @param status - Tournament status for TTL calculation
+   * @param year - Year filter (optional, extracted from matches if not provided)
    */
   static async cacheMatches(
     tournamentNo: string,
     matches: BeachMatchCore[],
-    status: string
+    status: string,
+    year?: number
   ): Promise<void> {
     try {
-      const cacheKey = `matches_${tournamentNo}`;
+      // ✨ FIX: Extract year from first match or use provided year
+      let yearToUse = year;
+      if (!yearToUse && matches.length > 0) {
+        yearToUse = new Date(matches[0].scheduledDateTime).getFullYear();
+      }
+      if (!yearToUse) {
+        yearToUse = new Date().getFullYear();
+      }
+
+      const cacheKey = `matches_${tournamentNo}_${yearToUse}`;
       const ttl = getMatchCacheTTL(status);
       const metadata = createCacheMetadata(ttl);
 
@@ -85,7 +107,7 @@ export class TournamentMatchCache {
       const result = await this.cacheManager.set(this.NAMESPACE, cacheKey, cacheData);
 
       if (result.success) {
-        console.log(`📦 Cached ${matches.length} matches for tournament ${tournamentNo} (status: ${status}, TTL: ${ttl}ms)`);
+        console.log(`📦 Cached ${matches.length} matches for tournament ${tournamentNo} year ${yearToUse} (status: ${status}, TTL: ${ttl}ms)`);
       } else {
         console.warn('Failed to cache matches:', result.error);
       }
@@ -96,23 +118,30 @@ export class TournamentMatchCache {
 
   /**
    * Check if matches are cached and fresh for a tournament
+   *
    * @param tournamentNo - Tournament number
+   * @param year - Year filter (optional)
    * @returns true if fresh cache exists, false otherwise
    */
-  static async hasFreshCache(tournamentNo: string): Promise<boolean> {
-    const cached = await this.getCachedMatches(tournamentNo);
+  static async hasFreshCache(tournamentNo: string, year?: number): Promise<boolean> {
+    const cached = await this.getCachedMatches(tournamentNo, year);
     return cached !== null;
   }
 
   /**
    * Clear cached matches for a specific tournament
+   *
+   * ✨ ENHANCED: Now clears year-specific cache
+   *
    * @param tournamentNo - Tournament number
+   * @param year - Year filter (optional, clears current year if not provided)
    */
-  static async clearCache(tournamentNo: string): Promise<void> {
+  static async clearCache(tournamentNo: string, year?: number): Promise<void> {
     try {
-      const cacheKey = `matches_${tournamentNo}`;
+      const yearToUse = year || new Date().getFullYear();
+      const cacheKey = `matches_${tournamentNo}_${yearToUse}`;
       await this.cacheManager.delete(this.NAMESPACE, cacheKey);
-      console.log(`🗑️ Cleared match cache for tournament ${tournamentNo}`);
+      console.log(`🗑️ Cleared match cache for tournament ${tournamentNo} year ${yearToUse}`);
     } catch (error) {
       console.warn('Failed to clear match cache:', error);
     }
@@ -120,17 +149,21 @@ export class TournamentMatchCache {
 
   /**
    * Get cache metadata for debugging
+   *
    * @param tournamentNo - Tournament number
+   * @param year - Year filter (optional)
    * @returns Cache metadata or null
    */
-  static async getCacheMetadata(tournamentNo: string): Promise<{
+  static async getCacheMetadata(tournamentNo: string, year?: number): Promise<{
     status: string;
     cachedAt: string;
     ttl: number;
-    isStale: boolean
+    isStale: boolean;
+    year: number;
   } | null> {
     try {
-      const cacheKey = `matches_${tournamentNo}`;
+      const yearToUse = year || new Date().getFullYear();
+      const cacheKey = `matches_${tournamentNo}_${yearToUse}`;
       const result = await this.cacheManager.get<CachedMatchData>(this.NAMESPACE, cacheKey);
 
       if (!result.success || !result.data) {
@@ -145,7 +178,8 @@ export class TournamentMatchCache {
         status: cached.tournamentStatus,
         cachedAt: cached.cachedAt,
         ttl,
-        isStale: stale
+        isStale: stale,
+        year: yearToUse,
       };
     } catch (error) {
       console.warn('Failed to get cache metadata:', error);

@@ -4,12 +4,12 @@
  * Part of EPIC-007 Data Architecture Restructuration - Story 7.2
  */
 
-import { 
-  BaseRepository, 
-  BaseRepositoryConfig, 
-  RepositoryResult, 
-  RepositoryError, 
-  RepositoryErrorType 
+import {
+  BaseRepository,
+  BaseRepositoryConfig,
+  RepositoryResult,
+  RepositoryError,
+  RepositoryErrorType
 } from './base/BaseRepository';
 import { BeachMatchCore, MatchStatus, MatchResult, CourtInfo } from '../types/match-v2';
 import { BeachMatch } from '../types/match';
@@ -18,6 +18,10 @@ import { GetBeachMatchListRequest } from '../types/api-v2';
 // DataTransformationService removed - transformations now handled in simplified hooks
 import { VisResponseParser } from '../services/parsing/VisResponseParser';
 import { featureFlagManager } from '../config/featureFlags';
+// ✨ NEW: Database integration for lazy loading
+import { databaseService } from '../services/database/DatabaseService';
+import { extractYearFromMatch } from '../services/database/DatabaseMapper';
+import { SyncConfig } from '../config/syncConfig';
 
 /**
  * Match filtering options for repository queries
@@ -172,24 +176,33 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
 
   /**
    * Get matches for a specific tournament
+   *
+   * ✨ ENHANCED: Now uses lazy loading with database persistence
+   * Flow: Cache → Database → VIS API → Save to DB
+   * Fixes João Pessoa bug with year-aware filtering
    */
   async getByTournamentAsync(
-    tournamentId: string, 
+    tournamentId: string,
     filters: MatchFilters = {}
   ): Promise<RepositoryResult<BeachMatchCore[]>> {
     const monitor = this.startPerformanceMonitoring();
-    
+
     try {
-      // Generate cache key based on tournament and filters
-      const cacheKey = this.generateTournamentMatchesCacheKey(tournamentId, filters);
-      
-      // Check cache first
+      // Extract year from filters or use current year
+      const year = filters.startDate
+        ? new Date(filters.startDate).getFullYear()
+        : new Date().getFullYear();
+
+      // ✨ NEW: Year-aware cache key (fixes João Pessoa bug)
+      const cacheKey = this.generateYearAwareCacheKey(tournamentId, year, filters);
+
+      // STEP 1: Check memory cache first (fastest)
       const cached = await this.config.cacheManager.get<BeachMatchCore[]>(cacheKey);
-      
+
       if (cached) {
         const metrics = this.completePerformanceMonitoring(monitor, true, cached.tier);
         this.logPerformanceMetrics('getByTournamentAsync[cached]', metrics);
-        
+
         return {
           data: cached.data,
           metrics,
@@ -207,7 +220,39 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
         );
       }
 
-      // Build API request from filters
+      // ✨ STEP 2: Check database (lazy loading strategy)
+      if (SyncConfig.lazyLoading.enabled) {
+        console.log(`[MatchRepository] Checking database for tournament ${tournamentNo} year ${year}...`);
+
+        const dbMatches = await databaseService.getMatches({
+          tournamentCode: tournamentNo,
+          year,
+          status: filters.status,
+        });
+
+        if (dbMatches.length > 0) {
+          console.log(`[MatchRepository] ✅ Found ${dbMatches.length} matches in database`);
+
+          // Apply additional filters
+          let filteredMatches = this.applyMatchFilters(dbMatches, filters);
+
+          // Cache the DB result
+          await this.config.cacheManager.set(cacheKey, filteredMatches, { ttl: 1800000 });
+
+          const metrics = this.completePerformanceMonitoring(monitor, false, 2, 0); // Tier 2 = DB
+          this.logPerformanceMetrics('getByTournamentAsync[database]', metrics);
+
+          return {
+            data: filteredMatches,
+            metrics,
+            source: 'cache' as any // Using 'cache' for compatibility, but it's actually 'database'
+          };
+        }
+
+        console.log(`[MatchRepository] No matches found in database, fetching from VIS API...`);
+      }
+
+      // STEP 3: Fallback to VIS API
       const apiRequest: GetBeachMatchListRequest = {
         tournamentNo,
         courtNo: filters.courtNo,
@@ -219,7 +264,7 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
       };
 
       const response = await this.config.apiClient.getBeachMatchList(apiRequest);
-      
+
       if (!response.success) {
         throw new RepositoryError(
           'Failed to fetch matches from API',
@@ -229,29 +274,21 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
       }
 
       // Parse response
-      // TODO: Fetch tournament timezone from GetBeachTournament for better timezone handling
       const matches = VisResponseParser.parseBeachMatches(response.xmlData, tournamentId, undefined);
 
-      // Apply additional filters
-      let filteredMatches = matches;
-      if (filters.round) {
-        filteredMatches = filteredMatches.filter(m => 
-          m.round.toLowerCase().includes(filters.round!.toLowerCase())
-        );
-      }
-      if (filters.phaseCode) {
-        filteredMatches = filteredMatches.filter(m => m.phaseCode === filters.phaseCode);
-      }
-      if (filters.withRefereeAssignments) {
-        filteredMatches = filteredMatches.filter(m => 
-          m.refereeAssignments && m.refereeAssignments.length > 0
-        );
-      }
-      if (filters.maxResults) {
-        filteredMatches = filteredMatches.slice(0, filters.maxResults);
+      // ✨ STEP 4: Save to database (lazy loading persistence)
+      if (SyncConfig.lazyLoading.saveToDbAfterFetch && matches.length > 0) {
+        console.log(`[MatchRepository] 💾 Saving ${matches.length} matches to database...`);
+        await databaseService.saveMatches(matches).catch(err => {
+          console.warn('[MatchRepository] Failed to save matches to database:', err);
+          // Don't fail the request if DB save fails
+        });
       }
 
-      // Cache the result with 30 minute TTL for match data
+      // Apply additional filters
+      let filteredMatches = this.applyMatchFilters(matches, filters);
+
+      // Cache the result
       await this.config.cacheManager.set(cacheKey, filteredMatches, { ttl: 1800000 });
 
       const metrics = this.completePerformanceMonitoring(monitor, false, undefined, 1);
@@ -266,6 +303,53 @@ export class MatchRepository extends BaseRepository implements IMatchRepository 
     } catch (error) {
       throw this.handleError(error, 'getByTournamentAsync', { tournamentId, filters });
     }
+  }
+
+  /**
+   * ✨ NEW: Apply match filters (extracted for reusability)
+   */
+  private applyMatchFilters(matches: BeachMatchCore[], filters: MatchFilters): BeachMatchCore[] {
+    let filtered = matches;
+
+    if (filters.round) {
+      filtered = filtered.filter(m =>
+        m.round.toLowerCase().includes(filters.round!.toLowerCase())
+      );
+    }
+
+    if (filters.phaseCode) {
+      filtered = filtered.filter(m => m.phaseCode === filters.phaseCode);
+    }
+
+    if (filters.withRefereeAssignments) {
+      filtered = filtered.filter(m =>
+        m.refereeAssignments && m.refereeAssignments.length > 0
+      );
+    }
+
+    if (filters.maxResults) {
+      filtered = filtered.slice(0, filters.maxResults);
+    }
+
+    return filtered;
+  }
+
+  /**
+   * ✨ NEW: Generate year-aware cache key (fixes João Pessoa bug)
+   */
+  private generateYearAwareCacheKey(
+    tournamentId: string,
+    year: number,
+    filters: MatchFilters
+  ): string {
+    // Include year in cache key to avoid mixing data from different years
+    const baseKey = `matches:${tournamentId}:${year}`;
+
+    if (filters.courtNo) return `${baseKey}:court-${filters.courtNo}`;
+    if (filters.round) return `${baseKey}:round-${filters.round}`;
+    if (filters.status) return `${baseKey}:status-${filters.status}`;
+
+    return baseKey;
   }
 
   /**

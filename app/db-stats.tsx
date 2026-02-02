@@ -14,8 +14,8 @@ import {
   Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Text } from '../components/Text';
-import { Container } from '../components/Container';
+import { Text } from '../components/Typography/Text';
+import { Container } from '../components/Foundation/Container';
 import { useTheme } from '../hooks/useTheme';
 import { databaseService } from '../services/database/DatabaseService';
 import { isSupabaseAvailable } from '../services/database/SupabaseClient';
@@ -36,7 +36,7 @@ interface DbStats {
 }
 
 export default function DatabaseStatsScreen() {
-  const { theme } = useTheme();
+  const theme = useTheme();
   const [stats, setStats] = useState<DbStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

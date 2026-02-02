@@ -336,31 +336,106 @@ export class DatabaseService {
     tournamentCount: number;
     matchCount: number;
     refereeCount: number;
+    totalSize: number;
+    lastUpdate: string;
+    oldestData: string;
+    byYear: {
+      [year: string]: {
+        tournaments: number;
+        matches: number;
+      };
+    };
   }> {
     if (!isSupabaseAvailable()) {
-      return { tournamentCount: 0, matchCount: 0, refereeCount: 0 };
+      return {
+        tournamentCount: 0,
+        matchCount: 0,
+        refereeCount: 0,
+        totalSize: 0,
+        lastUpdate: '',
+        oldestData: '',
+        byYear: {},
+      };
     }
 
     const supabase = getSupabaseClient();
     if (!supabase) {
-      return { tournamentCount: 0, matchCount: 0, refereeCount: 0 };
+      return {
+        tournamentCount: 0,
+        matchCount: 0,
+        refereeCount: 0,
+        totalSize: 0,
+        lastUpdate: '',
+        oldestData: '',
+        byYear: {},
+      };
     }
 
     try {
-      const [tournamentResult, matchResult, refereeResult] = await Promise.all([
+      const [tournamentResult, matchResult, refereeResult, matchesData, tournamentsData] = await Promise.all([
         supabase.from('tournaments').select('*', { count: 'exact', head: true }),
         supabase.from('matches').select('*', { count: 'exact', head: true }),
         supabase.from('referees').select('*', { count: 'exact', head: true }),
+        supabase.from('matches').select('year, updated_at').order('updated_at', { ascending: false }),
+        supabase.from('tournaments').select('year, updated_at').order('updated_at', { ascending: false }),
       ]);
+
+      // Calculate by year statistics
+      const byYear: { [year: string]: { tournaments: number; matches: number } } = {};
+
+      // Count tournaments by year
+      if (tournamentsData.data) {
+        tournamentsData.data.forEach((t: any) => {
+          const year = t.year?.toString() || 'unknown';
+          if (!byYear[year]) {
+            byYear[year] = { tournaments: 0, matches: 0 };
+          }
+          byYear[year].tournaments++;
+        });
+      }
+
+      // Count matches by year
+      if (matchesData.data) {
+        matchesData.data.forEach((m: any) => {
+          const year = m.year?.toString() || 'unknown';
+          if (!byYear[year]) {
+            byYear[year] = { tournaments: 0, matches: 0 };
+          }
+          byYear[year].matches++;
+        });
+      }
+
+      // Get last update and oldest data timestamps
+      const lastUpdate = matchesData.data?.[0]?.updated_at || tournamentsData.data?.[0]?.updated_at || '';
+      const oldestMatch = matchesData.data?.[matchesData.data.length - 1]?.updated_at || '';
+      const oldestTournament = tournamentsData.data?.[tournamentsData.data.length - 1]?.updated_at || '';
+      const oldestData = oldestMatch && oldestTournament
+        ? (new Date(oldestMatch) < new Date(oldestTournament) ? oldestMatch : oldestTournament)
+        : (oldestMatch || oldestTournament);
+
+      // Estimate total size (rough approximation: avg 2KB per match, 1KB per tournament, 0.5KB per referee)
+      const totalSize = (matchResult.count || 0) * 2048 + (tournamentResult.count || 0) * 1024 + (refereeResult.count || 0) * 512;
 
       return {
         tournamentCount: tournamentResult.count || 0,
         matchCount: matchResult.count || 0,
         refereeCount: refereeResult.count || 0,
+        totalSize,
+        lastUpdate,
+        oldestData,
+        byYear,
       };
     } catch (error) {
       console.error('[DatabaseService] Error getting statistics:', error);
-      return { tournamentCount: 0, matchCount: 0, refereeCount: 0 };
+      return {
+        tournamentCount: 0,
+        matchCount: 0,
+        refereeCount: 0,
+        totalSize: 0,
+        lastUpdate: '',
+        oldestData: '',
+        byYear: {},
+      };
     }
   }
 }

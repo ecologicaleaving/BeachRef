@@ -1208,17 +1208,23 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
 
     try {
-      // STEP 1: Check cache first for matches
-      const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo);
+      // ✨ FIX: Extract year from tournament dates (João Pessoa bug fix)
+      const tournamentYear = tournament.dates?.startDate
+        ? new Date(tournament.dates.startDate).getFullYear()
+        : new Date().getFullYear();
+
+      // STEP 1: Check cache first for matches (with year parameter)
+      const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo, tournamentYear);
 
       if (cachedMatches) {
+        console.log(`📦 ✅ Using cached matches for tournament ${tournament.visNo} year ${tournamentYear}`);
         setMatches(cachedMatches);
         setMatchesLoading(false);
         setLoadMatchesInProgress(false);
         return;
       }
 
-      console.log('🔄 No cached matches found, fetching from API');
+      console.log(`🔄 No cached matches found for year ${tournamentYear}, fetching from API`);
     } catch (error) {
       console.warn('Failed to check cache for matches:', error);
     }
@@ -1596,9 +1602,9 @@ const TournamentDetailScreenContent: React.FC = () => {
             setMatches(sortedMatches);
             setMatchesLoading(false);
 
-            // Cache the matches with tournament status
+            // Cache the matches with tournament status (with year parameter to fix João Pessoa bug)
             const tournamentStatus = getTournamentStatus();
-            TournamentMatchCache.cacheMatches(tournament.visNo, sortedMatches, tournamentStatus)
+            TournamentMatchCache.cacheMatches(tournament.visNo, sortedMatches, tournamentStatus, tournamentYear)
               .catch(error => console.warn('Failed to cache matches:', error));
           } catch (parseError) {
             setMatches([]);

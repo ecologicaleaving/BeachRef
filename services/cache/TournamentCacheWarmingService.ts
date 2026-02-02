@@ -123,8 +123,12 @@ export class TournamentCacheWarmingService {
       if (matches && matches.length > 0) {
         // Determine tournament status from matches
         const status = this.determineTournamentStatus(matches);
-        await TournamentMatchCache.cacheMatches(tournamentNo, matches, status);
-        console.log(`✅ Successfully warmed cache for tournament ${tournamentNo} (${matches.length} matches)`);
+
+        // Extract year from matches to fix João Pessoa bug
+        const year = new Date(matches[0].scheduledDateTime).getFullYear();
+
+        await TournamentMatchCache.cacheMatches(tournamentNo, matches, status, year);
+        console.log(`✅ Successfully warmed cache for tournament ${tournamentNo} year ${year} (${matches.length} matches)`);
 
         // Non-blocking AuxiliaryPersons fetch for match officials (specs/006-match-officials-display - T015)
         // Fire-and-forget: Don't block tournament display on official data

@@ -13,8 +13,14 @@ import { queryClient } from "../lib/queryClient";
 import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { asyncStoragePersister, handlePersistenceError, migrateAsyncStorageData } from "../lib/queryPersistence";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
+import { CacheMigrationService } from "../services/cache/CacheMigrationService";
 import { injectCSSVariables } from "../theme/css-variables";
 import { colors } from "../theme/tokens";
+
+// Import cache debug utilities in development
+if (__DEV__) {
+  require("../utils/cacheDebug");
+}
 
 const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
@@ -95,6 +101,10 @@ export default function RootLayout() {
         // Migrate existing AsyncStorage data if needed
         await migrateAsyncStorageData();
         console.log('AsyncStorage migration completed');
+
+        // Migrate cache to fix João Pessoa/Nayarit bug (old cache without year keys)
+        await CacheMigrationService.checkAndMigrate();
+        console.log('Cache migration completed');
 
         // Initialize brand assets
         await preloadBrandAssets();

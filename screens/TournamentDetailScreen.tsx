@@ -1393,17 +1393,22 @@ const TournamentDetailScreenContent: React.FC = () => {
 
             // STEP 3: GetBeachMatchList for each tournament
             // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug (matches from wrong years)
+            // Extract year from tournament dates, fallback to tournament object fields
             const tournamentYear = tournament.dates?.startDate
               ? new Date(tournament.dates.startDate).getFullYear()
-              : new Date().getFullYear();
+              : tournament.startDate
+              ? new Date(tournament.startDate).getFullYear()
+              : null; // Don't filter if we can't determine the year
 
             const matchRequest: GetBeachMatchListRequest = {
               tournamentNo: beachTournament.no,
               includeResults: true,
               includeReferees: true,
-              // Filter by year to avoid matches from other years with same tournament number
-              startDate: `${tournamentYear}-01-01`,
-              endDate: `${tournamentYear}-12-31`
+              // Only add year filter if we successfully extracted a year
+              ...(tournamentYear && {
+                startDate: `${tournamentYear}-01-01`,
+                endDate: `${tournamentYear}-12-31`
+              })
             };
 
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
@@ -1548,17 +1553,22 @@ const TournamentDetailScreenContent: React.FC = () => {
 
         // GetBeachMatchList for the tournament
         // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug (matches from wrong years)
+        // Extract year from tournament dates, fallback to tournament object fields
         const tournamentYear = tournament.dates?.startDate
           ? new Date(tournament.dates.startDate).getFullYear()
-          : new Date().getFullYear();
+          : tournament.startDate
+          ? new Date(tournament.startDate).getFullYear()
+          : null; // Don't filter if we can't determine the year
 
         const matchRequest: GetBeachMatchListRequest = {
           tournamentNo: tournamentNo,
           includeResults: true,
           includeReferees: true,
-          // Filter by year to avoid matches from other years with same tournament number
-          startDate: `${tournamentYear}-01-01`,
-          endDate: `${tournamentYear}-12-31`
+          // Only add year filter if we successfully extracted a year
+          ...(tournamentYear && {
+            startDate: `${tournamentYear}-01-01`,
+            endDate: `${tournamentYear}-12-31`
+          })
         };
 
         const matchResponse = await visApi.getBeachMatchList(matchRequest);
@@ -1569,9 +1579,11 @@ const TournamentDetailScreenContent: React.FC = () => {
             tournamentNo: tournament.visNo,
             includeResults: true,
             includeReferees: true,
-            // Use same year filtering for consistency
-            startDate: `${tournamentYear}-01-01`,
-            endDate: `${tournamentYear}-12-31`
+            // Only add year filter if we successfully extracted a year
+            ...(tournamentYear && {
+              startDate: `${tournamentYear}-01-01`,
+              endDate: `${tournamentYear}-12-31`
+            })
           };
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);
 

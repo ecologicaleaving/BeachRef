@@ -264,16 +264,17 @@ export class TournamentCacheWarmingService {
 
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
-      // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug
-      const yearToUse = year || new Date().getFullYear();
-
+      // Only add year filtering if explicitly provided
+      // This prevents filtering out matches from old tournaments
       const matchRequest: GetBeachMatchListRequest = {
         tournamentNo,
         includeResults: true,
         includeReferees: true,
-        // Filter by year to avoid matches from other years with same tournament number
-        startDate: `${yearToUse}-01-01`,
-        endDate: `${yearToUse}-12-31`
+        // Only filter by year if we know the tournament year
+        ...(year && {
+          startDate: `${year}-01-01`,
+          endDate: `${year}-12-31`
+        })
       };
 
       const matchResponse = await visApi.getBeachMatchList(matchRequest);

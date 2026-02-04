@@ -210,15 +210,12 @@ export class RefereeAssignmentsService {
 
     // Fallback to direct API call using VIS API
     try {
-      // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug
-      const currentYear = new Date().getFullYear();
-
+      // NOTE: Year filtering removed here because we don't have tournament date info
+      // The screen-level fetching (TournamentDetailScreen) handles year filtering
+      // when it has access to tournament.dates
       const response = await this.visApiClient.getBeachMatchList({
         tournamentNo,
-        fields: ['No', 'Referee1Name', 'Referee2Name', 'NoReferee1', 'NoReferee2', 'Referee1FederationCode', 'Referee2FederationCode'],
-        // Filter by year to avoid matches from other years with same tournament number
-        startDate: `${currentYear}-01-01`,
-        endDate: `${currentYear}-12-31`
+        fields: ['No', 'Referee1Name', 'Referee2Name', 'NoReferee1', 'NoReferee2', 'Referee1FederationCode', 'Referee2FederationCode']
       });
 
       if (!response.success) {

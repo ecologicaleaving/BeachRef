@@ -247,9 +247,10 @@ export class TournamentCacheWarmingService {
   /**
    * Fetch tournament matches from API
    * @param tournamentNo - Tournament number
+   * @param year - Optional year to filter matches (defaults to current year)
    * @returns Array of matches or null if failed
    */
-  private static async fetchTournamentMatches(tournamentNo: string): Promise<BeachMatchCore[] | null> {
+  private static async fetchTournamentMatches(tournamentNo: string, year?: number): Promise<BeachMatchCore[] | null> {
     try {
       const config = {
         baseUrl: getVisApiBaseUrl(), // Platform-aware: proxy for web, direct for native
@@ -263,10 +264,16 @@ export class TournamentCacheWarmingService {
 
       const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
+      // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug
+      const yearToUse = year || new Date().getFullYear();
+
       const matchRequest: GetBeachMatchListRequest = {
         tournamentNo,
         includeResults: true,
-        includeReferees: true
+        includeReferees: true,
+        // Filter by year to avoid matches from other years with same tournament number
+        startDate: `${yearToUse}-01-01`,
+        endDate: `${yearToUse}-12-31`
       };
 
       const matchResponse = await visApi.getBeachMatchList(matchRequest);

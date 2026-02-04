@@ -11,7 +11,7 @@ import { UnifiedCacheManager } from './UnifiedCacheManager';
 
 export class CacheMigrationService {
   private static readonly MIGRATION_VERSION_KEY = '@CacheMigrationVersion';
-  private static readonly CURRENT_VERSION = '2'; // Increment when new migration needed
+  private static readonly CURRENT_VERSION = '3'; // v3: Force cache clear after API year filtering fix
 
   /**
    * Check if migration is needed and execute if so

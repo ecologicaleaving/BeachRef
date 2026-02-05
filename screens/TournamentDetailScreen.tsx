@@ -1392,22 +1392,16 @@ const TournamentDetailScreenContent: React.FC = () => {
             }
 
             // STEP 3: GetBeachMatchList for each tournament
-            // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug (matches from wrong years)
-            // Extract year from tournament dates, fallback to tournament object fields
-            const tournamentYear = tournament.dates?.startDate
-              ? new Date(tournament.dates.startDate).getFullYear()
-              : tournament.startDate
-              ? new Date(tournament.startDate).getFullYear()
-              : null; // Don't filter if we can't determine the year
-
+            // ✨ FIX: Use exact tournament dates for filtering (prevents wrong matches)
+            // More precise than year-based filtering, works for all tournaments
             const matchRequest: GetBeachMatchListRequest = {
               tournamentNo: beachTournament.no,
               includeResults: true,
               includeReferees: true,
-              // Only add year filter if we successfully extracted a year
-              ...(tournamentYear && {
-                startDate: `${tournamentYear}-01-01`,
-                endDate: `${tournamentYear}-12-31`
+              // Use exact tournament date range if available
+              ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+                startDate: tournament.dates.startDate,
+                endDate: tournament.dates.endDate
               })
             };
 
@@ -1552,22 +1546,15 @@ const TournamentDetailScreenContent: React.FC = () => {
         }
 
         // GetBeachMatchList for the tournament
-        // ✨ FIX: Add year filtering to prevent João Pessoa/Nayarit bug (matches from wrong years)
-        // Extract year from tournament dates, fallback to tournament object fields
-        const tournamentYear = tournament.dates?.startDate
-          ? new Date(tournament.dates.startDate).getFullYear()
-          : tournament.startDate
-          ? new Date(tournament.startDate).getFullYear()
-          : null; // Don't filter if we can't determine the year
-
+        // ✨ FIX: Use exact tournament dates to prevent João Pessoa/Nayarit bug
         const matchRequest: GetBeachMatchListRequest = {
           tournamentNo: tournamentNo,
           includeResults: true,
           includeReferees: true,
-          // Only add year filter if we successfully extracted a year
-          ...(tournamentYear && {
-            startDate: `${tournamentYear}-01-01`,
-            endDate: `${tournamentYear}-12-31`
+          // Use exact tournament date range if available
+          ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+            startDate: tournament.dates.startDate,
+            endDate: tournament.dates.endDate
           })
         };
 
@@ -1579,10 +1566,10 @@ const TournamentDetailScreenContent: React.FC = () => {
             tournamentNo: tournament.visNo,
             includeResults: true,
             includeReferees: true,
-            // Only add year filter if we successfully extracted a year
-            ...(tournamentYear && {
-              startDate: `${tournamentYear}-01-01`,
-              endDate: `${tournamentYear}-12-31`
+            // Use exact tournament date range if available
+            ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+              startDate: tournament.dates.startDate,
+              endDate: tournament.dates.endDate
             })
           };
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);

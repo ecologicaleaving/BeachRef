@@ -11,7 +11,7 @@ import { UnifiedCacheManager } from './UnifiedCacheManager';
 
 export class CacheMigrationService {
   private static readonly MIGRATION_VERSION_KEY = '@CacheMigrationVersion';
-  private static readonly CURRENT_VERSION = '4'; // v4: Force cache clear after fixing year filter fallback bug
+  private static readonly CURRENT_VERSION = '5'; // v5: Force cache clear after correcting date filter to use exact dates
 
   /**
    * Check if migration is needed and execute if so

@@ -1207,12 +1207,13 @@ const TournamentDetailScreenContent: React.FC = () => {
       return;
     }
 
-    try {
-      // ✨ FIX: Extract year from tournament dates (João Pessoa bug fix)
-      const tournamentYear = tournament.dates?.startDate
-        ? new Date(tournament.dates.startDate).getFullYear()
-        : new Date().getFullYear();
+    // Extract year from tournament dates for cache keying
+    // Uses tournament start date year, falls back to current year
+    const tournamentYear = tournament.dates?.startDate
+      ? new Date(tournament.dates.startDate).getFullYear()
+      : new Date().getFullYear();
 
+    try {
       // STEP 1: Check cache first for matches (with year parameter)
       const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo, tournamentYear);
 
@@ -1392,20 +1393,24 @@ const TournamentDetailScreenContent: React.FC = () => {
             }
 
             // STEP 3: GetBeachMatchList for each tournament
-            // ✨ FIX: Use exact tournament dates for filtering (prevents wrong matches)
-            // More precise than year-based filtering, works for all tournaments
+            // Use exact tournament dates if available, otherwise year range as fallback
             const matchRequest: GetBeachMatchListRequest = {
               tournamentNo: beachTournament.no,
               includeResults: true,
               includeReferees: true,
-              // Use exact tournament date range if available
-              ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+              // Use exact tournament date range if available, else year range
+              ...(tournament.dates?.startDate && tournament.dates?.endDate ? {
                 startDate: tournament.dates.startDate,
                 endDate: tournament.dates.endDate
+              } : {
+                startDate: `${tournamentYear}-01-01`,
+                endDate: `${tournamentYear}-12-31`
               })
             };
 
+            console.log('🔍 [MainPath] Match request:', JSON.stringify(matchRequest));
             const matchResponse = await visApi.getBeachMatchList(matchRequest);
+            console.log('🔍 [MainPath] Response success:', matchResponse.success, 'hasXml:', !!matchResponse.xmlData);
 
             if (matchResponse.success && matchResponse.xmlData) {
               // Parse matches with tournament timezone context and gender data
@@ -1545,18 +1550,22 @@ const TournamentDetailScreenContent: React.FC = () => {
           console.warn('⚠️ Failed to fetch tournament timezone in fallback, will fall back to match-level timezone:', error);
         }
 
-        // GetBeachMatchList for the tournament
-        // ✨ FIX: Use exact tournament dates to prevent João Pessoa/Nayarit bug
+        // GetBeachMatchList for the tournament (fallback path)
         const matchRequest: GetBeachMatchListRequest = {
           tournamentNo: tournamentNo,
           includeResults: true,
           includeReferees: true,
-          // Use exact tournament date range if available
-          ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+          // Use exact tournament date range if available, else year range
+          ...(tournament.dates?.startDate && tournament.dates?.endDate ? {
             startDate: tournament.dates.startDate,
             endDate: tournament.dates.endDate
+          } : {
+            startDate: `${tournamentYear}-01-01`,
+            endDate: `${tournamentYear}-12-31`
           })
         };
+
+        console.log('🔍 [FallbackPath] Match request:', JSON.stringify(matchRequest));
 
         const matchResponse = await visApi.getBeachMatchList(matchRequest);
 
@@ -1566,10 +1575,13 @@ const TournamentDetailScreenContent: React.FC = () => {
             tournamentNo: tournament.visNo,
             includeResults: true,
             includeReferees: true,
-            // Use exact tournament date range if available
-            ...(tournament.dates?.startDate && tournament.dates?.endDate && {
+            // Use exact tournament date range if available, else year range
+            ...(tournament.dates?.startDate && tournament.dates?.endDate ? {
               startDate: tournament.dates.startDate,
               endDate: tournament.dates.endDate
+            } : {
+              startDate: `${tournamentYear}-01-01`,
+              endDate: `${tournamentYear}-12-31`
             })
           };
           const fallbackResponse = await visApi.getBeachMatchList(fallbackRequest);

@@ -203,6 +203,8 @@ class VisApiClient {
     final doc = XmlDocument.parse(xml);
     // VIS API returns <EventReferee> elements (not <Referee>)
     final referees = doc.findAllElements('EventReferee').toList();
+    // Deduplicate by NoReferee (old tournaments may return duplicates)
+    final seen = <String>{};
     return referees
         .map((el) => EventReferee(
               no: _attr(el, 'NoReferee'),
@@ -213,6 +215,7 @@ class VisApiClient {
               type: _attr(el, 'Type').isEmpty ? '1' : _attr(el, 'Type'),
             ))
         .where((r) => r.firstName.isNotEmpty || r.lastName.isNotEmpty)
+        .where((r) => r.no.isEmpty || seen.add(r.no))
         .toList();
   }
 

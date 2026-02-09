@@ -30,12 +30,14 @@
       "edgeToEdgeEnabled": true,
       "package": "com.beachref.app",
       "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
         "CAMERA",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
       ],
       "blockedPermissions": [
         "RECORD_AUDIO",
@@ -58,6 +60,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#1B365D"
+        }
+      ],
       [
         "expo-splash-screen",
         {

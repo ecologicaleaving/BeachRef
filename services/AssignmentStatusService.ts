@@ -5,6 +5,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Vibration } from 'react-native';
+import NotificationService from './notifications/NotificationService';
+import NotificationPreferencesService from './notifications/NotificationPreferencesService';
+import { NotificationType } from '../types/notifications';
 
 // Simple EventEmitter implementation for React Native compatibility
 class EventEmitter {
@@ -340,11 +343,11 @@ class AssignmentStatusManager extends EventEmitter {
   /**
    * Handle status change notifications and feedback
    */
-  private handleStatusChangeNotification(
+  private async handleStatusChangeNotification(
     updatedState: AssignmentStatusState,
     previousStatus: AssignmentStatus | undefined,
     source: 'user' | 'system' | 'sync'
-  ): void {
+  ): Promise<void> {
     if (!this.notificationConfig.enabled) return;
 
     const { status, urgency, courtNumber, teams } = updatedState;
@@ -352,17 +355,81 @@ class AssignmentStatusManager extends EventEmitter {
     // Status change notifications
     if (this.notificationConfig.statusChanges && source === 'system' && previousStatus !== status) {
       const message = this.getStatusChangeMessage(status, courtNumber, teams);
-      Alert.alert('Assignment Status Update', message);
+
+      // Use NotificationService instead of Alert.alert
+      try {
+        const notificationService = NotificationService.getInstance();
+        const preferencesService = NotificationPreferencesService.getInstance();
+
+        // Check if referee has notifications enabled
+        const preferences = await preferencesService.getPreferences(this.refereeId);
+
+        if (preferences.enabled && preferences.statusChanges) {
+          // Check quiet hours
+          const isQuietHours = await preferencesService.isInQuietHours(this.refereeId);
+
+          if (!isQuietHours) {
+            await notificationService.sendNotification(
+              {
+                type: NotificationType.STATUS_CHANGE,
+                title: 'Assignment Status Update',
+                body: message,
+                data: {
+                  assignmentId: updatedState.id,
+                  courtNumber,
+                  deepLink: 'beachref://referee-dashboard'
+                },
+                priority: urgency === 'critical' || urgency === 'warning' ? 'high' : 'default',
+                sound: preferences.sound ? 'default' : undefined,
+                vibrate: preferences.vibration
+              },
+              true // Enable fallback to Alert.alert
+            );
+          }
+        }
+      } catch (error) {
+        console.error('[AssignmentStatusService] Failed to send notification:', error);
+        // Fallback to Alert.alert on error
+        Alert.alert('Assignment Status Update', message);
+      }
     }
 
     // Urgency alerts
     if (this.notificationConfig.urgencyAlerts && (urgency === 'critical' || urgency === 'warning')) {
       const urgencyMessage = this.getUrgencyMessage(urgency, courtNumber, status);
-      Alert.alert(
-        urgency === 'critical' ? '🚨 Critical Alert' : '⚠️ Warning',
-        urgencyMessage,
-        [{ text: 'OK', style: urgency === 'critical' ? 'destructive' : 'default' }]
-      );
+
+      try {
+        const notificationService = NotificationService.getInstance();
+        const preferencesService = NotificationPreferencesService.getInstance();
+        const preferences = await preferencesService.getPreferences(this.refereeId);
+
+        if (preferences.enabled) {
+          await notificationService.sendNotification(
+            {
+              type: NotificationType.STATUS_CHANGE,
+              title: urgency === 'critical' ? '🚨 Critical Alert' : '⚠️ Warning',
+              body: urgencyMessage,
+              data: {
+                assignmentId: updatedState.id,
+                urgency,
+                courtNumber,
+                deepLink: 'beachref://referee-dashboard'
+              },
+              priority: 'high',
+              sound: preferences.sound ? 'default' : undefined,
+              vibrate: preferences.vibration
+            },
+            true
+          );
+        }
+      } catch (error) {
+        console.error('[AssignmentStatusService] Failed to send urgency alert:', error);
+        Alert.alert(
+          urgency === 'critical' ? '🚨 Critical Alert' : '⚠️ Warning',
+          urgencyMessage,
+          [{ text: 'OK', style: urgency === 'critical' ? 'destructive' : 'default' }]
+        );
+      }
 
       // Vibration feedback for urgency alerts
       if (this.notificationConfig.vibration) {
@@ -376,11 +443,37 @@ class AssignmentStatusManager extends EventEmitter {
 
     // Emergency status special handling
     if (status === 'emergency') {
-      Alert.alert(
-        '🚨 EMERGENCY ASSIGNMENT',
-        `Urgent assignment change for Court ${courtNumber}. Please check your assignments immediately.`,
-        [{ text: 'View Assignments', style: 'destructive' }]
-      );
+      try {
+        const notificationService = NotificationService.getInstance();
+        const preferencesService = NotificationPreferencesService.getInstance();
+        const preferences = await preferencesService.getPreferences(this.refereeId);
+
+        if (preferences.enabled) {
+          await notificationService.sendNotification(
+            {
+              type: NotificationType.EMERGENCY,
+              title: '🚨 EMERGENCY ASSIGNMENT',
+              body: `Urgent assignment change for Court ${courtNumber}. Please check your assignments immediately.`,
+              data: {
+                assignmentId: updatedState.id,
+                courtNumber,
+                deepLink: 'beachref://referee-dashboard'
+              },
+              priority: 'high',
+              sound: preferences.sound ? 'default' : undefined,
+              vibrate: preferences.vibration
+            },
+            true
+          );
+        }
+      } catch (error) {
+        console.error('[AssignmentStatusService] Failed to send emergency notification:', error);
+        Alert.alert(
+          '🚨 EMERGENCY ASSIGNMENT',
+          `Urgent assignment change for Court ${courtNumber}. Please check your assignments immediately.`,
+          [{ text: 'View Assignments', style: 'destructive' }]
+        );
+      }
 
       if (this.notificationConfig.vibration) {
         Vibration.vibrate([200, 100, 200, 100, 200, 100, 200]);

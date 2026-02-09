@@ -56,6 +56,9 @@ final tournamentsProvider = FutureProvider<List<Tournament>>((ref) async {
 final tournamentNosProvider =
     FutureProvider.family<List<BeachTournamentEntry>, String>(
         (ref, eventNo) async {
+  // Keep resolved tournament numbers in memory — they never change.
+  ref.keepAlive();
+
   final api = ref.watch(visApiClientProvider);
   final cache = CacheService.instance;
 

@@ -5,6 +5,7 @@ import { VisApiClient } from './api/VisApiClient';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { TournamentRefereeData, getOfficialDisplayName, isActiveOfficial, OfficialStatus, OfficialType } from '../types/referee-v2';
+import NotificationTriggerService from './notifications/NotificationTriggerService';
 
 export class RefereeAssignmentsService {
   private static readonly REFEREE_PROFILE_KEY = '@referee_profile';
@@ -157,39 +158,49 @@ export class RefereeAssignmentsService {
         throw new Error('No referee profile found. Please set up referee profile first.');
       }
 
+      // Get cached data for new assignment detection
+      const cachedData = !forceRefresh ? await this.getCachedAssignments(tournamentNo) : null;
+
       // Try cache first if not forcing refresh
-      if (!forceRefresh) {
-        const cachedData = await this.getCachedAssignments(tournamentNo);
-        if (cachedData) {
-          return await this.enhanceAssignmentsWithRefereeData(cachedData, tournamentNo);
-        }
+      if (cachedData && !forceRefresh) {
+        return await this.enhanceAssignmentsWithRefereeData(cachedData, tournamentNo);
       }
 
       // Fetch match data from API/Cache
       const matches = await this.fetchMatchData(tournamentNo);
-      
+
       // Filter for referee assignments
       const refereeAssignments = this.filterMatchesByReferee(matches, referee);
-      
+
       // Categorize assignments
       const categorizedAssignments = this.categorizeAssignments(refereeAssignments);
-      
+
+      // Detect new assignments and trigger notifications
+      if (cachedData) {
+        await this.detectAndNotifyNewAssignments(
+          referee,
+          cachedData,
+          categorizedAssignments,
+          tournamentNo
+        );
+      }
+
       // Enhance with cached referee profiles
       const enhancedAssignments = await this.enhanceAssignmentsWithRefereeData(categorizedAssignments, tournamentNo);
-      
+
       // Cache the results
       await this.cacheAssignments(tournamentNo, enhancedAssignments);
-      
+
       return enhancedAssignments;
     } catch (error) {
       // console.error('Failed to get referee assignments:', error);
-      
+
       // Try to return cached data as fallback
       const cachedData = await this.getCachedAssignments(tournamentNo);
       if (cachedData) {
         return await this.enhanceAssignmentsWithRefereeData(cachedData, tournamentNo);
       }
-      
+
       throw error;
     }
   }
@@ -628,6 +639,96 @@ export class RefereeAssignmentsService {
     } catch (error) {
       // console.error('Failed to extract referee from match data:', error);
       return null;
+    }
+  }
+
+  /**
+   * Detect new assignments and trigger notifications
+   *
+   * @param referee - Current referee profile
+   * @param cachedAssignments - Previously cached assignments
+   * @param newAssignments - New assignments from API
+   * @param tournamentNo - Tournament number
+   */
+  private static async detectAndNotifyNewAssignments(
+    referee: RefereeProfile,
+    cachedAssignments: RefereeAssignmentStatus,
+    newAssignments: RefereeAssignmentStatus,
+    tournamentNo: string
+  ): Promise<void> {
+    try {
+      // Combine all previous assignments
+      const previousAssignments = [
+        ...cachedAssignments.current,
+        ...cachedAssignments.upcoming,
+        ...cachedAssignments.completed
+      ];
+
+      // Combine all new assignments
+      const allNewAssignments = [
+        ...newAssignments.current,
+        ...newAssignments.upcoming,
+        ...newAssignments.completed
+      ];
+
+      // Detect truly new assignments (not in cache)
+      const newlyDetected = this.detectNewAssignments(previousAssignments, allNewAssignments);
+
+      if (newlyDetected.length === 0) {
+        return;
+      }
+
+      // Get tournament name for better notification message
+      let tournamentName = `Tournament ${tournamentNo}`;
+      try {
+        // Try to get tournament name from match data
+        if (newlyDetected.length > 0 && newlyDetected[0].tournamentCode) {
+          tournamentName = newlyDetected[0].tournamentCode;
+        }
+      } catch {
+        // Use fallback name
+      }
+
+      // Trigger notification for each new assignment
+      for (const assignment of newlyDetected) {
+        await NotificationTriggerService.getInstance().triggerNewAssignment({
+          refereeId: referee.id?.toString() || referee.visRefereeNo,
+          assignment: {
+            tournamentCode: assignment.tournamentCode || tournamentNo,
+            tournamentName,
+            matchNo: assignment.matchNo
+          }
+        });
+      }
+
+      console.log(`[RefereeAssignmentsService] Detected ${newlyDetected.length} new assignments`);
+    } catch (error) {
+      console.error('[RefereeAssignmentsService] Failed to detect new assignments:', error);
+    }
+  }
+
+  /**
+   * Detect new assignments by comparing match numbers
+   *
+   * @param oldAssignments - Previous assignments
+   * @param newAssignments - New assignments
+   * @returns Array of newly added assignments
+   */
+  private static detectNewAssignments(
+    oldAssignments: RefereeAssignment[],
+    newAssignments: RefereeAssignment[]
+  ): RefereeAssignment[] {
+    try {
+      // Create set of old match numbers for fast lookup
+      const oldMatchNos = new Set(oldAssignments.map(a => a.matchNo));
+
+      // Filter new assignments that weren't in the old set
+      const newlyAdded = newAssignments.filter(a => !oldMatchNos.has(a.matchNo));
+
+      return newlyAdded;
+    } catch (error) {
+      console.error('[RefereeAssignmentsService] Failed to detect new assignments:', error);
+      return [];
     }
   }
 }

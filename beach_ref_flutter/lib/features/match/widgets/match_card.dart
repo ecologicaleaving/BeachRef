@@ -126,10 +126,10 @@ class MatchCard extends StatelessWidget {
     );
   }
 
+  /// Webapp style: black band for W, subtle gray for M
   Color get _genderStripColor {
-    if (match.gender == 'W') return AppColors.genderFemale;
-    if (match.gender == 'M') return AppColors.genderMale;
-    return AppColors.genderMale; // default
+    if (match.gender == 'W') return AppColors.primary;
+    return AppColors.borderLight;
   }
 }
 

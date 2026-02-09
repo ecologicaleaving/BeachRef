@@ -18,7 +18,15 @@ final appRouter = GoRouter(
       name: 'tournament-detail',
       builder: (context, state) {
         final visNo = state.pathParameters['visNo']!;
-        return TournamentDetailScreen(visNo: visNo);
+        final qp = state.uri.queryParameters;
+        return TournamentDetailScreen(
+          visNo: visNo,
+          tournamentName: qp['name'],
+          tournamentCity: qp['city'],
+          countryCode: qp['country'],
+          dateRange: qp['dates'],
+          genderText: qp['gender'],
+        );
       },
     ),
     GoRoute(

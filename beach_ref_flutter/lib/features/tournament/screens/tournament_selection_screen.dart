@@ -8,6 +8,7 @@ import '../../../shared/widgets/loading_skeleton.dart';
 import '../../../shared/widgets/navigation_header.dart';
 import '../../../shared/widgets/offline_banner.dart';
 import '../providers/tournament_providers.dart';
+import '../models/tournament.dart';
 import '../widgets/tournament_card.dart';
 
 /// Tournament browsing and selection screen
@@ -163,13 +164,34 @@ class _TournamentSelectionScreenState
     );
   }
 
-  void _selectTournament(String visNo) {
+  void _selectTournament(Tournament tournament) {
+    final visNo = tournament.no;
     ref.read(selectedTournamentProvider.notifier).state = visNo;
     try {
       Hive.box('app_settings').put('defaultTournament', visNo);
     } catch (_) {}
 
-    context.push('/tournament/$visNo');
+    final params = <String, String>{};
+    if (tournament.name.isNotEmpty) {
+      params['name'] = tournament.name;
+    }
+    final city = tournament.displayCity;
+    if (city.isNotEmpty) params['city'] = city;
+    if (tournament.countryCode.isNotEmpty) {
+      params['country'] = tournament.countryCode;
+    }
+    final dates = tournament.dateRange;
+    if (dates.isNotEmpty) params['dates'] = dates;
+    final gender = tournament.genderText;
+    if (gender.isNotEmpty) params['gender'] = gender;
+
+    final query = params.entries
+        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+    final path = query.isEmpty
+        ? '/tournament/$visNo'
+        : '/tournament/$visNo?$query';
+    context.push(path);
   }
 }
 
@@ -180,7 +202,7 @@ class _SeasonPanel extends StatefulWidget {
   final Map<String, List> monthsMap;
   final bool initiallyExpanded;
   final String currentMonthKey;
-  final void Function(String visNo) onTournamentTap;
+  final void Function(Tournament tournament) onTournamentTap;
 
   const _SeasonPanel({
     required this.year,
@@ -306,7 +328,7 @@ class _MonthPanel extends StatelessWidget {
   final List tournaments;
   final bool isExpanded;
   final VoidCallback onToggle;
-  final void Function(String visNo) onTournamentTap;
+  final void Function(Tournament tournament) onTournamentTap;
 
   const _MonthPanel({
     required this.monthKey,
@@ -383,7 +405,7 @@ class _MonthPanel extends StatelessWidget {
         if (isExpanded)
           ...tournaments.map((tournament) => TournamentCard(
                 tournament: tournament,
-                onTap: () => onTournamentTap(tournament.no),
+                onTap: () => onTournamentTap(tournament as Tournament),
               )),
       ],
     );

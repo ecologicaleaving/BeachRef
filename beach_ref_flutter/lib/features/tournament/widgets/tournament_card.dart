@@ -20,23 +20,33 @@ class TournamentCard extends StatelessWidget {
   Color get _accentColor {
     final label = _statusLabel;
     if (label == 'LIVE') return AppColors.statusLive;
-    if (label == 'COMPLETED') return AppColors.statusCompleted;
+    if (label == 'COMPLETED' || label == 'CANCELLED') return AppColors.statusCompleted;
     return AppColors.statusScheduled;
   }
 
+  /// VIS Event Status codes (different from Match Status!):
+  /// 1 = Draft, 2 = Published, 3 = Completed, 4 = Archived, 5 = Cancelled
+  /// "LIVE" is determined by date range, not status code.
   String get _statusLabel {
     final status = tournament.status;
-    // VIS API uses numeric codes: 4 = completed/finished
     final numeric = int.tryParse(status);
-    if (numeric != null) {
-      if (numeric >= 3 && numeric <= 8) return 'LIVE';
-      if (numeric >= 9 || numeric == 4) return 'COMPLETED';
-      return 'SCHEDULED';
-    }
-    final lower = status.toLowerCase();
-    if (lower.contains('running') || lower.contains('live')) return 'LIVE';
-    if (lower.contains('complet') || lower.contains('finish')) return 'COMPLETED';
-    return 'SCHEDULED';
+
+    // Check cancelled first
+    if (numeric == 5) return 'CANCELLED';
+
+    // Check completed/archived
+    if (numeric == 3 || numeric == 4) return 'COMPLETED';
+
+    // For status 1-2 (or unknown), check dates to determine live vs scheduled vs completed
+    final now = DateTime.now();
+    try {
+      final start = DateTime.parse(tournament.startDate);
+      final end = DateTime.parse(tournament.endDate).add(const Duration(days: 1));
+      if (now.isAfter(start) && now.isBefore(end)) return 'LIVE';
+      if (now.isAfter(end)) return 'COMPLETED';
+    } catch (_) {}
+
+    return 'UPCOMING';
   }
 
   @override
@@ -214,6 +224,9 @@ class _StatusBadge extends StatelessWidget {
     if (label == 'COMPLETED') {
       bgColor = AppColors.completedBg;
       textColor = AppColors.completedText;
+    } else if (label == 'CANCELLED') {
+      bgColor = const Color(0xFFFEE2E2);
+      textColor = const Color(0xFF991B1B);
     } else {
       bgColor = AppColors.scheduledBg;
       textColor = AppColors.scheduledText;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/vis_api_client.dart';
 import '../../../core/cache/cache_service.dart';
@@ -49,6 +50,11 @@ Duration _smartMatchListTtl(List<BeachMatch> matches) {
 /// - Scheduled tournament: cache 1 hour
 final matchListProvider =
     FutureProvider.family<List<BeachMatch>, String>((ref, eventNo) async {
+  // Keep resolved data in memory across navigations — avoids
+  // re-deserializing 100+ matches from Hive JSON on every visit.
+  ref.keepAlive();
+
+  final sw = Stopwatch()..start();
   final api = ref.watch(visApiClientProvider);
   final sync = DataSyncService.instance;
   final cache = CacheService.instance;
@@ -56,6 +62,9 @@ final matchListProvider =
   // Step 1: Resolve Event No → Tournament Numbers (cached 7 days)
   final tournamentEntries =
       await ref.watch(tournamentNosProvider(eventNo).future);
+  if (kDebugMode) {
+    debugPrint('[matchListProvider] tournamentNos resolved in ${sw.elapsedMilliseconds}ms');
+  }
 
   if (tournamentEntries.isEmpty) {
     return [];
@@ -68,6 +77,7 @@ final matchListProvider =
     final cacheKey = 'matchlist:${entry.tournamentNo}';
     final defaultTtl = const Duration(hours: 1);
 
+    final entryStart = sw.elapsedMilliseconds;
     final result = await sync.getMatchesWithLazyLoading(
       cacheKey: cacheKey,
       tournamentNo: entry.tournamentNo,
@@ -81,6 +91,9 @@ final matchListProvider =
         return fetched;
       },
     );
+    if (kDebugMode) {
+      debugPrint('[matchListProvider] matches ${entry.tournamentNo} loaded in ${sw.elapsedMilliseconds - entryStart}ms (${result.data.length} matches)');
+    }
 
     // Tag matches with gender info
     for (final m in result.data) {
@@ -90,6 +103,9 @@ final matchListProvider =
     }
   }
 
+  if (kDebugMode) {
+    debugPrint('[matchListProvider] TOTAL: ${sw.elapsedMilliseconds}ms, ${allMatches.length} matches');
+  }
   return allMatches;
 });
 
@@ -165,6 +181,9 @@ final groupedMatchesProvider = Provider.family<
 /// Cached 6 hours - referee assignments rarely change
 final eventRefereeListProvider =
     FutureProvider.family<List<EventReferee>, String>((ref, eventNo) async {
+  // Keep referee list in memory — avoids re-deserialization on tab switch.
+  ref.keepAlive();
+
   final api = ref.watch(visApiClientProvider);
   final cache = CacheService.instance;
 

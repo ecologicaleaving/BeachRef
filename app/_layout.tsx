@@ -5,6 +5,7 @@ import { Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { preloadBrandAssets } from "../assets/brand";
 import { QueryDevTools } from "../components/DevTools/QueryDevTools";
 import { useAnalytics } from "../hooks/useAnalytics";
@@ -14,6 +15,7 @@ import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { asyncStoragePersister, handlePersistenceError, migrateAsyncStorageData } from "../lib/queryPersistence";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { CacheMigrationService } from "../services/cache/CacheMigrationService";
+import NotificationService from "../services/notifications/NotificationService";
 import { injectCSSVariables } from "../theme/css-variables";
 import { colors } from "../theme/tokens";
 
@@ -114,6 +116,11 @@ export default function RootLayout() {
         TournamentCacheWarmingService.startBackgroundWarming();
         console.log('Cache warming started');
 
+        // Initialize notification service
+        const notificationService = NotificationService.getInstance();
+        await notificationService.initialize();
+        console.log('Notification service initialized');
+
         // Performance monitoring and data persistence handled by queryClient
 
       } catch (error) {
@@ -124,6 +131,24 @@ export default function RootLayout() {
     };
 
     initializeApp();
+
+    // Setup notification handlers
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+
+    // Setup notification response listener (user tap)
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      NotificationService.getInstance().handleNotificationResponse(response);
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   return (

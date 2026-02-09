@@ -5,6 +5,8 @@ import { AppState } from 'react-native';
 import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
 import { RealtimeFallbackService } from './RealtimeFallbackService';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
+import NotificationTriggerService from './notifications/NotificationTriggerService';
+import RefereeAssignmentsService from './RefereeAssignmentsService';
 
 // Subscription configuration
 interface SubscriptionConfig {
@@ -509,16 +511,78 @@ export class RealtimeSubscriptionService {
   private static async handleMatchUpdate(payload: any): Promise<void> {
     try {
       const updatedMatch = payload.new;
-      
+      const oldMatch = payload.old;
+
       // Clear relevant cache entries to force fresh data on next request
       await this.invalidateMatchCache(updatedMatch.tournament_no);
-      
+
+      // Trigger notification if match just finished
+      if (
+        updatedMatch.status === 'Finished' &&
+        oldMatch?.status !== 'Finished'
+      ) {
+        await this.notifyMatchFinished(updatedMatch);
+      }
+
       // Check if match is no longer live - if so, we can remove the subscription
       if (!this.isLiveMatchStatus(updatedMatch.status)) {
         this.checkTournamentSubscriptionNeeded(updatedMatch.tournament_no);
       }
     } catch (error) {
       // console.error('Error handling match update:', error);
+    }
+  }
+
+  /**
+   * Send notification when match finishes
+   */
+  private static async notifyMatchFinished(match: any): Promise<void> {
+    try {
+      // Get current referee to check if they are assigned to this match
+      const referee = await RefereeAssignmentsService.getCurrentReferee();
+
+      if (!referee) {
+        return;
+      }
+
+      // Get referee assignments for this tournament
+      const assignments = await RefereeAssignmentsService.getRefereeAssignments(
+        match.tournament_no.toString()
+      );
+
+      // Check if referee is assigned to this match
+      const allAssignments = [
+        ...assignments.current,
+        ...assignments.upcoming,
+        ...assignments.completed
+      ];
+
+      const isAssigned = allAssignments.some(
+        a => a.matchNo === match.match_no?.toString()
+      );
+
+      if (!isAssigned) {
+        return;
+      }
+
+      // Build teams string
+      let teams = '';
+      if (match.team1_name && match.team2_name) {
+        teams = `${match.team1_name} vs ${match.team2_name}`;
+      }
+
+      // Trigger notification
+      await NotificationTriggerService.getInstance().triggerMatchResult({
+        refereeId: referee.id?.toString() || referee.visRefereeNo,
+        matchId: match.id,
+        tournamentNo: match.tournament_no.toString(),
+        status: match.status,
+        teams
+      });
+
+      console.log('[RealtimeSubscriptionService] Triggered match result notification for match:', match.match_no);
+    } catch (error) {
+      console.error('[RealtimeSubscriptionService] Failed to notify match finished:', error);
     }
   }
 

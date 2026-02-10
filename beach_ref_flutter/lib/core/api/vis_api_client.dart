@@ -272,46 +272,126 @@ class VisApiClient {
   BeachLiveResponse _parseBeachLive(String xml) {
     final doc = XmlDocument.parse(xml);
 
-    // Check for NoChanges
+    // Check for <NoChanges /> element (self-closing or with content)
     final noChanges = doc.findAllElements('NoChanges');
     if (noChanges.isNotEmpty) {
-      final text = noChanges.first.innerText.trim().toLowerCase();
-      if (text == 'true' || text == '1') {
-        return BeachLiveResponse.noChanges();
+      return BeachLiveResponse.noChanges();
+    }
+
+    // Root is <BeachLive PollDelay="20" Version="...">
+    final root = doc.rootElement;
+    final pollDelay = double.tryParse(root.getAttribute('PollDelay') ?? '');
+    final version = _intAttr(root, 'Version') ?? 0;
+
+    // <Tournament> element
+    final tournamentEl = root.findElements('Tournament').firstOrNull;
+    final tournamentCode = tournamentEl != null ? _attr(tournamentEl, 'Code') : '';
+    final tournamentName = tournamentEl != null ? _attr(tournamentEl, 'Name') : '';
+
+    // <Round> element
+    final roundEl = root.findElements('Round').firstOrNull;
+    final roundCode = roundEl != null ? _attr(roundEl, 'Code') : '';
+    final roundName = roundEl != null ? _attr(roundEl, 'Name') : '';
+
+    // <Match> element
+    final matchEl = root.findElements('Match').firstOrNull;
+    final matchNo = matchEl != null ? _intAttr(matchEl, 'No') : null;
+    final noTeamA = matchEl != null ? _intAttr(matchEl, 'NoTeamA') : null;
+    final noTeamB = matchEl != null ? _intAttr(matchEl, 'NoTeamB') : null;
+    final rawStatusCode = matchEl != null ? _intAttr(matchEl, 'Status') : null;
+    final matchPointsA = matchEl != null ? (_intAttr(matchEl, 'MatchPointsA') ?? 0) : 0;
+    final matchPointsB = matchEl != null ? (_intAttr(matchEl, 'MatchPointsB') ?? 0) : 0;
+    final resultType = matchEl != null ? _intAttr(matchEl, 'ResultType') : null;
+
+    // <Team> elements — resolve names/federations via team numbers
+    final teamEls = root.findElements('Team').toList();
+    String teamAName = '';
+    String teamBName = '';
+    String teamAFed = '';
+    String teamBFed = '';
+    for (final t in teamEls) {
+      final tNo = _intAttr(t, 'No');
+      if (tNo == noTeamA) {
+        teamAName = _attr(t, 'Name');
+        teamAFed = _attr(t, 'FederationCode');
+      } else if (tNo == noTeamB) {
+        teamBName = _attr(t, 'Name');
+        teamBFed = _attr(t, 'FederationCode');
       }
     }
 
-    final root = doc.rootElement;
-    final matchEl = root.findElements('BeachMatch').firstOrNull ?? root;
-
-    // Parse sets
+    // <Set> elements — structured per-set data
+    final setEls = root.findElements('Set').toList();
     final sets = <BeachLiveSet>[];
-    for (var i = 1; i <= 3; i++) {
-      final ptA = _intAttr(matchEl, 'PointsTeamASet$i');
-      final ptB = _intAttr(matchEl, 'PointsTeamBSet$i');
-      if (ptA != null || ptB != null) {
+    int? lastServingTeam;
+
+    if (setEls.isNotEmpty) {
+      for (final s in setEls) {
+        final setNo = _intAttr(s, 'No') ?? (sets.length + 1);
+        final servingTeam = _intAttr(s, 'NoServingTeam');
+        if (servingTeam != null) lastServingTeam = servingTeam;
+
         sets.add(BeachLiveSet(
-          setNumber: i,
-          pointsTeamA: ptA ?? 0,
-          pointsTeamB: ptB ?? 0,
-          duration: _attr(matchEl, 'DurationSet$i'),
+          setNumber: setNo,
+          pointsTeamA: _intAttr(s, 'PointsTeamA') ?? 0,
+          pointsTeamB: _intAttr(s, 'PointsTeamB') ?? 0,
+          durationSeconds: _intAttr(s, 'Duration'),
+          beginTimeOffsetMs: _intAttr(s, 'BeginTimeOffset'),
+          nbTimeoutTeamA: _intAttr(s, 'NbTimeoutTeamA') ?? 0,
+          nbTimeoutTeamB: _intAttr(s, 'NbTimeoutTeamB') ?? 0,
+          nbChallengeRequestedTeamA: _intAttr(s, 'NbChallengeRequestedTeamA') ?? 0,
+          nbChallengeRequestedTeamB: _intAttr(s, 'NbChallengeRequestedTeamB') ?? 0,
+          nbChallengeAcceptedTeamA: _intAttr(s, 'NbChallengeAcceptedTeamA') ?? 0,
+          nbChallengeAcceptedTeamB: _intAttr(s, 'NbChallengeAcceptedTeamB') ?? 0,
+          nbChallengeRefusedTeamA: _intAttr(s, 'NbChallengeRefusedTeamA') ?? 0,
+          nbChallengeRefusedTeamB: _intAttr(s, 'NbChallengeRefusedTeamB') ?? 0,
+          nbSetPointsTeamA: _intAttr(s, 'NbSetPointsTeamA') ?? 0,
+          nbSetPointsTeamB: _intAttr(s, 'NbSetPointsTeamB') ?? 0,
+          noServingTeam: servingTeam,
+          noTeamAtLeft: _intAttr(s, 'NoTeamAtLeft'),
+          noTeamAtRight: _intAttr(s, 'NoTeamAtRight'),
         ));
+      }
+    } else {
+      // Fallback: flat PointsTeamASet1/2/3 attributes (old format / BeachMatch)
+      final fallbackEl = matchEl ?? root;
+      for (var i = 1; i <= 3; i++) {
+        final ptA = _intAttr(fallbackEl, 'PointsTeamASet$i');
+        final ptB = _intAttr(fallbackEl, 'PointsTeamBSet$i');
+        if (ptA != null || ptB != null) {
+          sets.add(BeachLiveSet(
+            setNumber: i,
+            pointsTeamA: ptA ?? 0,
+            pointsTeamB: ptB ?? 0,
+            duration: _attr(fallbackEl, 'DurationSet$i'),
+          ));
+        }
       }
     }
 
     return BeachLiveResponse(
       hasChanges: true,
-      version: _intAttr(root, 'Version') ?? 0,
-      matchPointsA: _intAttr(matchEl, 'MatchPointsA') ?? 0,
-      matchPointsB: _intAttr(matchEl, 'MatchPointsB') ?? 0,
-      status: _attr(matchEl, 'Status'),
+      version: version,
+      matchPointsA: matchPointsA,
+      matchPointsB: matchPointsB,
+      status: rawStatusCode?.toString() ?? '',
       sets: sets,
-      teamAName: _attr(matchEl, 'TeamAName'),
-      teamBName: _attr(matchEl, 'TeamBName'),
-      teamAFederationCode: _attr(matchEl, 'TeamAFederationCode'),
-      teamBFederationCode: _attr(matchEl, 'TeamBFederationCode'),
-      court: _attr(matchEl, 'Court'),
-      roundName: _attr(matchEl, 'RoundName'),
+      teamAName: teamAName,
+      teamBName: teamBName,
+      teamAFederationCode: teamAFed,
+      teamBFederationCode: teamBFed,
+      court: '',
+      roundName: roundName,
+      pollDelay: pollDelay,
+      rawStatusCode: rawStatusCode,
+      matchNo: matchNo,
+      noTeamA: noTeamA,
+      noTeamB: noTeamB,
+      noServingTeam: lastServingTeam,
+      tournamentCode: tournamentCode,
+      tournamentName: tournamentName,
+      roundCode: roundCode,
+      resultType: resultType,
     );
   }
 

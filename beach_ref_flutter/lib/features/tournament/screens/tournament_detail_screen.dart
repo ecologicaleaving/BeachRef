@@ -471,7 +471,7 @@ class _ScheduleTab extends StatelessWidget {
                           title: section,
                           count: filteredMatches.length,
                           status: section == 'Live'
-                              ? MatchDisplayStatus.live
+                              ? MatchDisplayStatus.inSet1
                               : section == 'Scheduled'
                                   ? MatchDisplayStatus.scheduled
                                   : MatchDisplayStatus.finished,

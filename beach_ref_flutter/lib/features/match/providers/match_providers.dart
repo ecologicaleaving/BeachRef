@@ -141,19 +141,15 @@ final groupedMatchesProvider = Provider.family<
       // Check court sequencing for ReadyToStart
       final effectiveStatus = (int.tryParse(m.status) == 2 &&
               canReadyToStartGoLive(m, matches))
-          ? MatchDisplayStatus.live
+          ? MatchDisplayStatus.inSet1
           : m.displayStatus;
 
-      switch (effectiveStatus) {
-        case MatchDisplayStatus.live:
-          live.add(m);
-          break;
-        case MatchDisplayStatus.finished:
-          completed.add(m);
-          break;
-        case MatchDisplayStatus.scheduled:
-          scheduled.add(m);
-          break;
+      if (effectiveStatus.isLive) {
+        live.add(m);
+      } else if (effectiveStatus.isFinished) {
+        completed.add(m);
+      } else {
+        scheduled.add(m);
       }
     }
 

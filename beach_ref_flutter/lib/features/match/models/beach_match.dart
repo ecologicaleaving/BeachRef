@@ -148,10 +148,10 @@ class BeachMatch {
   }
 
   /// Is this match live/running?
-  bool get isLive => displayStatus == MatchDisplayStatus.live;
+  bool get isLive => displayStatus.isLive;
 
   /// Is this match finished?
-  bool get isFinished => displayStatus == MatchDisplayStatus.finished;
+  bool get isFinished => displayStatus.isFinished;
 
   Map<String, dynamic> toJson() => {
     'no': no,
@@ -233,24 +233,134 @@ class SetScore {
   const SetScore(this.setNumber, this.teamA, this.teamB, this.duration);
 }
 
-/// Display status enum
-enum MatchDisplayStatus { live, scheduled, finished }
+/// Display status enum — granular VIS match statuses for beach volleyball.
+enum MatchDisplayStatus {
+  scheduled,       // VIS 1
+  readyToStart,    // VIS 2
+  inSet1,          // VIS 3
+  set1Finished,    // VIS 4
+  inSet2,          // VIS 5
+  set2Finished,    // VIS 6
+  inSet3,          // VIS 7
+  set3Finished,    // VIS 8
+  finished,        // VIS 12
+  officialResult,  // VIS 13
+  corrected,       // VIS 14
+  closed,          // VIS 15
+}
+
+/// Convenience getters for grouping granular statuses.
+extension MatchDisplayStatusX on MatchDisplayStatus {
+  /// True for any in-play or between-set status (inSet1..set3Finished).
+  bool get isLive {
+    switch (this) {
+      case MatchDisplayStatus.inSet1:
+      case MatchDisplayStatus.set1Finished:
+      case MatchDisplayStatus.inSet2:
+      case MatchDisplayStatus.set2Finished:
+      case MatchDisplayStatus.inSet3:
+      case MatchDisplayStatus.set3Finished:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// True for any finished/post-match status.
+  bool get isFinished {
+    switch (this) {
+      case MatchDisplayStatus.finished:
+      case MatchDisplayStatus.officialResult:
+      case MatchDisplayStatus.corrected:
+      case MatchDisplayStatus.closed:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// True for pre-match statuses.
+  bool get isScheduled {
+    switch (this) {
+      case MatchDisplayStatus.scheduled:
+      case MatchDisplayStatus.readyToStart:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// Human-readable label for UI display.
+  String get displayLabel {
+    switch (this) {
+      case MatchDisplayStatus.scheduled:
+        return 'SCHEDULED';
+      case MatchDisplayStatus.readyToStart:
+        return 'READY';
+      case MatchDisplayStatus.inSet1:
+        return 'IN SET 1';
+      case MatchDisplayStatus.set1Finished:
+        return 'SET 1 DONE';
+      case MatchDisplayStatus.inSet2:
+        return 'IN SET 2';
+      case MatchDisplayStatus.set2Finished:
+        return 'SET 2 DONE';
+      case MatchDisplayStatus.inSet3:
+        return 'IN SET 3';
+      case MatchDisplayStatus.set3Finished:
+        return 'SET 3 DONE';
+      case MatchDisplayStatus.finished:
+        return 'FINISHED';
+      case MatchDisplayStatus.officialResult:
+        return 'OFFICIAL';
+      case MatchDisplayStatus.corrected:
+        return 'CORRECTED';
+      case MatchDisplayStatus.closed:
+        return 'CLOSED';
+    }
+  }
+
+  /// Recommended polling interval for this status.
+  Duration get pollingInterval {
+    if (isLive) return const Duration(seconds: 5);
+    if (this == MatchDisplayStatus.readyToStart) return const Duration(seconds: 15);
+    if (isScheduled) return const Duration(seconds: 60);
+    return Duration.zero; // finished — no polling
+  }
+}
 
 /// Maps VIS API status to display status.
-/// VIS codes: 1=Scheduled, 2=ReadyToStart, 3-8=Running/LIVE, 9+=Finished
+/// VIS codes: 1=Scheduled, 2=ReadyToStart, 3=InSet1, 4=Set1Finished,
+/// 5=InSet2, 6=Set2Finished, 7=InSet3, 8=Set3Finished,
+/// 12=Finished, 13=OfficialResult, 14=Corrected, 15=Closed
 MatchDisplayStatus mapVisMatchStatus(String? visStatus) {
   if (visStatus == null || visStatus.isEmpty) return MatchDisplayStatus.scheduled;
 
   final numeric = int.tryParse(visStatus);
   if (numeric != null) {
-    if (numeric >= 3 && numeric <= 8) return MatchDisplayStatus.live;
-    if (numeric >= 9) return MatchDisplayStatus.finished;
-    return MatchDisplayStatus.scheduled;
+    switch (numeric) {
+      case 1:  return MatchDisplayStatus.scheduled;
+      case 2:  return MatchDisplayStatus.readyToStart;
+      case 3:  return MatchDisplayStatus.inSet1;
+      case 4:  return MatchDisplayStatus.set1Finished;
+      case 5:  return MatchDisplayStatus.inSet2;
+      case 6:  return MatchDisplayStatus.set2Finished;
+      case 7:  return MatchDisplayStatus.inSet3;
+      case 8:  return MatchDisplayStatus.set3Finished;
+      case 12: return MatchDisplayStatus.finished;
+      case 13: return MatchDisplayStatus.officialResult;
+      case 14: return MatchDisplayStatus.corrected;
+      case 15: return MatchDisplayStatus.closed;
+      default:
+        // 9-11 are indoor-specific; treat as finished for beach
+        if (numeric >= 9) return MatchDisplayStatus.finished;
+        return MatchDisplayStatus.scheduled;
+    }
   }
 
   final s = visStatus.toLowerCase().trim();
   if (s == 'running' || s == 'live' || s == 'in_progress') {
-    return MatchDisplayStatus.live;
+    return MatchDisplayStatus.inSet1;
   }
   if (s == 'finished' || s == 'completed' || s == 'final') {
     return MatchDisplayStatus.finished;

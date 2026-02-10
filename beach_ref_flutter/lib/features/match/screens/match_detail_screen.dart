@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/flag_image.dart';
 import '../../../shared/widgets/loading_skeleton.dart';
 import '../../../shared/widgets/status_badge.dart';
+import '../models/beach_live.dart';
 import '../models/beach_match.dart';
 import '../providers/live_score_provider.dart';
 import '../providers/match_providers.dart';
@@ -19,6 +20,10 @@ class MatchDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final matchAsync = ref.watch(matchDetailProvider(matchNo));
+    final parsedMatchNo = int.tryParse(matchNo) ?? 0;
+
+    // Always fetch a one-shot GetBeachLive snapshot (records to Supabase)
+    final snapshotAsync = ref.watch(matchSnapshotProvider(parsedMatchNo));
 
     goBack() {
       if (context.canPop()) {
@@ -71,6 +76,9 @@ class MatchDetailScreen extends ConsumerWidget {
           );
         }
 
+        // Resolve snapshot data (null while loading or on error)
+        final snapshot = snapshotAsync.valueOrNull;
+
         return Scaffold(
           appBar: makeAppBar(
             match.roundName.isNotEmpty ? match.roundName : 'Match',
@@ -81,25 +89,38 @@ class MatchDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Live score polling (only for running matches)
-                if (match.isLive) _LiveSection(matchNo: int.tryParse(matchNo) ?? 0),
+                // Live matches: polling section (takes over from snapshot)
+                if (match.isLive || match.displayStatus == MatchDisplayStatus.readyToStart)
+                  _LiveSection(matchNo: parsedMatchNo),
 
-                // Static match info (for non-live or as fallback)
-                if (!match.isLive) _StaticScoreSection(match: match),
+                // Finished/scheduled matches: show enriched data from snapshot
+                if (!match.isLive && match.displayStatus != MatchDisplayStatus.readyToStart) ...[
+                  if (snapshot != null)
+                    // Rich display with timeouts, challenges, serving, etc.
+                    LiveScoreDisplay(liveData: snapshot)
+                  else
+                    _StaticScoreSection(match: match),
+                ],
 
                 const SizedBox(height: AppSpacing.md),
 
-                // Set-by-set scores
-                if (match.setScores.isNotEmpty) _SetScoresCard(match: match),
+                // Enriched set details from snapshot (for finished matches)
+                if (!match.isLive && snapshot != null && snapshot.sets.isNotEmpty)
+                  _EnrichedSetDetails(snapshot: snapshot),
 
-                const SizedBox(height: AppSpacing.md),
+                // Fallback: basic set scores from static data
+                if (!match.isLive && snapshot == null && match.setScores.isNotEmpty)
+                  _SetScoresCard(match: match),
+
+                if (match.setScores.isNotEmpty || (snapshot != null && snapshot.sets.isNotEmpty))
+                  const SizedBox(height: AppSpacing.md),
 
                 // Match info card
                 _MatchInfoCard(match: match),
 
                 const SizedBox(height: AppSpacing.md),
 
-                // Referees card
+                // Referees card (always shown)
                 if (match.referee1Name.isNotEmpty ||
                     match.referee2Name.isNotEmpty)
                   _RefereesCard(match: match),
@@ -210,6 +231,146 @@ class _StaticScoreSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Enriched set details from GetBeachLive snapshot — shows per-set
+/// timeouts, challenges, durations, and serving info.
+class _EnrichedSetDetails extends StatelessWidget {
+  final BeachLiveResponse snapshot;
+  const _EnrichedSetDetails({required this.snapshot});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLg),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Set Details',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          for (final set in snapshot.sets) ...[
+            _SetDetailRow(set: set, snapshot: snapshot),
+            if (set.setNumber < snapshot.sets.length)
+              const Divider(height: 16),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Single set detail row with score, duration, timeouts, challenges.
+class _SetDetailRow extends StatelessWidget {
+  final BeachLiveSet set;
+  final BeachLiveResponse snapshot;
+  const _SetDetailRow({required this.set, required this.snapshot});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasTimeouts = set.nbTimeoutTeamA > 0 || set.nbTimeoutTeamB > 0;
+    final hasChallenges =
+        set.nbChallengeRequestedTeamA > 0 || set.nbChallengeRequestedTeamB > 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Set header: "Set 1   21-10   16:37"
+        Row(
+          children: [
+            Text(
+              'Set ${set.setNumber}',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              set.display,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: set.pointsTeamA > set.pointsTeamB
+                    ? AppColors.success
+                    : set.pointsTeamB > set.pointsTeamA
+                        ? AppColors.error
+                        : AppColors.textPrimary,
+              ),
+            ),
+            const Spacer(),
+            if (set.durationDisplay.isNotEmpty)
+              Text(
+                set.durationDisplay,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+          ],
+        ),
+        // Stats row
+        if (hasTimeouts || hasChallenges)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Wrap(
+              spacing: 12,
+              children: [
+                if (hasTimeouts)
+                  _StatChip(
+                    icon: Icons.timer_outlined,
+                    label: 'TO ${set.nbTimeoutTeamA}-${set.nbTimeoutTeamB}',
+                  ),
+                if (hasChallenges)
+                  _StatChip(
+                    icon: Icons.gavel_outlined,
+                    label: 'CH ${set.nbChallengeAcceptedTeamA}/${set.nbChallengeRequestedTeamA}'
+                        ' - ${set.nbChallengeAcceptedTeamB}/${set.nbChallengeRequestedTeamB}',
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Small stat chip (icon + label) for set details.
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _StatChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: AppColors.textTertiary),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

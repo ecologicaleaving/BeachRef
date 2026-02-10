@@ -19,6 +19,8 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = _statusConfig(status);
 
+    final showDot = status.isLive;
+
     if (prominent) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -30,7 +32,7 @@ class StatusBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (status == MatchDisplayStatus.live) ...[
+            if (showDot) ...[
               _PulsingDot(color: config.dotColor ?? AppColors.liveDot, size: 10),
               const SizedBox(width: 6),
             ],
@@ -56,7 +58,7 @@ class StatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (status == MatchDisplayStatus.live) ...[
+          if (showDot) ...[
             _PulsingDot(color: config.dotColor ?? AppColors.liveDot, size: 8),
             const SizedBox(width: 4),
           ],
@@ -74,27 +76,27 @@ class StatusBadge extends StatelessWidget {
   }
 
   _BadgeConfig _statusConfig(MatchDisplayStatus status) {
-    switch (status) {
-      case MatchDisplayStatus.live:
-        return const _BadgeConfig(
-          label: 'LIVE',
-          textColor: AppColors.liveText,
-          bgColor: AppColors.liveBg,
-          dotColor: AppColors.liveDot,
-        );
-      case MatchDisplayStatus.scheduled:
-        return const _BadgeConfig(
-          label: 'SCHEDULED',
-          textColor: AppColors.scheduledText,
-          bgColor: AppColors.scheduledBg,
-        );
-      case MatchDisplayStatus.finished:
-        return const _BadgeConfig(
-          label: 'FINISHED',
-          textColor: AppColors.completedText,
-          bgColor: AppColors.completedBg,
-        );
+    if (status.isLive) {
+      return _BadgeConfig(
+        label: status.displayLabel,
+        textColor: AppColors.liveText,
+        bgColor: AppColors.liveBg,
+        dotColor: AppColors.liveDot,
+      );
     }
+    if (status.isFinished) {
+      return _BadgeConfig(
+        label: status.displayLabel,
+        textColor: AppColors.completedText,
+        bgColor: AppColors.completedBg,
+      );
+    }
+    // scheduled / readyToStart
+    return _BadgeConfig(
+      label: status.displayLabel,
+      textColor: AppColors.scheduledText,
+      bgColor: AppColors.scheduledBg,
+    );
   }
 }
 

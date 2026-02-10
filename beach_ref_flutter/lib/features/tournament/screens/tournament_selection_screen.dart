@@ -5,7 +5,6 @@ import 'package:hive/hive.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/loading_skeleton.dart';
-import '../../../shared/widgets/navigation_header.dart';
 import '../../../shared/widgets/offline_banner.dart';
 import '../providers/tournament_providers.dart';
 import '../models/tournament.dart';
@@ -26,26 +25,89 @@ class _TournamentSelectionScreenState
   final _searchController = TextEditingController();
   bool _showFilters = false;
 
+  // Accordion state: only one season and one month open at a time
+  String? _openSeasonYear;
+  String? _openMonthKey;
+
+  // GlobalKeys for scroll-to on open
+  final Map<String, GlobalKey> _seasonKeys = {};
+  final Map<String, GlobalKey> _monthKeys = {};
+
+  // Track whether we've done the initial scroll to current month
+  bool _didInitialScroll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _openSeasonYear = DateTime.now().year.toString();
+    // Don't set _openMonthKey here — we'll set it from actual data on first load
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  /// Current month key (e.g. "February 2026")
-  String get _currentMonthKey {
-    final now = DateTime.now();
-    const months = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-    return '${months[now.month]} ${now.year}';
+  GlobalKey _seasonKeyFor(String year) {
+    return _seasonKeys.putIfAbsent(year, () => GlobalKey());
+  }
+
+  GlobalKey _monthKeyFor(String monthKey) {
+    return _monthKeys.putIfAbsent(monthKey, () => GlobalKey());
+  }
+
+  void _toggleSeason(String year, {String? firstMonthKey}) {
+    final opening = _openSeasonYear != year;
+    setState(() {
+      if (opening) {
+        _openSeasonYear = year;
+        _openMonthKey = null;
+      } else {
+        _openSeasonYear = null;
+        _openMonthKey = null;
+      }
+    });
+    // Scroll immediately after frame builds — season header pins at top,
+    // first month appears right below
+    if (opening && firstMonthKey != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToKey(_monthKeyFor(firstMonthKey), fast: true);
+      });
+    }
+  }
+
+  void _toggleMonth(String monthKey) {
+    final opening = _openMonthKey != monthKey;
+    setState(() {
+      _openMonthKey = opening ? monthKey : null;
+    });
+    if (opening) {
+      // Small delay for month content to start expanding
+      Future.delayed(const Duration(milliseconds: 80), () {
+        if (!mounted) return;
+        _scrollToKey(_monthKeyFor(monthKey), fast: false);
+      });
+    }
+  }
+
+  void _scrollToKey(GlobalKey key, {bool fast = false}) {
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.0,
+        duration: Duration(milliseconds: fast ? 200 : 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final groupedAsync = ref.watch(groupedTournamentsProvider);
     final gender = ref.watch(genderFilterProvider);
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
 
     return Scaffold(
       appBar: AppBar(
@@ -91,7 +153,7 @@ class _TournamentSelectionScreenState
             duration: const Duration(milliseconds: 200),
           ),
 
-          // Tournament list with season/month accordion
+          // Tournament list with pinned season headers
           Expanded(
             child: groupedAsync.when(
               loading: () => const LoadingSkeleton(),
@@ -111,8 +173,6 @@ class _TournamentSelectionScreenState
                   );
                 }
 
-                final currentMonth = _currentMonthKey;
-
                 // Group months by year (season)
                 final byYear = <String, Map<String, List>>{};
                 for (final entry in grouped.entries) {
@@ -126,7 +186,77 @@ class _TournamentSelectionScreenState
                 final sortedYears = byYear.keys.toList()
                   ..sort((a, b) => b.compareTo(a));
 
-                final currentYear = DateTime.now().year.toString();
+                // On first data load, align to the first month of the open season
+                if (!_didInitialScroll && _openSeasonYear != null) {
+                  _didInitialScroll = true;
+                  final seasonMonths = byYear[_openSeasonYear];
+                  if (seasonMonths != null && seasonMonths.isNotEmpty) {
+                    final firstMonth = seasonMonths.keys.first;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+                      _scrollToKey(_monthKeyFor(firstMonth), fast: true);
+                    });
+                  }
+                }
+
+                // Build slivers: pinned season header + month content
+                final slivers = <Widget>[];
+                for (final year in sortedYears) {
+                  final monthsMap = byYear[year]!;
+                  final totalCount = monthsMap.values.fold<int>(
+                    0, (sum, list) => sum + list.length,
+                  );
+                  final isExpanded = _openSeasonYear == year;
+
+                  // Pinned season header (stays at top while scrolling months)
+                  slivers.add(
+                    SliverPersistentHeader(
+                      key: _seasonKeyFor(year),
+                      pinned: isExpanded,
+                      delegate: _SeasonHeaderDelegate(
+                        year: year,
+                        totalCount: totalCount,
+                        isExpanded: isExpanded,
+                        onToggle: () => _toggleSeason(year, firstMonthKey: monthsMap.keys.first),
+                        backgroundColor: scaffoldBg,
+                      ),
+                    ),
+                  );
+
+                  // Month panels (animated expand/collapse)
+                  slivers.add(
+                    SliverToBoxAdapter(
+                      child: AnimatedSize(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        clipBehavior: Clip.hardEdge,
+                        child: isExpanded
+                            ? Column(
+                                children: monthsMap.entries.map((entry) {
+                                  final monthKey = entry.key;
+                                  final tournaments = entry.value;
+                                  return _MonthPanel(
+                                    key: _monthKeyFor(monthKey),
+                                    monthKey: monthKey,
+                                    tournaments: tournaments,
+                                    isExpanded: _openMonthKey == monthKey,
+                                    onToggle: () => _toggleMonth(monthKey),
+                                    onTournamentTap: _selectTournament,
+                                  );
+                                }).toList(),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
+                  );
+                }
+
+                // Bottom padding
+                slivers.add(
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 64),
+                  ),
+                );
 
                 return RefreshIndicator(
                   color: AppColors.accent,
@@ -134,26 +264,9 @@ class _TournamentSelectionScreenState
                     ref.invalidate(tournamentsProvider);
                     await ref.read(tournamentsProvider.future);
                   },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-                    itemCount: sortedYears.length,
-                    itemBuilder: (context, index) {
-                      final year = sortedYears[index];
-                      final monthsMap = byYear[year]!;
-                      final totalCount = monthsMap.values.fold<int>(
-                        0, (sum, list) => sum + list.length,
-                      );
-                      final isCurrentYear = year == currentYear;
-
-                      return _SeasonPanel(
-                        year: year,
-                        totalCount: totalCount,
-                        monthsMap: monthsMap,
-                        initiallyExpanded: isCurrentYear,
-                        currentMonthKey: currentMonth,
-                        onTournamentTap: _selectTournament,
-                      );
-                    },
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: slivers,
                   ),
                 );
               },
@@ -195,130 +308,98 @@ class _TournamentSelectionScreenState
   }
 }
 
-/// Dark season header panel (e.g. "Season 2026")
-class _SeasonPanel extends StatefulWidget {
+/// Pinned season header delegate for SliverPersistentHeader
+class _SeasonHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String year;
   final int totalCount;
-  final Map<String, List> monthsMap;
-  final bool initiallyExpanded;
-  final String currentMonthKey;
-  final void Function(Tournament tournament) onTournamentTap;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final Color backgroundColor;
 
-  const _SeasonPanel({
+  static const double headerHeight = 64.0;
+
+  _SeasonHeaderDelegate({
     required this.year,
     required this.totalCount,
-    required this.monthsMap,
-    required this.initiallyExpanded,
-    required this.currentMonthKey,
-    required this.onTournamentTap,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.backgroundColor,
   });
 
   @override
-  State<_SeasonPanel> createState() => _SeasonPanelState();
-}
-
-class _SeasonPanelState extends State<_SeasonPanel> {
-  late bool _expanded;
-  String? _openMonthKey;
+  double get maxExtent => headerHeight;
 
   @override
-  void initState() {
-    super.initState();
-    _expanded = widget.initiallyExpanded;
-    // Default open month = current month if season is expanded
-    if (_expanded) {
-      _openMonthKey = widget.monthsMap.keys
-          .where((k) => k == widget.currentMonthKey)
-          .firstOrNull;
-      // If current month not in this season, open first month
-      _openMonthKey ??= widget.monthsMap.keys.firstOrNull;
-    }
-  }
-
-  void _toggleMonth(String monthKey) {
-    setState(() {
-      if (_openMonthKey == monthKey) {
-        _openMonthKey = null; // close if already open
-      } else {
-        _openMonthKey = monthKey; // open this, close others
-      }
-    });
-  }
+  double get minExtent => headerHeight;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Season header (dark titanium, gold border)
-        GestureDetector(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Container(
-            margin: const EdgeInsets.only(top: 20, left: 16, right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: _expanded ? AppColors.primaryHover : AppColors.primary,
-              borderRadius: BorderRadius.circular(8),
-              border: const Border(
-                bottom: BorderSide(color: AppColors.accent, width: 2),
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return GestureDetector(
+      onTap: onToggle,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: backgroundColor,
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: isExpanded ? AppColors.primaryHover : AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+            border: const Border(
+              bottom: BorderSide(color: AppColors.accent, width: 2),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isExpanded ? 0.15 : 0.1),
+                offset: const Offset(0, 2),
+                blurRadius: 4,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: _expanded ? 0.15 : 0.1),
-                  offset: const Offset(0, 2),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Season ${widget.year}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Season $year',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
-                Text(
-                  '${widget.totalCount} tournaments',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
+              ),
+              Text(
+                '$totalCount tournaments',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _expanded ? '\u25BC' : '\u25B6',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
+              ),
+              const SizedBox(width: 8),
+              AnimatedRotation(
+                turns: isExpanded ? 0.25 : 0.0,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-
-        // Month panels inside season (exclusive accordion)
-        if (_expanded)
-          ...widget.monthsMap.entries.map((entry) {
-            final monthKey = entry.key;
-            final tournaments = entry.value;
-
-            return _MonthPanel(
-              monthKey: monthKey,
-              tournaments: tournaments,
-              isExpanded: _openMonthKey == monthKey,
-              onToggle: () => _toggleMonth(monthKey),
-              onTournamentTap: widget.onTournamentTap,
-            );
-          }),
-      ],
+      ),
     );
+  }
+
+  @override
+  bool shouldRebuild(covariant _SeasonHeaderDelegate oldDelegate) {
+    return year != oldDelegate.year ||
+        totalCount != oldDelegate.totalCount ||
+        isExpanded != oldDelegate.isExpanded;
   }
 }
 
@@ -331,6 +412,7 @@ class _MonthPanel extends StatelessWidget {
   final void Function(Tournament tournament) onTournamentTap;
 
   const _MonthPanel({
+    super.key,
     required this.monthKey,
     required this.tournaments,
     required this.isExpanded,
@@ -388,11 +470,13 @@ class _MonthPanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  isExpanded ? '\u25BC' : '\u25B6',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                AnimatedRotation(
+                  turns: isExpanded ? 0.25 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  child: const Icon(
+                    Icons.chevron_right,
+                    size: 18,
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -401,12 +485,23 @@ class _MonthPanel extends StatelessWidget {
           ),
         ),
 
-        // Tournament cards
-        if (isExpanded)
-          ...tournaments.map((tournament) => TournamentCard(
-                tournament: tournament,
-                onTap: () => onTournamentTap(tournament as Tournament),
-              )),
+        // Tournament cards (animated expand/collapse)
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          clipBehavior: Clip.hardEdge,
+          child: isExpanded
+              ? Column(
+                  children: tournaments
+                      .map((tournament) => TournamentCard(
+                            tournament: tournament,
+                            onTap: () =>
+                                onTournamentTap(tournament as Tournament),
+                          ))
+                      .toList(),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

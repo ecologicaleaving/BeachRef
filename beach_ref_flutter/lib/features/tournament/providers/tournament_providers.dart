@@ -124,7 +124,12 @@ final groupedTournamentsProvider =
       grouped.putIfAbsent(key, () => []).add(t);
     }
 
-    // Sort keys: most recent month first
+    // Sort tournaments within each month: most recent first
+    for (final list in grouped.values) {
+      list.sort((a, b) => b.startDate.compareTo(a.startDate));
+    }
+
+    // Sort keys: most recent month first (December at top, January at bottom)
     final sortedKeys = grouped.keys.toList()
       ..sort((a, b) {
         final dtA = _parseMonthYear(a);

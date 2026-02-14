@@ -1,101 +1,80 @@
 # BeachRef Flutter - Setup Supabase
 
-## 🎯 Configurazione Completa
+## 🎯 Configurazione
 
-BeachRef Flutter è configurato per usare **Supabase self-hosted** sul VPS CiccioHouse.
+BeachRef usa **Supabase Production** sul VPS 8020solutions.org per l'app pubblica.
 
-### 📦 Ambienti Disponibili
+Il database contiene il dump del **VIS FIVB** (tornei, match, arbitri).
 
-- **Development** → Supabase Dev (porta 54321)
-- **Production** → Supabase Prod (porta 54421)
+**Non c'è ambiente Development** - BeachRef legge dati readonly dal VIS! 🏐
 
 ---
 
 ## 🚀 Setup sul PC Locale
 
-### 1. SSH Tunnel (richiesto)
-
-Apri un terminale e lascia attivo il tunnel:
-
-**Per Development:**
-```bash
-ssh -L 54321:127.0.0.1:54321 -L 54322:127.0.0.1:54322 -L 54323:127.0.0.1:54323 root@46.225.60.101
-```
-
-**Per Production:**
-```bash
-ssh -L 54421:127.0.0.1:54421 -L 54422:127.0.0.1:54422 -L 54423:127.0.0.1:54423 root@46.225.60.101
-```
-
-### 2. Installare Dipendenze
+### 1. Pull Ultimi Commit
 
 ```bash
-cd beach_ref_flutter
-flutter pub get
+cd ~/BeachRef/beach_ref_flutter
+git pull origin master
 ```
 
-### 3. Lanciare l'App
+### 2. Crea File .env.prod
 
-**Development (consigliato):**
 ```bash
-./scripts/run_dev.sh
+cat > .env.prod << 'EOF'
+SUPABASE_URL=https://api.8020solutions.org
+SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+EOF
 ```
 
-**Production:**
+### 3. Lancia l'App
+
 ```bash
 ./scripts/run_prod.sh
 ```
 
-**Manuale (se script non funziona):**
+**Oppure manuale:**
 ```bash
 flutter run \
-  --dart-define=SUPABASE_URL=http://localhost:54321 \
+  --dart-define=SUPABASE_URL=https://api.8020solutions.org \
   --dart-define=SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
 ```
 
 ---
 
-## 🔍 Verifica Connessione
+## 🔍 Database
 
-### Studio UI (Browser)
-- Dev: http://localhost:54323
-- Prod: http://localhost:54423
+### Schema:
+- Dump completo VIS FIVB
+- Tornei, match, arbitri
+- Dati readonly per l'app
 
-### Database Diretto (psql/DBeaver)
-```
-Dev:  postgresql://postgres:postgres@localhost:54322/postgres
-Prod: postgresql://postgres:postgres@localhost:54422/postgres
-```
-
----
-
-## 📝 File Configurazione
-
-```
-.env.dev   → Development (54321)
-.env.prod  → Production (54421)
-```
-
-**Non committare mai questi file!** Sono già in `.gitignore`.
-
----
-
-## ⚠️ Troubleshooting
-
-**Errore: "Connection refused"**
-→ Controlla che il tunnel SSH sia attivo
-
-**Errore: "Invalid API key"**
-→ Verifica che le credenziali in `.env.dev` siano corrette
-
-**Errore: "Network error"**
-→ Verifica che Supabase sia running sul VPS:
+### Accedi a Studio (via tunnel):
 ```bash
-ssh root@46.225.60.101 "cd ~/supabase-cli && supabase status"
+ssh -L 54423:127.0.0.1:54423 root@46.225.60.101
 ```
+Poi: http://localhost:54423
 
 ---
 
-## 🎉 Ready to Code!
+## 📊 Dati
 
-Ora puoi sviluppare in locale con hot reload mentre il backend gira sul VPS! 😎
+Database popolato con dump del sistema VIS FIVB.
+
+Gli utenti BeachRef consumano dati esistenti, non li modificano.
+
+---
+
+## ⚠️ Note Importanti
+
+- **Solo Production** - app pubblica
+- Database readonly (dump VIS)
+- Nessun tunnel SSH necessario - tutto HTTPS
+- Istanza dedicata su `api.8020solutions.org`
+
+---
+
+## 🎉 Ready!
+
+BeachRef è configurato per accesso pubblico con backend VIS! 🏐😊

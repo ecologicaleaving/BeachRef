@@ -16,7 +16,7 @@
 
 import { MMKV } from 'react-native-mmkv';
 import NetInfo from '@react-native-community/netinfo';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../supabase';
 import type {
   NotificationPreferences,
   DEFAULT_NOTIFICATION_PREFERENCES

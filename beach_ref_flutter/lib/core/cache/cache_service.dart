@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'memory_cache.dart';
 
 /// Multi-level cache: Memory -> Hive -> API
@@ -23,13 +24,13 @@ class CacheService {
   int _misses = 0;
   int _apiCalls = 0;
 
-  Future<void> init() async {
-    _hiveBox = await Hive.openBox('cache_entries_v4');
+  Future<void> init({HiveAesCipher? cipher}) async {
+    _hiveBox = await Hive.openBox('cache_entries_v4', encryptionCipher: cipher);
   }
 
   /// Get from cache. If miss, call [fetcher] and cache the result.
   ///
-  /// [deserializer] is required for complex types (List<T>, custom objects)
+  /// [deserializer] is required for complex types (`List<T>`, custom objects)
   /// to reconstruct from JSON. Without it, only primitive types survive
   /// Hive serialization.
   Future<T> getOrFetch<T>({

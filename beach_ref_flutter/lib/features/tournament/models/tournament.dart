@@ -60,8 +60,8 @@ class Tournament {
 
   /// Get all resolved tournament numbers
   List<String> get allTournamentNos => [
-        if (tournamentNoMen != null) tournamentNoMen!,
-        if (tournamentNoWomen != null) tournamentNoWomen!,
+        ?tournamentNoMen,
+        ?tournamentNoWomen,
       ];
 
   /// Gender display text

@@ -1,7 +1,12 @@
 const https = require('https');
 
-const SUPABASE_URL = 'https://peofucnjgcrgswzqslpb.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlb2Z1Y25qZ2NyZ3N3enFzbHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3Mzk5ODksImV4cCI6MjA3MTMxNTk4OX0.Hv4-h78giF2PZH1MCl9FMs26u2l4NbB4C3de2Uaezs0';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !ANON_KEY) {
+  console.error('Missing env vars: SUPABASE_URL and SUPABASE_ANON_KEY must be set.');
+  process.exit(1);
+}
 
 function query(path) {
   return new Promise((resolve, reject) => {

@@ -17,15 +17,24 @@ final appRouter = GoRouter(
       path: '/tournament/:visNo',
       name: 'tournament-detail',
       builder: (context, state) {
-        final visNo = state.pathParameters['visNo']!;
+        final visNo = state.pathParameters['visNo'] ?? '';
+        // Validate visNo is numeric to prevent deep link injection
+        if (visNo.isEmpty || !RegExp(r'^\d+$').hasMatch(visNo)) {
+          return const TournamentSelectionScreen();
+        }
         final qp = state.uri.queryParameters;
+        // Sanitize gender to known values only
+        final rawGender = qp['gender'];
+        final gender = (rawGender == 'M' || rawGender == 'W' || rawGender == 'MX')
+            ? rawGender
+            : null;
         return TournamentDetailScreen(
           visNo: visNo,
           tournamentName: qp['name'],
           tournamentCity: qp['city'],
           countryCode: qp['country'],
           dateRange: qp['dates'],
-          genderText: qp['gender'],
+          genderText: gender,
         );
       },
     ),
@@ -33,7 +42,11 @@ final appRouter = GoRouter(
       path: '/match/:matchNo',
       name: 'match-detail',
       builder: (context, state) {
-        final matchNo = state.pathParameters['matchNo']!;
+        final matchNo = state.pathParameters['matchNo'] ?? '';
+        // Validate matchNo is numeric
+        if (matchNo.isEmpty || !RegExp(r'^\d+$').hasMatch(matchNo)) {
+          return const TournamentSelectionScreen();
+        }
         return MatchDetailScreen(matchNo: matchNo);
       },
     ),

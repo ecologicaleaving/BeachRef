@@ -123,8 +123,8 @@ final matchDetailProvider =
     ttl: ttl,
     fetcher: () => api.getBeachMatch(matchNo: matchNo),
     deserializer: (json) {
-      if (json == null) return null;
-      return BeachMatch.fromJson(Map<String, dynamic>.from(json as Map));
+      if (json == null || json is! Map) return null;
+      return BeachMatch.fromJson(Map<String, dynamic>.from(json));
     },
   );
 });
@@ -186,12 +186,22 @@ final eventRefereeListProvider =
   final cacheKey = 'event_referees:$eventNo';
   const ttl = Duration(hours: 6);
 
-  return cache.getOrFetch<List<EventReferee>>(
+  final raw = await cache.getOrFetch<List<EventReferee>>(
     key: cacheKey,
     ttl: ttl,
     fetcher: () => api.getEventRefereeList(eventNo),
-    deserializer: (json) => (json as List)
-        .map((e) => EventReferee.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList(),
+    deserializer: (json) {
+      if (json is! List) return <EventReferee>[];
+      return json
+          .whereType<Map>()
+          .map((e) => EventReferee.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    },
   );
+
+  // Deduplicate cached data (old cache entries may contain duplicates)
+  final seen = <String>{};
+  final sorted = List<EventReferee>.of(raw)
+    ..sort((a, b) => b.firstName.length.compareTo(a.firstName.length));
+  return sorted.where((r) => seen.add(r.deduplicationKey)).toList();
 });

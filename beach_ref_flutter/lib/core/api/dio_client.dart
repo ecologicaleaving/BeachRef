@@ -8,7 +8,10 @@ class DioClient {
 
   static const _baseUrl = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
   static const _timeout = Duration(seconds: 10);
-  static const _appId = '2a9523517c52420da73d927c6d6bab23';
+  static const _appId = String.fromEnvironment(
+    'FIVB_APP_ID',
+    defaultValue: '',
+  );
 
   static Dio get instance {
     _instance ??= _create();

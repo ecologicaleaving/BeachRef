@@ -13,7 +13,7 @@ import 'dio_client.dart';
 /// - GetEventList returns Event Numbers (not Tournament Numbers)
 /// - GetBeachMatchList requires Tournament Numbers (not Event Numbers)
 /// - To resolve: call GetEvent(eventNo) → Content field contains
-///   <BeachTournament No="xxx" Gender="0/1"/> entries
+///   `<BeachTournament No="xxx" Gender="0/1"/>` entries
 /// - Each Event typically has 2 BeachTournaments (Men=Gender 0, Women=Gender 1)
 class VisApiClient {
   final Dio _dio;
@@ -203,9 +203,10 @@ class VisApiClient {
     final doc = XmlDocument.parse(xml);
     // VIS API returns <EventReferee> elements (not <Referee>)
     final referees = doc.findAllElements('EventReferee').toList();
-    // Deduplicate by NoReferee (old tournaments may return duplicates)
-    final seen = <String>{};
-    return referees
+    // Old tournaments return the same person multiple times with different
+    // formats (e.g. "FERRO M.", "FERRO, M.", "Ferro"). Parse all entries,
+    // prefer those with proper firstName, then deduplicate by coreName+federation.
+    final parsed = referees
         .map((el) => EventReferee(
               no: _attr(el, 'NoReferee'),
               firstName: _attr(el, 'FirstName'),
@@ -215,8 +216,12 @@ class VisApiClient {
               type: _attr(el, 'Type').isEmpty ? '1' : _attr(el, 'Type'),
             ))
         .where((r) => r.firstName.isNotEmpty || r.lastName.isNotEmpty)
-        .where((r) => r.no.isEmpty || seen.add(r.no))
-        .toList();
+        .toList()
+      // Sort: entries with firstName first (more info → kept by dedup)
+      ..sort((a, b) => b.firstName.length.compareTo(a.firstName.length));
+
+    final seenNames = <String>{};
+    return parsed.where((r) => seenNames.add(r.deduplicationKey)).toList();
   }
 
   // ──────────────────────────────────────────────
@@ -507,6 +512,24 @@ class EventReferee {
       return '$lastName, ${firstName[0]}.';
     }
     return '$lastName $firstName'.trim();
+  }
+
+  /// Normalized key for deduplication — handles VIS returning the same person
+  /// with different IDs, inconsistent name formats, or missing first names.
+  /// Old tournaments return names like "FERRO M.", "FERRO, M.", and "Ferro"
+  /// for the same person. We strip embedded initials and dedup by
+  /// coreName + federation.
+  String get deduplicationKey {
+    var ln = lastName.trim();
+
+    // Strip trailing embedded initial from lastName
+    // e.g. "FERRO M." → "FERRO", "CRESCENTINI D." → "CRESCENTINI"
+    ln = ln.replaceAll(RegExp(r'[,\s]+[A-Za-z]\.?\s*$'), '');
+
+    // Normalize: lowercase, collapse whitespace
+    ln = ln.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+    return '$ln|${federationCode.trim().toLowerCase()}';
   }
 
   bool get isChallengeReferee => type == '4';

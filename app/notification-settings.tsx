@@ -23,7 +23,7 @@ import { StatusBar } from 'expo-status-bar';
 import NotificationService, { PermissionStatus } from '../services/notifications/NotificationService';
 import NotificationPreferencesService from '../services/notifications/NotificationPreferencesService';
 import type { NotificationPreferences } from '../types/notifications';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../theme/ThemeContext';
 import Container from '../components/Container';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { QuietHoursConfig } from '../components/notifications/QuietHoursConfig';

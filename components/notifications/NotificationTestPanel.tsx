@@ -16,7 +16,7 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import NotificationService from '../../services/notifications/NotificationService';
 import NotificationTriggerService from '../../services/notifications/NotificationTriggerService';
 import NotificationQueueService from '../../services/notifications/NotificationQueueService';

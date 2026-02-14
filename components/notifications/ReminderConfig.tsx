@@ -13,7 +13,7 @@ import {
   Switch,
   TouchableOpacity
 } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import type { NotificationPreferences } from '../../types/notifications';
 
 interface ReminderConfigProps {

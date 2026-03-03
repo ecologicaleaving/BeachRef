@@ -173,6 +173,11 @@ export function useMatches(
       }
 
       // Priority 2: Database fallback (for cached/offline scenarios)
+      // Guard: never run an unfiltered query — it would return matches from all tournaments.
+      if (!filters?.tournamentCode && !filters?.eventId) {
+        return [];
+      }
+
       if (supabase) {
         fallbackUsed = true;
         

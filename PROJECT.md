@@ -2,7 +2,7 @@
 
 ## Project Info
 - **Name**: BeachRef
-- **Version**: v1.0.0
+- **Version**: v1.0.1
 - **Status**: production
 - **Platforms**: apk, ios
 - **Description**: Piattaforma gestione arbitraggi beach volleyball per tornei professionali
@@ -33,7 +33,7 @@
 
 ## Repository
 - **Main Branch**: main
-- **Development Branch**: feature/tournament-sync-v2
+- **Development Branch**: feature/issue-20-fix-tournament-matches-empty
 - **GitHub**: https://github.com/ecologicaleaving/BeachRef
 
 ## Tech Stack
@@ -85,9 +85,8 @@
 - **TODO**: Export reports automatici post-torneo
 - **DONE**: Sistema sync dati tornei federazione beach volleyball
 - **DONE**: App mobile cross-platform iOS/Android
-- **IN PROGRESS**: Tournament management workflow optimization
+- **DONE**: Issue #20 — Bug fix: tornei 2026 senza partite mostravano match di altri tornei/stagioni (reset stato stale, year-scoped cache keys, filter guard DB fallback, empty-array guard in cacheMatches)
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 
 ---
-*Last Updated: 2026-02-22T06:00:00Z*
-*Auto-generated from: https://app.8020solutions.org/status.html*
+*Last Updated: 2026-03-03T10:30:00Z*

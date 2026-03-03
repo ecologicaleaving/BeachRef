@@ -1785,6 +1785,12 @@ const TournamentDetailScreenContent: React.FC = () => {
 
   useEffect(() => {
     if (tournament.visNo) {
+      // Reset match state immediately to avoid showing stale data from a previously
+      // viewed tournament when the same component instance is reused (e.g. router.replace).
+      setMatches(null);
+      setMatchesLoading(true);
+      setLoadMatchesInProgress(false); // Reset guard so the new tournament can load
+
       // Track recently viewed tournament for cache warming
       TournamentCacheWarmingService.trackRecentlyViewed(tournament.visNo);
 

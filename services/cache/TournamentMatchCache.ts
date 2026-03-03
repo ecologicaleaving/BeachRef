@@ -84,6 +84,12 @@ export class TournamentMatchCache {
     status: string,
     year?: number
   ): Promise<void> {
+    // Guard: never cache an empty match list — it would be treated as "no matches"
+    // on the next read, preventing a fresh API fetch for a tournament that has data.
+    if (matches.length === 0) {
+      return;
+    }
+
     try {
       // ✨ FIX: Extract year from first match or use provided year
       let yearToUse = year;

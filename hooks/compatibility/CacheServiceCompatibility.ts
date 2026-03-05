@@ -195,10 +195,35 @@ export class CacheServiceCompatibility {
     
     try {
       if (USE_NEW_HOOKS) {
+        const normalizedTournamentNo = `${tournamentNo}`.trim();
+        const numericEventNo = /^\d+$/.test(normalizedTournamentNo)
+          ? Number(normalizedTournamentNo)
+          : undefined;
+
+        let resolvedTournamentCode: string | null = null;
+        if (numericEventNo !== undefined) {
+          try {
+            const { TournamentCodeResolver } = require('../../services/TournamentCodeResolver');
+            resolvedTournamentCode = await TournamentCodeResolver.getInstance().resolve({
+              visNo: normalizedTournamentNo
+            });
+          } catch {
+            resolvedTournamentCode = null;
+          }
+        }
+
+        const matchFilters: { tournamentCode?: string; eventNo?: number } = {};
+        if (numericEventNo !== undefined) {
+          matchFilters.eventNo = numericEventNo;
+        }
+        if (resolvedTournamentCode) {
+          matchFilters.tournamentCode = resolvedTournamentCode;
+        } else if (numericEventNo === undefined) {
+          matchFilters.tournamentCode = normalizedTournamentNo;
+        }
+
         // Use new hook-based system
-        const result = await CacheServiceCompatibility.getDualReadService().getMatches({
-          tournamentCode: tournamentNo
-        });
+        const result = await CacheServiceCompatibility.getDualReadService().getMatches(matchFilters);
         
         if (!result) {
           throw new Error('DualReadService returned undefined result for matches');
@@ -215,7 +240,7 @@ export class CacheServiceCompatibility {
           cached: result.source !== 'api',
           timestamp: result.timestamp,
           ttl: 15 * 60 * 1000, // 15 minutes for matches
-          cacheKey: `matches_${tournamentNo}`,
+          cacheKey: `matches_${resolvedTournamentCode || normalizedTournamentNo}`,
           requestId: `compat_${Date.now()}`,
           performance: {
             memoryHit: result.source === 'cache',

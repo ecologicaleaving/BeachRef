@@ -1,4 +1,5 @@
 import { DualReadService } from '../../services/DualReadService';
+import { TournamentCodeResolver } from '../../services/TournamentCodeResolver';
 import { CacheServiceCompatibility } from '../compatibility/CacheServiceCompatibility';
 import { FeatureFlagManager, featureFlags } from '../compatibility/FeatureFlags';
 import { FilterOptions } from '../../types/cache';
@@ -27,8 +28,16 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
 }));
+jest.mock('../../services/TournamentCodeResolver', () => ({
+  TournamentCodeResolver: {
+    getInstance: jest.fn(() => ({
+      resolve: jest.fn()
+    })),
+  },
+}));
 
 const mockDualReadService = DualReadService as jest.Mocked<typeof DualReadService>;
+const mockTournamentCodeResolver = TournamentCodeResolver as jest.Mocked<typeof TournamentCodeResolver>;
 
 // Test data
 const mockTournamentDTO = {
@@ -109,6 +118,9 @@ describe('Backward Compatibility Layer', () => {
       getPerformanceMetrics: jest.fn(),
     };
     mockDualReadService.getInstance.mockReturnValue(mockInstance as any);
+    (mockTournamentCodeResolver.getInstance as jest.Mock).mockReturnValue({
+      resolve: jest.fn().mockResolvedValue(null)
+    });
   });
 
   describe('CacheServiceCompatibility', () => {
@@ -155,6 +167,29 @@ describe('Backward Compatibility Layer', () => {
       expect(result.data[0].Status).toBe('RUNNING');
       expect(result.source).toBe('api');
       expect(result.cached).toBe(false);
+    });
+
+    it('should resolve numeric tournament identifiers using eventNo and resolved tournamentCode', async () => {
+      const mockInstance = mockDualReadService.getInstance();
+      const resolverInstance = {
+        resolve: jest.fn().mockResolvedValue('ROM2026M001')
+      };
+      (mockTournamentCodeResolver.getInstance as jest.Mock).mockReturnValue(resolverInstance);
+
+      mockInstance.getMatches.mockResolvedValue({
+        data: [mockMatchDTO],
+        source: 'database',
+        timestamp: Date.now(),
+        performance: { queryTime: 120, fallbackUsed: false }
+      });
+
+      await CacheServiceCompatibility.getMatches('123456');
+
+      expect(resolverInstance.resolve).toHaveBeenCalledWith({ visNo: '123456' });
+      expect(mockInstance.getMatches).toHaveBeenCalledWith({
+        eventNo: 123456,
+        tournamentCode: 'ROM2026M001'
+      });
     });
 
     it('should transform referee data to legacy format', async () => {

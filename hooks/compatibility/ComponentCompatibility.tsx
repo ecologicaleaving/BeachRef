@@ -175,10 +175,16 @@ export function useCompatibleMatches(tournamentNo: string) {
   const componentName = 'MatchList';
   
   const shouldUseNewHook = featureFlags.shouldUseNewHook(componentName, 'matches');
+  const normalizedTournamentNo = `${tournamentNo || ''}`.trim();
+  const numericTournamentNo = /^\d+$/.test(normalizedTournamentNo)
+    ? Number(normalizedTournamentNo)
+    : undefined;
   
   // New hook system
   const newHookResult = useMatches(
-    { tournamentCode: tournamentNo },
+    numericTournamentNo !== undefined
+      ? { eventId: numericTournamentNo }
+      : { tournamentCode: normalizedTournamentNo },
     { 
       readStrategy: 'db_first',
       enablePerformanceMonitoring: true,

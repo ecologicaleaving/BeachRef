@@ -57,3 +57,7 @@ architecture/
 
 # Local Netlify folder
 .netlify
+.commit-automation/cache/
+
+# BeachRef-app è una repo Flutter separata
+BeachRef-app/

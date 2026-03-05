@@ -1,19 +1,19 @@
 # Production Audit Report
 
-**Date**: 02/01/2026, 06:48:29 PM | **Status**: ✅ PASS | **Exit Code**: 0
+**Date**: 02/09/2026, 08:51:52 PM | **Status**: ✅ PASS | **Exit Code**: 0
 
 ## Summary
 
-- **Total Findings**: 2882 (🆕 0 new, ✅ 0 resolved)
+- **Total Findings**: 3057 (🆕 0 new, ✅ 0 resolved)
 - **Critical**: 0 ✅
 - **High**: 0 ✅
-- **Medium**: 2882 ⚠️
+- **Medium**: 3057 ⚠️
 - **Low**: 0 ✅
 - **Manual Review Required**: 0 findings
 
 ## Trend Analysis
 
-**Compared to**: run-2026-02-01-17-53-57
+**Compared to**: run-2026-02-09-06-47-17
 
 - **Total Findings**: ➡️ 0
 - **Critical**: ➡️ 0
@@ -24,7 +24,7 @@
 **Summary**: same number of findings | 0% resolved, 0% new
 
 ## Findings
-### 🟡 Medium (2882)
+### 🟡 Medium (3057)
 
 #### typescript-error (Rule: `typescript:2322`)
 
@@ -260,15 +260,31 @@
 
 #### typescript-error (Rule: `typescript:7030`)
 
-**Location**: `app/_layout.tsx:59`
+**Location**: `app/_layout.tsx:67`
 **Status**: 📌 Existing
 **Message**: Not all code paths return a value.
 
 ---
 
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/_layout.tsx:120`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/_layout.tsx:146`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/_layout.tsx:123`
+**Location**: `app/_layout.tsx:158`
 **Status**: 📌 Existing
 **Message**: Type 'Persister' is not assignable to type 'import("C:/Users/KreshOS/Documents/00-Progetti/BeachRef/node_modules/@tanstack/query-persist-client-core/build/modern/persist").Persister'.
   The types returned by 'restoreClient()' are incompatible between these types.
@@ -285,7 +301,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `app/_layout.tsx:133`
+**Location**: `app/_layout.tsx:168`
 **Status**: 📌 Existing
 **Message**: Type '(error: Error) => void' is not assignable to type '() => unknown'.
   Target signature provides too few arguments. Expected 1 or more, but got 0.
@@ -359,6 +375,192 @@
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; showBackButton: boolean; rightComponent: null; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
   Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:185`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:194`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:205`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:214`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:236`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:262`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:277`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:285`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `app/db-stats.tsx:296`
+**Status**: 📌 Existing
+**Message**: Property 'surface' does not exist on type 'ColorToken'.
+
+---
+
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `app/notification-settings.tsx:26`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../context/ThemeContext' or its corresponding type declarations.
+
+---
+
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `app/notification-settings.tsx:27`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../components/Container' or its corresponding type declarations.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:54`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:58`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:73`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:78`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:92`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:110`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `app/notification-settings.tsx:126`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: true; onBackPress: () => void; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `app/notification-settings.tsx:144`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; showBackButton: true; onBackPress: () => void; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
+  Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:338`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:341`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:358`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `app/notification-settings.tsx:361`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
 
 ---
 
@@ -6246,6 +6448,110 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:19`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../../context/ThemeContext' or its corresponding type declarations.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:47`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationQueueService'. Did you mean to access the static member 'NotificationQueueService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:59`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:82`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:103`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:123`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:144`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:164`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:183`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `components/notifications/NotificationTestPanel.tsx:196`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationQueueService'. Did you mean to access the static member 'NotificationQueueService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `components/notifications/QuietHoursConfig.tsx:15`
+**Status**: 📌 Existing
+**Message**: 'TouchableOpacity' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `components/notifications/QuietHoursConfig.tsx:18`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../../context/ThemeContext' or its corresponding type declarations.
+
+---
+
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `components/notifications/ReminderConfig.tsx:16`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../../context/ThemeContext' or its corresponding type declarations.
+
+---
+
 #### typescript-error (Rule: `typescript:7030`)
 
 **Location**: `components/PerformanceDashboard.tsx:18`
@@ -11455,6 +11761,24 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `config/syncConfig.ts:171`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `config/syncConfig.ts:172`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
 #### typescript-error (Rule: `typescript:2352`)
 
 **Location**: `hooks/compatibility/CacheServiceCompatibility.ts:23`
@@ -12527,6 +12851,22 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `hooks/useNotificationPermissions.ts:49`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `hooks/useNotificationPreferences.ts:69`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
 #### typescript-error (Rule: `typescript:2304`)
 
 **Location**: `hooks/useOfflineSync.ts:144`
@@ -13523,15 +13863,34 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `repositories/MatchRepository.ts:153`
+**Location**: `repositories/MatchRepository.ts:23`
+**Status**: 📌 Existing
+**Message**: 'extractYearFromMatch' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `repositories/MatchRepository.ts:157`
 **Status**: 📌 Existing
 **Message**: 'monitor' is declared but its value is never read.
 
 ---
 
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `repositories/MatchRepository.ts:227`
+**Status**: 📌 Existing
+**Message**: Argument of type '{ tournamentCode: string; year: number; status: MatchStatus | undefined; }' is not assignable to parameter of type 'MatchQueryFilters' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'status' are incompatible.
+    Type 'import("C:/Users/KreshOS/Documents/00-Progetti/BeachRef/types/match-v2").MatchStatus | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `repositories/MatchRepository.ts:211`
+**Location**: `repositories/MatchRepository.ts:256`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentNo: string; courtNo: string | undefined; status: MatchStatus | undefined; startDate: string | undefined; endDate: string | undefined; includeResults: true; includeReferees: true; }' is not assignable to type 'GetBeachMatchListRequest' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'courtNo' are incompatible.
@@ -13542,7 +13901,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `repositories/MatchRepository.ts:393`
+**Location**: `repositories/MatchRepository.ts:477`
 **Status**: 📌 Existing
 **Message**: 'monitor' is declared but its value is never read.
 
@@ -13550,7 +13909,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `repositories/MatchRepository.ts:447`
+**Location**: `repositories/MatchRepository.ts:531`
 **Status**: 📌 Existing
 **Message**: Type 'BeachMatchCore[]' is not assignable to type 'BeachMatch[]'.
   Property 'No' is missing in type 'BeachMatchCore' but required in type 'BeachMatch'.
@@ -13559,15 +13918,23 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `repositories/MatchRepository.ts:520`
+**Location**: `repositories/MatchRepository.ts:604`
 **Status**: 📌 Existing
 **Message**: 'monitor' is declared but its value is never read.
 
 ---
 
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `repositories/MatchRepository.ts:630`
+**Status**: 📌 Existing
+**Message**: '[REDACTED]' is declared but its value is never read.
+
+---
+
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `repositories/MatchRepository.ts:575`
+**Location**: `repositories/MatchRepository.ts:659`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string | null'.
   Type 'undefined' is not assignable to type 'string | null'.
@@ -13576,7 +13943,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `repositories/MatchRepository.ts:584`
+**Location**: `repositories/MatchRepository.ts:668`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string | null'.
   Type 'undefined' is not assignable to type 'string | null'.
@@ -15351,7 +15718,7 @@
 
 **Location**: `screens/TournamentDetailScreen.tsx:390`
 **Status**: 📌 Existing
-**Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
+**Message**: This comparison appears to be unintentional because the types '"officials" | "schedule"' and '"matches"' have no overlap.
 
 ---
 
@@ -15367,7 +15734,7 @@
 
 **Location**: `screens/TournamentDetailScreen.tsx:478`
 **Status**: 📌 Existing
-**Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
+**Message**: This comparison appears to be unintentional because the types '"officials" | "schedule"' and '"matches"' have no overlap.
 
 ---
 
@@ -15723,7 +16090,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1242`
+**Location**: `screens/TournamentDetailScreen.tsx:1249`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Property 'exponentialBackoff' is missing in type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' but required in type 'VisApiClientConfig'.
@@ -15732,7 +16099,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1252`
+**Location**: `screens/TournamentDetailScreen.tsx:1259`
 **Status**: 📌 Existing
 **Message**: 'formattedXml' is declared but its value is never read.
 
@@ -15740,7 +16107,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1264`
+**Location**: `screens/TournamentDetailScreen.tsx:1271`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -15749,7 +16116,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1274`
+**Location**: `screens/TournamentDetailScreen.tsx:1281`
 **Status**: 📌 Existing
 **Message**: 'formattedContent' is declared but its value is never read.
 
@@ -15757,7 +16124,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1348`
+**Location**: `screens/TournamentDetailScreen.tsx:1355`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Property 'exponentialBackoff' is missing in type '{ baseUrl: string; timeoutMs: number; maxRetries: number; retryDelayMs: number; enableLogging: boolean; headers: {}; }' but required in type 'VisApiClientConfig'.
@@ -15766,7 +16133,7 @@
 
 #### typescript-error (Rule: `typescript:7006`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1356`
+**Location**: `screens/TournamentDetailScreen.tsx:1363`
 **Status**: 📌 Existing
 **Message**: Parameter 'beachTournament' implicitly has an 'any' type.
 
@@ -15774,7 +16141,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1362`
+**Location**: `screens/TournamentDetailScreen.tsx:1369`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'GetBeachTournamentRequest'.
 
@@ -15782,15 +16149,24 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1371`
+**Location**: `screens/TournamentDetailScreen.tsx:1378`
 **Status**: 📌 Existing
 **Message**: 'formattedTournamentXml' is declared but its value is never read.
 
 ---
 
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `screens/TournamentDetailScreen.tsx:1413`
+**Status**: 📌 Existing
+**Message**: Property 'xmlData' does not exist on type 'VisApiResponse'.
+  Property 'xmlData' does not exist on type 'VisApiErrorResponse'.
+
+---
+
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1423`
+**Location**: `screens/TournamentDetailScreen.tsx:1441`
 **Status**: 📌 Existing
 **Message**: Argument of type '"M" | "W"' is not assignable to parameter of type 'GenderType | undefined'.
   Type '"M"' is not assignable to type 'GenderType | undefined'.
@@ -15799,7 +16175,7 @@
 
 #### typescript-error (Rule: `typescript:2304`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1512`
+**Location**: `screens/TournamentDetailScreen.tsx:1530`
 **Status**: 📌 Existing
 **Message**: Cannot find name 'GetBeachTournamentRequest'.
 
@@ -15807,7 +16183,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1520`
+**Location**: `screens/TournamentDetailScreen.tsx:1538`
 **Status**: 📌 Existing
 **Message**: 'formattedFallbackXml' is declared but its value is never read.
 
@@ -15815,7 +16191,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1529`
+**Location**: `screens/TournamentDetailScreen.tsx:1547`
 **Status**: 📌 Existing
 **Message**: Property 'DefaultTimeZone' does not exist on type 'TournamentLocation'.
 
@@ -15823,7 +16199,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1554`
+**Location**: `screens/TournamentDetailScreen.tsx:1590`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'TournamentLocation | undefined'.
   Type 'string' is not assignable to type 'TournamentLocation'.
@@ -15832,7 +16208,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1569`
+**Location**: `screens/TournamentDetailScreen.tsx:1605`
 **Status**: 📌 Existing
 **Message**: Argument of type 'string | undefined' is not assignable to parameter of type 'TournamentLocation | undefined'.
   Type 'string' is not assignable to type 'TournamentLocation'.
@@ -15841,15 +16217,15 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1624`
+**Location**: `screens/TournamentDetailScreen.tsx:1660`
 **Status**: 📌 Existing
-**Message**: This comparison appears to be unintentional because the types '"schedule" | "officials"' and '"matches"' have no overlap.
+**Message**: This comparison appears to be unintentional because the types '"officials" | "schedule"' and '"matches"' have no overlap.
 
 ---
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1653`
+**Location**: `screens/TournamentDetailScreen.tsx:1689`
 **Status**: 📌 Existing
 **Message**: Type 'string | undefined' is not assignable to type 'string | null'.
   Type 'undefined' is not assignable to type 'string | null'.
@@ -15858,7 +16234,7 @@
 
 #### typescript-error (Rule: `typescript:2538`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1657`
+**Location**: `screens/TournamentDetailScreen.tsx:1693`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' cannot be used as an index type.
 
@@ -15866,7 +16242,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1722`
+**Location**: `screens/TournamentDetailScreen.tsx:1758`
 **Status**: 📌 Existing
 **Message**: Argument of type '{ baseURL: string; timeout: number; }' is not assignable to parameter of type 'VisApiClientConfig'.
   Type '{ baseURL: string; timeout: number; }' is missing the following properties from type 'VisApiClientConfig': baseUrl, timeoutMs, maxRetries, retryDelayMs, and 2 more.
@@ -15875,7 +16251,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1723`
+**Location**: `screens/TournamentDetailScreen.tsx:1759`
 **Status**: 📌 Existing
 **Message**: Property 'getTournaments' does not exist on type 'VisApiClient'.
 
@@ -15883,7 +16259,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1783`
+**Location**: `screens/TournamentDetailScreen.tsx:1819`
 **Status**: 📌 Existing
 **Message**: 'handleStatusPress' is declared but its value is never read.
 
@@ -15891,7 +16267,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:1808`
+**Location**: `screens/TournamentDetailScreen.tsx:1844`
 **Status**: 📌 Existing
 **Message**: Type '{ title: string; subtitle: string; showBackButton: boolean; onBackPress: () => void; onHomePress: () => void; showStatusBar: false; }' is not assignable to type 'IntrinsicAttributes & NavigationHeaderProps'.
   Property 'showBackButton' does not exist on type 'IntrinsicAttributes & NavigationHeaderProps'.
@@ -15900,7 +16276,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2018`
+**Location**: `screens/TournamentDetailScreen.tsx:2054`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"InProgress"' have no overlap.
 
@@ -15908,7 +16284,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2018`
+**Location**: `screens/TournamentDetailScreen.tsx:2054`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Scheduled"' have no overlap.
 
@@ -15916,7 +16292,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2026`
+**Location**: `screens/TournamentDetailScreen.tsx:2062`
 **Status**: 📌 Existing
 **Message**: Type '{ key: string; matchNo: number; beachLive: BeachLive | undefined; loading: boolean; error: Error | undefined; fallbackMatch: any; onRefresh: () => void; style: { marginBottom: number; }; }' is not assignable to type 'LiveScoreCardProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'beachLive' are incompatible.
@@ -15927,7 +16303,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2049`
+**Location**: `screens/TournamentDetailScreen.tsx:2085`
 **Status**: 📌 Existing
 **Message**: Type 'BeachMatchCore[]' is not assignable to type 'ExtendedBeachMatch[]'.
   Type 'BeachMatchCore' is not assignable to type 'ExtendedBeachMatch' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
@@ -15939,7 +16315,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2076`
+**Location**: `screens/TournamentDetailScreen.tsx:2112`
 **Status**: 📌 Existing
 **Message**: Type '(matchNo: number) => BeachLive | null' is not assignable to type '(matchNumber: string | number) => any'.
   Types of parameters 'matchNo' and 'matchNumber' are incompatible.
@@ -15950,7 +16326,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2079`
+**Location**: `screens/TournamentDetailScreen.tsx:2115`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"COMPLETED" | "SCHEDULED" | "LIVE NOW"' and '"LIVE"' have no overlap.
 
@@ -15958,7 +16334,7 @@
 
 #### typescript-error (Rule: `typescript:2367`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2080`
+**Location**: `screens/TournamentDetailScreen.tsx:2116`
 **Status**: 📌 Existing
 **Message**: This comparison appears to be unintentional because the types '"COMPLETED" | "SCHEDULED" | "LIVE NOW"' and '"LIVE"' have no overlap.
 
@@ -15966,7 +16342,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2135`
+**Location**: `screens/TournamentDetailScreen.tsx:2171`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentCode: string; dateRange: { startDate: string; endDate: string; } | undefined; }' is not assignable to type 'MatchesFilters' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'dateRange' are incompatible.
@@ -15977,7 +16353,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `screens/TournamentDetailScreen.tsx:2157`
+**Location**: `screens/TournamentDetailScreen.tsx:2193`
 **Status**: 📌 Existing
 **Message**: Type '{ tournamentNo: string; tournamentName: string | undefined; tournamentData: string; matchData: string | undefined; showHeader: false; onRefresh: () => Promise<void>; }' is not assignable to type 'TournamentRefereeListProps' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'tournamentName' are incompatible.
@@ -17432,9 +17808,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2440`)
+
+**Location**: `services/AssignmentStatusService.ts:10`
+**Status**: 📌 Existing
+**Message**: Import declaration conflicts with local declaration of 'NotificationType'.
+
+---
+
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/AssignmentStatusService.ts:198`
+**Location**: `services/AssignmentStatusService.ts:201`
 **Status**: 📌 Existing
 **Message**: Type '{ id: string; assignmentId: string; previousStatus: AssignmentStatus | undefined; newStatus: AssignmentStatus; urgency: "critical" | "warning" | "normal"; timestamp: string; source: "user" | ... 1 more ... | "sync"; reason: string | undefined; }' is not assignable to type 'StatusHistoryEntry' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'reason' are incompatible.
@@ -17445,12 +17829,92 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/AssignmentStatusService.ts:211`
+**Location**: `services/AssignmentStatusService.ts:214`
 **Status**: 📌 Existing
 **Message**: Type '{ type: "status_change"; assignmentId: string; previousStatus: AssignmentStatus | undefined; newStatus: AssignmentStatus; timestamp: string; }' is not assignable to type 'StatusUpdateEvent' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'previousStatus' are incompatible.
     Type 'AssignmentStatus | undefined' is not assignable to type 'AssignmentStatus'.
       Type 'undefined' is not assignable to type 'AssignmentStatus'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:361`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:362`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/AssignmentStatusService.ts:365`
+**Status**: 📌 Existing
+**Message**: Property 'refereeId' does not exist on type 'AssignmentStatusManager'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/AssignmentStatusService.ts:369`
+**Status**: 📌 Existing
+**Message**: Property 'refereeId' does not exist on type 'AssignmentStatusManager'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:402`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:403`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/AssignmentStatusService.ts:404`
+**Status**: 📌 Existing
+**Message**: Property 'refereeId' does not exist on type 'AssignmentStatusManager'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:447`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/AssignmentStatusService.ts:448`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/AssignmentStatusService.ts:449`
+**Status**: 📌 Existing
+**Message**: Property 'refereeId' does not exist on type 'AssignmentStatusManager'.
 
 ---
 
@@ -17639,6 +18103,14 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/cache/CacheMigrationService.ts:9`
+**Status**: 📌 Existing
+**Message**: 'MmkvStorage' is declared but its value is never read.
+
+---
+
 #### typescript-error (Rule: `typescript:2862`)
 
 **Location**: `services/cache/CacheService.ts:488`
@@ -17682,9 +18154,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `services/cache/TournamentCacheWarmingService.ts:128`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
+
+---
+
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `services/cache/TournamentCacheWarmingService.ts:174`
+**Location**: `services/cache/TournamentCacheWarmingService.ts:178`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'fields' does not exist in type 'GetEventRequest'.
 
@@ -17692,7 +18172,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/cache/TournamentCacheWarmingService.ts:177`
+**Location**: `services/cache/TournamentCacheWarmingService.ts:181`
 **Status**: 📌 Existing
 **Message**: Property 'AuxiliaryPersons' does not exist on type 'VisApiResponse'.
   Property 'AuxiliaryPersons' does not exist on type 'VisApiErrorResponse'.
@@ -17701,7 +18181,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/cache/TournamentCacheWarmingService.ts:178`
+**Location**: `services/cache/TournamentCacheWarmingService.ts:182`
 **Status**: 📌 Existing
 **Message**: Property 'AuxiliaryPersons' does not exist on type 'VisApiResponse'.
   Property 'AuxiliaryPersons' does not exist on type 'VisApiErrorResponse'.
@@ -17710,9 +18190,17 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/cache/TournamentCacheWarmingService.ts:273`
+**Location**: `services/cache/TournamentCacheWarmingService.ts:285`
 **Status**: 📌 Existing
 **Message**: Argument of type 'undefined' is not assignable to parameter of type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `services/cache/TournamentMatchCache.ts:91`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
 
 ---
 
@@ -17848,6 +18336,344 @@
 **Location**: `services/ConnectionDiagnostics.ts:598`
 **Status**: 📌 Existing
 **Message**: Duplicate identifier 'isRunningDiagnostics'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:31`
+**Status**: 📌 Existing
+**Message**: Property 'team1Score' does not exist on type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:32`
+**Status**: 📌 Existing
+**Message**: Property 'team2Score' does not exist on type '{ set: number; a: number; b: number; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/database/DatabaseMapper.ts:35`
+**Status**: 📌 Existing
+**Message**: Type '{ vis_match_no: number; tournament_code: string; event_id: number; round_code: string | undefined; round_name: string; round_phase: string | undefined; utc_datetime: string; local_datetime: string; ... 11 more ...; nb_live_score_upload: number; }' is not assignable to type 'Omit<DbMatch, "id" | "updated_at" | "created_at">' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'round_code' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:44`
+**Status**: 📌 Existing
+**Message**: Property 'name' does not exist on type 'CourtInfo'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:44`
+**Status**: 📌 Existing
+**Message**: Property 'number' does not exist on type 'CourtInfo'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:45`
+**Status**: 📌 Existing
+**Message**: Property 'name' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:46`
+**Status**: 📌 Existing
+**Message**: Property 'name' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:47`
+**Status**: 📌 Existing
+**Message**: Property 'federation' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:48`
+**Status**: 📌 Existing
+**Message**: Property 'federation' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:49`
+**Status**: 📌 Existing
+**Message**: Property 'players' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `services/database/DatabaseMapper.ts:49`
+**Status**: 📌 Existing
+**Message**: Parameter 'p' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:50`
+**Status**: 📌 Existing
+**Message**: Property 'players' does not exist on type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:7006`)
+
+**Location**: `services/database/DatabaseMapper.ts:50`
+**Status**: 📌 Existing
+**Message**: Parameter 'p' implicitly has an 'any' type.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:54`
+**Status**: 📌 Existing
+**Message**: Property 'name' does not exist on type 'CourtInfo'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:54`
+**Status**: 📌 Existing
+**Message**: Property 'number' does not exist on type 'CourtInfo'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/database/DatabaseMapper.ts:75`
+**Status**: 📌 Existing
+**Message**: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/database/DatabaseMapper.ts:85`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'number' does not exist in type 'CourtInfo'.
+
+---
+
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/database/DatabaseMapper.ts:97`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'name' does not exist in type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/database/DatabaseMapper.ts:103`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'name' does not exist in type 'MatchTeam'.
+
+---
+
+#### typescript-error (Rule: `typescript:2412`)
+
+**Location**: `services/database/DatabaseMapper.ts:110`
+**Status**: 📌 Existing
+**Message**: Type '{ sets: { setNumber: number; team1Score: number; team2Score: number; }[]; resultType?: string; winnerRank?: string; duration?: number; } | undefined' is not assignable to type 'MatchResult | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/database/DatabaseMapper.ts:141`
+**Status**: 📌 Existing
+**Message**: Type '{ vis_no: string; code: string; name: string; gender: "M" | "W" | undefined; type: TournamentType; start_date: string; end_date: string; city: string | undefined; country: string | undefined; country_code: string | undefined; status: TournamentStatus; }' is not assignable to type 'Omit<DbTournament, "id" | "updated_at" | "created_at">' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'gender' are incompatible.
+    Type '"M" | "W" | undefined' is not assignable to type '"M" | "W"'.
+      Type 'undefined' is not assignable to type '"M" | "W"'.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/database/DatabaseMapper.ts:163`
+**Status**: 📌 Existing
+**Message**: Type '{ id: string; visNo: string; version: number; lastUpdated: string; code: string; name: string; title: string; gender: GenderType; tournamentType: any; dates: { startDate: string; endDate: string; }; ... 9 more ...; courts: undefined; }' is not assignable to type 'TournamentCore' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'NoEvent' are incompatible.
+    Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:211`
+**Status**: 📌 Existing
+**Message**: Property 'role' does not exist on type 'RefereeAssignment'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:211`
+**Status**: 📌 Existing
+**Message**: Property 'role' does not exist on type 'RefereeAssignment'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseMapper.ts:213`
+**Status**: 📌 Existing
+**Message**: Property 'role' does not exist on type 'RefereeAssignment'.
+
+---
+
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/database/DatabaseMapper.ts:240`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'visNo' does not exist in type 'RefereeAssignment'.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/database/DatabaseService.ts:14`
+**Status**: 📌 Existing
+**Message**: 'extractYearFromTournament' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/database/DatabaseService.ts:15`
+**Status**: 📌 Existing
+**Message**: 'extractYearFromMatch' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/database/DatabaseService.ts:19`
+**Status**: 📌 Existing
+**Message**: 'DbMatch' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/database/DatabaseService.ts:19`
+**Status**: 📌 Existing
+**Message**: 'DbTournament' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/database/DatabaseService.ts:19`
+**Status**: 📌 Existing
+**Message**: 'QueryResult' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `services/database/DatabaseService.ts:139`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "matches", never, "POST">', gave the following error.
+    Argument of type 'Omit<DbMatch, "id" | "updated_at" | "created_at">[]' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; defaultToNull?: boolean; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, ... 5 more ..., "POST">', gave the following error.
+    Argument of type 'Omit<DbMatch, "id" | "updated_at" | "created_at">[]' is not assignable to parameter of type 'never[]'.
+      Type 'Omit<DbMatch, "id" | "updated_at" | "created_at">' is not assignable to type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `services/database/DatabaseService.ts:250`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "tournaments", never, "POST">', gave the following error.
+    Argument of type 'Omit<DbTournament, "id" | "updated_at" | "created_at">[]' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; defaultToNull?: boolean; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, ... 5 more ..., "POST">', gave the following error.
+    Type 'Omit<DbTournament, "id" | "updated_at" | "created_at">' is not assignable to type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2769`)
+
+**Location**: `services/database/DatabaseService.ts:287`
+**Status**: 📌 Existing
+**Message**: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "tournaments", never, "POST">', gave the following error.
+    Argument of type 'Omit<DbTournament, "id" | "updated_at" | "created_at">[]' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { onConflict?: string; ignoreDuplicates?: boolean; count?: "exact" | "planned" | "estimated"; defaultToNull?: boolean; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, ... 5 more ..., "POST">', gave the following error.
+    Argument of type 'Omit<DbTournament, "id" | "updated_at" | "created_at">[]' is not assignable to parameter of type 'never[]'.
+      Type 'Omit<DbTournament, "id" | "updated_at" | "created_at">' is not assignable to type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseService.ts:409`
+**Status**: 📌 Existing
+**Message**: Property 'updated_at' does not exist on type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseService.ts:409`
+**Status**: 📌 Existing
+**Message**: Property 'updated_at' does not exist on type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseService.ts:410`
+**Status**: 📌 Existing
+**Message**: Property 'updated_at' does not exist on type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/database/DatabaseService.ts:411`
+**Status**: 📌 Existing
+**Message**: Property 'updated_at' does not exist on type 'never'.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/database/SupabaseClient.ts:33`
+**Status**: 📌 Existing
+**Message**: Type '{ url: string; anonKey: string; serviceRoleKey: string | undefined; }' is not assignable to type 'SupabaseConfig' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'serviceRoleKey' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
 
 ---
 
@@ -19729,7 +20555,7 @@
 
 **Location**: `services/MigrationRollbackService.ts:731`
 **Status**: 📌 Existing
-**Message**: Type '{ name: string; description: string; status: "passed" | "failed"; message: string; critical: true; metadata: { error: string; } | undefined; }' is not assignable to type 'ValidationCheck' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+**Message**: Type '{ name: string; description: string; status: "failed" | "passed"; message: string; critical: true; metadata: { error: string; } | undefined; }' is not assignable to type 'ValidationCheck' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'metadata' are incompatible.
     Type '{ error: string; } | undefined' is not assignable to type 'Record<string, any>'.
       Type 'undefined' is not assignable to type 'Record<string, any>'.
@@ -20169,6 +20995,396 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2307`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:19`
+**Status**: 📌 Existing
+**Message**: Cannot find module '../../lib/supabase' or its corresponding type declarations.
+
+---
+
+#### typescript-error (Rule: `typescript:6196`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:22`
+**Status**: 📌 Existing
+**Message**: 'DEFAULT_NOTIFICATION_PREFERENCES' is declared but never used.
+
+---
+
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:90`
+**Status**: 📌 Existing
+**Message**: Argument of type '{ id: string; encryptionKey: string | undefined; }' is not assignable to parameter of type 'Configuration' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'encryptionKey' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:238`
+**Status**: 📌 Existing
+**Message**: 'data' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:431`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type 'Timeout'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:592`
+**Status**: 📌 Existing
+**Message**: 'currentHour' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:592`
+**Status**: 📌 Existing
+**Message**: 'currentMinute' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:593`
+**Status**: 📌 Existing
+**Message**: 'startHour' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:593`
+**Status**: 📌 Existing
+**Message**: 'startMinute' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:594`
+**Status**: 📌 Existing
+**Message**: 'endHour' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:594`
+**Status**: 📌 Existing
+**Message**: 'endMinute' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/notifications/NotificationPreferencesService.ts:643`
+**Status**: 📌 Existing
+**Message**: Type '{ id: string; refereeId: string; enabled: boolean; newAssignments: boolean; matchResults: boolean; matchDesignations: boolean; statusChanges: boolean; tournamentUpdates: boolean; reminders: { ...; }; ... 7 more ...; lastSyncedAt: string | undefined; }' is not assignable to type 'NotificationPreferences' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'quietHours' are incompatible.
+    Type '{ enabled: true; startTime: string; endTime: string; timezone: string; } | undefined' is not assignable to type '{ enabled: boolean; startTime: string; endTime: string; timezone: string; }'.
+      Type 'undefined' is not assignable to type '{ enabled: boolean; startTime: string; endTime: string; timezone: string; }'.
+
+---
+
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `services/notifications/NotificationQueueService.ts:70`
+**Status**: 📌 Existing
+**Message**: Argument of type '{ id: string; encryptionKey: string | undefined; }' is not assignable to parameter of type 'Configuration' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'encryptionKey' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationQueueService.ts:178`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:18048`)
+
+**Location**: `services/notifications/NotificationQueueService.ts:228`
+**Status**: 📌 Existing
+**Message**: 'delay' is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationQueueService.ts:303`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type 'Timeout'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationService.ts:112`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'WebPushService'. Did you mean to access the static member 'WebPushService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationService.ts:148`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'WebPushService'. Did you mean to access the static member 'WebPushService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/notifications/NotificationService.ts:204`
+**Status**: 📌 Existing
+**Message**: Property 'openSettingsAsync' does not exist on type 'typeof import("C:/Users/KreshOS/Documents/00-Progetti/BeachRef/node_modules/expo-notifications/build/index")'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationService.ts:243`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'WebPushService'. Did you mean to access the static member 'WebPushService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationService.ts:261`
+**Status**: 📌 Existing
+**Message**: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `services/notifications/NotificationService.ts:272`
+**Status**: 📌 Existing
+**Message**: Argument of type '{ projectId: string | undefined; }' is not assignable to parameter of type 'ExpoPushTokenOptions' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'projectId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationService.ts:313`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'WebPushService'. Did you mean to access the static member 'WebPushService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/notifications/NotificationService.ts:360`
+**Status**: 📌 Existing
+**Message**: Type '{ title: string; body: string; data: { [key: string]: any; matchId?: string; tournamentCode?: string; assignmentId?: string; deepLink?: string; }; sound: string; badge: number | undefined; priority: Notifications.AndroidNotificationPriority.DEFAULT | Notifications.AndroidNotificationPriority.HIGH; }' is not assignable to type 'NotificationContentInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'badge' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationService.ts:412`
+**Status**: 📌 Existing
+**Message**: Type '{}' is not assignable to type 'string | number | (string | number)[] | null | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationService.ts:423`
+**Status**: 📌 Existing
+**Message**: Type '{}' is not assignable to type 'string | number | (string | number)[] | null | undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationService.ts:498`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'WebPushService'. Did you mean to access the static member 'WebPushService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:6196`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:22`
+**Status**: 📌 Existing
+**Message**: 'NotificationTriggerContext' is declared but never used.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:64`
+**Status**: 📌 Existing
+**Message**: 'storage' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2379`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:70`
+**Status**: 📌 Existing
+**Message**: Argument of type '{ id: string; encryptionKey: string | undefined; }' is not assignable to parameter of type 'Configuration' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'encryptionKey' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:128`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type 'Timeout'.
+
+---
+
+#### typescript-error (Rule: `typescript:2322`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:143`
+**Status**: 📌 Existing
+**Message**: Type 'number' is not assignable to type 'Timeout'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:176`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:198`
+**Status**: 📌 Existing
+**Message**: 'status' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:231`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:293`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:350`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:375`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:389`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:415`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:439`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2375`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:452`
+**Status**: 📌 Existing
+**Message**: Type '{ assignmentId: string | undefined; deepLink: string; }' is not assignable to type '{ [key: string]: any; matchId?: string; tournamentCode?: string; assignmentId?: string; deepLink?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'assignmentId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:459`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationService'. Did you mean to access the static member 'NotificationService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:483`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/notifications/NotificationTriggerService.ts:504`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationPreferencesService'. Did you mean to access the static member 'NotificationPreferencesService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2353`)
+
+**Location**: `services/notifications/WebPushService.ts:224`
+**Status**: 📌 Existing
+**Message**: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
+
+---
+
 #### typescript-error (Rule: `typescript:2724`)
 
 **Location**: `services/parsing/VisResponseParser.ts:11`
@@ -20595,9 +21811,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2613`)
+
+**Location**: `services/RealtimeSubscriptionService.ts:9`
+**Status**: 📌 Existing
+**Message**: Module '"C:/Users/KreshOS/Documents/00-Progetti/BeachRef/services/RefereeAssignmentsService"' has no default export. Did you mean to use 'import { RefereeAssignmentsService } from "C:/Users/KreshOS/Documents/00-Progetti/BeachRef/services/RefereeAssignmentsService"' instead?
+
+---
+
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:47`
+**Location**: `services/RealtimeSubscriptionService.ts:49`
 **Status**: 📌 Existing
 **Message**: 'CONNECTION_TIMEOUT' is declared but its value is never read.
 
@@ -20605,7 +21829,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:67`
+**Location**: `services/RealtimeSubscriptionService.ts:69`
 **Status**: 📌 Existing
 **Message**: 'callback' is declared but its value is never read.
 
@@ -20613,7 +21837,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:241`
+**Location**: `services/RealtimeSubscriptionService.ts:243`
 **Status**: 📌 Existing
 **Message**: Argument of type 'BeachMatch | undefined' is not assignable to parameter of type 'BeachMatch'.
   Type 'undefined' is not assignable to type 'BeachMatch'.
@@ -20622,7 +21846,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:283`
+**Location**: `services/RealtimeSubscriptionService.ts:285`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -20630,7 +21854,7 @@
 
 #### typescript-error (Rule: `typescript:2412`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:308`
+**Location**: `services/RealtimeSubscriptionService.ts:310`
 **Status**: 📌 Existing
 **Message**: Type 'undefined' is not assignable to type 'number' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
 
@@ -20638,7 +21862,7 @@
 
 #### typescript-error (Rule: `typescript:18046`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:328`
+**Location**: `services/RealtimeSubscriptionService.ts:330`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
 
@@ -20646,7 +21870,7 @@
 
 #### typescript-error (Rule: `typescript:18046`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:331`
+**Location**: `services/RealtimeSubscriptionService.ts:333`
 **Status**: 📌 Existing
 **Message**: 'error' is of type 'unknown'.
 
@@ -20654,7 +21878,7 @@
 
 #### typescript-error (Rule: `typescript:2345`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:371`
+**Location**: `services/RealtimeSubscriptionService.ts:373`
 **Status**: 📌 Existing
 **Message**: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
 
@@ -20662,7 +21886,7 @@
 
 #### typescript-error (Rule: `typescript:18047`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:414`
+**Location**: `services/RealtimeSubscriptionService.ts:416`
 **Status**: 📌 Existing
 **Message**: 'supabase' is possibly 'null'.
 
@@ -20670,7 +21894,7 @@
 
 #### typescript-error (Rule: `typescript:2375`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:496`
+**Location**: `services/RealtimeSubscriptionService.ts:498`
 **Status**: 📌 Existing
 **Message**: Type '{ active: boolean; retrying: boolean; lastRetryAttempt: number | undefined; retriesRemaining: number | undefined; fallbackActive: boolean; circuitBreakerState: CircuitState | undefined; }' is not assignable to type '{ active: boolean; retrying: boolean; lastRetryAttempt?: number; retriesRemaining?: number; fallbackActive: boolean; circuitBreakerState?: CircuitState; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
   Types of property 'lastRetryAttempt' are incompatible.
@@ -20679,9 +21903,17 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/RealtimeSubscriptionService.ts:575`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:530`
+**Location**: `services/RealtimeSubscriptionService.ts:594`
 **Status**: 📌 Existing
 **Message**: Property 'invalidateMatchCache' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -20689,7 +21921,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:539`
+**Location**: `services/RealtimeSubscriptionService.ts:603`
 **Status**: 📌 Existing
 **Message**: 'tournamentNo' is declared but its value is never read.
 
@@ -20697,7 +21929,7 @@
 
 #### typescript-error (Rule: `typescript:6133`)
 
-**Location**: `services/RealtimeSubscriptionService.ts:615`
+**Location**: `services/RealtimeSubscriptionService.ts:679`
 **Status**: 📌 Existing
 **Message**: 'matches' is declared but its value is never read.
 
@@ -20841,7 +22073,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeAssignmentsService.ts:203`
+**Location**: `services/RefereeAssignmentsService.ts:214`
 **Status**: 📌 Existing
 **Message**: Property 'getMatchesFromSupabase' does not exist on type 'typeof CacheServiceCompatibility'.
 
@@ -20849,7 +22081,7 @@
 
 #### typescript-error (Rule: `typescript:2353`)
 
-**Location**: `services/RefereeAssignmentsService.ts:215`
+**Location**: `services/RefereeAssignmentsService.ts:229`
 **Status**: 📌 Existing
 **Message**: Object literal may only specify known properties, and 'fields' does not exist in type 'GetBeachMatchListRequest'.
 
@@ -20857,7 +22089,7 @@
 
 #### typescript-error (Rule: `typescript:2322`)
 
-**Location**: `services/RefereeAssignmentsService.ts:324`
+**Location**: `services/RefereeAssignmentsService.ts:338`
 **Status**: 📌 Existing
 **Message**: Type '{ federationCode: string; firstName: string; gender: "M"; lastName: string; noReferee: string; status: OfficialStatus.ACTIVE; type: OfficialType.REFEREE; }[]' is not assignable to type 'readonly EventReferee[]'.
   Property 'RefereeId' is missing in type '{ federationCode: string; firstName: string; gender: "M"; lastName: string; noReferee: string; status: OfficialStatus.ACTIVE; type: OfficialType.REFEREE; }' but required in type 'EventReferee'.
@@ -20866,7 +22098,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeAssignmentsService.ts:391`
+**Location**: `services/RefereeAssignmentsService.ts:405`
 **Status**: 📌 Existing
 **Message**: Property 'noReferee' does not exist on type 'EventReferee'.
 
@@ -20874,7 +22106,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeAssignmentsService.ts:398`
+**Location**: `services/RefereeAssignmentsService.ts:412`
 **Status**: 📌 Existing
 **Message**: Property 'noReferee' does not exist on type 'EventReferee'.
 
@@ -20882,7 +22114,7 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeAssignmentsService.ts:463`
+**Location**: `services/RefereeAssignmentsService.ts:477`
 **Status**: 📌 Existing
 **Message**: Property 'noReferee' does not exist on type 'EventReferee'.
 
@@ -20890,9 +22122,65 @@
 
 #### typescript-error (Rule: `typescript:2339`)
 
-**Location**: `services/RefereeAssignmentsService.ts:533`
+**Location**: `services/RefereeAssignmentsService.ts:547`
 **Status**: 📌 Existing
 **Message**: Property 'noReferee' does not exist on type 'EventReferee'.
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `services/RefereeAssignmentsService.ts:685`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2551`)
+
+**Location**: `services/RefereeAssignmentsService.ts:685`
+**Status**: 📌 Existing
+**Message**: Property 'tournamentCode' does not exist on type 'RefereeAssignment'. Did you mean 'tournamentNo'?
+
+---
+
+#### typescript-error (Rule: `typescript:2532`)
+
+**Location**: `services/RefereeAssignmentsService.ts:686`
+**Status**: 📌 Existing
+**Message**: Object is possibly 'undefined'.
+
+---
+
+#### typescript-error (Rule: `typescript:2551`)
+
+**Location**: `services/RefereeAssignmentsService.ts:686`
+**Status**: 📌 Existing
+**Message**: Property 'tournamentCode' does not exist on type 'RefereeAssignment'. Did you mean 'tournamentNo'?
+
+---
+
+#### typescript-error (Rule: `typescript:2576`)
+
+**Location**: `services/RefereeAssignmentsService.ts:694`
+**Status**: 📌 Existing
+**Message**: Property 'getInstance' does not exist on type 'NotificationTriggerService'. Did you mean to access the static member 'NotificationTriggerService.getInstance' instead?
+
+---
+
+#### typescript-error (Rule: `typescript:2339`)
+
+**Location**: `services/RefereeAssignmentsService.ts:695`
+**Status**: 📌 Existing
+**Message**: Property 'visRefereeNo' does not exist on type 'RefereeProfile'.
+
+---
+
+#### typescript-error (Rule: `typescript:2551`)
+
+**Location**: `services/RefereeAssignmentsService.ts:697`
+**Status**: 📌 Existing
+**Message**: Property 'tournamentCode' does not exist on type 'RefereeAssignment'. Did you mean 'tournamentNo'?
 
 ---
 
@@ -21412,6 +22700,166 @@
   Types of property 'previousStatus' are incompatible.
     Type 'StatusType | undefined' is not assignable to type 'StatusType'.
       Type 'undefined' is not assignable to type 'StatusType'.
+
+---
+
+#### typescript-error (Rule: `typescript:6192`)
+
+**Location**: `services/sync/DataSyncService.ts:13`
+**Status**: 📌 Existing
+**Message**: All imports in import declaration are unused.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/DataSyncService.ts:217`
+**Status**: 📌 Existing
+**Message**: 'onProgress' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/DataSyncService.ts:257`
+**Status**: 📌 Existing
+**Message**: 'onProgress' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/DataSyncService.ts:258`
+**Status**: 📌 Existing
+**Message**: 'onCancel' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `services/sync/DataSyncService.ts:305`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Running"' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `services/sync/DataSyncService.ts:305`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Live"' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `services/sync/DataSyncService.ts:309`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Finished"' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:2367`)
+
+**Location**: `services/sync/DataSyncService.ts:309`
+**Status**: 📌 Existing
+**Message**: This comparison appears to be unintentional because the types 'MatchStatus' and '"Completed"' have no overlap.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:107`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:121`
+**Status**: 📌 Existing
+**Message**: 'tournamentNo' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:122`
+**Status**: 📌 Existing
+**Message**: 'year' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:123`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:155`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:164`
+**Status**: 📌 Existing
+**Message**: 'tournamentNo' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:165`
+**Status**: 📌 Existing
+**Message**: 'year' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:166`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:195`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:202`
+**Status**: 📌 Existing
+**Message**: 'tournamentNo' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:203`
+**Status**: 📌 Existing
+**Message**: 'year' is declared but its value is never read.
+
+---
+
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `services/sync/SyncStrategy.ts:204`
+**Status**: 📌 Existing
+**Message**: 'options' is declared but its value is never read.
 
 ---
 
@@ -25431,6 +26879,14 @@
 
 ---
 
+#### typescript-error (Rule: `typescript:6133`)
+
+**Location**: `utils/cacheDebug.ts:9`
+**Status**: 📌 Existing
+**Message**: 'UnifiedCacheManager' is declared but its value is never read.
+
+---
+
 #### typescript-error (Rule: `typescript:2379`)
 
 **Location**: `utils/cachePerformanceMonitor.ts:37`
@@ -26299,12 +27755,12 @@
 
 ## Checker Results
 
-- ✅ **TypeScript Checker** (42.4s) - 2882 findings
-- ✅ **ESLint Checker** (17.1s) - 0 findings
-- ✅ **Complexity Checker** (0.7s) - 0 findings
+- ✅ **TypeScript Checker** (173.6s) - 3057 findings
+- ✅ **ESLint Checker** (137.4s) - 0 findings
+- ✅ **Complexity Checker** (3.4s) - 0 findings
 
 ---
 
-**Audit Run ID**: `run-2026-02-01-18-48-29`
-**Duration**: 60.2s
-**Generated**: 2026-02-01T17:48:29.925Z
+**Audit Run ID**: `run-2026-02-09-20-51-52`
+**Duration**: 314.5s
+**Generated**: 2026-02-09T19:51:52.168Z

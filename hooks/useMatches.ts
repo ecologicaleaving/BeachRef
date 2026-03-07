@@ -6,6 +6,10 @@ import { MatchDTO } from '../services/DualReadService';
 export interface MatchesFilters {
   tournamentCode?: string;
   eventId?: number;
+  // FIX #27: year is now an explicit filter to scope cache keys per season.
+  // Callers should always pass the year of the tournament being viewed.
+  // Defaults to current year when omitted, so old callers are not broken.
+  year?: number;
   round?: string;
   status?: 'SCHEDULED' | 'RUNNING' | 'COMPLETED' | 'CANCELLED';
   date?: string;
@@ -101,9 +105,19 @@ export function useMatches(
   };
 
   const cacheStrategy = determineCacheStrategy();
-  
-  // Create query key using TanStack Query key factory
-  const queryKey = queryKeys.matches.list(filters);
+
+  // FIX #27: Always include year in the cache key to prevent cross-season contamination.
+  // If the caller does not supply a year, derive it from the date filter or fall back to
+  // the current calendar year.  This ensures that two tournaments that share the same
+  // tournamentCode in different seasons NEVER resolve to the same TanStack Query entry.
+  const resolvedYear =
+    filters?.year ??
+    (filters?.date ? new Date(filters.date).getFullYear() : undefined) ??
+    (filters?.dateRange?.startDate ? new Date(filters.dateRange.startDate).getFullYear() : undefined) ??
+    new Date().getFullYear();
+
+  // Create query key using TanStack Query key factory — year is always part of the key.
+  const queryKey = queryKeys.matches.list({ ...filters, year: resolvedYear });
 
   // Real-time subscription setup for live matches (VIS API-first approach)
   useEffect(() => {
@@ -180,7 +194,7 @@ export function useMatches(
 
       if (supabase) {
         fallbackUsed = true;
-        
+
         let query = supabase
           .from('matches')
           .select(`
@@ -230,10 +244,16 @@ export function useMatches(
         if (filters?.date) {
           query = query.gte('utc_datetime', `${filters.date}T00:00:00Z`)
                       .lt('utc_datetime', `${filters.date}T23:59:59Z`);
-        }
-        if (filters?.dateRange) {
+        } else if (filters?.dateRange) {
           query = query.gte('utc_datetime', `${filters.dateRange.startDate}T00:00:00Z`)
                       .lt('utc_datetime', `${filters.dateRange.endDate}T23:59:59Z`);
+        } else {
+          // FIX #27: When no date filter is specified, always scope by year to prevent
+          // the DB returning historical matches (e.g. 2013) for a tournament that has
+          // the same tournament_code reused across seasons.
+          const yearStart = `${resolvedYear}-01-01T00:00:00Z`;
+          const yearEnd   = `${resolvedYear}-12-31T23:59:59Z`;
+          query = query.gte('utc_datetime', yearStart).lte('utc_datetime', yearEnd);
         }
 
         const { data: dbData, error: dbError } = await query;

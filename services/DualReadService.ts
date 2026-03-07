@@ -367,6 +367,11 @@ export class DualReadService {
     eventNo?: number;
     status?: string;
     date?: string;
+    // FIX #27: explicit year scope prevents cross-season cache contamination.
+    // Callers should pass the tournament year so DB queries never return matches
+    // from an older season that shares the same tournament_code.
+    year?: number;
+    dateRange?: { startDate: string; endDate: string };
   }): Promise<ReadResult<MatchDTO[]>> {
     const startTime = Date.now();
     let fallbackUsed = false;
@@ -819,6 +824,20 @@ export class DualReadService {
       if (filters?.date) {
         query = query.gte('utc_datetime', `${filters.date}T00:00:00Z`)
                     .lt('utc_datetime', `${filters.date}T23:59:59Z`);
+      } else {
+        // FIX #27: When no explicit date filter is provided, scope by year to prevent
+        // cross-season contamination (e.g. matches from 2013 appearing for a 2026 tournament
+        // that reuses the same tournament_code).  The year is taken from filters.year if set,
+        // otherwise from filters.dateRange.startDate, otherwise current year.
+        const year =
+          filters?.year ??
+          (filters?.dateRange?.startDate
+            ? new Date(filters.dateRange.startDate).getFullYear()
+            : undefined) ??
+          new Date().getFullYear();
+        const yearStart = `${year}-01-01T00:00:00Z`;
+        const yearEnd   = `${year}-12-31T23:59:59Z`;
+        query = query.gte('utc_datetime', yearStart).lte('utc_datetime', yearEnd);
       }
 
       const { data, error } = await query;
@@ -847,6 +866,8 @@ export class DualReadService {
     if (filters?.tournamentCode) params.append('tournamentCode', filters.tournamentCode);
     if (filters?.round) params.append('round', filters.round);
     if (filters?.eventNo) params.append('eventNo', filters.eventNo.toString());
+    // FIX #27: forward year to the edge function so it can scope the VIS API query.
+    if (filters?.year) params.append('year', filters.year.toString());
 
     const response = await fetch(`${edgeUrl}/vis/matches?${params}`, {
       headers: {

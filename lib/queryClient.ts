@@ -69,10 +69,14 @@ export const queryKeys = {
   matches: {
     all: ['matches'] as const,
     lists: () => ['matches', 'list'] as const,
-    list: (params?: { tournamentCode?: string; eventId?: number }) => ['matches', 'list', params] as const,
+    // FIX #27: year is mandatory in the cache key to prevent cross-season contamination.
+    // Without year, tournament codes shared across seasons (e.g. same event in 2013 and 2026)
+    // resolve to the same TanStack Query cache entry, causing stale 2013 data to appear.
+    list: (params?: { tournamentCode?: string; eventId?: number; year?: number }) => ['matches', 'list', params] as const,
     details: () => ['matches', 'detail'] as const,
     detail: (id: string) => ['matches', 'detail', id] as const,
-    byTournament: (tournamentId: string) => ['matches', 'tournament', tournamentId] as const,
+    // FIX #27: include year in tournament-scoped match key to prevent cross-season cache hits.
+    byTournament: (tournamentId: string, year?: number) => ['matches', 'tournament', tournamentId, year ?? new Date().getFullYear()] as const,
   },
   referees: {
     all: ['referees'] as const,

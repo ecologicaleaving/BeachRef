@@ -64,8 +64,36 @@ describe('QueryClient Configuration', () => {
       expect(queryKeys.matches.lists()).toEqual(['matches', 'list']);
       expect(queryKeys.matches.list({ tournamentCode: 'FIVB2024M001' }))
         .toEqual(['matches', 'list', { tournamentCode: 'FIVB2024M001' }]);
-      expect(queryKeys.matches.byTournament('tournament123'))
-        .toEqual(['matches', 'tournament', 'tournament123']);
+      // FIX #27: byTournament now includes year to prevent cross-season cache hits.
+      expect(queryKeys.matches.byTournament('tournament123', 2026))
+        .toEqual(['matches', 'tournament', 'tournament123', 2026]);
+    });
+
+    // Issue #27 — cache key isolation tests
+    test('should produce different cache keys for same tournament in different years', () => {
+      const key2013 = queryKeys.matches.list({ tournamentCode: 'FIVB001', year: 2013 });
+      const key2026 = queryKeys.matches.list({ tournamentCode: 'FIVB001', year: 2026 });
+      // Serialise to JSON to compare deeply (TanStack Query does the same internally)
+      expect(JSON.stringify(key2013)).not.toBe(JSON.stringify(key2026));
+    });
+
+    test('byTournament should produce different keys for different years', () => {
+      const key2013 = queryKeys.matches.byTournament('t123', 2013);
+      const key2026 = queryKeys.matches.byTournament('t123', 2026);
+      expect(JSON.stringify(key2013)).not.toBe(JSON.stringify(key2026));
+    });
+
+    test('byTournament should default year to current year when not specified', () => {
+      const currentYear = new Date().getFullYear();
+      const keyDefault = queryKeys.matches.byTournament('t123');
+      expect(keyDefault).toEqual(['matches', 'tournament', 't123', currentYear]);
+    });
+
+    test('list with year 2026 should not equal list without year for same tournament', () => {
+      const keyWithYear    = queryKeys.matches.list({ tournamentCode: 'FIVB001', year: 2026 });
+      const keyWithoutYear = queryKeys.matches.list({ tournamentCode: 'FIVB001' });
+      // keyWithoutYear has year:undefined which differs from year:2026
+      expect(JSON.stringify(keyWithYear)).not.toBe(JSON.stringify(keyWithoutYear));
     });
 
     test('should generate proper referee query keys', () => {

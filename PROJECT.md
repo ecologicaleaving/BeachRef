@@ -2,7 +2,7 @@
 
 ## Project Info
 - **Name**: BeachRef
-- **Version**: v1.0.3
+- **Version**: v1.0.4
 - **Status**: production
 - **Platforms**: apk, ios
 - **Description**: Piattaforma gestione arbitraggi beach volleyball per tornei professionali
@@ -33,7 +33,7 @@
 
 ## Repository
 - **Main Branch**: main
-- **Development Branch**: feature/issue-20-fix-tournament-matches-empty
+- **Development Branch**: feature/issue-27-cache-2013-bug
 - **GitHub**: https://github.com/ecologicaleaving/BeachRef
 
 ## Tech Stack
@@ -88,8 +88,9 @@
 - **DONE**: Issue #20 — Bug fix: tornei 2026 senza partite mostravano match di altri tornei/stagioni (reset stato stale, year-scoped cache keys, filter guard DB fallback, empty-array guard in cacheMatches)
 - **DONE**: Issue #22 — Security hardening Supabase: RLS su 6 tabelle pubbliche, views ricreate come SECURITY INVOKER, search_path fisso su 30+ funzioni, policy restrittive su matches/sync_error_log/analytics_events, accesso materialized view ristretto
 - **DONE**: Issue #23 - Fix tornei 2026: visNo numerico risolto in tournamentCode nel compatibility layer, filtro eventNo per query DB e prevenzione cross-contaminazione partite stale
+- **DONE**: Issue #27 — Bug fix cache intermittente 2013: year aggiunto a queryKeys.matches.list() e byTournament(), guard anno nel DB fallback di useMatches e DualReadService.getMatchesFromDB(), year propagato alla API, 4 nuovi test di isolamento cache key per anno
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 
 ---
-*Last Updated: 2026-03-05T10:57:59Z*
+*Last Updated: 2026-03-07T14:30:00Z*
 

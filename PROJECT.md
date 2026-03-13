@@ -2,7 +2,7 @@
 
 ## Project Info
 - **Name**: BeachRef
-- **Version**: v1.0.4
+- **Version**: v1.0.5
 - **Status**: production
 - **Platforms**: apk, ios
 - **Description**: Piattaforma gestione arbitraggi beach volleyball per tornei professionali
@@ -92,5 +92,5 @@
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 
 ---
-*Last Updated: 2026-03-07T14:30:00Z*
+*Last Updated: 2026-03-13T19:00:00Z*
 

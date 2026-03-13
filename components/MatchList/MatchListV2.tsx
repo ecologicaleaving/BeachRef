@@ -350,8 +350,42 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     return shouldUseHook ? rawMatches.map(dto => transformMatchDTO(dto, { timezone: tournamentTimezone, gender: tournamentGender })) : [];
   }, [rawMatches, shouldUseHook, tournamentTimezone, tournamentGender]);
 
-  // Use either prop matches or hook matches
-  const activeMatches = propMatches || hookMatches;
+  // FIX #29 (João Pessoa / web cache bug):
+  // On web, shouldUseHook is false to avoid CORS issues with Supabase edge functions.
+  // propMatches are passed from TournamentDetailScreen and may include historical matches
+  // from the DB (e.g. 2013) for tournaments whose tournamentCode is reused across seasons.
+  // We filter propMatches by the tournament year so only the correct season is shown.
+  const webYearFilteredMatches = useMemo(() => {
+    if (Platform.OS !== 'web' || !propMatches) return propMatches;
+
+    // Determine the target year: explicit filter > tournamentData.startDate > current year
+    const targetYear =
+      matchFilters?.year ??
+      (matchFilters?.dateRange?.startDate
+        ? new Date(matchFilters.dateRange.startDate).getFullYear()
+        : undefined) ??
+      (tournamentData?.startDate
+        ? new Date(tournamentData.startDate).getFullYear()
+        : undefined) ??
+      new Date().getFullYear();
+
+    const filtered = propMatches.filter(match => {
+      const dateStr = (match as any).scheduledDateTime || (match as any).LocalDate || (match as any).Date;
+      if (!dateStr) return true; // Keep matches with no date (TBD etc.)
+      return new Date(dateStr).getFullYear() === targetYear;
+    });
+
+    if (filtered.length !== propMatches.length) {
+      console.log(
+        `[MatchListV2 web] Year filter (${targetYear}): kept ${filtered.length}/${propMatches.length} matches`
+      );
+    }
+
+    return filtered;
+  }, [propMatches, matchFilters?.year, matchFilters?.dateRange?.startDate, tournamentData?.startDate]);
+
+  // Use either year-filtered prop matches (web) or hook matches (native)
+  const activeMatches = (Platform.OS === 'web' ? webYearFilteredMatches : propMatches) || hookMatches;
 
   const loading = propLoading || (shouldUseHook ? hookLoading : false);
   const error = hookError?.message || null;

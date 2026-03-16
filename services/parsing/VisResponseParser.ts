@@ -435,19 +435,21 @@ export class VisResponseParser {
         // FIX #29: Using new Date() here was the root cause of the 2013 bug — it stamped
         // old matches with today's date (2026), making year filters ineffective
         console.warn(`[VisResponseParser] Timezone parsing failed for ${localDate}T${timeWithSeconds} in ${resolvedTournamentTz}:`, error);
-        scheduledDateTime = new Date(`${localDate}T${timeWithSeconds}Z`).toISOString();
+        // Keep original date as-is (no Z suffix — treat as local, not UTC, to avoid date shift)
+        scheduledDateTime = `${localDate}T${timeWithSeconds}`;
         scheduledDateTournament = localDate;
         scheduledTimeTournament = timeWithSeconds;
         scheduledDateTimeTournament = `${localDate}T${timeWithSeconds}`;
-        scheduledEpochMs = new Date(`${localDate}T${timeWithSeconds}Z`).getTime();
+        scheduledEpochMs = new Date(`${localDate}T${timeWithSeconds}`).getTime() || 0;
         scheduledTz = 'UTC';
       }
     } else {
-      // No date/time available — leave empty string so year filters can reject these matches
-      scheduledDateTime = '';
-      scheduledDateTournament = '';
+      // No date/time available — use epoch 0 (1970) so year filters reject it without crashing
+      // FIX #29: empty string caused new Date('') → Invalid Date → crash on iOS
+      scheduledDateTime = '1970-01-01T00:00:00Z';
+      scheduledDateTournament = '1970-01-01';
       scheduledTimeTournament = '00:00:00';
-      scheduledDateTimeTournament = '';
+      scheduledDateTimeTournament = '1970-01-01T00:00:00';
       scheduledEpochMs = 0;
       scheduledTz = tournamentTimezone || 'UTC';
     }

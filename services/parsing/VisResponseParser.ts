@@ -431,22 +431,24 @@ export class VisResponseParser {
         scheduledTz = resolvedTournamentTz;
 
       } catch (error) {
-        // Fallback if timezone parsing fails
+        // Fallback if timezone parsing fails — use ORIGINAL date from VIS API, not today's date
+        // FIX #29: Using new Date() here was the root cause of the 2013 bug — it stamped
+        // old matches with today's date (2026), making year filters ineffective
         console.warn(`[VisResponseParser] Timezone parsing failed for ${localDate}T${timeWithSeconds} in ${resolvedTournamentTz}:`, error);
-        scheduledDateTime = new Date().toISOString();
+        scheduledDateTime = new Date(`${localDate}T${timeWithSeconds}Z`).toISOString();
         scheduledDateTournament = localDate;
         scheduledTimeTournament = timeWithSeconds;
         scheduledDateTimeTournament = `${localDate}T${timeWithSeconds}`;
-        scheduledEpochMs = Date.now();
+        scheduledEpochMs = new Date(`${localDate}T${timeWithSeconds}Z`).getTime();
         scheduledTz = 'UTC';
       }
     } else {
-      // No date/time available
-      scheduledDateTime = new Date().toISOString();
-      scheduledDateTournament = new Date().toISOString().split('T')[0];
+      // No date/time available — leave empty string so year filters can reject these matches
+      scheduledDateTime = '';
+      scheduledDateTournament = '';
       scheduledTimeTournament = '00:00:00';
-      scheduledDateTimeTournament = `${scheduledDateTournament}T${scheduledTimeTournament}`;
-      scheduledEpochMs = Date.now();
+      scheduledDateTimeTournament = '';
+      scheduledEpochMs = 0;
       scheduledTz = tournamentTimezone || 'UTC';
     }
     

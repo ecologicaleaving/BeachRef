@@ -11,7 +11,7 @@ import { UnifiedCacheManager } from './UnifiedCacheManager';
 
 export class CacheMigrationService {
   private static readonly MIGRATION_VERSION_KEY = '@CacheMigrationVersion';
-  private static readonly CURRENT_VERSION = '6'; // v6: Force cache clear — fix #29 reject dateless matches that leaked 2013 data
+  private static readonly CURRENT_VERSION = '7'; // v7: Force cache clear after parser fix — cached matches had wrong dates from new Date() fallback
 
   /**
    * Check if migration is needed and execute if so

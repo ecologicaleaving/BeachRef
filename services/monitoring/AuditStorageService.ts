@@ -9,6 +9,7 @@
  */
 
 import { MMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import { ApiRequest, AuditFinding, AuditReport } from '../../types/audit';
 
 /**
@@ -43,7 +44,9 @@ export class AuditStorageService {
       // Initialize MMKV with audit namespace
       this.storage = new MMKV({
         id: 'audit-storage',
-        encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY,
+        ...(Platform.OS !== 'web' && process.env.EXPO_PUBLIC_MMKV_KEY
+          ? { encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY }
+          : {}),
       });
 
       // Clean up old data on initialization

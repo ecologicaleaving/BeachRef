@@ -15,6 +15,7 @@
  */
 
 import { MMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { supabase } from '../supabase';
 import type {
@@ -86,10 +87,12 @@ export class NotificationPreferencesService {
   private syncInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
-    // Initialize MMKV with encryption
+    // Initialize MMKV — encryptionKey is NOT supported on web (react-native-mmkv)
     this.storage = new MMKV({
       id: STORAGE_NAMESPACE,
-      encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY || undefined
+      ...(Platform.OS !== 'web' && process.env.EXPO_PUBLIC_MMKV_KEY
+        ? { encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY }
+        : {})
     });
 
     this.log('NotificationPreferencesService initialized');

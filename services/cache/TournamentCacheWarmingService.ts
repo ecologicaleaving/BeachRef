@@ -18,6 +18,7 @@ interface RecentTournament {
   tournamentNo: string;
   lastViewed: string;
   status?: string;
+  year?: number; // Tournament year for date-scoped API calls
 }
 
 export class TournamentCacheWarmingService {
@@ -88,7 +89,7 @@ export class TournamentCacheWarmingService {
       // Warm in parallel but rate-limited
       const promises = tournamentsToWarm
         .slice(0, this.MAX_CONCURRENT_WARMING)
-        .map(tournament => this.warmSingleTournament(tournament.tournamentNo));
+        .map(tournament => this.warmSingleTournament(tournament.tournamentNo, tournament.year));
 
       await Promise.all(promises);
 
@@ -100,35 +101,53 @@ export class TournamentCacheWarmingService {
   /**
    * Warm cache for a single tournament
    * @param tournamentNo - Tournament number to warm
+   * @param year - Tournament year for date-scoped API calls
    */
-  private static async warmSingleTournament(tournamentNo: string): Promise<void> {
+  private static async warmSingleTournament(tournamentNo: string, year?: number): Promise<void> {
     if (this.warmingInProgress.has(tournamentNo)) {
       return; // Already warming this tournament
     }
 
     this.warmingInProgress.add(tournamentNo);
 
+    // Use provided year or default to current year
+    const targetYear = year || new Date().getFullYear();
+
     try {
-      // Check if already cached and fresh
-      const hasFreshCache = await TournamentMatchCache.hasFreshCache(tournamentNo);
+      // Check if already cached and fresh (with year)
+      const hasFreshCache = await TournamentMatchCache.hasFreshCache(tournamentNo, targetYear);
       if (hasFreshCache) {
         return;
       }
 
-      console.log(`🔥 Warming tournament ${tournamentNo}`);
+      console.log(`🔥 Warming tournament ${tournamentNo} year ${targetYear}`);
 
-      // Fetch and cache tournament data
-      const matches = await this.fetchTournamentMatches(tournamentNo);
+      // Fetch with year filtering to avoid cross-year contamination
+      const matches = await this.fetchTournamentMatches(tournamentNo, targetYear);
 
       if (matches && matches.length > 0) {
-        // Determine tournament status from matches
-        const status = this.determineTournamentStatus(matches);
+        // FIX #29: Filter matches to only include the target year
+        // The VIS API may return matches from other years if tournamentNo is reused across seasons
+        const filteredMatches = matches.filter(m => {
+          const d = (m as any).scheduledDateTime;
+          if (!d) return true; // Keep matches without dates (TBD)
+          return new Date(d).getFullYear() === targetYear;
+        });
 
-        // Extract year from matches to fix João Pessoa bug
-        const year = new Date(matches[0].scheduledDateTime).getFullYear();
+        if (filteredMatches.length === 0) {
+          console.warn(`⚠️ Warming ${tournamentNo}: all ${matches.length} matches filtered out (none from ${targetYear})`);
+          return;
+        }
 
-        await TournamentMatchCache.cacheMatches(tournamentNo, matches, status, year);
-        console.log(`✅ Successfully warmed cache for tournament ${tournamentNo} year ${year} (${matches.length} matches)`);
+        if (filteredMatches.length !== matches.length) {
+          console.warn(`⚠️ Warming ${tournamentNo}: filtered ${matches.length - filteredMatches.length} wrong-year matches, keeping ${filteredMatches.length}`);
+        }
+
+        // Determine tournament status from filtered matches
+        const status = this.determineTournamentStatus(filteredMatches);
+
+        await TournamentMatchCache.cacheMatches(tournamentNo, filteredMatches, status, targetYear);
+        console.log(`✅ Warmed cache for tournament ${tournamentNo} year ${targetYear} (${filteredMatches.length} matches)`);
 
         // Non-blocking AuxiliaryPersons fetch for match officials (specs/006-match-officials-display - T015)
         // Fire-and-forget: Don't block tournament display on official data
@@ -192,15 +211,16 @@ export class TournamentCacheWarmingService {
   /**
    * Track recently viewed tournament for cache warming
    * @param tournamentNo - Tournament number that was viewed
+   * @param year - Tournament year (for date-scoped warming)
    */
-  static async trackRecentlyViewed(tournamentNo: string): Promise<void> {
+  static async trackRecentlyViewed(tournamentNo: string, year?: number): Promise<void> {
     try {
       const recent = await this.getRecentlyViewedTournaments();
 
       // Remove if already exists and add to front
       const filtered = recent.filter(t => t.tournamentNo !== tournamentNo);
       const updated: RecentTournament[] = [
-        { tournamentNo, lastViewed: new Date().toISOString() },
+        { tournamentNo, lastViewed: new Date().toISOString(), year: year || new Date().getFullYear() },
         ...filtered
       ].slice(0, this.MAX_RECENT_TOURNAMENTS);
 

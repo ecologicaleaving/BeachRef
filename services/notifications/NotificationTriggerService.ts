@@ -14,6 +14,7 @@
  */
 
 import { MMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import NotificationService from './NotificationService';
 import NotificationPreferencesService from './NotificationPreferencesService';
 import type {
@@ -69,7 +70,9 @@ export class NotificationTriggerService {
   private constructor() {
     this.storage = new MMKV({
       id: 'notification_triggers',
-      encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY || undefined
+      ...(Platform.OS !== 'web' && process.env.EXPO_PUBLIC_MMKV_KEY
+        ? { encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY }
+        : {})
     });
 
     this.log('NotificationTriggerService initialized');

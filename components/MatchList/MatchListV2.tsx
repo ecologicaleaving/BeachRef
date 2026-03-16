@@ -376,9 +376,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     });
 
     if (filtered.length !== propMatches.length) {
-      console.log(
-        `[MatchListV2 web] Year filter (${targetYear}): kept ${filtered.length}/${propMatches.length} matches`
-      );
+      console.warn(`[MatchListV2] Year filter removed ${propMatches.length - filtered.length} wrong-year matches (targetYear=${targetYear})`);
     }
 
     return filtered;

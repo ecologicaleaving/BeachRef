@@ -1213,12 +1213,14 @@ const TournamentDetailScreenContent: React.FC = () => {
       ? new Date(tournament.dates.startDate).getFullYear()
       : new Date().getFullYear();
 
+    console.log(`[loadMatches] visNo=${tournament.visNo} year=${tournamentYear}`);
+
     try {
       // STEP 1: Check cache first for matches (with year parameter)
       const cachedMatches = await TournamentMatchCache.getCachedMatches(tournament.visNo, tournamentYear);
 
       if (cachedMatches) {
-        console.log(`📦 ✅ Using cached matches for tournament ${tournament.visNo} year ${tournamentYear}`);
+        console.log(`[loadMatches] Cache HIT: ${cachedMatches.length} matches`);
         setMatches(cachedMatches);
         setMatchesLoading(false);
         setLoadMatchesInProgress(false);
@@ -1299,6 +1301,8 @@ const TournamentDetailScreenContent: React.FC = () => {
                   gender: genderMatch ? genderMatch[1] : null
                 };
               });
+
+              console.log(`[loadMatches] GetEvent(${tournament.visNo}) → ${tournaments.length} BeachTournaments`);
 
               // Store tournament list for subsequent API calls
               const validTournaments = tournaments.filter(t => t.no && t.gender);
@@ -1620,6 +1624,18 @@ const TournamentDetailScreenContent: React.FC = () => {
 
       // Parse the response asynchronously to avoid blocking UI
       if (allMatches.length > 0) {
+        // FIX #29: Filter out wrong-year matches before displaying or caching
+        // The VIS API may return matches from other years if tournament codes are reused across seasons
+        const beforeFilter = allMatches.length;
+        allMatches = allMatches.filter(m => {
+          const d = (m as any).scheduledDateTime || (m as any).LocalDate;
+          if (!d) return true; // Keep matches without dates (TBD)
+          return new Date(d).getFullYear() === tournamentYear;
+        });
+        if (allMatches.length !== beforeFilter) {
+          console.warn(`⚠️ [FIX-29] Filtered ${beforeFilter - allMatches.length} wrong-year matches from API response (kept ${allMatches.length}/${beforeFilter} for year ${tournamentYear})`);
+        }
+
         setTimeout(async () => {
           try {
             // Sort matches by date and time in DESCENDING order (newest/latest first)
@@ -1791,8 +1807,11 @@ const TournamentDetailScreenContent: React.FC = () => {
       setMatchesLoading(true);
       setLoadMatchesInProgress(false); // Reset guard so the new tournament can load
 
-      // Track recently viewed tournament for cache warming
-      TournamentCacheWarmingService.trackRecentlyViewed(tournament.visNo);
+      // Track recently viewed tournament for cache warming (with year for date-scoped warming)
+      const trackYear = tournament.dates?.startDate
+        ? new Date(tournament.dates.startDate).getFullYear()
+        : new Date().getFullYear();
+      TournamentCacheWarmingService.trackRecentlyViewed(tournament.visNo, trackYear);
 
       // Load tournament display data (country, location info for TournamentCard)
       loadTournamentDisplayData();

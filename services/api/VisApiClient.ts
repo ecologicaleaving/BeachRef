@@ -931,7 +931,8 @@ export class VisApiClient implements IVisApiClient {
         method: 'POST',
         headers,
         body: formData,
-        signal: controller.signal
+        signal: controller.signal,
+        cache: 'no-store', // FIX #29: Prevent browser HTTP cache from serving stale VIS API responses
       });
 
       if (!response.ok) {

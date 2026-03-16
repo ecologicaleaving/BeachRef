@@ -90,6 +90,17 @@ export default function RootLayout() {
     // Inject CSS variables for web platform
     if (Platform.OS === 'web') {
       injectCSSVariables();
+
+      // Register service worker for cache-busting and push notifications
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
+          .then((reg) => {
+            console.log('[SW] Registered, checking for updates...');
+            // Force update check on every page load
+            reg.update();
+          })
+          .catch((err) => console.warn('[SW] Registration failed:', err));
+      }
     }
 
     // Initialize cache warmup service and brand assets on app start

@@ -9,6 +9,7 @@
 /* global self, clients */
 
 const CACHE_NAME = 'beachref-notifications-v1';
+const APP_VERSION = '2026.03.16.1'; // Bump this on every deploy that needs forced refresh
 
 /**
  * Service Worker installation
@@ -22,12 +23,39 @@ self.addEventListener('install', (event) => {
 
 /**
  * Service Worker activation
+ * Clears ALL browser caches to ensure users get fresh code after deploy
  */
 self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activating...');
+  console.log('[ServiceWorker] Activating version', APP_VERSION);
 
-  // Claim all clients immediately
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('[ServiceWorker] Clearing cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+/**
+ * Fetch handler — Network-first, no caching
+ * Ensures users always get fresh content after deploy.
+ * Only intercepts navigation requests (HTML pages) to force reload.
+ */
+self.addEventListener('fetch', (event) => {
+  // Only intercept navigation requests (page loads, not API calls or assets)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Offline fallback: return cached page if network fails
+        return caches.match(event.request);
+      })
+    );
+  }
+  // All other requests (JS, CSS, images, API) go straight to network — no interception
 });
 
 /**

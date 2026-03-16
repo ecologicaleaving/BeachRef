@@ -11,6 +11,14 @@
   status = 200
 
 [[headers]]
+  # TEMPORARY: Force all browsers to clear cached resources for this origin
+  # This purges the old 1-year cached JS bundles from users' browsers
+  # TODO: Remove Clear-Site-Data header after 2026-04-01
+  for = "/*"
+  [headers.values]
+    Clear-Site-Data = "\"cache\""
+
+[[headers]]
   # index.html must NEVER be cached — this is how users get new deploys
   for = "/"
   [headers.values]

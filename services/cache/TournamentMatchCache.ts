@@ -55,12 +55,31 @@ export class TournamentMatchCache {
         return null;
       }
 
+      // FIX #29: Validate that cached matches actually belong to the requested year
+      // Guards against corrupt cache entries from warming service or cross-year contamination
+      const validMatches = cached.matches.filter(m => {
+        const dateStr = (m as any).scheduledDateTime || (m as any).LocalDate;
+        if (!dateStr) return true; // Keep matches without dates (TBD)
+        return new Date(dateStr).getFullYear() === yearToUse;
+      });
+
+      if (validMatches.length !== cached.matches.length) {
+        console.warn(`⚠️ [Cache] Filtered ${cached.matches.length - validMatches.length} wrong-year matches from cache for tournament ${tournamentNo} year ${yearToUse}`);
+      }
+
+      if (validMatches.length === 0) {
+        // All matches were from wrong year - treat as cache miss
+        console.warn(`⚠️ [Cache] All ${cached.matches.length} cached matches are wrong year for tournament ${tournamentNo} year ${yearToUse}, treating as MISS`);
+        CachePerformanceMonitor.recordCacheMiss(cacheKey, Date.now() - startTime);
+        return null;
+      }
+
       const responseTime = Date.now() - startTime;
-      const dataSize = JSON.stringify(cached.matches).length;
+      const dataSize = JSON.stringify(validMatches).length;
 
       CachePerformanceMonitor.recordCacheHit(cacheKey, responseTime, dataSize);
-      console.log(`📦 ✅ Cache HIT for tournament ${tournamentNo} year ${yearToUse}`);
-      return cached.matches;
+      console.log(`📦 ✅ Cache HIT for tournament ${tournamentNo} year ${yearToUse} (${validMatches.length} matches)`);
+      return validMatches;
     } catch (error) {
       CachePerformanceMonitor.recordCacheError(cacheKey, Date.now() - startTime);
       console.warn('Failed to get cached matches:', error);

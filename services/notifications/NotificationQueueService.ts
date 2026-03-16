@@ -13,6 +13,7 @@
  */
 
 import { MMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import NotificationService from './NotificationService';
 import type { NotificationPayload } from '../../types/notifications';
@@ -69,7 +70,9 @@ export class NotificationQueueService {
   private constructor() {
     this.storage = new MMKV({
       id: 'notification_queue',
-      encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY || undefined
+      ...(Platform.OS !== 'web' && process.env.EXPO_PUBLIC_MMKV_KEY
+        ? { encryptionKey: process.env.EXPO_PUBLIC_MMKV_KEY }
+        : {})
     });
 
     this.log('NotificationQueueService initialized');

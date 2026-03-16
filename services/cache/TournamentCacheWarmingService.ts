@@ -129,9 +129,11 @@ export class TournamentCacheWarmingService {
         // FIX #29: Filter matches to only include the target year
         // The VIS API may return matches from other years if tournamentNo is reused across seasons
         const filteredMatches = matches.filter(m => {
-          const d = (m as any).scheduledDateTime;
-          if (!d) return true; // Keep matches without dates (TBD)
-          return new Date(d).getFullYear() === targetYear;
+          const d = (m as any).scheduledDateTime || (m as any).LocalDate || (m as any).Date || (m as any).MatchDate;
+          if (!d) return false; // REJECT matches without any date
+          const matchYear = new Date(d).getFullYear();
+          if (isNaN(matchYear)) return false;
+          return matchYear === targetYear;
         });
 
         if (filteredMatches.length === 0) {

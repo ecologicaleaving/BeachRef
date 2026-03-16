@@ -1628,9 +1628,11 @@ const TournamentDetailScreenContent: React.FC = () => {
         // The VIS API may return matches from other years if tournament codes are reused across seasons
         const beforeFilter = allMatches.length;
         allMatches = allMatches.filter(m => {
-          const d = (m as any).scheduledDateTime || (m as any).LocalDate;
-          if (!d) return true; // Keep matches without dates (TBD)
-          return new Date(d).getFullYear() === tournamentYear;
+          const d = (m as any).scheduledDateTime || (m as any).LocalDate || (m as any).Date || (m as any).MatchDate;
+          if (!d) return false; // REJECT matches without any date — likely from wrong year/corrupt data
+          const matchYear = new Date(d).getFullYear();
+          if (isNaN(matchYear)) return false;
+          return matchYear === tournamentYear;
         });
         if (allMatches.length !== beforeFilter) {
           console.warn(`⚠️ [FIX-29] Filtered ${beforeFilter - allMatches.length} wrong-year matches from API response (kept ${allMatches.length}/${beforeFilter} for year ${tournamentYear})`);

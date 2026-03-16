@@ -57,10 +57,13 @@ export class TournamentMatchCache {
 
       // FIX #29: Validate that cached matches actually belong to the requested year
       // Guards against corrupt cache entries from warming service or cross-year contamination
+      // Check ALL possible date fields from VIS API
       const validMatches = cached.matches.filter(m => {
-        const dateStr = (m as any).scheduledDateTime || (m as any).LocalDate;
-        if (!dateStr) return true; // Keep matches without dates (TBD)
-        return new Date(dateStr).getFullYear() === yearToUse;
+        const dateStr = (m as any).scheduledDateTime || (m as any).LocalDate || (m as any).Date || (m as any).MatchDate || (m as any).LocalDateTime;
+        if (!dateStr) return false; // REJECT matches without any date — they're likely from corrupt/old cache
+        const matchYear = new Date(dateStr).getFullYear();
+        if (isNaN(matchYear)) return false; // Invalid date
+        return matchYear === yearToUse;
       });
 
       if (validMatches.length !== cached.matches.length) {

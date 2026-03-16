@@ -370,9 +370,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       new Date().getFullYear();
 
     const filtered = propMatches.filter(match => {
-      const dateStr = (match as any).scheduledDateTime || (match as any).LocalDate || (match as any).Date;
-      if (!dateStr) return true; // Keep matches with no date (TBD etc.)
-      return new Date(dateStr).getFullYear() === targetYear;
+      const dateStr = (match as any).scheduledDateTime || (match as any).LocalDate || (match as any).Date || (match as any).MatchDate;
+      if (!dateStr) return false; // REJECT matches without any date — likely from wrong year
+      const matchYear = new Date(dateStr).getFullYear();
+      if (isNaN(matchYear)) return false;
+      return matchYear === targetYear;
     });
 
     if (filtered.length !== propMatches.length) {

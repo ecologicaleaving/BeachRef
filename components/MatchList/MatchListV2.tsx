@@ -789,13 +789,17 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       if (scheduled?.dateTournament) {
         // Use pre-calculated tournament date (immune to browser timezone)
         dateKey = scheduled.dateTournament; // Already in YYYY-MM-DD format
+      } else if ((match as any).scheduledDateTournament) {
+        dateKey = (match as any).scheduledDateTournament;
+      } else if ((match as any).LocalDate) {
+        dateKey = (match as any).LocalDate;
       } else {
-        // Fallback to legacy method (but this is the buggy path)
+        // Last resort fallback (may shift dates in negative UTC offsets)
         const date = new Date(match.scheduledDateTime);
         if (isNaN(date.getTime())) {
           return;
         }
-        dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        dateKey = date.toISOString().split('T')[0];
       }
 
       if (!groups[dateKey]) {
@@ -865,11 +869,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
       const todayMatches = filteredMatches.filter(match => {
         // Use timezone-safe date from scheduled structure if available
         const scheduled = (match as any).scheduled;
-        if (scheduled?.dateTournament) {
-          return scheduled.dateTournament === todayStr;
-        }
-        // Fallback to legacy method (but this is the buggy path)
-        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        const matchDate = scheduled?.dateTournament
+          ?? (match as any).scheduledDateTournament
+          ?? (match as any).LocalDate
+          ?? new Date(match.scheduledDateTime).toISOString().split('T')[0];
         return matchDate === todayStr;
       });
 
@@ -938,11 +941,10 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     const hasTodayMatches = filteredMatches.some(match => {
       // Use timezone-safe date from scheduled structure if available
       const scheduled = (match as any).scheduled;
-      if (scheduled?.dateTournament) {
-        return scheduled.dateTournament === todayStr;
-      }
-      // Fallback to legacy method (but this is the buggy path)
-      const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+      const matchDate = scheduled?.dateTournament
+        ?? (match as any).scheduledDateTournament
+        ?? (match as any).LocalDate
+        ?? new Date(match.scheduledDateTime).toISOString().split('T')[0];
       return matchDate === todayStr;
     });
 

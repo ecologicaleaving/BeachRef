@@ -408,8 +408,12 @@ const TournamentDetailScreenContent: React.FC = () => {
       const todaysScheduledMatches = matches.filter(match => {
         if (!match?.scheduledDateTime) return false;
 
-        // Check if match is today
-        const matchDate = new Date(match.scheduledDateTime).toISOString().split('T')[0];
+        // Check if match is today (timezone-safe: prefer tournament-local date)
+        const scheduled = (match as any).scheduled;
+        const matchDate = scheduled?.dateTournament
+          ?? (match as any).scheduledDateTournament
+          ?? (match as any).LocalDate
+          ?? new Date(match.scheduledDateTime).toISOString().split('T')[0];
         if (matchDate !== todayStr) return false;
 
         // Check for SCHEDULED status

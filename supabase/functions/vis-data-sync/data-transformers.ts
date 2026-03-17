@@ -145,7 +145,7 @@ export function transformMatchForDatabase(visMatch: VisMatchDTO, tournamentId?: 
     phase: visMatch.phaseCode || 'Main Draw',
     name: `${visMatch.tournamentCode} - ${visMatch.phaseCode || 'Main Draw'}`,
     country: null, // Will be populated from tournament data
-    start_date: visMatch.scheduledDateTime ? new Date(visMatch.scheduledDateTime).toISOString().split('T')[0] : null,
+    start_date: (visMatch as any).LocalDate ?? (visMatch.scheduledDateTime ? new Date(visMatch.scheduledDateTime).toISOString().split('T')[0] : null),
     end_date: null,
     status: visMatch.status,
     created_at: new Date().toISOString(),

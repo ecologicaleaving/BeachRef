@@ -824,7 +824,8 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
   useEffect(() => {
     if (groupedMatches.length > 0) {
       const allDates = groupedMatches.map(([date]) => date);
-      const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
       const initialExpanded: { [key: string]: boolean } = {};
 
@@ -863,7 +864,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
     } else {
       // Priority 2: First match of today (chronologically first, appears last in "Today" panel)
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       // AUTOSCROLL: Looking for today matches
 
       const todayMatches = filteredMatches.filter(match => {
@@ -937,7 +938,7 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
     // Check if there are matches for today
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const hasTodayMatches = filteredMatches.some(match => {
       // Use timezone-safe date from scheduled structure if available
       const scheduled = (match as any).scheduled;
@@ -967,7 +968,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Format date for section headers - consistent date format (no "Today"/"Tomorrow" labels)
   const formatDateHeader = (dateString: string): string => {
-    const date = new Date(dateString);
+    // IMPORTANT: dateString is a tournament-local date "YYYY-MM-DD".
+    // new Date("YYYY-MM-DD") parses as UTC midnight, which shifts to the
+    // previous day in negative-UTC timezones.  Append T12:00:00 so the
+    // date survives any local-timezone conversion.
+    const date = new Date(dateString + 'T12:00:00');
     if (isNaN(date.getTime())) {
       return dateString;
     }

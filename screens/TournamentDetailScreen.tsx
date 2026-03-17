@@ -403,7 +403,7 @@ const TournamentDetailScreenContent: React.FC = () => {
     } else {
       // Priority 2: Last SCHEDULED match of TODAY
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
       const todaysScheduledMatches = matches.filter(match => {
         if (!match?.scheduledDateTime) return false;
@@ -559,7 +559,8 @@ const TournamentDetailScreenContent: React.FC = () => {
       return 'SCHEDULED';
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const startDateOnly = startDate.split('T')[0];
 
     if (today < startDateOnly) {

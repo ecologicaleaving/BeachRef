@@ -27,7 +27,7 @@
 - **Deploy Method**: expo-build (mobile) / Netlify (web)
 - **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
-- **Last Deploy**: 2026-07-08T08:34:41Z (web — issue #32 code-splitting)
+- **Last Deploy**: 2026-07-08T09:53:18Z (web — issue #34/PR #35 per-route SSG + skeleton)
 - **Environment Variables**: 
   - `SUPABASE_URL`: Expo environment injection
   - `SUPABASE_ANON_KEY`: Expo secure store
@@ -92,8 +92,9 @@
 - **DONE**: Issue #23 - Fix tornei 2026: visNo numerico risolto in tournamentCode nel compatibility layer, filtro eventNo per query DB e prevenzione cross-contaminazione partite stale
 - **DONE**: Issue #27 — Bug fix cache intermittente 2013: year aggiunto a queryKeys.matches.list() e byTournament(), guard anno nel DB fallback di useMatches e DualReadService.getMatchesFromDB(), year propagato alla API, 4 nuovi test di isolamento cache key per anno
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
-- **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. Diagnosi: il render delay è boot RN-Web, non il bundle → round 2 SSG tracciato in #34
-- **TODO**: Issue #34 — Web perf round 2: prerendering SSG per load time ≥80% (prototipo misurato: LCP 77ms vs 1900ms)
+- **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. LCP prod −34%. Diagnosi: il render delay è boot RN-Web, non il bundle
+- **DONE**: Issue #34 (PR #35) — Web perf SSG: routing per-route + skeleton prerenderizzato (perceived performance). Certificato che il −80% sull'LCP NON è raggiungibile con SSG (LCP = contenuto data-driven non prerenderizzabile); richiede refactor architetturale (output `server` o runtime più leggero). Test: `npm run test:prerender`, `tests/curl-tests.sh`
+- **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 
 ---
 *Last Updated: 2026-07-08T08:35:00Z*

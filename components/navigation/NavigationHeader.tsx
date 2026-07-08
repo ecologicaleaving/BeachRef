@@ -1,5 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Filter, Home, RefreshCw } from 'lucide-react-native';
+// Deep subpath imports avoid pulling in the full lucide-react-native icon
+// barrel (~3200 named exports) into the web bundle — see issue #32.
+import Filter from 'lucide-react-native/dist/esm/icons/funnel';
+import Home from 'lucide-react-native/dist/esm/icons/house';
+import RefreshCw from 'lucide-react-native/dist/esm/icons/refresh-cw';
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,

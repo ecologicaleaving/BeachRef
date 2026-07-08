@@ -7,7 +7,9 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Users } from 'lucide-react-native';
+// Deep subpath import avoids pulling in the full lucide-react-native icon
+// barrel (~3200 named exports) into the web bundle — see issue #32.
+import Users from 'lucide-react-native/dist/esm/icons/users';
 
 interface EmptyTeamListStateProps {
   /** Custom message to display */

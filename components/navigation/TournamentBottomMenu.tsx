@@ -1,5 +1,8 @@
 import { usePathname, useRouter } from 'expo-router';
-import { Calendar, Users } from 'lucide-react-native';
+// Deep subpath imports avoid pulling in the full lucide-react-native icon
+// barrel (~3200 named exports) into the web bundle — see issue #32.
+import Calendar from 'lucide-react-native/dist/esm/icons/calendar';
+import Users from 'lucide-react-native/dist/esm/icons/users';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { shadowPresets } from '../../theme/shadows';

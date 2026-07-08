@@ -41,6 +41,13 @@ interface TournamentSection {
 
 const TournamentSelectionScreen: React.FC = () => {
   const [tournaments, setTournaments] = useState<TournamentCore[]>([]);
+  // issue #34 (SSG): `hydrated` is false during static prerendering and on the
+  // first client render, then true after mount. Used to prerender a full
+  // skeleton as the LCP element (painted instantly from the per-route HTML)
+  // with markup identical on server and first client render → no hydration
+  // mismatch. Post-hydration the original loading/empty/error logic is unchanged.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
 
   // US1 - Loading States: Use unified loading state hook
   const {
@@ -1173,8 +1180,13 @@ const TournamentSelectionScreen: React.FC = () => {
     );
   };
 
-  // US1 & US3: Show loading skeleton during initial load
-  if (isLoading && tournaments.length === 0) {
+  // US1 & US3 + issue #34: Show loading skeleton during initial load AND during
+  // static prerender / first client paint. Prerendering a full skeleton makes it
+  // the LCP element (instant paint from per-route HTML) instead of waiting for
+  // the JS boot + data fetch. `!hydrated` covers the SSR/first-render case with
+  // identical server/client markup; post-hydration the `isLoading` gate behaves
+  // exactly as before, so confirmed-empty still shows the empty state.
+  if ((isLoading || !hydrated) && tournaments.length === 0) {
     return (
       <View style={styles.container}>
         <NavigationHeader

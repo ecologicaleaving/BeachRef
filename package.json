@@ -18,6 +18,7 @@
     "validate:accessibility": "npm run validate:contrast && npm run test:contrast",
     "setup-supabase": "node scripts/setup-supabase.js",
     "test-database": "node scripts/test-database-schema.js",
+    "test:prerender": "node tests/prerender-check.js",
     "audit": "tsx scripts/audit/run-audit.ts",
     "audit:ci": "tsx scripts/audit/run-audit.ts --ci --fail-on=critical,high",
     "audit:watch": "tsx scripts/audit/run-audit.ts --watch",

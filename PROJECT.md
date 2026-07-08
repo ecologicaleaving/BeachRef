@@ -21,18 +21,20 @@
 - **Admin URL**: https://supabase.com/dashboard
 
 ## Deployment
-- **Live URL**: N/A (mobile app)
-- **Deploy Method**: expo-build
-- **Deploy Host**: expo-build-service
+- **Live URL (Web)**: https://beachrefs.netlify.app
+- **Web Deploy**: Netlify (Git-connected su master, build `expo export --platform web`)
+- **Live URL (Mobile)**: N/A (mobile app)
+- **Deploy Method**: expo-build (mobile) / Netlify (web)
+- **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
-- **Last Deploy**: 2026-02-15T06:00:00Z
+- **Last Deploy**: 2026-07-08T08:34:41Z (web — issue #32 code-splitting)
 - **Environment Variables**: 
   - `SUPABASE_URL`: Expo environment injection
   - `SUPABASE_ANON_KEY`: Expo secure store
   - `TOURNAMENT_API_KEY`: External API integration
 
 ## Repository
-- **Main Branch**: main
+- **Main Branch**: master
 - **Development Branch**: feature/issue-27-cache-2013-bug
 - **GitHub**: https://github.com/ecologicaleaving/BeachRef
 
@@ -90,7 +92,9 @@
 - **DONE**: Issue #23 - Fix tornei 2026: visNo numerico risolto in tournamentCode nel compatibility layer, filtro eventNo per query DB e prevenzione cross-contaminazione partite stale
 - **DONE**: Issue #27 — Bug fix cache intermittente 2013: year aggiunto a queryKeys.matches.list() e byTournament(), guard anno nel DB fallback di useMatches e DualReadService.getMatchesFromDB(), year propagato alla API, 4 nuovi test di isolamento cache key per anno
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
+- **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. Diagnosi: il render delay è boot RN-Web, non il bundle → round 2 SSG tracciato in #34
+- **TODO**: Issue #34 — Web perf round 2: prerendering SSG per load time ≥80% (prototipo misurato: LCP 77ms vs 1900ms)
 
 ---
-*Last Updated: 2026-03-13T19:00:00Z*
+*Last Updated: 2026-07-08T08:35:00Z*
 

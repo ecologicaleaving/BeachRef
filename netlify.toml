@@ -5,10 +5,17 @@
 [functions]
   directory = "netlify/functions"
 
+# NOTE (issue #34): NO SPA catch-all rewrite to /index.html.
+# With Expo `web.output: "static"` every route is prerendered to its own HTML
+# (e.g. /tournament-selection → tournament-selection.html) with above-the-fold
+# content already painted. A `/* -> /index.html 200` rewrite would serve the
+# empty "Loading" splash for every URL, discarding all per-route prerendering
+# and inflating LCP. Netlify serves the per-route HTML via pretty URLs; unknown
+# paths fall back to Expo's generated 404 page.
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 200
+  to = "/+not-found.html"
+  status = 404
 
 [[headers]]
   # index.html must NEVER be cached — this is how users get new deploys

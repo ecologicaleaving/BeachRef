@@ -11,14 +11,6 @@
   status = 200
 
 [[headers]]
-  # TEMPORARY: Force all browsers to clear cached resources for this origin
-  # This purges the old 1-year cached JS bundles from users' browsers
-  # TODO: Remove Clear-Site-Data header after 2026-04-01
-  for = "/*"
-  [headers.values]
-    Clear-Site-Data = "\"cache\""
-
-[[headers]]
   # index.html must NEVER be cached — this is how users get new deploys
   for = "/"
   [headers.values]
@@ -38,6 +30,14 @@
 [[headers]]
   # Hashed bundles from Expo export (e.g., /bundles/abc123.js)
   for = "/bundles/*"
+  [headers.values]
+    cache-control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # Code-split JS chunks from Expo web export (entry + per-route async chunks)
+  # Filenames are content-hashed (e.g. /_expo/static/js/web/entry-<hash>.js),
+  # so they can be cached forever — a new deploy always produces new hashes.
+  for = "/_expo/static/js/web/*"
   [headers.values]
     cache-control = "public, max-age=31536000, immutable"
 

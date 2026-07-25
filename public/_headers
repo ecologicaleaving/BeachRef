@@ -1,0 +1,51 @@
+# =============================================================================
+# SINGLE SOURCE OF TRUTH for Netlify response headers (issue #36).
+# =============================================================================
+# This file is copied verbatim into `dist/_headers` by `expo export`.
+#
+# It has to live here, NOT in `netlify.toml`: the site is deployed by
+# `.github/workflows/netlify-deploy.yml`, whose deploy job only downloads the
+# `dist/` build artifact and hands it to `nwtgck/actions-netlify`. The
+# repository is never checked out in that job, so `netlify.toml` is not even
+# present and its `[[headers]]` / `[[redirects]]` blocks are inert. Verified on
+# deploy preview 37: with header rules only in `netlify.toml`, every response
+# came back with Netlify's default `public,max-age=0,must-revalidate`.
+#
+# Do NOT add header rules to `netlify.toml` — they will silently do nothing.
+#
+# ORDERING MATTERS. Netlify applies every matching rule and, for a repeated
+# header name, the LAST matching rule wins. Netlify globs are also greedy
+# across path separators, so `/*.js` matches `/_expo/static/js/web/x.js`. The
+# previous version of this file declared `/_expo/*` BEFORE a generic `/*.js`,
+# so the hashed chunks ended up `max-age=0` in production. Specific rules must
+# therefore come LAST, and generic per-extension rules must not exist at all.
+# =============================================================================
+
+# Default: HTML documents must NEVER be cached — this is how users receive a
+# new deploy. Overridden below for content-hashed static assets.
+/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Hashed static assets from older/alternate output paths.
+/static/*
+  Cache-Control: public, max-age=31536000, immutable
+/bundles/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Code-split JS/CSS chunks from the Expo web export (entry + per-route async
+# chunks). Filenames are content-hashed — e.g.
+# /_expo/static/js/web/entry-<hash>.js — so a new deploy always produces new
+# URLs and a 1 year immutable cache is safe.
+/_expo/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts and images. Also content-hashed, verified in `dist/`:
+#   /assets/assets/images/beachref-logo.bb09d201425a9962ec1ca16e22254b12.png
+#   /assets/node_modules/@expo/vector-icons/.../Feather.a76d3097….ttf
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker is the file the browser re-fetches to discover a new
+# version — it must never be cached. Declared last so nothing overrides it.
+/service-worker.js
+  Cache-Control: no-cache, no-store, must-revalidate

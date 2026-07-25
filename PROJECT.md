@@ -100,22 +100,37 @@
 
 ## Web — configurazione cache e redirect (issue #36)
 
-**Unica fonte di verità: `netlify.toml`.** Non reintrodurre `public/_headers` né
-`public/_redirects`: la duplicazione ha già prodotto in produzione regole
-contraddittorie (la regola generica `/*.js` sovrascriveva silenziosamente
-l'`immutable` dei chunk hashati, e un catch-all SPA annullava il per-route SSG).
+**Unica fonte di verità: `public/_headers`** (copiato in `dist/_headers` da
+`expo export`). **NON** `netlify.toml`.
+
+Motivo, verificato sul deploy preview 37: il sito non è buildato da Netlify da
+git. Lo deploya `.github/workflows/netlify-deploy.yml`, il cui job di deploy
+scarica **solo** l'artifact `dist/` e lo passa a `nwtgck/actions-netlify` —
+la repo non viene mai checkoutata in quel job, quindi `netlify.toml` non è
+nemmeno presente e i suoi blocchi `[[headers]]`/`[[redirects]]` sono inerti.
+Con le regole dichiarate solo in `netlify.toml` ogni risposta tornava con il
+default Netlify `public,max-age=0,must-revalidate`.
+
+**Ordinamento**: Netlify applica tutte le regole che matchano e, a parità di
+nome header, vince l'**ultima**. I glob sono greedy sui separatori di path
+(`/*.js` matcha `/_expo/static/js/web/x.js`). Le regole specifiche vanno
+quindi dichiarate **per ultime**, e regole generiche per estensione non devono
+esistere: era esattamente questo il bug (`/_expo/*` dichiarato prima di
+`/*.js`, che quindi vinceva con `max-age=0`).
+
+Nessun `public/_redirects`: il per-route SSG di #34 funziona con i pretty URL
+di Netlify senza alcuna regola di redirect, e un catch-all SPA lo romperebbe.
 
 | Path | Cache-Control | Perché |
 |---|---|---|
 | `/*` (documenti HTML) | `no-cache, no-store, must-revalidate` | i deploy devono arrivare subito agli utenti |
+| `/static/*`, `/bundles/*` | `public, max-age=31536000, immutable` | output alternativi hashati |
 | `/_expo/*` | `public, max-age=31536000, immutable` | filename content-hashed dall'export Expo |
 | `/assets/*` | `public, max-age=31536000, immutable` | font/immagini con hash nel filename |
-| `/static/*`, `/bundles/*` | `public, max-age=31536000, immutable` | output alternativi hashati |
 | `/service-worker.js` | `no-cache, no-store, must-revalidate` | è il file da cui il browser scopre una nuova versione |
 
-Le regole specifiche sono dichiarate **dopo** il default `/*`: così vincono sia
-con la semantica "ultima regola che matcha" sia con "regola più specifica".
-Verificare sempre l'effetto reale con `./tests/curl-tests.sh <deploy-preview-url>`.
+Verificare sempre l'effetto reale con `./tests/curl-tests.sh <deploy-preview-url>`
+— le regole header di Netlify non sono verificabili in locale.
 
 **Service worker**: serve solo per le web push. Non ha (e non deve avere) un
 handler `fetch` — intercettare le navigazioni aggiungeva ~1.8 s di TTFB percepito

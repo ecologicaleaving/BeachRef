@@ -562,8 +562,9 @@ Every run prints its roster — which checkers are running and which are **NOT**
 A reduced run is allowed; a *silent* reduced run is not. An unrecognised
 `--checks` id exits 2 rather than quietly narrowing coverage.
 
-Full run cost: ~100 s (TypeScript ~40 s, ESLint ~33 s, Complexity ~24 s, the
-other six ~2 s combined).
+Full run cost: ~62 s (TypeScript ~20 s, ESLint ~20 s, Complexity ~21 s, the
+other six ~1 s combined). Before issue #44 it was ~187 s, because four of those
+six walked `node_modules`.
 
 **Verifying the ESLint checker**: its scope is deliberately identical to what
 `expo lint` covers, so `npm run lint` and the `eslint` checker report the same
@@ -636,7 +637,7 @@ specs/002-production-refactoring/reports/
 | Key | Purpose |
 |---|---|
 | `projectRoot` | Repo root. Overridable via `AUDIT_PROJECT_ROOT` (used by tests to point the audit at a broken fixture). |
-| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. |
+| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. #42 fixed this in the shared `shouldExcludePath()` but wired **only the security scanner** to it; the error-handling, performance, data-flow and build validators each kept a copy-pasted, non-normalised walker and went on scanning `node_modules` until issue #44. **Any checker that walks the tree must call `shouldExcludePath()` — never re-implement the matching.** Frozen by `__tests__/scripts/audit/checker-exclusions.test.ts`. |
 | `lintRoots` | Dirs linted by the ESLint checker — kept equal to `expo lint`'s defaults for cross-checkability. |
 | `complexityRoots` | Dirs analysed by the Complexity checker (wider than `lintRoots`). |
 | `baselineFile` | `.audit-baseline.json` — the frozen backlog. |
@@ -653,6 +654,10 @@ specs/002-production-refactoring/reports/
   tolerates line shifts; the roster contains all 9 checkers.
 - `audit-cli-exit-code.test.ts` — runs the real CLI against a deliberately
   broken project and asserts exit 2 for every invocation the hooks use.
+- `security-scanner.test.ts` — the XML-namespace exemption (issue #56).
+- `checker-exclusions.test.ts` — every tree-walking checker honours
+  `excludePaths` on any platform, and none of them descends into
+  `node_modules` (issue #44).
 
 If you touch the audit, these must stay green.
 
@@ -725,7 +730,9 @@ authority on current behaviour**; treat those documents as historical.
 - Checker execution time
 - Trend analysis over time
 
-**Current state (after issue #56, all 9 checkers, `--no-baseline`)**:
+**Current state (after issue #44, all 9 checkers, `--no-baseline`)** — these
+numbers are now reproducible on a machine with `node_modules` installed, which
+before #44 they were not (see `excludePaths` above):
 
 | Checker | Findings |
 |---|---|
@@ -735,7 +742,7 @@ authority on current behaviour**; treat those documents as historical.
 | Security | **0** |
 | Architecture | 15 |
 | Error Handling | 39 |
-| Performance | ~2049 |
+| Performance | 2049 |
 | Data Flow | 25 |
 | Build | 4 |
 
@@ -743,6 +750,15 @@ authority on current behaviour**; treat those documents as historical.
 issue #56). The gate therefore reports PASS today, and will report FAIL the
 moment any of those counts grows. This number is the epic's real starting
 point — not zero.
+
+> Issue #44 did **not** regenerate the baseline, and the counts above did not
+> move. Before #44 the same table was only reproducible on a checkout without
+> `node_modules`: with dependencies installed, four validators walked them and
+> Error Handling reported 150 instead of 39 — 111 phantom **High** findings that
+> the gate counted as blocking regressions. `npm run audit:ci`, and therefore
+> `.husky/pre-push`, failed on `master` for every developer. The full run also
+> dropped from ~187 s to ~62 s once the walkers stopped reading the dependency
+> tree.
 
 ### Secrets: the one finding class you must never baseline
 

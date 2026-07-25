@@ -8,7 +8,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import { AUDIT_CONFIG, shouldExcludePath } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath } from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -268,12 +268,10 @@ export class PerformanceValidator implements AuditChecker {
         for (const entry of entries) {
           const fullPath = path.join(currentDir, entry.name);
 
-          // Skip excluded paths
-          const relativePath = path.relative(AUDIT_CONFIG.projectRoot, fullPath);
-          if (AUDIT_CONFIG.excludePaths.some(p => {
-            const regex = new RegExp('^' + p.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$');
-            return regex.test(relativePath);
-          })) {
+          // Skip excluded paths — see the note in error-handling-validator.ts:
+          // the inline copy matched against raw path.relative() output and so
+          // never excluded anything on Windows (issue #44).
+          if (shouldExcludePath(fullPath)) {
             continue;
           }
 

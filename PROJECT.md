@@ -94,8 +94,48 @@
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 - **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. LCP prod −34%. Diagnosi: il render delay è boot RN-Web, non il bundle
 - **DONE**: Issue #34 (PR #35) — Web perf SSG: routing per-route + skeleton prerenderizzato (perceived performance). Certificato che il −80% sull'LCP NON è raggiungibile con SSG (LCP = contenuto data-driven non prerenderizzabile); richiede refactor architetturale (output `server` o runtime più leggero). Test: `npm run test:prerender`, `tests/curl-tests.sh`
+- **DONE**: Issue #36 — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), `netlify.toml` unica fonte di verità per header e redirect (`public/_headers` e `public/_redirects` eliminati, incluso il catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34), chunk `/_expo/*` e `/assets/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Test: `tests/curl-tests.sh <BASE_URL>`, `npm run test:prerender`
+- **TODO** (follow-up di #36, fuori scope): dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw, ~3.2 s di download+parse) — richiede bundle analysis a sé
 - **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 
+## Web — configurazione cache e redirect (issue #36)
+
+**Unica fonte di verità: `public/_headers`** (copiato in `dist/_headers` da
+`expo export`). **NON** `netlify.toml`.
+
+Motivo, verificato sul deploy preview 37: il sito non è buildato da Netlify da
+git. Lo deploya `.github/workflows/netlify-deploy.yml`, il cui job di deploy
+scarica **solo** l'artifact `dist/` e lo passa a `nwtgck/actions-netlify` —
+la repo non viene mai checkoutata in quel job, quindi `netlify.toml` non è
+nemmeno presente e i suoi blocchi `[[headers]]`/`[[redirects]]` sono inerti.
+Con le regole dichiarate solo in `netlify.toml` ogni risposta tornava con il
+default Netlify `public,max-age=0,must-revalidate`.
+
+**Ordinamento**: Netlify applica tutte le regole che matchano e, a parità di
+nome header, vince l'**ultima**. I glob sono greedy sui separatori di path
+(`/*.js` matcha `/_expo/static/js/web/x.js`). Le regole specifiche vanno
+quindi dichiarate **per ultime**, e regole generiche per estensione non devono
+esistere: era esattamente questo il bug (`/_expo/*` dichiarato prima di
+`/*.js`, che quindi vinceva con `max-age=0`).
+
+Nessun `public/_redirects`: il per-route SSG di #34 funziona con i pretty URL
+di Netlify senza alcuna regola di redirect, e un catch-all SPA lo romperebbe.
+
+| Path | Cache-Control | Perché |
+|---|---|---|
+| `/*` (documenti HTML) | `no-cache, no-store, must-revalidate` | i deploy devono arrivare subito agli utenti |
+| `/static/*`, `/bundles/*` | `public, max-age=31536000, immutable` | output alternativi hashati |
+| `/_expo/*` | `public, max-age=31536000, immutable` | filename content-hashed dall'export Expo |
+| `/assets/*` | `public, max-age=31536000, immutable` | font/immagini con hash nel filename |
+| `/service-worker.js` | `no-cache, no-store, must-revalidate` | è il file da cui il browser scopre una nuova versione |
+
+Verificare sempre l'effetto reale con `./tests/curl-tests.sh <deploy-preview-url>`
+— le regole header di Netlify non sono verificabili in locale.
+
+**Service worker**: serve solo per le web push. Non ha (e non deve avere) un
+handler `fetch` — intercettare le navigazioni aggiungeva ~1.8 s di TTFB percepito
+senza alcun beneficio di caching. `APP_VERSION` va bumpato a ogni modifica del file.
+
 ---
-*Last Updated: 2026-07-08T08:35:00Z*
+*Last Updated: 2026-07-25T00:00:00Z*
 

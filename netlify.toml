@@ -5,56 +5,30 @@
 [functions]
   directory = "netlify/functions"
 
-# NOTE (issue #34): NO SPA catch-all rewrite to /index.html.
-# With Expo `web.output: "static"` every route is prerendered to its own HTML
-# (e.g. /tournament-selection → tournament-selection.html) with above-the-fold
-# content already painted. A `/* -> /index.html 200` rewrite would serve the
-# empty "Loading" splash for every URL, discarding all per-route prerendering
-# and inflating LCP. Netlify serves the per-route HTML via pretty URLs; unknown
-# paths fall back to Expo's generated 404 page.
-[[redirects]]
-  from = "/*"
-  to = "/+not-found.html"
-  status = 404
-
-[[headers]]
-  # index.html must NEVER be cached — this is how users get new deploys
-  for = "/"
-  [headers.values]
-    cache-control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  for = "/index.html"
-  [headers.values]
-    cache-control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  # Hashed static assets can be cached forever (filename changes on new deploy)
-  for = "/static/*"
-  [headers.values]
-    cache-control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  # Hashed bundles from Expo export (e.g., /bundles/abc123.js)
-  for = "/bundles/*"
-  [headers.values]
-    cache-control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  # Code-split JS chunks from Expo web export (entry + per-route async chunks)
-  # Filenames are content-hashed (e.g. /_expo/static/js/web/entry-<hash>.js),
-  # so they can be cached forever — a new deploy always produces new hashes.
-  for = "/_expo/static/js/web/*"
-  [headers.values]
-    cache-control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  # Root-level assets: short cache with revalidation
-  for = "/*.js"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
+# =============================================================================
+# NO [[headers]] AND NO [[redirects]] HERE — ON PURPOSE (issue #36).
+# =============================================================================
+# This site is not built by Netlify from git. It is deployed by
+# `.github/workflows/netlify-deploy.yml`, whose deploy job downloads only the
+# `dist/` build artifact and hands it to `nwtgck/actions-netlify`. That job
+# never checks out the repository, so this file is not present at deploy time
+# and any `[[headers]]` / `[[redirects]]` block in it is inert.
+#
+# Verified on deploy preview 37: with the header rules declared only here,
+# every response — document, JS chunk, service worker — came back with
+# Netlify's default `public,max-age=0,must-revalidate`. The rules had no effect
+# whatsoever, which is why the `immutable` policy for `/_expo/static/js/web/*`
+# declared in this file never reached production.
+#
+# The single source of truth for response headers is `public/_headers`, which
+# `expo export` copies to `dist/_headers` and which Netlify honours on every
+# deploy type. Add header rules there, not here.
+#
+# Redirects (issue #34): there is deliberately no SPA catch-all. With Expo
+# `web.output: "static"` every route is prerendered to its own HTML file (e.g.
+# /tournament-selection -> tournament-selection.html) with above-the-fold
+# content already painted, and Netlify serves it via pretty URLs with no
+# redirect rule at all. A `/* -> /index.html 200` rewrite would serve the empty
+# "Loading" splash for every URL and discard all per-route prerendering. There
+# is no `public/_redirects` for the same reason.
+# =============================================================================

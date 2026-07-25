@@ -415,6 +415,30 @@ singolo caricamento, più la match list: 4 richieste per montaggio, 8 per
 aprire → indietro → riaprire. Ora sono **2 e 2**. Congelato da
 `__tests__/services/RefereeDirectoryService.test.ts` (blocco "API call budget").
 
+### Niente header custom, o ogni richiesta costa il doppio
+
+La config del client in questo servizio ha `headers: {}` **di proposito**. Una
+POST con il solo `Content-Type: application/x-www-form-urlencoded` e' una CORS
+*simple request*; basta aggiungere `X-FIVB-App-ID` (come fa `OfficialsService`)
+per renderla non-simple, e il browser antepone una `OPTIONS` di preflight. La
+VIS risponde **senza `Access-Control-Max-Age`**, quindi il preflight non viene
+cachato: **ogni richiesta diventa due round trip**. Misurato sul deploy preview
+della #46: un caricamento di `all-referees` con l'header ha prodotto **31
+`OPTIONS` e zero POST completate**. Non rimetterlo "per uniformita'".
+
+### Limite noto — NON re-indagare
+
+`GetReferee` e `GetImageList` **non funzionano con questo app id, e non
+funzionavano nemmeno prima**. Verificato con richieste dirette alla VIS
+(issue #46): `GetReferee` risponde `<Responses><AccessDenied /></Responses>` sia
+**con** sia **senza** header `X-FIVB-App-ID`; `GetImageList` risponde una pagina
+ASP.NET `Runtime Error` in entrambi i casi. Conseguenza: il ritratto non si
+risolve mai e `referee-profile` mostra il fallback "View ID Card" — che e'
+esattamente cio' che faceva prima, quando le stesse due chiamate fallivano in
+silenzio dentro il componente. Nessun percorso critico chiama `GetReferee`: il
+roster di `GetEventRefereeList` porta gia' gli stessi campi, ed e' per questo che
+`ref-mode` non fa piu' una `GetReferee` per arbitro.
+
 ### Due difetti preesistenti, deliberatamente non corretti
 
 - **`ref-mode` si cancella i dati da sola.** Il caricamento finisce con una

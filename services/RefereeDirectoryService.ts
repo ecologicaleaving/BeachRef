@@ -42,6 +42,18 @@
  * - `app/all-referees.tsx` fans out one season-stats request per active referee
  *   with an unbounded `Promise.all`. That is tracked in issue #65 and is
  *   deliberately left alone — this service only removes the raw `fetch`es.
+ * - **`GetReferee` and `GetImageList` do not work with this app id, and did not
+ *   work before either — do not re-investigate.** Probed directly against the
+ *   VIS (issue #46): `GetReferee` answers `<Responses><AccessDenied /></Responses>`
+ *   *both with and without* the `X-FIVB-App-ID` header, and `GetImageList`
+ *   answers an ASP.NET `Runtime Error` page in both cases. So
+ *   {@link getRefereePortraitUrl} returns `null` in practice and
+ *   `referee-profile` shows its "View ID Card" fallback — which is exactly what
+ *   it did before #46, when the same two calls failed silently inside the
+ *   component. {@link getReferee} is kept because it is a legitimate part of
+ *   this service's surface, but nothing on the critical path calls it: the
+ *   roster from `GetEventRefereeList` already carries the same fields, which is
+ *   why `ref-mode` no longer issues one `GetReferee` per referee.
  * ---
  *
  * Error policy: no method throws. A failure yields an empty collection plus an

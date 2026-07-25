@@ -209,3 +209,146 @@ export function getOfficialDisplayName(official: RefereeOfficial | EventReferee)
 export function getOfficialFullDisplayName(official: RefereeOfficial | EventReferee): string {
   return `${official.firstName} ${official.lastName} (${official.federationCode})`;
 }
+
+// ============================================================================
+// Event Officials (issue #40) — auxiliary personnel + match assignments
+// ============================================================================
+
+/**
+ * Auxiliary function derived from the VIS `Functions` attribute of an
+ * `<AuxiliaryPerson>` entry.
+ *
+ * Codes are not documented by FIVB; they were decoded empirically over two
+ * distinct events (EventNo 1719 and 1525, 123/124 matches covered).
+ * See {@link AUXILIARY_FUNCTION_CODE_MAP}.
+ */
+export enum AuxiliaryFunction {
+  /** Functions="4" — scorer / assistant scorer pool */
+  SCORER = 'Scorer',
+  /** Functions="2" — line judge pool */
+  LINE_JUDGE = 'LineJudge',
+  /** Any code not present in {@link AUXILIARY_FUNCTION_CODE_MAP} */
+  UNKNOWN = 'Unknown'
+}
+
+/**
+ * VIS `Functions` code → {@link AuxiliaryFunction}.
+ *
+ * Only `2` and `4` have ever been observed. An unknown code MUST NOT crash the
+ * caller: {@link mapAuxiliaryFunctionCode} maps it to
+ * {@link AuxiliaryFunction.UNKNOWN} while the raw code stays available on
+ * {@link EventAuxiliaryOfficial.functionCode}, so a new code surfaces in the
+ * data instead of silently disappearing (issue #40, AC7).
+ */
+export const AUXILIARY_FUNCTION_CODE_MAP: Readonly<Record<string, AuxiliaryFunction>> = {
+  '2': AuxiliaryFunction.LINE_JUDGE,
+  '4': AuxiliaryFunction.SCORER
+};
+
+/**
+ * Map a raw VIS `Functions` code to a typed role. Never throws.
+ */
+export function mapAuxiliaryFunctionCode(code: string | number | undefined | null): AuxiliaryFunction {
+  if (code === undefined || code === null || code === '') {
+    return AuxiliaryFunction.UNKNOWN;
+  }
+  return AUXILIARY_FUNCTION_CODE_MAP[String(code).trim()] ?? AuxiliaryFunction.UNKNOWN;
+}
+
+/**
+ * A single person from the event-level `AuxiliaryPersons` roster.
+ * This is the only source of *names* for scorers and line judges.
+ */
+export interface EventAuxiliaryOfficial {
+  /** Event-scoped id (`No`), the value referenced by match `Personnel` */
+  readonly no: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  /** 2-letter nationality code (VIS `NationalityCode`, e.g. 'BR') */
+  readonly nationalityCode: string;
+  /** VIS gender code as returned ('0' = male, '1' = female) */
+  readonly gender: string;
+  /** Raw `Functions` attribute, kept verbatim for traceability */
+  readonly functionCode: string;
+  /** Decoded role, {@link AuxiliaryFunction.UNKNOWN} for unmapped codes */
+  readonly function: AuxiliaryFunction;
+}
+
+/**
+ * One resolved official slot of a match.
+ */
+export interface MatchOfficialAssignment {
+  /** Slot the person occupies in this match */
+  readonly role: OfficialRole;
+  /** Event-scoped auxiliary person id taken from `Personnel` */
+  readonly officialNo: string;
+  /** `true` when the id was found in the event roster */
+  readonly resolved: boolean;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly nationalityCode: string;
+  /** Ready-to-render label; falls back to `#<id>` when unresolved */
+  readonly displayName: string;
+  readonly function: AuxiliaryFunction;
+}
+
+/**
+ * Officials of a single match, names already resolved.
+ */
+export interface MatchOfficials {
+  readonly eventNo: string;
+  readonly matchNo: string;
+  /** `false` when the match carries no `Personnel` attribute at all */
+  readonly hasPersonnelData: boolean;
+  readonly assignments: readonly MatchOfficialAssignment[];
+  /** Roles the public VIS API cannot provide — see {@link UNAVAILABLE_EVENT_OFFICIAL_ROLES} */
+  readonly unavailableRoles: readonly string[];
+  /** Populated when the lookup failed; `assignments` is then empty */
+  readonly error?: string;
+}
+
+/**
+ * Event-level roster of auxiliary officials.
+ */
+export interface EventOfficialsRoster {
+  readonly eventNo: string;
+  readonly eventName: string;
+  readonly auxiliaryOfficials: readonly EventAuxiliaryOfficial[];
+  /** ISO timestamp of retrieval */
+  readonly retrievedAt: string;
+  /** Roles the public VIS API cannot provide — see {@link UNAVAILABLE_EVENT_OFFICIAL_ROLES} */
+  readonly unavailableRoles: readonly string[];
+  /** Populated when the lookup failed; `auxiliaryOfficials` is then empty */
+  readonly error?: string;
+}
+
+/**
+ * Officials of every match of a tournament plus the roster they resolve against.
+ */
+export interface TournamentOfficials {
+  readonly eventNo: string;
+  readonly roster: EventOfficialsRoster;
+  readonly matches: readonly MatchOfficials[];
+  /** Number of VIS calls actually issued (cache hits excluded) — issue #40 AC4 */
+  readonly apiCallCount: number;
+  readonly error?: string;
+}
+
+/**
+ * **Known VIS limitation — do not re-investigate (issue #40, AC8).**
+ *
+ * The names of the *referee coach* and the *technical delegate* are NOT
+ * obtainable from the public VIS API. Verified at all three levels (event,
+ * tournament, match) on two distinct events, probing ~60 candidate field names.
+ *
+ * `GetEventOfficialList` returns exactly 2 `EventOfficial` entities per event —
+ * almost certainly those two roles — but exposes only `No` and `Version`, with
+ * every other requested attribute silently ignored. The singular
+ * `GetEventOfficial` answers `<NotInNewFormat id="1008" />`.
+ *
+ * Consumers should render these roles as *unavailable*, not as missing data.
+ */
+export const UNAVAILABLE_EVENT_OFFICIAL_ROLES: readonly string[] = [
+  'RefereeCoach',
+  'TechnicalDelegate'
+] as const;

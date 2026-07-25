@@ -232,8 +232,44 @@ The project uses Expo Router with a comprehensive screen-based navigation system
   - `@sentry/react-native` - Production error tracking
   - `react-native-network-logger` - Development API monitoring
   - `fast-xml-parser` - XML validation for VIS API audit
-- **Performance**: React Native Reanimated, gesture handler
 - **Expo SDK**: Version ~53.0.20 with new architecture enabled
+
+> **`react-native-reanimated` and `react-native-gesture-handler` are no longer
+> imported by any application file** (issue #38). They are still declared in
+> `package.json` because the native build expects them, but a single import of
+> either pulls **300 modules / ~830 KB** into the web entry chunk: gesture-handler
+> loads reanimated unconditionally through
+> `handlers/gestures/reanimatedWrapper`. Animations use React Native's own
+> `Animated` (`utils/statusAnimations.ts`) and gestures use `PanResponder`
+> (`components/navigation/GmailStyleSideMenu.tsx`); both ship inside
+> react-native-web and cost nothing extra. Do not reintroduce either import
+> without measuring the entry chunk first — see "Web bundle weight" below.
+
+### Web bundle weight (issue #38)
+
+Two import shapes in this codebase are load-bearing and easy to undo by accident:
+
+- **Icon sets.** Import them from `components/Icons/vectorIconSets`, never from
+  `@expo/vector-icons` directly. The package index imports every icon set, and
+  each set carries a glyph map — 345 KB of JSON for three sets ever used, none
+  of which is even rendered on web (all three wrappers branch on
+  `Platform.OS === 'web'` and draw a text glyph). `vectorIconSets.web.ts`
+  exports inert components so the fonts never reach the web bundle.
+- **Native-only Expo modules.** `expo-notifications` and `expo-device` are
+  loaded with a memoised dynamic `import()` in `NotificationService`, because on
+  web every public method already routes through `WebPushService`. A `require()`
+  inside a function would NOT have worked — Metro resolves it statically
+  (issue #45).
+
+Before claiming any of this is lighter or heavier, measure it:
+
+```bash
+npx expo export --platform web --source-maps --output-dir dist-map
+node scripts/analyze-bundle.js dist-map --top 20
+```
+
+`tests/curl-tests.sh` enforces a hard brotli ceiling on the served entry chunk
+(`ENTRY_MAX_BROTLI_BYTES`), so a weight regression turns the smoke test red.
 
 ### Custom Hooks (✨ New)
 - **`useFieldMode`** - Network-adaptive field selection hook

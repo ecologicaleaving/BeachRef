@@ -8,14 +8,21 @@
 /* eslint-env serviceworker */
 /* global self, clients */
 
-const CACHE_NAME = 'beachref-notifications-v1';
-const APP_VERSION = '2026.03.16.1'; // Bump this on every deploy that needs forced refresh
+const CACHE_PREFIX = 'beachref-';
+const CACHE_NAME = 'beachref-notifications-v2';
+const APP_VERSION = '2026.07.25.1'; // Bump on every deploy that changes this file
 
 /**
  * Service Worker installation
+ *
+ * `skipWaiting()` makes the new worker take over without waiting for all tabs
+ * to close. Combined with `clients.claim()` in `activate` this guarantees that
+ * users still running the OLD worker (issue #36 — the one that intercepted
+ * every navigation and wiped all caches) are migrated to this one on the very
+ * next page load, instead of staying stuck on the old version indefinitely.
  */
 self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Installing...');
+  console.log('[ServiceWorker] Installing version', APP_VERSION);
 
   // Skip waiting to activate immediately
   self.skipWaiting();
@@ -23,40 +30,46 @@ self.addEventListener('install', (event) => {
 
 /**
  * Service Worker activation
- * Clears ALL browser caches to ensure users get fresh code after deploy
+ *
+ * NOTE (issue #36): this used to `caches.delete()` EVERY cache of the origin on
+ * every activation, throwing away caches this worker does not own. It now only
+ * prunes its own stale caches (`beachref-*` other than the current one) and
+ * claims existing clients so the fetch-intercepting old worker is replaced.
  */
 self.addEventListener('activate', (event) => {
   console.log('[ServiceWorker] Activating version', APP_VERSION);
 
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          console.log('[ServiceWorker] Clearing cache:', cacheName);
-          return caches.delete(cacheName);
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
+            .map((name) => {
+              console.log('[ServiceWorker] Removing stale cache:', name);
+              return caches.delete(name);
+            })
+        )
+      )
+      // Take control of pages already controlled by the previous worker so the
+      // old navigation-intercepting fetch handler stops being used right away.
+      .then(() => self.clients.claim())
   );
 });
 
 /**
- * Fetch handler — Network-first, no caching
- * Ensures users always get fresh content after deploy.
- * Only intercepts navigation requests (HTML pages) to force reload.
+ * NOTE (issue #36): there is deliberately NO `fetch` handler.
+ *
+ * This service worker exists only for web push notifications. A `fetch`
+ * handler that intercepted navigations added the service worker boot time to
+ * the TTFB of every page load (measured: 2046 ms in the browser against 220 ms
+ * with curl on the same document) while providing no caching benefit, since it
+ * was a pure network passthrough. Without a `fetch` handler the browser skips
+ * the worker entirely for navigations and asset requests.
+ *
+ * Do not re-add a `fetch` handler unless real offline caching is implemented,
+ * and measure the navigation TTFB impact if you do.
  */
-self.addEventListener('fetch', (event) => {
-  // Only intercept navigation requests (page loads, not API calls or assets)
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        // Offline fallback: return cached page if network fails
-        return caches.match(event.request);
-      })
-    );
-  }
-  // All other requests (JS, CSS, images, API) go straight to network — no interception
-});
 
 /**
  * Push event handler

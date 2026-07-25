@@ -20,17 +20,14 @@ export class PerformanceValidator implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      const [cacheFindings, pollingFindings, resourceFindings] = await Promise.all([
-        this.checkCacheConfiguration(),
-        this.checkPollingConfiguration(),
-        this.checkResourceUsage(),
-      ]);
+    // Errors propagate on purpose (issue #42, AC1).
+    const [cacheFindings, pollingFindings, resourceFindings] = await Promise.all([
+      this.checkCacheConfiguration(),
+      this.checkPollingConfiguration(),
+      this.checkResourceUsage(),
+    ]);
 
-      findings.push(...cacheFindings, ...pollingFindings, ...resourceFindings);
-    } catch (error) {
-      console.warn('Performance validator error:', (error as Error).message);
-    }
+    findings.push(...cacheFindings, ...pollingFindings, ...resourceFindings);
 
     return findings;
   }

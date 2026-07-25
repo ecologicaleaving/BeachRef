@@ -19,8 +19,10 @@
     "setup-supabase": "node scripts/setup-supabase.js",
     "test-database": "node scripts/test-database-schema.js",
     "test:prerender": "node tests/prerender-check.js",
-    "audit": "tsx scripts/audit/run-audit.ts",
-    "audit:ci": "tsx scripts/audit/run-audit.ts --ci --fail-on=critical,high",
+    "audit": "tsx scripts/audit/run-audit.ts --checks=all",
+    "audit:ci": "tsx scripts/audit/run-audit.ts --ci --checks=all --fail-on=critical,high",
+    "audit:quality": "tsx scripts/audit/run-audit.ts --checks=quality",
+    "audit:baseline": "tsx scripts/audit/run-audit.ts --checks=all --update-baseline",
     "audit:watch": "tsx scripts/audit/run-audit.ts --watch",
     "fix-undefined": "tsx scripts/fix-possibly-undefined.ts",
     "prepare": "husky"

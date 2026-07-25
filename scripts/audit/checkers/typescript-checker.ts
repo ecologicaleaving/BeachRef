@@ -21,11 +21,14 @@ export class TypeScriptChecker implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    // Find tsconfig.json
+    // Find tsconfig.json.
+    // A missing tsconfig is a checker failure, not "zero type errors" —
+    // returning [] here would make a broken setup look clean (issue #42, AC1).
     const configPath = this.findTsConfig();
     if (!configPath) {
-      // No TypeScript config found
-      return [];
+      throw new Error(
+        `No tsconfig.json found under ${AUDIT_CONFIG.projectRoot} — cannot type-check.`
+      );
     }
 
     // Parse tsconfig.json

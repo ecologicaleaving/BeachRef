@@ -20,17 +20,14 @@ export class BuildValidator implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      const [expoFindings, tsFindings, platformFindings] = await Promise.all([
-        this.checkExpoConfig(),
-        this.checkTypeScriptConfig(),
-        this.checkPlatformCompatibility(),
-      ]);
+    // Errors propagate on purpose (issue #42, AC1).
+    const [expoFindings, tsFindings, platformFindings] = await Promise.all([
+      this.checkExpoConfig(),
+      this.checkTypeScriptConfig(),
+      this.checkPlatformCompatibility(),
+    ]);
 
-      findings.push(...expoFindings, ...tsFindings, ...platformFindings);
-    } catch (error) {
-      console.warn('Build validator error:', (error as Error).message);
-    }
+    findings.push(...expoFindings, ...tsFindings, ...platformFindings);
 
     return findings;
   }

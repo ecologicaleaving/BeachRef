@@ -20,17 +20,15 @@ export class ArchitectureValidator implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      const [diFindings, navFindings, componentFindings] = await Promise.all([
-        this.checkDependencyInjection(),
-        this.checkNavigationPatterns(),
-        this.checkComponentSeparation(),
-      ]);
+    // Errors propagate on purpose (issue #42, AC1): a validator that crashed
+    // must be reported as ERROR, not as "no findings".
+    const [diFindings, navFindings, componentFindings] = await Promise.all([
+      this.checkDependencyInjection(),
+      this.checkNavigationPatterns(),
+      this.checkComponentSeparation(),
+    ]);
 
-      findings.push(...diFindings, ...navFindings, ...componentFindings);
-    } catch (error) {
-      console.warn('Architecture validator error:', (error as Error).message);
-    }
+    findings.push(...diFindings, ...navFindings, ...componentFindings);
 
     return findings;
   }

@@ -9,7 +9,7 @@
 import { ESLint } from 'eslint';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import { AUDIT_CONFIG, resolveExistingRoots } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath, sanitizeFindingMessage } from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -18,52 +18,57 @@ export class EslintChecker implements AuditChecker {
   readonly id = 'eslint';
   readonly name = 'ESLint Checker';
 
+  /**
+   * Directories linted, kept identical to what `npm run lint` covers so the two
+   * counts are cross-checkable (issue #42, AC3).
+   */
+  get scope(): string[] {
+    return resolveExistingRoots(AUDIT_CONFIG.lintRoots).map((abs) =>
+      path.relative(AUDIT_CONFIG.projectRoot, abs).replace(/\\/g, '/')
+    );
+  }
+
+  /**
+   * Run ESLint over the project's lint roots using the project's own
+   * eslint.config.js.
+   *
+   * Deliberately does NOT catch errors: before #42 this method swallowed every
+   * failure and returned `[]`, so a broken ESLint configuration was
+   * indistinguishable from a clean codebase. Any throw here is surfaced by the
+   * orchestrator as CheckerStatus.ERROR and forces a non-zero exit.
+   */
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      // Create ESLint instance with project configuration
-      const eslint = new ESLint({
-        cwd: AUDIT_CONFIG.projectRoot,
-        // ESLint will automatically find and use .eslintrc or package.json config
-      });
+    const roots = resolveExistingRoots(AUDIT_CONFIG.lintRoots);
 
-      // Get files to lint
-      const filesToLint = [
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.ts'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.tsx'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.js'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.jsx'),
-      ];
+    if (roots.length === 0) {
+      throw new Error(
+        `No lint roots found. Expected at least one of: ${AUDIT_CONFIG.lintRoots.join(', ')} under ${AUDIT_CONFIG.projectRoot}`
+      );
+    }
 
-      // Run ESLint
-      const results = await eslint.lintFiles(filesToLint);
+    // Uses the project's eslint.config.js (flat config auto-discovery).
+    // Passing directories rather than '**/*.jsx'-style globs avoids the
+    // "No files matching ... were found" hard failure that used to be swallowed.
+    const eslint = new ESLint({
+      cwd: AUDIT_CONFIG.projectRoot,
+      errorOnUnmatchedPattern: false,
+    });
 
-      // Convert results to findings
-      for (const result of results) {
-        // Skip if no messages or in excluded paths
-        if (result.messages.length === 0) {
-          continue;
-        }
+    const results = await eslint.lintFiles(roots);
 
-        if (this.shouldExcludeFile(result.filePath)) {
-          continue;
-        }
+    for (const result of results) {
+      if (result.messages.length === 0) {
+        continue;
+      }
 
-        for (const message of result.messages) {
-          const finding = this.createFindingFromMessage(
-            result.filePath,
-            message
-          );
-          if (finding) {
-            findings.push(finding);
-          }
+      for (const message of result.messages) {
+        const finding = this.createFindingFromMessage(result.filePath, message);
+        if (finding) {
+          findings.push(finding);
         }
       }
-    } catch (error) {
-      // If ESLint fails (e.g., no config found), return empty findings
-      console.warn('ESLint checker failed:', (error as Error).message);
-      return [];
     }
 
     return findings;
@@ -108,21 +113,6 @@ export class EslintChecker implements AuditChecker {
       requiresManualReview: false,
       timestamp: new Date().toISOString(),
     };
-  }
-
-  /**
-   * Check if a file should be excluded from linting
-   */
-  private shouldExcludeFile(filePath: string): boolean {
-    const relativePath = path.relative(AUDIT_CONFIG.projectRoot, filePath);
-
-    return AUDIT_CONFIG.excludePaths.some((pattern) => {
-      // Simple glob pattern matching (supports ** and *)
-      const regex = new RegExp(
-        '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
-      );
-      return regex.test(relativePath);
-    });
   }
 
   /**

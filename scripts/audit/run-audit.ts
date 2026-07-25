@@ -12,11 +12,14 @@ import {
   AuditChecker,
   Finding,
   CheckerResult,
+  CheckerRoster,
   CheckerStatus,
   AuditStatus,
   AuditSummary,
   AuditCliArgs,
   FindingStatus,
+  GateResult,
+  Severity,
 } from './types';
 import { AUDIT_CONFIG } from './config';
 import { TypeScriptChecker } from './checkers/typescript-checker';
@@ -35,18 +38,27 @@ import {
   determineFindingStatus,
 } from './tracking/audit-history-manager';
 import { generateTrendAnalysis } from './tracking/trend-analyzer';
+import {
+  AuditBaseline,
+  buildBaseline,
+  loadBaseline,
+  saveBaseline,
+  splitRegressions,
+} from './tracking/baseline-manager';
 import { generateJsonReport } from './reporters/json-reporter';
 import { generateMarkdownReport } from './reporters/markdown-reporter';
 import {
   printAuditReport,
   printAuditStart,
   printCheckerStart,
+  printCheckerRoster,
   printReportPaths,
 } from './reporters/console-reporter';
 import {
-  determineExitCodeWithCheckers,
   parseFailOnLevels,
-  determineExitCodeWithCustomLevels,
+  determineOverallExitCode,
+  exitCodeToStatus,
+  getErroredCheckers,
   ExitCode,
 } from './utils/exit-code-manager';
 import { sortBySeverity } from './utils/severity-classifier';
@@ -70,13 +82,29 @@ async function main(): Promise<void> {
     // Load audit history
     const history = await loadAuditHistory();
 
-    // Create checkers based on --checks argument
-    const checkers = createCheckers(args.checks);
+    // Resolve which checkers run — and, just as importantly, which do not
+    const roster = resolveRoster(args.checks);
+    printCheckerRoster(roster);
+
+    if (roster.unknown.length > 0) {
+      // An unknown checker id used to be a console.warn that still produced a
+      // green run. A typo in --checks must not silently reduce coverage.
+      console.error(
+        `Unknown checker id(s): ${roster.unknown.join(', ')}. Known: ${roster.available.join(', ')}`
+      );
+      process.exit(ExitCode.ERROR);
+    }
+
+    const checkers = createCheckers(roster);
 
     if (checkers.length === 0) {
       console.error('No checkers selected. Use --checks to specify checkers.');
       process.exit(ExitCode.ERROR);
     }
+
+    // Load the frozen baseline up front so a corrupt baseline fails loudly
+    // before spending minutes running checkers.
+    const baseline = args.noBaseline ? null : await loadBaseline();
 
     // Run audit
     const startTime = Date.now();
@@ -124,10 +152,43 @@ async function main(): Promise<void> {
     const report = generateReport(
       allFindings,
       checkerResults,
+      roster,
+      baseline,
       startTime,
       history,
       args
     );
+
+    // --update-baseline: freeze the current blocking findings instead of gating
+    if (args.updateBaseline) {
+      const erroredCheckers = getErroredCheckers(checkerResults);
+      if (erroredCheckers.length > 0) {
+        console.error(
+          `Refusing to write a baseline: ${erroredCheckers.length} checker(s) failed, the finding set is incomplete.`
+        );
+        process.exit(ExitCode.ERROR);
+      }
+      if (roster.skipped.length > 0) {
+        console.error(
+          `Refusing to write a baseline from a partial run. Skipped checkers: ${roster.skipped.join(', ')}. Run without --checks.`
+        );
+        process.exit(ExitCode.ERROR);
+      }
+
+      const blocking = filterBlockingFindings(
+        report.findings,
+        report.gate.failOnSeverities
+      );
+      const written = await saveBaseline(
+        buildBaseline(blocking, roster.requested, report.gate.failOnSeverities)
+      );
+      printAuditReport(report);
+      console.log('');
+      console.log(
+        `📌 Baseline updated: ${written} (${blocking.length} blocking findings frozen)`
+      );
+      process.exit(ExitCode.PASS);
+    }
 
     // Update and save history
     const updatedHistory = updateHistoryWithReport(history, report);
@@ -152,11 +213,64 @@ async function main(): Promise<void> {
 }
 
 /**
+ * Findings at one of the blocking severity levels
+ */
+export function filterBlockingFindings(
+  findings: Finding[],
+  failOnSeverities: Severity[]
+): Finding[] {
+  const levels = new Set(failOnSeverities);
+  return findings.filter((f) => levels.has(f.severity));
+}
+
+/**
+ * Evaluate the gate for a run (issue #42, AC2 + AC7).
+ *
+ * Order of precedence:
+ *   1. any checker errored  -> ERROR  (exit 2), whatever the findings say
+ *   2. blocking regressions -> FAIL   (exit 1)
+ *   3. otherwise            -> PASS   (exit 0)
+ */
+export function evaluateGate(
+  findings: Finding[],
+  checkerResults: CheckerResult[],
+  baseline: AuditBaseline | null,
+  args: AuditCliArgs
+): { gate: GateResult; exitCode: ExitCode; overallStatus: AuditStatus } {
+  const failOnSeverities = [...parseFailOnLevels(args.failOn)];
+  const blocking = filterBlockingFindings(findings, failOnSeverities);
+
+  const useBaseline = !args.noBaseline;
+  const { regressions, baselined } = useBaseline
+    ? splitRegressions(blocking, baseline)
+    : { regressions: blocking, baselined: [] as Finding[] };
+
+  const exitCode = determineOverallExitCode(checkerResults, regressions);
+
+  const gate: GateResult = {
+    mode: useBaseline ? 'baseline' : 'absolute',
+    failOnSeverities,
+    blockingFindingCount: blocking.length,
+    regressionCount: regressions.length,
+    baselinedCount: baselined.length,
+    regressionFindingIds: regressions.map((f) => f.id),
+  };
+
+  if (useBaseline && baseline) {
+    gate.baselineFile = AUDIT_CONFIG.baselineFile;
+  }
+
+  return { gate, exitCode, overallStatus: exitCodeToStatus(exitCode) };
+}
+
+/**
  * Generate audit report from findings and checker results
  */
 function generateReport(
   findings: Finding[],
   checkerResults: CheckerResult[],
+  checkerRoster: CheckerRoster,
+  baseline: AuditBaseline | null,
   startTime: number,
   history: any,
   args: AuditCliArgs
@@ -176,20 +290,12 @@ function generateReport(
     history
   );
 
-  // Determine exit code
-  let exitCode: ExitCode;
-  if (args.failOn) {
-    // Custom fail-on levels
-    const failOnLevels = parseFailOnLevels(args.failOn);
-    exitCode = determineExitCodeWithCustomLevels(sortedFindings, failOnLevels);
-  } else {
-    // Default: fail on Critical/High
-    exitCode = determineExitCodeWithCheckers(checkerResults, sortedFindings);
-  }
-
-  // Determine overall status
-  const overallStatus =
-    exitCode === ExitCode.PASS ? AuditStatus.PASS : AuditStatus.FAIL;
+  const { gate, exitCode, overallStatus } = evaluateGate(
+    sortedFindings,
+    checkerResults,
+    baseline,
+    args
+  );
 
   // Generate audit run ID
   const auditRunId = generateAuditRunId();
@@ -203,6 +309,8 @@ function generateReport(
     summary,
     findings: sortedFindings,
     checkerResults,
+    checkerRoster,
+    gate,
   };
 
   // Add trend analysis only if it exists
@@ -262,77 +370,79 @@ function generateAuditRunId(): string {
 }
 
 /**
- * Create checkers based on CLI arguments
+ * Single source of truth for the checker registry.
+ *
+ * Issue #42: previously the roster lived inline in a switch statement and the
+ * default was the 3-checker 'quality' preset, so six checkers — including the
+ * security scanner — were never instantiated by `npm run audit` or
+ * `npm run audit:ci`. The registry is now enumerable, the default is every
+ * checker, and whatever is NOT run is printed explicitly.
  */
-function createCheckers(checksArg?: string): AuditChecker[] {
-  // Default: all code quality checkers (US1)
-  const defaultCheckers = ['typescript', 'eslint', 'complexity'];
+export const CHECKER_REGISTRY: Record<string, () => AuditChecker> = {
+  typescript: () => new TypeScriptChecker(),
+  eslint: () => new EslintChecker(),
+  complexity: () => new ComplexityChecker(),
+  security: () => new SecurityScanner(),
+  architecture: () => new ArchitectureValidator(),
+  'error-handling': () => new ErrorHandlingValidator(),
+  performance: () => new PerformanceValidator(),
+  'data-flow': () => new DataFlowValidator(),
+  build: () => new BuildValidator(),
+};
 
-  // Parse --checks argument
-  const checksToRun = checksArg
-    ? checksArg.split(',').map((s) => s.trim().toLowerCase())
-    : defaultCheckers;
+/** Named presets. 'all' is the default for both `audit` and `audit:ci`. */
+export const CHECKER_PRESETS: Record<string, string[]> = {
+  all: Object.keys(CHECKER_REGISTRY),
+  quality: ['typescript', 'eslint', 'complexity'],
+};
 
-  const checkers: AuditChecker[] = [];
+/** Every checker id the tool knows about */
+export function allCheckerIds(): string[] {
+  return Object.keys(CHECKER_REGISTRY);
+}
 
-  for (const checkId of checksToRun) {
-    switch (checkId) {
-      case 'typescript':
-        checkers.push(new TypeScriptChecker());
-        break;
-      case 'eslint':
-        checkers.push(new EslintChecker());
-        break;
-      case 'complexity':
-        checkers.push(new ComplexityChecker());
-        break;
-      case 'security':
-        checkers.push(new SecurityScanner());
-        break;
-      case 'architecture':
-        checkers.push(new ArchitectureValidator());
-        break;
-      case 'error-handling':
-        checkers.push(new ErrorHandlingValidator());
-        break;
-      case 'performance':
-        checkers.push(new PerformanceValidator());
-        break;
-      case 'data-flow':
-        checkers.push(new DataFlowValidator());
-        break;
-      case 'build':
-        checkers.push(new BuildValidator());
-        break;
-      case 'quality':
-        // Alias for all code quality checkers (US1)
-        checkers.push(new TypeScriptChecker());
-        checkers.push(new EslintChecker());
-        checkers.push(new ComplexityChecker());
-        break;
-      case 'all':
-        // All checkers (US1-US7)
-        checkers.push(new TypeScriptChecker());
-        checkers.push(new EslintChecker());
-        checkers.push(new ComplexityChecker());
-        checkers.push(new SecurityScanner());
-        checkers.push(new ArchitectureValidator());
-        checkers.push(new ErrorHandlingValidator());
-        checkers.push(new PerformanceValidator());
-        checkers.push(new DataFlowValidator());
-        checkers.push(new BuildValidator());
-        break;
-      default:
-        console.warn(`Unknown checker: ${checkId}`);
+/**
+ * Resolve the --checks argument into a roster.
+ * Default (no argument): every checker.
+ */
+export function resolveRoster(checksArg?: string): CheckerRoster {
+  const available = allCheckerIds();
+
+  const requestedRaw = checksArg
+    ? checksArg.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+    : ['all'];
+
+  const requested: string[] = [];
+  const unknown: string[] = [];
+
+  for (const id of requestedRaw) {
+    const preset = CHECKER_PRESETS[id];
+    if (preset) {
+      requested.push(...preset);
+    } else if (available.includes(id)) {
+      requested.push(id);
+    } else {
+      unknown.push(id);
     }
   }
 
-  // Remove duplicates
-  const uniqueCheckers = Array.from(
-    new Map(checkers.map((c) => [c.id, c])).values()
-  );
+  // De-duplicate while keeping registry order for stable output
+  const requestedSet = new Set(requested);
+  const orderedRequested = available.filter((id) => requestedSet.has(id));
 
-  return uniqueCheckers;
+  return {
+    available,
+    requested: orderedRequested,
+    skipped: available.filter((id) => !requestedSet.has(id)),
+    unknown,
+  };
+}
+
+/**
+ * Instantiate the checkers for a roster
+ */
+export function createCheckers(roster: CheckerRoster): AuditChecker[] {
+  return roster.requested.map((id) => CHECKER_REGISTRY[id]!());
 }
 
 /**
@@ -356,7 +466,7 @@ async function executeCheckerWithTimeout(
 /**
  * Parse command-line arguments
  */
-function parseCliArgs(args: string[]): AuditCliArgs {
+export function parseCliArgs(args: string[]): AuditCliArgs {
   const parsed: AuditCliArgs = {};
 
   for (let i = 0; i < args.length; i++) {
@@ -431,6 +541,12 @@ function parseCliArgs(args: string[]): AuditCliArgs {
           parsed.exclude = args[i]!;
         }
         break;
+      case '--update-baseline':
+        parsed.updateBaseline = true;
+        break;
+      case '--no-baseline':
+        parsed.noBaseline = true;
+        break;
       case '--version':
         parsed.version = true;
         break;
@@ -459,11 +575,13 @@ Options:
   --ci                    Run in CI mode (strict exit codes)
   --fail-on <levels>      Fail on specific severity levels (e.g., 'critical,high')
   --watch                 Watch mode for continuous auditing
-  --checks <checks>       Run specific checks (e.g., 'typescript,eslint')
+  --checks <checks>       Run specific checks (default: all)
   --severity <levels>     Show only specific severity levels
   --scope <path>          Scope audit to specific files/directories
   --ignore <ids>          Ignore specific finding IDs
   --exclude <paths>       Exclude paths from auditing
+  --update-baseline       Freeze current blocking findings into .audit-baseline.json
+  --no-baseline           Ignore the baseline; gate on the absolute finding count
   --version               Show version
   --help, -h              Show this help
 
@@ -472,6 +590,7 @@ Examples:
   npm run audit -- --checks=typescript
   npm run audit -- --severity=critical,high
   npm run audit:ci
+  npm run audit:baseline
 
 Checkers:
   typescript              TypeScript compiler errors (US1)
@@ -483,18 +602,27 @@ Checkers:
   performance             Performance - cache, polling, resource usage (US5)
   data-flow               Data flow - subscriptions, sync, immutability (US6)
   build                   Build validation - Expo config, platform compatibility (US7)
-  quality                 All code quality checks - US1 (alias)
-  all                     All checkers - US1 through US7 (alias)
+  quality                 TypeScript + ESLint + Complexity only (alias, used by pre-commit)
+  all                     All 9 checkers (alias) — DEFAULT
 
 Exit Codes:
-  0                       PASS - No Critical/High findings
-  1                       FAIL - Critical/High findings present
-  2                       ERROR - Audit tool failure
+  0                       PASS  - every requested checker ran, no blocking regressions
+  1                       FAIL  - blocking regressions vs .audit-baseline.json
+  2                       ERROR - a checker could not run; the result is not trustworthy
+
+Gate:
+  Findings are classified honestly (TypeScript errors are High). The frozen
+  baseline in .audit-baseline.json records the pre-existing backlog per
+  (file, finding type); only findings IN EXCESS of it fail the build.
+  Regenerate it with 'npm run audit:baseline' — the numbers should only go down.
 `);
 }
 
-// Execute main
-main().catch((error) => {
-  console.error('Fatal error:', error);
-  process.exit(ExitCode.ERROR);
-});
+// Execute main only when run as a CLI, so the pure decision helpers above can
+// be imported by tests without kicking off a full audit.
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('Fatal error:', error);
+    process.exit(ExitCode.ERROR);
+  });
+}

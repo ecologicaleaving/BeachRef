@@ -213,9 +213,22 @@ export class RefereeDirectoryService {
           retryDelayMs: 1000,
           exponentialBackoff: true,
           enableLogging: false,
-          headers: {
-            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-          }
+          // NO custom headers, on purpose — measured, not assumed.
+          //
+          // A POST with only Content-Type: application/x-www-form-urlencoded is
+          // a CORS *simple request* and goes straight out. Adding
+          // X-FIVB-App-ID (as OfficialsService does) makes it non-simple, so the
+          // browser sends an OPTIONS preflight first — and the VIS answers
+          // without Access-Control-Max-Age, so the preflight is **not cached**:
+          // every single request becomes two round trips. Measured on the
+          // deploy preview of #46: with the header, one `all-referees` load
+          // produced 31 OPTIONS and not a single completed POST; without it,
+          // the same load issues plain POSTs, exactly as master does.
+          //
+          // The header is not required: `tournament-ref` and `all-referees`
+          // have queried these endpoints without it for as long as they have
+          // existed. Do not add it "for consistency".
+          headers: {}
         }, DEFAULT_RETRY_CONFIG),
         cache: CacheService.getInstance() as unknown as RefereeDirectoryCache
       };

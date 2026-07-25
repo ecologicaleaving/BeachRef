@@ -102,10 +102,19 @@ global.console = {
   error: jest.fn(),
 };
 
-// Mock timers for better test control
-jest.useFakeTimers({
-  legacyFakeTimers: true,
-});
+// NOTE: timers are deliberately NOT faked globally.
+//
+// A global `jest.useFakeTimers({ legacyFakeTimers: true })` froze `setTimeout`
+// for every suite, so any code path with a retry/backoff delay (VisApiClient's
+// retry logic, polling services, circuit breakers) hung until the 5s jest
+// timeout — 128 test timeouts across the repo, none of them real bugs.
+//
+// Suites that need to control time must opt in themselves, in their own
+// `beforeEach`:
+//
+//     jest.useFakeTimers();
+//     // ... jest.advanceTimersByTime(1000) ...
+//     afterEach(() => jest.useRealTimers());
 
 // Custom Jest matchers
 expect.extend({

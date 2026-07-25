@@ -16,6 +16,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Code Quality
 - `npm run lint` - Run ESLint with Expo config
 
+### Testing
+- `npm test` - Run the jest suite
+- **Prima di scrivere il test di un servizio, leggi `TESTING.md`.**
+  `VisApiClient` e `CacheService` si importano **staticamente**: la config jest
+  (`jest.config.js`, `__mocks__/`) risolve `expo/virtual/env`, `react-native-mmkv`
+  e le dipendenze ESM una volta per tutte. Non usare `require()` lazy nel codice
+  di produzione né `jest.mock('expo/virtual/env')` nei singoli test (issue #48).
+
 ### Project Management
 - `npm run reset-project` - Reset to blank project (moves current code to app-example/)
 

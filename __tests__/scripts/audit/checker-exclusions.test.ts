@@ -1,0 +1,80 @@
+/**
+ * Checker path-exclusion tests
+ * Issue #44
+ *
+ * Four of the nine checkers (error-handling, performance, data-flow, build)
+ * each carried their own copy-pasted directory walker that matched
+ * `AUDIT_CONFIG.excludePaths` against raw `path.relative()` output.
+ *
+ * On Windows `path.relative()` returns backslashes, so the pattern
+ * `node_modules/**` never matched `node_modules\@types\node\util.d.ts` and all
+ * four checkers walked the entire dependency tree. Issue #42 had already found
+ * and fixed exactly this bug — but only for the security scanner, via the
+ * shared `shouldExcludePath()`, which normalises to POSIX separators first.
+ *
+ * The consequence was not cosmetic: the Error Handling validator reported 150
+ * findings instead of 39, of which 111 came from third-party code. Those 111
+ * were counted as *blocking regressions* against the frozen baseline, so
+ * `npm run audit:ci` — and therefore `.husky/pre-push` — failed on `master` on
+ * any machine that had run `npm install`. A gate that is red for everyone all
+ * the time is a gate nobody reads.
+ *
+ * What is frozen here: every checker that walks the tree must exclude the same
+ * paths the shared helper excludes, on any platform.
+ */
+
+import * as path from 'path';
+import { AUDIT_CONFIG, shouldExcludePath } from '../../../scripts/audit/config';
+import { ErrorHandlingValidator } from '../../../scripts/audit/checkers/error-handling-validator';
+import { PerformanceValidator } from '../../../scripts/audit/checkers/performance-validator';
+import { DataFlowValidator } from '../../../scripts/audit/checkers/data-flow-validator';
+import { BuildValidator } from '../../../scripts/audit/checkers/build-validator';
+
+type Walker = {
+  findFiles(dir: string, pattern: RegExp): Promise<string[]>;
+};
+
+const walkers: [string, () => Walker][] = [
+  ['ErrorHandlingValidator', () => new ErrorHandlingValidator() as unknown as Walker],
+  ['PerformanceValidator', () => new PerformanceValidator() as unknown as Walker],
+  ['DataFlowValidator', () => new DataFlowValidator() as unknown as Walker],
+  ['BuildValidator', () => new BuildValidator() as unknown as Walker],
+];
+
+describe('shouldExcludePath normalises separators', () => {
+  it('excludes node_modules given a Windows-style absolute path', () => {
+    const winStyle = path.join(AUDIT_CONFIG.projectRoot, 'node_modules', '@types', 'node', 'util.d.ts');
+    expect(shouldExcludePath(winStyle)).toBe(true);
+  });
+
+  it('excludes dist/ and .expo/ regardless of separator', () => {
+    expect(shouldExcludePath(path.join(AUDIT_CONFIG.projectRoot, 'dist', 'index.js'))).toBe(true);
+    expect(shouldExcludePath(path.join(AUDIT_CONFIG.projectRoot, '.expo', 'x.ts'))).toBe(true);
+  });
+
+  it('does not exclude first-party source', () => {
+    expect(shouldExcludePath(path.join(AUDIT_CONFIG.projectRoot, 'services', 'SyncManager.ts'))).toBe(
+      false
+    );
+  });
+});
+
+describe.each(walkers)('%s file discovery', (_name, make) => {
+  it('never walks into node_modules', async () => {
+    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+    const leaked = files.filter((f) => f.replace(/\\/g, '/').includes('/node_modules/'));
+    expect(leaked).toEqual([]);
+  });
+
+  it('honours every excludePaths pattern', async () => {
+    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+    const leaked = files.filter((f) => shouldExcludePath(f));
+    expect(leaked).toEqual([]);
+  });
+
+  it('still finds first-party source', async () => {
+    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+    expect(files.length).toBeGreaterThan(0);
+    expect(files.some((f) => f.replace(/\\/g, '/').includes('/services/'))).toBe(true);
+  });
+});

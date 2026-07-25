@@ -1,28 +1,42 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# husky v9 sources this file itself; the legacy `. "$(dirname "$0")/_/husky.sh"`
+# line is deprecated and made the hook impossible to run standalone.
 
-echo "🔍 Running production audit (pre-push)..."
-echo "This is the same check that will run in CI/CD"
+echo "🔍 Pre-push audit: all 9 checkers (npm run audit:ci)"
+echo "   Note: there is no audit job in CI today — this hook is the only place"
+echo "   the full audit is enforced."
 echo ""
 
-# Run CI-level checks and capture exit code
 npm run audit:ci
 AUDIT_EXIT_CODE=$?
 
-# Check exit code
+if [ $AUDIT_EXIT_CODE -eq 2 ]; then
+  echo ""
+  echo "🔴 Push blocked: the audit could not run one or more checkers."
+  echo ""
+  echo "   The result above is NOT a clean bill of health — part of the codebase"
+  echo "   was never inspected. Fix the checker error and retry."
+  echo ""
+  exit 1
+fi
+
 if [ $AUDIT_EXIT_CODE -ne 0 ]; then
   echo ""
-  echo "❌ Push blocked: Critical or High severity issues found"
+  echo "❌ Push blocked: new Critical/High findings vs .audit-baseline.json"
   echo ""
-  echo "Your code would fail CI/CD checks. Please:"
-  echo "  1. Fix the Critical and High issues above"
-  echo "  2. Run 'npm run audit:ci' locally to verify"
-  echo "  3. Or use 'git push --no-verify' to skip (not recommended for production)"
+  echo "   1. Fix the regressions listed above"
+  echo "   2. Run 'npm run audit:ci' locally to verify"
+  echo ""
+  echo "   If a finding is legitimately expected, regenerate the baseline with"
+  echo "   'npm run audit:baseline' and commit the diff so it stays reviewable."
   echo ""
   exit 1
 fi
 
 echo ""
-echo "✅ Audit passed - proceeding with push"
-echo "Your code will pass CI/CD checks"
+echo "✅ Audit passed: all 9 checkers ran, no new Critical/High findings"
+echo "   vs .audit-baseline.json."
+echo ""
+echo "   This says nothing about tests, build or deploy — the audit only covers"
+echo "   what its 9 checkers inspect. CI still has to go green."
 echo ""

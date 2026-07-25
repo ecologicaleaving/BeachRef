@@ -1,89 +1,109 @@
-# CI/CD Deployment Setup Guide
+# Deploy web — setup
 
-## Overview
-This repository is configured with GitHub Actions to automatically build and deploy your Expo web app to Netlify when you push to the `master` branch.
+> Riscritto nella issue #52. La versione precedente descriveva il deploy via
+> GitHub Action con i secret `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID`, e
+> attribuiva a `netlify.toml` redirect SPA e header di sicurezza che non ci
+> sono mai stati. Non è più vero niente di tutto questo.
 
-## Required Secrets
+## Chi pubblica il sito
 
-You need to set up the following secrets in your GitHub repository settings:
+**Solo l'integrazione git di Netlify.** Alla configurazione si accede da
+Netlify → progetto `beachrefs` → *Site configuration → Build & deploy*.
 
-### 1. Netlify Secrets
+Su ogni push a `master` e su ogni pull request Netlify:
 
-**NETLIFY_AUTH_TOKEN**
-- Go to [Netlify Account Settings](https://app.netlify.com/user/applications#personal-access-tokens)
-- Generate a new personal access token
-- Copy the token and add it as a repository secret
+1. checkouta la repository;
+2. legge il blocco `[build]` di `netlify.toml`;
+3. esegue `npx expo export --platform web` con Node 18 (da `.nvmrc`, ribadito
+   in `[build.environment].NODE_VERSION`);
+4. pubblica `dist/`.
 
-**NETLIFY_SITE_ID**
-- Go to your Netlify site dashboard
-- Go to Site Settings > General > Site details
-- Copy the "Site ID" (it looks like: `abcd1234-5678-90ef-ghij-klmnopqrstuv`)
-- Add it as a repository secret
+| | URL |
+|---|---|
+| Produzione (`master`) | <https://beachrefs.netlify.app> |
+| Preview di una PR | `https://deploy-preview-<N>--beachrefs.netlify.app` |
 
-### 2. Setting Up Repository Secrets
+I preview compaiono come check sulla PR (`netlify/beachrefs/deploy-preview`,
+`Header rules`, `Redirect rules`, `Pages changed`).
 
-1. Go to your GitHub repository
-2. Click on **Settings** tab
-3. In the left sidebar, click **Secrets and variables** > **Actions**
-4. Click **New repository secret**
-5. Add each secret:
-   - Name: `NETLIFY_AUTH_TOKEN`, Value: your Netlify personal access token
-   - Name: `NETLIFY_SITE_ID`, Value: your Netlify site ID
+## Cosa fa (e non fa) la GitHub Action
 
-## Workflow Features
+`.github/workflows/web-build.yml` — ex `netlify-deploy.yml` — **non deploya
+nulla**. Ha un solo job, `build`, che esegue lo stesso comando di export come
+gate sulle PR: se non compila qui, non compilerebbe nemmeno su Netlify.
 
-The CI/CD pipeline includes:
+I job `deploy` e `deploy-preview` (basati su `nwtgck/actions-netlify`) sono
+stati rimossi dalla #52: pubblicavano il sito in parallelo a Netlify,
+vincendo la corsa. Di conseguenza i secret GitHub `NETLIFY_AUTH_TOKEN` e
+`NETLIFY_SITE_ID` **non sono più usati da niente** e possono essere revocati.
 
-✅ **Automated Testing**: Runs linting and tests on every push/PR  
-✅ **Web Build**: Builds your Expo web app for production  
-✅ **Production Deployment**: Deploys to Netlify on `master` branch pushes  
-✅ **Preview Deployments**: Creates preview deployments for Pull Requests  
-✅ **Build Caching**: Uses npm cache for faster builds  
+## Variabili d'ambiente
 
-## Manual Deployment (Backup)
+**Il build su Netlify non eredita i secret di GitHub Actions.** Tutto ciò che
+serve al bundle va messo in Netlify → *Site configuration → Environment
+variables*.
 
-If you need to deploy manually:
+Stato attuale: **nessuna variabile è necessaria**. Verificato confrontando il
+bundle di produzione (buildato dalla Action) con quello buildato da Netlify:
+nessuno dei due contiene un URL Supabase o una chiave — le `EXPO_PUBLIC_*` non
+erano passate da nessuno dei due sistemi. L'unica variabile già presente nel
+repository è `EXPO_PUBLIC_GA_ID` in `.env.production` (file tracciato).
+
+Da configurare **quando** le relative feature verranno attivate lato web:
+
+| Variabile | Serve a |
+|---|---|
+| `EXPO_PUBLIC_SUPABASE_URL` | client Supabase |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | client Supabase |
+| `EXPO_PUBLIC_EDGE_URL` | Supabase Edge Functions |
+| `EXPO_PUBLIC_MMKV_KEY` | cifratura della cache MMKV |
+| `EXPO_PUBLIC_SENTRY_DSN` | error tracking |
+| `EXPO_PUBLIC_VAPID_PUBLIC_KEY` | web push |
+
+⚠️ Tutto ciò che ha prefisso `EXPO_PUBLIC_` finisce **inlinato nel bundle** ed è
+quindi pubblico. Mai usarlo per una service-role key o una password.
+
+## Header e redirect
+
+`public/_headers` è l'**unica** fonte di verità: `expo export` lo copia in
+`dist/_headers` e Netlify lo onora. Non spostare le regole in `netlify.toml`,
+anche ora che quel file viene letto — vedi il commento in fondo a `netlify.toml`
+e la sezione cache di `PROJECT.md`.
+
+Non esiste `public/_redirects` e non deve esistere un catch-all SPA: ogni rotta
+è prerenderizzata in un proprio HTML (issue #34) e un
+`/* -> /index.html 200` servirebbe lo splash vuoto ovunque.
+
+## Verifica dopo un deploy
 
 ```bash
-# Build the web app
+./tests/curl-tests.sh https://beachrefs.netlify.app
+# oppure, su una PR:
+./tests/curl-tests.sh https://deploy-preview-<N>--beachrefs.netlify.app
+```
+
+15 check: routing per-rotta, assenza di `Clear-Site-Data`, HTML `no-store`,
+chunk `_expo` `immutable`, service worker non cachato. Le regole header di
+Netlify non sono verificabili in locale: serve un deploy vero.
+
+## Deploy manuale (emergenza)
+
+```bash
 npx expo export --platform web
-
-# Install Netlify CLI (if not installed)
-npm install -g netlify-cli
-
-# Deploy to Netlify
-netlify deploy --prod --dir=dist
+npx netlify-cli deploy --prod --dir=dist
 ```
 
 ## Troubleshooting
 
-### Build Fails
-- Check that all dependencies are in `package.json`
-- Ensure `npm run lint` and `npm test` pass locally
-- Check GitHub Actions logs for specific errors
+**Il build fallisce su Netlify ma passa in locale** — controlla la versione di
+Node nel log del deploy: deve essere 18. `.nvmrc` ha la precedenza su
+`NODE_VERSION`.
 
-### Deployment Fails
-- Verify Netlify secrets are correctly set
-- Check that your Netlify site exists and is accessible
-- Ensure the build output directory is `dist`
+**Una feature funziona in locale e non in produzione** — quasi sempre è una
+`EXPO_PUBLIC_*` presente nel tuo `.env` locale e non configurata su Netlify.
+Le variabili sono inlinate al build: dopo averle aggiunte serve un nuovo
+deploy, non basta un restart.
 
-### Expo Build Issues
-- Make sure `expo` is listed in dependencies or devDependencies
-- Check that `app.json` has proper web configuration
-- Verify all required assets exist (icon, splash screen, etc.)
-
-## Netlify Configuration
-
-Your `netlify.toml` is already configured with:
-- Build command: `npx expo export --platform web`
-- Publish directory: `dist`
-- SPA redirects for React Router
-- Security headers
-- Cache optimization
-
-## Next Steps
-
-1. Set up the required secrets in GitHub
-2. Push to `master` branch to trigger the first deployment
-3. Monitor the GitHub Actions tab for build progress
-4. Your app will be live at your Netlify URL once deployment completes!
+**Il deploy passa ma gli header sono sbagliati** — le regole stanno in
+`public/_headers` e l'ordine conta (vince l'ultima regola che matcha). Vedi
+`PROJECT.md`, sezione "Web — configurazione cache e redirect".

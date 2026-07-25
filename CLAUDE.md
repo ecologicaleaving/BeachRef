@@ -606,7 +606,9 @@ baseline can never be narrowed by accident.
 ### CI/CD status — read this
 
 **There is currently no audit job in CI.** `.github/workflows/` contains only
-`netlify-deploy.yml`. Earlier revisions of this file described a 4-stage
+`web-build.yml`, which since issue #52 does not deploy — it only verifies that
+`npx expo export --platform web` succeeds, as a gate on pull requests
+(see "Web deployment" below). Earlier revisions of this file described a 4-stage
 `audit.yml` pipeline and a GitLab template; neither exists in the repository.
 Today the audit is enforced **only by the git hooks**, which means it can be
 bypassed with `--no-verify` and is not enforced on PRs. Wiring `npm run audit:ci`
@@ -855,4 +857,53 @@ Potential improvements for future versions:
 - **Shrink the baseline** - `.audit-baseline.json` should trend to zero
 - **Code Coverage Integration** - Track test coverage trends
 - **Dependency Audits** - npm audit integration with trending
+
+---
+
+## Web deployment (issue #52)
+
+**One system publishes the site: Netlify's git integration.** It checks out the
+repository on every push to `master` and on every pull request, runs the
+`[build]` block of `netlify.toml` (`npx expo export --platform web`, Node 18)
+and publishes `dist/`. PR previews are Netlify's, at
+`https://deploy-preview-<N>--beachrefs.netlify.app`.
+
+`.github/workflows/web-build.yml` — renamed from `netlify-deploy.yml` — **does
+not deploy**. Its single `build` job runs the same export command as a gate on
+pull requests. Its `deploy` and `deploy-preview` jobs, which used
+`nwtgck/actions-netlify`, were removed by #52.
+
+Until #52 both systems published on every push. The Action normally won the
+race, so what users saw came from the Action while Netlify's own build ran in
+parallel and only its checks were visible on PRs.
+
+**What this changes, and what it does not:**
+
+| | Before #52 | After #52 |
+|---|---|---|
+| Publishes production | GitHub Action (Netlify also built, in parallel) | Netlify git integration only |
+| Repo checked out at deploy | No | **Yes** |
+| `netlify.toml` read | No — inert except as documentation | **Yes** |
+| Header source of truth | `public/_headers` | `public/_headers` — **unchanged on purpose** |
+| Build env vars | none passed by the Action | none configured on Netlify — same bundle |
+
+Verified on the Netlify-native deploy of PR #59 before the switch: all 15
+checks of `tests/curl-tests.sh` green (immutable `_expo` chunks, `no-store`
+HTML, no `Clear-Site-Data`, per-route SSG), and the entry bundle within 0.02%
+of the Action-built production one, with no Supabase URL or key inlined in
+either.
+
+**Do not** move header rules into `netlify.toml` now that it is read. See the
+comment at the bottom of that file.
+
+**Env vars**: the Netlify build does **not** inherit GitHub Actions secrets.
+Anything the web bundle needs must be set in Netlify → Site settings →
+Environment variables. Today nothing is required; `EXPO_PUBLIC_SUPABASE_URL`,
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_EDGE_URL`, `EXPO_PUBLIC_MMKV_KEY`,
+`EXPO_PUBLIC_SENTRY_DSN` and `EXPO_PUBLIC_VAPID_PUBLIC_KEY` are the ones the
+code reads when those features are switched on.
+
+**Node version** is declared in three places that must agree: `.nvmrc`,
+`[build.environment].NODE_VERSION` in `netlify.toml`, and `env.NODE_VERSION` in
+`web-build.yml`. All three are `18`. `.nvmrc` wins on Netlify if they diverge.
 

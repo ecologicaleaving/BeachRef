@@ -1,17 +1,19 @@
 # =============================================================================
 # SINGLE SOURCE OF TRUTH for Netlify response headers (issue #36).
 # =============================================================================
-# This file is copied verbatim into `dist/_headers` by `expo export`.
+# This file is copied verbatim into `dist/_headers` by `expo export`, and
+# Netlify honours it on every deploy type.
 #
-# It has to live here, NOT in `netlify.toml`: the site is deployed by
-# `.github/workflows/netlify-deploy.yml`, whose deploy job only downloads the
-# `dist/` build artifact and hands it to `nwtgck/actions-netlify`. The
-# repository is never checked out in that job, so `netlify.toml` is not even
-# present and its `[[headers]]` / `[[redirects]]` blocks are inert. Verified on
-# deploy preview 37: with header rules only in `netlify.toml`, every response
-# came back with Netlify's default `public,max-age=0,must-revalidate`.
+# Historical reason it lives here (issue #36): the site used to be deployed by
+# a GitHub Action that downloaded only the `dist/` artifact and never checked
+# out the repository, so `netlify.toml` was not present at deploy time and its
+# `[[headers]]` blocks were inert. Since issue #52 the site is built by
+# Netlify's git integration and `netlify.toml` IS read — but this file stays
+# the single source of truth anyway.
 #
-# Do NOT add header rules to `netlify.toml` — they will silently do nothing.
+# Do NOT move or duplicate these rules into `netlify.toml`. Two places for the
+# same rules means two places for the ordering mistake described below, and
+# only one of them shows up in `dist/`. Header rules go here.
 #
 # ORDERING MATTERS. Netlify applies every matching rule and, for a repeated
 # header name, the LAST matching rule wins. Netlify globs are also greedy

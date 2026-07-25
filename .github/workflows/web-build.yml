@@ -1,0 +1,83 @@
+name: Web build (CI gate)
+
+# =============================================================================
+# THIS WORKFLOW DOES NOT DEPLOY. It only verifies that the web app compiles.
+# =============================================================================
+# Publishing is done exclusively by Netlify's git integration (issue #52,
+# decision 1 of #50): Netlify checks out the repository on every push to
+# `master` and on every pull request, runs the `[build]` block of
+# `netlify.toml` and publishes `dist/`.
+#
+# Until #52 the site was published TWICE — by this workflow (via
+# `nwtgck/actions-netlify`, which won the race and was what users saw) and by
+# Netlify's git integration in parallel. The `deploy` and `deploy-preview`
+# jobs have been removed; the `build` job stays as the PR gate, because losing
+# the "does it even compile" check on pull requests would be a regression.
+#
+# Consequence for configuration: Netlify now checks out the repository, so
+# `netlify.toml` IS read at deploy time. Response headers nevertheless stay in
+# `public/_headers` — see the comment in `netlify.toml`.
+#
+# Renamed from `netlify-deploy.yml`; the job id `build` is unchanged so any
+# status-check reference to it keeps working.
+# =============================================================================
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  # Must stay in sync with `.nvmrc` and `[build.environment]` in `netlify.toml`.
+  # A different Node version here than on Netlify would mean this gate is
+  # validating a build that is not the one being published.
+  NODE_VERSION: '18'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linter (non-blocking)
+      run: npm run lint || echo "Linting failed but continuing build"
+      continue-on-error: true
+
+    - name: Run tests (non-blocking)
+      run: npm test --passWithNoTests || echo "Tests failed but continuing build"
+      continue-on-error: true
+
+    - name: Verify Expo CLI
+      run: npx expo --version
+
+    # This is the actual gate: the same command Netlify runs
+    # (`[build].command` in `netlify.toml`). If it fails here, the Netlify
+    # deploy of the same commit would fail too.
+    - name: Build for web
+      run: npx expo export --platform web --clear
+      timeout-minutes: 15
+      env:
+        NODE_ENV: production
+        CI: true
+        EXPO_NO_TELEMETRY: 1
+
+    # Kept for inspection only — nothing consumes this artifact any more.
+    # Useful to inspect the output of a PR without going through a deploy.
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-build
+        path: dist/
+        retention-days: 1

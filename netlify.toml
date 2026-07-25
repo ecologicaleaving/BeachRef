@@ -1,28 +1,50 @@
+# =============================================================================
+# This file IS read at deploy time — and it is now the only build config.
+# =============================================================================
+# Since issue #52 the site is published exclusively by Netlify's git
+# integration: Netlify checks out the repository on every push to `master` and
+# on every pull request, runs the `[build]` block below and publishes `dist/`.
+#
+# `.github/workflows/web-build.yml` (ex `netlify-deploy.yml`) no longer
+# deploys anything — it only verifies that the same build command succeeds, as
+# a gate on pull requests.
+#
+# Before #52 the site was published twice, and the GitHub Action won the race:
+# its deploy job downloaded only the `dist/` artifact and never checked out the
+# repository, so this file was not even present at deploy time and everything
+# in it except `[build]` was inert. That is no longer the case — anything added
+# here now takes effect. Read the header note below before adding to it.
+# =============================================================================
+
 [build]
   publish = "dist"
   command = "npx expo export --platform web"
+
+[build.environment]
+  # Kept in sync with `.nvmrc` (which takes precedence if the two ever diverge)
+  # and with `NODE_VERSION` in `.github/workflows/web-build.yml`. Declared
+  # explicitly so the version the site is built with is visible in the repo and
+  # not only in the Netlify UI.
+  NODE_VERSION = "18"
 
 [functions]
   directory = "netlify/functions"
 
 # =============================================================================
-# NO [[headers]] AND NO [[redirects]] HERE — ON PURPOSE (issue #36).
+# STILL NO [[headers]] AND NO [[redirects]] HERE — ON PURPOSE (issues #36, #52).
 # =============================================================================
-# This site is not built by Netlify from git. It is deployed by
-# `.github/workflows/netlify-deploy.yml`, whose deploy job downloads only the
-# `dist/` build artifact and hands it to `nwtgck/actions-netlify`. That job
-# never checks out the repository, so this file is not present at deploy time
-# and any `[[headers]]` / `[[redirects]]` block in it is inert.
+# `[[headers]]` blocks placed here WOULD work now. They are deliberately absent
+# anyway: the single source of truth for response headers is `public/_headers`,
+# which `expo export` copies verbatim to `dist/_headers` and which Netlify
+# honours on every deploy type — including this one. Verified on the Netlify
+# git-integration deploy of PR #59, where all 15 checks of
+# `tests/curl-tests.sh` passed with the rules declared only in
+# `public/_headers`.
 #
-# Verified on deploy preview 37: with the header rules declared only here,
-# every response — document, JS chunk, service worker — came back with
-# Netlify's default `public,max-age=0,must-revalidate`. The rules had no effect
-# whatsoever, which is why the `immutable` policy for `/_expo/static/js/web/*`
-# declared in this file never reached production.
-#
-# The single source of truth for response headers is `public/_headers`, which
-# `expo export` copies to `dist/_headers` and which Netlify honours on every
-# deploy type. Add header rules there, not here.
+# Duplicating or moving those rules here would buy nothing and would create two
+# places where an ordering mistake can silently un-cache the hashed chunks —
+# which is exactly the bug #36 had to fix. Add header rules to
+# `public/_headers`, not here.
 #
 # Redirects (issue #34): there is deliberately no SPA catch-all. With Expo
 # `web.output: "static"` every route is prerendered to its own HTML file (e.g.

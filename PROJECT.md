@@ -22,16 +22,32 @@
 
 ## Deployment
 - **Live URL (Web)**: https://beachrefs.netlify.app
-- **Web Deploy**: Netlify (Git-connected su master, build `expo export --platform web`)
+- **Web Deploy**: Netlify **git-connected** su `master` — unico sistema che pubblica
+  (issue #52). Netlify checkouta la repo, esegue `[build]` di `netlify.toml`
+  (`npx expo export --platform web`, Node 18 da `.nvmrc`) e pubblica `dist/`.
+  I deploy preview delle PR sono prodotti da Netlify
+  (`https://deploy-preview-<N>--beachrefs.netlify.app`).
+  `.github/workflows/web-build.yml` **non deploya**: verifica solo che il build
+  compili, come gate sulle PR.
 - **Live URL (Mobile)**: N/A (mobile app)
 - **Deploy Method**: expo-build (mobile) / Netlify (web)
 - **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
 - **Last Deploy**: 2026-07-25T10:52:00Z (web — issue #40/PR #41 OfficialsService; prima PR #39 fix permessi CI)
-- **Environment Variables**: 
-  - `SUPABASE_URL`: Expo environment injection
-  - `SUPABASE_ANON_KEY`: Expo secure store
-  - `TOURNAMENT_API_KEY`: External API integration
+- **Environment Variables (build web)**: **nessuna, oggi.** Verificato su bundle
+  (issue #52): né il bundle di produzione buildato dalla Action né quello
+  buildato da Netlify contengono un URL Supabase o una chiave — le
+  `EXPO_PUBLIC_*` non erano passate da nessuno dei due. Il build Netlify
+  **non** eredita i secret di GitHub Actions: quando servirà Supabase lato web
+  (issue di attivazione), le variabili vanno configurate in
+  **Netlify → Site settings → Environment variables**, non nei secret GitHub.
+  Elenco di quelle che il codice legge, per quando servirà:
+  `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`,
+  `EXPO_PUBLIC_EDGE_URL`, `EXPO_PUBLIC_MMKV_KEY`, `EXPO_PUBLIC_SENTRY_DSN`,
+  `EXPO_PUBLIC_VAPID_PUBLIC_KEY`. `EXPO_PUBLIC_GA_ID` è già in `.env.production`
+  (file tracciato).
+  `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID` nei secret GitHub **non servono più**
+  dopo #52: erano usati solo dai job di deploy rimossi.
 
 ## Repository
 - **Main Branch**: master
@@ -141,6 +157,7 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #56 (epic #51, priorità massima) — Credenziali di produzione hardcoded su repo **pubblica**. `apply_migrations_pg.js:15` conteneva in chiaro la **password del ruolo `postgres` (superuser)** del DB Supabase di produzione dal commit `edd5e4a` del 2025-09-13: **dieci mesi** di esposizione. Lo stesso valore era in un **17° file non elencato dalla issue**, `apply_migrations_cli.js`, che è anche il runner che scriveva `temp_migration_*.sql` nella root (fallendo prima dell'`unlink`, ce li ha lasciati). Degli altri 14 file dell'elenco **nessuno conteneva un segreto**: i match erano `process.env.SUPABASE_SERVICE_ROLE_KEY` e policy SQL `auth.role() = 'service_role'` — la lista era il risultato di una ricerca per pattern, non di una verifica. Eliminati comunque come script one-off di sessioni chiuse (legati al torneo 1552 / a un arbitro specifico), previa verifica che nessuno fosse referenziato da `package.json`, `.github/`, `.husky/` o dalla documentazione. `TRIGGER-SYNC-FUNCTION.sql` riscritto: non aveva un segreto ma istruiva a incollarne uno in un file tracciato, ora legge da Supabase Vault. `supabase/.temp/` tolto dal tracking. Scanner di sicurezza: **14 finding (1 Critical + 13 High) → 0**. I 13 `security-http` erano **falsi positivi**: `xmlns="http://..."` e `SOAPAction:` in buste SOAP VIS — URI opachi mai dereferenziati, che riscritti a `https://` romperebbero la richiesta; lo scanner ora li esenta per singola occorrenza (una riga con namespace **e** endpoint http:// vero resta segnalata). **Barriera anti-ricomparsa**: nuovo preset `precommit` = `quality` + `security`, usato da `.husky/pre-commit` — prima il security scanner girava **solo in pre-push**. Prova eseguita con segreto finto: col nuovo scope il commit è **bloccato** (Critical +1, exit 1), col vecchio scope `audit:quality` lo stesso file passava **PASS/0**. `.gitignore` copre `temp_migration_*.sql`, dump e file di credenziali; `.env.example` documenta con placeholder le variabili degli script rimasti (che escono già con exit 1 e messaggio esplicito — nessun fallback hardcoded). ⚠️ **La rotazione dei segreti e il controllo degli access log restano a carico di Davide: la rimozione dal codice non chiude l'esposizione.**
 - **DONE**: Issue #44 (epic #51, wave 0) — Sedimento nella root: **2,6 MB e 148 file tracciati** che non erano codice del progetto. Rimossi 62 marker `tmpclaude-*-cwd` degli agent, 5 dump di output di `tsc`/`jest`, `tmp.patch`, `temp-test.ts`, `repro_duration_bug.ts` e il file da 0 byte con path Windows malformato (il `:` era **U+F03A**, per questo `git rm` col nome letterale falliva — serve `--pathspec-from-file`). **56 script `.js`** classificati uno per uno e eliminati con indicazione di dove vive ora la logica: officials → `services/OfficialsService.ts` (#40), richieste VIS → `VisApiClient`/`OptimizedApiClient`, parsing → `VisResponseParser`, cache → `services/cache/`, transizione ReadyToStart→LIVE → `types/match-v2.ts::canReadyToStartMatchGoLive`, sync → `services/sync/`, schema arbitri → migration 012/013. Restano in root i 7 `.js` che sono configurazione. **31 `.md` → 4** (README/CLAUDE/PROJECT/AGENTS): 5 spostati in `docs/`, 22 eliminati (fra cui **quattro report di deployment dello stesso giorno in disaccordo tra loro** su READY/NOT READY). `.sql` sciolti: erano **5, non 9** (la issue contava una fotografia pre-#56); 4 eliminati perché già coperti da `supabase/migrations/`, `TRIGGER-SYNC-FUNCTION.sql` spostato in `supabase/manual/`. `.gitignore` esteso contro il riformarsi del sedimento; tolto `docs/` dalle ignore (bloccava solo l'aggiunta di documenti **nuovi**, mentre ~60 file sotto `docs/` erano già tracciati). Verifica di non-regressione: build/`npm test`/`lint`/`tsc` **identici a master** (2677 errori TS, 922 problemi ESLint, 117 suite fallite / 186 test falliti — invariati), nessuno dei file eliminati referenziato da `package.json`, `.github/`, `.husky/`, `netlify.toml`, `eas.json`, `app.json`, docs o codice (due scansioni indipendenti; gli **unici** due file di root citati da qualcosa, `color-migration-report.json` e `TRIGGER-SYNC-FUNCTION.sql`, sono stati conservati)
 - **DONE**: Fix collaterale emerso da #44 — **`npm run audit:ci` era rosso su `master`** per chiunque avesse `node_modules` installato. La #42 aveva corretto il matching di `excludePaths` (POSIX-normalizzato) nella funzione condivisa `shouldExcludePath()`, ma vi aveva collegato **solo il security scanner**: error-handling, performance, data-flow e build avevano ciascuno una copia incollata del walker con la riga sbagliata e continuavano a scendere in `node_modules`. Error Handling riportava **150 finding invece di 39, di cui esattamente 111 da codice di terze parti** — e sono di severità High, quindi il gate li contava come regressioni bloccanti oltre la baseline. Tutti e quattro usano ora `shouldExcludePath()`; i numeri tornano esattamente quelli documentati in CLAUDE.md, regressioni **0 → PASS**, e la run completa passa da ~187 s a ~62 s. **La baseline non è stata rigenerata** (l'avrebbe congelata coi 111 finding di `node_modules`). Congelato da `__tests__/scripts/audit/checker-exclusions.test.ts` (15 test; 9 falliscono senza il fix)
+- **DONE**: Issue #52 (epic #51, decisione 1 di #50) — Un solo sistema pubblica il sito. Fino a oggi il web era deployato **due volte a ogni push**: dalla GitHub Action (`nwtgck/actions-netlify`, che vinceva la corsa — era il suo artifact quello che vedevano gli utenti) e in parallelo dall'integrazione git di Netlify, di cui sulle PR si vedevano solo i check. Rimossi i job `deploy` e `deploy-preview`; il job `build` **resta** come gate sulle PR (perdere la verifica "compila?" sarebbe stato un regresso) e il workflow è stato rinominato `netlify-deploy.yml` → **`web-build.yml`**, con il job id `build` invariato. Conseguenza non ovvia: Netlify **checkouta la repo**, quindi `netlify.toml` da inerte diventa **letto** — i commenti in `netlify.toml` e `public/_headers` che spiegavano perché era inerte sono stati riscritti, perché da oggi mentono. Gli header **restano in `public/_headers`**: spostarli in `netlify.toml` ora che verrebbe letto sarebbe una seconda migrazione senza beneficio e un secondo posto dove sbagliare l'ordinamento. `NODE_VERSION = "18"` dichiarato esplicitamente in `netlify.toml` (allineato a `.nvmrc` e al workflow). **Env var: nessuna necessaria** — verificato scaricando i due bundle `entry-*.js`, quello di produzione (buildato dalla Action) e quello del deploy Netlify-nativo della PR #59: **zero** occorrenze di URL Supabase o chiavi in entrambi, dimensioni entro lo 0,02% — la Action non passava alcuna `EXPO_PUBLIC_*` e Netlify non ne ha configurate, quindi il bundle pubblicato non cambia. Prova che l'integrazione Netlify regge: `tests/curl-tests.sh` sul permalink del deploy Netlify-nativo della PR #59 → **15/15 verdi** (chunk `_expo` `immutable`, HTML `no-store`, nessun `Clear-Site-Data`, SSG per-rotta). ⚠️ I secret GitHub `NETLIFY_AUTH_TOKEN` e `NETLIFY_SITE_ID` non sono più usati da nulla: **revocarli** è a carico di Davide. `docs/DEPLOYMENT_SETUP.md` riscritto (descriveva i secret della Action e attribuiva a `netlify.toml` redirect SPA e header di sicurezza mai esistiti)
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2721 finding bloccanti: 2677 TS, 5 ESLint error, 39 error-handling; **0 Critical, 0 security**)
 
 ## Web — configurazione cache e redirect (issue #36)
@@ -148,13 +165,21 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 **Unica fonte di verità: `public/_headers`** (copiato in `dist/_headers` da
 `expo export`). **NON** `netlify.toml`.
 
-Motivo, verificato sul deploy preview 37: il sito non è buildato da Netlify da
-git. Lo deploya `.github/workflows/netlify-deploy.yml`, il cui job di deploy
-scarica **solo** l'artifact `dist/` e lo passa a `nwtgck/actions-netlify` —
-la repo non viene mai checkoutata in quel job, quindi `netlify.toml` non è
-nemmeno presente e i suoi blocchi `[[headers]]`/`[[redirects]]` sono inerti.
-Con le regole dichiarate solo in `netlify.toml` ogni risposta tornava con il
-default Netlify `public,max-age=0,must-revalidate`.
+Origine storica, verificata sul deploy preview 37: fino alla #52 il sito non era
+buildato da Netlify da git ma dal job di deploy della GitHub Action, che
+scaricava **solo** l'artifact `dist/` senza mai checkoutare la repo — quindi
+`netlify.toml` non era nemmeno presente al momento del deploy e i suoi blocchi
+`[[headers]]`/`[[redirects]]` erano inerti (ogni risposta tornava col default
+Netlify `public,max-age=0,must-revalidate`).
+
+**Dopo la #52 questo non è più vero**: pubblica solo l'integrazione git di
+Netlify, che checkouta la repo, quindi `netlify.toml` **viene letto**. La regola
+resta comunque quella: gli header si dichiarano in `public/_headers` e basta.
+Duplicarli in `netlify.toml` non porta alcun beneficio e crea un secondo posto
+dove sbagliare l'ordinamento (vedi sotto) — con l'aggravante che solo uno dei
+due finisce in `dist/`. Verificato sul deploy Netlify-nativo della PR #59:
+15/15 check di `tests/curl-tests.sh` verdi con le regole solo in
+`public/_headers`.
 
 **Ordinamento**: Netlify applica tutte le regole che matchano e, a parità di
 nome header, vince l'**ultima**. I glob sono greedy sui separatori di path

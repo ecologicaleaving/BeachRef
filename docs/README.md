@@ -15,7 +15,7 @@ cancellalo. Un documento superato che resta è peggio di uno assente.
 | [`ARCHITECTURE-DATA-STANDARDS.md`](./ARCHITECTURE-DATA-STANDARDS.md) | Specifica degli oggetti dati standardizzati e self-healing (tipi di dominio, versioning, validazione) |
 | [`LIVE_SCORE_SERVICE_ARCHITECTURE.md`](./LIVE_SCORE_SERVICE_ARCHITECTURE.md) | Architettura del Live Score Service (polling ibrido, integrazione VIS) — implementata in `services/live-score/` |
 | [`LAZY_LOADING_SETUP.md`](./LAZY_LOADING_SETUP.md) | Persistenza lazy-loading su Supabase per ridurre le chiamate VIS — implementata in `services/sync/` |
-| [`DEPLOYMENT_SETUP.md`](./DEPLOYMENT_SETUP.md) | Secret e configurazione della GitHub Action che deploya su Netlify (`.github/workflows/netlify-deploy.yml`) |
+| [`DEPLOYMENT_SETUP.md`](./DEPLOYMENT_SETUP.md) | Come viene pubblicato il web: integrazione git di Netlify (unica) + `.github/workflows/web-build.yml` come gate di build sulle PR |
 | [`ANDROID_SETUP_TODO.md`](./ANDROID_SETUP_TODO.md) | Checklist di configurazione per la build Android/EAS |
 
 ### Guidelines

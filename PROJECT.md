@@ -27,7 +27,7 @@
 - **Deploy Method**: expo-build (mobile) / Netlify (web)
 - **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
-- **Last Deploy**: 2026-07-25T02:36:00Z (web — issue #36/PR #37 cache + service worker + health check)
+- **Last Deploy**: 2026-07-25T10:52:00Z (web — issue #40/PR #41 OfficialsService; prima PR #39 fix permessi CI)
 - **Environment Variables**: 
   - `SUPABASE_URL`: Expo environment injection
   - `SUPABASE_ANON_KEY`: Expo secure store

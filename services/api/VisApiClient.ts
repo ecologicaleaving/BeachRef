@@ -1195,9 +1195,19 @@ export class VisApiClient implements IVisApiClient {
    */
   private buildGetBeachMatchListXml(request: GetBeachMatchListRequest): string {
     // Use the EXACT format from documentation - filter parameter is NoTournament
-    const filterAttribs = [`NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`];
-    
-    // Add optional filters only if provided  
+    const filterAttribs: string[] = [];
+
+    if (request.tournamentNo) {
+      filterAttribs.push(`NoTournament="${this.escapeXmlAttribute(request.tournamentNo)}"`);
+    }
+
+    // Event-level filtering (issue #40): the whole event in a single call,
+    // regardless of how many gender tournaments it is split into.
+    if (request.eventNo) {
+      filterAttribs.push(`NoEvent="${this.escapeXmlAttribute(request.eventNo)}"`);
+    }
+
+    // Add optional filters only if provided
     if (request.courtNo) {
       filterAttribs.push(`CourtNo="${this.escapeXmlAttribute(request.courtNo)}"`);
     }
@@ -1358,9 +1368,12 @@ export class VisApiClient implements IVisApiClient {
     const fields = request.fields && request.fields.length > 0
       ? request.fields.join(' ')
       : 'NoReferee FirstName LastName Gender Role Status';
-    
-    // Use Filter element with NoEvent per VIS API specification
-    return `<Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request>`;
+
+    // Use Filter element with NoEvent per VIS API specification.
+    // GetEventRefereeList only answers inside a <Requests> envelope: sent bare
+    // it replies `<NotInNewFormat id="1008" />` (verified on EventNo 1719/1525,
+    // issue #40). This mirrors the envelope already used in app/ref-mode.tsx.
+    return `<Requests><Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request></Requests>`;
   }
 
   /**

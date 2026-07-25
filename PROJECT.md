@@ -94,8 +94,33 @@
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 - **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. LCP prod −34%. Diagnosi: il render delay è boot RN-Web, non il bundle
 - **DONE**: Issue #34 (PR #35) — Web perf SSG: routing per-route + skeleton prerenderizzato (perceived performance). Certificato che il −80% sull'LCP NON è raggiungibile con SSG (LCP = contenuto data-driven non prerenderizzabile); richiede refactor architetturale (output `server` o runtime più leggero). Test: `npm run test:prerender`, `tests/curl-tests.sh`
+- **DONE**: Issue #36 — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), `netlify.toml` unica fonte di verità per header e redirect (`public/_headers` e `public/_redirects` eliminati, incluso il catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34), chunk `/_expo/*` e `/assets/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Test: `tests/curl-tests.sh <BASE_URL>`, `npm run test:prerender`
+- **TODO** (follow-up di #36, fuori scope): dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw, ~3.2 s di download+parse) — richiede bundle analysis a sé
 - **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 
+## Web — configurazione cache e redirect (issue #36)
+
+**Unica fonte di verità: `netlify.toml`.** Non reintrodurre `public/_headers` né
+`public/_redirects`: la duplicazione ha già prodotto in produzione regole
+contraddittorie (la regola generica `/*.js` sovrascriveva silenziosamente
+l'`immutable` dei chunk hashati, e un catch-all SPA annullava il per-route SSG).
+
+| Path | Cache-Control | Perché |
+|---|---|---|
+| `/*` (documenti HTML) | `no-cache, no-store, must-revalidate` | i deploy devono arrivare subito agli utenti |
+| `/_expo/*` | `public, max-age=31536000, immutable` | filename content-hashed dall'export Expo |
+| `/assets/*` | `public, max-age=31536000, immutable` | font/immagini con hash nel filename |
+| `/static/*`, `/bundles/*` | `public, max-age=31536000, immutable` | output alternativi hashati |
+| `/service-worker.js` | `no-cache, no-store, must-revalidate` | è il file da cui il browser scopre una nuova versione |
+
+Le regole specifiche sono dichiarate **dopo** il default `/*`: così vincono sia
+con la semantica "ultima regola che matcha" sia con "regola più specifica".
+Verificare sempre l'effetto reale con `./tests/curl-tests.sh <deploy-preview-url>`.
+
+**Service worker**: serve solo per le web push. Non ha (e non deve avere) un
+handler `fetch` — intercettare le navigazioni aggiungeva ~1.8 s di TTFB percepito
+senza alcun beneficio di caching. `APP_VERSION` va bumpato a ogni modifica del file.
+
 ---
-*Last Updated: 2026-07-08T08:35:00Z*
+*Last Updated: 2026-07-25T00:00:00Z*
 

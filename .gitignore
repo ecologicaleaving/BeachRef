@@ -34,6 +34,25 @@ yarn-error.*
 .env*.local
 .env
 
+# Secrets & one-off working files (issue #56)
+# A prod superuser password sat in a tracked root script for ten months on a
+# public repo. These patterns cover the shapes that let it happen: SQL fragments
+# written to the repo root by migration runners, ad-hoc scripts people paste
+# credentials into, and database dumps.
+temp_migration_*.sql
+*.dump
+*.sql.gz
+*.sqlite
+*.sqlite3
+secrets.json
+credentials.json
+service-account*.json
+*-service-role*.json
+
+# Supabase CLI local state (contains pooler connection strings)
+supabase/.temp/
+supabase/.branches/
+
 # typescript
 *.tsbuildinfo
 

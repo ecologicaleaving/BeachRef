@@ -138,6 +138,15 @@ export class SecurityScanner implements AuditChecker {
               return;
             }
 
+            // Skip XML namespace / SOAP identifiers. These http:// URIs are
+            // opaque names, not endpoints — nothing ever dereferences them, and
+            // rewriting them to https:// silently breaks the SOAP request the
+            // VIS API expects. Only namespace-shaped occurrences are exempt;
+            // an actual http:// endpoint on the same line still gets flagged.
+            if (SecurityScanner.isXmlNamespaceOnly(line)) {
+              return;
+            }
+
             const file = sanitizeFilePath(filePath);
             const lineNumber = index + 1;
             const message = 'Insecure HTTP protocol detected. Use HTTPS for production network calls.';
@@ -335,6 +344,41 @@ export class SecurityScanner implements AuditChecker {
   /**
    * Check if finding is in test file or comment
    */
+  /**
+   * True when every insecure `http://` occurrence on the line is an XML
+   * namespace or SOAP identifier rather than a network endpoint.
+   *
+   * XML namespace URIs (`xmlns`, `xmlns:soap`, `xsi:schemaLocation`) and
+   * `SOAPAction` values are identifiers by specification: an XML processor
+   * compares them as strings and never fetches them. Flagging them produced 13
+   * of the 14 security findings in this repository (issue #56) and pushed
+   * developers towards "fixing" them to `https://`, which breaks the request.
+   *
+   * The check is deliberately per-occurrence: a line that carries both a
+   * namespace and a real `http://` endpoint is still reported.
+   */
+  static isXmlNamespaceOnly(line: string): boolean {
+    const insecureUri = /http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0)[^\s'"`<>)]*/gi;
+    const namespaceContext =
+      /(?:xmlns(?::[\w.-]+)?|(?:[\w.-]+:)?schemaLocation|SOAPAction|targetNamespace)\s*[:=]\s*["'`]?\s*$/i;
+
+    const occurrences = line.match(insecureUri);
+    if (!occurrences) {
+      return false;
+    }
+
+    let cursor = 0;
+    for (const uri of occurrences) {
+      const at = line.indexOf(uri, cursor);
+      cursor = at + uri.length;
+      if (!namespaceContext.test(line.slice(0, at))) {
+        return false; // a genuine endpoint — keep the finding
+      }
+    }
+
+    return true;
+  }
+
   private isInTestOrComment(filePath: string, line: string): boolean {
     // Check if test file
     if (

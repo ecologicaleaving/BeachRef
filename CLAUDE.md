@@ -553,8 +553,9 @@ exit 2.
 | `npm run audit` | **all 9** | Critical + High regressions |
 | `npm run audit:ci` | **all 9** | Critical + High regressions |
 | `npm run audit:quality` | typescript, eslint, complexity | Critical + High regressions |
+| `npm run audit:precommit` | typescript, eslint, complexity, **security** | Critical + High regressions |
 | `npm run audit:baseline` | all 9 | nothing — rewrites `.audit-baseline.json` |
-| `.husky/pre-commit` | typescript, eslint, complexity (`npm run audit:quality`) | **Critical** regressions only (fast) |
+| `.husky/pre-commit` | typescript, eslint, complexity, security (`npm run audit:precommit`) | **Critical** regressions only (fast) |
 | `.husky/pre-push` | **all 9** (`npm run audit:ci`) | Critical + High regressions |
 
 Every run prints its roster — which checkers are running and which are **NOT**.
@@ -724,24 +725,57 @@ authority on current behaviour**; treat those documents as historical.
 - Checker execution time
 - Trend analysis over time
 
-**Current state (issue #42, all 9 checkers, `--no-baseline`)**:
+**Current state (after issue #56, all 9 checkers, `--no-baseline`)**:
 
 | Checker | Findings |
 |---|---|
-| TypeScript | 2722 |
-| ESLint | 928 (5 errors / 923 warnings — matches `npm run lint`) |
+| TypeScript | 2677 |
+| ESLint | 922 (5 errors / 917 warnings — matches `npm run lint`) |
 | Complexity | 176 |
-| Security | 14 (1 Critical, 13 High) |
+| Security | **0** |
 | Architecture | 15 |
 | Error Handling | 39 |
-| Performance | 2049 |
+| Performance | ~2049 |
 | Data Flow | 25 |
 | Build | 4 |
-| **Total** | **5972** — 1 Critical, 2779 High, 2269 Medium, 923 Low |
 
-2780 blocking findings are frozen in `.audit-baseline.json`. The gate therefore
-reports PASS today, and will report FAIL the moment any of those counts grows.
-This number is the epic's real starting point — not zero.
+2721 blocking findings are frozen in `.audit-baseline.json` (was 2780 before
+issue #56). The gate therefore reports PASS today, and will report FAIL the
+moment any of those counts grows. This number is the epic's real starting
+point — not zero.
+
+### Secrets: the one finding class you must never baseline
+
+Issue #56 found the production Postgres **superuser** password hardcoded in a
+tracked root script, on a **public** repository, untouched since 2025-09-13.
+The security scanner had existed the whole time — it had simply never been run,
+because before #42 six of the nine checkers were never instantiated.
+
+Two things changed so it cannot recur silently:
+
+- **`security` runs at commit time**, not only at push. `.husky/pre-commit` uses
+  the `precommit` preset (`quality` + `security`). The scanner costs <1s on the
+  whole tree; there was no reason for the commit gate to be blind to the only
+  finding class that is Critical by definition.
+- **The scanner stopped crying wolf.** 13 of its 14 findings were
+  `xmlns="http://..."` and `SOAPAction:` inside SOAP envelopes for the VIS API.
+  Those URIs are opaque identifiers that nothing dereferences, and rewriting
+  them to `https://` breaks the request. `SecurityScanner.isXmlNamespaceOnly`
+  exempts them **per occurrence** — a line carrying both a namespace and a real
+  `http://` endpoint is still reported.
+  Frozen by `__tests__/scripts/audit/security-scanner.test.ts`.
+
+If the gate reports `security-credential`, **do not** run `audit:baseline` and
+**do not** `--no-verify` past it. Move the value to an environment variable and
+document it with a placeholder in `.env.example`. A secret in a tracked file on
+a public repo is compromised the moment it is pushed; removing it from the code
+afterwards does not un-publish it — only rotation does.
+
+> **Git worktrees caveat**: `core.hooksPath` is an *absolute* path to the main
+> worktree's `.husky/_`. A commit made from a linked worktree therefore runs the
+> **main worktree's** hook scripts, not its own. When changing a hook, verify it
+> with `git -c core.hooksPath=.husky commit ...` or by running `.husky/pre-commit`
+> directly — otherwise you are testing a stale script.
 
 ### Environment Setup
 

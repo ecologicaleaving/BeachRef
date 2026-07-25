@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, StyleSheet, Animated } from 'react-native';
+
 import { useLiveIndicatorAnimation } from '../../utils/statusAnimations';
 import { colors } from '../../theme/tokens';
 

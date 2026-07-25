@@ -4,12 +4,11 @@
  * Story 002: Enhanced Live Score UX with Animations
  *
  * Provides smooth transition animations for status changes
- * Optimized for mobile performance with React Native Reanimated
+ * Built on React Native's own Animated API (issue #38 dropped reanimated)
  */
 
 import { Animated, Easing, AccessibilityInfo } from 'react-native';
-import { useEffect } from 'react';
-import { useSharedValue, useAnimatedStyle, withTiming, withSequence, withRepeat, runOnJS } from 'react-native-reanimated';
+import React, { useEffect } from 'react';
 import { TournamentStatus, getStatusColor } from './statusColors';
 
 // Animation configuration constants
@@ -437,193 +436,204 @@ export const optimizeAnimationPerformance = {
 };
 
 export default StatusAnimationController;
+// =============================================================================
+// Live Score UX animation hooks (Story 002)
+// =============================================================================
+// These used to be built on `react-native-reanimated`. They are now built on
+// React Native's own `Animated`, which ships inside react-native-web and is
+// already bundled (issue #38): reanimated accounted for 176 modules and 544 KB
+// of the web entry chunk while being used only by the five hooks below.
+// The public shape of every hook is unchanged — each returns a style object
+// that can be spread into an `Animated.View` style array.
 
-// =============================================================================
-// React Native Reanimated Hooks (Story 002: Live Score UX Animations)
-// =============================================================================
+/** Drives an Animated.Value through a sequence of timings, once per change. */
+const useSequence = (
+  run: (value: Animated.Value) => Animated.CompositeAnimation | null,
+  initial: number,
+  deps: any[]
+) => {
+  const value = React.useRef(new Animated.Value(initial)).current;
+
+  useEffect(() => {
+    const animation = run(value);
+    if (!animation) return;
+    animation.start();
+    return () => animation.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return value;
+};
 
 /**
- * Hook for animating score changes with bounce effect using Reanimated
+ * Hook for animating score changes with bounce effect
  * Animates scale from 1.0 → 1.2 → 1.0 over 300ms
  */
 export const useScoreChangeAnimation = (score: number | string, isLive: boolean = false) => {
-  const animatedScale = useSharedValue(1);
-  const previousScore = useSharedValue(score);
+  const previousScore = React.useRef(score);
 
-  useEffect(() => {
-    // Only animate if score actually changed and match is live
-    if (isLive && score !== previousScore.value && score !== undefined && score !== null) {
-      animatedScale.value = withSequence(
-        withTiming(1.2, { duration: 150 }),
-        withTiming(1, { duration: 150 })
-      );
-      previousScore.value = score;
-    }
-  }, [score, isLive]);
+  const scale = useSequence(
+    (value) => {
+      const changed = score !== previousScore.current;
+      previousScore.current = score;
+      if (!isLive || !changed || score === undefined || score === null) return null;
+      return Animated.sequence([
+        Animated.timing(value, { toValue: 1.2, duration: 150, useNativeDriver: false }),
+        Animated.timing(value, { toValue: 1, duration: 150, useNativeDriver: false }),
+      ]);
+    },
+    1,
+    [score, isLive]
+  );
 
-  return useAnimatedStyle(() => ({
-    transform: [{ scale: animatedScale.value }]
-  }));
+  return { transform: [{ scale }] };
 };
 
 /**
- * Hook for live indicator pulsing animation using Reanimated
+ * Hook for live indicator pulsing animation
  * Creates a subtle pulsing effect for live status indicators
  */
 export const useLiveIndicatorAnimation = (isLive: boolean) => {
-  const opacity = useSharedValue(isLive ? 1 : 0);
-
-  useEffect(() => {
-    if (isLive) {
-      opacity.value = withRepeat(
-        withSequence(
-          withTiming(0.3, { duration: 1000 }),
-          withTiming(1, { duration: 1000 })
-        ),
-        -1, // Infinite repeat
-        false
+  const opacity = useSequence(
+    (value) => {
+      if (!isLive) {
+        return Animated.timing(value, { toValue: 0, duration: 300, useNativeDriver: false });
+      }
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(value, { toValue: 0.3, duration: 1000, useNativeDriver: false }),
+          Animated.timing(value, { toValue: 1, duration: 1000, useNativeDriver: false }),
+        ])
       );
-    } else {
-      opacity.value = withTiming(0, { duration: 300 });
-    }
-  }, [isLive]);
+    },
+    isLive ? 1 : 0,
+    [isLive]
+  );
 
-  return useAnimatedStyle(() => ({
-    opacity: opacity.value
-  }));
+  return { opacity };
 };
 
 /**
- * Hook for match status change animations using Reanimated
+ * Hook for match status change animations
  * Provides smooth transitions for status changes (Scheduled → Running → Finished)
  */
 export const useStatusChangeAnimation = (status: string) => {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
+  const scale = useSequence(
+    (value) =>
+      Animated.sequence([
+        Animated.timing(value, { toValue: 1.05, duration: 200, useNativeDriver: false }),
+        Animated.timing(value, { toValue: 1, duration: 200, useNativeDriver: false }),
+      ]),
+    1,
+    [status]
+  );
 
-  useEffect(() => {
-    // Animate status changes with subtle scale and opacity effects
-    scale.value = withSequence(
-      withTiming(1.05, { duration: 200 }),
-      withTiming(1, { duration: 200 })
-    );
+  const opacity = useSequence(
+    (value) =>
+      Animated.sequence([
+        Animated.timing(value, { toValue: 0.8, duration: 100, useNativeDriver: false }),
+        Animated.timing(value, { toValue: 1, duration: 100, useNativeDriver: false }),
+      ]),
+    1,
+    [status]
+  );
 
-    opacity.value = withSequence(
-      withTiming(0.8, { duration: 100 }),
-      withTiming(1, { duration: 100 })
-    );
-  }, [status]);
-
-  return useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value
-  }));
+  return { transform: [{ scale }], opacity };
 };
 
 /**
- * Hook for court assignment change animations using Reanimated
+ * Hook for court assignment change animations
  * Animates when court assignments are updated
  */
 export const useCourtChangeAnimation = (courtNumber: string | number) => {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(1);
+  const translateY = useSequence(
+    (value) => {
+      if (!courtNumber) return null;
+      return Animated.sequence([
+        Animated.timing(value, { toValue: -5, duration: 150, useNativeDriver: false }),
+        Animated.timing(value, { toValue: 0, duration: 150, useNativeDriver: false }),
+      ]);
+    },
+    0,
+    [courtNumber]
+  );
 
-  useEffect(() => {
-    if (courtNumber) {
-      translateY.value = withSequence(
-        withTiming(-5, { duration: 150 }),
-        withTiming(0, { duration: 150 })
-      );
+  const opacity = useSequence(
+    (value) => {
+      if (!courtNumber) return null;
+      return Animated.sequence([
+        Animated.timing(value, { toValue: 0.7, duration: 150, useNativeDriver: false }),
+        Animated.timing(value, { toValue: 1, duration: 150, useNativeDriver: false }),
+      ]);
+    },
+    1,
+    [courtNumber]
+  );
 
-      opacity.value = withSequence(
-        withTiming(0.7, { duration: 150 }),
-        withTiming(1, { duration: 150 })
-      );
-    }
-  }, [courtNumber]);
-
-  return useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value
-  }));
+  return { transform: [{ translateY }], opacity };
 };
 
 /**
- * Hook for loading state animations using Reanimated
+ * Hook for loading state animations
  * Creates gentle fade animations for loading states
  */
 export const useLoadingAnimation = (isLoading: boolean) => {
-  const opacity = useSharedValue(isLoading ? 0.6 : 1);
-
-  useEffect(() => {
-    if (isLoading) {
-      opacity.value = withRepeat(
-        withSequence(
-          withTiming(0.6, { duration: 800 }),
-          withTiming(1, { duration: 800 })
-        ),
-        -1,
-        true
+  const opacity = useSequence(
+    (value) => {
+      if (!isLoading) {
+        return Animated.timing(value, { toValue: 1, duration: 300, useNativeDriver: false });
+      }
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(value, { toValue: 0.6, duration: 800, useNativeDriver: false }),
+          Animated.timing(value, { toValue: 1, duration: 800, useNativeDriver: false }),
+        ])
       );
-    } else {
-      opacity.value = withTiming(1, { duration: 300 });
-    }
-  }, [isLoading]);
+    },
+    isLoading ? 0.6 : 1,
+    [isLoading]
+  );
 
-  return useAnimatedStyle(() => ({
-    opacity: opacity.value
-  }));
+  return { opacity };
 };
 
 /**
- * Hook to detect user's reduced motion preference using Reanimated
- * Respects system accessibility settings
+ * Hook to detect the user's reduced motion preference.
+ * Returns a `{ value }` container so existing call sites keep working.
  */
 export const useReducedMotion = () => {
-  const isReducedMotionEnabled = useSharedValue(false);
+  const container = React.useRef({ value: false }).current;
+  const [, forceUpdate] = React.useState(0);
 
   useEffect(() => {
-    const checkReducedMotion = async () => {
-      try {
-        const reducedMotion = await AccessibilityInfo.isReduceMotionEnabled();
-        runOnJS((enabled: boolean) => {
-          isReducedMotionEnabled.value = enabled;
-        })(reducedMotion);
-      } catch (error) {
-        // Default to false if unable to detect
-        isReducedMotionEnabled.value = false;
-      }
+    let cancelled = false;
+
+    const apply = (enabled: boolean) => {
+      if (cancelled || container.value === enabled) return;
+      container.value = enabled;
+      forceUpdate((n) => n + 1);
     };
 
-    checkReducedMotion();
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then(apply)
+      .catch(() => apply(false));
 
-    // Listen for changes in accessibility settings
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', (enabled) => {
-      runOnJS((reducedMotion: boolean) => {
-        isReducedMotionEnabled.value = reducedMotion;
-      })(enabled);
-    });
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', apply);
 
-    return () => subscription?.remove();
+    return () => {
+      cancelled = true;
+      subscription?.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return isReducedMotionEnabled;
+  return container;
 };
 
 /**
- * Utility function to conditionally apply animations based on reduced motion preference
- * Returns an animated style that respects accessibility settings
+ * Conditionally apply an animated style depending on the reduced motion
+ * preference. Returns a static (empty) style when reduced motion is on.
  */
-export const withReducedMotionCheck = (
-  normalAnimatedStyle: any,
-  reducedMotionSharedValue: any
-) => {
-  'worklet';
-  return useAnimatedStyle(() => {
-    if (reducedMotionSharedValue.value) {
-      // Return static style when reduced motion is enabled
-      return {};
-    }
-    return normalAnimatedStyle();
-  });
+export const withReducedMotionCheck = (normalAnimatedStyle: any, reducedMotion: boolean) => {
+  return reducedMotion ? {} : normalAnimatedStyle;
 };

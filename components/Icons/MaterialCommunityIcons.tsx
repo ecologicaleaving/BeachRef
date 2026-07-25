@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Text, Platform, ViewStyle } from 'react-native';
-import { MaterialCommunityIcons as MCIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons as MCIcons } from './vectorIconSets';
 import { colors, designTokens } from '../../theme/tokens';
 import { IconProps as BaseIconProps } from '../../types/props';
 

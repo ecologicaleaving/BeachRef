@@ -6,6 +6,9 @@ node_modules/
 # Expo
 .expo/
 dist/
+# Source-mapped export used by `scripts/analyze-bundle.js` (issue #38)
+dist-map/
+.bundle-tmp/
 web-build/
 expo-env.d.ts
 

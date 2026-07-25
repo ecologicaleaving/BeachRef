@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
+
 import { Title, Heading, Subheading, EnhancedBodyText, EnhancedCaption } from './Text';
 import { colors, spacing } from '../../theme/tokens';
 import { createTextShadow } from '../../theme/shadows';

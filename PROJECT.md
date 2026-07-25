@@ -147,10 +147,12 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. LCP prod −34%. Diagnosi: il render delay è boot RN-Web, non il bundle
 - **DONE**: Issue #34 (PR #35) — Web perf SSG: routing per-route + skeleton prerenderizzato (perceived performance). Certificato che il −80% sull'LCP NON è raggiungibile con SSG (LCP = contenuto data-driven non prerenderizzabile); richiede refactor architetturale (output `server` o runtime più leggero). Test: `npm run test:prerender`, `tests/curl-tests.sh`
 - **DONE**: Issue #36 (PR #37) — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), **`public/_headers` unica fonte di verità** per header e redirect (`public/_redirects` eliminato col catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34; `netlify.toml` svuotato perché **inerte** — vedi sezione sotto), chunk `/_expo/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Misurato sul deploy: contenuto reale da ~9900 ms a ~2277 ms, TTFB da 2046 ms a 152 ms, prima chiamata VIS API da 8275 ms a 1322 ms. Test: `tests/curl-tests.sh <BASE_URL>` (15 check), `npm run test:prerender`
-- **TODO**: Issue #38 (follow-up di #36) — dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw): dopo #36 è il **95% dell'LCP residuo** (2115 ms di render delay su 2187 ms di LCP, con TTFB a 72 ms). Chiude i due target LCP lasciati aperti da #36
+- **DONE**: Issue #38 (epic #51, wave 1, follow-up di #36) — Dimagrimento dell'entry chunk. Prima di tagliare è stato scritto `scripts/analyze-bundle.js`, che attribuisce ogni byte generato al sorgente da cui viene tramite la source map (AC1): senza quella misura tre dei quattro interventi non sarebbero stati trovati e uno sarebbe stato fatto sul candidato sbagliato. **La scoperta principale non era in lista**: `import { X } from '@expo/vector-icons'` tira dentro **tutti** i set di icone, e i loro glyph map sono **345 KB** del chunk (MaterialCommunityIcons 164 KB, FontAwesome5 49 KB, MaterialIcons 46 KB, Ionicons 30 KB, FA5-brands 28 KB, FontAwesome 27 KB) per **tre** set usati — e su web nessuno dei tre viene mai renderizzato, perché tutti e tre i wrapper hanno un ramo `Platform.OS === 'web'` che disegna un glifo di testo. Non comparivano nell'analisi perché il **JSON non ha mapping nella source map**: erano nella quota "non attribuita". Ora passano da `components/Icons/vectorIconSets.ts` + `.web.ts`. **Secondo per peso, anch'esso fuori lista**: `PanGestureHandler` in `GmailStyleSideMenu` era l'unico import di `react-native-gesture-handler` in tutto il codice, e gesture-handler tira `react-native-reanimated` via `handlers/gestures/reanimatedWrapper` → **300 moduli e ~830 KB** per una swipe di chiusura del menu, sostituita con `PanResponder` di React Native (già dentro react-native-web); i 5 hook che usavano reanimated in `utils/statusAnimations.ts` sono stati riscritti su `Animated` di RN, API pubblica invariata. Terzo: `expo-notifications` + `expo-device` (e con loro `@ide/backoff`→`assert`, `ua-parser-js`) resi lazy con `import()` in `NotificationService` e `app/_layout.tsx` — su web ogni metodo passa già da `WebPushService`, quindi il ramo native non serve al boot. Quarto: `minifierConfig` con `keep_fnames: false` e `ascii_only: false`, e `inlineRequires` attivo anche su web (era `!isWeb`) per differire l'*esecuzione* dei moduli. **Non toccato di proposito**: `@supabase/*` (~140 KB raw / ~29 KB br, oggi codice morto in produzione perché senza `EXPO_PUBLIC_SUPABASE_*` il client è `null`) — è materia della #54 che lo sta accendendo; e `luxon` (71 KB raw, duplicato funzionale di `dayjs` che è già nel bundle) perché riscrivere la logica timezone appena riparata dalla #29 per ~14 KB br non vale il rischio. Budget di peso ora verificato da `tests/curl-tests.sh` (`ENTRY_MAX_BROTLI_BYTES`), insieme all'AC3 (nessun simbolo dei servizi `__DEV__` nel chunk servito — era già vero). **Risultato sul deploy: entry brotli 866.641 → 511.623 B (−41,0%), raw 3.674.188 → 2.072.378 B (−43,6%) — AC2 raggiunto.** Test 3 suite in più verdi e 0 regressioni, `audit:ci` PASS. **Ma la premessa della issue non regge alla misura**: vedi la sezione "Il peso del bundle non è la leva dell'LCP" più sotto
 - **DONE**: Issue #40 — `services/OfficialsService.ts`: nomi di scorer/assistant scorer/line judge per match e delegazione arbitrale, **2 chiamate VIS per torneo** indipendenti dal numero di match. Decoding XML-nell'XML isolato in `utils/visEmbeddedXml.ts`, tipi in `types/referee-v2.ts`, 26 test su fixture reali senza rete, script `scripts/show-tournament-officials.js`. Fix collaterale: `GetEventRefereeList` in `VisApiClient` era rotto (mancava l'envelope `<Requests>`). Limite documentato: referee coach e technical delegate non ottenibili dalla VIS pubblica
 - **DONE**: Issue #43 — Notifiche: l'init falliva a **ogni** avvio in produzione (`TypeError: w.default.getInstance is not a function`, degradato a warning dal try/catch di init). Causa: i 5 servizi in `services/notifications/` esportavano sia la classe (named) sia un `export default X.getInstance()` — cioè un'**istanza già costruita** con lo stesso nome — e i consumer importavano il default chiamandoci sopra il metodo **statico** `getInstance()`. Convenzione adottata: **solo named export della classe, nessun default export**; 13 file allineati (5 servizi + 8 consumer, incluso `NotificationService` stesso che usava male `WebPushService`). Aggiunto `NotificationService.isInitialized()` come prova positiva di init e log dedicati in `app/_layout.tsx`; l'init error è ora `console.error` in `__DEV__` (il warn silenzioso è ciò che ha nascosto il bug). Test: `__tests__/services/notifications/NotificationServiceInit.test.ts` (22 test, 19 falliscono col bug presente)
-- **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
+- **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching lato server, o runtime più leggero di react-native-web. **È rimasta l'unica strada per gli AC11/AC12 di #36** (LCP < 1500 / < 1800 ms): la #38 ha dimezzato il bundle e l'LCP è sceso del 5% a cache fredda, misurato. Reanimated non è più un candidato: la #38 lo ha già tolto dal grafo
+- **TODO** (emerso da #38): `@supabase/*` pesa ~140 KB raw / ~29 KB br nell'entry ed è **codice morto in produzione** finché `EXPO_PUBLIC_SUPABASE_*` non è configurata su Netlify (il client è `null`). Va reso lazy con `import()` **dentro la #54**, che lo sta accendendo: 4 servizi dell'entry lo importano e serve trasformare l'export sincrono `supabase` in un getter async
+- **TODO** (emerso da #38): `luxon` (71 KB raw) è un duplicato funzionale di `dayjs`, già nel bundle con i plugin utc e timezone. Non consolidato nella #38 perché i 4 file che lo usano sono logica timezone appena riparata dalla #29 e `toFormat`/`fromISO` non hanno semantica identica a dayjs. Vale ~14 KB br: da fare solo se qualcuno tocca comunque quella logica
 - **DONE**: Issue #42 (epic #51, wave 0) — Il gate di qualità torna a dire il vero. `npm run audit` usciva **PASS/0 mentre 2 dei 3 checker crashavano** (`catch → console.warn → return []`) e **6 checker su 9 non venivano mai istanziati** (default = preset `quality`; lo scanner di sicurezza non era mai stato eseguito). Ora: tre esiti distinti **PASS/FAIL/ERROR** (exit 0/1/2), i checker non catturano più i propri errori, `ERROR` ha precedenza su tutto incluso `--fail-on` (era la via con cui `audit:ci` aggirava il controllo), tutti e 9 i checker girano di default e il **roster viene stampato** (chi gira e chi no). Fix ESLint (scope = `expo lint`, 928 finding = identico a `npm run lint`) e Complexity (`overrideConfigFile: true` scartava il parser TS → tutti i `.ts` ignorati; ora 176 finding reali). `typescript-error` riportato a **High** (era Medium "per flessibilità": rendeva il gate incapace di bloccare); il backlog preesistente è congelato in **`.audit-baseline.json`** (2780 finding bloccanti, budget per `(file, tipo)` — insensibile agli shift di riga) e il gate blocca **solo le regressioni**. Esclusioni path normalizzate POSIX (su Windows non matchavano mai: lo scanner camminava `node_modules`, `docs/`, artefatti di build). 31 test nuovi in `__tests__/scripts/audit/`. Comandi: `npm run audit` / `audit:ci` (9 checker), `audit:quality` (3, pre-commit), `audit:baseline` (ri-congela)
 - **DONE**: Issue #48 (epic #51, wave 3) — Config jest riparata alla radice. La diagnosi iniziale (`uuid` ESM + MMKV + NetInfo) era incompleta: la causa dominante era che **`babel-preset-expo` riscrive ogni `process.env.EXPO_PUBLIC_*` in un import da `expo/virtual/env`** (ESM), quindi qualunque file che leggesse una env var esplodeva all'import. Fix in `jest.config.js`: `moduleNameMapper` su `expo/virtual/env` e `react-native-mmkv` (mock in-memory vero, non `jest.fn()`), transform per i `.js` con `@react-native/babel-preset` (dichiarare `transform` **sostituisce** la mappa di default: i `.js` non venivano trasformati affatto), `transformIgnorePatterns` allargato a `uuid`/`expo*`/`react-native*`/`@sentry`/`@tanstack`. Rimossi dai test i **21 file Deno** delle Edge Function Supabase (girano con `deno test`, mai con jest) e tolti i **fake timer legacy globali** da `jest.setup.js`, che congelavano `setTimeout` per tutte le suite (128 timeout da 5s che non erano bug). Toppa di `OfficialsService` rimossa: `require` lazy → import statici, 26 test verdi. Corretto `services/MatchResultOfflineService.ts` che importava `@react-native-netinfo/netinfo`, pacchetto inesistente. **Suite rosse 118 → 88, verdi 36 → 43, test verdi 994 → 1283 (+289), zero regressioni.** Doc: `TESTING.md`
 - **TODO**: Wiring dell'audit in CI — oggi `npm run audit:ci` gira **solo** negli hook git (bypassabile con `--no-verify`), non sulle PR. `.github/workflows/audit.yml` documentato in CLAUDE.md non è mai esistito
@@ -161,6 +163,78 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #45 (epic #51, wave 1, propedeutica a #38) — Codice morto e codice dormiente sono due cose diverse, e la issue le trattava insieme. **Morto e rimosso**: `IntegrationTestSuite` + `MigrationOrchestrationService` + `MigrationMonitoringService` + `MigrationRollbackService` (127 KB di sorgente, 5933 righe) formavano un'**isola chiusa** — si importavano solo fra loro, la radice `IntegrationTestSuite` non era importata da nessuno tranne il proprio test, e nessun percorso da `app/` li raggiungeva. Verificati anche i riferimenti dinamici (nessun `require()` a runtime, nessun import per stringa, nessuna citazione in `package.json`/`.github/`/`.husky/`/`netlify.toml`/`app.json`/script; `scripts/enableMigration.js`, che il nome suggerirebbe, riguarda i feature flag degli hook). **Effetto sul bundle: zero, e misurato** — non essendo nel grafo di build non erano nel chunk `entry-*.js`: 0 occorrenze di ogni marker nel bundle prodotto *prima* della rimozione. I "170 KB nel grafo di build" della issue erano sorgente su disco, non peso spedito. **Dormiente e mantenuto**: `DualReadService` **non** è stato rimosso (AC3 opzione (b)) perché la #54 accende Supabase sul web e questo è il percorso DB-first che piloterà. È stato reso **davvero** lazy: l'accesso avveniva con un `require()` dentro un metodo, ma **Metro risolve `require()` staticamente esattamente come `import`** — differiva l'*esecuzione*, mai il *caricamento*, quindi il file stava nell'entry. Con `import()` dinamico memoizzato: entry raw 3.666.774 → 3.641.546 B (**−25.228 B, −0,69%**), br 711.719 → 707.711 B (**−4.008 B, −0,56%**), nuovo chunk `DualReadService-*.js` raw 25.704 / br 5.425 B (23 → 24 chunk). `@supabase/supabase-js` **non** si sposta: resta nell'entry perché lo importano altri 8 moduli raggiungibili da `app/`. **Scoperta collaterale importante per la #54**: il ramo DB non "fallisce e degrada", è il **costruttore** che esplode — senza `EXPO_PUBLIC_SUPABASE_URL` `createClient()` lancia `supabaseUrl is required.`, quindi ogni `getTournaments`/`getMatches`/`getReferees`/`clearCache` di `CacheServiceCompatibility` termina nel `catch` dei chiamanti sulla VIS API. Appena le variabili saranno su Netlify, `readStrategy: 'db_first'` si attiva **di colpo** su tutte e quattro le strade, senza altri interruttori. tsc 2675 → **2603** (−72), lint 922 (5 errori) invariato, 4 suite rosse in meno, `npm run audit:ci` PASS
 - **TODO** (emerso da #45): `services/DataConsistencyValidator.ts` e `services/DataSyncService.ts` sono **rimasti orfani** dopo la rimozione della catena `Migration*` — erano importati solo da lì. Non eliminati di proposito: sono codice Supabase e vanno valutati insieme alla #54, non tagliati di nascosto
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2721 finding bloccanti: 2677 TS, 5 ESLint error, 39 error-handling; **0 Critical, 0 security**)
+
+## Il peso del bundle non è la leva dell'LCP (issue #38)
+
+**Misurato, non stimato.** La #38 ha tolto al chunk `entry-*.js` il **41% in
+brotli e il 44% in raw** (866.641 → 511.623 B br; 3.674.188 → 2.072.378 B raw).
+LCP misurato subito dopo, produzione contro deploy preview, back-to-back nella
+stessa sessione di browser:
+
+| scenario | prod | dopo #38 | Δ |
+|---|---:|---:|---:|
+| first view, cache fredda | 2268 ms | 2156 ms | −112 ms (−4,9%) |
+| repeat view, no throttling (mediana di 3) | 956 ms | 1020 ms | dentro il rumore |
+| repeat view, 4x CPU + Fast 4G | 1380 ms | 1236 ms | −104 ms (−7,6%) |
+| repeat view, 4x CPU, trace DevTools | 2165 ms | 1915 ms | −250 ms (−11,5%) |
+| **download del chunk, cache fredda** | **685 ms** | **440 ms** | **−245 ms** |
+
+La issue #38 dava per assodato che *"oltre il 95% dell'LCP è parse + execute di
+quel chunk"*. **Non è così.** Se lo fosse, un taglio del 44% sarebbe valso
+~800 ms; ne vale 110-250. L'unico guadagno che si vede per intero è quello di
+rete, sul download.
+
+Il resto dell'LCP è **boot di React-Native-Web + round-trip verso la VIS API**,
+che è ciò che produce davvero l'elemento LCP — contenuto data-driven, non
+prerenderizzabile. È la stessa conclusione già misurata dalla #34 e la diagnosi
+della #32 (*"il render delay è boot RN-Web, non il bundle"*), ora confermata una
+terza volta e con l'esperimento più netto possibile: dimezzare il bundle.
+
+**Conseguenza operativa: non aprire altre issue di dimagrimento del bundle
+aspettandosi un guadagno di LCP.** I ~230 KB raw ancora identificati (Supabase
+~140 KB, luxon ~71 KB) varrebbero forse 40-60 ms. Gli AC11/AC12 di #36
+(LCP < 1500 / < 1800 ms) richiedono gli interventi architetturali già a backlog:
+output Expo `server` con data fetching lato server, oppure un runtime più
+leggero di react-native-web. Il dimagrimento resta comunque un guadagno reale e
+permanente su rete, memoria e batteria — semplicemente non è la leva che si
+credeva.
+
+## Come si misura il peso dell'entry chunk (issue #38)
+
+**Il peso su disco non dice nulla sul peso spedito, e la dimensione di un file
+sorgente non dice nulla su quanto pesi nel bundle.** L'unico modo onesto di
+sapere cosa occupa il chunk `entry-*.js` è attribuirne ogni byte generato al
+sorgente da cui proviene, tramite la sua source map:
+
+```bash
+npx expo export --platform web --source-maps --output-dir dist-map
+node scripts/analyze-bundle.js dist-map --top 20 --json analysis.json
+```
+
+Lo strumento stampa raw / brotli / gzip del chunk, i primi N contributori
+aggregati per pacchetto npm o file applicativo, i primi N singoli file, e lo
+split dipendenze / codice applicativo. `dist-map/` è in `.gitignore` ed escluso
+dai checker dell'audit.
+
+Due trappole che questo script ha già preso in trappola una volta:
+
+1. **Il JSON non ha mapping.** I glyph map di `@expo/vector-icons` (345 KB) non
+   comparivano tra i contributori perché nessun mapping li copre: si vedevano
+   solo come "unattributed". Se la quota non attribuita è alta, guarda le righe
+   più lunghe del bundle a mano — è lì che si nascondono i dati inline:
+   ```bash
+   node -e "const l=require('fs').readFileSync('dist/_expo/static/js/web/entry-<hash>.js','utf8').split('\n'); l.map((s,i)=>[i+1,s.length]).sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([i,n])=>console.log(i,n,JSON.stringify(l[i-1].slice(0,80))))"
+   ```
+2. **Il brotli locale non è quello di Netlify.** In locale `zlib` a qualità 11
+   comprime molto più di quanto faccia Netlify (~19% contro ~24% del raw sullo
+   stesso contenuto). Confronta sempre locale-con-locale e deploy-con-deploy,
+   mai i due fra loro. Sul deploy si misura così:
+   ```bash
+   curl -s -H 'Accept-Encoding: br' -o /dev/null -w '%{size_download}\n' <entry-url>
+   ```
+
+Il budget di peso dell'entry è verificato a ogni run di `tests/curl-tests.sh`
+(`ENTRY_MAX_BROTLI_BYTES`): un aumento fa diventare rosso lo smoke test.
 
 ## Codice lazy e peso dell'entry chunk (issue #45)
 

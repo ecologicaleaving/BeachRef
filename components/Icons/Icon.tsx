@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ViewStyle, AccessibilityRole, Platform, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './vectorIconSets';
 import { 
   IconSize, 
   IconVariant, 

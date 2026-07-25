@@ -27,7 +27,7 @@
 - **Deploy Method**: expo-build (mobile) / Netlify (web)
 - **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
-- **Last Deploy**: 2026-07-08T09:53:18Z (web — issue #34/PR #35 per-route SSG + skeleton)
+- **Last Deploy**: 2026-07-25T02:36:00Z (web — issue #36/PR #37 cache + service worker + health check)
 - **Environment Variables**: 
   - `SUPABASE_URL`: Expo environment injection
   - `SUPABASE_ANON_KEY`: Expo secure store
@@ -94,8 +94,8 @@
 - **TODO**: Integrazione livestreaming matches con metadata arbitraggio
 - **DONE**: Issue #32 — Web perf: code-splitting per route (1→23 chunk), icone deep-import (bundle raw −37%), fix cache Netlify. LCP prod −34%. Diagnosi: il render delay è boot RN-Web, non il bundle
 - **DONE**: Issue #34 (PR #35) — Web perf SSG: routing per-route + skeleton prerenderizzato (perceived performance). Certificato che il −80% sull'LCP NON è raggiungibile con SSG (LCP = contenuto data-driven non prerenderizzabile); richiede refactor architetturale (output `server` o runtime più leggero). Test: `npm run test:prerender`, `tests/curl-tests.sh`
-- **DONE**: Issue #36 — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), `netlify.toml` unica fonte di verità per header e redirect (`public/_headers` e `public/_redirects` eliminati, incluso il catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34), chunk `/_expo/*` e `/assets/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Test: `tests/curl-tests.sh <BASE_URL>`, `npm run test:prerender`
-- **TODO** (follow-up di #36, fuori scope): dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw, ~3.2 s di download+parse) — richiede bundle analysis a sé
+- **DONE**: Issue #36 (PR #37) — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), **`public/_headers` unica fonte di verità** per header e redirect (`public/_redirects` eliminato col catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34; `netlify.toml` svuotato perché **inerte** — vedi sezione sotto), chunk `/_expo/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Misurato sul deploy: contenuto reale da ~9900 ms a ~2277 ms, TTFB da 2046 ms a 152 ms, prima chiamata VIS API da 8275 ms a 1322 ms. Test: `tests/curl-tests.sh <BASE_URL>` (15 check), `npm run test:prerender`
+- **TODO**: Issue #38 (follow-up di #36) — dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw): dopo #36 è il **95% dell'LCP residuo** (2115 ms di render delay su 2187 ms di LCP, con TTFB a 72 ms). Chiude i due target LCP lasciati aperti da #36
 - **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 
 ## Web — configurazione cache e redirect (issue #36)

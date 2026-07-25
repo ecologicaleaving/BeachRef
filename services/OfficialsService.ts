@@ -34,7 +34,10 @@
  */
 
 import { XMLParser } from 'fast-xml-parser';
+import { VisApiClient } from './api/VisApiClient';
+import { CacheService } from './cache/CacheService';
 import type { GetBeachMatchListRequest, GetEventRefereeListRequest, GetEventRequest, VisApiResponse } from '../types/api-v2';
+import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import {
   AuxiliaryFunction,
   EventAuxiliaryOfficial,
@@ -131,15 +134,9 @@ export class OfficialsService {
 
   private static getDependencies(): OfficialsServiceDependencies {
     if (!this.dependencies) {
-      // Lazily required: the concrete client and cache pull in native modules
-      // (uuid ESM, MMKV, NetInfo). Tests inject stubs and never load them.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { VisApiClient } = require('./api/VisApiClient');
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { CacheService } = require('./cache/CacheService');
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { DEFAULT_RETRY_CONFIG } = require('../types/api-v2');
-
+      // Collaborators are still built lazily (only when nobody injected one),
+      // but they are now *statically imported*: the jest config handles the
+      // native/ESM modules they pull in — see docs/testing-services.md.
       this.dependencies = {
         client: new VisApiClient({
           baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',

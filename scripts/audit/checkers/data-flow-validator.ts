@@ -20,17 +20,14 @@ export class DataFlowValidator implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      const [subscriptionFindings, syncFindings, immutabilityFindings] = await Promise.all([
-        this.checkSubscriptionManagement(),
-        this.checkSyncPatterns(),
-        this.checkDataImmutability(),
-      ]);
+    // Errors propagate on purpose (issue #42, AC1).
+    const [subscriptionFindings, syncFindings, immutabilityFindings] = await Promise.all([
+      this.checkSubscriptionManagement(),
+      this.checkSyncPatterns(),
+      this.checkDataImmutability(),
+    ]);
 
-      findings.push(...subscriptionFindings, ...syncFindings, ...immutabilityFindings);
-    } catch (error) {
-      console.warn('Data flow validator error:', (error as Error).message);
-    }
+    findings.push(...subscriptionFindings, ...syncFindings, ...immutabilityFindings);
 
     return findings;
   }

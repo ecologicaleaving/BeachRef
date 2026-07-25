@@ -9,7 +9,7 @@
 import { ESLint } from 'eslint';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import { AUDIT_CONFIG, resolveExistingRoots, shouldExcludePath } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath, sanitizeFindingMessage } from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -18,62 +18,71 @@ export class ComplexityChecker implements AuditChecker {
   readonly id = 'complexity';
   readonly name = 'Complexity Checker';
 
+  get scope(): string[] {
+    return resolveExistingRoots(AUDIT_CONFIG.complexityRoots).map((abs) =>
+      path.relative(AUDIT_CONFIG.projectRoot, abs).replace(/\\/g, '/')
+    );
+  }
+
+  /**
+   * Run the built-in `complexity` rule over the project's source roots.
+   *
+   * Two bugs fixed in issue #42:
+   *  1. `overrideConfigFile: true` threw away the project's flat config, so no
+   *     TypeScript parser was registered and every .ts/.tsx file was ignored
+   *     ("All files matched by '**\/*.ts' are ignored"). The rule is now layered
+   *     ON TOP of the project config instead of replacing it.
+   *  2. The failure was caught and turned into `return []` — a broken checker
+   *     was indistinguishable from a clean codebase. Errors now propagate.
+   */
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      // Create ESLint instance with complexity rules
-      const eslint = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: {
+    const roots = resolveExistingRoots(AUDIT_CONFIG.complexityRoots);
+
+    if (roots.length === 0) {
+      throw new Error(
+        `No complexity roots found. Expected at least one of: ${AUDIT_CONFIG.complexityRoots.join(', ')} under ${AUDIT_CONFIG.projectRoot}`
+      );
+    }
+
+    const eslint = new ESLint({
+      cwd: AUDIT_CONFIG.projectRoot,
+      errorOnUnmatchedPattern: false,
+      // Layered on top of eslint.config.js so the TypeScript parser stays active
+      overrideConfig: [
+        {
           rules: {
             // Cyclomatic complexity (from clarification: 15)
-            // Built-in ESLint rule, no plugin needed
-            'complexity': ['error', AUDIT_CONFIG.complexity.cyclomatic],
+            complexity: ['error', AUDIT_CONFIG.complexity.cyclomatic],
           },
-        } as any,
-        cwd: AUDIT_CONFIG.projectRoot,
-      });
+        },
+      ] as any,
+    });
 
-      // Get files to analyze
-      const filesToLint = [
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.ts'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.tsx'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.js'),
-        path.join(AUDIT_CONFIG.projectRoot, '**/*.jsx'),
-      ];
+    const results = await eslint.lintFiles(roots);
 
-      // Run ESLint with complexity rules
-      const results = await eslint.lintFiles(filesToLint);
+    for (const result of results) {
+      if (result.messages.length === 0) {
+        continue;
+      }
 
-      // Convert results to findings
-      for (const result of results) {
-        if (result.messages.length === 0) {
+      if (shouldExcludePath(result.filePath)) {
+        continue;
+      }
+
+      for (const message of result.messages) {
+        // Only process complexity rule violations — everything else in these
+        // files is the ESLint checker's job.
+        if (!this.isComplexityViolation(message)) {
           continue;
         }
 
-        if (this.shouldExcludeFile(result.filePath)) {
-          continue;
-        }
-
-        for (const message of result.messages) {
-          // Only process complexity rule violations
-          if (!this.isComplexityViolation(message)) {
-            continue;
-          }
-
-          const finding = this.createComplexityFinding(
-            result.filePath,
-            message
-          );
-          if (finding) {
-            findings.push(finding);
-          }
+        const finding = this.createComplexityFinding(result.filePath, message);
+        if (finding) {
+          findings.push(finding);
         }
       }
-    } catch (error) {
-      console.warn('Complexity checker failed:', (error as Error).message);
-      return [];
     }
 
     return findings;
@@ -152,19 +161,5 @@ export class ComplexityChecker implements AuditChecker {
       return parseInt(match[1], 10);
     }
     return null;
-  }
-
-  /**
-   * Check if a file should be excluded
-   */
-  private shouldExcludeFile(filePath: string): boolean {
-    const relativePath = path.relative(AUDIT_CONFIG.projectRoot, filePath);
-
-    return AUDIT_CONFIG.excludePaths.some((pattern) => {
-      const regex = new RegExp(
-        '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
-      );
-      return regex.test(relativePath);
-    });
   }
 }

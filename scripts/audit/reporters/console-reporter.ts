@@ -6,12 +6,8 @@
  * Provides immediate feedback during audit execution.
  */
 
-import { AuditReport, CheckerResult} from '../types';
-import {
-  _getSeverityEmoji,
-  _getSeverityColor,
-  countBySeverity,
-} from '../utils/severity-classifier';
+import { AuditReport, CheckerResult, CheckerRoster, CheckerStatus } from '../types';
+import { countBySeverity } from '../utils/severity-classifier';
 import {
   getExitCodeEmoji,
   getExitCodeDescription,
@@ -44,6 +40,11 @@ export function printAuditReport(report: AuditReport): void {
 
   console.log(''); // Separator
 
+  // Print gate explanation
+  printGate(report);
+
+  console.log(''); // Separator
+
   // Print trend analysis (if available)
   if (report.trendAnalysis) {
     printTrendAnalysis(report);
@@ -61,17 +62,21 @@ export function printAuditReport(report: AuditReport): void {
  */
 function printCheckerResults(checkerResults: CheckerResult[]): void {
   for (const checker of checkerResults) {
-    const statusIcon =
-      checker.status === 'success'
-        ? '✅'
-        : checker.status === 'failure'
-          ? '⚠️'
-          : '❌';
+    const errored = checker.status === CheckerStatus.ERROR;
+
+    const statusIcon = errored
+      ? '❌'
+      : checker.status === CheckerStatus.FAILURE
+        ? '⚠️'
+        : '✅';
 
     const durationSeconds = (checker.durationMs / 1000).toFixed(1);
 
-    const findingsSuffix =
-      checker.findingCount === 0
+    // A checker that errored has no finding count worth printing — showing
+    // "0 findings" in green is precisely the lie issue #42 is about.
+    const findingsSuffix = errored
+      ? `${RED}DID NOT RUN${RESET}`
+      : checker.findingCount === 0
         ? `${GREEN}0 findings${RESET}`
         : checker.findingCount === 1
           ? '1 finding'
@@ -84,6 +89,58 @@ function printCheckerResults(checkerResults: CheckerResult[]): void {
     if (checker.errorMessage) {
       console.log(`   ${RED}Error: ${checker.errorMessage}${RESET}`);
     }
+  }
+}
+
+/**
+ * Print which checkers will run and which will not (issue #42, AC5).
+ */
+export function printCheckerRoster(roster: CheckerRoster): void {
+  console.log(
+    `${BOLD}Checkers:${RESET} ${roster.requested.length}/${roster.available.length} selected`
+  );
+  console.log(`  ${GREEN}running:${RESET} ${roster.requested.join(', ') || '(none)'}`);
+
+  if (roster.skipped.length > 0) {
+    console.log(`  ${YELLOW}NOT running:${RESET} ${roster.skipped.join(', ')}`);
+  }
+
+  if (roster.unknown.length > 0) {
+    console.log(`  ${RED}unknown ids:${RESET} ${roster.unknown.join(', ')}`);
+  }
+
+  console.log('');
+}
+
+/**
+ * Explain how PASS/FAIL was decided (issue #42, AC7).
+ */
+function printGate(report: AuditReport): void {
+  const { gate } = report;
+
+  console.log(`${BOLD}🚦 Gate${RESET}`);
+  console.log(
+    `  Mode: ${gate.mode === 'baseline' ? `baseline (${gate.baselineFile ?? 'no baseline file yet'})` : 'absolute (baseline ignored)'}`
+  );
+  console.log(
+    `  Blocking severities: ${gate.failOnSeverities.join(', ')}`
+  );
+  console.log(`  Blocking findings: ${gate.blockingFindingCount}`);
+  console.log(`  ${DIM}└ known / baselined: ${gate.baselinedCount}${RESET}`);
+
+  const regressionColor = gate.regressionCount > 0 ? RED : GREEN;
+  console.log(
+    `  ${regressionColor}└ regressions (block the build): ${gate.regressionCount}${RESET}`
+  );
+
+  const erroredCount = report.checkerResults.filter(
+    (c) => c.status === CheckerStatus.ERROR
+  ).length;
+
+  if (erroredCount > 0) {
+    console.log(
+      `  ${RED}${erroredCount} checker(s) could not run — result is NOT trustworthy${RESET}`
+    );
   }
 }
 

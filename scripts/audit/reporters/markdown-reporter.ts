@@ -56,6 +56,12 @@ export function exportReportAsMarkdown(report: AuditReport): string {
   // Summary
   sections.push(generateSummary(report));
 
+  // Gate
+  const gateSection = generateGateSection(report);
+  if (gateSection) {
+    sections.push(gateSection);
+  }
+
   // Trend Analysis (if available)
   if (report.trendAnalysis) {
     sections.push(generateTrendSection(report));
@@ -254,17 +260,18 @@ function generateCheckerResultsSection(report: AuditReport): string {
   const sections: string[] = ['## Checker Results', ''];
 
   for (const checker of report.checkerResults) {
-    const statusEmoji =
-      checker.status === 'success'
-        ? '✅'
-        : checker.status === 'failure'
-          ? '⚠️'
-          : '❌';
+    const errored = checker.status === 'error';
+
+    const statusEmoji = errored
+      ? '❌'
+      : checker.status === 'failure'
+        ? '⚠️'
+        : '✅';
 
     const durationSeconds = (checker.durationMs / 1000).toFixed(1);
 
     sections.push(
-      `- ${statusEmoji} **${checker.checkerName}** (${durationSeconds}s) - ${checker.findingCount} findings`
+      `- ${statusEmoji} **${checker.checkerName}** (${durationSeconds}s) - ${errored ? '**DID NOT RUN**' : `${checker.findingCount} findings`}`
     );
 
     if (checker.errorMessage) {
@@ -272,7 +279,53 @@ function generateCheckerResultsSection(report: AuditReport): string {
     }
   }
 
+  const { checkerRoster } = report;
+  if (checkerRoster) {
+    sections.push('');
+    sections.push(
+      `**Roster**: ${checkerRoster.requested.length}/${checkerRoster.available.length} checkers selected.`
+    );
+    sections.push('');
+    sections.push(`- Running: \`${checkerRoster.requested.join('`, `') || 'none'}\``);
+    if (checkerRoster.skipped.length > 0) {
+      sections.push(`- **NOT running**: \`${checkerRoster.skipped.join('`, `')}\``);
+    }
+  }
+
   return sections.join('\n');
+}
+
+/**
+ * Generate the gate section — how PASS/FAIL was decided (issue #42)
+ */
+function generateGateSection(report: AuditReport): string {
+  const { gate } = report;
+
+  if (!gate) {
+    return '';
+  }
+
+  const lines: string[] = ['## Gate', ''];
+
+  lines.push(
+    `| Property | Value |`,
+    `|---|---|`,
+    `| Mode | \`${gate.mode}\`${gate.baselineFile ? ` (\`${gate.baselineFile}\`)` : ''} |`,
+    `| Blocking severities | ${gate.failOnSeverities.join(', ')} |`,
+    `| Blocking findings | ${gate.blockingFindingCount} |`,
+    `| Known / baselined | ${gate.baselinedCount} |`,
+    `| **Regressions (block the build)** | **${gate.regressionCount}** |`
+  );
+
+  const errored = report.checkerResults.filter((c) => c.status === 'error');
+  if (errored.length > 0) {
+    lines.push('');
+    lines.push(
+      `> ⚠️ ${errored.length} checker(s) could not run — this result is **not trustworthy** and the audit exits with code 2.`
+    );
+  }
+
+  return lines.join('\n');
 }
 
 /**

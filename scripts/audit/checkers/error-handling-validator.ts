@@ -20,17 +20,14 @@ export class ErrorHandlingValidator implements AuditChecker {
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      const [apiFindings, boundaryFindings, promiseFindings] = await Promise.all([
-        this.checkApiErrorHandling(),
-        this.checkErrorBoundaries(),
-        this.checkPromiseErrorHandling(),
-      ]);
+    // Errors propagate on purpose (issue #42, AC1).
+    const [apiFindings, boundaryFindings, promiseFindings] = await Promise.all([
+      this.checkApiErrorHandling(),
+      this.checkErrorBoundaries(),
+      this.checkPromiseErrorHandling(),
+    ]);
 
-      findings.push(...apiFindings, ...boundaryFindings, ...promiseFindings);
-    } catch (error) {
-      console.warn('Error handling validator error:', (error as Error).message);
-    }
+    findings.push(...apiFindings, ...boundaryFindings, ...promiseFindings);
 
     return findings;
   }

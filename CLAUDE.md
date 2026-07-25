@@ -512,90 +512,97 @@ npm start
 
 ## Production Readiness Audit System
 
-**Feature**: `specs/002-production-refactoring`
-**Status**: ✅ Complete (126/126 tasks)
-**Impact**: Comprehensive code quality validation with automated checks
+**Feature**: `specs/002-production-refactoring`, repaired by issue #42
+**Impact**: Code quality validation with an outcome that can be trusted
 
-### Overview
+> **Read this before trusting an audit result.** Until issue #42 the audit
+> reported `PASS` / exit 0 while two of the three checkers it ran were crashing
+> and six of the nine checkers were never instantiated at all. The section below
+> describes the system as it actually behaves today. If you change the audit,
+> keep this section true.
 
-Enterprise-grade production readiness audit system with 9 specialized checkers, git hook integration, and CI/CD automation. Validates code quality, security, performance, and architecture before deployment.
+### Three outcomes, three exit codes
 
-### Key Features
+| Exit | Status | Meaning |
+|---|---|---|
+| `0` | `PASS` | Every **requested** checker ran and there are no blocking regressions |
+| `1` | `FAIL` | Every requested checker ran; there are blocking findings beyond the frozen baseline |
+| `2` | `ERROR` | At least one checker **could not run** — the result is not trustworthy |
 
-#### 1. Automated Code Quality Checks
+`ERROR` is never reported as `PASS`, and it takes precedence over everything,
+including `--fail-on`. Checkers do not catch their own failures: an exception in
+a checker becomes `CheckerStatus.ERROR`, is printed as `DID NOT RUN`, and forces
+exit 2.
 
-**9 Specialized Checkers**:
-- **TypeScript Compiler** - Type safety validation
-- **ESLint** - Code style and best practices
-- **Complexity Analyzer** - Cyclomatic and cognitive complexity
-- **Security Scanner** - Vulnerability detection (optimized, 500-file limit)
-- **Architecture Validator** - DI patterns, Expo Router compliance
-- **Error Handling Validator** - Try-catch, boundaries, promises
-- **Performance Validator** - Cache, polling, React optimization
-- **Data Flow Validator** - Subscriptions, sync, immutability
-- **Build Validator** - Config validation, platform compatibility
+### The 9 checkers — and when each one runs
 
-**Usage**:
+| Checker id | What it inspects | Scope |
+|---|---|---|
+| `typescript` | `tsc` diagnostics | whole project (`tsconfig.json`) |
+| `eslint` | ESLint errors/warnings via the project's `eslint.config.js` | `AUDIT_CONFIG.lintRoots` = `src`, `app`, `components` |
+| `complexity` | Cyclomatic complexity (threshold 15) | `AUDIT_CONFIG.complexityRoots` (adds `services`, `hooks`, `utils`, `lib`, `theme`, `screens`, `repositories`, `config`) |
+| `security` | Hardcoded credentials, `http://`, MMKV encryption, Sentry sanitisation | walks the project, honours `excludePaths` |
+| `architecture` | DI patterns, Expo Router compliance, component separation | `services`, `app`, `components` |
+| `error-handling` | try/catch around API calls, error boundaries, unhandled promises | `services`, `app` |
+| `performance` | Cache config, polling config, resource usage | `services`, `app`, `components` |
+| `data-flow` | Subscription cleanup, sync patterns, immutability | `hooks`, `services` |
+| `build` | `app.json` / `tsconfig.json` validity, platform compatibility | config files |
+
+| Command | Checkers | Blocks on |
+|---|---|---|
+| `npm run audit` | **all 9** | Critical + High regressions |
+| `npm run audit:ci` | **all 9** | Critical + High regressions |
+| `npm run audit:quality` | typescript, eslint, complexity | Critical + High regressions |
+| `npm run audit:baseline` | all 9 | nothing — rewrites `.audit-baseline.json` |
+| `.husky/pre-commit` | typescript, eslint, complexity (`npm run audit:quality`) | **Critical** regressions only (fast) |
+| `.husky/pre-push` | **all 9** (`npm run audit:ci`) | Critical + High regressions |
+
+Every run prints its roster — which checkers are running and which are **NOT**.
+A reduced run is allowed; a *silent* reduced run is not. An unrecognised
+`--checks` id exits 2 rather than quietly narrowing coverage.
+
+Full run cost: ~100 s (TypeScript ~40 s, ESLint ~33 s, Complexity ~24 s, the
+other six ~2 s combined).
+
+**Verifying the ESLint checker**: its scope is deliberately identical to what
+`expo lint` covers, so `npm run lint` and the `eslint` checker report the same
+number of problems. If they diverge, one of the two is misconfigured.
+
+### The gate: honest severities, frozen baseline
+
+Findings are classified by what they are, not by what is convenient:
+`typescript-error` is **High** (it was demoted to Medium before #42, which made
+the gate structurally incapable of blocking anything).
+
+The pre-existing backlog is instead absorbed by a **frozen baseline** committed
+at `.audit-baseline.json`:
+
+- it records a **count per `(file, finding type)`** — not per finding id, so it
+  survives line shifts;
+- the gate blocks only on findings **in excess** of that budget, i.e.
+  regressions: a file that gets worse, or a new file with blocking findings;
+- removing findings is always allowed — the backlog can only shrink;
+- because the file is committed, any increase shows up in a PR diff.
+
 ```bash
-# Run all checkers
-npm run audit
-
-# Run specific checker
-npm run audit -- --checks=typescript
-
-# Run by severity
-npm run audit -- --severity=critical
-
-# CI/CD mode (fails on Critical/High)
-npm run audit:ci
-
-# Filter checks
-npm run audit -- --checks=quality  # TypeScript + ESLint + Complexity
-npm run audit -- --checks=security # Security only
+npm run audit                 # gate on regressions vs the baseline (default)
+npm run audit -- --no-baseline  # gate on the absolute count (shows the real total)
+npm run audit:baseline        # re-freeze the backlog; commit the diff
 ```
 
-#### 2. Git Hook Integration
+`npm run audit:baseline` refuses to write from a partial or failed run, so a
+baseline can never be narrowed by accident.
 
-**Pre-commit Hook** (Blocks bad commits):
-```bash
-# Runs automatically on git commit
-# Validates: TypeScript + ESLint + Complexity
-# Blocks if: Critical issues found
-# Bypass: git commit --no-verify
-```
+### CI/CD status — read this
 
-**Pre-push Hook** (CI/CD validation):
-```bash
-# Runs automatically on git push
-# Validates: All checkers (same as CI/CD)
-# Blocks if: Critical or High issues found
-# Bypass: git push --no-verify
-```
+**There is currently no audit job in CI.** `.github/workflows/` contains only
+`netlify-deploy.yml`. Earlier revisions of this file described a 4-stage
+`audit.yml` pipeline and a GitLab template; neither exists in the repository.
+Today the audit is enforced **only by the git hooks**, which means it can be
+bypassed with `--no-verify` and is not enforced on PRs. Wiring `npm run audit:ci`
+into CI is open work.
 
-**Setup**:
-```bash
-# Already configured in .husky/
-# Hooks are automatically installed on npm install
-# No manual setup required
-```
-
-#### 3. CI/CD Integration
-
-**GitHub Actions Workflow** (`.github/workflows/audit.yml`):
-```yaml
-# 4-stage pipeline:
-# Stage 1: Code Quality (fast, ~1 min)
-# Stage 2: Security Scan (parallel with stage 1)
-# Stage 3: Full Audit (~7 min after stages 1-2 pass)
-# Stage 4: Deployment Gate (only on master/main)
-```
-
-**GitLab CI Template** (`.specs/002-production-refactoring/ci-templates/gitlab-ci.yml`):
-- Parallel security and quality checks
-- Caching for faster runs
-- Artifact generation for reports
-
-#### 4. Reporting & Trending
+#### Reporting & Trending
 
 **Report Formats**:
 - **JSON** - Machine-readable for automation
@@ -623,29 +630,30 @@ specs/002-production-refactoring/reports/
 
 ### Audit Configuration
 
-**Config File** (`scripts/audit/config.ts`):
-```typescript
-export const AuditConfig = {
-  // Severity thresholds
-  failOnSeverity: ['Critical', 'High'],
-  
-  // Checker-specific settings
-  typescript: {
-    strict: true,
-    skipLibCheck: true
-  },
-  
-  security: {
-    maxFiles: 500,  // Performance optimization
-    priorityDirs: ['services', 'app', 'components', 'utils', 'api']
-  },
-  
-  complexity: {
-    cyclomaticThreshold: 15,
-    cognitiveThreshold: 10
-  }
-};
-```
+**Config File** (`scripts/audit/config.ts`) — `AUDIT_CONFIG`:
+
+| Key | Purpose |
+|---|---|
+| `projectRoot` | Repo root. Overridable via `AUDIT_PROJECT_ROOT` (used by tests to point the audit at a broken fixture). |
+| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. |
+| `lintRoots` | Dirs linted by the ESLint checker — kept equal to `expo lint`'s defaults for cross-checkability. |
+| `complexityRoots` | Dirs analysed by the Complexity checker (wider than `lintRoots`). |
+| `baselineFile` | `.audit-baseline.json` — the frozen backlog. |
+| `severityMap` | Finding type → severity. `typescript-error` is **High**. |
+| `complexity` | `cyclomatic: 15`, `cognitive: 20`. |
+| `performance` | `checkerTimeoutMs: 5 min`, `maxDurationMs: 15 min`. |
+
+### Tests
+
+`__tests__/scripts/audit/` guards the properties above:
+
+- `audit-gate.test.ts` — PASS / FAIL / ERROR are distinct; ERROR beats `--fail-on`
+  and beats findings; baseline absorbs the backlog, catches regressions, and
+  tolerates line shifts; the roster contains all 9 checkers.
+- `audit-cli-exit-code.test.ts` — runs the real CLI against a deliberately
+  broken project and asserts exit 2 for every invocation the hooks use.
+
+If you touch the audit, these must stay green.
 
 ### TypeScript Error Reduction
 
@@ -691,20 +699,21 @@ export const AuditConfig = {
 - **Maintain backward compatibility** - Add optional properties and aliases
 - **Test after each round** - Run audit to verify impact
 
-**CI/CD Best Practices**:
-- Run quality checks in parallel with security
-- Cache dependencies for faster runs
-- Generate and store audit reports as artifacts
-- Use exit codes to fail builds on Critical/High issues
+**When adding or changing a checker**:
+- Never `catch` a failure and `return []`. Let it throw — the orchestrator turns
+  it into `ERROR`. A checker that silently returns no findings is worse than no
+  checker at all, because it produces false confidence.
+- Register it in `CHECKER_REGISTRY` (`scripts/audit/run-audit.ts`); the `all`
+  preset and the roster output derive from that object automatically.
+- Add its expected finding count to the table above.
 
 ### Documentation
 
-Comprehensive guides available in `specs/002-production-refactoring/`:
-
-- **`AUDIT_GUIDE.md`** (600+ lines) - Complete usage guide and examples
-- **`INTEGRATION_GUIDE.md`** (550+ lines) - Step-by-step integration instructions
-- **`INTEGRATION_COMPLETE.md`** (500+ lines) - Integration summary and verification
-- **`FINAL_DELIVERY.md`** (450+ lines) - Complete system overview
+Guides in `specs/002-production-refactoring/` (`AUDIT_GUIDE.md`,
+`INTEGRATION_GUIDE.md`, `INTEGRATION_COMPLETE.md`, `FINAL_DELIVERY.md`) predate
+issue #42 and describe the system as originally intended, including the
+never-created `audit.yml` CI pipeline. **This section of CLAUDE.md is the
+authority on current behaviour**; treat those documents as historical.
 
 ### Monitoring & Metrics
 
@@ -715,11 +724,24 @@ Comprehensive guides available in `specs/002-production-refactoring/`:
 - Checker execution time
 - Trend analysis over time
 
-**Success Indicators**:
-- ✅ Zero Critical issues in production code
-- ✅ Git hooks preventing bad commits
-- ✅ CI/CD pipeline passing consistently
-- ✅ Decreasing trend in error count
+**Current state (issue #42, all 9 checkers, `--no-baseline`)**:
+
+| Checker | Findings |
+|---|---|
+| TypeScript | 2722 |
+| ESLint | 928 (5 errors / 923 warnings — matches `npm run lint`) |
+| Complexity | 176 |
+| Security | 14 (1 Critical, 13 High) |
+| Architecture | 15 |
+| Error Handling | 39 |
+| Performance | 2049 |
+| Data Flow | 25 |
+| Build | 4 |
+| **Total** | **5972** — 1 Critical, 2779 High, 2269 Medium, 923 Low |
+
+2780 blocking findings are frozen in `.audit-baseline.json`. The gate therefore
+reports PASS today, and will report FAIL the moment any of those counts grows.
+This number is the epic's real starting point — not zero.
 
 ### Environment Setup
 
@@ -748,49 +770,31 @@ chmod +x .husky/pre-commit .husky/pre-push
 
 **Audit Running Slow**:
 ```bash
-# Run only fast checkers
-npm run audit -- --checks=quality
+# Fast subset (~95s -> ~5s for the six cheap checkers is not the issue;
+# TypeScript + ESLint + Complexity are where the time goes)
+npm run audit:quality
 
-# Skip slow security scanner
-npm run audit -- --checks=typescript,eslint,complexity
+# The six non-quality checkers cost ~2s combined
+npm run audit -- --checks=security,architecture,error-handling,performance,data-flow,build
 ```
 
-**CI/CD Failing**:
-```bash
-# Run same checks locally
-npm run audit:ci
+**Exit code 2 / "DID NOT RUN"**: a checker crashed. This is **not** a passing
+audit — part of the codebase was never inspected. Read the `Error:` line printed
+under the checker name and fix the configuration.
 
-# Check exit code
-echo $?  # Should be 1 if failed
-```
-
-### Migration from Manual Testing
-
-**Before** (Manual):
-```bash
-# Manual checks before commit
-npx tsc --noEmit
-npm run lint
-git commit -m "fix: something"
-# Hope CI passes...
-```
-
-**After** (Automated):
-```bash
-# Just commit - hooks handle validation
-git commit -m "fix: something"
-# ✅ Automatic quality checks
-# ❌ Blocks if critical issues
-# 🚀 Confidence in CI/CD passage
-```
+**"regressions (block the build): N"**: you introduced N blocking findings beyond
+the frozen baseline. Either fix them, or — if they are genuinely expected —
+run `npm run audit:baseline` and commit the `.audit-baseline.json` diff so the
+increase is reviewable.
 
 ### Future Enhancements
 
 Potential improvements for future versions:
 
+- **Wire the audit into CI** - `npm run audit:ci` currently runs only in git hooks
+- **Broaden the ESLint scope** - `lintRoots` mirrors `expo lint`, so `services/`,
+  `hooks/` and `utils/` are covered by `tsc` and complexity but not by ESLint rules
+- **Shrink the baseline** - `.audit-baseline.json` should trend to zero
 - **Code Coverage Integration** - Track test coverage trends
-- **Performance Benchmarks** - Automated performance regression detection
 - **Dependency Audits** - npm audit integration with trending
-- **Custom Rule Sets** - Team-specific ESLint rules
-- **Automated Fixes** - ESLint --fix integration for auto-fixable issues
 

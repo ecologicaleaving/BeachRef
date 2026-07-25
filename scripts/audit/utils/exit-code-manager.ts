@@ -10,7 +10,13 @@
  * - 2: ERROR - Audit tool failure
  */
 
-import { Severity, Finding, CheckerResult, CheckerStatus } from '../types';
+import {
+  Severity,
+  Finding,
+  CheckerResult,
+  CheckerStatus,
+  AuditStatus,
+} from '../types';
 import { blocksDeployment } from './severity-classifier';
 
 /**
@@ -63,6 +69,35 @@ export function determineExitCodeWithCheckers(
 }
 
 /**
+ * Checkers that could not run at all.
+ * @param checkerResults - Results from all checkers
+ */
+export function getErroredCheckers(
+  checkerResults: CheckerResult[]
+): CheckerResult[] {
+  return checkerResults.filter(
+    (result) => result.status === CheckerStatus.ERROR
+  );
+}
+
+/**
+ * Map an exit code to the audit status reported to humans.
+ *
+ * Issue #42: ERROR previously collapsed into FAIL/PASS depending on the code
+ * path. The three states are now distinct and 1:1 with the exit code.
+ */
+export function exitCodeToStatus(exitCode: ExitCode): AuditStatus {
+  switch (exitCode) {
+    case ExitCode.PASS:
+      return AuditStatus.PASS;
+    case ExitCode.FAIL:
+      return AuditStatus.FAIL;
+    default:
+      return AuditStatus.ERROR;
+  }
+}
+
+/**
  * Get exit code description
  * @param exitCode - Exit code to describe
  * @returns Human-readable description
@@ -70,11 +105,11 @@ export function determineExitCodeWithCheckers(
 export function getExitCodeDescription(exitCode: ExitCode): string {
   switch (exitCode) {
     case ExitCode.PASS:
-      return 'PASS - No Critical/High findings';
+      return 'PASS - all requested checkers ran, no blocking regressions';
     case ExitCode.FAIL:
-      return 'FAIL - Critical or High findings present';
+      return 'FAIL - blocking regressions present';
     case ExitCode.ERROR:
-      return 'ERROR - Audit tool failure';
+      return 'ERROR - one or more checkers could not run, result is not trustworthy';
     default:
       return 'UNKNOWN';
   }
@@ -156,4 +191,28 @@ export function determineExitCodeWithCustomLevels(
   );
 
   return hasFailingFindings ? ExitCode.FAIL : ExitCode.PASS;
+}
+
+/**
+ * Single decision point for the audit outcome (issue #42, AC1 + AC2).
+ *
+ * Precedence is absolute and applies to every invocation, including
+ * `--fail-on=...`: if a checker could not run, the audit is ERROR. Before #42,
+ * `npm run audit:ci` passed `--fail-on=critical,high`, which routed around the
+ * checker-error branch entirely, so a crashed checker could still exit 0.
+ *
+ * @param checkerResults - Results from all checkers
+ * @param blockingFindings - Findings that should fail the build (already
+ *                           filtered for severity and, when applicable, baseline)
+ * @returns Exit code
+ */
+export function determineOverallExitCode(
+  checkerResults: CheckerResult[],
+  blockingFindings: Finding[]
+): ExitCode {
+  if (getErroredCheckers(checkerResults).length > 0) {
+    return ExitCode.ERROR;
+  }
+
+  return blockingFindings.length > 0 ? ExitCode.FAIL : ExitCode.PASS;
 }

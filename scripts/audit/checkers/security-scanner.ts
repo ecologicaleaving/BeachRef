@@ -9,7 +9,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker, Severity } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import {
+  AUDIT_CONFIG,
+  shouldExcludePath,
+  toProjectRelativePosixPath,
+} from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath, containsPotentialSecrets} from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -18,26 +22,27 @@ export class SecurityScanner implements AuditChecker {
   readonly id = 'security';
   readonly name = 'Security Scanner';
 
+  /**
+   * Deliberately does not catch: a security scanner that fails must not report
+   * "no security problems found" (issue #42, AC1). Errors propagate to the
+   * orchestrator, which marks the run ERROR.
+   */
   async check(): Promise<Finding[]> {
     const findings: Finding[] = [];
 
-    try {
-      // Run all security checks in parallel
-      const [credentialFindings, httpFindings, encryptionFindings, sanitizationFindings] =
-        await Promise.all([
-          this.scanForCredentials(),
-          this.scanForHttpUsage(),
-          this.checkEncryptionConfig(),
-          this.checkSanitization(),
-        ]);
+    // Run all security checks in parallel
+    const [credentialFindings, httpFindings, encryptionFindings, sanitizationFindings] =
+      await Promise.all([
+        this.scanForCredentials(),
+        this.scanForHttpUsage(),
+        this.checkEncryptionConfig(),
+        this.checkSanitization(),
+      ]);
 
-      findings.push(...credentialFindings);
-      findings.push(...httpFindings);
-      findings.push(...encryptionFindings);
-      findings.push(...sanitizationFindings);
-    } catch (error) {
-      console.warn('Security scanner encountered an error:', (error as Error).message);
-    }
+    findings.push(...credentialFindings);
+    findings.push(...httpFindings);
+    findings.push(...encryptionFindings);
+    findings.push(...sanitizationFindings);
 
     return findings;
   }
@@ -292,15 +297,15 @@ export class SecurityScanner implements AuditChecker {
           }
 
           const fullPath = path.join(dir, entry.name);
-          const relativePath = path.relative(AUDIT_CONFIG.projectRoot, fullPath);
+          const relativePath = toProjectRelativePosixPath(fullPath);
 
-          // Skip excluded paths
-          if (AUDIT_CONFIG.excludePaths.some(pattern => {
-            const regex = new RegExp(
-              '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
-            );
-            return regex.test(relativePath);
-          })) {
+          // Skip excluded paths.
+          // For directories we also test `<dir>/` so that a `foo/**` pattern
+          // prunes the whole subtree instead of only its files.
+          if (
+            shouldExcludePath(fullPath) ||
+            (entry.isDirectory() && shouldExcludePath(`${relativePath}/x`))
+          ) {
             continue;
           }
 

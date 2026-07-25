@@ -77,10 +77,16 @@ export enum FindingStatus {
 
 /**
  * Audit execution status
+ *
+ * - PASS:  every requested checker ran, no blocking regressions
+ * - FAIL:  every requested checker ran, blocking regressions present
+ * - ERROR: at least one checker could not run — the audit result is NOT
+ *          trustworthy and must never be reported as PASS (issue #42)
  */
 export enum AuditStatus {
   PASS = 'PASS',
   FAIL = 'FAIL',
+  ERROR = 'ERROR',
 }
 
 /**
@@ -215,6 +221,54 @@ export interface CheckerResult {
 }
 
 /**
+ * How the pass/fail gate was evaluated for a run.
+ *
+ * Introduced by issue #42: the audit inherits thousands of pre-existing
+ * findings, so the gate blocks on *regressions* against a frozen baseline
+ * rather than on the absolute total.
+ */
+export interface GateResult {
+  /** 'baseline' = block on regressions only; 'absolute' = block on every blocking finding */
+  mode: 'baseline' | 'absolute';
+
+  /** Severity levels considered blocking for this run */
+  failOnSeverities: Severity[];
+
+  /** Findings at a blocking severity (regardless of baseline) */
+  blockingFindingCount: number;
+
+  /** Blocking findings that exceed the frozen baseline budget — these fail the build */
+  regressionCount: number;
+
+  /** Blocking findings covered by the baseline (reported, not blocking) */
+  baselinedCount: number;
+
+  /** Baseline file used, relative to project root (undefined when mode='absolute') */
+  baselineFile?: string;
+
+  /** IDs of the regressions, for reporting */
+  regressionFindingIds: string[];
+}
+
+/**
+ * Roster of checkers for a run — makes it impossible for a checker to be
+ * silently absent (issue #42, AC5).
+ */
+export interface CheckerRoster {
+  /** Every checker the audit tool knows about */
+  available: string[];
+
+  /** Checker ids selected for this run */
+  requested: string[];
+
+  /** Known checker ids NOT selected for this run */
+  skipped: string[];
+
+  /** Ids passed on the CLI that match no known checker */
+  unknown: string[];
+}
+
+/**
  * Comprehensive report of a single audit execution
  * JSON Schema: specs/002-production-refactoring/contracts/audit-report.schema.json
  */
@@ -245,6 +299,12 @@ export interface AuditReport {
 
   /** Per-checker execution details */
   checkerResults: CheckerResult[];
+
+  /** Which checkers ran and which did not (issue #42, AC5) */
+  checkerRoster: CheckerRoster;
+
+  /** How PASS/FAIL was decided (issue #42, AC7) */
+  gate: GateResult;
 }
 
 // ============================================================================
@@ -324,6 +384,15 @@ export interface AuditConfig {
   /** Paths to exclude from auditing */
   excludePaths: string[];
 
+  /** Source roots linted by the ESLint checker (parity with `npm run lint`) */
+  lintRoots: string[];
+
+  /** Source roots analysed by the Complexity checker */
+  complexityRoots: string[];
+
+  /** Frozen baseline file, relative to project root */
+  baselineFile: string;
+
   /** Complexity thresholds */
   complexity: ComplexityThresholds;
 
@@ -388,6 +457,12 @@ export interface AuditCliArgs {
 
   /** Show version */
   version?: boolean;
+
+  /** Regenerate the frozen baseline from this run instead of gating on it */
+  updateBaseline?: boolean;
+
+  /** Ignore the frozen baseline and gate on the absolute finding count */
+  noBaseline?: boolean;
 }
 
 // ============================================================================

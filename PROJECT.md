@@ -100,6 +100,21 @@ const service = NotificationService.getInstance();
 Il contratto è verificato dai test in
 `__tests__/services/notifications/NotificationServiceInit.test.ts`.
 
+## Configurazione dei test (issue #48)
+
+Un servizio si testa con **import statici**: `VisApiClient` e `CacheService` sono
+importabili in jest senza toppe. È vietato reintrodurre `require()` lazy nel
+codice di produzione per aggirare jest, e vietato aggiungere
+`jest.mock('expo/virtual/env')` nei singoli file di test: la soluzione sta in
+`jest.config.js` / `__mocks__/`.
+
+Causa storica: `babel-preset-expo` riscrive ogni `process.env.EXPO_PUBLIC_*` in
+un import da `expo/virtual/env` (ESM), che jest non parsava — quindi **qualunque
+file che leggesse una variabile d'ambiente moriva all'import**.
+
+Guida completa (DI, `fetch` finto, timer, formato del body VIS):
+**`TESTING.md`**.
+
 ## Backlog
 - **TODO**: Integrazione AI per analisi performance arbitri
 - **TODO**: Offline mode per gestione tornei senza connessione
@@ -121,6 +136,7 @@ Il contratto è verificato dai test in
 - **DONE**: Issue #43 — Notifiche: l'init falliva a **ogni** avvio in produzione (`TypeError: w.default.getInstance is not a function`, degradato a warning dal try/catch di init). Causa: i 5 servizi in `services/notifications/` esportavano sia la classe (named) sia un `export default X.getInstance()` — cioè un'**istanza già costruita** con lo stesso nome — e i consumer importavano il default chiamandoci sopra il metodo **statico** `getInstance()`. Convenzione adottata: **solo named export della classe, nessun default export**; 13 file allineati (5 servizi + 8 consumer, incluso `NotificationService` stesso che usava male `WebPushService`). Aggiunto `NotificationService.isInitialized()` come prova positiva di init e log dedicati in `app/_layout.tsx`; l'init error è ora `console.error` in `__DEV__` (il warn silenzioso è ciò che ha nascosto il bug). Test: `__tests__/services/notifications/NotificationServiceInit.test.ts` (22 test, 19 falliscono col bug presente)
 - **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 - **DONE**: Issue #42 (epic #51, wave 0) — Il gate di qualità torna a dire il vero. `npm run audit` usciva **PASS/0 mentre 2 dei 3 checker crashavano** (`catch → console.warn → return []`) e **6 checker su 9 non venivano mai istanziati** (default = preset `quality`; lo scanner di sicurezza non era mai stato eseguito). Ora: tre esiti distinti **PASS/FAIL/ERROR** (exit 0/1/2), i checker non catturano più i propri errori, `ERROR` ha precedenza su tutto incluso `--fail-on` (era la via con cui `audit:ci` aggirava il controllo), tutti e 9 i checker girano di default e il **roster viene stampato** (chi gira e chi no). Fix ESLint (scope = `expo lint`, 928 finding = identico a `npm run lint`) e Complexity (`overrideConfigFile: true` scartava il parser TS → tutti i `.ts` ignorati; ora 176 finding reali). `typescript-error` riportato a **High** (era Medium "per flessibilità": rendeva il gate incapace di bloccare); il backlog preesistente è congelato in **`.audit-baseline.json`** (2780 finding bloccanti, budget per `(file, tipo)` — insensibile agli shift di riga) e il gate blocca **solo le regressioni**. Esclusioni path normalizzate POSIX (su Windows non matchavano mai: lo scanner camminava `node_modules`, `docs/`, artefatti di build). 31 test nuovi in `__tests__/scripts/audit/`. Comandi: `npm run audit` / `audit:ci` (9 checker), `audit:quality` (3, pre-commit), `audit:baseline` (ri-congela)
+- **DONE**: Issue #48 (epic #51, wave 3) — Config jest riparata alla radice. La diagnosi iniziale (`uuid` ESM + MMKV + NetInfo) era incompleta: la causa dominante era che **`babel-preset-expo` riscrive ogni `process.env.EXPO_PUBLIC_*` in un import da `expo/virtual/env`** (ESM), quindi qualunque file che leggesse una env var esplodeva all'import. Fix in `jest.config.js`: `moduleNameMapper` su `expo/virtual/env` e `react-native-mmkv` (mock in-memory vero, non `jest.fn()`), transform per i `.js` con `@react-native/babel-preset` (dichiarare `transform` **sostituisce** la mappa di default: i `.js` non venivano trasformati affatto), `transformIgnorePatterns` allargato a `uuid`/`expo*`/`react-native*`/`@sentry`/`@tanstack`. Rimossi dai test i **21 file Deno** delle Edge Function Supabase (girano con `deno test`, mai con jest) e tolti i **fake timer legacy globali** da `jest.setup.js`, che congelavano `setTimeout` per tutte le suite (128 timeout da 5s che non erano bug). Toppa di `OfficialsService` rimossa: `require` lazy → import statici, 26 test verdi. Corretto `services/MatchResultOfflineService.ts` che importava `@react-native-netinfo/netinfo`, pacchetto inesistente. **Suite rosse 118 → 88, verdi 36 → 43, test verdi 994 → 1283 (+289), zero regressioni.** Doc: `TESTING.md`
 - **TODO**: Wiring dell'audit in CI — oggi `npm run audit:ci` gira **solo** negli hook git (bypassabile con `--no-verify`), non sulle PR. `.github/workflows/audit.yml` documentato in CLAUDE.md non è mai esistito
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2780 finding bloccanti: 2722 TS, 5 ESLint error, 1 credenziale Critical, 13 http://, ~39 error-handling)
 
@@ -227,5 +243,5 @@ API + cache, non DB. Per persistere servirebbero `event_officials` e
 valorizzare le credenziali nel deploy.
 
 ---
-*Last Updated: 2026-07-25T00:00:00Z*
+*Last Updated: 2026-07-25T12:00:00Z*
 

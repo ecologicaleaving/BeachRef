@@ -1,72 +1,48 @@
-# BeachRef Documentation
+# BeachRef — documentazione
 
-## 📚 Documentation Structure
+Indice reale di quello che c'è in `docs/`. Se aggiungi un documento qui,
+aggiungilo anche a questa lista; se un documento smette di essere vero,
+cancellalo. Un documento superato che resta è peggio di uno assente.
 
-### 🏗️ **Data Architecture & API Strategy**
-**Location**: `/docs/dataArchitecture/`
+> La versione precedente di questo file indicizzava `docs/dataArchitecture/`
+> e `docs/VisDocsNew/`: il primo è finito in `docs/archive/dataArchitecture/`,
+> il secondo non esiste nel repository. Riscritto nella issue #44.
 
-Complete redesign of BeachRef's data architecture and API strategy to solve performance, stability and maintainability issues.
+## Riferimento attivo
 
-- **[Overview & Quick Start](./dataArchitecture/README.md)** - Main entry point with executive summary
-- **[Data Architecture](./dataArchitecture/data-architecture.md)** - Stable domain types and data models  
-- **[API Strategy](./dataArchitecture/api-strategy.md)** - Unified VIS API client and endpoints
-- **[Transformation Layer](./dataArchitecture/transformation-layer.md)** - XML parsing and data conversion
-- **[Caching Strategy](./dataArchitecture/caching-strategy.md)** - Smart 2-tier cache with 90%+ hit rate
-- **[Migration Plan](./dataArchitecture/migration-plan.md)** - 4-phase implementation with rollback strategy
+| Documento | Cosa dice |
+|---|---|
+| [`ARCHITECTURE-DATA-STANDARDS.md`](./ARCHITECTURE-DATA-STANDARDS.md) | Specifica degli oggetti dati standardizzati e self-healing (tipi di dominio, versioning, validazione) |
+| [`LIVE_SCORE_SERVICE_ARCHITECTURE.md`](./LIVE_SCORE_SERVICE_ARCHITECTURE.md) | Architettura del Live Score Service (polling ibrido, integrazione VIS) — implementata in `services/live-score/` |
+| [`LAZY_LOADING_SETUP.md`](./LAZY_LOADING_SETUP.md) | Persistenza lazy-loading su Supabase per ridurre le chiamate VIS — implementata in `services/sync/` |
+| [`DEPLOYMENT_SETUP.md`](./DEPLOYMENT_SETUP.md) | Secret e configurazione della GitHub Action che deploya su Netlify (`.github/workflows/netlify-deploy.yml`) |
+| [`ANDROID_SETUP_TODO.md`](./ANDROID_SETUP_TODO.md) | Checklist di configurazione per la build Android/EAS |
 
-### 📖 **VIS API Documentation**  
-**Location**: `/docs/VisDocsNew/`
+### Guidelines
 
-Original VIS API documentation and reference materials.
+- [`Guidelines/VISImplementationGuide.md`](./Guidelines/VISImplementationGuide.md)
+- [`Guidelines/VISCacheGuidelines.md`](./Guidelines/VISCacheGuidelines.md)
+- [`Guidelines/FieldImplementationGuideline.md`](./Guidelines/FieldImplementationGuideline.md)
+- [`Guidelines/referee-extraction-implementation-guidelines.md`](./Guidelines/referee-extraction-implementation-guidelines.md)
 
-- **[API Requests](./VisDocsNew/requests.md)** - Complete VIS API request catalog
-- **[Event Fields](./VisDocsNew/eventFields.md)** - Event data structure documentation
-- **[Beach Tournament Request](./VisDocsNew/reqGetBVTournament.md)** - GetBeachTournament API
-- **[Event Request](./VisDocsNew/requestEvent.md)** - GetEvent API documentation
-- **[Beach Round Phase](./VisDocsNew/BeachRoundPhase.md)** - Beach volleyball phase enums
+### Sistema colori
 
-## 🎯 Key Improvements
+- [`COLOR-MIGRATION-MATRIX.md`](./COLOR-MIGRATION-MATRIX.md)
+- [`COMPLETE-COLOR-MAPPING.md`](./COMPLETE-COLOR-MAPPING.md)
+- [`ESLINT-COLOR-RULES.md`](./ESLINT-COLOR-RULES.md)
 
-### ❌ **Current Issues**
-- **Unstable data structure**: 99 optional fields in Tournament interface
-- **Fragmented API strategy**: 3 different VIS endpoints with 2000+ lines fallback
-- **Ineffective caching**: 4-tier complex cache with ~30% hit rate
-- **Performance problems**: 2-5 second response times
+### Altro
 
-### ✅ **New Architecture Benefits**
-- **Stable data types**: Immutable IDs, versioning, type safety
-- **Unified API strategy**: GetEventList primary endpoint with field selection
-- **Smart caching**: 2-tier cache with 90%+ hit rate, <500ms response time
-- **Clean architecture**: Repository pattern, dependency injection, error boundaries
+- [`examples/enhanced-match-data-usage.md`](./examples/enhanced-match-data-usage.md)
+- [`solutions/duration-debug-fix.md`](./solutions/duration-debug-fix.md)
 
-## 🚀 Quick Start
+## Storico
 
-1. **Review the architecture**: Start with [`/docs/dataArchitecture/README.md`](./dataArchitecture/README.md)
-2. **Understand the problems**: Read current vs new architecture comparison
-3. **Plan implementation**: Follow the 4-phase migration plan
-4. **Begin Phase 1**: Implement foundation types and API client
+`docs/archive/` contiene epic, PRD e piani di migrazione conclusi. È storia:
+non usarlo come riferimento sullo stato attuale del codice.
 
-## 📊 Expected Performance Gains
+## Dove NON sta la documentazione
 
-| Metric | Current | New | Improvement |
-|--------|---------|-----|-------------|
-| **Cache Hit Rate** | ~30% | 90%+ | **3x better** |
-| **Response Time** | 2-5s | <500ms | **10x faster** |
-| **Code Complexity** | 2000+ lines | 500 lines | **4x simpler** |
-| **Bundle Size** | Current | -30% | **Lighter** |
-| **Memory Usage** | Current | -40% | **More efficient** |
-
-## 🛠️ Implementation Timeline
-
-- **Phase 1** (Week 1-2): Foundation - New types, API client, cache manager
-- **Phase 2** (Week 2-3): API & Cache - Repository migration, performance testing
-- **Phase 3** (Week 3-4): UI Migration - Component updates, data migration
-- **Phase 4** (Week 4): Cleanup - Legacy removal, production deployment
-
-**Total Duration**: 4 weeks  
-**Team Size**: 2-3 developers  
-**Estimated Effort**: 160-240 developer hours
-
----
-
-🚀 **Ready to transform BeachRef?** Start with the **[Data Architecture Overview](./dataArchitecture/README.md)**!
+- **Stato del progetto, backlog, changelog per issue** → `PROJECT.md` (root)
+- **Come lavorare sul codebase, comportamento dell'audit** → `CLAUDE.md` (root)
+- **Specifiche di feature con task tracking** → `specs/`

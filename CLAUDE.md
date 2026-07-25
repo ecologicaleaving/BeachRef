@@ -561,16 +561,18 @@ exit 2.
 | `npm run audit` | **all 9** | Critical + High regressions |
 | `npm run audit:ci` | **all 9** | Critical + High regressions |
 | `npm run audit:quality` | typescript, eslint, complexity | Critical + High regressions |
+| `npm run audit:precommit` | typescript, eslint, complexity, **security** | Critical + High regressions |
 | `npm run audit:baseline` | all 9 | nothing — rewrites `.audit-baseline.json` |
-| `.husky/pre-commit` | typescript, eslint, complexity (`npm run audit:quality`) | **Critical** regressions only (fast) |
+| `.husky/pre-commit` | typescript, eslint, complexity, security (`npm run audit:precommit`) | **Critical** regressions only (fast) |
 | `.husky/pre-push` | **all 9** (`npm run audit:ci`) | Critical + High regressions |
 
 Every run prints its roster — which checkers are running and which are **NOT**.
 A reduced run is allowed; a *silent* reduced run is not. An unrecognised
 `--checks` id exits 2 rather than quietly narrowing coverage.
 
-Full run cost: ~100 s (TypeScript ~40 s, ESLint ~33 s, Complexity ~24 s, the
-other six ~2 s combined).
+Full run cost: ~62 s (TypeScript ~20 s, ESLint ~20 s, Complexity ~21 s, the
+other six ~1 s combined). Before issue #44 it was ~187 s, because four of those
+six walked `node_modules`.
 
 **Verifying the ESLint checker**: its scope is deliberately identical to what
 `expo lint` covers, so `npm run lint` and the `eslint` checker report the same
@@ -643,7 +645,7 @@ specs/002-production-refactoring/reports/
 | Key | Purpose |
 |---|---|
 | `projectRoot` | Repo root. Overridable via `AUDIT_PROJECT_ROOT` (used by tests to point the audit at a broken fixture). |
-| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. |
+| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. #42 fixed this in the shared `shouldExcludePath()` but wired **only the security scanner** to it; the error-handling, performance, data-flow and build validators each kept a copy-pasted, non-normalised walker and went on scanning `node_modules` until issue #44. **Any checker that walks the tree must call `shouldExcludePath()` — never re-implement the matching.** Frozen by `__tests__/scripts/audit/checker-exclusions.test.ts`. |
 | `lintRoots` | Dirs linted by the ESLint checker — kept equal to `expo lint`'s defaults for cross-checkability. |
 | `complexityRoots` | Dirs analysed by the Complexity checker (wider than `lintRoots`). |
 | `baselineFile` | `.audit-baseline.json` — the frozen backlog. |
@@ -660,6 +662,10 @@ specs/002-production-refactoring/reports/
   tolerates line shifts; the roster contains all 9 checkers.
 - `audit-cli-exit-code.test.ts` — runs the real CLI against a deliberately
   broken project and asserts exit 2 for every invocation the hooks use.
+- `security-scanner.test.ts` — the XML-namespace exemption (issue #56).
+- `checker-exclusions.test.ts` — every tree-walking checker honours
+  `excludePaths` on any platform, and none of them descends into
+  `node_modules` (issue #44).
 
 If you touch the audit, these must stay green.
 
@@ -732,24 +738,68 @@ authority on current behaviour**; treat those documents as historical.
 - Checker execution time
 - Trend analysis over time
 
-**Current state (issue #42, all 9 checkers, `--no-baseline`)**:
+**Current state (after issue #44, all 9 checkers, `--no-baseline`)** — these
+numbers are now reproducible on a machine with `node_modules` installed, which
+before #44 they were not (see `excludePaths` above):
 
 | Checker | Findings |
 |---|---|
-| TypeScript | 2722 |
-| ESLint | 928 (5 errors / 923 warnings — matches `npm run lint`) |
+| TypeScript | 2677 |
+| ESLint | 922 (5 errors / 917 warnings — matches `npm run lint`) |
 | Complexity | 176 |
-| Security | 14 (1 Critical, 13 High) |
+| Security | **0** |
 | Architecture | 15 |
 | Error Handling | 39 |
 | Performance | 2049 |
 | Data Flow | 25 |
 | Build | 4 |
-| **Total** | **5972** — 1 Critical, 2779 High, 2269 Medium, 923 Low |
 
-2780 blocking findings are frozen in `.audit-baseline.json`. The gate therefore
-reports PASS today, and will report FAIL the moment any of those counts grows.
-This number is the epic's real starting point — not zero.
+2721 blocking findings are frozen in `.audit-baseline.json` (was 2780 before
+issue #56). The gate therefore reports PASS today, and will report FAIL the
+moment any of those counts grows. This number is the epic's real starting
+point — not zero.
+
+> Issue #44 did **not** regenerate the baseline, and the counts above did not
+> move. Before #44 the same table was only reproducible on a checkout without
+> `node_modules`: with dependencies installed, four validators walked them and
+> Error Handling reported 150 instead of 39 — 111 phantom **High** findings that
+> the gate counted as blocking regressions. `npm run audit:ci`, and therefore
+> `.husky/pre-push`, failed on `master` for every developer. The full run also
+> dropped from ~187 s to ~62 s once the walkers stopped reading the dependency
+> tree.
+
+### Secrets: the one finding class you must never baseline
+
+Issue #56 found the production Postgres **superuser** password hardcoded in a
+tracked root script, on a **public** repository, untouched since 2025-09-13.
+The security scanner had existed the whole time — it had simply never been run,
+because before #42 six of the nine checkers were never instantiated.
+
+Two things changed so it cannot recur silently:
+
+- **`security` runs at commit time**, not only at push. `.husky/pre-commit` uses
+  the `precommit` preset (`quality` + `security`). The scanner costs <1s on the
+  whole tree; there was no reason for the commit gate to be blind to the only
+  finding class that is Critical by definition.
+- **The scanner stopped crying wolf.** 13 of its 14 findings were
+  `xmlns="http://..."` and `SOAPAction:` inside SOAP envelopes for the VIS API.
+  Those URIs are opaque identifiers that nothing dereferences, and rewriting
+  them to `https://` breaks the request. `SecurityScanner.isXmlNamespaceOnly`
+  exempts them **per occurrence** — a line carrying both a namespace and a real
+  `http://` endpoint is still reported.
+  Frozen by `__tests__/scripts/audit/security-scanner.test.ts`.
+
+If the gate reports `security-credential`, **do not** run `audit:baseline` and
+**do not** `--no-verify` past it. Move the value to an environment variable and
+document it with a placeholder in `.env.example`. A secret in a tracked file on
+a public repo is compromised the moment it is pushed; removing it from the code
+afterwards does not un-publish it — only rotation does.
+
+> **Git worktrees caveat**: `core.hooksPath` is an *absolute* path to the main
+> worktree's `.husky/_`. A commit made from a linked worktree therefore runs the
+> **main worktree's** hook scripts, not its own. When changing a hook, verify it
+> with `git -c core.hooksPath=.husky commit ...` or by running `.husky/pre-commit`
+> directly — otherwise you are testing a stale script.
 
 ### Environment Setup
 

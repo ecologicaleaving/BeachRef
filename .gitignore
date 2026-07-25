@@ -67,7 +67,10 @@ app-example
 expo-go.apk
 
 # Project documentation and architecture
-docs/
+# NOTE (issue #44): `docs/` used to be listed here while ~60 files under it were
+# already tracked — the entry only ever blocked *new* docs from being added,
+# which is the opposite of what anyone wanted. Removed so `docs/` is a normal
+# tracked directory.
 archive/
 architecture/
 
@@ -77,6 +80,42 @@ architecture/
 # Local Netlify folder
 .netlify
 .commit-automation/cache/
+
+# ---------------------------------------------------------------------------
+# Repo-root sediment (issue #44)
+#
+# The root had accumulated 62 agent scratch files, 56 one-off investigation
+# scripts, 5 compiler/test output dumps and 23 stale session reports — all
+# tracked. The point of these patterns is not disk space: it is that nobody
+# could tell live code from residue. Keep them.
+# ---------------------------------------------------------------------------
+
+# Agent working-directory markers (never belong in the repo)
+tmpclaude-*
+.claude/worktrees/
+
+# Compiler / test / lint output dumps
+ts_errors*.txt
+ts_undefined_errors*.txt
+ts*-fix-output.txt
+tsc_output*.txt
+test_output*.txt
+lint_output*.txt
+*.patch
+
+# One-off investigation scripts written straight into the root.
+# Anything worth keeping goes in scripts/ with a header saying what it is for.
+/test-*.js
+/check-*.js
+/debug-*.js
+/find-*.js
+/search-*.js
+/show-*.js
+/fix-*.js
+/analyze-*.js
+/simple-*.js
+/temp-*.ts
+/repro_*.ts
 
 # BeachRef-app è una repo Flutter separata
 BeachRef-app/

@@ -15,7 +15,7 @@
 import { MMKV } from 'react-native-mmkv';
 import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import NotificationService from './NotificationService';
+import { NotificationService } from './NotificationService';
 import type { NotificationPayload } from '../../types/notifications';
 
 /**
@@ -385,5 +385,9 @@ export class NotificationQueueService {
   }
 }
 
-// Export singleton instance
-export default NotificationQueueService.getInstance();
+// NOTE (issue #43): intentionally NO default export.
+// A default export holding an already-built instance coexisting with a
+// same-named class export is what caused `X.default.getInstance is not a
+// function` at runtime. Consume this service as:
+//   import { NotificationQueueService } from '.../NotificationQueueService';
+//   NotificationQueueService.getInstance()

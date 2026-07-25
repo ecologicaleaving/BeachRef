@@ -17,7 +17,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
-import WebPushService from './WebPushService';
+import { WebPushService } from './WebPushService';
 import type {
   NotificationPayload,
   NotificationType,
@@ -535,6 +535,14 @@ export class NotificationService {
   }
 
   /**
+   * Whether initialize() has completed successfully.
+   * Positive proof that the notification subsystem is live (issue #43, AC2).
+   */
+  public isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
    * Reset service (for testing)
    */
   public reset(): void {
@@ -544,5 +552,9 @@ export class NotificationService {
   }
 }
 
-// Export singleton instance
-export default NotificationService.getInstance();
+// NOTE (issue #43): intentionally NO default export.
+// A default export holding an already-built instance coexisting with a
+// same-named class export is what caused `w.default.getInstance is not a
+// function` at every app start. Consume this service as:
+//   import { NotificationService } from '.../NotificationService';
+//   NotificationService.getInstance()

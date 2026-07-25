@@ -18,7 +18,7 @@ import { enablePerformanceMonitoring } from "../lib/queryPerformance";
 import { asyncStoragePersister, handlePersistenceError, migrateAsyncStorageData } from "../lib/queryPersistence";
 import { TournamentCacheWarmingService } from "../services/cache/TournamentCacheWarmingService";
 import { CacheMigrationService } from "../services/cache/CacheMigrationService";
-import NotificationService from "../services/notifications/NotificationService";
+import { NotificationService } from "../services/notifications/NotificationService";
 import { injectCSSVariables } from "../theme/css-variables";
 import { colors } from "../theme/tokens";
 
@@ -133,13 +133,24 @@ export default function RootLayout() {
         // Initialize notification service
         const notificationService = NotificationService.getInstance();
         await notificationService.initialize();
-        console.log('Notification service initialized');
+        // Positive proof the subsystem is actually live (issue #43, AC2):
+        // before the fix this line was never reached — getInstance() threw.
+        console.log(
+          '[App] Notification service initialized:',
+          notificationService.isInitialized()
+        );
 
         // Performance monitoring and data persistence handled by queryClient
 
       } catch (error) {
-        // Handle initialization errors gracefully
-        console.warn('App initialization warning:', error);
+        // Handle initialization errors gracefully at runtime, but make them
+        // loud in development: a silent console.warn here is what hid issue #43
+        // (broken notification init) for months.
+        if (__DEV__) {
+          console.error('App initialization FAILED:', error);
+        } else {
+          console.warn('App initialization warning:', error);
+        }
       }
       console.log('App initialization completed');
     };
@@ -159,6 +170,7 @@ export default function RootLayout() {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       NotificationService.getInstance().handleNotificationResponse(response);
     });
+    console.log('[App] Notification response listener registered');
 
     return () => {
       subscription.remove();

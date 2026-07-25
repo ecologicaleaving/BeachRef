@@ -5,7 +5,7 @@ import { AppState } from 'react-native';
 import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
 import { RealtimeFallbackService } from './RealtimeFallbackService';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
-import NotificationTriggerService from './notifications/NotificationTriggerService';
+import { NotificationTriggerService } from './notifications/NotificationTriggerService';
 import RefereeAssignmentsService from './RefereeAssignmentsService';
 
 // Subscription configuration

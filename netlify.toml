@@ -5,6 +5,18 @@
 [functions]
   directory = "netlify/functions"
 
+# ---------------------------------------------------------------------------
+# SINGLE SOURCE OF TRUTH (issue #36)
+# ---------------------------------------------------------------------------
+# All redirect and header rules for this site live in THIS file only.
+# `public/_headers` and `public/_redirects` were deleted: having the same rules
+# in two places produced contradictory results in production (the generic
+# `/*.js` rule silently overrode the `immutable` rule for the hashed Expo
+# chunks, and a `/*  /index.html  200` catch-all in `_redirects` defeated the
+# per-route SSG that `netlify.toml` explicitly opts out of).
+# Do NOT re-introduce `public/_headers` or `public/_redirects`.
+# ---------------------------------------------------------------------------
+
 # NOTE (issue #34): NO SPA catch-all rewrite to /index.html.
 # With Expo `web.output: "static"` every route is prerendered to its own HTML
 # (e.g. /tournament-selection → tournament-selection.html) with above-the-fold
@@ -17,44 +29,57 @@
   to = "/+not-found.html"
   status = 404
 
+# ---------------------------------------------------------------------------
+# Headers
+# ---------------------------------------------------------------------------
+# Rule ordering note (issue #36): Netlify applies EVERY matching rule and, for a
+# repeated header name, the LAST matching rule wins. Netlify globs are also
+# greedy across path separators — `/*.js` matches `/_expo/static/js/web/x.js`.
+# The rules below are therefore written so that the intended winner is BOTH the
+# more specific pattern AND the later one: correct under either precedence
+# semantics, so we are not relying on undocumented ordering behaviour.
+
+# Default: every document is an HTML page that must never be cached — this is
+# how users receive a new deploy. Overridden below for hashed static assets.
 [[headers]]
-  # index.html must NEVER be cached — this is how users get new deploys
-  for = "/"
+  for = "/*"
   [headers.values]
     cache-control = "no-cache, no-store, must-revalidate"
 
+# Hashed static assets from older/alternate output paths.
 [[headers]]
-  for = "/index.html"
-  [headers.values]
-    cache-control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  # Hashed static assets can be cached forever (filename changes on new deploy)
   for = "/static/*"
   [headers.values]
     cache-control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  # Hashed bundles from Expo export (e.g., /bundles/abc123.js)
   for = "/bundles/*"
   [headers.values]
     cache-control = "public, max-age=31536000, immutable"
 
+# Code-split JS/CSS chunks from the Expo web export (entry + per-route async
+# chunks + assets). Filenames are content-hashed
+# (e.g. /_expo/static/js/web/entry-<hash>.js), so they can be cached forever —
+# a new deploy always produces new hashes. This rule is declared AFTER the
+# `/*` default on purpose: it must be the one that wins.
 [[headers]]
-  # Code-split JS chunks from Expo web export (entry + per-route async chunks)
-  # Filenames are content-hashed (e.g. /_expo/static/js/web/entry-<hash>.js),
-  # so they can be cached forever — a new deploy always produces new hashes.
-  for = "/_expo/static/js/web/*"
+  for = "/_expo/*"
   [headers.values]
     cache-control = "public, max-age=31536000, immutable"
 
+# Expo static export copies fonts/images under /assets/ with content-hashed
+# filenames too — verified in `dist/` after `npx expo export --platform web`:
+#   dist/assets/assets/images/beachref-logo.bb09d201425a9962ec1ca16e22254b12.png
+#   dist/assets/node_modules/@expo/vector-icons/.../Feather.a76d3097….ttf
+# so the same 1 year immutable policy is safe here.
 [[headers]]
-  # Root-level assets: short cache with revalidation
-  for = "/*.js"
+  for = "/assets/*"
   [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
+    cache-control = "public, max-age=31536000, immutable"
 
+# The service worker itself must NEVER be cached: it is the file the browser
+# re-fetches to discover a new version. Declared last so nothing overrides it.
 [[headers]]
-  for = "/*.css"
+  for = "/service-worker.js"
   [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
+    cache-control = "no-cache, no-store, must-revalidate"

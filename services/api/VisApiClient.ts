@@ -21,6 +21,10 @@ import {
   GetBeachLiveRequest,
   GetEventOfficialListRequest,
   GetEventRefereeListRequest,
+  GetRefereeListRequest,
+  GetRefereeRequest,
+  GetImageListRequest,
+  GetRefereeIdCardRequest,
   BatchRequest,
   BatchResponse,
   BatchRequestItem,
@@ -101,8 +105,13 @@ export class VisApiClient implements IVisApiClient {
         [VisApiEndpoint.GET_BEACH_ROUND_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_LIVE]: 0,
         [VisApiEndpoint.BATCH_REQUEST]: 0,
+        [VisApiEndpoint.GET_BEACH_MATCH_STATUS]: 0,
         [VisApiEndpoint.GET_EVENT_OFFICIAL_LIST]: 0,
-        [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: 0
+        [VisApiEndpoint.GET_EVENT_REFEREE_LIST]: 0,
+        [VisApiEndpoint.GET_REFEREE_LIST]: 0,
+        [VisApiEndpoint.GET_REFEREE]: 0,
+        [VisApiEndpoint.GET_IMAGE_LIST]: 0,
+        [VisApiEndpoint.GET_REFEREE_ID_CARD]: 0
       },
       errorsByType: {},
       lastRequestTimestamp: new Date().toISOString()
@@ -477,6 +486,100 @@ export class VisApiClient implements IVisApiClient {
       
     } catch (error) {
       this.updateMonitor(VisApiEndpoint.GET_EVENT_REFEREE_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Global referee directory (issue #46).
+   *
+   * Moved here from `app/all-referees.tsx` and `app/tournament-ref.tsx`, which
+   * issued this request with a bare `fetch` and therefore bypassed retry,
+   * monitoring and {@link ApiAuditService}.
+   */
+  async getRefereeList(request: GetRefereeListRequest = {}): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const optimizedRequest = {
+        ...request,
+        fields: request.fields || DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_REFEREE_LIST]
+      };
+
+      const response = await this.executeRequest(
+        VisApiEndpoint.GET_REFEREE_LIST,
+        this.buildGetRefereeListXml(optimizedRequest)
+      );
+
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE_LIST, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Single referee record (issue #46). Moved here from `app/ref-mode.tsx`.
+   */
+  async getReferee(request: GetRefereeRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const response = await this.executeRequest(
+        VisApiEndpoint.GET_REFEREE,
+        this.buildGetRefereeXml(request)
+      );
+
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Image lookup (issue #46). Moved here from `app/referee-profile.tsx`, where
+   * it resolved a referee's portrait.
+   */
+  async getImageList(request: GetImageListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const response = await this.executeRequest(
+        VisApiEndpoint.GET_IMAGE_LIST,
+        this.buildGetImageListXml(request)
+      );
+
+      this.updateMonitor(VisApiEndpoint.GET_IMAGE_LIST, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_IMAGE_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Referee ID card token (issue #46). Moved here from `app/referee-profile.tsx`.
+   */
+  async getRefereeIdCard(request: GetRefereeIdCardRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const response = await this.executeRequest(
+        VisApiEndpoint.GET_REFEREE_ID_CARD,
+        this.buildGetRefereeIdCardXml(request)
+      );
+
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE_ID_CARD, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_REFEREE_ID_CARD, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
   }
@@ -1374,6 +1477,53 @@ export class VisApiClient implements IVisApiClient {
     // it replies `<NotInNewFormat id="1008" />` (verified on EventNo 1719/1525,
     // issue #40). This mirrors the envelope already used in app/ref-mode.tsx.
     return `<Requests><Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request></Requests>`;
+  }
+
+  /**
+   * Build GetRefereeList XML request (issue #46).
+   *
+   * The four builders below keep the `<Requests>` envelope that the screens
+   * they were extracted from used verbatim. It is not decoration: like
+   * GetEventRefereeList, these endpoints answer `<NotInNewFormat id="1008" />`
+   * when the request is sent bare (issue #40).
+   */
+  private buildGetRefereeListXml(request: GetRefereeListRequest): string {
+    const fields = request.fields && request.fields.length > 0
+      ? request.fields.join(' ')
+      : DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_REFEREE_LIST].join(' ');
+
+    const filter = request.sport
+      ? `<Filter Sport="${this.escapeXmlAttribute(request.sport)}" />`
+      : '';
+
+    return `<Requests><Request Type="GetRefereeList" Fields="${this.escapeXmlAttribute(fields)}">${filter}</Request></Requests>`;
+  }
+
+  /**
+   * Build GetReferee XML request (issue #46)
+   */
+  private buildGetRefereeXml(request: GetRefereeRequest): string {
+    return `<Requests><Request Type="GetReferee" No="${this.escapeXmlAttribute(request.refereeNo)}" VISId="VIS" /></Requests>`;
+  }
+
+  /**
+   * Build GetImageList XML request (issue #46)
+   */
+  private buildGetImageListXml(request: GetImageListRequest): string {
+    const fields = request.fields && request.fields.length > 0
+      ? request.fields.join(' ')
+      : DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_IMAGE_LIST].join(' ');
+
+    return `<Requests><Request Type="GetImageList" Fields="${this.escapeXmlAttribute(fields)}">` +
+      `<Filter DataType="${this.escapeXmlAttribute(request.dataType)}" DataNo="${this.escapeXmlAttribute(request.dataNo)}" ImageType="${this.escapeXmlAttribute(request.imageType)}" />` +
+      `</Request></Requests>`;
+  }
+
+  /**
+   * Build GetRefereeIdCard XML request (issue #46)
+   */
+  private buildGetRefereeIdCardXml(request: GetRefereeIdCardRequest): string {
+    return `<Requests><Request Type="GetRefereeIdCard" No="${this.escapeXmlAttribute(request.refereeNo)}" VolleyType="${this.escapeXmlAttribute(request.volleyType)}" /></Requests>`;
   }
 
   /**

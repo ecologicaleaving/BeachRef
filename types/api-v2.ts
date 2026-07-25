@@ -35,7 +35,13 @@ export enum VisApiEndpoint {
   /** Endpoint for event referee lists */
   GET_EVENT_REFEREE_LIST = 'GetEventRefereeList',
   /** Endpoint for general referee lists */
-  GET_REFEREE_LIST = 'GetRefereeList'
+  GET_REFEREE_LIST = 'GetRefereeList',
+  /** Endpoint for a single referee's details (issue #46) */
+  GET_REFEREE = 'GetReferee',
+  /** Endpoint for image lookups — used to resolve referee portraits (issue #46) */
+  GET_IMAGE_LIST = 'GetImageList',
+  /** Endpoint issuing a one-shot token for a referee's ID card PDF (issue #46) */
+  GET_REFEREE_ID_CARD = 'GetRefereeIdCard'
 }
 
 /**
@@ -268,6 +274,54 @@ export interface GetEventRefereeListRequest extends VisApiRequestBase {
   readonly eventNo: string;
   /** Fields to include in response */
   readonly fields?: readonly string[];
+}
+
+/**
+ * GetRefereeList request parameters (issue #46)
+ * For retrieving the global referee directory, optionally narrowed by sport.
+ */
+export interface GetRefereeListRequest extends VisApiRequestBase {
+  /** VIS sport code — `BV` for beach volleyball. Omit for every sport. */
+  readonly sport?: string;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
+}
+
+/**
+ * GetReferee request parameters (issue #46)
+ * For retrieving a single referee's full record.
+ */
+export interface GetRefereeRequest extends VisApiRequestBase {
+  /** Referee number (`NoReferee`) */
+  readonly refereeNo: string;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
+}
+
+/**
+ * GetImageList request parameters (issue #46)
+ * Only ever used here to resolve the portrait of a person: `dataType` 61 is the
+ * referee entity and `imageType` 15 is the portrait.
+ */
+export interface GetImageListRequest extends VisApiRequestBase {
+  /** VIS entity type the image belongs to */
+  readonly dataType: string;
+  /** Identifier of that entity */
+  readonly dataNo: string;
+  /** VIS image type */
+  readonly imageType: string;
+  /** Fields to include in response */
+  readonly fields?: readonly string[];
+}
+
+/**
+ * GetRefereeIdCard request parameters (issue #46)
+ */
+export interface GetRefereeIdCardRequest extends VisApiRequestBase {
+  /** Referee number (`NoReferee`) */
+  readonly refereeNo: string;
+  /** `Volley` or `Beach` */
+  readonly volleyType: string;
 }
 
 /**
@@ -663,7 +717,15 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   ],
   [VisApiEndpoint.GET_REFEREE_LIST]: [
     'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Gender', 'Type', 'Status'
-  ]
+  ],
+  [VisApiEndpoint.GET_REFEREE]: [
+    'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Gender', 'Type', 'Status'
+  ],
+  // The only thing read out of these two responses. GetRefereeIdCard takes no
+  // `Fields` attribute at all — its builder does not emit one — but every
+  // endpoint must declare a non-empty selection (see the field-selection tests).
+  [VisApiEndpoint.GET_IMAGE_LIST]: ['No'],
+  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token']
 } as const;
 
 /**
@@ -711,7 +773,12 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
   ],
   [VisApiEndpoint.GET_REFEREE_LIST]: [
     'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
-  ]
+  ],
+  [VisApiEndpoint.GET_REFEREE]: [
+    'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
+  ],
+  [VisApiEndpoint.GET_IMAGE_LIST]: ['No'],
+  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token']
 } as const;
 
 /**

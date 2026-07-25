@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Text, Platform } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather } from './vectorIconSets';
 import { colors, designTokens } from '../../theme/tokens';
 
 // Platform-aware Icon wrapper to avoid web font timeouts

@@ -83,7 +83,17 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
+    # Il default del repo per GITHUB_TOKEN e' read-only: senza questo blocco lo
+    # step di deploy riesce (il preview viene pubblicato) ma fallisce subito dopo
+    # con "Resource not accessible by integration" nel tentativo di postare il
+    # commento sulla PR, rendendo rossa ogni run `pull_request`.
+    # `actions: read` serve a download-artifact, `pull-requests: write` al commento.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+
     steps:
     - name: Download build artifacts
       uses: actions/download-artifact@v4

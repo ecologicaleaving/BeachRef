@@ -5,8 +5,8 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Vibration } from 'react-native';
-import NotificationService from './notifications/NotificationService';
-import NotificationPreferencesService from './notifications/NotificationPreferencesService';
+import { NotificationService } from './notifications/NotificationService';
+import { NotificationPreferencesService } from './notifications/NotificationPreferencesService';
 import { NotificationType } from '../types/notifications';
 
 // Simple EventEmitter implementation for React Native compatibility

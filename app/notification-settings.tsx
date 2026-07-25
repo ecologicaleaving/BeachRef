@@ -20,8 +20,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import NotificationService, { PermissionStatus } from '../services/notifications/NotificationService';
-import NotificationPreferencesService from '../services/notifications/NotificationPreferencesService';
+import { NotificationService, PermissionStatus } from '../services/notifications/NotificationService';
+import { NotificationPreferencesService } from '../services/notifications/NotificationPreferencesService';
 import type { NotificationPreferences } from '../types/notifications';
 import { useTheme } from '../theme/ThemeContext';
 import Container from '../components/Foundation/Container';

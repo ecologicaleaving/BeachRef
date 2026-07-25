@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import NotificationPreferencesService from '../services/notifications/NotificationPreferencesService';
+import { NotificationPreferencesService } from '../services/notifications/NotificationPreferencesService';
 import type { NotificationPreferences } from '../types/notifications';
 
 /**

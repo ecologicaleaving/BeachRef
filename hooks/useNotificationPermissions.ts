@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import NotificationService, { PermissionStatus } from '../services/notifications/NotificationService';
+import { NotificationService, PermissionStatus } from '../services/notifications/NotificationService';
 
 /**
  * Hook return type

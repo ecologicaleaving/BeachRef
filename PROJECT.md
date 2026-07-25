@@ -83,6 +83,23 @@
 - **Database**: Supabase dashboard query performance analysis
 - **Build Failures**: Check EAS build logs + dependency conflicts
 
+## Convenzione singleton dei servizi (issue #43)
+
+Un servizio singleton espone **solo la classe come named export**. È vietato
+aggiungere `export default X.getInstance()` (o qualunque default che sia
+un'istanza già costruita) accanto alla classe omonima: il consumer scrive
+`import X from '...'`, crede di avere la classe, chiama il metodo statico
+`X.getInstance()` sull'istanza e ottiene a runtime
+`X.default.getInstance is not a function`. Uso corretto:
+
+```ts
+import { NotificationService } from '../services/notifications/NotificationService';
+const service = NotificationService.getInstance();
+```
+
+Il contratto è verificato dai test in
+`__tests__/services/notifications/NotificationServiceInit.test.ts`.
+
 ## Backlog
 - **TODO**: Integrazione AI per analisi performance arbitri
 - **TODO**: Offline mode per gestione tornei senza connessione
@@ -101,6 +118,7 @@
 - **DONE**: Issue #36 (PR #37) — Web perf cache/SW: rimosso `Clear-Site-Data: "cache"` (azzerava la cache HTTP a ogni risposta), **`public/_headers` unica fonte di verità** per header e redirect (`public/_redirects` eliminato col catch-all SPA `/* → /index.html` che rompeva il per-route SSG di #34; `netlify.toml` svuotato perché **inerte** — vedi sezione sotto), chunk `/_expo/*` ora davvero `immutable`, service worker senza handler `fetch` e senza `caches.delete()` indiscriminato, latency probe di `NetworkStateManager` spostata dal documento HTML a `HEAD /favicon.ico` fuori dal percorso critico. Misurato sul deploy: contenuto reale da ~9900 ms a ~2277 ms, TTFB da 2046 ms a 152 ms, prima chiamata VIS API da 8275 ms a 1322 ms. Test: `tests/curl-tests.sh <BASE_URL>` (15 check), `npm run test:prerender`
 - **TODO**: Issue #38 (follow-up di #36) — dimagrimento del bundle `entry-*.js` (868 KB br / 3.7 MB raw): dopo #36 è il **95% dell'LCP residuo** (2115 ms di render delay su 2187 ms di LCP, con TTFB a 72 ms). Chiude i due target LCP lasciati aperti da #36
 - **DONE**: Issue #40 — `services/OfficialsService.ts`: nomi di scorer/assistant scorer/line judge per match e delegazione arbitrale, **2 chiamate VIS per torneo** indipendenti dal numero di match. Decoding XML-nell'XML isolato in `utils/visEmbeddedXml.ts`, tipi in `types/referee-v2.ts`, 26 test su fixture reali senza rete, script `scripts/show-tournament-officials.js`. Fix collaterale: `GetEventRefereeList` in `VisApiClient` era rotto (mancava l'envelope `<Requests>`). Limite documentato: referee coach e technical delegate non ottenibili dalla VIS pubblica
+- **DONE**: Issue #43 — Notifiche: l'init falliva a **ogni** avvio in produzione (`TypeError: w.default.getInstance is not a function`, degradato a warning dal try/catch di init). Causa: i 5 servizi in `services/notifications/` esportavano sia la classe (named) sia un `export default X.getInstance()` — cioè un'**istanza già costruita** con lo stesso nome — e i consumer importavano il default chiamandoci sopra il metodo **statico** `getInstance()`. Convenzione adottata: **solo named export della classe, nessun default export**; 13 file allineati (5 servizi + 8 consumer, incluso `NotificationService` stesso che usava male `WebPushService`). Aggiunto `NotificationService.isInitialized()` come prova positiva di init e log dedicati in `app/_layout.tsx`; l'init error è ora `console.error` in `__DEV__` (il warn silenzioso è ciò che ha nascosto il bug). Test: `__tests__/services/notifications/NotificationServiceInit.test.ts` (22 test, 19 falliscono col bug presente)
 - **TODO** (epic, se prioritizzato): Web perf −80% architetturale — Expo output `server` con data fetching, o rimozione runtime pesante (reanimated)
 
 ## Web — configurazione cache e redirect (issue #36)

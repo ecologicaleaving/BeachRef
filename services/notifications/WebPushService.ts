@@ -361,4 +361,9 @@ export class WebPushService {
 }
 
 // Export singleton instance
-export default WebPushService.getInstance();
+// NOTE (issue #43): intentionally NO default export.
+// A default export holding an already-built instance coexisting with a
+// same-named class export is what caused `X.default.getInstance is not a
+// function` at runtime. Consume this service as:
+//   import { WebPushService } from '.../WebPushService';
+//   WebPushService.getInstance()

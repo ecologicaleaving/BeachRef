@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,15 @@ import {
   Switch,
   ScrollView,
   Easing,
+  PanResponder,
   _Dimensions,
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+// The swipe-to-close gesture uses React Native's built-in PanResponder instead
+// of `react-native-gesture-handler` (issue #38). This single import used to be
+// the only reason gesture-handler was in the graph, and gesture-handler in turn
+// pulls in react-native-reanimated through `handlers/gestures/reanimatedWrapper`
+// — together 300 modules and ~900 KB of the entry chunk, for one drawer swipe.
+// PanResponder ships with react-native-web, which is already bundled.
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { TournamentCore } from '../../types/tournament-v2';
@@ -182,7 +188,6 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
   const slideAnim = React.useRef(new Animated.Value(-MENU_WIDTH)).current;
   const backdropOpacity = React.useRef(new Animated.Value(0)).current;
   const { favoriteTournaments, toggleFavorite, isLoading } = useFavoriteTournaments();
-  const gestureRef = useRef(null);
 
   const [defaultTournament, setDefaultTournament] = useState<TournamentCore | null>(null);
   const [, setIsLoadingDefault] = useState(true); // Only setter used (TS6133)
@@ -302,30 +307,43 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     }
   };
 
-  const handleGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: slideAnim } }],
-    { useNativeDriver: false }
+  // Swipe-to-close, reimplemented on PanResponder. Behaviour is unchanged:
+  // the pan only takes over past a 15 px horizontal movement and bails out if
+  // the movement is mostly vertical (the former `activeOffsetX` /`failOffsetY`),
+  // it drives `slideAnim` while dragging, and on release it either closes past
+  // 30 % of the menu width / a fast left flick, or springs back open.
+  const panResponder = React.useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_evt, gestureState) =>
+          Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dy) < 10,
+        onPanResponderMove: (_evt, gestureState) => {
+          // Only the closing direction is draggable; dragging right would pull
+          // the menu past its open position.
+          slideAnim.setValue(Math.min(0, gestureState.dx));
+        },
+        onPanResponderRelease: (_evt, gestureState) => {
+          const velocityX = gestureState.vx * 1000; // px/ms -> px/s
+          const shouldClose =
+            gestureState.dx < -MENU_WIDTH * 0.3 || velocityX < -500;
+
+          if (shouldClose) {
+            onClose();
+          } else {
+            // Snap back to open position
+            Animated.spring(slideAnim, {
+              toValue: 0,
+              velocity: velocityX,
+              tension: 300,
+              friction: 35,
+              useNativeDriver: false,
+            }).start();
+          }
+        },
+        onPanResponderTerminationRequest: () => false,
+      }),
+    [slideAnim, onClose]
   );
-
-  const handleGestureStateChange = (event: any) => {
-    if (event.nativeEvent.oldState === State.ACTIVE) {
-      const { translationX, velocityX } = event.nativeEvent;
-      const shouldClose = translationX < -MENU_WIDTH * 0.3 || velocityX < -500;
-
-      if (shouldClose) {
-        onClose();
-      } else {
-        // Snap back to open position
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          velocity: velocityX,
-          tension: 300,
-          friction: 35,
-          useNativeDriver: false,
-        }).start();
-      }
-    }
-  };
 
   return (
     <Modal
@@ -347,14 +365,10 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
           <BlurView intensity={20} style={StyleSheet.absoluteFillObject} />
         </Animated.View>
 
-        <PanGestureHandler
-          ref={gestureRef}
-          onGestureEvent={handleGestureEvent}
-          onHandlerStateChange={handleGestureStateChange}
-          activeOffsetX={[-15, 15]}
-          failOffsetY={[-10, 10]}
-        >
-          <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }] }]}>
+        <Animated.View
+            {...panResponder.panHandlers}
+            style={[styles.menuContainer, { transform: [{ translateX: slideAnim }] }]}
+          >
           <SafeAreaView style={styles.safeArea}>
             <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
               {/* Header */}
@@ -501,7 +515,6 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
             </ScrollView>
           </SafeAreaView>
           </Animated.View>
-        </PanGestureHandler>
 
         <Pressable
           style={[styles.pressableBackdrop, { left: MENU_WIDTH }]}

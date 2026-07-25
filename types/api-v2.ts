@@ -125,6 +125,8 @@ export interface GetBeachTournamentRequest extends VisApiRequestBase {
 export interface GetEventRequest extends VisApiRequestBase {
   /** Event number from VIS */
   readonly eventNo: string;
+  /** Explicit field selection (omitted → VIS returns its default field set) */
+  readonly fields?: readonly string[];
   /** Include officials list */
   readonly includeOfficials?: boolean;
   /** Include referee assignments */
@@ -138,8 +140,13 @@ export interface GetEventRequest extends VisApiRequestBase {
  * For match data
  */
 export interface GetBeachMatchListRequest extends VisApiRequestBase {
-  /** Tournament number from VIS */
-  readonly tournamentNo: string;
+  /** Tournament number from VIS (omit when filtering by {@link eventNo}) */
+  readonly tournamentNo?: string;
+  /**
+   * Event number from VIS — filters `NoEvent` instead of `NoTournament`,
+   * returning every match of the event in one call (issue #40).
+   */
+  readonly eventNo?: string;
   /** Filter by court number */
   readonly courtNo?: string;
   /** Filter by match status */

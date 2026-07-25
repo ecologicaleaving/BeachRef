@@ -37,7 +37,12 @@ config.transformer.getTransformOptions = async (entryPoints, options, getDepende
   return {
     transform: {
       experimentalImportSupport: false,
-      inlineRequires: !isWeb,
+      // Inline requires on every platform, web included (issue #38). Without it
+      // the ~1200 modules of the web entry chunk are all *executed* at boot,
+      // which is where the 2.1 s of LCP render delay went; with it a module's
+      // factory runs the first time one of its exports is actually read. It has
+      // always been on for native, so the codebase already tolerates it.
+      inlineRequires: true,
       // Enable require.context for Expo Router
       unstable_allowRequireContext: true,
     },
@@ -53,10 +58,21 @@ if (process.env.NODE_ENV === 'production') {
   // Enable minification with safer settings for private class fields
   config.transformer.minifierConfig = {
     mangle: {
-      keep_fnames: true,
+      // `keep_fnames: true` used to be set here. It preserves every function and
+      // class name in the output — ~1500 modules' worth of identifiers that the
+      // browser has to parse — and nothing in this codebase reads `fn.name` or
+      // `constructor.name` at runtime (issue #38: the only `.name ===` checks are
+      // on built-in `Error` objects, whose names are not minified). React
+      // component names in DevTools come from `displayName`, which is set
+      // explicitly where it matters.
+      keep_fnames: false,
     },
     output: {
-      ascii_only: true,
+      // `ascii_only: true` escapes every non-ASCII character as \uXXXX, turning
+      // each emoji/accented character in a string literal into 6-12 bytes. The
+      // bundle is served as UTF-8 with an explicit charset, so the escaping buys
+      // nothing (issue #38).
+      ascii_only: false,
       quote_keys: true,
       wrap_iife: true,
     },

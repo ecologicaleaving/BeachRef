@@ -16,6 +16,14 @@ import { queryPerformanceMonitor } from '../../lib/queryPerformance';
 // Feature flag for gradual migration - made configurable for testing
 let USE_NEW_HOOKS = process.env.EXPO_PUBLIC_USE_NEW_HOOKS === 'true' || false;
 
+/** Shape `DualReadService.getTournaments` accepts. */
+interface DualReadTournamentFilters {
+  season?: number;
+  gender?: 'M' | 'W';
+  country?: string;
+  status?: string;
+}
+
 /**
  * Transform new TournamentDTO to legacy TournamentCore format
  */
@@ -81,17 +89,28 @@ function transformRefereeToLegacy(dto: RefereeDTO): TournamentRefereeData {
 /**
  * Transform legacy FilterOptions to new hook filters
  */
-function transformFiltersToNew(filters?: FilterOptions) {
+function transformFiltersToNew(filters?: FilterOptions): DualReadTournamentFilters | undefined {
   if (!filters) return undefined;
-  
-  return {
-    season: filters.year,
-    gender: filters.gender,
-    country: filters.country,
-    status: filters.status === 'active' ? 'ACTIVE' : 
-            filters.status === 'completed' ? 'COMPLETED' : 
-            filters.status === 'upcoming' ? 'UPCOMING' : undefined,
-  };
+
+  const status = filters.status === 'active' ? 'ACTIVE' :
+                 filters.status === 'completed' ? 'COMPLETED' :
+                 filters.status === 'upcoming' ? 'UPCOMING' : undefined;
+
+  // Built by assignment, not as an object literal: the project compiles with
+  // `exactOptionalPropertyTypes`, under which an explicit `undefined` value is
+  // not the same thing as an absent optional key. This only started mattering
+  // when DualReadService stopped being reached through an untyped `require()`
+  // (issue #45) and its parameter types became visible here.
+  const gender = filters.gender;
+  const country = filters.country;
+
+  const next: DualReadTournamentFilters = {};
+  if (filters.year !== undefined) next.season = filters.year;
+  if (gender !== undefined) next.gender = gender;
+  if (country !== undefined) next.country = country;
+  if (status !== undefined) next.status = status;
+
+  return next;
 }
 
 /**
@@ -99,9 +118,36 @@ function transformFiltersToNew(filters?: FilterOptions) {
  * Maintains exact same interface while using new DualReadService internally
  */
 export class CacheServiceCompatibility {
-  // Get DualReadService instance dynamically to prevent circular dependency
-  private static getDualReadService() {
-    const { DualReadService } = require('../../services/DualReadService');
+  /**
+   * `DualReadService` is loaded with a **dynamic `import()`**, not a static one
+   * and not `require()` (issue #45).
+   *
+   * Two reasons, in this order:
+   *
+   * 1. **Bundle.** Metro resolves `require()` statically exactly like `import`:
+   *    a `require()` inside a method defers *execution*, never *loading*. With
+   *    `require()` here, `services/DualReadService.ts` sat in the web entry
+   *    chunk — the chunk whose parse time is the bulk of the residual LCP
+   *    (issue #38). `import()` puts it in its own async chunk instead.
+   * 2. **Circular dependency**, the original reason for the lazy access. Still
+   *    holds: `DualReadService` reaches back into this compatibility layer.
+   *
+   * The service is **not** dead code and must not be removed: issue #54 turns
+   * Supabase on for the web, and this is the DB-first read path it will drive.
+   * Until then `new DualReadService()` throws `supabaseUrl is required.` in the
+   * constructor (no `EXPO_PUBLIC_SUPABASE_URL` in the web build) — which is the
+   * actual mechanism by which the DB branch is inert today and everything falls
+   * back to the VIS API. Keeping the rejection identical to the previous
+   * behaviour is deliberate: it used to be a synchronous `throw` inside an
+   * `async` method, i.e. already a rejected promise to every caller.
+   */
+  private static dualReadModulePromise: Promise<typeof import('../../services/DualReadService')> | null = null;
+
+  private static async getDualReadService() {
+    if (!CacheServiceCompatibility.dualReadModulePromise) {
+      CacheServiceCompatibility.dualReadModulePromise = import('../../services/DualReadService');
+    }
+    const { DualReadService } = await CacheServiceCompatibility.dualReadModulePromise;
     return DualReadService.getInstance();
   }
 
@@ -111,9 +157,9 @@ export class CacheServiceCompatibility {
   /**
    * Ensure service is properly initialized
    */
-  private static ensureInitialized(): void {
+  private static async ensureInitialized(): Promise<void> {
     if (!this.initialized) {
-      CacheServiceCompatibility.getDualReadService().configure({
+      (await CacheServiceCompatibility.getDualReadService()).configure({
         readStrategy: 'db_first',
         fallbackEnabled: true,
         enablePerformanceMonitoring: true
@@ -128,7 +174,7 @@ export class CacheServiceCompatibility {
    */
   static async getTournaments(filters?: FilterOptions): Promise<CacheResult<TournamentCore[]>> {
     // Ensure service is initialized
-    this.ensureInitialized();
+    await this.ensureInitialized();
     
     const startTime = Date.now();
     
@@ -136,7 +182,7 @@ export class CacheServiceCompatibility {
       if (USE_NEW_HOOKS) {
         // Use new hook-based system
         const newFilters = transformFiltersToNew(filters);
-        const result = await CacheServiceCompatibility.getDualReadService().getTournaments(newFilters);
+        const result = await (await CacheServiceCompatibility.getDualReadService()).getTournaments(newFilters);
         
         if (!result) {
           throw new Error('DualReadService returned undefined result');
@@ -189,7 +235,7 @@ export class CacheServiceCompatibility {
    */
   static async getMatches(tournamentNo: string): Promise<CacheResult<BeachMatch[]>> {
     // Ensure service is initialized
-    this.ensureInitialized();
+    await this.ensureInitialized();
     
     const startTime = Date.now();
     
@@ -223,7 +269,7 @@ export class CacheServiceCompatibility {
         }
 
         // Use new hook-based system
-        const result = await CacheServiceCompatibility.getDualReadService().getMatches(matchFilters);
+        const result = await (await CacheServiceCompatibility.getDualReadService()).getMatches(matchFilters);
         
         if (!result) {
           throw new Error('DualReadService returned undefined result for matches');
@@ -276,14 +322,14 @@ export class CacheServiceCompatibility {
    */
   static async getRefereeData(tournamentNo: string): Promise<CacheResult<TournamentRefereeData>> {
     // Ensure service is initialized
-    this.ensureInitialized();
+    await this.ensureInitialized();
     
     const startTime = Date.now();
     
     try {
       if (USE_NEW_HOOKS) {
         // Use new hook-based system
-        const result = await CacheServiceCompatibility.getDualReadService().getReferees({
+        const result = await (await CacheServiceCompatibility.getDualReadService()).getReferees({
           tournamentCodes: [tournamentNo],
           includeAssignments: true
         });
@@ -340,7 +386,7 @@ export class CacheServiceCompatibility {
    */
   static async clearCache(keys?: string[]): Promise<void> {
     // Ensure service is initialized
-    this.ensureInitialized();
+    await this.ensureInitialized();
     
     if (USE_NEW_HOOKS) {
       // Clear TanStack Query cache
@@ -367,7 +413,7 @@ export class CacheServiceCompatibility {
         ['tournaments', 'matches', 'referees'];
       
       for (const type of cacheTypes) {
-        await CacheServiceCompatibility.getDualReadService().invalidateCache(type as any);
+        await (await CacheServiceCompatibility.getDualReadService()).invalidateCache(type as any);
       }
     } else {
       // Would call original CacheService.clearCache
@@ -385,7 +431,7 @@ export class CacheServiceCompatibility {
   }> {
     if (USE_NEW_HOOKS) {
       // Get performance metrics from DualReadService
-      const performanceMetrics = CacheServiceCompatibility.getDualReadService().getPerformanceMetrics();
+      const performanceMetrics = (await CacheServiceCompatibility.getDualReadService()).getPerformanceMetrics();
       
       // Calculate aggregated stats
       let totalRequests = 0;
@@ -422,13 +468,26 @@ export class CacheServiceCompatibility {
    * Initialize cache service (backward compatibility)
    */
   static initialize(config?: any): void {
-    // Configure DualReadService with provided config
-    CacheServiceCompatibility.getDualReadService().configure({
-      readStrategy: 'db_first',
-      fallbackEnabled: true,
-      enablePerformanceMonitoring: true,
-      ...config
-    });
+    // Configure DualReadService with provided config.
+    // The signature stays `void` (it is public API for the existing callers);
+    // since DualReadService is now loaded lazily this can only be scheduled,
+    // not awaited. A failure here is not fatal: `ensureInitialized()` retries on
+    // the first read and every consumer already falls back to the VIS API.
+    void (async () => {
+      try {
+        const service = await CacheServiceCompatibility.getDualReadService();
+        service.configure({
+          readStrategy: 'db_first',
+          fallbackEnabled: true,
+          enablePerformanceMonitoring: true,
+          ...config
+        });
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[CacheServiceCompatibility] initialize() could not configure DualReadService:', error);
+        }
+      }
+    })();
   }
 
   /**

@@ -73,6 +73,11 @@
   torneo (scorer, assistant scorer, line judge) e delegazione arbitrale, dalla VIS.
   Costo **2 chiamate per torneo**, indipendente dal numero di match. Vedi sezione
   "Officials di torneo" più sotto.
+- **RefereeDirectoryService** (`services/RefereeDirectoryService.ts`): anagrafica
+  arbitri per la UI — roster di evento, direttorio globale, singolo arbitro,
+  officials di evento, ritratto e ID card. È l'unico punto da cui le schermate
+  in `app/` leggono questi dati; tutto passa da `VisApiClient` ed è cachato per
+  chiave (issue #46). Vedi sezione "Anagrafica arbitri" più sotto.
 
 ## Monitoring
 - **Health Check**: App startup + API connectivity check
@@ -162,6 +167,7 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #52 (epic #51, decisione 1 di #50) — Un solo sistema pubblica il sito. Fino a oggi il web era deployato **due volte a ogni push**: dalla GitHub Action (`nwtgck/actions-netlify`, che vinceva la corsa — era il suo artifact quello che vedevano gli utenti) e in parallelo dall'integrazione git di Netlify, di cui sulle PR si vedevano solo i check. Rimossi i job `deploy` e `deploy-preview`; il job `build` **resta** come gate sulle PR (perdere la verifica "compila?" sarebbe stato un regresso) e il workflow è stato rinominato `netlify-deploy.yml` → **`web-build.yml`**, con il job id `build` invariato. Conseguenza non ovvia: Netlify **checkouta la repo**, quindi `netlify.toml` da inerte diventa **letto** — i commenti in `netlify.toml` e `public/_headers` che spiegavano perché era inerte sono stati riscritti, perché da oggi mentono. Gli header **restano in `public/_headers`**: spostarli in `netlify.toml` ora che verrebbe letto sarebbe una seconda migrazione senza beneficio e un secondo posto dove sbagliare l'ordinamento. `NODE_VERSION = "18"` dichiarato esplicitamente in `netlify.toml` (allineato a `.nvmrc` e al workflow). **Env var: nessuna necessaria** — verificato scaricando i due bundle `entry-*.js`, quello di produzione (buildato dalla Action) e quello del deploy Netlify-nativo della PR #59: **zero** occorrenze di URL Supabase o chiavi in entrambi, dimensioni entro lo 0,02% — la Action non passava alcuna `EXPO_PUBLIC_*` e Netlify non ne ha configurate, quindi il bundle pubblicato non cambia. Prova che l'integrazione Netlify regge: `tests/curl-tests.sh` sul permalink del deploy Netlify-nativo della PR #59 → **15/15 verdi** (chunk `_expo` `immutable`, HTML `no-store`, nessun `Clear-Site-Data`, SSG per-rotta). ⚠️ I secret GitHub `NETLIFY_AUTH_TOKEN` e `NETLIFY_SITE_ID` non sono più usati da nulla: **revocarli** è a carico di Davide. `docs/DEPLOYMENT_SETUP.md` riscritto (descriveva i secret della Action e attribuiva a `netlify.toml` redirect SPA e header di sicurezza mai esistiti)
 - **DONE**: Issue #45 (epic #51, wave 1, propedeutica a #38) — Codice morto e codice dormiente sono due cose diverse, e la issue le trattava insieme. **Morto e rimosso**: `IntegrationTestSuite` + `MigrationOrchestrationService` + `MigrationMonitoringService` + `MigrationRollbackService` (127 KB di sorgente, 5933 righe) formavano un'**isola chiusa** — si importavano solo fra loro, la radice `IntegrationTestSuite` non era importata da nessuno tranne il proprio test, e nessun percorso da `app/` li raggiungeva. Verificati anche i riferimenti dinamici (nessun `require()` a runtime, nessun import per stringa, nessuna citazione in `package.json`/`.github/`/`.husky/`/`netlify.toml`/`app.json`/script; `scripts/enableMigration.js`, che il nome suggerirebbe, riguarda i feature flag degli hook). **Effetto sul bundle: zero, e misurato** — non essendo nel grafo di build non erano nel chunk `entry-*.js`: 0 occorrenze di ogni marker nel bundle prodotto *prima* della rimozione. I "170 KB nel grafo di build" della issue erano sorgente su disco, non peso spedito. **Dormiente e mantenuto**: `DualReadService` **non** è stato rimosso (AC3 opzione (b)) perché la #54 accende Supabase sul web e questo è il percorso DB-first che piloterà. È stato reso **davvero** lazy: l'accesso avveniva con un `require()` dentro un metodo, ma **Metro risolve `require()` staticamente esattamente come `import`** — differiva l'*esecuzione*, mai il *caricamento*, quindi il file stava nell'entry. Con `import()` dinamico memoizzato: entry raw 3.666.774 → 3.641.546 B (**−25.228 B, −0,69%**), br 711.719 → 707.711 B (**−4.008 B, −0,56%**), nuovo chunk `DualReadService-*.js` raw 25.704 / br 5.425 B (23 → 24 chunk). `@supabase/supabase-js` **non** si sposta: resta nell'entry perché lo importano altri 8 moduli raggiungibili da `app/`. **Scoperta collaterale importante per la #54**: il ramo DB non "fallisce e degrada", è il **costruttore** che esplode — senza `EXPO_PUBLIC_SUPABASE_URL` `createClient()` lancia `supabaseUrl is required.`, quindi ogni `getTournaments`/`getMatches`/`getReferees`/`clearCache` di `CacheServiceCompatibility` termina nel `catch` dei chiamanti sulla VIS API. Appena le variabili saranno su Netlify, `readStrategy: 'db_first'` si attiva **di colpo** su tutte e quattro le strade, senza altri interruttori. tsc 2675 → **2603** (−72), lint 922 (5 errori) invariato, 4 suite rosse in meno, `npm run audit:ci` PASS
 - **TODO** (emerso da #45): `services/DataConsistencyValidator.ts` e `services/DataSyncService.ts` sono **rimasti orfani** dopo la rimozione della catena `Migration*` — erano importati solo da lì. Non eliminati di proposito: sono codice Supabase e vanno valutati insieme alla #54, non tagliati di nascosto
+- **DONE**: Issue #46 (epic #51, wave 2, parte 1 di 2) — Le **13 `fetch` dirette al VIS** nelle 4 schermate di `app/` (`tournament-ref` 5, `all-referees` 3, `ref-mode` 3, `referee-profile` 2) sono state sostituite da `services/RefereeDirectoryService.ts`, modellato su `OfficialsService`. Non è solo estetica: bypassare `VisApiClient` significava bypassare retry, monitor e soprattutto `ApiAuditService` — le metriche di conformità API in CLAUDE.md **non vedevano questo traffico**, ed è questa la ragione vera della issue. Aggiunti al client 4 endpoint che prima esistevano solo come stringhe XML nei componenti (`GetRefereeList`, `GetReferee`, `GetImageList`, `GetRefereeIdCard`), ciascuno con l'envelope `<Requests>` che questi endpoint richiedono (senza, rispondono `<NotInNewFormat id="1008" />` — stessa trappola di `GetEventRefereeList` trovata nella #40). **Misura AC5**: `tournament-ref` chiedeva **tre volte** lo stesso `GetEventRefereeList` in un solo caricamento; ora aprire → tornare indietro → riaprire costa **2 chiamate invece di 8** (−75%), `all-referees` scarica il direttorio globale **una volta invece di due**, `ref-mode` passa da 4 chiamate a 3 e da 3 a 1 alla riapertura. 29 test nuovi su fixture **senza rete**. tsc 2603 → **2593**, lint 922 → **918** (5 errori invariati, tutti preesistenti in file non toccati), `audit:ci` PASS. **Due bug preesistenti trovati e NON corretti** (la issue è un refactoring): (1) `ref-mode` chiude il caricamento con una `GetEvent` che **sovrascrive** le liste appena ottenute con quello che riesce a estrarne — e non estrae nulla, perché `GetEvent` non risponde con `<EventOfficialList>`/`<EventRefereeList>`: è il motivo per cui la schermata mostra `Officials (0) / Referees (0)` ed è "under construction"; il comportamento è preservato alla lettera con un commento che lo marca. (2) `all-referees` fa fan-out con `Promise.all` **non limitato** di una richiesta statistiche per ogni arbitro attivo — vedi issue #65
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2721 finding bloccanti: 2677 TS, 5 ESLint error, 39 error-handling; **0 Critical, 0 security**)
 
 ## Il peso del bundle non è la leva dell'LCP (issue #38)
@@ -369,6 +375,59 @@ API + cache, non DB. Per persistere servirebbero `event_officials` e
 `match_officials` popolate dalle stesse 2 chiamate — ma il prerequisito è
 valorizzare le credenziali nel deploy.
 
+## Anagrafica arbitri (issue #46)
+
+`services/RefereeDirectoryService.ts` è **l'unico** punto da cui le schermate in
+`app/` leggono l'anagrafica arbitri. Prima della #46 le quattro schermate
+parlavano con `fivb.org` da dentro il corpo del componente, con 13 `fetch`.
+
+### Perché non era solo brutto
+
+`ApiAuditService` misura **solo ciò che passa da `VisApiClient`**. Le percentuali
+di payload reduction, cache hit rate e call volume riportate in CLAUDE.md erano
+quindi **cieche** su tutto questo traffico. Tre schermate su quattro non avevano
+cache e rifacevano ogni richiesta a ogni montaggio.
+
+### Chi chiede cosa
+
+| Metodo | Chiamata VIS | Chiave cache | TTL |
+|---|---|---|---|
+| `getEventReferees` | `GetEventRefereeList` | `referees:event:<eventNo>` | 120 s |
+| `getEventOfficials` | `GetEventOfficialList` | `referees:event-officials:<eventNo>` | 120 s |
+| `getEventMatches` | `GetBeachMatchList` | `referees:event-matches:<eventNo>` | 15 s |
+| `getAllReferees` | `GetRefereeList` | `referees:all:<sport>` | 120 s |
+| `getReferee` | `GetReferee` | `referees:one:<no>` | 120 s |
+| `getBeachEvents` | `GetEventList` | `referees:events:beach` | 120 s |
+| `getRefereePortraitUrl` | `GetImageList` | `referees:portrait:<id>` | 120 s |
+| `getRefereeIdCardUrl` | `GetRefereeIdCard` | **non cachato** — il token è monouso |
+
+### L'envelope `<Requests>`, di nuovo
+
+`GetRefereeList`, `GetReferee`, `GetImageList` e `GetRefereeIdCard` si comportano
+come `GetEventRefereeList` (#40): **senza** l'envelope `<Requests>` rispondono
+`<NotInNewFormat id="1008" />`. I builder in `VisApiClient` lo mettono; non
+riscriverli "per uniformità" con gli altri endpoint, che invece lo vogliono nudo.
+
+### Il risparmio, misurato
+
+`tournament-ref` chiedeva **tre volte** lo stesso `GetEventRefereeList` in un
+singolo caricamento, più la match list: 4 richieste per montaggio, 8 per
+aprire → indietro → riaprire. Ora sono **2 e 2**. Congelato da
+`__tests__/services/RefereeDirectoryService.test.ts` (blocco "API call budget").
+
+### Due difetti preesistenti, deliberatamente non corretti
+
+- **`ref-mode` si cancella i dati da sola.** Il caricamento finisce con una
+  `GetEvent` che *sovrascrive* incondizionatamente le liste ottenute dagli
+  endpoint dedicati, cercando `<EventOfficialList>` / `<EventRefereeList>` che
+  `GetEvent` non restituisce. Risultato: `Officials (0) / Referees (0)`. È il
+  motivo per cui la schermata è "under construction". Preservato alla lettera
+  con un commento in `app/ref-mode.tsx` che lo marca; toglierlo è una modifica
+  funzionale e vuole la sua issue.
+- **`all-referees` fa fan-out illimitato.** `Promise.all` su una richiesta
+  statistiche **per ogni arbitro attivo**, senza limite di concorrenza →
+  issue #65.
+
 ---
-*Last Updated: 2026-07-25T12:00:00Z*
+*Last Updated: 2026-07-26T12:00:00Z*
 

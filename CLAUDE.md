@@ -90,6 +90,15 @@ The project uses Expo Router with a comprehensive screen-based navigation system
 - `NetworkMonitor.ts` - Network connectivity monitoring
 
 **Business Logic Services**:
+- `RefereeDirectoryService.ts` - Referee directory reads for the `app/` screens
+  (issue #46). **The screens must not talk to the VIS themselves.** Until #46,
+  `tournament-ref`, `all-referees`, `ref-mode` and `referee-profile` issued 13
+  raw `fetch` calls to `fivb.org` from inside the component body, which bypassed
+  retry, the request monitor and — the part that actually mattered —
+  `ApiAuditService`, so the API conformance numbers in this file were blind to
+  that traffic. Every read is now cached per key and routed through
+  `VisApiClient`. If you need a referee-shaped datum in a screen, add a method
+  here rather than a `fetch` there.
 - `RefereeAssignmentsService.ts` - Assignment management
 - `MatchResultsService.ts` - Match result handling
 - `TournamentOperationsService.ts` - Tournament operations

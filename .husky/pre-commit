@@ -2,12 +2,15 @@
 # husky v9 sources this file itself; the legacy `. "$(dirname "$0")/_/husky.sh"`
 # line is deprecated and made the hook impossible to run standalone.
 
-echo "🔍 Pre-commit audit: TypeScript + ESLint + Complexity"
+echo "🔍 Pre-commit audit: TypeScript + ESLint + Complexity + Security"
 echo "   (fast subset — the full 9-checker audit runs on push and in CI)"
 echo ""
 
-# Fast quality subset. The audit itself prints which checkers are NOT running.
-npm run audit:quality -- --fail-on=critical
+# Fast quality subset + the security scanner. Security is here because of issue
+# #56: a production superuser password sat in a tracked file for ten months, and
+# the scanner that would have caught it only ran on push. It costs <1s.
+# The audit itself prints which checkers are NOT running.
+npm run audit:precommit -- --fail-on=critical
 AUDIT_EXIT_CODE=$?
 
 if [ $AUDIT_EXIT_CODE -eq 2 ]; then
@@ -24,8 +27,14 @@ if [ $AUDIT_EXIT_CODE -ne 0 ]; then
   echo ""
   echo "❌ Commit blocked: new Critical findings vs .audit-baseline.json"
   echo ""
+  echo "   If the finding is 'security-credential', STOP. Do not baseline it and"
+  echo "   do not --no-verify past it. Move the value to an environment variable"
+  echo "   and document it in .env.example. A secret in a tracked file on a"
+  echo "   public repo is compromised the moment it is pushed."
+  echo ""
+  echo "   Otherwise:"
   echo "   1. Fix the findings listed above, or"
-  echo "   2. Run 'npm run audit -- --checks=quality' to see them again"
+  echo "   2. Run 'npm run audit -- --checks=precommit' to see them again"
   echo ""
   echo "   If a finding is legitimately expected, regenerate the baseline with"
   echo "   'npm run audit:baseline' and commit the diff so it stays reviewable."
@@ -34,7 +43,8 @@ if [ $AUDIT_EXIT_CODE -ne 0 ]; then
 fi
 
 echo ""
-echo "✅ Pre-commit subset passed: no new Critical findings in TypeScript/ESLint/Complexity."
-echo "   NOT checked here: security, architecture, error-handling, performance,"
+echo "✅ Pre-commit subset passed: no new Critical findings in"
+echo "   TypeScript/ESLint/Complexity/Security."
+echo "   NOT checked here: architecture, error-handling, performance,"
 echo "   data-flow, build — those run on 'git push' and in CI."
 echo ""

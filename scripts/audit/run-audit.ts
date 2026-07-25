@@ -394,6 +394,17 @@ export const CHECKER_REGISTRY: Record<string, () => AuditChecker> = {
 export const CHECKER_PRESETS: Record<string, string[]> = {
   all: Object.keys(CHECKER_REGISTRY),
   quality: ['typescript', 'eslint', 'complexity'],
+  /**
+   * What `.husky/pre-commit` runs (issue #56).
+   *
+   * `quality` plus `security`. A hardcoded production superuser password lived
+   * in a tracked file for ten months because nothing inspected a commit for
+   * credentials — the security scanner only ran on push, where `--no-verify`
+   * and "I'll push later" both defeat it. The scanner costs well under a second
+   * on the whole tree, so there is no reason for the commit gate to be blind to
+   * the one finding class that is Critical by definition.
+   */
+  precommit: ['typescript', 'eslint', 'complexity', 'security'],
 };
 
 /** Every checker id the tool knows about */

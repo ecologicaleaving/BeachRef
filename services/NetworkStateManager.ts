@@ -59,8 +59,19 @@ export class NetworkStateManager {
   private latencyHistory: number[] = [];
   private unsubscribeNetInfo: (() => void) | null = null;
   private qualityAssessmentTimer: NodeJS.Timeout | null = null;
+  private deferredAssessmentTimer: ReturnType<typeof setTimeout> | null = null;
   private isInitialized = false;
-  
+
+  // Latency probe de-duplication (issue #36).
+  // The probe used to run once per NetInfo state change AND once per interval
+  // tick with no coalescing, so several concurrent requests to the site root
+  // piled up on the critical path of the first render.
+  private latencyProbeInFlight: Promise<number> | null = null;
+  private lastLatencyProbeAt = 0;
+  private lastLatencyValue: number | null = null;
+  private static readonly LATENCY_PROBE_MIN_INTERVAL_MS = 15000;
+  private static readonly FIRST_ASSESSMENT_DELAY_MS = 4000;
+
   // Connection quality thresholds
   private readonly QUALITY_THRESHOLDS = {
     EXCELLENT: 90,
@@ -165,7 +176,15 @@ export class NetworkStateManager {
     };
 
     this.networkState = networkState;
-    this.assessConnectionQuality();
+
+    // NOTE (issue #36): do NOT probe the network synchronously here. This ran on
+    // every NetInfo state change during app boot and put a same-origin request
+    // on the critical path before the first VIS API call. Quality is still
+    // recomputed immediately (from the last real measurement or an estimate) so
+    // consumers never observe a null/stale value; only the network probe itself
+    // is deferred.
+    this.assessConnectionQualitySync();
+    this.scheduleQualityAssessment();
     this.notifyListeners();
 
     //   type: networkState.type,
@@ -223,9 +242,46 @@ export class NetworkStateManager {
   }
 
   /**
+   * Schedule a quality assessment off the critical rendering path (issue #36).
+   *
+   * Coalesces bursts of NetInfo events into a single deferred assessment and,
+   * on web, waits for the browser to be idle so the probe never competes with
+   * the first paint or with the first VIS API call.
+   */
+  private scheduleQualityAssessment(): void {
+    if (this.deferredAssessmentTimer) return; // already scheduled
+
+    this.deferredAssessmentTimer = setTimeout(() => {
+      this.deferredAssessmentTimer = null;
+      this.runWhenIdle(() => {
+        this.assessConnectionQuality().then(() => this.notifyListeners());
+      });
+    }, NetworkStateManager.FIRST_ASSESSMENT_DELAY_MS);
+
+    // Never keep a Node/Jest process alive just for a diagnostic probe.
+    (this.deferredAssessmentTimer as any)?.unref?.();
+  }
+
+  /**
+   * Run a callback when the browser is idle, falling back to a direct call on
+   * platforms without `requestIdleCallback` (native, older Safari, jsdom).
+   */
+  private runWhenIdle(callback: () => void): void {
+    const ric = (typeof globalThis !== 'undefined'
+      ? (globalThis as any).requestIdleCallback
+      : undefined) as undefined | ((cb: () => void, opts?: { timeout: number }) => void);
+
+    if (typeof ric === 'function') {
+      ric(callback, { timeout: 5000 });
+    } else {
+      callback();
+    }
+  }
+
+  /**
    * Assess connection quality and recommend strategy
    */
-  private async assessConnectionQuality(): Promise<void> {
+  private async assessConnectionQuality(options: { force?: boolean } = {}): Promise<void> {
     if (!this.networkState?.isConnected) {
       this.connectionQuality = {
         score: 0,
@@ -240,31 +296,8 @@ export class NetworkStateManager {
 
     try {
       // Measure latency with a quick HTTP request
-      const latency = await this.measureLatency();
-      const stability = this.calculateStability();
-      const throughputScore = this.estimateThroughput();
-
-      // Calculate overall quality score
-      const qualityScore = this.calculateQualityScore(latency, stability, throughputScore);
-      
-      this.connectionQuality = {
-        score: qualityScore,
-        level: this.getQualityLevel(qualityScore),
-        latency,
-        stability,
-        throughput: throughputScore,
-        recommendation: this.recommendStrategy(qualityScore, this.networkState.type)
-      };
-
-      // Update history for trend analysis
-      this.qualityHistory.push(qualityScore);
-      this.latencyHistory.push(latency);
-
-      // Keep only last 20 measurements
-      if (this.qualityHistory.length > 20) {
-        this.qualityHistory.shift();
-        this.latencyHistory.shift();
-      }
+      const latency = await this.measureLatency(options.force ? { force: true } : {});
+      this.applyQualityMeasurement(latency);
 
       //   score: qualityScore,
       //   level: this.connectionQuality.level,
@@ -288,22 +321,135 @@ export class NetworkStateManager {
   }
 
   /**
+   * Assess connection quality WITHOUT touching the network (issue #36).
+   *
+   * Called synchronously on every NetInfo state change so `connectionQuality`
+   * is never null or stale for consumers, while the actual latency probe is
+   * deferred off the critical path. Uses the last real measurement when we
+   * have one, otherwise a connection-type based estimate.
+   */
+  private assessConnectionQualitySync(): void {
+    if (!this.networkState?.isConnected) {
+      this.connectionQuality = {
+        score: 0,
+        level: 'offline',
+        latency: 0,
+        stability: 0,
+        throughput: 0,
+        recommendation: ConnectionStrategy.OFFLINE_MODE
+      };
+      return;
+    }
+
+    this.applyQualityMeasurement(
+      this.lastLatencyValue ?? this.estimateLatencyFromType(),
+      { recordHistory: false }
+    );
+  }
+
+  /**
+   * Turn a latency figure into the current quality snapshot.
+   */
+  private applyQualityMeasurement(
+    latency: number,
+    options: { recordHistory?: boolean } = {}
+  ): void {
+    if (!this.networkState) return;
+
+    const { recordHistory = true } = options;
+    const stability = this.calculateStability();
+    const throughputScore = this.estimateThroughput();
+    const qualityScore = this.calculateQualityScore(latency, stability, throughputScore);
+
+    this.connectionQuality = {
+      score: qualityScore,
+      level: this.getQualityLevel(qualityScore),
+      latency,
+      stability,
+      throughput: throughputScore,
+      recommendation: this.recommendStrategy(qualityScore, this.networkState.type)
+    };
+
+    if (!recordHistory) return;
+
+    // Update history for trend analysis — only for real measurements, so
+    // estimates never pollute the stability trend.
+    this.qualityHistory.push(qualityScore);
+    this.latencyHistory.push(latency);
+
+    // Keep only last 20 measurements
+    if (this.qualityHistory.length > 20) {
+      this.qualityHistory.shift();
+      this.latencyHistory.shift();
+    }
+  }
+
+  /**
+   * Rough latency estimate used before the first real probe completes.
+   */
+  private estimateLatencyFromType(): number {
+    switch (this.networkState?.type) {
+      case 'ethernet':
+        return 30;
+      case 'wifi':
+        return 60;
+      case 'cellular':
+        return 150;
+      default:
+        return 200;
+    }
+  }
+
+  /**
    * Measure network latency
    */
-  private async measureLatency(): Promise<number> {
+  private async measureLatency(options: { force?: boolean } = {}): Promise<number> {
+    // De-duplicate: reuse an in-flight probe instead of opening a second socket.
+    if (this.latencyProbeInFlight) {
+      return this.latencyProbeInFlight;
+    }
+
+    // Throttle: reuse the last measurement if it is still recent. Prevents the
+    // "three concurrent requests to /" behaviour reported in issue #36.
+    const age = Date.now() - this.lastLatencyProbeAt;
+    if (
+      !options.force &&
+      this.lastLatencyValue !== null &&
+      age < NetworkStateManager.LATENCY_PROBE_MIN_INTERVAL_MS
+    ) {
+      return this.lastLatencyValue;
+    }
+
+    this.latencyProbeInFlight = this.runLatencyProbe();
+    try {
+      const latency = await this.latencyProbeInFlight;
+      this.lastLatencyProbeAt = Date.now();
+      this.lastLatencyValue = latency;
+      return latency;
+    } finally {
+      this.latencyProbeInFlight = null;
+    }
+  }
+
+  private async runLatencyProbe(): Promise<number> {
     const startTime = Date.now();
     try {
-      // Use a same-origin endpoint on web to avoid CORS; fallback to httpbin in native
+      // NOTE (issue #36): on web this used to GET the site root, i.e. download
+      // and let the browser parse the full prerendered HTML document (~4.5 s on
+      // the measured trace). Probe a tiny static file with HEAD instead — it is
+      // same-origin (no CORS), a few hundred bytes, and never triggers a parse.
       const testUrl = (typeof window !== 'undefined' && window.location?.origin)
-        ? window.location.origin + '/' // same-origin request avoids CORS
+        ? window.location.origin + '/favicon.ico'
         : 'https://httpbin.org/json';
 
+      const isWebProbe = testUrl.endsWith('/favicon.ico');
+
       const response = await Promise.race([
-        fetch(testUrl, { 
-          method: 'GET',
-          cache: 'no-cache',
+        fetch(testUrl, {
+          method: isWebProbe ? 'HEAD' : 'GET',
+          cache: 'no-store',
         }),
-        new Promise<never>((_, reject) => 
+        new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Timeout')), 5000)
         )
       ]);
@@ -524,7 +670,8 @@ export class NetworkStateManager {
    * Force connection quality reassessment
    */
   async forceQualityReassessment(): Promise<void> {
-    await this.assessConnectionQuality();
+    // Explicit caller intent — bypass the probe throttle (issue #36).
+    await this.assessConnectionQuality({ force: true });
     this.notifyListeners();
   }
 
@@ -585,9 +732,17 @@ export class NetworkStateManager {
       this.qualityAssessmentTimer = null;
     }
 
+    if (this.deferredAssessmentTimer) {
+      clearTimeout(this.deferredAssessmentTimer);
+      this.deferredAssessmentTimer = null;
+    }
+
     this.listeners.clear();
     this.qualityHistory = [];
     this.latencyHistory = [];
+    this.latencyProbeInFlight = null;
+    this.lastLatencyProbeAt = 0;
+    this.lastLatencyValue = null;
 
   }
 

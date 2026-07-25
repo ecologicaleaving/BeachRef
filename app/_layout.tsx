@@ -1,3 +1,6 @@
+// Must run before anything else touches NetInfo (issue #36): repoints the web
+// reachability probe away from the site's HTML document.
+import "../lib/netinfoConfig";
 // VIS API Optimization: Monitoring Setup (Phase 1)
 // Platform detection
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";

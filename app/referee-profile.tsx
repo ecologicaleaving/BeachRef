@@ -19,6 +19,14 @@ import { RefereeAnalyticsDashboard } from '../components/RefereeAnalytics/Refere
 import { useRefereeAnalytics } from '../hooks/useRefereeAnalytics';
 import { colors, designTokens } from '../theme/tokens';
 import { ActionIcons } from '../components/Icons/IconLibrary';
+import { RefereeDirectoryService } from '../services/RefereeDirectoryService';
+
+/**
+ * The VIS identifier of a referee, whichever of the three shapes the caller
+ * navigated with carries it.
+ */
+const refereeVisId = (referee: EventReferee | RefereeOfficial): string =>
+  String((referee as any).id || (referee as any).RefereeId || (referee as any).noOfficial || '');
 
 /**
  * Individual Referee Profile Dashboard Screen
@@ -49,36 +57,27 @@ const RefereeProfileScreen: React.FC = () => {
     }
   }, [refereeData, router]);
 
-  // Try to fetch portrait image URL via VIS Images API
+  // Portrait image URL, resolved by RefereeDirectoryService (issue #46).
+  // The portrait is optional: a failure leaves the ID-card button in place.
   useEffect(() => {
-    const fetchPortrait = async () => {
-      try {
-        if (!referee) return;
-        const id = (referee as any).id || (referee as any).RefereeId || (referee as any).noOfficial;
-        if (!id) return;
-        const appId = '2a9523517c52420da73d927c6d6bab23';
-        const xml = `<Requests><Request Type="GetImageList" Fields="No"><Filter DataType="61" DataNo="${id}" ImageType="15"/></Request></Requests>`;
-        const resp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-FIVB-App-ID': appId,
-            'Accept': 'application/xml'
-          },
-          body: new URLSearchParams({ Request: xml }) as any
-        });
-        if (!resp.ok) return;
-        const txt = await resp.text();
-        const m = txt.match(/<Image[^>]*\sNo="(\d+)"/);
-        if (m && m[1]) {
-          const url = `https://www.fivb.org/Vis2009/Images/GetImage.asmx?No=${m[1]}&MaxSize=300`;
-          setPortraitUrl(url);
-        }
-      } catch {
-        // Swallow errors; portrait is optional
+    let cancelled = false;
+
+    const loadPortrait = async () => {
+      if (!referee) return;
+      const id = refereeVisId(referee);
+      if (!id) return;
+
+      const url = await RefereeDirectoryService.getRefereePortraitUrl(id);
+      if (!cancelled && url) {
+        setPortraitUrl(url);
       }
     };
-    fetchPortrait();
+
+    loadPortrait();
+
+    return () => {
+      cancelled = true;
+    };
   }, [referee]);
 
   // Get referee analytics
@@ -112,6 +111,17 @@ const RefereeProfileScreen: React.FC = () => {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleOpenIdCard = async () => {
+    if (!referee) return;
+    const id = refereeVisId(referee);
+    if (!id) return;
+
+    const url = await RefereeDirectoryService.getRefereeIdCardUrl(id);
+    if (url) {
+      await Linking.openURL(url);
+    }
   };
 
   if (loading || !referee) {
@@ -201,31 +211,7 @@ const RefereeProfileScreen: React.FC = () => {
           ) : (
             <TouchableOpacity
               style={styles.idCardButton}
-              onPress={async () => {
-                try {
-                  const id = (referee as any).id || (referee as any).RefereeId || (referee as any).noOfficial;
-                  if (!id) return;
-                  const appId = '2a9523517c52420da73d927c6d6bab23';
-                  // Try Volley first, then Beach
-                  const tryTypes = ['Volley', 'Beach'];
-                  for (const vt of tryTypes) {
-                    const xml = `<Requests><Request Type="GetRefereeIdCard" No="${id}" VolleyType="${vt}"/></Requests>`;
-                    const resp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-FIVB-App-ID': appId, 'Accept': 'application/xml' },
-                      body: new URLSearchParams({ Request: xml }) as any
-                    });
-                    if (!resp.ok) continue;
-                    const txt = await resp.text();
-                    const m = txt.match(/Token="([^"]+)"/);
-                    if (m && m[1]) {
-                      const url = `https://www.fivb.org/Vis2009/Documents/GetDocument.asmx?Token=${m[1]}`;
-                      await Linking.openURL(url);
-                      break;
-                    }
-                  }
-                } catch {}
-              }}
+              onPress={handleOpenIdCard}
             >
               <Text style={styles.idCardButtonText}>View ID Card</Text>
             </TouchableOpacity>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,10 @@ import { NavigationHeader } from '../components/navigation/NavigationHeader';
 import { BottomTabNavigation } from '../components/navigation/BottomTabNavigation';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { designTokens } from '../theme/tokens';
+import {
+  RefereeDirectoryService,
+  type DirectoryReferee
+} from '../services/RefereeDirectoryService';
 
 interface Official {
   FederationCode: string;
@@ -42,6 +46,23 @@ interface Referee {
   WeakPoints: string;
 }
 
+/** Adapt a service referee to the shape this screen renders. */
+const toScreenReferee = (referee: DirectoryReferee): Referee => ({
+  Conclusion: '',
+  FederationCode: referee.federationCode,
+  FirstName: referee.firstName,
+  Gender: referee.gender,
+  LastName: referee.lastName,
+  NoPortraitPhoto: '',
+  NoReferee: referee.RefereeId,
+  Signatures: '',
+  Status: referee.status ?? '',
+  StrongPoints: '',
+  TheoryTest: '',
+  Type: referee.type ?? '',
+  WeakPoints: ''
+});
+
 const RefModeScreen: React.FC = () => {
   const router = useRouter();
   const { eventNo, tournamentName } = useLocalSearchParams<{ 
@@ -59,72 +80,44 @@ const RefModeScreen: React.FC = () => {
     router.back();
   };
 
-  // Extract referees from match assignments as fallback
-  const extractRefereesFromMatches = async (eventNo: string) => {
-    try {
-      
-      // Get match data for the event
-      const { VisApiClient } = await import('../services/api/VisApiClient');
-      const visApi = new VisApiClient();
-      
-      const matchResponse = await visApi.getBeachMatchList({
-        eventNo: eventNo,
-        maxResults: 100
-      });
-      
-      if (matchResponse.success && matchResponse.xmlData) {
-        
-        // Parse match XML to extract referee names
-        const refereeNamesSet = new Set<string>();
-        const xmlData = matchResponse.xmlData;
-        
-        // Extract referee names from match XML
-        const refereePatterns = [
-          /Referee1="([^"]+)"/g,
-          /Referee2="([^"]+)"/g,
-          /Referee="([^"]+)"/g
-        ];
-        
-        refereePatterns.forEach(pattern => {
-          let match;
-          while ((match = pattern.exec(xmlData)) !== null) {
-            const refereeName = (match[1] ?? '').trim();
-            if (refereeName && refereeName !== '' && refereeName !== 'TBD') {
-              refereeNamesSet.add(refereeName);
-            }
-          }
-        });
-        
-        // Convert to referee objects
-        const extractedReferees: Referee[] = Array.from(refereeNamesSet).map((name, index) => {
-          const [firstName, ...lastNameParts] = name.split(' ');
-          return {
-            NoReferee: `EXTRACTED_${index + 1}`,
-            FirstName: firstName || '',
-            LastName: lastNameParts.join(' ') || '',
-            FederationCode: '',
-            Gender: '',
-            NoPortraitPhoto: '',
-            Signatures: '',
-            Status: 'ACTIVE',
-            Conclusion: '',
-            StrongPoints: '',
-            TheoryTest: '',
-            Type: 'EXTRACTED',
-            WeakPoints: ''
-          };
-        });
-        
-        if (extractedReferees.length > 0) {
-          setReferees(extractedReferees);
+  /**
+   * Referees deduced from the match assignments — the fallback used when the
+   * event has no referee roster of its own.
+   */
+  const extractRefereesFromMatches = async (event: string): Promise<Referee[]> => {
+    const { matches } = await RefereeDirectoryService.getEventMatches(event);
+
+    const refereeNames = new Set<string>();
+    for (const match of matches) {
+      for (const key of ['Referee1Name', 'Referee2Name', 'Referee1', 'Referee2', 'Referee']) {
+        const name = (match[key] ?? '').trim();
+        if (name && name !== 'TBD') {
+          refereeNames.add(name);
         }
       }
-    } catch (error) {
-      console.error('❌ Failed to extract referees from matches:', error);
     }
+
+    return Array.from(refereeNames).map((name, index) => {
+      const [firstName, ...lastNameParts] = name.split(' ');
+      return {
+        NoReferee: `EXTRACTED_${index + 1}`,
+        FirstName: firstName || '',
+        LastName: lastNameParts.join(' ') || '',
+        FederationCode: '',
+        Gender: '',
+        NoPortraitPhoto: '',
+        Signatures: '',
+        Status: 'ACTIVE',
+        Conclusion: '',
+        StrongPoints: '',
+        TheoryTest: '',
+        Type: 'EXTRACTED',
+        WeakPoints: ''
+      };
+    });
   };
 
-  const loadOfficialData = async () => {
+  const loadOfficialData = useCallback(async () => {
     if (!eventNo) {
       setError('No event number provided');
       return;
@@ -132,107 +125,47 @@ const RefModeScreen: React.FC = () => {
 
     setLoading(true);
     setError(null);
-    
+
     try {
-      const { VisApiClient } = await import('../services/api/VisApiClient');
-      const { DEFAULT_RETRY_CONFIG } = await import('../types/api-v2');
-      
-      const config = {
-        baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
-        timeoutMs: 30000,
-        maxRetries: 3,
-        retryDelayMs: 1000,
-        enableLogging: true,
-        headers: {}
-      };
-      
-      const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
+      // Referee roster of the event. RefereeDirectoryService owns the
+      // <Requests> envelope this screen used to spell out by hand — the
+      // workaround now lives in VisApiClient (issue #40).
+      const { referees: eventReferees, error: refereesError } =
+        await RefereeDirectoryService.getEventReferees(eventNo);
 
+      let resolvedReferees: Referee[] = eventReferees.map(toScreenReferee);
 
-      // Make specific GetEventRefereeList request using GET method like the manual
-      
-      // Request specific fields as provided
-      const refereeRequest = `<Requests><Request Type='GetEventRefereeList' Fields='Conclusion FederationCode FirstName Gender LastName NoPortraitPhoto NoReferee Signatures Status StrongPoints TheoryTest Type WeakPoints'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
-      const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
-      
-
-      try {
-        const refereeResponse = await fetch(refereeUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/xml, text/xml, */*',
-            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-          }
-        });
-        
-        if (refereeResponse.ok) {
-          const refereeData = await refereeResponse.text();
-          
-          // Parse referee numbers from the response
-          const refereeNumbers = parseRefereeNumbers(refereeData);
-          
-          // Get detailed info for each referee
-          if (refereeNumbers.length > 0) {
-            const detailedReferees = await getDetailedReferees(refereeNumbers.slice(0, 3)); // Limit to first 3 for testing
-            setReferees(detailedReferees);
-          }
-        } else {
-          console.error('❌ GetEventRefereeList HTTP error:', refereeResponse.status, refereeResponse.statusText);
-          // Try fallback: extract referees from match assignments
-          await extractRefereesFromMatches(eventNo);
-        }
-      } catch (error) {
-        console.error('❌ GetEventRefereeList failed:', error);
-        // Try fallback: extract referees from match assignments
-        await extractRefereesFromMatches(eventNo);
+      // Same fallback as before: no roster ⇒ deduce the names from the matches.
+      if (refereesError || resolvedReferees.length === 0) {
+        resolvedReferees = await extractRefereesFromMatches(eventNo);
       }
 
-      // Also try GetEventOfficialList with GET
-      
-      const officialRequest = `<Requests><Request Type='GetEventOfficialList' Fields='FederationCode FirstName Gender LastName NoPortraitPhoto NoOfficial Role Signatures Status Type'><Filter NoEvent='${eventNo}'/></Request></Requests>`;
-      const officialUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(officialRequest)}`;
-      
+      setReferees(resolvedReferees);
 
-      try {
-        const officialResponse = await fetch(officialUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/xml, text/xml, */*',
-            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-          }
-        });
-        
-        if (officialResponse.ok) {
-          const officialData = await officialResponse.text();
-          
-          const officialsData = parseOfficials(officialData);
-          setOfficials(officialsData);
-        } else {
-          console.error('❌ GetEventOfficialList HTTP error:', officialResponse.status, officialResponse.statusText);
-        }
-      } catch (error) {
-        console.error('❌ GetEventOfficialList failed:', error);
-      }
+      const { officials: eventOfficials } =
+        await RefereeDirectoryService.getEventOfficials(eventNo);
 
-      // Fallback: Try GetEvent with officials and referees enabled
-      const eventResponse = await visApi.getEvent({
-        eventNo: eventNo,
-        includeOfficials: true,
-        includeReferees: true
-      });
+      // GetEventOfficialList exposes only `No` and `Version` for these two
+      // entities (investigated at length in issue #40), so nameless rows are
+      // dropped rather than rendered as blank cards — which is what this screen
+      // showed before, its parser requiring a wrapper the response never has.
+      setOfficials(eventOfficials.filter(o => o.FirstName.trim() || o.LastName.trim()));
 
-      if (eventResponse.success && eventResponse.xmlData) {
-        
-        // Parse officials from the response
-        const officialsData = parseOfficials(eventResponse.xmlData);
-        const refereesData = parseReferees(eventResponse.xmlData);
-        
-        
-        setOfficials(officialsData);
-        setReferees(refereesData);
-      } else {
+      // ⚠️ PRE-EXISTING DEFECT, PRESERVED ON PURPOSE (issue #46 is a refactoring).
+      // This final GetEvent unconditionally *overwrites* both lists with what it
+      // can parse out of the event payload — and it can parse nothing, because
+      // GetEvent does not answer with <EventOfficialList> / <EventRefereeList>.
+      // The net effect is that everything resolved above is discarded and the
+      // screen renders "Officials (0) / Referees (0)". That is why ref-mode is
+      // "under construction" in CLAUDE.md. Removing these four lines makes the
+      // screen work; doing so is a functional change and needs its own issue.
+      const roster = await RefereeDirectoryService.getEventRosterFromEvent(eventNo);
+
+      if (roster.error) {
         setError('Failed to load official data');
-        console.error('❌ Failed to get event data:', eventResponse.error);
+      } else {
+        setOfficials(roster.officials);
+        setReferees(roster.referees.map(toScreenReferee));
       }
     } catch (error) {
       console.error('❌ Error loading official data:', error);
@@ -240,176 +173,7 @@ const RefModeScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to parse referee numbers from GetEventRefereeList response
-  const parseRefereeNumbers = (xmlData: string): string[] => {
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
-      const refereeElements = xmlDoc.getElementsByTagName('EventReferee');
-      
-      const numbers = [];
-      for (let i = 0; i < refereeElements.length; i++) {
-        const no = refereeElements[i]!.getAttribute('No');
-        if (no) {
-          numbers.push(no);
-        }
-      }
-      return numbers;
-    } catch (error) {
-      console.error('Error parsing referee numbers:', error);
-      return [];
-    }
-  };
-
-  // Function to get detailed referee information
-  const getDetailedReferees = async (refereeNumbers: string[]): Promise<Referee[]> => {
-    const detailedReferees: Referee[] = [];
-    
-    for (const refereeNo of refereeNumbers) {
-      try {
-        
-        const refereeRequest = `<Requests><Request Type='GetReferee' No='${refereeNo}' VISId='VIS'/></Requests>`;
-        const refereeUrl = `https://www.fivb.org/vis2009/XmlRequest.asmx?Request=${encodeURIComponent(refereeRequest)}`;
-        
-        
-        const response = await fetch(refereeUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/xml, text/xml, */*',
-            'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-          }
-        });
-        
-        if (response.ok) {
-          const refereeData = await response.text();
-          
-          // Parse individual referee data
-          const parsedReferee = parseIndividualReferee(refereeData, refereeNo);
-          if (parsedReferee) {
-            detailedReferees.push(parsedReferee);
-          }
-        } else {
-          console.error(`❌ GetReferee failed for ${refereeNo}:`, response.status, response.statusText);
-        }
-      } catch (error) {
-        console.error(`❌ Error getting referee ${refereeNo}:`, error);
-      }
-    }
-    
-    return detailedReferees;
-  };
-
-  // Function to parse individual referee data
-  const parseIndividualReferee = (xmlData: string, refereeNo: string): Referee | null => {
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
-      const refereeElements = xmlDoc.getElementsByTagName('Referee');
-      
-      if (refereeElements.length > 0) {
-        const referee = refereeElements[0]!;
-
-        return {
-          Conclusion: referee.getAttribute('Conclusion') || '',
-          FederationCode: referee.getAttribute('FederationCode') || '',
-          FirstName: referee.getAttribute('FirstName') || '',
-          Gender: referee.getAttribute('Gender') || '',
-          LastName: referee.getAttribute('LastName') || '',
-          NoPortraitPhoto: referee.getAttribute('NoPortraitPhoto') || '',
-          NoReferee: referee.getAttribute('NoReferee') || refereeNo,
-          Signatures: referee.getAttribute('Signatures') || '',
-          Status: referee.getAttribute('Status') || '',
-          StrongPoints: referee.getAttribute('StrongPoints') || '',
-          TheoryTest: referee.getAttribute('TheoryTest') || '',
-          Type: referee.getAttribute('Type') || '',
-          WeakPoints: referee.getAttribute('WeakPoints') || '',
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error parsing individual referee:', error);
-      return null;
-    }
-  };
-
-  const parseOfficials = (xmlData: string): Official[] => {
-    try {
-      // Look for EventOfficialList in the XML response
-      const officialListMatch = xmlData.match(/<EventOfficialList[^>]*>(.*?)<\/EventOfficialList>/s);
-      if (!officialListMatch) {
-        return [];
-      }
-
-      const officialListXml = officialListMatch[1]!;
-      const officialMatches = officialListXml.match(/<EventOfficial[^>]*\/>/g) || [];
-      
-      return officialMatches.map(match => {
-        const parseAttribute = (attr: string) => {
-          const regex = new RegExp(`${attr}="([^"]*)"`, 'i');
-          const result = match.match(regex);
-          return result ? result[1] : '';
-        };
-
-        return {
-          FederationCode: parseAttribute('FederationCode'),
-          FirstName: parseAttribute('FirstName'),
-          Gender: parseAttribute('Gender'),
-          LastName: parseAttribute('LastName'),
-          NoPortraitPhoto: parseAttribute('NoPortraitPhoto'),
-          NoOfficial: parseAttribute('NoOfficial'),
-          Role: parseAttribute('Role'),
-          Signatures: parseAttribute('Signatures'),
-          Status: parseAttribute('Status'),
-          Type: parseAttribute('Type'),
-        };
-      });
-    } catch (error) {
-      console.error('Error parsing officials:', error);
-      return [];
-    }
-  };
-
-  const parseReferees = (xmlData: string): Referee[] => {
-    try {
-      // Look for EventRefereeList in the XML response
-      const refereeListMatch = xmlData.match(/<EventRefereeList[^>]*>(.*?)<\/EventRefereeList>/s);
-      if (!refereeListMatch) {
-        return [];
-      }
-
-      const refereeListXml = refereeListMatch[1]!;
-      const refereeMatches = refereeListXml.match(/<EventReferee[^>]*\/>/g) || [];
-      
-      return refereeMatches.map(match => {
-        const parseAttribute = (attr: string) => {
-          const regex = new RegExp(`${attr}="([^"]*)"`, 'i');
-          const result = match.match(regex);
-          return result ? result[1] : '';
-        };
-
-        return {
-          Conclusion: parseAttribute('Conclusion'),
-          FederationCode: parseAttribute('FederationCode'),
-          FirstName: parseAttribute('FirstName'),
-          Gender: parseAttribute('Gender'),
-          LastName: parseAttribute('LastName'),
-          NoPortraitPhoto: parseAttribute('NoPortraitPhoto'),
-          NoReferee: parseAttribute('NoReferee'),
-          Signatures: parseAttribute('Signatures'),
-          Status: parseAttribute('Status'),
-          StrongPoints: parseAttribute('StrongPoints'),
-          TheoryTest: parseAttribute('TheoryTest'),
-          Type: parseAttribute('Type'),
-          WeakPoints: parseAttribute('WeakPoints'),
-        };
-      });
-    } catch (error) {
-      console.error('Error parsing referees:', error);
-      return [];
-    }
-  };
+  }, [eventNo]);
 
   useEffect(() => {
     if (eventNo) {

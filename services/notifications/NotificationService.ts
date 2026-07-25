@@ -13,8 +13,7 @@
  * - Fallback to Alert.alert when permissions denied
  */
 
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
+import type * as Notifications from 'expo-notifications';
 import { Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { WebPushService } from './WebPushService';
@@ -25,6 +24,38 @@ import type {
 } from '../../types/notifications';
 
 const isWeb = Platform.OS === 'web';
+
+// `expo-notifications` and `expo-device` are only ever reached from the native
+// branches below — on web every public method routes through `WebPushService`.
+// They are therefore loaded with a dynamic `import()`, which Metro turns into a
+// separate async chunk, instead of being pulled into the entry chunk that every
+// web visitor downloads and parses (issue #38: the two packages plus what they
+// drag in — `@ide/backoff` -> `assert`, `expo-device` -> `ua-parser-js` — were
+// ~100 KB / 55 modules of it).
+//
+// Note that a `require()` inside a function would NOT achieve this: Metro
+// resolves it statically and the module stays in the chunk (issue #45). Only
+// `import()` produces an async chunk. Each loader memoises its promise, so the
+// module is fetched and evaluated at most once.
+type NotificationsModule = typeof import('expo-notifications');
+type DeviceModule = typeof import('expo-device');
+
+let notificationsModulePromise: Promise<NotificationsModule> | null = null;
+let deviceModulePromise: Promise<DeviceModule> | null = null;
+
+const loadNotifications = (): Promise<NotificationsModule> => {
+  if (!notificationsModulePromise) {
+    notificationsModulePromise = import('expo-notifications');
+  }
+  return notificationsModulePromise;
+};
+
+const loadDevice = (): Promise<DeviceModule> => {
+  if (!deviceModulePromise) {
+    deviceModulePromise = import('expo-device');
+  }
+  return deviceModulePromise;
+};
 
 /**
  * Permission status enum
@@ -85,14 +116,19 @@ export class NotificationService {
     }
 
     try {
-      // Setup notification handler for foreground notifications
-      Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldShowAlert: true,
-          shouldPlaySound: true,
-          shouldSetBadge: true,
-        }),
-      });
+      // Setup notification handler for foreground notifications.
+      // On web this is a no-op in expo-notifications and WebPushService owns the
+      // presentation, so the module is not loaded there at all.
+      if (!isWeb) {
+        const Notifications = await loadNotifications();
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+          }),
+        });
+      }
 
       this.initialized = true;
       this.log('Notification service initialized');
@@ -122,7 +158,7 @@ export class NotificationService {
       }
 
       // MOBILE: Use expo-notifications
-      const { status } = await Notifications.getPermissionsAsync();
+      const { status } = await (await loadNotifications()).getPermissionsAsync();
 
       if (status === 'granted') {
         return PermissionStatus.GRANTED;
@@ -170,6 +206,8 @@ export class NotificationService {
       }
 
       // MOBILE: Check if running on physical device
+      const Notifications = await loadNotifications();
+      const Device = await loadDevice();
       if (!Device.isDevice) {
         this.log('Must use physical device for push notifications');
         Alert.alert(
@@ -269,7 +307,7 @@ export class NotificationService {
       }
 
       // MOBILE: Get Expo push token
-      const tokenData = await Notifications.getExpoPushTokenAsync({
+      const tokenData = await (await loadNotifications()).getExpoPushTokenAsync({
         projectId: process.env.EXPO_PUBLIC_PROJECT_ID || undefined
       });
 
@@ -356,6 +394,7 @@ export class NotificationService {
       }
 
       // Schedule notification
+      const Notifications = await loadNotifications();
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: payload.title,
@@ -469,7 +508,8 @@ export class NotificationService {
    */
   public async setBadgeCount(count: number): Promise<void> {
     try {
-      await Notifications.setBadgeCountAsync(count);
+      if (isWeb) return;
+      await (await loadNotifications()).setBadgeCountAsync(count);
       this.log('Badge count updated:', count);
     } catch (error) {
       console.error('[NotificationService] Failed to set badge count:', error);
@@ -481,7 +521,8 @@ export class NotificationService {
    */
   public async getBadgeCount(): Promise<number> {
     try {
-      return await Notifications.getBadgeCountAsync();
+      if (isWeb) return 0;
+      return await (await loadNotifications()).getBadgeCountAsync();
     } catch (error) {
       console.error('[NotificationService] Failed to get badge count:', error);
       return 0;
@@ -502,7 +543,7 @@ export class NotificationService {
       }
 
       // MOBILE: Use expo-notifications
-      await Notifications.dismissAllNotificationsAsync();
+      await (await loadNotifications()).dismissAllNotificationsAsync();
       await this.setBadgeCount(0);
       this.log('All notifications cleared');
     } catch (error) {
@@ -516,8 +557,9 @@ export class NotificationService {
   private async getDeviceId(): Promise<string> {
     try {
       // Use device name + OS version as unique ID
-      const deviceName = Device.deviceName || 'unknown';
-      const osVersion = Device.osVersion || '0';
+      const Device = isWeb ? null : await loadDevice();
+      const deviceName = Device?.deviceName || 'unknown';
+      const osVersion = Device?.osVersion || '0';
       return `${deviceName}_${osVersion}_${Date.now()}`;
     } catch (error) {
       console.error('[NotificationService] Failed to get device ID:', error);

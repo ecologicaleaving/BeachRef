@@ -8,7 +8,6 @@ import { Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { preloadBrandAssets } from "../assets/brand";
 import { QueryDevTools } from "../components/DevTools/QueryDevTools";
 import { useAnalytics } from "../hooks/useAnalytics";
@@ -157,23 +156,44 @@ export default function RootLayout() {
 
     initializeApp();
 
-    // Setup notification handlers
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-      }),
-    });
+    // Notification handler + response listener.
+    //
+    // `expo-notifications` is loaded with a dynamic `import()` (issue #38) so it
+    // does not sit on the boot path of the web bundle: `NotificationService`
+    // already routes web through `WebPushService`, and the handler and listener
+    // below only matter on native. The import resolves after first paint, and
+    // `initialize()` inside `initializeApp()` above is what actually arms the
+    // subsystem (issue #43) — that is unchanged.
+    let subscription: { remove: () => void } | undefined;
+    let cancelled = false;
 
-    // Setup notification response listener (user tap)
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      NotificationService.getInstance().handleNotificationResponse(response);
-    });
-    console.log('[App] Notification response listener registered');
+    const registerNotificationHandlers = async () => {
+      try {
+        const Notifications = await import('expo-notifications');
+        if (cancelled) return;
+
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+          }),
+        });
+
+        subscription = Notifications.addNotificationResponseReceivedListener(response => {
+          NotificationService.getInstance().handleNotificationResponse(response);
+        });
+        console.log('[App] Notification response listener registered');
+      } catch (error) {
+        console.warn('[App] Notification handlers not registered:', error);
+      }
+    };
+
+    registerNotificationHandlers();
 
     return () => {
-      subscription.remove();
+      cancelled = true;
+      subscription?.remove();
     };
   }, []);
 

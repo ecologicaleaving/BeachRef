@@ -12,8 +12,7 @@ import {
   ScrollView,
   Easing,
   PanResponder,
-  _Dimensions,
-} from 'react-native';
+  } from 'react-native';
 // The swipe-to-close gesture uses React Native's built-in PanResponder instead
 // of `react-native-gesture-handler` (issue #38). This single import used to be
 // the only reason gesture-handler was in the graph, and gesture-handler in turn

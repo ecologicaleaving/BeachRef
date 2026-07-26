@@ -13,7 +13,6 @@ import {
   getStatusColor, 
   getStatusSize,
   getStatusIconName,
-  _getAccessibilityPattern,
   shouldAnimateStatus,
   getStatusAnimationDuration,
 } from '../../utils/statusIndicators';

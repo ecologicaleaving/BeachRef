@@ -12,7 +12,6 @@ import {
   TouchableOpacity, 
   Animated,
   StyleSheet, 
-  _ViewStyle, 
   TextStyle 
 } from 'react-native';
 import { EnhancedMatchResult} from '../../types/MatchResults';

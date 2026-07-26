@@ -44,9 +44,45 @@ import { v4 as uuidv4 } from 'uuid';
 import { ApiRequest, NetworkType, RequestSource } from '../../types/audit';
 import { errorTransformService } from '../ErrorTransformService';
 import { APIErrorState } from '../../types';
+import { Semaphore } from '../../utils/concurrency';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
+
+/**
+ * Hard ceiling on VIS requests in flight, process-wide (issue #65, AC10).
+ *
+ * Why a global and not a per-instance limit: every service builds its own
+ * `VisApiClient`, so a per-instance cap would be no cap at all — a screen that
+ * touches four services could still put four times the limit on the wire. The
+ * VIS does not care which of our objects sent the request.
+ *
+ * Why 4:
+ * - A browser opens at most **6** connections per host on HTTP/1.1, which the
+ *   VIS speaks. Above 6 the extra requests do not go faster, they queue in the
+ *   socket pool where we cannot see them, time out, or reason about them.
+ * - Leaving 2 of the 6 free means a VIS burst never starves the rest of the
+ *   page (fonts, flags, the analytics beacon) — that starvation is what made
+ *   `/all-referees` look frozen even once data started arriving.
+ * - The throttle measured in #67 was triggered by a 112-request burst. At 4 in
+ *   flight the same 112 requests become a paced pipeline instead of a flood.
+ *
+ * This is a *ceiling*, not a target: callers that fan out are still expected to
+ * bound themselves (see `RefereeSeasonStatsLoader`). The semaphore is the net
+ * under the next `Promise.all` somebody writes without thinking about it.
+ */
+export const VIS_MAX_CONCURRENT_REQUESTS = 4;
+
+const visRequestSemaphore = new Semaphore(VIS_MAX_CONCURRENT_REQUESTS);
+
+/** In-flight / queued VIS requests. Read by tests and the audit tooling. */
+export function getVisRequestConcurrency(): { inFlight: number; queued: number; limit: number } {
+  return {
+    inFlight: visRequestSemaphore.inFlight,
+    queued: visRequestSemaphore.queued,
+    limit: VIS_MAX_CONCURRENT_REQUESTS,
+  };
+}
 
 // VIS API Optimization: Audit service integration (T016)
 // Conditional imports for audit services (only in __DEV__, not on web)
@@ -1009,8 +1045,18 @@ export class VisApiClient implements IVisApiClient {
    * - Captures all requests for audit analysis in __DEV__ mode
    * - Reports malformed requests to Sentry
    * - Fallback to cache on BadRequestSyntax errors
+   *
+   * Issue #65: every VIS request in the app funnels through here, which makes
+   * it the one place where a process-wide concurrency ceiling can actually be
+   * enforced. The wait for a slot happens *before* `dispatchHttpRequest`, so
+   * queueing time is not charged against `config.timeoutMs` — a request that
+   * waited 3 s for a slot still gets its full timeout budget once it starts.
    */
   private async makeHttpRequest(xmlRequest: string): Promise<string> {
+    return visRequestSemaphore.run(() => this.dispatchHttpRequest(xmlRequest));
+  }
+
+  private async dispatchHttpRequest(xmlRequest: string): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
 

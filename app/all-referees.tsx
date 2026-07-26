@@ -15,6 +15,7 @@ import { FlagImage } from '../components/FlagImage';
 import { colors, designTokens } from '../theme/tokens';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 import { RefereeDirectoryService } from '../services/RefereeDirectoryService';
+import { loadRefereeSeasonStats } from '../services/RefereeSeasonStatsLoader';
 import { createShadow } from '../theme/shadows';
 // import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus'; // Not needed for All Referees
 
@@ -26,6 +27,16 @@ interface Referee {
   gender: string;
   level?: string;
   totalMatches?: number; // For sorting
+  /**
+   * Season stats already fetched by the bulk pass, when available.
+   *
+   * Issue #65: the collapsed card used to fetch these itself, from a `useEffect`
+   * on mount — one `getSeasonStats` (>= 3 VIS requests) per row, for every row,
+   * with nothing bounding it. On a list of several hundred referees that second
+   * fan-out was larger than the first one. The bulk pass already asks for
+   * exactly this data, so the card is handed the answer instead of asking again.
+   */
+  seasonStats?: SeasonStats | null;
 }
 
 type StatsTab = 'Current' | 'Season' | 'Career';
@@ -43,17 +54,26 @@ const RefereeCard = ({
   onToggle: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState<StatsTab>('Current');
-  const [currentStats, setCurrentStats] = useState<SeasonStats | null>(null);
+  const [currentStats, setCurrentStats] = useState<SeasonStats | null>(referee?.seasonStats ?? null);
   const [seasonStats, setSeasonStats] = useState<SeasonStats | null>(null);
   const [careerStats, setCareerStats] = useState<CareerStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Load current stats immediately on mount for R1/R2 totals display
+  /**
+   * Adopt the stats the bulk pass produced, whenever they land.
+   *
+   * Issue #65: this replaces a `useEffect` that called `getSeasonStats` on
+   * mount. Every card did it, the list is not virtualised so every card mounts,
+   * and nothing bounded the result — hundreds of simultaneous requests on top
+   * of the ones the screen had already fired. Now the data flows down from the
+   * one place that fetches it, and the card issues a request only when the user
+   * actually expands it.
+   */
   useEffect(() => {
-    if (referee?.RefereeId && !currentStats) {
-      loadCurrentStats();
+    if (referee?.seasonStats) {
+      setCurrentStats(referee.seasonStats);
     }
-  }, [referee?.RefereeId]);
+  }, [referee?.seasonStats]);
 
   // Load stats when card is expanded or tab changes
   useEffect(() => {
@@ -61,20 +81,6 @@ const RefereeCard = ({
       loadRefereeStats();
     }
   }, [expanded, referee?.RefereeId, activeTab]);
-
-  const loadCurrentStats = async () => {
-    if (!referee?.RefereeId) return;
-    
-    try {
-      // Use current calendar year for season stats (2025)
-      const currentYear = new Date().getFullYear();
-      const seasonYear = currentYear.toString();
-      const seasonStats = await RefereeStatsService.getSeasonStats(referee.RefereeId, seasonYear);
-      setCurrentStats(seasonStats);
-    } catch (error) {
-      console.error('Error loading season stats for collapsed card:', error);
-    }
-  };
 
   const loadRefereeStats = async () => {
     if (!referee?.RefereeId || !tournamentNo) {
@@ -262,84 +268,128 @@ function AllRefereesScreenContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [referees, setReferees] = useState<Referee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  /**
+   * True while the bounded stats pass is still filling in match counts. Kept
+   * separate from `loading` on purpose (issue #65, AC1): the list is usable
+   * without the counters, so the spinner must not wait for them.
+   */
+  const [statsPending, setStatsPending] = useState(false);
   const [expandedRefereeId, setExpandedRefereeId] = useState<string | null>(null);
-  
+  const cancelledRef = React.useRef(false);
+
   // Use a default tournament for all referees (latest active tournament)
   const defaultTournamentNo = '1053'; // Can be made dynamic later
 
   const loadAllReferees = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      
+
       // Phase 1: Load only active referees for current season
       const activeRefereesLoaded = await loadActiveSeasonReferees();
       if (!activeRefereesLoaded) {
         setReferees([]);
       }
-      
+
       // Phase 2: Load remaining referees from other seasons incrementally in background
       setTimeout(() => {
         loadInactiveRefereesIncrementally();
       }, 1000);
-      
+
     } catch (error) {
       console.error('Error loading referees:', error);
       setReferees([]);
+      // AC1: a failure has to be visible. Before issue #65 the only two states
+      // this screen could reach were "spinner" and "No referees available",
+      // which is indistinguishable from a healthy empty result.
+      setLoadError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Could not load referees. Check your connection and pull to refresh.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Issue #65 — the rewritten load.
+   *
+   * The old version awaited an unbounded `Promise.all` over `getSeasonStats`
+   * before calling `setReferees`, and `setLoading(false)` sat downstream of that
+   * await. Two consequences, both visible to the user:
+   *
+   * - the list was withheld until the *last* of ~600 VIS requests answered, and
+   * - if one of them never answered, the spinner stayed up forever.
+   *
+   * Now the list is published as soon as it is known — it is complete at that
+   * point, only the sort key is missing — and the stats fill in behind it with a
+   * bounded fan-out and a per-referee timeout. `loading` is released with the
+   * list, not with the statistics.
+   */
   const loadActiveSeasonReferees = async (): Promise<boolean> => {
     try {
       const currentYear = new Date().getFullYear();
-      
+
       // Get matches from current year to extract active referee IDs
       const activeRefereeIds = await getActiveRefereeIdsFromMatches(currentYear);
-      
+
       if (activeRefereeIds.size > 0) {
-        
+
         // Get referee details for active IDs only
         const activeReferees = await getRefereeDetailsByIds(Array.from(activeRefereeIds));
-        
+
         if (activeReferees.length > 0) {
-          
-          // Load stats for active referees to get match counts for sorting
-          const refereesWithStats = await Promise.all(
-            activeReferees.map(async (referee) => {
-              try {
-                const seasonStats = await RefereeStatsService.getSeasonStats(referee.RefereeId, currentYear.toString());
-                return {
-                  ...referee,
-                  totalMatches: seasonStats?.totalMatches || 0
-                };
-              } catch (error) {
-                return {
-                  ...referee,
-                  totalMatches: 0
-                };
-              }
-            })
-          );
-          
-          // Sort by matches officiated (descending)
-          const sortedActiveReferees = refereesWithStats.sort((a, b) => b.totalMatches - a.totalMatches);
-          
-          setReferees(sortedActiveReferees);
-          
+          // Publish the list first, unsorted, with placeholder counters.
+          setReferees(activeReferees.map(referee => ({ ...referee, totalMatches: 0 })));
+
+          // Then fill the counters in, at most REFEREE_STATS_CONCURRENCY at a
+          // time, each capped by REFEREE_STATS_TIMEOUT_MS. Not awaited: nothing
+          // downstream of it may hold the spinner.
+          void fillSeasonStats(activeReferees, currentYear.toString());
+
           // Load inactive referees in background
           setTimeout(() => {
             loadInactiveReferees(activeRefereeIds);
           }, 2000);
-          
+
           return true;
         }
       }
-      
+
       return false;
     } catch (error) {
       console.error('Error loading active season referees:', error);
-      return false;
+      throw error;
+    }
+  };
+
+  /**
+   * Bounded, progressive stats pass. Each result is merged into the list as it
+   * lands and the list is re-sorted, so the ordering converges to "most matches
+   * first" without ever blocking the render.
+   */
+  const fillSeasonStats = async (targets: Referee[], season: string): Promise<void> => {
+    setStatsPending(true);
+    try {
+      await loadRefereeSeasonStats(targets, season, {
+        isCancelled: () => cancelledRef.current,
+        onResult: ({ refereeId, stats, totalMatches }) => {
+          setReferees(prev => {
+            const next = prev.map(referee =>
+              referee.RefereeId === refereeId
+                ? { ...referee, totalMatches, seasonStats: stats }
+                : referee
+            );
+            return next.sort((a, b) => (b.totalMatches || 0) - (a.totalMatches || 0));
+          });
+        },
+      });
+    } finally {
+      if (!cancelledRef.current) {
+        setStatsPending(false);
+      }
     }
   };
 
@@ -506,7 +556,12 @@ function AllRefereesScreenContent() {
   };
 
   useEffect(() => {
+    cancelledRef.current = false;
     loadAllReferees();
+    return () => {
+      // Stops the progressive stats pass from calling setState after unmount.
+      cancelledRef.current = true;
+    };
   }, []);
 
   return (
@@ -556,11 +611,26 @@ function AllRefereesScreenContent() {
             </View>
           )}
           
-          {filteredReferees.length === 0 && !loading && (
+          {/* AC1: an explicit failure state, distinct from "no results". */}
+          {loadError && !loading && referees.length === 0 && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Could not load referees.</Text>
+              <Text style={styles.emptyText}>{loadError}</Text>
+              <Text style={styles.emptyText}>Pull down to retry.</Text>
+            </View>
+          )}
+
+          {filteredReferees.length === 0 && !loading && !loadError && (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
                 {searchQuery ? 'No referees found matching your search.' : 'No referees available.'}
               </Text>
+            </View>
+          )}
+
+          {statsPending && referees.length > 0 && (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Updating season match counts…</Text>
             </View>
           )}
 

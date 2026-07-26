@@ -353,6 +353,26 @@ export class VisApiClient implements IVisApiClient {
    * `/tournament-teams` route — has been calling this method since
    * `specs/003-players-entry-list` landed, but the method was never written, so
    * every load threw "visApi.getTournamentTeamList is not a function".
+   *
+   * **`/tournament-teams` still shows an empty list, and this is why.** The
+   * crash is gone; the feature is not finished. Probing the live VIS while
+   * writing this (issue #73):
+   *
+   * - `GetTournamentTeamList` **is** a real request type and answers 200, but it
+   *   returns `<TournamentsTeams><TournamentTeam No= Version= />`, **not** the
+   *   `<BeachTeams><BeachTeam>` shape with camelCase attributes that
+   *   `specs/003-players-entry-list/data-model.md` assumes and that
+   *   `TournamentTeamService.parseTeamListResponse` parses. It also ignores both
+   *   the `No` attribute and the `Fields` list — it answered with all 3286 rows.
+   * - The endpoint that actually carries the entry list is **`GetBeachTeamList`**,
+   *   filtered by `<Filter NoTournament="…"/>`. Verified: it returns
+   *   `<BeachTeams><BeachTeam No= Name="A/B" NoTournament= />`.
+   * - The blocker is that the app carries an **event** number (`NoEvent`, e.g.
+   *   1734) while that filter wants a **tournament** number (values like 21), and
+   *   an event holds several tournaments.
+   *
+   * Finishing this is completing a half-landed feature, not fixing a bug — it
+   * needs its own issue. Do not re-derive the above: it cost several probes.
    */
   async getTournamentTeamList(request: GetTournamentTeamListRequest): Promise<VisApiResponse> {
     const startTime = Date.now();

@@ -41,6 +41,7 @@
   "exclude": [
     "node_modules",
     ".expo",
+    "supabase/functions",
     "dist",
     "web-build",
     "**/*.test.ts",

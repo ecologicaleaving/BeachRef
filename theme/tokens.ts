@@ -39,6 +39,17 @@ const baseColors = {
   textTertiary: neutrals.textTertiary,  // Muted text
   border: neutrals.borderSubtle, // Border color (TS2339 fix)
   background: neutrals.bgPage,
+  // Issue #65: `app/notification-settings.tsx` and the three
+  // `components/notifications/*` panels style themselves with `colors.surface`,
+  // `colors.onPrimary`, `colors.surfaceDisabled` and `colors.textDisabled`.
+  // None of them existed here, so every one of those styles resolved to
+  // `undefined` — sections with no background on a page background, and switch
+  // thumbs with no colour. The crash hid it; with the crash fixed the screen
+  // would simply have looked broken instead.
+  surface: neutrals.bgSurface,
+  onPrimary: neutrals.bgSurface,
+  surfaceDisabled: '#E4E4E7',   // Zinc 200
+  textDisabled: brandBlue[500], // Zinc 500
 } as const;
 
 // Legacy Brand Colors (Mapped to new theme)

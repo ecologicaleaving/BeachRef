@@ -16,7 +16,10 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { useTheme } from '../../theme/ThemeContext';
+// Issue #65: was '../../theme/ThemeContext', whose useTheme throws without a
+// provider and returns { tokens, ... } — but this file reads theme.colors.*,
+// which is the shape of hooks/useTheme. See app/notification-settings.tsx.
+import { useTheme } from '../../hooks/useTheme';
 import { NotificationService } from '../../services/notifications/NotificationService';
 import { NotificationTriggerService } from '../../services/notifications/NotificationTriggerService';
 import { NotificationQueueService } from '../../services/notifications/NotificationQueueService';

@@ -18,6 +18,10 @@ export interface ColorToken {
   surfacePrimary?: string;
   surfaceSecondary?: string;
   surfaceDisabled?: string;
+  /** Card/section background, one step above `background`. */
+  surface?: string;
+  /** Foreground that sits on top of `primary` (button labels, switch thumbs). */
+  onPrimary?: string;
   border?: string;
   text?: string;
   textTertiary?: string;  // Tertiary text color for muted content

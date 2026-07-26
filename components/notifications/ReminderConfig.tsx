@@ -13,7 +13,10 @@ import {
   Switch,
   TouchableOpacity
 } from 'react-native';
-import { useTheme } from '../../theme/ThemeContext';
+// Issue #65: was '../../theme/ThemeContext', whose useTheme throws without a
+// provider and returns { tokens, ... } — but this file reads theme.colors.*,
+// which is the shape of hooks/useTheme. See app/notification-settings.tsx.
+import { useTheme } from '../../hooks/useTheme';
 import type { NotificationPreferences } from '../../types/notifications';
 
 interface ReminderConfigProps {

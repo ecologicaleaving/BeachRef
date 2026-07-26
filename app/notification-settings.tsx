@@ -23,8 +23,38 @@ import { StatusBar } from 'expo-status-bar';
 import { NotificationService, PermissionStatus } from '../services/notifications/NotificationService';
 import { NotificationPreferencesService } from '../services/notifications/NotificationPreferencesService';
 import type { NotificationPreferences } from '../types/notifications';
-import { useTheme } from '../theme/ThemeContext';
-import Container from '../components/Foundation/Container';
+/**
+ * Issue #65 — this import used to be `from '../theme/ThemeContext'`.
+ *
+ * There are two `useTheme` in this codebase:
+ *
+ * - `hooks/useTheme` — a plain function over `designTokens`. No provider, no
+ *   context. Returns `{ colors, spacing, typography, ... }`.
+ * - `theme/ThemeContext` — a real React context that throws
+ *   `useTheme must be used within a ThemeProvider` when unmounted, and returns
+ *   `{ tokens, isHighContrastMode, toggleHighContrast }`.
+ *
+ * This screen imported the second one and then read `theme.colors.*` — the
+ * shape of the *first*. So even with a provider mounted the screen would have
+ * died one line later on `undefined.background`. The wrong import is the bug;
+ * the missing provider was only what made it fail loudly. `ThemeProvider` is
+ * now mounted in `app/_layout.tsx` too, so the context is genuinely available
+ * to anything that wants it (see the comment there).
+ */
+import { useTheme } from '../hooks/useTheme';
+/**
+ * Issue #65 — `Container` was a **default** import, and
+ * `components/Foundation/Container.tsx` has no default export. The identifier
+ * resolved to `undefined` and React threw
+ * `Element type is invalid ... got: undefined` (minified #130) on render.
+ *
+ * This was a *second*, independent break on this same route, invisible until
+ * now because `useTheme` threw on line 34 — before render was ever reached. It
+ * is the reason AC3 asks for the screen to be *usable* and not merely
+ * crash-free: fixing only the theme import would have swapped one blank page
+ * for another. `tsc` had been reporting it (TS2613) the whole time.
+ */
+import { Container } from '../components/Foundation/Container';
 import NavigationHeader from '../components/navigation/NavigationHeader';
 import { QuietHoursConfig } from '../components/notifications/QuietHoursConfig';
 import { ReminderConfig } from '../components/notifications/ReminderConfig';
@@ -138,7 +168,9 @@ export default function NotificationSettingsScreen() {
 
   return (
     <Container>
-      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+      {/* `theme.dark` never existed on either theme object — it read as
+          `undefined`, so this was always the 'dark' branch. Written out. */}
+      <StatusBar style="dark" />
       <NavigationHeader
         title="Impostazioni Notifiche"
         showBackButton

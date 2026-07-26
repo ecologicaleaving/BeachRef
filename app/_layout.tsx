@@ -19,6 +19,7 @@ import { TournamentCacheWarmingService } from "../services/cache/TournamentCache
 import { CacheMigrationService } from "../services/cache/CacheMigrationService";
 import { NotificationService } from "../services/notifications/NotificationService";
 import { injectCSSVariables } from "../theme/css-variables";
+import { ThemeProvider } from "../theme/ThemeContext";
 import { colors } from "../theme/tokens";
 
 // Import cache debug utilities in development
@@ -213,6 +214,24 @@ export default function RootLayout() {
       }}
       onError={handlePersistenceError}
     >
+      {/*
+        Issue #65 — `ThemeProvider` was mounted **nowhere**. Not here, not in a
+        nested layout, not in a screen: the app had a React context with a
+        `useTheme` that throws `useTheme must be used within a ThemeProvider`,
+        and four files importing it. `/notification-settings` was simply the
+        route someone reached first.
+
+        That is the composition defect the issue asks to fix at the root, and
+        this is the root: `app/_layout.tsx` is the only layout in the project,
+        so every route is a child of this tree. The four call sites also had the
+        wrong import (they consume `theme.colors.*`, which is `hooks/useTheme`'s
+        shape, not this context's) and have been repointed — but leaving the
+        provider unmounted would have left the same trap armed for the next
+        person who imports the context version, so it is mounted here.
+
+        Cost: one AsyncStorage read for the high-contrast preference on boot.
+      */}
+      <ThemeProvider>
       <AssignmentStatusProvider>
         <StatusBar
           style="light"
@@ -235,6 +254,7 @@ export default function RootLayout() {
         </Stack>
         <QueryDevTools />
       </AssignmentStatusProvider>
+      </ThemeProvider>
     </PersistQueryClientProvider>
   );
 }

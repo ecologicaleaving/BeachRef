@@ -473,7 +473,45 @@ export interface VisApiClientConfig {
   readonly retryDelayMs: number;
   /** Enable exponential backoff */
   readonly exponentialBackoff: boolean;
-  /** Request headers */
+  /**
+   * Extra request headers. **Leave this undefined unless you have measured the
+   * cost — on web every entry here doubles the number of round trips.**
+   *
+   * The client always sends `Content-Type: application/x-www-form-urlencoded`
+   * with a form body, which makes the POST a CORS *simple request*: the browser
+   * sends it straight out, one round trip. Adding **any** header outside the
+   * CORS safelist makes the request non-simple, so the browser must first send
+   * an `OPTIONS` preflight. The VIS answers that preflight **without
+   * `Access-Control-Max-Age`**:
+   *
+   * ```
+   * $ curl -i -X OPTIONS https://www.fivb.org/Vis2009/XmlRequest.asmx \
+   *     -H "Origin: https://beachrefs.netlify.app" \
+   *     -H "Access-Control-Request-Method: POST" \
+   *     -H "Access-Control-Request-Headers: x-fivb-app-id"
+   * HTTP/1.1 200 OK
+   * access-control-allow-headers: Authorization, Content-Type, X-FIVB-App-ID
+   * access-control-allow-methods: POST, GET, OPTIONS
+   * access-control-allow-origin: *
+   * # no Access-Control-Max-Age  ->  the preflight is NOT cacheable
+   * ```
+   *
+   * With no max-age the browser re-runs the preflight for *every single*
+   * request. There is no cache to amortise it against, so the header is not a
+   * one-off cost: it is a permanent ×2 on VIS traffic, and on a polling loop it
+   * is a ×2 on every tick.
+   *
+   * `X-FIVB-App-ID` in particular is **not required by the VIS** and was
+   * removed everywhere by issue #67. Ten endpoints were probed with and without
+   * it — `GetEventList`, `GetEvent` (fielded and full), `GetBeachTournamentList`,
+   * `GetBeachMatchList`, `GetBeachMatch`, `GetBeachLive`, `GetEventRefereeList`,
+   * `GetEventOfficialList`, `GetRefereeList` — and every pair came back
+   * byte-for-byte identical, same HTTP status, same record count. (`GetReferee`
+   * and `GetImageList` fail with `AccessDenied` / `Runtime Error` in both cases;
+   * see `RefereeDirectoryService`.) It does not gate quota, data or access.
+   *
+   * Frozen by `__tests__/no-vis-custom-headers.test.ts`.
+   */
   readonly headers?: Record<string, string>;
   /** Enable request/response logging */
   readonly enableLogging: boolean;

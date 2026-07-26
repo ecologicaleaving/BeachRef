@@ -5,9 +5,16 @@
  * a cached map of event referees from GetEventRefereeList.
  *
  * Similar pattern to matchOfficialsSync.ts for Personnel lookup.
+ *
+ * Issue #47: the roster no longer arrives through a raw `fetch` with its own
+ * `XMLParser`. {@link RefereeDirectoryService.getEventReferees} issues the same
+ * `GetEventRefereeList` through {@link VisApiClient} — so it is retried,
+ * monitored, cached per event and, above all, **seen by `ApiAuditService`** —
+ * and this module keeps only what it exists for: a *synchronous* id → name map
+ * that `MatchCard` can read inside a render, where awaiting is not an option.
  */
 
-import { XMLParser } from 'fast-xml-parser';
+import { RefereeDirectoryService } from '../services/RefereeDirectoryService';
 
 interface ChallengeReferee {
   noReferee: string;
@@ -26,13 +33,6 @@ interface ChallengeRefereeMap {
 // Global cache for event referee maps
 const eventRefereeMapsCache: ChallengeRefereeMap = {};
 
-const parser = new XMLParser({
-  ignoreAttributes: false,
-  attributeNamePrefix: '',
-  textNodeName: '_text',
-  parseAttributeValue: true
-});
-
 /**
  * Fetch and cache event referee list from GetEventRefereeList
  */
@@ -43,49 +43,37 @@ export async function fetchEventRefereeList(eventNo: string): Promise<void> {
   }
 
   try {
-    const xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender">
-    <Filter NoEvent="${eventNo}"/>
-  </Request>
-</Requests>`;
+    const { referees, error } = await RefereeDirectoryService.getEventReferees(eventNo);
 
-    const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-      method: "POST",
-      headers: {
-        "Accept": "application/xml",
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: new URLSearchParams({ Request: xml })
-    });
+    if (error) {
+      console.warn(`[ChallengeRefereeSync] ${error}`);
+      // Same contract as before: an empty map, so the next render does not
+      // re-request an event the VIS has nothing to say about.
+      eventRefereeMapsCache[eventNo] = {};
+      return;
+    }
 
-    if (response.ok) {
-      const xmlResponse = await response.text();
-      const data = parser.parse(xmlResponse);
+    const refereeMap: { [refereeId: string]: ChallengeReferee } = {};
 
-      const refereeMap: { [refereeId: string]: ChallengeReferee } = {};
-
-      if (data.Responses?.EventReferees?.EventReferee) {
-        const referees = Array.isArray(data.Responses.EventReferees.EventReferee)
-          ? data.Responses.EventReferees.EventReferee
-          : [data.Responses.EventReferees.EventReferee];
-
-        referees.forEach((ref: any) => {
-          if (ref.NoReferee) {
-            refereeMap[ref.NoReferee.toString()] = {
-              noReferee: ref.NoReferee.toString(),
-              firstName: ref.FirstName || '',
-              lastName: ref.LastName || '',
-              federationCode: ref.FederationCode || '',
-              gender: ref.Gender === 0 ? 'M' : ref.Gender === 1 ? 'F' : ''
-            };
-          }
-        });
+    for (const referee of referees) {
+      if (!referee.RefereeId) {
+        continue;
       }
 
-      eventRefereeMapsCache[eventNo] = refereeMap;
-      console.log(`[ChallengeRefereeSync] Cached ${Object.keys(refereeMap).length} referees for event ${eventNo}`);
+      refereeMap[referee.RefereeId] = {
+        noReferee: referee.RefereeId,
+        firstName: referee.firstName,
+        lastName: referee.lastName,
+        federationCode: referee.federationCode,
+        // VIS gender code arrives as a string here ('0' male, '1' female);
+        // the previous parser saw it as a number because it had
+        // parseAttributeValue on. Same two outcomes, same fallback.
+        gender: referee.gender === '0' ? 'M' : referee.gender === '1' ? 'F' : ''
+      };
     }
+
+    eventRefereeMapsCache[eventNo] = refereeMap;
+    console.log(`[ChallengeRefereeSync] Cached ${Object.keys(refereeMap).length} referees for event ${eventNo}`);
   } catch (error) {
     console.error('[ChallengeRefereeSync] Error fetching event referee list:', error);
     // Create empty cache to avoid repeated failed requests

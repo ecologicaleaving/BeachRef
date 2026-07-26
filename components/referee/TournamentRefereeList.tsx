@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from '
 import { Text } from '../Typography/Text';
 import { colors, designTokens } from '../../theme/tokens';
 import { RefereeStatsService, RefereeStats, RefereeMatch } from '../../services/RefereeStatsService';
+import { RefereeDirectoryService } from '../../services/RefereeDirectoryService';
 import { FlagImage } from '../FlagImage';
 import { MatchRefereeCard } from './MatchRefereeCard';
 
@@ -301,37 +302,44 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
     }
   };
 
+  /**
+   * Issue #47: the network left this component.
+   *
+   * It used to POST `GetEventRefereeList` to `fivb.org` from the component body
+   * and parse the XML with local regexes — no retry, no cache, and invisible to
+   * `ApiAuditService`. `RefereeDirectoryService.getEventReferees` issues the
+   * same request with a superset of the fields, caches it per event, and never
+   * throws; the only logic that stayed here is the normalisation the screen
+   * applies (6-digit `NoReferee` or nothing, drop nameless rows), which the
+   * service performs identically for `GetRefereeList` but not for event
+   * rosters.
+   */
   const loadRefereesFromAPI = async (): Promise<boolean> => {
     try {
-      const xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Role Level Status">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
+      const { referees: rosterReferees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
 
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        const parsedReferees = parseRefereeXML(xmlResponse);
-        if (parsedReferees.length > 0) {
-          const normalized = parsedReferees.map(r => ({
-            ...r,
-            RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
-          })).filter(r => r.firstName?.trim() || r.lastName?.trim());
-          setReferees(normalized);
-          return normalized.length > 0;
-        }
+      if (rosterReferees.length === 0) {
+        return false;
       }
-      return false;
+
+      const normalized: Referee[] = rosterReferees
+        .filter(r => r.firstName?.trim() || r.lastName?.trim())
+        .map(r => ({
+          RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? r.RefereeId : '',
+          firstName: r.firstName,
+          lastName: r.lastName,
+          federationCode: r.federationCode,
+          gender: r.gender,
+          level: r.level ?? '',
+          role: r.role ?? ''
+        }));
+
+      if (normalized.length === 0) {
+        return false;
+      }
+
+      setReferees(normalized);
+      return true;
     } catch (error) {
       console.error('Error in loadRefereesFromAPI:', error);
       return false;
@@ -340,38 +348,6 @@ export const TournamentRefereeList: React.FC<TournamentRefereeListProps> = ({
 
   const loadRefereesFromMatchList = async (): Promise<void> => {
     // Simplified version - can be expanded later if needed
-  };
-
-  const parseRefereeXML = (xmlString: string): Referee[] => {
-    const referees: Referee[] = [];
-    const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
-
-    if (refereeMatches) {
-      refereeMatches.forEach(match => {
-        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
-        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
-        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
-        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
-        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
-        const role = match.match(/Role="([^"]*)"/)?.[1] || ''; // Parse Role field
-
-        // Only add referee if they have at least a name
-        if (firstName.trim() || lastName.trim()) {
-          referees.push({
-            RefereeId: noReferee,
-            firstName,
-            lastName,
-            federationCode,
-            gender,
-            level,
-            role
-          });
-        }
-      });
-    }
-
-    return referees;
   };
 
   useEffect(() => {

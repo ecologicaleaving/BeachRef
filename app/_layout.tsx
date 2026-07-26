@@ -1,6 +1,14 @@
 // Must run before anything else touches NetInfo (issue #36): repoints the web
 // reachability probe away from the site's HTML document.
 import "../lib/netinfoConfig";
+// Issue #54: resolve the database-read flags at boot. The module imports
+// nothing and costs a couple of hundred bytes, and loading it here is what
+// makes the two no-deploy controls actually reachable: `?dbReads=` is read (and
+// persisted) on the first render, and `__beachrefDbReads.off()` exists in the
+// console even on routes that never touch a database read path. A rollback
+// switch you have to navigate to a particular screen to reach is not a rollback
+// switch.
+import "../services/flags/DbReadFlags";
 // VIS API Optimization: Monitoring Setup (Phase 1)
 // Platform detection
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";

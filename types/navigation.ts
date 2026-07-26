@@ -10,7 +10,6 @@ export type RootStackParamList = {
     tournamentData: string; // JSON stringified Tournament
   };
   'switch-tournament': undefined;
-  'referee-settings': undefined;
 };
 
 export type NavigationState = 'selection' | 'dashboard';

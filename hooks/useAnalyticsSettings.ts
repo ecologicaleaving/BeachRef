@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LocalStorageManager } from '../services/LocalStorageManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AnalyticsCustomization } from '../components/Analytics/AnalyticsDashboard';
 
 /**
@@ -39,8 +39,18 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const storageManager = LocalStorageManager.getInstance();
-  const SETTINGS_KEY = 'analytics_settings';
+  // Analytics settings are a *user preference*, not cached API data, so they are
+  // persisted the same way the rest of the app persists preferences: AsyncStorage
+  // under an explicit namespaced key (see TournamentStorageService).
+  //
+  // This hook used to call `LocalStorageManager.getInstance()`. `LocalStorageManager`
+  // is a TTL cache: it has no `getInstance()` static (so the call threw a TypeError
+  // during render and both /analytics-dashboard and /analytics-settings rendered as
+  // blank pages), and it has no `getItem`/`setItem` either — its API is
+  // `get(key)` / `set(key, data, ttl)` / `delete(key)` over a `@VisCache:` prefix.
+  // Fixing only the `getInstance()` call would have turned the red error into a
+  // second, quieter failure (issue #71 / #65).
+  const SETTINGS_KEY = '@BeachRef:analytics_settings';
 
   // Default settings following Story 4.3 specifications
   const defaultSettings: AnalyticsSettings = {
@@ -76,7 +86,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
     setError(null);
     
     try {
-      const storedSettings = await storageManager.getItem(SETTINGS_KEY);
+      const storedSettings = await AsyncStorage.getItem(SETTINGS_KEY);
       
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings) as AnalyticsSettings;
@@ -94,7 +104,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
         setSettings(validatedSettings);
       } else {
         // First time use - save default settings
-        await storageManager.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
+        await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
         setSettings(defaultSettings);
       }
     } catch (err) {
@@ -107,7 +117,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
     } finally {
       setIsLoading(false);
     }
-  }, [storageManager]);
+  }, []);
 
   // Update settings with persistence
   const updateSettings = useCallback(async (updates: Partial<AnalyticsSettings>): Promise<void> => {
@@ -130,7 +140,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
       setSettings(updatedSettings);
 
       // Persist to storage
-      await storageManager.setItem(SETTINGS_KEY, JSON.stringify(updatedSettings));
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updatedSettings));
     } catch (err) {
       const error = err as Error;
       setError(error);
@@ -141,7 +151,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
       console.error('Failed to update analytics settings:', error.message);
       throw error;
     }
-  }, [settings, storageManager, loadSettings]);
+  }, [settings, loadSettings]);
 
   // Reset settings to defaults
   const resetSettings = useCallback(async (): Promise<void> => {
@@ -153,7 +163,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
         lastUpdated: new Date().toISOString(),
       };
 
-      await storageManager.setItem(SETTINGS_KEY, JSON.stringify(resetSettings));
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(resetSettings));
       setSettings(resetSettings);
     } catch (err) {
       const error = err as Error;
@@ -162,7 +172,7 @@ export function useAnalyticsSettings(): AnalyticsSettingsHookResult {
       console.error('Failed to reset analytics settings:', error.message);
       throw error;
     }
-  }, [storageManager]);
+  }, []);
 
   // Export settings as JSON string
   const exportSettings = useCallback(async (): Promise<string> => {

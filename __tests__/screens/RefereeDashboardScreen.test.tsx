@@ -169,17 +169,23 @@ describe('RefereeDashboardScreen', () => {
     await waitFor(() => {
       const assignmentsButton = screen.getByText('My Assignments');
       const resultsButton = screen.getByText('Results');
-      const settingsButton = screen.getByText('Settings');
-      
+
       fireEvent.press(assignmentsButton);
       expect(mockPush).toHaveBeenCalledWith('/my-assignments');
-      
+
       fireEvent.press(resultsButton);
       expect(mockPush).toHaveBeenCalledWith('/match-results');
-      
-      fireEvent.press(settingsButton);
-      expect(mockPush).toHaveBeenCalledWith('/referee-settings');
     });
+  });
+
+  it('offers no Settings quick action — /referee-settings was unrouted (#73)', async () => {
+    render(<RefereeDashboardScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText('My Assignments')).toBeTruthy();
+    });
+
+    expect(screen.queryByText('Settings')).toBeNull();
   });
 
   it('should handle switch tournament button', async () => {

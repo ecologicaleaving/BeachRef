@@ -1,3 +1,40 @@
+/**
+ * UNROUTED — this screen is not reachable (issue #73).
+ *
+ * `app/referee-settings.tsx` was deleted and the two entry points (the side
+ * menu item, already `disabled: true`, and the "Settings" quick action on the
+ * referee dashboard) were removed. The file is kept, not deleted, because
+ * deleting a feature is a product decision — see the PR for issue #73.
+ *
+ * **Why it was unrouted.** Despite its name this is not a settings screen: it
+ * is a Tournament Monitor (court monitor + referee monitor) that duplicates
+ * `/tournament-ref`, `/all-referees` and `/ref-mode`. Its entire data layer
+ * calls `VisApiService.{getBeachMatchList, fetchDirectFromAPI,
+ * fetchMatchesDirectFromAPI, findRelatedTournaments, extractGenderFromCode}` —
+ * a service removed by issues #46/#47 when every VIS read moved behind
+ * `VisApiClient`. Those identifiers are now free variables.
+ *
+ * The failure is **silent**, not loud, which is why nobody noticed: every one
+ * of those calls sits inside a `try { … } catch { }` that swallows the
+ * `ReferenceError` and turns it into "no data" or an `Alert`. Verified on
+ * production before the change: the screen opens and renders its mode chooser,
+ * "Court Monitor" shows "No matches found", and "Referee Monitor" does nothing
+ * at all — no console error. Exactly the #43 pattern: a catch block degrading a
+ * fatal error into silence.
+ *
+ * `selectedDate` / `setSelectedDate` are undeclared for a different reason — a
+ * refactor removed `useDateNavigation` (see the "DateNavigator and
+ * useDateNavigation completely removed" note below) and left ~15 usages behind.
+ *
+ * **To revive it** you would need to: re-declare the date state, and move the
+ * data layer onto `VisApiClient.fetchMatchesForTournament` /
+ * `.fetchBeachTournamentsThisYear` (both added by #73). That is not a rename:
+ * those return domain `BeachMatchCore` / `TournamentCore`, while ~50 reads in
+ * this file expect the raw VIS shape (`.Court`, `.Referee1Name`, `.Date`,
+ * `.No`, `.Code`). Budget it as a rewrite, and decide first whether the screen
+ * should exist at all next to the three that already do its job.
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

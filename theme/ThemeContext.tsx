@@ -8,7 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContextType } from '../types/theme';
 import { designTokens, validateAllContrasts } from './tokens';
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// Exported because `components/Foundation/ContrastControls.tsx` consumes the
+// context directly with `useContext(ThemeContext)`. Without the `export` the
+// import resolved to `undefined` and the component crashed on render (#71).
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const HIGH_CONTRAST_STORAGE_KEY = '@RefereeApp:HighContrastMode';
 

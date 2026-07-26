@@ -3,10 +3,21 @@ import { supabase } from './supabase';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { AppState } from 'react-native';
 import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
+// `ConnectionState` is a runtime enum and `hooks/useRealtimeSubscription.ts`
+// imports it *from this module* and compares against its members. Importing a
+// name is not re-exporting it: without this line the hook received `undefined`
+// and `state === ConnectionState.CONNECTED` threw. Same family as the two bugs
+// above (issues #71 / #73).
+export { ConnectionState };
 import { RealtimeFallbackService } from './RealtimeFallbackService';
 import { ConnectionCircuitBreaker, CircuitState } from './ConnectionCircuitBreaker';
 import { NotificationTriggerService } from './notifications/NotificationTriggerService';
-import RefereeAssignmentsService from './RefereeAssignmentsService';
+// `RefereeAssignmentsService` has no default export — only `export class`.
+// The default import used to resolve to `undefined` at runtime, so every
+// notification-triggering path below died with
+// "Cannot read properties of undefined (reading 'getCurrentReferee')".
+// Same family as issue #43/#71: a singleton imported the wrong way.
+import { RefereeAssignmentsService } from './RefereeAssignmentsService';
 
 // Subscription configuration
 interface SubscriptionConfig {

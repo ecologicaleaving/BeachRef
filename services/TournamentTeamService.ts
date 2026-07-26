@@ -21,7 +21,8 @@ import {
   VISTeamDTO,
   isSuccessResponse
 } from '../types/api-v2';
-import { TournamentCore } from '../types/tournament';
+// TournamentCore lives in types/tournament-v2, not types/tournament.
+import { TournamentCore } from '../types/tournament-v2';
 
 /**
  * Required fields for team list API call

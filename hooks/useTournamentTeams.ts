@@ -13,7 +13,7 @@ import {
 } from '../types/tournament-team';
 import { TournamentTeamService } from '../services/TournamentTeamService';
 import { VisApiClient } from '../services/api/VisApiClient';
-import { TournamentCore } from '../types/tournament';
+import { TournamentCore } from '../types/tournament-v2';
 
 /**
  * Hook state interface

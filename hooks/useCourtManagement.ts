@@ -196,28 +196,28 @@ export const useCourtManagement = (): UseCourtManagement => {
       // Try to load opposite gender tournament
       try {
         const tournaments = await visApiClient.fetchBeachTournamentsThisYear();
-        const currentTournament = tournaments.find(t => t.No === tournamentNo);
+        const currentTournament = tournaments.find(t => t.visNo === tournamentNo);
         
-        if (currentTournament?.Code) {
+        if (currentTournament?.code) {
           let oppositeCode: string | null = null;
-          if (currentTournament.Code.startsWith('M')) {
-            oppositeCode = 'W' + currentTournament.Code.substring(1);
-          } else if (currentTournament.Code.startsWith('W')) {
-            oppositeCode = 'M' + currentTournament.Code.substring(1);
+          if (currentTournament.code.startsWith('M')) {
+            oppositeCode = 'W' + currentTournament.code.substring(1);
+          } else if (currentTournament.code.startsWith('W')) {
+            oppositeCode = 'M' + currentTournament.code.substring(1);
           }
           
           if (oppositeCode) {
-            const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
+            const oppositeTournament = tournaments.find(t => t.code === oppositeCode);
             if (oppositeTournament) {
-              const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeTournament.No);
-              const oppositeGender = extractGenderFromCode(oppositeTournament.Code);
+              const oppositeMatches = await visApiClient.fetchMatchesForTournament(oppositeTournament.visNo);
+              const oppositeGender = extractGenderFromCode(oppositeTournament.code);
               
               const oppositeMatchesWithMeta = oppositeMatches.map(match => ({
                 ...match,
                 tournamentGender: oppositeGender,
-                tournamentNo: oppositeTournament.No,
-                tournamentCode: oppositeTournament.Code,
-                tournamentCountry: oppositeTournament.Country || oppositeTournament.CountryName || inferredCountry
+                tournamentNo: oppositeTournament.visNo,
+                tournamentCode: oppositeTournament.code,
+                tournamentCountry: oppositeTournament.country || inferredCountry
               }));
               
               allTournamentMatches = [...allTournamentMatches, ...oppositeMatchesWithMeta];

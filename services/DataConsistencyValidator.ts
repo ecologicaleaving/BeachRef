@@ -1,6 +1,9 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ErrorLogger } from './ErrorLogger';
-import { NetworkMonitor } from './NetworkStateManager';
+// The class is called NetworkStateManager; 'NetworkMonitor' was never exported
+// by that module, so this import was undefined and NetworkMonitor.getInstance()
+// threw on construction (#73 AC6).
+import { NetworkStateManager as NetworkMonitor } from './NetworkStateManager';
 import { VisApiClient } from './api/VisApiClient';
 import { TournamentDTO, MatchDTO, EventDTO } from './DualReadService';
 import * as crypto from 'crypto';
@@ -92,7 +95,13 @@ export class DataConsistencyValidator {
       process.env.EXPO_PUBLIC_SUPABASE_URL!,
       process.env.EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
     );
-    this.visApiClient = VisApiClient.getInstance();
+    // VisApiClient has no static getInstance(): it is constructed with a config
+    // (issue #73, same family as #43/#71). This constructor threw before it could
+    // reach any of the validation logic.
+    this.visApiClient = new VisApiClient({
+      baseURL: process.env.EXPO_PUBLIC_VIS_API_BASE_URL || 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
+      timeout: parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '10000', 10),
+    } as any);
     this.errorLogger = ErrorLogger.getInstance();
     this.networkMonitor = NetworkMonitor.getInstance();
 
@@ -258,11 +267,11 @@ export class DataConsistencyValidator {
       }
 
       // Fetch tournaments from API
-      const apiTournaments = await this.visApiClient.getTournaments();
+      const apiTournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
 
       // Convert to comparable format
       const dbMap = new Map(dbTournaments?.map(t => [t.tournament_code, this.normalizeForComparison(t)]) || []);
-      const apiMap = new Map((apiTournaments || []).map(t => [t.tournamentCode, this.normalizeForComparison(t)]));
+      const apiMap = new Map((apiTournaments || []).map(t => [t.code, this.normalizeForComparison(t)]));
 
       // Check for missing tournaments
       for (const [code, tournament] of apiMap) {
@@ -340,7 +349,7 @@ export class DataConsistencyValidator {
       }
 
       // Fetch events from API (through tournaments)
-      const tournaments = await this.visApiClient.getTournaments();
+      const tournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
       const apiEvents: any[] = [];
       
       for (const tournament of tournaments || []) {
@@ -399,11 +408,11 @@ export class DataConsistencyValidator {
 
       // Fetch matches from API
       const apiMatches: any[] = [];
-      const tournaments = await this.visApiClient.getTournaments();
+      const tournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
       
       for (const tournament of tournaments || []) {
         try {
-          const matches = await this.visApiClient.getMatches({ tournamentCode: tournament.tournamentCode });
+          const matches = await this.visApiClient.fetchMatchesForTournament(tournament.visNo);
           apiMatches.push(...matches);
         } catch (error) {
           this.errorLogger.logError('Failed to fetch matches for tournament', error, { 
@@ -456,11 +465,11 @@ export class DataConsistencyValidator {
 
       // Fetch referee assignments from API (part of match data)
       const apiAssignments: any[] = [];
-      const tournaments = await this.visApiClient.getTournaments();
+      const tournaments = await this.visApiClient.fetchBeachTournamentsThisYear();
       
       for (const tournament of tournaments || []) {
         try {
-          const matches = await this.visApiClient.getMatches({ tournamentCode: tournament.tournamentCode });
+          const matches = await this.visApiClient.fetchMatchesForTournament(tournament.visNo);
           for (const match of matches || []) {
             if (match.referees && match.referees.length > 0) {
               for (const referee of match.referees) {

@@ -764,13 +764,14 @@ If you touch the audit, these must stay green.
 > npx tsc --noEmit --pretty false | grep -c "error TS"
 > ```
 
-**Stato attuale (issue #49)**: **1757 errori**, da 2462 — **−705, −28,6%**.
+**Stato attuale (issue #71/#73)**: **1708 errori**. Erano 1757 dopo la #49, 2462 prima.
 Baseline audit congelata a **1795** finding bloccanti (era 2721).
 
 | Campagna | Da | A | Δ |
 |---|---|---|---|
 | Precedente (6 round) | 4215 | 3590 | −625 (−14,8%) |
 | Issue #49 (6 round) | 2462 | 1757 | −705 (−28,6%) |
+| Issue #71/#73 (bug veri, non tipi) | 1757 | 1708 | −49 |
 
 **Cosa ha prodotto la riduzione, in ordine di resa** — il criterio e' sempre lo
 stesso: *una* definizione radice sbagliata, decine di errori a valle.
@@ -785,6 +786,22 @@ stesso: *una* definizione radice sbagliata, decine di errori a valle.
 | 27 import verso export inesistenti (`_Modal`, `_Severity`, ...) | 27 | Rimossi (nessuno era usato) |
 | `CachedApiResponse`/`InstrumentedApiResponse` | 24 | Intersezione invece di `extends` su una union |
 | `FilterOptions` senza `status`/`gender`/`country` | 10 | Dichiarati in `types/cache.ts` |
+
+**Un membro che il modulo non espone e' il trabocchetto piu' *frequente*.** Le
+issue #71 e #73 hanno mostrato che quattro guasti separati (#43, #71, #73 ×2)
+erano lo stesso errore: un modulo che chiede a un altro un nome che non c'e' —
+un import di un export inesistente, o un metodo statico su una classe che non lo
+ha. `tsc` li segnalava **tutti**, da tempo: la riga che spiegava due pagine
+bianche era la **1877 di 2462**, classificata `Medium`. Non erano invisibili,
+erano illeggibili — ed e' per questo che la barriera e' un test, non una nota.
+
+`__tests__/no-phantom-imports.test.ts` tiene a **zero** la prima meta' della
+famiglia (import di nomi non esportati) su `app/ components/ hooks/ lib/
+screens/ services/ utils/`, risolvendo gli import con il compilatore TypeScript.
+La seconda meta' — statici fantasma, ~17 casi residui, alcuni sul percorso caldo
+del realtime — e' enumerata in PROJECT.md, sezione *"Membri che il modulo non
+espone"*. **Prima di scrivere `X.getInstance()`, apri `X`**: meta' delle classi
+di questo codebase sono interamente statiche e non ce l'hanno.
 
 **`interface X extends <union>` e' il trabocchetto piu' costoso di questo
 codebase.** Un'interface che estende un tipo union **non ne eredita i membri**:

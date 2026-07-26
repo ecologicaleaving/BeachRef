@@ -25,6 +25,8 @@ import {
   GetRefereeRequest,
   GetImageListRequest,
   GetRefereeIdCardRequest,
+  GetBeachMatchStatusRequest,
+  GetTournamentTeamListRequest,
   BatchRequest,
   BatchResponse,
   BatchRequestItem,
@@ -45,6 +47,9 @@ import { ApiRequest, NetworkType, RequestSource } from '../../types/audit';
 import { errorTransformService } from '../ErrorTransformService';
 import { APIErrorState } from '../../types';
 import { Semaphore } from '../../utils/concurrency';
+import { VisResponseParser } from '../parsing/VisResponseParser';
+import { BeachMatchCore } from '../../types/match-v2';
+import { TournamentCore } from '../../types/tournament-v2';
 
 // Platform detection
 const isWebEnvironment = typeof window !== 'undefined';
@@ -71,6 +76,13 @@ const isWebEnvironment = typeof window !== 'undefined';
  * bound themselves (see `RefereeSeasonStatsLoader`). The semaphore is the net
  * under the next `Promise.all` somebody writes without thinking about it.
  */
+// Five modules (`useCourtManagement`, `useRealtimeData`, `useRefereeManagement`,
+// `RealtimeFallbackService`, `SetScoreService`) import `DEFAULT_RETRY_CONFIG`
+// *from here* — this module imports it but importing is not re-exporting, so
+// they all received `undefined`. Re-exported rather than rewritten at the five
+// call sites: the client is the natural place to read its own default policy.
+export { DEFAULT_RETRY_CONFIG };
+
 export const VIS_MAX_CONCURRENT_REQUESTS = 4;
 
 const visRequestSemaphore = new Semaphore(VIS_MAX_CONCURRENT_REQUESTS);
@@ -131,6 +143,7 @@ export class VisApiClient implements IVisApiClient {
       failedRequests: 0,
       avgResponseTimeMs: 0,
       requestsByEndpoint: {
+        [VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST]: 0,
         [VisApiEndpoint.GET_EVENT_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST]: 0,
         [VisApiEndpoint.GET_BEACH_TOURNAMENT]: 0,
@@ -307,6 +320,120 @@ export class VisApiClient implements IVisApiClient {
       this.updateMonitor(VisApiEndpoint.GET_BEACH_TOURNAMENT_LIST, false, Date.now() - startTime);
       return this.createErrorResponse(error, Date.now() - startTime);
     }
+  }
+
+  /**
+   * Live status/score snapshot for one match.
+   *
+   * `IVisApiClient` has required this method all along — which is why `tsc`
+   * reported `Class 'VisApiClient' incorrectly implements interface
+   * 'IVisApiClient'` — and `services/MatchDetailsService.ts` calls it. It was
+   * simply never written (issue #73).
+   */
+  async getBeachMatchStatus(request: GetBeachMatchStatusRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const xmlRequest = this.buildGetBeachMatchStatusXml(request);
+      const response = await this.executeRequest(VisApiEndpoint.GET_BEACH_MATCH_STATUS, xmlRequest);
+
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH_STATUS, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_BEACH_MATCH_STATUS, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Get the tournament entry list (teams / players).
+   *
+   * Added by issue #73. `services/TournamentTeamService.ts` — and through it the
+   * `/tournament-teams` route — has been calling this method since
+   * `specs/003-players-entry-list` landed, but the method was never written, so
+   * every load threw "visApi.getTournamentTeamList is not a function".
+   *
+   * **`/tournament-teams` still shows an empty list, and this is why.** The
+   * crash is gone; the feature is not finished. Probing the live VIS while
+   * writing this (issue #73):
+   *
+   * - `GetTournamentTeamList` **is** a real request type and answers 200, but it
+   *   returns `<TournamentsTeams><TournamentTeam No= Version= />`, **not** the
+   *   `<BeachTeams><BeachTeam>` shape with camelCase attributes that
+   *   `specs/003-players-entry-list/data-model.md` assumes and that
+   *   `TournamentTeamService.parseTeamListResponse` parses. It also ignores both
+   *   the `No` attribute and the `Fields` list — it answered with all 3286 rows.
+   * - The endpoint that actually carries the entry list is **`GetBeachTeamList`**,
+   *   filtered by `<Filter NoTournament="…"/>`. Verified: it returns
+   *   `<BeachTeams><BeachTeam No= Name="A/B" NoTournament= />`.
+   * - The blocker is that the app carries an **event** number (`NoEvent`, e.g.
+   *   1734) while that filter wants a **tournament** number (values like 21), and
+   *   an event holds several tournaments.
+   *
+   * Finishing this is completing a half-landed feature, not fixing a bug — it
+   * needs its own issue. Do not re-derive the above: it cost several probes.
+   */
+  async getTournamentTeamList(request: GetTournamentTeamListRequest): Promise<VisApiResponse> {
+    const startTime = Date.now();
+
+    try {
+      const xmlRequest = this.buildGetTournamentTeamListXml(request);
+      const response = await this.executeRequest(VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST, xmlRequest);
+
+      this.updateMonitor(VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST, true, Date.now() - startTime);
+      return response;
+
+    } catch (error) {
+      this.updateMonitor(VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST, false, Date.now() - startTime);
+      return this.createErrorResponse(error, Date.now() - startTime);
+    }
+  }
+
+  /**
+   * Matches of a tournament, already parsed into the domain type.
+   *
+   * `IVisApiClient` has advertised `fetchMatchesForTournament` since the type
+   * cleanup of issue #49, but nothing ever implemented it: eight call sites
+   * across `useRealtimeData`, `useCourtManagement`, `useRefereeManagement` and
+   * `RealtimeFallbackService` — the last of which is the polling fallback used
+   * whenever the realtime socket drops — called a method that did not exist.
+   * Implemented here rather than rewritten at each call site because all eight
+   * wanted the same composition: `getBeachMatchList` + `VisResponseParser`.
+   */
+  async fetchMatchesForTournament(tournamentNo: string): Promise<BeachMatchCore[]> {
+    const response = await this.getBeachMatchList({
+      tournamentNo,
+      includeResults: true,
+      includeReferees: true,
+    });
+
+    if (!response.success) {
+      throw new Error(`Failed to fetch matches for tournament ${tournamentNo}: ${response.error}`);
+    }
+
+    return VisResponseParser.parseBeachMatches(response.xmlData, tournamentNo);
+  }
+
+  /**
+   * Tournaments of the current calendar year, already parsed into the domain
+   * type. Second half of the same gap as {@link fetchMatchesForTournament}:
+   * `useCourtManagement` and `useRefereeManagement` use it to locate the
+   * opposite-gender twin of a tournament.
+   */
+  async fetchBeachTournamentsThisYear(): Promise<TournamentCore[]> {
+    const year = new Date().getFullYear();
+
+    const response = await this.getEventList({
+      startDate: `${year}-01-01`,
+      endDate: `${year}-12-31`,
+    });
+
+    if (!response.success) {
+      throw new Error(`Failed to fetch tournaments for ${year}: ${response.error}`);
+    }
+
+    return VisResponseParser.parseEventList(response.xmlData);
   }
 
   /**
@@ -1308,6 +1435,29 @@ export class VisApiClient implements IVisApiClient {
     const xmlRequest = `<Request Type="GetBeachTournamentList" Fields="${this.escapeXmlAttribute(fields)}">${filterElement}</Request>`;
     
     return xmlRequest;
+  }
+
+  /**
+   * Build GetTournamentTeamList XML request (VIS API format).
+   * Same `<Request Type="..." No="..." Fields="..." />` shape every other
+   * single-entity list endpoint on this client uses.
+   */
+  /**
+   * Build GetBeachMatchStatus XML request (VIS API format).
+   * Same shape as GetBeachMatch: the match number is an attribute of <Request>.
+   */
+  private buildGetBeachMatchStatusXml(request: GetBeachMatchStatusRequest): string {
+    const fields = DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_MATCH_STATUS].join(' ');
+    return `<Request Type="GetBeachMatchStatus" No="${this.escapeXmlAttribute(String(request.matchNo))}" Fields="${this.escapeXmlAttribute(fields)}" />`;
+  }
+
+  private buildGetTournamentTeamListXml(request: GetTournamentTeamListRequest): string {
+    const fields = (request.Fields && request.Fields.length > 0
+      ? request.Fields
+      : DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST]
+    ).join(' ');
+
+    return `<Request Type="GetTournamentTeamList" No="${this.escapeXmlAttribute(String(request.TournamentNo))}" Fields="${this.escapeXmlAttribute(fields)}" />`;
   }
 
   /**

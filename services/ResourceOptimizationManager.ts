@@ -1,6 +1,5 @@
 import { NetworkStateManager } from './NetworkStateManager';
 import { AppStateManager, AppLifecycleState } from './AppStateManager';
-import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
@@ -83,7 +82,10 @@ export class ResourceOptimizationManager {
   
   private networkStateManager: NetworkStateManager;
   private appStateManager: AppStateManager;
-  private performanceMonitor: RealtimePerformanceMonitor;
+  // NOTE (issue #73): a `performanceMonitor` field used to be assigned here from
+  // `RealtimePerformanceMonitor.getInstance()`. That class is entirely static and
+  // exposes no `getInstance`, so the constructor threw a TypeError — and the field
+  // was never read anyway. Removed rather than repaired.
   
   private currentMetrics: ResourceMetrics | null = null;
   private deviceProfile: DeviceProfile | null = null;
@@ -112,7 +114,6 @@ export class ResourceOptimizationManager {
   private constructor() {
     this.networkStateManager = NetworkStateManager.getInstance();
     this.appStateManager = AppStateManager.getInstance();
-    this.performanceMonitor = RealtimePerformanceMonitor.getInstance();
     
     this.optimizationConfig = { ...this.DEFAULT_CONFIG };
     

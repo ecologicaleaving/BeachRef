@@ -158,12 +158,10 @@ const RefereeDashboardScreenContent: React.FC = () => {
     router.push('/tournament-selection');
   };
 
-  const handleSettings = () => {
-    trackRefereeInteraction('view_details', 'settings_access', {
-      source: 'dashboard'
-    });
-    router.push('/referee-settings');
-  };
+  // Issue #73: the "Settings" quick action pushed '/referee-settings', a route
+  // that no longer exists. See the header comment on
+  // screens/RefereeSettingsScreen.tsx for why it was unrouted. The button was
+  // removed with the route rather than left pointing at a dead link.
 
   const handleAssignments = () => {
     trackRefereeInteraction('view_details', 'assignments_view', {
@@ -408,10 +406,6 @@ const RefereeDashboardScreenContent: React.FC = () => {
             <TouchableOpacity style={styles.quickActionButton} onPress={handleResults}>
               <Text style={styles.quickActionIcon}>🏆</Text>
               <Text style={styles.quickActionText}>Results</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionButton} onPress={handleSettings}>
-              <Text style={styles.quickActionIcon}>⚙️</Text>
-              <Text style={styles.quickActionText}>Settings</Text>
             </TouchableOpacity>
           </View>
 

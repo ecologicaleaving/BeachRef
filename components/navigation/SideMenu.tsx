@@ -89,12 +89,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose, currentC
       route: '/all-referees',
       disabled: true, // DISABLED
     },
-    {
-      icon: 'cog',
-      title: 'Settings',
-      route: '/referee-settings',
-      disabled: true,
-    },
   ];
 
   // Tournament-specific menu items

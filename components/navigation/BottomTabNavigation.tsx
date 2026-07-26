@@ -66,7 +66,6 @@ export const BottomTabNavigation: React.FC<BottomTabNavigationProps> = ({
     
     // Auto-detect based on current pathname
     if (pathname.includes('tournament-detail')) return 'details';
-    if (pathname.includes('referee-settings')) return 'monitor';
     if (pathname.includes('analytics-dashboard')) return 'analytics';
     return 'details'; // Default
   };

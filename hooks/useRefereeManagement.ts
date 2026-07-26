@@ -112,32 +112,28 @@ export const useRefereeManagement = (): UseRefereeManagement => {
         return;
       }
       
-      // Quick sample check for referee data availability
-      const sampleMatch = matches[0];
-      
-      // Extract unique referees from matches
+      // Extract unique referees from matches.
+      //
+      // Issue #73: this used to read `match.NoReferee1` / `.Referee1Name` /
+      // `.Referee1FederationCode` — the raw VIS attribute names. The matches now
+      // arrive parsed as `BeachMatchCore`, which carries them normalised in
+      // `refereeAssignments`. Reading the VIS names off a parsed match yielded
+      // `undefined`, so the map stayed empty and the hook always reported
+      // "No Referees Found".
       const refereeMap = new Map<string, RefereeFromDB>();
-      
+
       matches.forEach(match => {
-        // Add Referee 1 if present
-        if (match.NoReferee1 && match.Referee1Name) {
-          refereeMap.set(match.NoReferee1, {
-            No: match.NoReferee1,
-            Name: match.Referee1Name,
-            FederationCode: match.Referee1FederationCode,
+        const assignments = match.refereeAssignments || match.officials || [];
+        assignments.forEach(assignment => {
+          if (!assignment.refereeId || !assignment.refereeName) return;
+          refereeMap.set(assignment.refereeId, {
+            No: assignment.refereeId,
+            Name: assignment.refereeName,
+            ...(assignment.federationCode ? { FederationCode: assignment.federationCode } : {}),
           });
-        }
-        
-        // Add Referee 2 if present
-        if (match.NoReferee2 && match.Referee2Name) {
-          refereeMap.set(match.NoReferee2, {
-            No: match.NoReferee2,
-            Name: match.Referee2Name,
-            FederationCode: match.Referee2FederationCode,
-          });
-        }
+        });
       });
-      
+
       const referees = Array.from(refereeMap.values()).sort((a, b) => a.Name.localeCompare(b.Name));
       
       if (referees.length === 0) {

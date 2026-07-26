@@ -171,6 +171,7 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #46 (epic #51, wave 2, parte 1 di 2) — Le **13 `fetch` dirette al VIS** nelle 4 schermate di `app/` (`tournament-ref` 5, `all-referees` 3, `ref-mode` 3, `referee-profile` 2) sono state sostituite da `services/RefereeDirectoryService.ts`, modellato su `OfficialsService`. Non è solo estetica: bypassare `VisApiClient` significava bypassare retry, monitor e soprattutto `ApiAuditService` — le metriche di conformità API in CLAUDE.md **non vedevano questo traffico**, ed è questa la ragione vera della issue. Aggiunti al client 4 endpoint che prima esistevano solo come stringhe XML nei componenti (`GetRefereeList`, `GetReferee`, `GetImageList`, `GetRefereeIdCard`), ciascuno con l'envelope `<Requests>` che questi endpoint richiedono (senza, rispondono `<NotInNewFormat id="1008" />` — stessa trappola di `GetEventRefereeList` trovata nella #40). **Misura AC5**: `tournament-ref` chiedeva **tre volte** lo stesso `GetEventRefereeList` in un solo caricamento; ora aprire → tornare indietro → riaprire costa **2 chiamate invece di 8** (−75%), `all-referees` scarica il direttorio globale **una volta invece di due**, `ref-mode` passa da 4 chiamate a 3 e da 3 a 1 alla riapertura. 29 test nuovi su fixture **senza rete**. tsc 2603 → **2593**, lint 922 → **918** (5 errori invariati, tutti preesistenti in file non toccati), `audit:ci` PASS. **Due bug preesistenti trovati e NON corretti** (la issue è un refactoring): (1) `ref-mode` chiude il caricamento con una `GetEvent` che **sovrascrive** le liste appena ottenute con quello che riesce a estrarne — e non estrae nulla, perché `GetEvent` non risponde con `<EventOfficialList>`/`<EventRefereeList>`: è il motivo per cui la schermata mostra `Officials (0) / Referees (0)` ed è "under construction"; il comportamento è preservato alla lettera con un commento che lo marca. (2) `all-referees` fa fan-out con `Promise.all` **non limitato** di una richiesta statistiche per ogni arbitro attivo — vedi issue #65
 - **DONE**: Issue #47 (epic #51, wave 2, parte 2 di 2) — Le **ultime 10 `fetch` dirette al VIS** fuori da `services/api/`. La tabella della issue attribuiva l'ultima a `hooks/useLiveScores.ts`: **non era lì** — quel file passa già da `VisApiClient`, ha circuit breaker e cache 5 s (`CacheService.setLiveScore`). La decima era in `screens/TournamentDetailScreen.tsx`, che la issue non elencava. Rimisurato: `RefereeStatsService` 6, `utils/auxiliaryPersonsSync` 1, `utils/challengeRefereeSync` 1, `components/referee/TournamentRefereeList` 1, `screens/TournamentDetailScreen` 1 = **10**. **AC2 — `auxiliaryPersonsSync` eliminato, non incapsulato**: rifaceva `GetEvent Fields="AuxiliaryPersons"` e il doppio decode XML che `OfficialsService` già possiede. Sopravvive solo la *forma* dell'entry MMKV `event:<eventNo>:auxiliaryPersons`, perché `getSupportingOfficialsSync` la legge **in modo sincrono dentro il render** e non può await: ora la scrive `OfficialsService.primeAuxiliaryPersonsCache()`. **Il client è stato esteso, non forzato**: `GetBeachMatchListRequest.fields` — il field set di default non porta `TournamentGender` (split uomini/donne delle statistiche), `LocalDateTime` (filtro stagione client-side) né `Code` — e `GetEventRefereeListRequest.firstName`/`lastName`. Effetto collaterale: `RefereeAssignmentsService` passava **già** `fields` a `getBeachMatchList`, era un errore di tipo e il valore veniva scartato in silenzio; ora viene onorato (la risposta di quella chiamata è comunque buttata da un fallback morto). **Misura AC6, contata nel browser** (evento 1734 BPT Challenge Shangluo, un match LIVE in corso, storage pulito, ~136 s): produzione **35** POST VIS (`GetEventRefereeList` 3, `GetEvent` 3, `GetBeachMatchList` 3, `GetBeachTournament` 2, `GetBeachLive` 24) → preview #68 **33** (`GetEventRefereeList` **1**, resto invariato). Il guadagno vero è sull'apertura della tab arbitri, dove tre componenti chiedevano lo stesso roster: **3 `GetEventRefereeList` → 0** (servita dall'entry già in cache). Il polling live è **invariato di proposito**: 24 `GetBeachLive` prima e dopo — quel percorso non aveva `fetch` dirette da togliere. **AC7**: la copertura al 100% dell'audit è ora una proprietà congelata da due test complementari — `__tests__/no-direct-vis-fetch.test.ts` (niente raggiunge la VIS se non via `VisApiClient`) e `__tests__/services/api/VisApiClient.audit-coverage.test.ts` (1 richiesta catturata per ogni POST uscita, errori compresi). 20 test nuovi su fixture **senza rete**. tsc 2593 → **2589** (−4: spariti i 4 errori dei file toccati, nessuno nuovo), lint 918 invariato (5 errori, tutti preesistenti altrove), suite jest **identiche a master**, `audit:ci` PASS con 0 regressioni. ⚠️ **Nota per la #67**: `OfficialsService` manda `X-FIVB-App-ID` e `auxiliaryPersonsSync` no, quindi finché la #67 non toglie quell'header il percorso auxiliary-persons paga una preflight CORS che prima non pagava. L'header non è richiesto dall'endpoint; toglierlo è lavoro della #67, non di questa issue.
 - **DONE**: Issue #67 (epic #51) — L'header `X-FIVB-App-ID` raddoppiava i round trip verso la VIS. Rendeva la POST non-simple secondo CORS, quindi il browser anteponeva una `OPTIONS`; la VIS autorizza l'header ma risponde **senza `Access-Control-Max-Age`**, quindi il preflight **non e' cachabile** e viene rifatto prima di ogni singola richiesta. **AC1 — accertato prima di rimuovere**: dieci endpoint probati con e senza header (`GetEventList`, `GetEvent` fielded e full, `GetBeachTournamentList`, `GetBeachMatchList`, `GetBeachMatch`, `GetBeachLive`, `GetEventRefereeList`, `GetEventOfficialList`, `GetRefereeList`) → risposte **byte-identiche**, stesso status, stesso numero di record: l'header non gatea quota, dati ne' accesso. Rimosso dai **10 punti rimasti** su master (`OfficialsService`, `RefereeAssignmentsService`, `RefereeStatsService`, `SetScoreService`, `TournamentOperationsService`, `RealtimeFallbackService`, `useLiveScores`, `useCourtManagement`, `useRealtimeData`, `useRefereeManagement`); la issue ne elencava 13, ma #46 e #47 avevano gia' ripulito `app/`. **Lasciato di proposito** in `supabase/functions/contextual-vis-sync` e in alcuni `scripts/*.js`: girano su Deno/Node lato server, dove non c'e' browser e quindi non c'e' preflight. **Misure (AC3/AC4)** — le `OPTIONS` **non sono osservabili**: non compaiono nel Resource Timing (per spec il preflight non genera una entry propria) e nemmeno via CDP/`list_network_requests`, che e' esattamente il muro contro cui aveva sbattuto la #47. Misurato quindi il **tempo per richiesta**, che il round trip in piu' lo contiene: (a) **A/B controllato** sulla stessa pagina, stesso endpoint, 12 richieste sequenziali per ramo — mediana **212 ms con header vs 94 ms senza (2,26×)**, e il costo **non decade** dalla 1ª alla 12ª richiesta: e' la prova diretta che il preflight non viene mai cachato; (b) **polling live**, finestra di 120 s su un torneo con match LIVE (evento 1734), produzione contro preview back-to-back: mediana **198 → 103 ms (−48%)**, tempo totale in VIS **1764 → 989 ms (−44%)**; (c) `tournament-ref` (41 richieste, `RefereeStatsService`), due coppie: mediana **243/283 → 209/175 ms**, totale **9272/10390 → 8197/7093 ms** — guadagno piu' contenuto perche' le 41 richieste partono in parallelo su una sola connessione HTTP/2 e i preflight si sovrappongono; il numero di richieste verso la VIS si dimezza comunque (82 → 41). **AC5**: `OfficialsService` passa da 4 a 2 round trip; PROJECT.md e CLAUDE.md dichiaravano "2 chiamate per torneo" senza dire che erano 4 round trip — corretto in entrambi. **AC6 — barriera**: `__tests__/no-vis-custom-headers.test.ts`, non una regola ESLint: `AUDIT_CONFIG.lintRoots` copre solo `src`/`app`/`components`, mentre **tutti e 10** i siti stavano in `services/` e `hooks/` — una regola ESLint sarebbe stata una barriera davanti alla porta sbagliata. Verificato che il test fallisce reintroducendo un header. La prova sperimentale vive nel doc comment di `VisApiClientConfig.headers`. tsc 2589 invariato, lint 918 invariato, suite jest identiche a master (stesse 8 suite rosse sui file toccati, prima e dopo), `audit:ci` PASS 0 regressioni, `curl-tests.sh` 17/17 sul preview. ⚠️ **Scoperto per sbaglio**: caricare `/all-referees` (fan-out non limitato, issue #65) fa **112 richieste** e ci fa **rate-limitare dalla VIS** — dopo quel test una singola richiesta e' passata da ~100 ms a **125 s**, e ci sono voluti ~25 minuti per rientrare. Con l'header erano 224 richieste. La #65 non e' solo una questione di eleganza
+- **DONE**: Issue #65 (epic #51) — Due rotte rotte in produzione, e la causa del rate-limiting VIS. **`/all-referees`**: il `Promise.all` non limitato su `getSeasonStats` (≥3 richieste VIS per arbitro) sparava **112 richieste con picco di 50 in volo**; il flag `loading` era agganciato all'intero `Promise.all`, che si risolve solo quando si risolve l'**ultima** richiesta, e su quel cammino non c'era timeout — una richiesta che non risponde mai teneva su lo spinner per sempre. Misurato in browser sui due bundle: master **112 richieste / picco 50 / 0 righe di contenuto dopo 25 s (spinner ancora attivo)** → branch **picco 4, primo contenuto a 7,1 s con 4 richieste, 65 richieste per il caricamento completo, 1775 righe renderizzate**. Tre interventi: `utils/concurrency.ts` (semaforo + `mapWithConcurrency` + `withTimeout`), `services/RefereeSeasonStatsLoader.ts` (fan-out limitato a **4**, timeout **15 s** per arbitro, risultati consegnati progressivamente, non rigetta mai), e un **tetto globale di 4 richieste VIS in volo dentro `VisApiClient.makeHttpRequest`** — globale e non per istanza, perché ogni servizio costruisce il proprio client e la VIS non distingue i nostri oggetti. Tolto anche il fan-out **secondario**, invisibile finché lo schermo non caricava: ogni `RefereeCard` chiedeva le proprie statistiche da un `useEffect` di mount, su una lista non virtualizzata di ~1775 righe; ora le riceve dal passaggio bulk e interroga la VIS solo se l'utente espande la card. **`/notification-settings`**: `useTheme must be used within a ThemeProvider` **non** era una schermata montata fuori dal provider — il `ThemeProvider` non era montato **da nessuna parte** in tutta l'app, e i 4 file che importavano la versione context (`theme/ThemeContext`) leggevano poi `theme.colors.*`, che è la forma dell'**altra** `useTheme` (`hooks/useTheme`, funzione pura senza provider). Quindi montare il provider da solo non avrebbe risolto: avrebbe spostato il crash di una riga, su `undefined.background`. Corretti gli import **e** montato il provider in `app/_layout.tsx` (unico layout del progetto) perché la trappola non resti armata. Dietro quel crash ce n'era un **secondo**, mai visto perché il primo arrivava prima del render: `import Container from ...` su un modulo **senza default export** → `Element type is invalid ... got: undefined`. Aggiunti a `theme/tokens.ts` i 4 token che la schermata usa e che non esistevano (`surface`, `onPrimary`, `surfaceDisabled`, `textDisabled`): senza, la pagina sarebbe stata sì viva ma senza sfondi. tsc **2589 → 2463** (−126, tutti `TS2339` sui `theme.colors.X` inesistenti; **zero errori nuovi**), lint 918 → **916** (5 errori invariati), suite jest **nessuna regressione** (le 4 suite che cambiano esito sono ordine-dipendenti e falliscono identicamente su master), `audit:ci` **PASS / 0 regressioni**. 33 test nuovi in 4 suite, verificati falsi col bug presente (9/10 e 3/4 rossi ripristinando il codice di master). **Trovate e NON corrette** (fuori scope, segnalate): `/analytics-dashboard` e `/analytics-settings` sono **pagine bianche** — `hooks/useAnalyticsSettings.ts:42` chiama `LocalStorageManager.getInstance()`, statico che non esiste (`services/LocalStorageManager.ts` esporta solo la classe); `services/RealtimeSubscriptionService.ts:9` ha lo stesso difetto di default-import di `notification-settings`; `/referee-profile` e `/match-detail` raggiunte per URL diretto senza parametri restano su "Loading…" indefinito. **`/referee-dashboard` redirige a `/tournament-selection`**: il redirect è **condizionale e voluto** (`screens/RefereeDashboardScreen.tsx:100`) — scatta solo quando non c'è un torneo selezionato, né nei parametri né in `TournamentStorageService`. Aprendo la rotta per URL diretto non c'è mai un torneo, quindi sembra un redirect incondizionato; non lo è. Decisione: **lasciato com'è** e documentato (vedi sezione dedicata)
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2721 finding bloccanti: 2677 TS, 5 ESLint error, 39 error-handling; **0 Critical, 0 security**)
 
 ## Il peso del bundle non è la leva dell'LCP (issue #38)
@@ -507,6 +508,116 @@ calcolate e mai usate. Entrambi preesistenti alla #47.
 Aprire la tab arbitri costa **34 `GetBeachMatchList`** in 20 s, prima e dopo:
 è il `Promise.all` non limitato di una richiesta statistiche per arbitro. È la
 issue **#65**, non questa.
+
+---
+
+## Concorrenza verso la VIS (issue #65)
+
+**Non esiste un `Promise.all` accettabile su una lista di richieste VIS.** La
+VIS è un servizio condiviso della federazione e throttla: un caricamento di
+`/all-referees` con fan-out non limitato ha prodotto **112 richieste con picco
+di 50 in volo** e ha portato una `curl` verso la VIS da ~100 ms a **125 s**, con
+~25 minuti per rientrare (misura di #67). Il problema non è il totale, è la
+raffica.
+
+Esistono ora due limiti, e servono entrambi:
+
+| Dove | Limite | Cosa protegge |
+|---|---|---|
+| `VisApiClient.makeHttpRequest` (`VIS_MAX_CONCURRENT_REQUESTS`) | **4 richieste HTTP in volo, di processo** | la rete: è il tetto che nessun chiamante può superare |
+| `RefereeSeasonStatsLoader` (`REFEREE_STATS_CONCURRENCY`) | **4 arbitri alla volta**, `REFEREE_STATS_TIMEOUT_MS` 15 s ciascuno | la coda: evita di accumulare centinaia di richieste dietro il tetto |
+
+**Perché il tetto è globale e non per istanza.** Ogni servizio costruisce il
+proprio `VisApiClient` (`RefereeStatsService`, `RefereeDirectoryService`,
+`OfficialsService`, …). Un limite per istanza non sarebbe un limite: una
+schermata che tocca quattro servizi metterebbe comunque quattro volte il tetto
+sul filo. La VIS non distingue i nostri oggetti. Congelato da
+`__tests__/services/api/VisApiClient.concurrency.test.ts`, che verifica il
+limite anche **fra istanze diverse**.
+
+**Perché 4 e non 6 o 10.** Il browser apre al massimo **6** connessioni per host
+su HTTP/1.1, che è quello che la VIS parla: sopra 6 le richieste non vanno più
+veloci, si accodano nel socket pool dove non le vediamo e non le possiamo
+annullare. Lasciarne 2 libere delle 6 significa che una raffica VIS non affama
+il resto della pagina — ed era proprio quella fame a far sembrare
+`/all-referees` congelata anche quando i dati stavano arrivando. Misurato:
+picco 50 → **4**, primo contenuto utile da **mai** a **7,1 s** con 4 richieste.
+
+**Il tetto è una rete, non una scusa.** Chi fa fan-out deve continuare a
+limitarsi da solo (`mapWithConcurrency` in `utils/concurrency.ts`): il semaforo
+del client serve a far sì che il prossimo `Promise.all` scritto senza pensarci
+sia lento, non distruttivo.
+
+### `loading` non deve mai dipendere da un `Promise.all` senza timeout
+
+È la forma esatta del bug di `/all-referees`. `Promise.all` si risolve quando si
+risolve la **sua ultima** promise: basta una richiesta che non risponde mai — e
+sotto throttling è la norma, non l'eccezione — perché lo spinner resti su per
+sempre. Regola: se un flag di caricamento sta a valle di un fan-out, quel
+fan-out ha bisogno di un timeout per elemento **e** il flag va sganciato dai
+dati opzionali. In `/all-referees` la lista arbitri è completa **prima** del
+fan-out: mancava solo la chiave di ordinamento, e la si può riempire dopo aver
+disegnato.
+
+## `/referee-dashboard` redirige, ed è voluto (issue #65)
+
+`screens/RefereeDashboardScreen.tsx:100` fa `router.replace('/tournament-selection')`
+quando non trova un torneo — né nel parametro `tournamentData`, né in
+`TournamentStorageService.getSelectedTournament()`. Il dashboard di un arbitro
+senza un torneo selezionato non ha contenuto da mostrare, quindi il redirect è
+corretto.
+
+Aperta **per URL diretto** la rotta redirige sempre, perché per definizione non
+c'è né parametro né torneo in storage: è questo che la fa sembrare un redirect
+incondizionato. **Non è stata cambiata.** Se un giorno si vorrà renderla
+linkabile, la strada è far scegliere il torneo *dentro* la schermata, non
+togliere il redirect.
+
+## Rotte verificate (issue #65, AC6)
+
+Sweep sul bundle esportato del branch, ogni rotta caricata davvero in un
+browser. Esito:
+
+| Rotta | Esito |
+|---|---|
+| `/` | ✅ redirige a `/tournament-selection`, contenuto reale |
+| `/tournament-selection` | ✅ lista tornei |
+| `/tournament-detail` | ✅ stato vuoto esplicito senza parametri |
+| `/referee-dashboard` | ✅ redirect voluto (sopra) |
+| `/my-assignments` | ✅ |
+| `/assignment-detail` | ✅ placeholder TBD senza parametri |
+| `/match-results` | ✅ stato vuoto esplicito |
+| `/switch-tournament` | ✅ "coming soon" |
+| `/all-referees` | ✅ **corretta da questa issue** |
+| `/notification-settings` | ✅ **corretta da questa issue** |
+| `/db-stats` | ✅ errore esplicito (Supabase non configurato) |
+| `/ref-mode` | ✅ (mostra `Officials (0) / Referees (0)` — limite noto di #46) |
+| `/referee-settings` | ✅ |
+| `/tools-selection` | ✅ |
+| `/tournament-ref` | ✅ stato vuoto esplicito |
+| `/tournament-teams` | ✅ stato vuoto esplicito |
+| `/does-not-exist` | ✅ 404 |
+| `/analytics-dashboard` | ❌ **pagina bianca** — vedi sotto |
+| `/analytics-settings` | ❌ **pagina bianca** — vedi sotto |
+| `/referee-profile` | ⚠️ "Loading referee profile…" indefinito per URL diretto |
+| `/match-detail` | ⚠️ "Loading match details…" indefinito per URL diretto |
+
+**`/analytics-dashboard` e `/analytics-settings`** muoiono con
+`Uncaught TypeError: LocalStorageManager.getInstance is not a function`.
+`hooks/useAnalyticsSettings.ts:42` chiama un metodo **statico** che non esiste:
+`services/LocalStorageManager.ts` esporta solo la classe, da istanziare con
+`new`. È **esattamente la famiglia di difetto della #43** (import/export
+disallineato che il `tsc` segnalava e nessuno leggeva). Non corretto qui: è un
+terzo bug su rotte che questa issue non copre, e merita la sua.
+
+Stessa famiglia, sempre non corretta:
+`services/RealtimeSubscriptionService.ts:9` importa `RefereeAssignmentsService`
+come default da un modulo che non ha default export (TS2613).
+
+Le due rotte ⚠️ sono schermate di dettaglio che vivono di parametri: raggiunte
+dalla lista funzionano. Aperte per URL diretto restano su "Loading" invece di
+dire "manca il parametro" — stessa classe dell'AC1 di questa issue, su una
+superficie molto più piccola.
 
 ---
 

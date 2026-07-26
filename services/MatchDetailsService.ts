@@ -52,7 +52,7 @@ interface MatchDetailsConfig {
 
   // Polling state
   isPollingActive: boolean;
-  pollingInterval?: NodeJS.Timeout;
+  pollingInterval?: TimerHandle;
   pollingConfig?: BeachMatchPollingConfig;
   lastPollingUpdate?: string;
 

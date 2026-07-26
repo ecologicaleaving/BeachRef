@@ -13,7 +13,7 @@ export const useRealtimeMatches = (tournamentNo: string | null, enabled: boolean
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  const refreshTimeoutRef = useRef<TimerHandle>();
   
   const visApiClient = new VisApiClient({
     baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',

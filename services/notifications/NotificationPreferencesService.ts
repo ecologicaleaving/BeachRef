@@ -84,7 +84,7 @@ export class NotificationPreferencesService {
   private storage: MMKV;
   private debug: boolean = __DEV__;
   private syncInProgress: Map<string, boolean> = new Map();
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: TimerHandle | null = null;
 
   private constructor() {
     // Initialize MMKV — encryptionKey is NOT supported on web (react-native-mmkv)

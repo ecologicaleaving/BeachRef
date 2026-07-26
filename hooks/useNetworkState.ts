@@ -394,8 +394,8 @@ export function useNetworkState(options: NetworkStateOptions = {}): NetworkState
   useEffect(() => {
     if (!config.enablePerformanceTesting || !networkState.isOnline) return;
 
-    let latencyInterval: NodeJS.Timeout | null = null;
-    let speedInterval: NodeJS.Timeout | null = null;
+    let latencyInterval: TimerHandle | null = null;
+    let speedInterval: TimerHandle | null = null;
 
     if (config.enableLatencyCheck) {
       latencyInterval = setInterval(async () => {

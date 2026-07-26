@@ -54,7 +54,7 @@ interface BatchEntry {
   type: NotificationType;
   refereeId: string;
   items: any[];
-  timer: NodeJS.Timeout;
+  timer: TimerHandle;
 }
 
 /**

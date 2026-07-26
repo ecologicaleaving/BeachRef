@@ -33,7 +33,7 @@ const MatchResultsScreenContent: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState<TimerHandle | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [genderFilter, setGenderFilter] = useState<'all' | 'men' | 'women'>('all');
   

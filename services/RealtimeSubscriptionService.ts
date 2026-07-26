@@ -37,7 +37,7 @@ export class RealtimeSubscriptionService {
   private static connectionState: ConnectionState = ConnectionState.DISCONNECTED;
   private static connectionStateListeners = new Set<ConnectionStateListener>();
   private static isInitialized = false;
-  private static reconnectTimeouts = new Map<string, NodeJS.Timeout>();
+  private static reconnectTimeouts = new Map<string, TimerHandle>();
   private static appStateSubscription: any = null;
   private static circuitBreakers = new Map<string, ConnectionCircuitBreaker>();
   private static fallbackActive = new Map<string, boolean>();

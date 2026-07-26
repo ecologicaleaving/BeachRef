@@ -255,7 +255,7 @@ export const usePerformanceMonitoring = (
   } | undefined>(undefined);
 
   const metricsBuffer = useRef<PerformanceMetric[]>([]);
-  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const flushTimeoutRef = useRef<TimerHandle | null>(null);
   const mountedRef = useRef(true);
 
   // Initialize A/B testing and implementation detection

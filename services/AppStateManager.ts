@@ -45,9 +45,9 @@ export class AppStateManager {
     cleanupAfterMinutes: 10,
   };
 
-  private backgroundTimer: NodeJS.Timeout | null = null;
-  private cleanupTimer: NodeJS.Timeout | null = null;
-  private backgroundSyncTimer: NodeJS.Timeout | null = null;
+  private backgroundTimer: TimerHandle | null = null;
+  private cleanupTimer: TimerHandle | null = null;
+  private backgroundSyncTimer: TimerHandle | null = null;
   
   private suspendedConnections = new Set<string>();
   private criticalConnections = new Set<string>();

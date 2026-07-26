@@ -40,7 +40,7 @@ export class ConnectionCircuitBreaker {
   
   private config: CircuitBreakerConfig;
   private stats: CircuitBreakerStats;
-  private recoveryTimer: NodeJS.Timeout | null = null;
+  private recoveryTimer: TimerHandle | null = null;
   private stateChangeListeners = new Set<(state: CircuitState) => void>();
   private networkStateManager: NetworkStateManager;
   private networkChangeListener: (() => void) | null = null;

@@ -64,7 +64,7 @@ export class NotificationQueueService {
   private static instance: NotificationQueueService;
   private storage: MMKV;
   private debug: boolean = __DEV__;
-  private processingInterval: NodeJS.Timeout | null = null;
+  private processingInterval: TimerHandle | null = null;
   private isProcessing: boolean = false;
 
   private constructor() {

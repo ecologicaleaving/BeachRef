@@ -85,7 +85,7 @@ export class DataConsistencyValidator {
   private driftConfig: DriftDetectionConfig;
   private validationHistory: ValidationReport[] = [];
   private driftMetrics: DriftMetric[] = [];
-  private scheduledValidationInterval?: NodeJS.Timeout;
+  private scheduledValidationInterval?: TimerHandle;
 
   private constructor() {
     this.supabase = createClient(

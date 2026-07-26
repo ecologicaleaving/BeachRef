@@ -62,7 +62,7 @@ export class TournamentStatusSubscriptionService {
   private static statusListeners = new Set<TournamentStatusListener>();
   private static circuitBreaker: ConnectionCircuitBreaker;
   private static eventQueue: TournamentStatusEvent[] = [];
-  private static batchTimeout: NodeJS.Timeout | null = null;
+  private static batchTimeout: TimerHandle | null = null;
   
   // Configuration
   private static readonly MAX_CONCURRENT_TOURNAMENTS = 10;

@@ -791,16 +791,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                           }
 
                           sets.push(
+                            // `setScore` / `currentSetScore` are *text* styles
+                            // (fontSize/fontWeight/color). They were applied to
+                            // this View, while the Text below asked for
+                            // `setScoreText` / `currentSetScoreText`, which the
+                            // stylesheet never defined — so the score rendered
+                            // completely unstyled and the current set was not
+                            // visually distinguishable (issue #73).
                             <View
                               key={`set-${setScore.setNo}`}
-                              style={[
-                                styles.setScore,
-                                isCurrentSet && styles.currentSetScore
-                              ]}
+                              style={styles.setScoreContainer}
                             >
                               <Text style={[
-                                styles.setScoreText,
-                                isCurrentSet && styles.currentSetScoreText
+                                styles.setScore,
+                                isCurrentSet && styles.currentSetScore
                               ]}>
                                 {homeScore}-{awayScore}
                               </Text>
@@ -1771,6 +1775,12 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     transform: [{ scale: 1.1 }], // Make it 10% bigger
   },
+  /** Layout wrapper for one set's score; the text styling lives on `setScore`. */
+  setScoreContainer: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   setScore: {
     fontSize: 11,
     fontWeight: '600',
@@ -1827,6 +1837,12 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     zIndex: 10,
+  },
+  /** The ● dot inside `liveIndicator`. Referenced but never defined until #73. */
+  liveIndicatorText: {
+    fontSize: 8,
+    lineHeight: 8,
+    color: colors.success,
   },
   liveScore: {
     color: colors.success,

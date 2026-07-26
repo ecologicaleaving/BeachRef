@@ -14,11 +14,22 @@ export interface CacheStats {
   hitRatio: number;
 }
 
+/**
+ * Filtri torneo in formato legacy, consumati dal livello di compatibilita'
+ * (`hooks/compatibility/*`) che li traduce nei filtri del nuovo sistema a hook.
+ *
+ * `status`, `gender` e `country` erano gia' letti da entrambi i traduttori ma non
+ * erano dichiarati qui (issue #49): 10 TS2339 su un'unica interfaccia incompleta.
+ * I tipi rispecchiano i valori che i traduttori sanno effettivamente mappare.
+ */
 export interface FilterOptions {
   recentOnly?: boolean;
   year?: number;
   currentlyActive?: boolean;
   tournamentType?: string;
+  status?: 'active' | 'completed' | 'upcoming';
+  gender?: 'M' | 'W';
+  country?: string;
 }
 
 export interface MemoryCacheEntry {

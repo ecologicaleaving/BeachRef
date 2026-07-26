@@ -69,6 +69,30 @@ export interface BeachMatch {
   lineJudge2No?: string;
   // Referee assignment data
   refereeAssignments?: any[]; // Referee assignments for this match (using any[] for flexibility)
+  /**
+   * Alias di data/ora presenti in alcuni payload VIS e in dati gia' normalizzati
+   * (issue #49).
+   *
+   * I consumer leggono la data con catene difensive del tipo
+   * `m.Date || m.LocalDate || m.MatchDate || m.StartDate`, perche' la stessa
+   * partita arriva con nomi diversi a seconda dell'endpoint e dello stadio di
+   * normalizzazione. `LocalDate`/`LocalTime` restano i campi canonici: questi
+   * sono alias opzionali, dichiarati per rendere la catena di fallback
+   * type-safe invece di silenziarla caso per caso.
+   */
+  Date?: string;
+  MatchDate?: string;
+  StartDate?: string;
+  Time?: string;
+  /**
+   * Alias arbitri usati dai payload/mapper legacy accanto a
+   * `Referee1Name`/`Referee2Name`/`NoReferee1`/`NoReferee2`.
+   */
+  Referee?: string;
+  Referee1?: string;
+  Referee2?: string;
+  Referee1No?: string;
+  Referee2No?: string;
   // Additional fields for multi-tournament filtering
   tournamentGender?: string;
   tournamentNo?: string;

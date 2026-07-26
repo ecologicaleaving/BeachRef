@@ -309,9 +309,16 @@ export interface CachedResponseMetadata {
 /**
  * Response with caching information
  */
-export interface CachedApiResponse<T> extends ApiResponse<T> {
+/**
+ * `ApiResponse<T>` e' una *union* discriminata (`ApiSuccessResponse | ApiErrorResponse`).
+ * Un'`interface ... extends` su una union non eredita i membri: il tipo risultante
+ * perdeva `success`, `data` ed `error`, ed erano quelli gli accessi che i consumer
+ * facevano (issue #49). Intersezione invece di extends: la discriminazione su
+ * `success` continua a funzionare e i campi tornano visibili.
+ */
+export type CachedApiResponse<T> = ApiResponse<T> & {
   cache: CachedResponseMetadata;
-}
+};
 
 // ================================
 // Performance Monitoring Types
@@ -336,9 +343,10 @@ export interface ResponsePerformanceMetrics {
 /**
  * Response with performance metrics
  */
-export interface InstrumentedApiResponse<T> extends ApiResponse<T> {
+/** Vedi la nota su `CachedApiResponse`: intersezione, non `extends`, perche' `ApiResponse<T>` e' una union. */
+export type InstrumentedApiResponse<T> = ApiResponse<T> & {
   performance: ResponsePerformanceMetrics;
-}
+};
 
 // ================================
 // Streaming Response Types

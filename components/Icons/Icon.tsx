@@ -32,6 +32,20 @@ export interface IconProps {
   testID?: string;
   accessibilityLabel?: string;
   accessibilityHint?: string;
+  /**
+   * Override espliciti di dimensione e colore (issue #49).
+   *
+   * ~60 call site passavano gia' `width` / `height` / `fill` a queste icone:
+   * sono scritti contro la convenzione delle icone SVG, mentre `Icon` ragiona
+   * per `size` (token) e `colorKey` (chiave di tema). Erano props ignorate e
+   * non dichiarate. Invece di dichiararle e continuare a ignorarle, qui
+   * vengono onorate: `width`/`height` vincono sul token `size`, `fill` vince
+   * sul colore derivato da `colorKey`. Chi non le passa non cambia
+   * comportamento.
+   */
+  width?: number;
+  height?: number;
+  fill?: string;
 }
 
 export const Icon: React.FC<IconProps> = React.memo(({
@@ -48,10 +62,19 @@ export const Icon: React.FC<IconProps> = React.memo(({
   testID,
   accessibilityLabel,
   accessibilityHint,
+  width,
+  height,
+  fill,
 }) => {
   const baseIconName = getIconName(category, name);
   const variantIconName = getVariantIconName(baseIconName, variant);
-  const iconStyles = getIconStyles(size, theme, colorKey, variant, isInteractive, isEmergency);
+  const baseStyles = getIconStyles(size, theme, colorKey, variant, isInteractive, isEmergency);
+  // Gli override espliciti vincono sui token; vedi la nota su IconProps.
+  const iconStyles = {
+    ...baseStyles,
+    size: width ?? height ?? baseStyles.size,
+    color: fill ?? baseStyles.color,
+  };
   
   // Log accessibility warnings
   if (!iconStyles.contrast.compliant) {

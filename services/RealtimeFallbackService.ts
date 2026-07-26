@@ -25,7 +25,7 @@ export interface FallbackConfiguration {
  * Provides network-aware polling, hybrid modes, and graceful degradation
  */
 export class RealtimeFallbackService {
-  private static pollingIntervals = new Map<string, NodeJS.Timeout>();
+  private static pollingIntervals = new Map<string, TimerHandle>();
   private static isInitialized = false;
   private static circuitBreaker = ConnectionCircuitBreaker.getInstance('realtime-fallback');
   private static networkStateManager: NetworkStateManager;

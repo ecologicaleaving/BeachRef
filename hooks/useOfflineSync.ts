@@ -103,7 +103,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
   // Cleanup and callback refs
   const networkUnsubscribe = useRef<(() => void) | null>(null);
   const syncUnsubscribe = useRef<(() => void) | null>(null);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<TimerHandle | null>(null);
 
   // Persist offline queue to AsyncStorage
   const persistOfflineQueue = useCallback(async () => {

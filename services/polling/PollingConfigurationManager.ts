@@ -30,7 +30,7 @@ export class PollingConfigurationManager {
   private static instance: PollingConfigurationManager | null = null;
 
   private configurations: Map<string, PollingConfiguration> = new Map();
-  private activeTimers: Map<string, NodeJS.Timeout> = new Map();
+  private activeTimers: Map<string, TimerHandle> = new Map();
   private appState: AppStateStatus = 'active';
   private backgroundTimestamp: number = 0;
 

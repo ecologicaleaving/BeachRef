@@ -47,8 +47,8 @@ export class RealtimePerformanceMonitor {
     isBackgroundOptimized: false,
     lastBackgroundTime: 0,
     messageRateLimiter: new Map<string, number[]>(),
-    performanceTimer: null as NodeJS.Timeout | null,
-    memoryCleanupTimer: null as NodeJS.Timeout | null,
+    performanceTimer: null as TimerHandle | null,
+    memoryCleanupTimer: null as TimerHandle | null,
   };
 
   /**

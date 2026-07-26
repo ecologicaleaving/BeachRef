@@ -12,8 +12,6 @@ import {
   TouchableOpacity, 
   TextInput,
   StyleSheet, 
-  _ViewStyle, 
-  _TextStyle,
   Alert
 } from 'react-native';
 import { ScoreEntryProps, ResultValidationError } from '../../types/MatchResults';

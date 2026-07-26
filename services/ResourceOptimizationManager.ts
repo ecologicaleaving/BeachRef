@@ -89,8 +89,8 @@ export class ResourceOptimizationManager {
   private deviceProfile: DeviceProfile | null = null;
   private optimizationConfig: OptimizationConfig;
   
-  private metricsUpdateTimer: NodeJS.Timeout | null = null;
-  private optimizationTimer: NodeJS.Timeout | null = null;
+  private metricsUpdateTimer: TimerHandle | null = null;
+  private optimizationTimer: TimerHandle | null = null;
   
   private memoryPressureListeners = new Set<() => void>();
   private batteryOptimizationListeners = new Set<(enabled: boolean) => void>();

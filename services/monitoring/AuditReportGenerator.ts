@@ -13,8 +13,7 @@ import {
   ApiRequest,
   AuditFinding,
   AuditReport,
-  _Severity,
-} from '../../types/audit';
+  } from '../../types/audit';
 
 /**
  * AuditReportGenerator

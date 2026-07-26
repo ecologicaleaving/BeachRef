@@ -119,7 +119,7 @@ export function useAnalyticsCollection(
     lastError: undefined as string | undefined
   });
 
-  const flushTimeoutRef = useRef<NodeJS.Timeout>();
+  const flushTimeoutRef = useRef<TimerHandle>();
   const errorLogger = ErrorLogger.getInstance();
 
   // On web without an analytics endpoint configured, disable auto-flush and raise batch size to avoid frequent flush attempts

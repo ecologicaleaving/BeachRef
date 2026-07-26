@@ -302,7 +302,7 @@ export const useCacheAwareData = <T>(
   } | undefined>(undefined);
 
   const mountedRef = useRef(true);
-  const backgroundRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const backgroundRefreshTimeoutRef = useRef<TimerHandle | null>(null);
 
   // Fetch data with caching logic
   const fetchData = useCallback(async (forceRefresh = false): Promise<void> => {

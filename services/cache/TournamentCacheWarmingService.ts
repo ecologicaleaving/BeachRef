@@ -28,7 +28,7 @@ export class TournamentCacheWarmingService {
   private static readonly WARMING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
   private static warmingInProgress = new Set<string>();
-  private static warmingInterval: NodeJS.Timeout | null = null;
+  private static warmingInterval: TimerHandle | null = null;
 
   /**
    * Start background cache warming service

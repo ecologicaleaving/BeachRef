@@ -13,15 +13,11 @@ import {
   Modal,
   Alert,
   StyleSheet, 
-  _ViewStyle, 
-  _TextStyle,
   ActivityIndicator 
 } from 'react-native';
 import { EnhancedMatchResult, ResultStatus } from '../../types/MatchResults';
 import { 
   validateMatchResult,
-  _needsSync,
-  _getResultStatusText,
   formatMatchTime,
   calculateFinalScore,
   convertToSetScores

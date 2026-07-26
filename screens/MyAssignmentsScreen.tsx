@@ -7,8 +7,7 @@ import {
   RefreshControl, 
   ActivityIndicator,
   TouchableOpacity,
-  _Modal,
-} from 'react-native';
+  } from 'react-native';
 
 import { useRouter } from 'expo-router';
 import { Assignment } from '../types/assignments';

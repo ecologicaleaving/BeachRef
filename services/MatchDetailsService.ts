@@ -14,15 +14,12 @@ import {
   BeachMatchDTO,
   BeachMatchLiveDTO,
   BeachMatchBootstrapParams,
-  _BeachMatchPollingParams,
-  _BeachMatchLiveFeedParams,
   BeachMatchPollingConfig,
   BEACH_MATCH_POLLING_INTERVALS,
   getPollingInterval,
   shouldPoll,
   isValidBeachMatchDTO,
   isValidBeachMatchLiveDTO,
-  _extractClosedSets,
   mergePollingData
 } from '../types/match-details-dto';
 
@@ -52,7 +49,7 @@ interface MatchDetailsConfig {
 
   // Polling state
   isPollingActive: boolean;
-  pollingInterval?: NodeJS.Timeout;
+  pollingInterval?: TimerHandle;
   pollingConfig?: BeachMatchPollingConfig;
   lastPollingUpdate?: string;
 

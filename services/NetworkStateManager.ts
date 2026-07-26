@@ -58,7 +58,7 @@ export class NetworkStateManager {
   private qualityHistory: number[] = [];
   private latencyHistory: number[] = [];
   private unsubscribeNetInfo: (() => void) | null = null;
-  private qualityAssessmentTimer: NodeJS.Timeout | null = null;
+  private qualityAssessmentTimer: TimerHandle | null = null;
   private deferredAssessmentTimer: ReturnType<typeof setTimeout> | null = null;
   private isInitialized = false;
 

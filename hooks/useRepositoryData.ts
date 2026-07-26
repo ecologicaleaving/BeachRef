@@ -72,8 +72,8 @@ export const useRepositoryData = <T>(
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
 
   const mountedRef = useRef(true);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<TimerHandle | null>(null);
+  const retryTimeoutRef = useRef<TimerHandle | null>(null);
 
   // Cleanup function
   const cleanup = useCallback(() => {

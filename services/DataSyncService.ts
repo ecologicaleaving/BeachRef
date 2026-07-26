@@ -77,7 +77,7 @@ export class DataSyncService {
     batchSize: 100
   };
 
-  private syncIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private syncIntervals: Map<string, TimerHandle> = new Map();
   private listeners: Set<(status: SyncStatus) => void> = new Set();
 
   private constructor() {

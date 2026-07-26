@@ -26,6 +26,14 @@ export interface ColorToken {
   text?: string;
   textTertiary?: string;  // Tertiary text color for muted content
   shadows?: string;
+  /**
+   * Colori di stato (current/upcoming/completed/cancelled/emergency).
+   * `theme/tokens.ts` li espone davvero dentro `colors` (`{...baseColors, statusColors}`),
+   * ma l'interfaccia non li dichiarava: 37 accessi `colors.statusColors.*` sparsi nei
+   * componenti risultavano errori TS2339 pur essendo corretti a runtime.
+   * Obbligatorio: ogni oggetto colori concreto del progetto lo popola.
+   */
+  statusColors: StatusColors;
 }
 
 export interface BrandColors {

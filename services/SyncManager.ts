@@ -23,7 +23,7 @@ export class SyncManager {
   private isProcessingQueue = false;
   private syncCallbacks: Set<(taskType: string) => void> = new Set();
   private lastSyncAttempt = 0;
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: TimerHandle | null = null;
 
   private constructor() {
     this.networkMonitor = NetworkMonitor.getInstance();

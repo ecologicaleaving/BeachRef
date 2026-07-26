@@ -15,9 +15,7 @@ import {
   VisApiEndpoint,
   Severity,
   FindingCategory,
-  _NetworkType,
-  _RequestSource,
-} from '../../types/audit';
+  } from '../../types/audit';
 
 // Platform detection
 const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';

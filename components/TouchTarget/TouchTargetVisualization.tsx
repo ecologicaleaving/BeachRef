@@ -8,7 +8,6 @@ import {
   View,
   Text,
   StyleSheet,
-  _Dimensions,
   TouchableOpacity,
   Modal,
   ScrollView,

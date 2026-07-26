@@ -67,8 +67,29 @@ export const CORE_ICON_MAP = {
     share: 'share',
     filter: 'funnel',
     search: 'search',
+    // Issue #49 — icone gia' referenziate da `ActionIcons` ma mai mappate:
+    // `getIconName()` ripiegava su 'help-circle'.
+    alert: 'alert-circle',
+    assignment: 'clipboard',
+    'chevron-right': 'chevron-forward',
+    contact: 'person-circle',
+    fast: 'flash',
+    history: 'time',
+    'live-score': 'pulse',
+    match: 'tennisball',
+    minus: 'remove',
+    phone: 'call',
+    player: 'person',
+    plus: 'add',
+    referee: 'people',
+    results: 'trophy',
+    serve: 'hand-left',
+    stats: 'stats-chart',
+    submit: 'checkmark-done',
+    team: 'people-circle',
+    undo: 'arrow-undo',
   },
-  
+
   // Data icons
   data: {
     list: 'list',
@@ -76,6 +97,15 @@ export const CORE_ICON_MAP = {
     chart: 'bar-chart',
     stats: 'analytics',
     details: 'information-circle',
+    // Issue #49 — vedi sopra.
+    emergency: 'warning',
+    health: 'medkit',
+    info: 'information-circle',
+    location: 'location',
+    organization: 'business',
+    person: 'person',
+    phone: 'call',
+    time: 'time',
   },
   
   // Communication icons
@@ -93,6 +123,16 @@ export const CORE_ICON_MAP = {
     external: 'open',
     download: 'download',
     upload: 'cloud-upload',
+    // Issue #49 — vedi sopra.
+    activity: 'pulse',
+    check: 'checkmark',
+    'chevron-down': 'chevron-down',
+    close: 'close',
+    refresh: 'refresh',
+    security: 'shield-checkmark',
+    settings: 'settings',
+    warning: 'warning',
+    weather: 'partly-sunny',
   },
 } as const;
 

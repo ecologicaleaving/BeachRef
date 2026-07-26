@@ -6,9 +6,7 @@ import {
   SyncMonitoringMetrics,
   PerformanceMetrics,
   SyncStatistics,
-  _MetricsTimeWindow,
   ErrorType,
-  _SyncExecutionHistory,
   SyncHealthSummary
 } from '../types/monitoring'
 

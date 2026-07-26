@@ -8,8 +8,6 @@ import {
   TournamentCore, 
   TournamentDates, 
   GenderType, 
-  _TournamentType, 
-  _TournamentStatus,
   generateTournamentId,
   mapVisTournamentType,
   mapVisTournamentStatus
@@ -21,7 +19,6 @@ import {
   CourtInfo,
   RefereeAssignment,
   MatchResult,
-  _MatchStatus,
   generateMatchId,
   mapVisMatchStatus,
   calculateMatchDuration,

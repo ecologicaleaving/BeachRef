@@ -14,7 +14,6 @@ import {
   TextInput,
   Alert,
   StyleSheet, 
-  _ViewStyle, 
   TextStyle 
 } from 'react-native';
 import { SpecialResult} from '../../types/MatchResults';

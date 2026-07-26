@@ -40,7 +40,7 @@ export type ConnectionStateListener = (state: ConnectionState, error?: string) =
 export class ConnectionPoolManager {
   private connectionState: ConnectionState = ConnectionState.DISCONNECTED;
   private connectionStateListeners = new Set<ConnectionStateListener>();
-  private reconnectTimeouts = new Map<string, NodeJS.Timeout>();
+  private reconnectTimeouts = new Map<string, TimerHandle>();
   private appStateSubscription: any = null;
   private circuitBreakers = new Map<string, ConnectionCircuitBreaker>();
   private connectionHealth = new Map<string, ConnectionHealth>();

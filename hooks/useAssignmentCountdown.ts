@@ -35,7 +35,7 @@ export const useAssignmentCountdown = (targetDate: Date | null) => {
     message: 'On schedule',
   });
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<TimerHandle | null>(null);
 
   const calculateCountdown = (target: Date): CountdownTime => {
     const now = new Date();

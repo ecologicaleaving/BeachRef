@@ -84,7 +84,7 @@ interface PollingConfig {
   /** Callback function for updates */
   callback: LiveScoreCallback;
   /** Polling interval timer */
-  interval?: NodeJS.Timeout;
+  interval?: TimerHandle;
   /** Current polling delay in milliseconds */
   pollDelayMs: number;
   /** Options for data filtering */

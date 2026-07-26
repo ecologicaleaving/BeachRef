@@ -11,8 +11,6 @@ import { StatusType} from '../../types/status';
 import { AccessibilityStatusIndicator } from './AccessibilityStatusIndicator';
 import { designTokens } from '../../theme/tokens';
 import { 
-  _getStatusText, 
-  _getStatusCategory,
   isAssignmentStatus,
   isMatchStatus,
   isSystemStatus,

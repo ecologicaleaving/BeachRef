@@ -6,8 +6,42 @@
 
 import { VisApiClient } from './api/VisApiClient';
 import { LocalStorageManager } from './LocalStorageManager';
+import { RefereeDirectoryService } from './RefereeDirectoryService';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
-import { VisApiEndpoint, GetBeachMatchListRequest, GetEventRefereeListRequest } from '../types/api-v2';
+import type { GetBeachMatchListRequest, GetEventRefereeListRequest, VisApiResponse } from '../types/api-v2';
+
+/**
+ * Field list the stats parser reads (issue #47).
+ *
+ * Identical, name for name, to the `Fields=` attribute the six raw `fetch`
+ * calls this service used to build by hand. It is passed explicitly to
+ * {@link VisApiClient.getBeachMatchList} because the client's default set does
+ * not carry `TournamentGender` (men/women split), `LocalDateTime` (season
+ * filtering) or `Code`.
+ */
+const STATS_MATCH_FIELDS: readonly string[] = [
+  'No', 'Code', 'NoEvent', 'NoInTournament', 'TournamentName', 'TournamentGender',
+  'LocalDateTime', 'LocalDate', 'LocalTime', 'Court', 'RoundCode', 'Phase', 'Status',
+  'NoReferee1', 'NoReferee2', 'Referee1Name', 'Referee2Name',
+  'TeamAName', 'TeamBName', 'TeamAFederationCode', 'TeamBFederationCode',
+  'PointsTeamASet1', 'PointsTeamBSet1', 'PointsTeamASet2', 'PointsTeamBSet2',
+  'PointsTeamASet3', 'PointsTeamBSet3',
+  'Referee1FederationCode', 'Referee2FederationCode'
+];
+
+/** `Fields=` of the two name-resolution requests, unchanged from the raw calls. */
+const STATS_REFEREE_FIELDS: readonly string[] = [
+  'NoReferee', 'FirstName', 'LastName', 'FederationCode', 'Status', 'Role'
+];
+
+/**
+ * Subset of {@link VisApiClient} this service needs (issue #47). Declaring it
+ * explicitly is what makes the six requests testable on fixtures.
+ */
+export interface RefereeStatsApiClient {
+  getBeachMatchList(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
+  getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse>;
+}
 
 // Compatibility helpers to avoid reliance on class static methods when bundlers inline/hoist differently
 function parseMatchesFromVISXMLCompat(xmlData: string, refereeRole: 'first' | 'second'): any[] {
@@ -194,12 +228,23 @@ export class RefereeStatsService {
   private static readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
   private static readonly CURRENT_SEASON = new Date().getFullYear().toString();
   private static localStorage = new LocalStorageManager(1); // 1 day max age
-  private static visApiClient: VisApiClient;
+  private static visApiClient: RefereeStatsApiClient;
+
+  /**
+   * Override the VIS client — tests, or a caller that already owns one.
+   * Pass `null` to go back to the default (issue #47).
+   *
+   * Exists so the six requests this service issues can be exercised on
+   * fixtures, without a network and without stubbing `global.fetch`.
+   */
+  static setVisApiClient(client: RefereeStatsApiClient | null): void {
+    RefereeStatsService.visApiClient = client as RefereeStatsApiClient;
+  }
 
   /**
    * Initialize the service with VIS API client
    */
-  private static getVisApiClient(): VisApiClient {
+  private static getVisApiClient(): RefereeStatsApiClient {
     if (!RefereeStatsService.visApiClient) {
       RefereeStatsService.visApiClient = new VisApiClient({
         baseUrl: 'https://www.fivb.org/Vis2009/XmlRequest.asmx',
@@ -218,38 +263,21 @@ export class RefereeStatsService {
 
   /**
    * Resolve referee full name from event roster given NoReferee and NoEvent
+   *
+   * Issue #47: served by {@link RefereeDirectoryService.getEventReferees}, whose
+   * field list is a superset of the one this method used to request by hand and
+   * whose result is cached per event — so the several stats panels a screen
+   * opens for the same tournament now share a single `GetEventRefereeList`.
    */
   private static async resolveRefereeNameFromEvent(
     tournamentNo: string,
     refereeNo: string
   ): Promise<{ firstName: string; lastName: string } | null> {
     try {
-      const xml = `<Requests>
-  <Request Type="GetEventRefereeList" Fields="NoReferee FirstName LastName FederationCode Role Status">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/xml',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-      if (!response.ok) return null;
-      const xmlResponse = await response.text();
-      const entries = xmlResponse.match(/<EventReferee[^>]*>/g) || [];
-      for (const entry of entries) {
-        const no = entry.match(/NoReferee="([^"]*)"/)?.[1] || '';
-        if (no && no.toString().trim() === refereeNo.toString().trim()) {
-          const firstName = entry.match(/FirstName="([^"]*)"/)?.[1] || '';
-          const lastName = entry.match(/LastName="([^"]*)"/)?.[1] || '';
-          return { firstName, lastName };
-        }
-      }
-      return null;
+      const { referees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
+      const wanted = refereeNo.toString().trim();
+      const found = referees.find(referee => referee.RefereeId.toString().trim() === wanted);
+      return found ? { firstName: found.firstName, lastName: found.lastName } : null;
     } catch {
       return null;
     }
@@ -1035,29 +1063,19 @@ export class RefereeStatsService {
       const lastName = nameParts.slice(1).join(' ') || '';
       
       
-      // Try both name-based and NoReferee-based filtering
-      const xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Status Role">
-    <Filter NoEvent="${tournamentNo}" FirstName="${firstName}" LastName="${lastName}"/>
-  </Request>
-</Requests>`;
-
-      // Resolve refereeId against event roster
-      
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
-        },
-        body: new URLSearchParams({ Request: xml })
+      // Try both name-based and NoReferee-based filtering.
+      // Issue #47: same request, now built and sent by VisApiClient — the name
+      // halves of the filter are GetEventRefereeListRequest.firstName/lastName.
+      const response = await RefereeStatsService.getVisApiClient().getEventRefereeList({
+        eventNo: tournamentNo,
+        firstName,
+        lastName,
+        fields: STATS_REFEREE_FIELDS
       });
-      
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        
+
+      if (response.success) {
+        const xmlResponse = response.xmlData ?? '';
+
         // Try direct attribute match first
         const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/);
         const resolvedNoReferee = refereeNoMatch?.[1];
@@ -1065,37 +1083,15 @@ export class RefereeStatsService {
           return resolvedNoReferee;
         }
 
-        // Fallback: query all referees for the event and match by name client-side
-        const fallbackXml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Status Role">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
-
-        const fallbackResp = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-          method: "POST",
-          headers: {
-            "Accept": "application/xml",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
-          },
-          body: new URLSearchParams({ Request: fallbackXml })
-        });
-
-        if (fallbackResp.ok) {
-          const fallbackXmlText = await fallbackResp.text();
-          // Find EventReferee entries and match by first/last name
-          const entries = fallbackXmlText.match(/<EventReferee[^>]*>/g) || [];
-          const targetFirst = firstName.toLowerCase();
-          const targetLast = lastName.toLowerCase();
-          for (const entry of entries) {
-            const f = (entry.match(/FirstName="([^"]*)"/)?.[1] || '').toLowerCase();
-            const l = (entry.match(/LastName="([^"]*)"/)?.[1] || '').toLowerCase();
-            if (f === targetFirst && l === targetLast) {
-              const no = entry.match(/NoReferee="([^"]*)"/)?.[1];
-              if (no) return no;
-            }
+        // Fallback: match by name client-side against the event roster.
+        // RefereeDirectoryService caches that roster per event, so this second
+        // step costs a request only the first time an event is inspected.
+        const { referees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
+        const targetFirst = firstName.toLowerCase();
+        const targetLast = lastName.toLowerCase();
+        for (const referee of referees) {
+          if (referee.firstName.toLowerCase() === targetFirst && referee.lastName.toLowerCase() === targetLast) {
+            if (referee.RefereeId) return referee.RefereeId;
           }
         }
 
@@ -1133,31 +1129,18 @@ export class RefereeStatsService {
       
 
 
-      const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
-      
-      const xml = `<Requests>
-  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee -->
-  <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
-    <Filter NoEvent="${tournamentNo}" ${refereeField}="${refereeNo}"/>
-  </Request>
-</Requests>`;
-
-      
-
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
-        },
-        body: new URLSearchParams({ Request: xml })
+      // Issue #47: routed through VisApiClient. NoReferee1/NoReferee2 were
+      // already part of GetBeachMatchListRequest; the explicit field list is
+      // the new part (see STATS_MATCH_FIELDS).
+      const response = await RefereeStatsService.getVisApiClient().getBeachMatchList({
+        eventNo: tournamentNo,
+        ...(role === 'first' ? { NoReferee1: refereeNo } : { NoReferee2: refereeNo }),
+        fields: STATS_MATCH_FIELDS
       });
-      
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        
+
+      if (response.success) {
+        const xmlResponse = response.xmlData ?? '';
+
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
         // Map conditional attribute from raw VIS flag: 0 -> M, 1 -> W
         try {
@@ -1235,36 +1218,21 @@ export class RefereeStatsService {
         return [];
       }
 
-      const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
-      
       // Use tournament approach but with proper beach volleyball season date range
       // Beach volleyball season typically runs from March to February of next year
       const seasonStartDate = `${season}-03-01`;
       const seasonEndDate = `${parseInt(season) + 1}-02-28`;
-      
-      // Since VIS API ignores date filters, get all matches and filter client-side
-      const xml = `<Requests>
-  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (all time) -->
-  <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
-    <Filter ${refereeField}="${refereeNo}"/>
-  </Request>
-</Requests>`;
 
-      // Querying season stats
-
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
-        },
-        body: new URLSearchParams({ Request: xml })
+      // Since VIS API ignores date filters, get all matches and filter client-side.
+      // Issue #47: routed through VisApiClient — no event filter, only the
+      // referee slot, exactly as the raw request did.
+      const response = await RefereeStatsService.getVisApiClient().getBeachMatchList({
+        ...(role === 'first' ? { NoReferee1: refereeNo } : { NoReferee2: refereeNo }),
+        fields: STATS_MATCH_FIELDS
       });
-      
-      if (response.ok) {
-        const xmlResponse = await response.text();
+
+      if (response.success) {
+        const xmlResponse = response.xmlData ?? '';
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
         // Season query returned results
         
@@ -1330,35 +1298,19 @@ export class RefereeStatsService {
         return [];
       }
 
-      const refereeField = role === 'first' ? 'NoReferee1' : 'NoReferee2';
-      
-      // Use tournament approach but with extended date range for career (last 10 years)  
+      // Use tournament approach but with extended date range for career (last 10 years)
       const currentYear = 2024; // Fixed to 2024 for current season
       const careerStartDate = `${currentYear - 10}-01-01`;
       const careerEndDate = `${currentYear}-12-31`;
-      
-      const xml = `<Requests>
-  <!-- Matches where is ${role.charAt(0).toUpperCase() + role.slice(1)} Referee (career - all time) -->
-  <Request Type="GetBeachMatchList"
-           Fields="No Code NoEvent NoInTournament TournamentName TournamentGender LocalDateTime LocalDate LocalTime Court RoundCode Phase Status NoReferee1 NoReferee2 Referee1Name Referee2Name TeamAName TeamBName TeamAFederationCode TeamBFederationCode PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 Referee1FederationCode Referee2FederationCode">
-    <Filter ${refereeField}="${refereeNo}"/>
-  </Request>
-</Requests>`;
 
-      // Querying career stats
-
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-FIVB-App-ID": "2a9523517c52420da73d927c6d6bab23"
-        },
-        body: new URLSearchParams({ Request: xml })
+      // Issue #47: routed through VisApiClient — same filter, same fields.
+      const response = await RefereeStatsService.getVisApiClient().getBeachMatchList({
+        ...(role === 'first' ? { NoReferee1: refereeNo } : { NoReferee2: refereeNo }),
+        fields: STATS_MATCH_FIELDS
       });
-      
-      if (response.ok) {
-        const xmlResponse = await response.text();
+
+      if (response.success) {
+        const xmlResponse = response.xmlData ?? '';
         const matches = parseMatchesFromVISXMLCompat(xmlResponse, role);
         // Career query returned results
         if (matches.length > 0) {

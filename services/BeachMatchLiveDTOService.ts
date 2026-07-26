@@ -24,6 +24,15 @@ import {
   DEFAULT_RETRY_CONFIG
 } from '../types/api-v2';
 
+/** VIS match states that mean "set N is being played right now". */
+const IN_SET_STATUS_TO_SET_NUMBER: Record<string, number> = {
+  InSet1: 1,
+  InSet2: 2,
+  InSet3: 3,
+  InSet4: 4,
+  InSet5: 5,
+};
+
 export class BeachMatchLiveDTOService {
   private static instance: BeachMatchLiveDTOService;
   private visApiClient: VisApiClient;
@@ -122,6 +131,8 @@ export class BeachMatchLiveDTOService {
       if (!dto.teams.home.players[0].name || !dto.teams.away.players[0].name) {
         throw new Error(`No valid team data found for match ${params.matchNo}. Teams: ${dto.teams.home.players[0].name} vs ${dto.teams.away.players[0].name}`);
       }
+
+      this.deriveCurrentSet(dto);
 
       // Cache the result
       this.cache.set(cacheKey, dto);
@@ -1224,7 +1235,43 @@ export class BeachMatchLiveDTOService {
       }
     }
 
+    this.deriveCurrentSet(updatedDTO);
+
     return updatedDTO;
+  }
+
+  /**
+   * Fill in `score.currentSet` and `score.points` — the in-progress set and its
+   * running score.
+   *
+   * Issue #73: both fields are declared on `BeachMatchLiveDTO` and read by
+   * `/match-detail`, but **nothing ever assigned them**. `score.sets` carries the
+   * live set among the closed ones (the VIS returns it in the same list), so the
+   * screen could show the numbers but had no way to know *which* set was live:
+   * it fell back to "set 1", never marked a set as in progress, and the
+   * `IN SET n` label never appeared.
+   *
+   * The authority is `status.state`, which the VIS status code maps to
+   * `InSet1..InSet5`.
+   */
+  public deriveCurrentSet(dto: BeachMatchLiveDTO): BeachMatchLiveDTO {
+    const setNo = IN_SET_STATUS_TO_SET_NUMBER[dto.status.state];
+
+    if (!setNo) {
+      // Not in play: no set is current and there is no running score.
+      delete (dto.score as { currentSet?: number }).currentSet;
+      dto.score.points = null;
+      return dto;
+    }
+
+    dto.score.currentSet = setNo;
+
+    const liveSet = (dto.score.sets || []).find(s => s.setNo === setNo);
+    dto.score.points = liveSet
+      ? { home: liveSet.home ?? 0, away: liveSet.away ?? 0 }
+      : null;
+
+    return dto;
   }
 
   /**

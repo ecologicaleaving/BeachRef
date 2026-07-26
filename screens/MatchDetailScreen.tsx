@@ -598,9 +598,14 @@ export default function MatchDetailScreen() {
       const status = mergedData.data.status;
 
       if (mergedData.isLive) {
-        // Live match - check current set
-        if (state.liveData?.currentSet) {
-          return `IN SET ${state.liveData.currentSet}`;
+        // Live match - which set is in progress?
+        // Was `state.liveData?.currentSet`: `state.liveData` is a legacy slot that
+        // is initialised to null and never assigned, so this branch always fell
+        // through to the bare 'LIVE'. The DTO exposes it at `score.currentSet`
+        // (issue #73).
+        const currentSet = mergedData.data?.score?.currentSet;
+        if (currentSet) {
+          return `IN SET ${currentSet}`;
         }
         return 'LIVE';
       }
@@ -702,6 +707,12 @@ export default function MatchDetailScreen() {
       if (setData) {
         teamAPoints = setData.home || 0;
         teamBPoints = setData.away || 0;
+      } else if (dto.score?.currentSet === setNumber && dto.score?.points) {
+        // The set in progress is not always present in `score.sets` — depending
+        // on the VIS payload it only exists as the running `score.points`.
+        // Without this branch the live set showed 0-0 (issue #73).
+        teamAPoints = dto.score.points.home;
+        teamBPoints = dto.score.points.away;
       }
     } else if (mergedData.type === 'legacy') {
       const match = mergedData.data;
@@ -827,9 +838,14 @@ export default function MatchDetailScreen() {
         }
       }
     } else {
-      // New DTO system
-      if (state.liveData?.currentSet) {
-        return state.liveData.currentSet;
+      // New DTO system. Same bug as in getStatusText(): the in-progress set
+      // number lives on the DTO at `score.currentSet`, not on the never-assigned
+      // `state.liveData` (issue #73). Reading the dead slot meant this always
+      // returned the default 1, so "(Live)" and the current-set highlight were
+      // pinned to set 1 no matter which set was actually being played.
+      const currentSet = mergedData.data?.score?.currentSet;
+      if (currentSet) {
+        return currentSet;
       }
     }
 

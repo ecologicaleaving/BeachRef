@@ -169,6 +169,20 @@ export interface GetBeachMatchListRequest extends VisApiRequestBase {
   readonly NoReferee1?: string;
   /** Filter by second referee ID (NoReferee2 = RefereeId) */
   readonly NoReferee2?: string;
+  /**
+   * Field list to request, overriding the client's default set (issue #47).
+   *
+   * The default covers what the match screens render; it deliberately does
+   * **not** carry `TournamentGender`, `LocalDateTime`, `RoundCode`, `Phase` or
+   * `Code`, which `RefereeStatsService` needs to classify a referee's matches by
+   * gender and to filter a season client-side. That gap is the only reason that
+   * service still spoke to the VIS with a raw `fetch`; overriding the field list
+   * here is what let it move onto {@link VisApiClient}.
+   *
+   * Omit it unless you know which fields you need — a wider list is a bigger
+   * payload on every call.
+   */
+  readonly fields?: readonly string[];
 }
 
 /**
@@ -274,6 +288,17 @@ export interface GetEventRefereeListRequest extends VisApiRequestBase {
   readonly eventNo: string;
   /** Fields to include in response */
   readonly fields?: readonly string[];
+  /**
+   * Narrow the roster to one referee by name (issue #47).
+   *
+   * Both halves become `Filter` attributes. `RefereeStatsService` uses them to
+   * resolve a display name to a `NoReferee`; nothing else should need them,
+   * because the whole roster is cheaper to fetch once and search locally —
+   * which is exactly what {@link RefereeDirectoryService.getEventReferees}
+   * does.
+   */
+  readonly firstName?: string;
+  readonly lastName?: string;
 }
 
 /**

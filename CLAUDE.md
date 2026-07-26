@@ -1059,3 +1059,93 @@ code reads when those features are switched on.
 `[build.environment].NODE_VERSION` in `netlify.toml`, and `env.NODE_VERSION` in
 `web-build.yml`. All three are `18`. `.nvmrc` wins on Netlify if they diverge.
 
+---
+
+## Database reads are behind a flag (issue #54, phase 2)
+
+**Setting `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` no
+longer changes where the app reads from.** Before this, it did — and silently.
+`DualReadService` is hard-configured with `readStrategy: 'db_first'`, and its
+constructor called `createClient(process.env.EXPO_PUBLIC_SUPABASE_URL!, ...)`.
+Without the variable `createClient` throws `supabaseUrl is required.` **in the
+constructor**, so `DualReadService.getInstance()` itself threw, every caller of
+`CacheServiceCompatibility` got a rejected promise, and everything fell back to
+the VIS. That accident — not a design — is what has kept the DB branch inert.
+The day the variables appeared on Netlify, `getTournaments`, `getMatches`,
+`getReferees` and `clearCache` would all have switched source at once.
+
+### The gate
+
+`services/flags/DbReadFlags.ts`. One question — `isDbReadEnabled(domain)` — for
+three domains: `'tournaments' | 'matches' | 'referees'`. Resolution order:
+
+| # | Layer | Set by | Needs a deploy |
+|---|---|---|---|
+| 1 | runtime kill switch | the code itself, via `markDbUnavailable()` | no |
+| 2 | `?dbReads=` query param | anyone with the link (persisted on read) | no |
+| 3 | persisted local override | `setDbReadOverride()` / `__beachrefDbReads` | no |
+| 4 | `EXPO_PUBLIC_DB_READS` | Netlify site settings | **yes** |
+| 5 | default: **nothing enabled** | — | — |
+
+```
+https://beachrefs.netlify.app/?dbReads=tournaments   # enable one domain
+https://beachrefs.netlify.app/?dbReads=off           # rollback, persisted
+__beachrefDbReads.off()                              # rollback from devtools
+__beachrefDbReads.describe()                         # why is it on/off?
+```
+
+**An env var alone cannot be the rollback**: changing a Netlify variable *is* a
+redeploy. So layer 4 is only a floor, and layers 2-3 override it in both
+directions instantly. The operational consequence, and it is deliberate:
+**phase 3 rolls out through layers 2-3, one domain at a time, and
+`EXPO_PUBLIC_DB_READS` stays unset until a domain has been observed working.**
+Layers 2-3 are per-browser, so a fleet-wide rollback of an env-var-driven
+activation would still need a redeploy; a fleet-wide kill switch needs a runtime
+config source (a remote JSON, a Supabase row) and is deliberately not introduced
+here. Layer 1 covers the failure mode a human kill switch would be racing.
+
+### Wiring
+
+- `CacheServiceCompatibility` asks the gate per method. Flag off → it **does not
+  import `DualReadService` at all** (no Supabase client, no async chunk) and
+  rejects, which is exactly what callers already handle.
+- `useTournamentsHybrid` / `useMatchesHybrid` force `readStrategy: 'api_only'`
+  when their domain is off.
+- **Reject, do not silently serve.** `DualReadService`'s own "API" fallback is
+  *not* the VIS — it is a Supabase Edge Function behind `EXPO_PUBLIC_EDGE_URL`,
+  which is unset. The real VIS fallback has always lived in the **callers** of
+  `CacheServiceCompatibility`, and rejecting is how you reach it.
+
+### Two repairs that make the fallback real
+
+Both are in `services/DualReadService.ts`, and both were needed because AC7
+demands a *simulated* fallback, not one deduced from the presence of a
+`fallbackEnabled` flag:
+
+1. **The client is built lazily**, and `shouldTryDatabase()` returns `false`
+   when the variables are absent. A constructor that throws has no degradation
+   path — that is the whole lesson of #45.
+2. **`dbTimeoutMs` is applied.** It had been in `DualReadConfig` since the
+   service was written and reached **nothing**; only `apiTimeoutMs` ever became
+   an `AbortSignal`. A *slow* Supabase — worse than a failed one, because
+   nothing downstream ever runs — had no upper bound. `withDbTimeout()` bounds
+   every DB read. `services/__tests__/DualReadService.fallback.test.ts` hangs
+   without it.
+
+### Phase 1 helper
+
+`npm run verify:rls` (`scripts/verify-rls-anon.ts`) answers AC1: what can the
+**public** anon key actually do? It refuses to run without a key, **refuses a
+`service_role` key** (decodes the JWT `role` claim — auditing RLS with
+privileged credentials proves nothing), aborts if the project rejects the key,
+and probes 25 tables non-destructively (`insert({})` dies on NOT NULL *after*
+RLS has had its say; update/delete filter on an impossible id, so zero rows are
+ever matched). Exit 1 on a finding, exit 2 when the verification could not
+happen — "we could not tell" is never reported as "it is safe".
+
+```bash
+export SUPABASE_URL='https://<project>.supabase.co'
+export SUPABASE_ANON_KEY='<anon key>'
+npm run verify:rls
+```
+

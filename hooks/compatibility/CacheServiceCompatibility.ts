@@ -12,9 +12,19 @@ import type { TournamentDTO, MatchDTO, RefereeDTO } from '../../services/DualRea
 // Import as type only to prevent circular dependency - we'll get instance dynamically
 import { queryClient } from '../../lib/queryClient';
 import { queryPerformanceMonitor } from '../../lib/queryPerformance';
+import {
+  DbReadDomain,
+  DB_READ_DOMAINS,
+  clearDbUnavailable,
+  isDbReadEnabled,
+  markDbUnavailable,
+  setDbReadOverride,
+} from '../../services/flags/DbReadFlags';
 
-// Feature flag for gradual migration - made configurable for testing
-let USE_NEW_HOOKS = process.env.EXPO_PUBLIC_USE_NEW_HOOKS === 'true' || false;
+// The gradual-migration flag now lives in `services/flags/DbReadFlags` and is
+// resolved per read domain. `EXPO_PUBLIC_USE_NEW_HOOKS` is gone: it was a
+// second, all-or-nothing gate that nobody set, and having two switches for one
+// decision is how the decision ends up being taken by accident.
 
 /** Shape `DualReadService.getTournaments` accepts. */
 interface DualReadTournamentFilters {
@@ -151,39 +161,79 @@ export class CacheServiceCompatibility {
     return DualReadService.getInstance();
   }
 
-  // Service initialization moved to initialize() method to avoid static block timing issues
-  private static initialized = false;
-
   /**
-   * Ensure service is properly initialized
+   * The gate of issue #54, phase 2.
+   *
+   * Returns the dual-read service **only** when the caller's domain has been
+   * explicitly switched to the database. Three outcomes, all of them safe:
+   *
+   * - flag off (the default, and the state of production today) → `null`, and
+   *   `DualReadService` is not even imported, so no Supabase client is built
+   *   and no chunk is fetched;
+   * - flag on and the service builds → the service, configured `db_first` with
+   *   `fallbackEnabled`;
+   * - flag on and anything throws → the runtime kill switch is armed, every
+   *   domain falls back for a cooldown, and this returns `null`.
+   *
+   * The third case is the one that matters and the one that could not exist
+   * before: construction failure used to propagate as a rejected promise from
+   * `getInstance()` itself.
    */
-  private static async ensureInitialized(): Promise<void> {
-    if (!this.initialized) {
-      (await CacheServiceCompatibility.getDualReadService()).configure({
+  private static async getGatedDualReadService(domain: DbReadDomain) {
+    if (!isDbReadEnabled(domain)) {
+      return null;
+    }
+
+    try {
+      const service = await CacheServiceCompatibility.getDualReadService();
+      service.configure({
         readStrategy: 'db_first',
         fallbackEnabled: true,
-        enablePerformanceMonitoring: true
+        enablePerformanceMonitoring: true,
       });
-      this.initialized = true;
+      clearDbUnavailable();
+      return service;
+    } catch (error) {
+      markDbUnavailable(
+        `${domain}: ${(error as Error)?.message ?? 'unknown DualReadService failure'}`
+      );
+      return null;
     }
   }
+
+  /**
+   * The rejection every read path takes when the database is not its source.
+   *
+   * A rejection — rather than a silent VIS fetch from in here — is deliberate:
+   * it is byte-for-byte the behaviour callers already handle today, because
+   * today `getInstance()` throws `supabaseUrl is required.` before any of these
+   * methods can do anything. Note also that `DualReadService`'s own "API"
+   * fallback is **not** the VIS: it is a Supabase Edge Function behind
+   * `EXPO_PUBLIC_EDGE_URL`, which is unset. The real VIS fallback has always
+   * lived in this class's callers, and it is reached by rejecting.
+   */
+  private static disabledError(domain: DbReadDomain): Error {
+    return new Error(
+      `[CacheServiceCompatibility] database reads for "${domain}" are disabled ` +
+        `(issue #54 flag); the caller must use the VIS API path`
+    );
+  }
+
 
   /**
    * Get tournaments with backward compatibility
    * Matches CacheService.getTournaments interface exactly
    */
   static async getTournaments(filters?: FilterOptions): Promise<CacheResult<TournamentCore[]>> {
-    // Ensure service is initialized
-    await this.ensureInitialized();
-    
     const startTime = Date.now();
-    
+
     try {
-      if (USE_NEW_HOOKS) {
+      const service = await CacheServiceCompatibility.getGatedDualReadService('tournaments');
+      if (service) {
         // Use new hook-based system
         const newFilters = transformFiltersToNew(filters);
-        const result = await (await CacheServiceCompatibility.getDualReadService()).getTournaments(newFilters);
-        
+        const result = await service.getTournaments(newFilters);
+
         if (!result) {
           throw new Error('DualReadService returned undefined result');
         }
@@ -212,8 +262,7 @@ export class CacheServiceCompatibility {
           }
         };
       } else {
-        // Fallback to original CacheService (would be imported)
-        throw new Error('Legacy CacheService fallback not implemented in compatibility layer');
+        throw CacheServiceCompatibility.disabledError('tournaments');
       }
     } catch (error) {
       // Performance tracking for errors
@@ -234,13 +283,11 @@ export class CacheServiceCompatibility {
    * Matches CacheService.getMatches interface exactly
    */
   static async getMatches(tournamentNo: string): Promise<CacheResult<BeachMatch[]>> {
-    // Ensure service is initialized
-    await this.ensureInitialized();
-    
     const startTime = Date.now();
-    
+
     try {
-      if (USE_NEW_HOOKS) {
+      const service = await CacheServiceCompatibility.getGatedDualReadService('matches');
+      if (service) {
         const normalizedTournamentNo = `${tournamentNo}`.trim();
         const numericEventNo = /^\d+$/.test(normalizedTournamentNo)
           ? Number(normalizedTournamentNo)
@@ -269,8 +316,8 @@ export class CacheServiceCompatibility {
         }
 
         // Use new hook-based system
-        const result = await (await CacheServiceCompatibility.getDualReadService()).getMatches(matchFilters);
-        
+        const result = await service.getMatches(matchFilters);
+
         if (!result) {
           throw new Error('DualReadService returned undefined result for matches');
         }
@@ -299,8 +346,7 @@ export class CacheServiceCompatibility {
           }
         };
       } else {
-        // Fallback to original CacheService
-        throw new Error('Legacy CacheService fallback not implemented in compatibility layer');
+        throw CacheServiceCompatibility.disabledError('matches');
       }
     } catch (error) {
       // Performance tracking for errors
@@ -321,19 +367,17 @@ export class CacheServiceCompatibility {
    * Matches CacheService.getRefereeData interface exactly
    */
   static async getRefereeData(tournamentNo: string): Promise<CacheResult<TournamentRefereeData>> {
-    // Ensure service is initialized
-    await this.ensureInitialized();
-    
     const startTime = Date.now();
-    
+
     try {
-      if (USE_NEW_HOOKS) {
+      const service = await CacheServiceCompatibility.getGatedDualReadService('referees');
+      if (service) {
         // Use new hook-based system
-        const result = await (await CacheServiceCompatibility.getDualReadService()).getReferees({
+        const result = await service.getReferees({
           tournamentCodes: [tournamentNo],
           includeAssignments: true
         });
-        
+
         if (!result) {
           throw new Error('DualReadService returned undefined result for referees');
         }
@@ -364,8 +408,7 @@ export class CacheServiceCompatibility {
           }
         };
       } else {
-        // Fallback to original CacheService
-        throw new Error('Legacy CacheService fallback not implemented in compatibility layer');
+        throw CacheServiceCompatibility.disabledError('referees');
       }
     } catch (error) {
       // Performance tracking for errors
@@ -385,39 +428,34 @@ export class CacheServiceCompatibility {
    * Clear cache with backward compatibility
    */
   static async clearCache(keys?: string[]): Promise<void> {
-    // Ensure service is initialized
-    await this.ensureInitialized();
-    
-    if (USE_NEW_HOOKS) {
-      // Clear TanStack Query cache
-      if (keys) {
-        keys.forEach(key => {
-          if (key.includes('tournaments')) {
-            queryClient.removeQueries({ queryKey: ['tournaments'] });
-          } else if (key.includes('matches')) {
-            queryClient.removeQueries({ queryKey: ['matches'] });
-          } else if (key.includes('referees')) {
-            queryClient.removeQueries({ queryKey: ['referees'] });
-          }
-        });
-      } else {
-        // Clear all caches
-        queryClient.clear();
-      }
-      
-      // Also clear dual read service cache
-      const cacheTypes = keys ? 
-        keys.map(k => k.includes('tournaments') ? 'tournaments' : 
-                    k.includes('matches') ? 'matches' : 
-                    k.includes('referees') ? 'referees' : 'tournaments') :
-        ['tournaments', 'matches', 'referees'];
-      
-      for (const type of cacheTypes) {
-        await (await CacheServiceCompatibility.getDualReadService()).invalidateCache(type as any);
-      }
+    // The TanStack Query side is unconditional: it is local state and clearing
+    // it is correct regardless of where reads come from. Only the DualRead
+    // invalidation — which touches Supabase — is gated, per domain.
+    if (keys) {
+      keys.forEach(key => {
+        if (key.includes('tournaments')) {
+          queryClient.removeQueries({ queryKey: ['tournaments'] });
+        } else if (key.includes('matches')) {
+          queryClient.removeQueries({ queryKey: ['matches'] });
+        } else if (key.includes('referees')) {
+          queryClient.removeQueries({ queryKey: ['referees'] });
+        }
+      });
     } else {
-      // Would call original CacheService.clearCache
-      throw new Error('Legacy CacheService fallback not implemented in compatibility layer');
+      // Clear all caches
+      queryClient.clear();
+    }
+
+    const cacheTypes: DbReadDomain[] = keys
+      ? keys.map(k => k.includes('matches') ? 'matches'
+                    : k.includes('referees') ? 'referees'
+                    : 'tournaments')
+      : [...DB_READ_DOMAINS];
+
+    for (const type of cacheTypes) {
+      const service = await CacheServiceCompatibility.getGatedDualReadService(type);
+      if (!service) continue;
+      await service.invalidateCache(type as any);
     }
   }
 
@@ -429,10 +467,11 @@ export class CacheServiceCompatibility {
     localStorage: { entries: number; size: number; hitRate: number };
     performance: { avgResponseTime: number; totalRequests: number };
   }> {
-    if (USE_NEW_HOOKS) {
+    const statsService = await CacheServiceCompatibility.getGatedDualReadService('tournaments');
+    if (statsService) {
       // Get performance metrics from DualReadService
-      const performanceMetrics = (await CacheServiceCompatibility.getDualReadService()).getPerformanceMetrics();
-      
+      const performanceMetrics = statsService.getPerformanceMetrics();
+
       // Calculate aggregated stats
       let totalRequests = 0;
       let totalTime = 0;
@@ -459,8 +498,7 @@ export class CacheServiceCompatibility {
         }
       };
     } else {
-      // Would call original CacheService.getCacheStats
-      throw new Error('Legacy CacheService fallback not implemented in compatibility layer');
+      throw CacheServiceCompatibility.disabledError('tournaments');
     }
   }
 
@@ -471,8 +509,16 @@ export class CacheServiceCompatibility {
     // Configure DualReadService with provided config.
     // The signature stays `void` (it is public API for the existing callers);
     // since DualReadService is now loaded lazily this can only be scheduled,
-    // not awaited. A failure here is not fatal: `ensureInitialized()` retries on
-    // the first read and every consumer already falls back to the VIS API.
+    // not awaited. A failure here is not fatal: every read re-checks the gate
+    // and every consumer already falls back to the VIS API.
+    //
+    // Gated (issue #54): with every domain flagged off — the default — this
+    // does not import DualReadService at all, so no Supabase client is built
+    // and no async chunk is fetched at startup.
+    if (DB_READ_DOMAINS.every(domain => !isDbReadEnabled(domain))) {
+      return;
+    }
+
     void (async () => {
       try {
         const service = await CacheServiceCompatibility.getDualReadService();
@@ -564,28 +610,31 @@ export class CacheServiceCompatibility {
   }
 
   /**
-   * Check if using new hook system
+   * Is any read domain served by the database?
+   *
+   * @deprecated The question is now per-domain. Use
+   * `isDbReadEnabled(domain)` from `services/flags/DbReadFlags`.
    */
   static isUsingNewHooks(): boolean {
-    return USE_NEW_HOOKS;
+    return DB_READ_DOMAINS.some(domain => isDbReadEnabled(domain));
   }
 
   /**
-   * Enable new hook system (migration helper)
+   * @deprecated Kept as the migration helper it always was, now expressed in
+   * terms of the issue #54 flag: it switches **every** domain to the database.
+   * Prefer `setDbReadOverride(['tournaments'])` — the whole point of the flag
+   * is that activation happens one domain at a time.
    */
   static enableNewHooks(): void {
-    // Set feature flag to true
-    USE_NEW_HOOKS = true;
-    process.env.EXPO_PUBLIC_USE_NEW_HOOKS = 'true';
+    setDbReadOverride('all');
   }
 
   /**
-   * Disable new hook system (rollback helper)
+   * @deprecated The rollback of AC6. Equivalent to `setDbReadOverride('off')`
+   * or `__beachrefDbReads.off()` in the browser console.
    */
   static disableNewHooks(): void {
-    // Set feature flag to false
-    USE_NEW_HOOKS = false;
-    process.env.EXPO_PUBLIC_USE_NEW_HOOKS = 'false';
+    setDbReadOverride('off');
   }
 }
 

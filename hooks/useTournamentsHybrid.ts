@@ -2,6 +2,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useState, useCallback, useEffect } from 'react';
 import { DualReadService, TournamentDTO, ReadResult, ReadStrategy } from '../services/DualReadService';
 import { queryPerformanceMonitor } from '../lib/queryPerformance';
+import { isDbReadEnabled } from '../services/flags/DbReadFlags';
 
 export interface TournamentsFilters {
   season?: number;
@@ -62,8 +63,12 @@ export function useTournamentsHybrid(
 
   // Configure the dual read service
   useEffect(() => {
+    // Gated by the issue #54 flag: whatever strategy the caller asked for, the
+    // database is consulted only when 'tournaments' has been switched on.
+    // Otherwise the strategy is forced to 'api_only' — which is what this hook
+    // effectively did before, by throwing in the constructor.
     dualReadService.configure({
-      readStrategy: currentConfig.readStrategy!,
+      readStrategy: isDbReadEnabled('tournaments') ? currentConfig.readStrategy! : 'api_only',
       fallbackEnabled: currentConfig.fallbackEnabled!,
       enablePerformanceMonitoring: currentConfig.enablePerformanceMonitoring!
     });

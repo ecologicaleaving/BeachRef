@@ -2,6 +2,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { useState, useCallback, useEffect } from 'react';
 import { DualReadService, MatchDTO, ReadResult, ReadStrategy } from '../services/DualReadService';
 import { queryPerformanceMonitor } from '../lib/queryPerformance';
+import { isDbReadEnabled } from '../services/flags/DbReadFlags';
 
 export interface MatchesFilters {
   tournamentCode?: string;
@@ -69,8 +70,9 @@ export function useMatchesHybrid(
 
   // Configure the dual read service
   useEffect(() => {
+    // Gated by the issue #54 flag: see useTournamentsHybrid for the reasoning.
     dualReadService.configure({
-      readStrategy: currentConfig.readStrategy!,
+      readStrategy: isDbReadEnabled('matches') ? currentConfig.readStrategy! : 'api_only',
       fallbackEnabled: currentConfig.fallbackEnabled!,
       enablePerformanceMonitoring: currentConfig.enablePerformanceMonitoring!
     });

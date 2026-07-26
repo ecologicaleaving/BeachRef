@@ -26,6 +26,7 @@
     "audit:baseline": "tsx scripts/audit/run-audit.ts --checks=all --update-baseline",
     "audit:watch": "tsx scripts/audit/run-audit.ts --watch",
     "fix-undefined": "tsx scripts/fix-possibly-undefined.ts",
+    "verify:rls": "tsx scripts/verify-rls-anon.ts",
     "prepare": "husky"
   },
   "dependencies": {

@@ -179,7 +179,7 @@ export interface EventDTO {
  */
 export class DualReadService {
   private static instance: DualReadService | null = null;
-  private supabase: SupabaseClient;
+  private supabaseClient: SupabaseClient | null = null;
   private networkMonitor: NetworkMonitor;
   private errorLogger: ErrorLogger;
   private circuitBreaker: ConnectionCircuitBreaker;
@@ -206,10 +206,17 @@ export class DualReadService {
   }> = new Map();
 
   private constructor() {
-    this.supabase = createClient(
-      process.env.EXPO_PUBLIC_SUPABASE_URL!,
-      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // The Supabase client is built lazily, on the first query that is actually
+    // allowed to hit the database (issue #54).
+    //
+    // It used to be built here, with `process.env.EXPO_PUBLIC_SUPABASE_URL!`.
+    // When the variable is absent `createClient` throws `supabaseUrl is
+    // required.` **from the constructor**, so `DualReadService.getInstance()`
+    // itself threw and every caller got a rejected promise. That accident is
+    // what has kept the DB branch inert — and it is also why the branch could
+    // not degrade: a constructor that throws has no fallback path to take.
+    // Now construction is deferred and guarded, so `shouldTryDatabase()` can
+    // answer "no" and the API path runs normally.
     this.networkMonitor = NetworkMonitor.getInstance();
     this.errorLogger = ErrorLogger.getInstance();
     this.circuitBreaker = ConnectionCircuitBreaker.getInstance();
@@ -222,6 +229,63 @@ export class DualReadService {
       DualReadService.instance = new DualReadService();
     }
     return DualReadService.instance;
+  }
+
+  /** Are both Supabase environment variables present? */
+  static isSupabaseConfigured(): boolean {
+    return Boolean(
+      process.env.EXPO_PUBLIC_SUPABASE_URL && process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+    );
+  }
+
+  /**
+   * Lazily built Supabase client.
+   *
+   * Throws only when a DB query is genuinely attempted without configuration —
+   * a state `shouldTryDatabase()` already refuses to enter.
+   */
+  private get supabase(): SupabaseClient {
+    if (!this.supabaseClient) {
+      const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url || !anonKey) {
+        throw new Error(
+          'DualReadService: Supabase is not configured (EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY)'
+        );
+      }
+      this.supabaseClient = createClient(url, anonKey);
+    }
+    return this.supabaseClient;
+  }
+
+  /**
+   * Bound every database read to `dbTimeoutMs`.
+   *
+   * `dbTimeoutMs` existed in `DualReadConfig` since the service was written and
+   * was **never applied to anything** — only `apiTimeoutMs` reached a request,
+   * through `AbortSignal.timeout`. A slow (as opposed to failed) Supabase
+   * therefore had no upper bound: the read hung until PostgREST gave up, and
+   * the API fallback never got its turn. AC7 of issue #54 asks explicitly for
+   * "unreachable **or slow**"; this is the "slow" half.
+   */
+  private async withDbTimeout<T>(operation: string, promise: PromiseLike<T>): Promise<T> {
+    const timeoutMs = this.config.dbTimeoutMs;
+    if (!timeoutMs || timeoutMs <= 0) return promise as Promise<T>;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        promise as Promise<T>,
+        new Promise<never>((_resolve, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`Database timeout after ${timeoutMs}ms (${operation})`)),
+            timeoutMs
+          );
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
   }
 
   /**
@@ -247,7 +311,7 @@ export class DualReadService {
       // Try database first if strategy allows
       if (this.shouldTryDatabase()) {
         try {
-          const dbResult = await this.getTournamentsFromDB(filters);
+          const dbResult = await this.withDbTimeout('tournaments', this.getTournamentsFromDB(filters));
           if (dbResult && dbResult.length > 0) {
             const performance = {
               queryTime: Date.now() - startTime,
@@ -380,7 +444,7 @@ export class DualReadService {
       // Try database first if strategy allows
       if (this.shouldTryDatabase()) {
         try {
-          const dbResult = await this.getMatchesFromDB(filters);
+          const dbResult = await this.withDbTimeout('matches', this.getMatchesFromDB(filters));
           if (dbResult && dbResult.length > 0) {
             const performance = {
               queryTime: Date.now() - startTime,
@@ -509,7 +573,7 @@ export class DualReadService {
       // Try database first if strategy allows
       if (this.shouldTryDatabase()) {
         try {
-          const dbResult = await this.getRefereesFromDB(filters);
+          const dbResult = await this.withDbTimeout('referees', this.getRefereesFromDB(filters));
           if (dbResult && dbResult.length > 0) {
             const performance = {
               queryTime: Date.now() - startTime,
@@ -630,7 +694,7 @@ export class DualReadService {
     try {
       if (this.shouldTryDatabase()) {
         try {
-          const dbResult = await this.getEventsFromDB(filters);
+          const dbResult = await this.withDbTimeout('events', this.getEventsFromDB(filters));
           if (dbResult && dbResult.length > 0) {
             const performance = {
               queryTime: Date.now() - startTime,
@@ -1390,7 +1454,13 @@ export class DualReadService {
    * Determine if database should be tried based on read strategy
    */
   private shouldTryDatabase(): boolean {
-    return this.config.readStrategy === 'db_first' || 
+    // Configuration is a precondition, not a decision (issue #54). Without the
+    // environment variables there is no database to try, and saying so here is
+    // what lets `db_first` degrade to the API instead of throwing.
+    if (!DualReadService.isSupabaseConfigured()) {
+      return false;
+    }
+    return this.config.readStrategy === 'db_first' ||
            this.config.readStrategy === 'db_only';
   }
 

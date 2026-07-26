@@ -28,8 +28,14 @@ import * as path from 'path';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 
-/** Application source. Deno edge functions and one-off scripts are not it. */
-const SCANNED_DIRS = ['app', 'components', 'hooks', 'screens', 'services', 'utils', 'lib'];
+/**
+ * Application source — everything that can end up running in a browser.
+ * Wider than `no-direct-vis-fetch.test.ts` by `repositories` and `config`,
+ * which also reach `VisApiClient`.
+ */
+const SCANNED_DIRS = [
+  'app', 'components', 'hooks', 'screens', 'services', 'utils', 'lib', 'repositories', 'config'
+];
 
 const EXEMPT_PREFIXES = ['__tests__/', '__mocks__/'];
 
@@ -41,11 +47,12 @@ const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx']);
  * `Content-Type: application/x-www-form-urlencoded` is set by `VisApiClient`
  * itself and is CORS-safelisted, so it never appears in a config object.
  *
- * `supabase/functions/contextual-vis-sync/index.ts` still sends
- * `X-FIVB-App-ID` and is deliberately not scanned: it is a Deno function
- * running server-side, where there is no browser and therefore no preflight.
- * The header is useless there too, but removing it buys nothing and touches a
- * separately deployed runtime.
+ * Two places still send `X-FIVB-App-ID` and are deliberately out of scope,
+ * because **neither runs in a browser, so neither pays a preflight**:
+ * `supabase/functions/contextual-vis-sync/index.ts` (a Deno function on the
+ * server) and half a dozen one-off `scripts/*.js` run under Node. The header is
+ * just as useless there, but removing it buys nothing and touches a separately
+ * deployed runtime.
  */
 const ALLOWED: readonly string[] = [];
 

@@ -1,6 +1,13 @@
 import { AppState } from 'react-native';
 import NetworkStateManager, { NetworkState, ConnectionQuality } from './NetworkStateManager';
 import { AppStateManager, AppLifecycleState } from './AppStateManager';
+// `initialize()` below registers a connection-state listener on
+// RealtimeSubscriptionService, but the import had gone missing: the identifier
+// was a bare free variable, so `initialize()` threw a ReferenceError and the
+// performance monitor never started. The cycle with RealtimeSubscriptionService
+// is safe because the binding is only dereferenced inside `initialize()`,
+// never at module evaluation time.
+import { RealtimeSubscriptionService } from './RealtimeSubscriptionService';
 
 // Avoid circular dependency by using type-only import
 export enum ConnectionState {

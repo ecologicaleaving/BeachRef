@@ -41,7 +41,14 @@ export enum VisApiEndpoint {
   /** Endpoint for image lookups — used to resolve referee portraits (issue #46) */
   GET_IMAGE_LIST = 'GetImageList',
   /** Endpoint issuing a one-shot token for a referee's ID card PDF (issue #46) */
-  GET_REFEREE_ID_CARD = 'GetRefereeIdCard'
+  GET_REFEREE_ID_CARD = 'GetRefereeIdCard',
+  /**
+   * Endpoint for the tournament entry list (teams/players).
+   * Specified by `specs/003-players-entry-list` but never added to the client:
+   * `TournamentTeamService` called `visApi.getTournamentTeamList()` on a method
+   * that did not exist, so `/tournament-teams` threw on every load (issue #73).
+   */
+  GET_TOURNAMENT_TEAM_LIST = 'GetTournamentTeamList'
 }
 
 /**
@@ -350,6 +357,55 @@ export interface GetRefereeIdCardRequest extends VisApiRequestBase {
 }
 
 /**
+ * GetTournamentTeamList request parameters.
+ *
+ * Contract taken verbatim from `specs/003-players-entry-list/data-model.md`,
+ * whose task list included "types/api-v2.ts — Add GetTournamentTeamListRequest
+ * and GetTournamentTeamListResponse". That task never landed, while
+ * `services/TournamentTeamService.ts` was written against it — which is why the
+ * service imported three types that did not exist and called a client method
+ * that did not exist (issue #73).
+ *
+ * Note the PascalCase property names: they are the ones the service already
+ * writes, and they mirror the VIS attribute names.
+ */
+export interface GetTournamentTeamListRequest extends VisApiRequestBase {
+  /** Tournament number from VIS */
+  readonly TournamentNo: number;
+  /** Fields to include in response */
+  readonly Fields?: readonly string[];
+}
+
+/**
+ * A single team as returned by `GetTournamentTeamList`, after XML parsing.
+ * See `specs/003-players-entry-list/data-model.md`.
+ */
+export interface VISTeamDTO {
+  readonly no: number;
+  readonly player1Name: string;
+  readonly player2Name: string;
+  readonly player1No: number;
+  readonly player2No: number;
+  readonly seed: number | null;
+  /** Numeric or string phase code — normalised by TournamentTeamService */
+  readonly phaseCode: string;
+  readonly countryCode: string;
+  readonly status?: string;
+  readonly isWildCard?: boolean;
+  readonly isReserve?: boolean;
+  readonly gender: 'M' | 'W';
+}
+
+/**
+ * Parsed shape of a `GetTournamentTeamList` XML response.
+ */
+export interface GetTournamentTeamListResponse {
+  readonly BeachTeams?: {
+    readonly BeachTeam: VISTeamDTO[] | VISTeamDTO;
+  };
+}
+
+/**
  * Batch request item for combining multiple API calls
  */
 export interface BatchRequestItem {
@@ -620,18 +676,23 @@ export interface IVisApiClient {
   getEventRefereeList(request: GetEventRefereeListRequest): Promise<VisApiResponse>;
 
   /**
-   * Alias for getBeachMatchList - fetch matches for a tournament
-   * @param request - GetBeachMatchList request parameters
-   * @returns Promise with XML response
+   * Get the tournament entry list (teams / players)
+   * @param request - GetTournamentTeamList request parameters
+   * @returns Promise with XML response containing the team list
    */
-  fetchMatchesForTournament?(request: GetBeachMatchListRequest): Promise<VisApiResponse>;
+  getTournamentTeamList(request: GetTournamentTeamListRequest): Promise<VisApiResponse>;
 
-  /**
-   * Alias for getEventList - get tournaments
-   * @param request - GetEventList request parameters
-   * @returns Promise with XML response
-   */
-  getTournaments?(request: GetEventListRequest): Promise<VisApiResponse>;
+  // NOTE (issue #73): two *optional* aliases used to be declared here —
+  // `fetchMatchesForTournament?(request): Promise<VisApiResponse>` and
+  // `getTournaments?(request): Promise<VisApiResponse>`. Neither was ever
+  // implemented, and neither matched how the ten call sites used them (they
+  // pass a tournament number, not a request object, and expect parsed domain
+  // objects, not XML). Declaring an optional member that nothing implements
+  // does not make a call safe — it only stops the interface from complaining
+  // while the class still doesn't have the method.
+  // `fetchMatchesForTournament` and `fetchBeachTournamentsThisYear` are now
+  // real methods on `VisApiClient` with the signature the callers use;
+  // `getTournaments` was removed and its two callers moved to `getEventList`.
 
   /**
    * Test API connectivity
@@ -788,7 +849,11 @@ export const DEFAULT_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]>
   // `Fields` attribute at all — its builder does not emit one — but every
   // endpoint must declare a non-empty selection (see the field-selection tests).
   [VisApiEndpoint.GET_IMAGE_LIST]: ['No'],
-  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token']
+  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token'],
+  [VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST]: [
+    'No', 'Player1Name', 'Player2Name', 'Player1No', 'Player2No',
+    'Seed', 'PhaseCode', 'CountryCode', 'Status', 'IsWildCard', 'IsReserve', 'Gender'
+  ]
 } as const;
 
 /**
@@ -841,7 +906,10 @@ export const SLIM_FIELD_SELECTIONS: Record<VisApiEndpoint, readonly string[]> = 
     'FirstName', 'LastName', 'NoReferee', 'FederationCode', 'Status'
   ],
   [VisApiEndpoint.GET_IMAGE_LIST]: ['No'],
-  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token']
+  [VisApiEndpoint.GET_REFEREE_ID_CARD]: ['Token'],
+  [VisApiEndpoint.GET_TOURNAMENT_TEAM_LIST]: [
+    'No', 'Player1Name', 'Player2Name', 'Seed', 'PhaseCode', 'CountryCode'
+  ]
 } as const;
 
 /**

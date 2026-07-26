@@ -59,13 +59,13 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       
       const tournaments = await visApiClient.fetchBeachTournamentsThisYear();
       
-      const currentTournament = tournaments.find(t => t.No === tournamentNo);
+      const currentTournament = tournaments.find(t => t.visNo === tournamentNo);
       
-      if (!currentTournament || !currentTournament.Code) {
+      if (!currentTournament || !currentTournament.code) {
         return null;
       }
       
-      const currentCode = currentTournament.Code;
+      const currentCode = currentTournament.code;
       
       let oppositeCode: string | null = null;
       
@@ -76,9 +76,9 @@ export const useRefereeManagement = (): UseRefereeManagement => {
       }
       
       if (oppositeCode) {
-        const oppositeTournament = tournaments.find(t => t.Code === oppositeCode);
+        const oppositeTournament = tournaments.find(t => t.code === oppositeCode);
         if (oppositeTournament) {
-          return oppositeTournament.No;
+          return oppositeTournament.visNo;
         }
       }
       

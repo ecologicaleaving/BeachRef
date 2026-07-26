@@ -1746,8 +1746,18 @@ const TournamentDetailScreenContent: React.FC = () => {
           };
 
           const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
-          const apiResponse = await visApi.getTournaments();
-          tournaments = apiResponse.tournaments || [];
+          // A `getTournaments` method never existed on VisApiClient, and its
+          // supposed `{ tournaments }` envelope never existed either: this whole
+          // branch threw a TypeError, was swallowed by the catch below, and
+          // `/tournament-detail` reached from a link carrying only `visNo`
+          // silently never resolved the full tournament (issue #73).
+          // The real endpoint is GetEventList; parsing is VisResponseParser's job.
+          const { VisResponseParser } = await import('../services/parsing/VisResponseParser');
+          const apiResponse = await visApi.getEventList({});
+          if (!apiResponse.success) {
+            throw new Error(apiResponse.error || 'GetEventList failed');
+          }
+          tournaments = VisResponseParser.parseEventList(apiResponse.xmlData);
 
         } catch (apiError) {
           // US3 & US4: Transform error to user-friendly message

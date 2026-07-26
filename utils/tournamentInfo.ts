@@ -163,12 +163,22 @@ export const isScheduleItemCurrent = (item: ScheduleItem, currentTime: Date = ne
 };
 
 // Weather Alert Utilities
+
+/**
+ * Is this alert in force right now?
+ *
+ * `components/TournamentInfo/WeatherAlerts.tsx` has imported this name from
+ * here since it was written, and called it three times per render — but it was
+ * never defined, so the import was `undefined` and the component threw on its
+ * first alert (issue #73 AC6). The predicate is the one `getActiveWeatherAlerts`
+ * already applies; it is factored out here so the two can't drift.
+ */
+export const isWeatherAlertActive = (alert: WeatherAlert, currentTime: Date = new Date()): boolean =>
+  alert.issuedAt <= currentTime && (!alert.expiresAt || alert.expiresAt > currentTime);
+
 export const getActiveWeatherAlerts = (alerts: WeatherAlert[], currentTime: Date = new Date()): WeatherAlert[] => {
   return alerts
-    .filter(alert => 
-      alert.issuedAt <= currentTime &&
-      (!alert.expiresAt || alert.expiresAt > currentTime)
-    )
+    .filter(alert => isWeatherAlertActive(alert, currentTime))
     .sort((a, b) => {
       // Sort by severity first, then by issued time
       const severityOrder: Record<WeatherSeverity, number> = {

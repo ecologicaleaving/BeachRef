@@ -752,14 +752,66 @@ If you touch the audit, these must stay green.
 
 ### TypeScript Error Reduction
 
-**Systematic Type Fixing Results**:
+> **Misurare prima di tutto.** Se hai lanciato `npx expo start`, Expo ha
+> generato `expo-env.d.ts` e `.expo/types/` (entrambi gitignored). Con quelli
+> presenti `tsc --noEmit` passa da ~3200 a oltre 5000 righe di output, con
+> centinaia di errori da file estranei. **Verifica che non esistano e
+> rimuovili prima di prendere qualunque conteggio**, altrimenti misuri il
+> generatore di tipi di Expo, non il codice.
+>
+> ```bash
+> rm -rf .expo/types expo-env.d.ts
+> npx tsc --noEmit --pretty false | grep -c "error TS"
+> ```
 
-| Metric | Value |
-|--------|-------|
-| **Starting Errors** | 4,215 critical |
-| **Current Errors** | 3,590 critical |
-| **Errors Fixed** | **625 (14.8% reduction)** |
-| **Rounds Completed** | 6 |
+**Stato attuale (issue #49)**: **1757 errori**, da 2462 — **−705, −28,6%**.
+Baseline audit congelata a **1795** finding bloccanti (era 2721).
+
+| Campagna | Da | A | Δ |
+|---|---|---|---|
+| Precedente (6 round) | 4215 | 3590 | −625 (−14,8%) |
+| Issue #49 (6 round) | 2462 | 1757 | −705 (−28,6%) |
+
+**Cosa ha prodotto la riduzione, in ordine di resa** — il criterio e' sempre lo
+stesso: *una* definizione radice sbagliata, decine di errori a valle.
+
+| Causa radice | Errori | Fix |
+|---|---|---|
+| `supabase/functions/**` typecheckate dal tsconfig dell'app | 424 | Sono Deno (hanno il loro `deno.json`), escluse in `tsconfig.json` |
+| Libreria icone incompleta + `width`/`height`/`fill` non dichiarati | 91 | 36 voci aggiunte a `IconLibrary`/`CORE_ICON_MAP`; override onorati in `Icon` |
+| `BeachMatch` senza gli alias VIS di data/arbitro | ~45 | Alias opzionali in `types/match.ts` |
+| `NodeJS.Timeout` su RN/web (restituiscono `number`) | 39 | `TimerHandle` in `types/timers.d.ts`, 30 file |
+| `ColorToken` senza `statusColors` | 37 | Dichiarato obbligatorio in `types/theme.ts` |
+| 27 import verso export inesistenti (`_Modal`, `_Severity`, ...) | 27 | Rimossi (nessuno era usato) |
+| `CachedApiResponse`/`InstrumentedApiResponse` | 24 | Intersezione invece di `extends` su una union |
+| `FilterOptions` senza `status`/`gender`/`country` | 10 | Dichiarati in `types/cache.ts` |
+
+**`interface X extends <union>` e' il trabocchetto piu' costoso di questo
+codebase.** Un'interface che estende un tipo union **non ne eredita i membri**:
+il tipo risultante espone solo i campi aggiunti. `ApiResponse<T>` e
+`UseQueryResult<T>` sono entrambe union discriminate, e le interfacce che le
+estendevano avevano perso `data`, `success`, `error`, `isLoading`, `refetch`.
+Usa un'intersezione (`type X = Union & { ... }`).
+Restano da convertire — **non farlo senza budget**: `MatchesQueryResult`,
+`TournamentsQueryResult`, `RefereeAnalyticsQueryResult`. La conversione e'
+corretta ma fa emergere ~60 errori a valle (i consumer fanno `.data.data`, e gli
+oggetti restituiti dagli hook non soddisfano la union), per un guadagno netto di
+2. Tentata e ritirata in #49 per questo motivo.
+
+**Dove si e' fermata #49, e perche'.** Il target della issue era −30% (≤1723).
+Il residuo non e' piu' "tipi troppo stretti": e' **codice e tipi che non vanno
+d'accordo, con il codice dalla parte del torto** — `DatabaseMapper` che scrive
+`{number, name}` dove `CourtInfo` vuole `{courtNumber, courtName}`,
+`Assignment` a cui la UI chiede `round`/`phase`/`priority` che nessuno produce.
+Allargare quei tipi avrebbe fatto scendere il contatore nascondendo difetti
+reali. Il conteggio si e' fermato 34 errori sopra il target.
+
+**~220 dei 1757 errori residui vivono in file orfani** — `components/index.ts`
+non e' importato da nulla, e con esso tutta `components/TournamentInfo/*`,
+`components/MatchResult/*`, `components/entities/Player/*` e
+`components/TournamentDetail.tsx`. Cancellarli porterebbe da solo il totale a
+~1540 (−37% dalla baseline). E' una decisione di prodotto, non di tipi: va
+aperta come issue a se'.
 
 **Type Improvements Made**:
 
@@ -823,9 +875,13 @@ authority on current behaviour**; treat those documents as historical.
 numbers are now reproducible on a machine with `node_modules` installed, which
 before #44 they were not (see `excludePaths` above):
 
+> Aggiornato da issue #49: TypeScript e' passato da 2677 a **1757** finding e la
+> baseline congelata da 2721 a **1795**. La riga TypeScript qui sotto e' quella
+> post-#49; le altre non sono state toccate.
+
 | Checker | Findings |
 |---|---|
-| TypeScript | 2677 |
+| TypeScript | 1757 |
 | ESLint | 922 (5 errors / 917 warnings — matches `npm run lint`) |
 | Complexity | 176 |
 | Security | **0** |
@@ -835,8 +891,8 @@ before #44 they were not (see `excludePaths` above):
 | Data Flow | 25 |
 | Build | 4 |
 
-2721 blocking findings are frozen in `.audit-baseline.json` (was 2780 before
-issue #56). The gate therefore reports PASS today, and will report FAIL the
+1795 blocking findings are frozen in `.audit-baseline.json` (2780 before issue
+#56, 2721 before issue #49). The gate therefore reports PASS today, and will report FAIL the
 moment any of those counts grows. This number is the epic's real starting
 point — not zero.
 

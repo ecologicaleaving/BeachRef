@@ -1340,7 +1340,10 @@ export class VisApiClient implements IVisApiClient {
     
     // Include all federation code fields for flag display, plus match results, referee IDs, position fields, result types, timezone data, and match personnel
     // Note: VIS API returns NoEvent (not EventNo) for the event/tournament ID
-    const fields = 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoRefereeChallenge RefereeChallengeName RefereeChallengeFederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel NoEvent';
+    // A caller may override the list (issue #47) — see GetBeachMatchListRequest.fields.
+    const fields = request.fields && request.fields.length > 0
+      ? request.fields.join(' ')
+      : 'No NoInTournament BeginDateTimeUtc EndDateTimeUtc UtcDate UtcTime LocalDate LocalTime LocalTimeOffset TimeZone Status ResultType Court TeamAName TeamBName TeamAFederationCode TeamBFederationCode TeamAPositionInMainDraw TeamBPositionInMainDraw TeamAPositionInQualification TeamBPositionInQualification MatchPointsA MatchPointsB RoundName Round RoundPhase Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode NoRefereeChallenge RefereeChallengeName RefereeChallengeFederationCode NoReferee1 NoReferee2 PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 DurationSet1 DurationSet2 DurationSet3 Personnel NoEvent';
     
     // Use EXACT XML format from documentation
     const xmlRequest = `<Request Type="GetBeachMatchList" Fields="${fields}">
@@ -1472,11 +1475,20 @@ export class VisApiClient implements IVisApiClient {
       ? request.fields.join(' ')
       : 'NoReferee FirstName LastName Gender Role Status';
 
+    // Optional name narrowing (issue #47) — see GetEventRefereeListRequest.
+    const filterAttribs = [`NoEvent="${this.escapeXmlAttribute(request.eventNo)}"`];
+    if (request.firstName) {
+      filterAttribs.push(`FirstName="${this.escapeXmlAttribute(request.firstName)}"`);
+    }
+    if (request.lastName) {
+      filterAttribs.push(`LastName="${this.escapeXmlAttribute(request.lastName)}"`);
+    }
+
     // Use Filter element with NoEvent per VIS API specification.
     // GetEventRefereeList only answers inside a <Requests> envelope: sent bare
     // it replies `<NotInNewFormat id="1008" />` (verified on EventNo 1719/1525,
     // issue #40). This mirrors the envelope already used in app/ref-mode.tsx.
-    return `<Requests><Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter NoEvent="${this.escapeXmlAttribute(request.eventNo)}" /></Request></Requests>`;
+    return `<Requests><Request Type="GetEventRefereeList" Fields="${this.escapeXmlAttribute(fields)}"><Filter ${filterAttribs.join(' ')} /></Request></Requests>`;
   }
 
   /**

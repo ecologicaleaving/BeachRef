@@ -98,14 +98,32 @@ The project uses Expo Router with a comprehensive screen-based navigation system
   `ApiAuditService`, so the API conformance numbers in this file were blind to
   that traffic. Every read is now cached per key and routed through
   `VisApiClient`. If you need a referee-shaped datum in a screen, add a method
-  here rather than a `fetch` there.
+  here rather than a `fetch` there. Issue #47 extended that rule to the rest of
+  the codebase: `screens/`, `components/` and `utils/` read event rosters from
+  here too, so the three consumers that used to ask for the same
+  `GetEventRefereeList` while one tournament screen was open now share a single
+  cached entry.
+- `RefereeStatsService.ts` - Referee statistics. Its six raw `fetch` calls
+  became `VisApiClient` calls in issue #47; two of them stopped being requests
+  at all, because the roster they were resolving names against is already
+  cached by `RefereeDirectoryService`. Inject a client with
+  `RefereeStatsService.setVisApiClient()` in tests.
 - `RefereeAssignmentsService.ts` - Assignment management
 - `MatchResultsService.ts` - Match result handling
 - `TournamentOperationsService.ts` - Tournament operations
 
 **Monitoring & Audit Services** (✨ New - specs/001-vis-api-optimization):
 - `ApiAuditService.ts` - Request capture and validation (__DEV__ only)
-  - Captures all VIS API requests for analysis
+  - Captures all VIS API requests for analysis. **"All" became true with issue
+    #47**, and only because of two properties held together: nothing reaches
+    the VIS except through `VisApiClient`
+    (`__tests__/no-direct-vis-fetch.test.ts`), and everything through
+    `VisApiClient` is captured
+    (`__tests__/services/api/VisApiClient.audit-coverage.test.ts`). Before #46
+    and #47 the first property was false 23 times over, so every conformance
+    percentage in this file was computed on a sample that excluded precisely
+    the requests nobody was watching. If you add a VIS call, add it to the
+    client — not next to it.
   - Validates XML format, parameters, field counts
   - Detects malformed requests and over-fetching
   - Payload size monitoring (warn if >50KB)

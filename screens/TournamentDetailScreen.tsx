@@ -41,6 +41,7 @@ import { useLiveScores } from '../hooks/useLiveScores';
 import { useTournaments } from '../hooks/useTournaments';
 import { designTokens } from '../theme/tokens';
 import { fetchEventRefereeList } from '../utils/challengeRefereeSync';
+import { RefereeDirectoryService } from '../services/RefereeDirectoryService';
 // Removed TournamentDateExtractor - now using direct API StartDate/EndDate
 
 // Separate component for expanded filters to prevent hooks issues
@@ -1047,84 +1048,48 @@ const TournamentDetailScreenContent: React.FC = () => {
     }
   };
 
-  // VIS API referee request with correct format
+  /**
+   * VIS API referee request — issue #47: through the service, not a raw fetch.
+   *
+   * This was the last `fetch('https://www.fivb.org/...')` left in `screens/`
+   * after #46. `RefereeDirectoryService.getEventReferees` issues the same
+   * `GetEventRefereeList` with a superset of the fields, caches it per event
+   * (so opening the same tournament twice costs nothing) and shares that entry
+   * with `challengeRefereeSync` and `TournamentRefereeList`, which ask for the
+   * very same roster while this screen is open.
+   */
   const loadRefereesFromAPI = async () => {
     try {
       const NoEvent = tournament.visNo; // Use current tournament's event number
+      const { referees, error } = await RefereeDirectoryService.getEventReferees(NoEvent);
 
-      const xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
-    <Filter NoEvent="${NoEvent}"/>
-  </Request>
-</Requests>`;
-
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-
-      if (response.ok) {
-        const xmlResponse = await response.text();
-
-        // Parse and store referee data
-        const referees = parseRefereeXML(xmlResponse);
-        const validReferees = referees.filter(ref => ref.firstName.trim() || ref.lastName.trim());
-
-        const refereeNames = validReferees
-          .map(ref => `${ref.firstName} ${ref.lastName}`.trim())
-          .sort();
-
-        const refereeData = validReferees
-          .map(ref => ({
-            name: `${ref.firstName} ${ref.lastName}`.trim(),
-            federationCode: ref.federationCode || ''
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setRefereeNamesFromAPI(refereeNames);
-        setRefereeDataFromAPI(refereeData);
-      } else {
+      if (error) {
+        console.warn('🏐 loadRefereesFromAPI:', error);
         setRefereeNamesFromAPI([]);
         setRefereeDataFromAPI([]);
+        return;
       }
+
+      const validReferees = referees.filter(ref => ref.firstName.trim() || ref.lastName.trim());
+
+      const refereeNames = validReferees
+        .map(ref => `${ref.firstName} ${ref.lastName}`.trim())
+        .sort();
+
+      const refereeData = validReferees
+        .map(ref => ({
+          name: `${ref.firstName} ${ref.lastName}`.trim(),
+          federationCode: ref.federationCode || ''
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      setRefereeNamesFromAPI(refereeNames);
+      setRefereeDataFromAPI(refereeData);
     } catch (error) {
       console.error('🏐 Error in loadRefereesFromAPI:', error);
       setRefereeNamesFromAPI([]);
       setRefereeDataFromAPI([]);
     }
-  };
-
-  // Parse referee XML response
-  const parseRefereeXML = (xmlString: string) => {
-    const referees: any[] = [];
-
-    // Extract referee data using regex (simple parsing)
-    const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
-
-    if (refereeMatches) {
-      refereeMatches.forEach(match => {
-        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
-        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
-        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
-        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
-        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-
-        referees.push({
-          noReferee,
-          firstName,
-          lastName,
-          federationCode,
-          gender
-        });
-      });
-    }
-
-    return referees;
   };
 
 
@@ -1488,9 +1453,11 @@ const TournamentDetailScreenContent: React.FC = () => {
                   // Fetch both in parallel for Challenge Referee and Personnel display
                   console.log('[TournamentDetail] Fetching event referee list and auxiliary persons for NoEvent:', eventNo);
 
-                  // Import fetchEventAuxiliaryPersons dynamically
-                  import('../utils/auxiliaryPersonsSync').then(module => {
-                    module.fetchEventAuxiliaryPersons(eventNo.toString())
+                  // Issue #47: OfficialsService replaces utils/auxiliaryPersonsSync,
+                  // which duplicated its GetEvent recipe with a raw fetch.
+                  // Still loaded dynamically to keep it off the entry chunk.
+                  import('../services/OfficialsService').then(module => {
+                    module.OfficialsService.primeAuxiliaryPersonsCache(eventNo.toString())
                       .then(() => {
                         // Trigger re-render so MatchCards can display cached Personnel officials (T046)
                         setOfficialsDataLoaded(prev => prev + 1);

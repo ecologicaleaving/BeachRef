@@ -168,6 +168,7 @@ Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 - **DONE**: Issue #45 (epic #51, wave 1, propedeutica a #38) — Codice morto e codice dormiente sono due cose diverse, e la issue le trattava insieme. **Morto e rimosso**: `IntegrationTestSuite` + `MigrationOrchestrationService` + `MigrationMonitoringService` + `MigrationRollbackService` (127 KB di sorgente, 5933 righe) formavano un'**isola chiusa** — si importavano solo fra loro, la radice `IntegrationTestSuite` non era importata da nessuno tranne il proprio test, e nessun percorso da `app/` li raggiungeva. Verificati anche i riferimenti dinamici (nessun `require()` a runtime, nessun import per stringa, nessuna citazione in `package.json`/`.github/`/`.husky/`/`netlify.toml`/`app.json`/script; `scripts/enableMigration.js`, che il nome suggerirebbe, riguarda i feature flag degli hook). **Effetto sul bundle: zero, e misurato** — non essendo nel grafo di build non erano nel chunk `entry-*.js`: 0 occorrenze di ogni marker nel bundle prodotto *prima* della rimozione. I "170 KB nel grafo di build" della issue erano sorgente su disco, non peso spedito. **Dormiente e mantenuto**: `DualReadService` **non** è stato rimosso (AC3 opzione (b)) perché la #54 accende Supabase sul web e questo è il percorso DB-first che piloterà. È stato reso **davvero** lazy: l'accesso avveniva con un `require()` dentro un metodo, ma **Metro risolve `require()` staticamente esattamente come `import`** — differiva l'*esecuzione*, mai il *caricamento*, quindi il file stava nell'entry. Con `import()` dinamico memoizzato: entry raw 3.666.774 → 3.641.546 B (**−25.228 B, −0,69%**), br 711.719 → 707.711 B (**−4.008 B, −0,56%**), nuovo chunk `DualReadService-*.js` raw 25.704 / br 5.425 B (23 → 24 chunk). `@supabase/supabase-js` **non** si sposta: resta nell'entry perché lo importano altri 8 moduli raggiungibili da `app/`. **Scoperta collaterale importante per la #54**: il ramo DB non "fallisce e degrada", è il **costruttore** che esplode — senza `EXPO_PUBLIC_SUPABASE_URL` `createClient()` lancia `supabaseUrl is required.`, quindi ogni `getTournaments`/`getMatches`/`getReferees`/`clearCache` di `CacheServiceCompatibility` termina nel `catch` dei chiamanti sulla VIS API. Appena le variabili saranno su Netlify, `readStrategy: 'db_first'` si attiva **di colpo** su tutte e quattro le strade, senza altri interruttori. tsc 2675 → **2603** (−72), lint 922 (5 errori) invariato, 4 suite rosse in meno, `npm run audit:ci` PASS
 - **TODO** (emerso da #45): `services/DataConsistencyValidator.ts` e `services/DataSyncService.ts` sono **rimasti orfani** dopo la rimozione della catena `Migration*` — erano importati solo da lì. Non eliminati di proposito: sono codice Supabase e vanno valutati insieme alla #54, non tagliati di nascosto
 - **DONE**: Issue #46 (epic #51, wave 2, parte 1 di 2) — Le **13 `fetch` dirette al VIS** nelle 4 schermate di `app/` (`tournament-ref` 5, `all-referees` 3, `ref-mode` 3, `referee-profile` 2) sono state sostituite da `services/RefereeDirectoryService.ts`, modellato su `OfficialsService`. Non è solo estetica: bypassare `VisApiClient` significava bypassare retry, monitor e soprattutto `ApiAuditService` — le metriche di conformità API in CLAUDE.md **non vedevano questo traffico**, ed è questa la ragione vera della issue. Aggiunti al client 4 endpoint che prima esistevano solo come stringhe XML nei componenti (`GetRefereeList`, `GetReferee`, `GetImageList`, `GetRefereeIdCard`), ciascuno con l'envelope `<Requests>` che questi endpoint richiedono (senza, rispondono `<NotInNewFormat id="1008" />` — stessa trappola di `GetEventRefereeList` trovata nella #40). **Misura AC5**: `tournament-ref` chiedeva **tre volte** lo stesso `GetEventRefereeList` in un solo caricamento; ora aprire → tornare indietro → riaprire costa **2 chiamate invece di 8** (−75%), `all-referees` scarica il direttorio globale **una volta invece di due**, `ref-mode` passa da 4 chiamate a 3 e da 3 a 1 alla riapertura. 29 test nuovi su fixture **senza rete**. tsc 2603 → **2593**, lint 922 → **918** (5 errori invariati, tutti preesistenti in file non toccati), `audit:ci` PASS. **Due bug preesistenti trovati e NON corretti** (la issue è un refactoring): (1) `ref-mode` chiude il caricamento con una `GetEvent` che **sovrascrive** le liste appena ottenute con quello che riesce a estrarne — e non estrae nulla, perché `GetEvent` non risponde con `<EventOfficialList>`/`<EventRefereeList>`: è il motivo per cui la schermata mostra `Officials (0) / Referees (0)` ed è "under construction"; il comportamento è preservato alla lettera con un commento che lo marca. (2) `all-referees` fa fan-out con `Promise.all` **non limitato** di una richiesta statistiche per ogni arbitro attivo — vedi issue #65
+- **DONE**: Issue #47 (epic #51, wave 2, parte 2 di 2) — Le **ultime 10 `fetch` dirette al VIS** fuori da `services/api/`. La tabella della issue attribuiva l'ultima a `hooks/useLiveScores.ts`: **non era lì** — quel file passa già da `VisApiClient`, ha circuit breaker e cache 5 s (`CacheService.setLiveScore`). La decima era in `screens/TournamentDetailScreen.tsx`, che la issue non elencava. Rimisurato: `RefereeStatsService` 6, `utils/auxiliaryPersonsSync` 1, `utils/challengeRefereeSync` 1, `components/referee/TournamentRefereeList` 1, `screens/TournamentDetailScreen` 1 = **10**. **AC2 — `auxiliaryPersonsSync` eliminato, non incapsulato**: rifaceva `GetEvent Fields="AuxiliaryPersons"` e il doppio decode XML che `OfficialsService` già possiede. Sopravvive solo la *forma* dell'entry MMKV `event:<eventNo>:auxiliaryPersons`, perché `getSupportingOfficialsSync` la legge **in modo sincrono dentro il render** e non può await: ora la scrive `OfficialsService.primeAuxiliaryPersonsCache()`. **Il client è stato esteso, non forzato**: `GetBeachMatchListRequest.fields` — il field set di default non porta `TournamentGender` (split uomini/donne delle statistiche), `LocalDateTime` (filtro stagione client-side) né `Code` — e `GetEventRefereeListRequest.firstName`/`lastName`. Effetto collaterale: `RefereeAssignmentsService` passava **già** `fields` a `getBeachMatchList`, era un errore di tipo e il valore veniva scartato in silenzio; ora viene onorato (la risposta di quella chiamata è comunque buttata da un fallback morto). **Misura AC6, contata nel browser** (evento 1734 BPT Challenge Shangluo, un match LIVE in corso, storage pulito, ~136 s): produzione **35** POST VIS (`GetEventRefereeList` 3, `GetEvent` 3, `GetBeachMatchList` 3, `GetBeachTournament` 2, `GetBeachLive` 24) → preview #68 **33** (`GetEventRefereeList` **1**, resto invariato). Il guadagno vero è sull'apertura della tab arbitri, dove tre componenti chiedevano lo stesso roster: **3 `GetEventRefereeList` → 0** (servita dall'entry già in cache). Il polling live è **invariato di proposito**: 24 `GetBeachLive` prima e dopo — quel percorso non aveva `fetch` dirette da togliere. **AC7**: la copertura al 100% dell'audit è ora una proprietà congelata da due test complementari — `__tests__/no-direct-vis-fetch.test.ts` (niente raggiunge la VIS se non via `VisApiClient`) e `__tests__/services/api/VisApiClient.audit-coverage.test.ts` (1 richiesta catturata per ogni POST uscita, errori compresi). 20 test nuovi su fixture **senza rete**. tsc 2593 → **2589** (−4: spariti i 4 errori dei file toccati, nessuno nuovo), lint 918 invariato (5 errori, tutti preesistenti altrove), suite jest **identiche a master**, `audit:ci` PASS con 0 regressioni. ⚠️ **Nota per la #67**: `OfficialsService` manda `X-FIVB-App-ID` e `auxiliaryPersonsSync` no, quindi finché la #67 non toglie quell'header il percorso auxiliary-persons paga una preflight CORS che prima non pagava. L'header non è richiesto dall'endpoint; toglierlo è lavoro della #67, non di questa issue.
 - **TODO**: Rientro del baseline `.audit-baseline.json` verso zero (2721 finding bloccanti: 2677 TS, 5 ESLint error, 39 error-handling; **0 Critical, 0 security**)
 
 ## Il peso del bundle non è la leva dell'LCP (issue #38)
@@ -453,5 +454,47 @@ roster di `GetEventRefereeList` porta gia' gli stessi campi, ed e' per questo ch
   issue #65.
 
 ---
+## Anagrafica arbitri, parte 2 (issue #47)
+
+Con la #47 **nessun file fuori da `services/api/` nomina `fivb.org` dentro una
+`fetch`**. Congelato da `__tests__/no-direct-vis-fetch.test.ts`: se qualcuno
+riapre la scorciatoia, il test diventa rosso.
+
+### Chi legge il roster di un evento, e quante volte
+
+Tre consumatori chiedevano lo **stesso** `GetEventRefereeList` mentre la
+schermata torneo era aperta. Ora condividono l'entry
+`referees:event:<eventNo>` di `RefereeDirectoryService` (TTL 120 s):
+
+| Consumatore | Cosa ne fa |
+|---|---|
+| `screens/TournamentDetailScreen.tsx` | nomi + federazione per i filtri |
+| `components/referee/TournamentRefereeList.tsx` | la lista della tab Officials |
+| `utils/challengeRefereeSync.ts` | mappa **sincrona** id → nome per `MatchCard` |
+
+`challengeRefereeSync` e `matchOfficialsSync` restano perché fanno una cosa che
+un servizio async non può fare: si leggono **dentro il render**. Quello che
+hanno perso è la rete e il parser XML propri.
+
+### `RefereeStatsService`: cosa è cambiato e cosa no
+
+Le 6 `fetch` sono diventate chiamate al client. Due non sono nemmeno diventate
+chiamate: `resolveRefereeNameFromEvent` e il fallback per nome di
+`resolveRefereeIdFromTournament` leggono il roster già cachato da
+`RefereeDirectoryService`.
+
+**Non corretti di proposito** (la issue è un refactoring): il filtro per nome
+primario si fida del **primo** `NoReferee` che compare nella risposta, senza
+verificare che sia quello chiesto; e `careerStartDate`/`careerEndDate` sono
+calcolate e mai usate. Entrambi preesistenti alla #47.
+
+### Il fan-out delle statistiche non è stato toccato
+
+Aprire la tab arbitri costa **34 `GetBeachMatchList`** in 20 s, prima e dopo:
+è il `Promise.all` non limitato di una richiesta statistiche per arbitro. È la
+issue **#65**, non questa.
+
+---
+
 *Last Updated: 2026-07-26T12:00:00Z*
 

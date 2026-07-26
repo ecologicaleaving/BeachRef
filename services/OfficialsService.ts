@@ -36,6 +36,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import { VisApiClient } from './api/VisApiClient';
 import { CacheService } from './cache/CacheService';
+import { cacheMmkvStorage } from './cache/MmkvStorage';
 import type { GetBeachMatchListRequest, GetEventRefereeListRequest, GetEventRequest, VisApiResponse } from '../types/api-v2';
 import { DEFAULT_RETRY_CONFIG } from '../types/api-v2';
 import {
@@ -283,6 +284,51 @@ export class OfficialsService {
       return { referees };
     } catch (error) {
       return { referees: [], error: this.describeError('GetEventRefereeList', error) };
+    }
+  }
+
+  /**
+   * Publish the event roster in the flat MMKV entry that
+   * {@link getSupportingOfficialsSync} reads **synchronously** during render.
+   *
+   * Issue #47 folded `utils/auxiliaryPersonsSync.ts` in here. That module issued
+   * its own `fetch` to `GetEvent Fields="AuxiliaryPersons"` and re-implemented
+   * the double XML decode — the very recipe this service already owns — so it
+   * was a duplicate with divergent parsing, invisible to `ApiAuditService`.
+   *
+   * What survives of it is only the *shape* of the cache entry, because
+   * `matchOfficialsSync` cannot await: it reads `event:<eventNo>:auxiliaryPersons`
+   * off raw MMKV inside a render. Hence this method — the network and the
+   * parsing come from {@link getEventOfficials} (cached, 120 s), and the result
+   * is projected into that entry with the keys the sync reader expects
+   * (`No` as a **string**: it is compared against `Personnel` ids stringified).
+   *
+   * Never throws; a failure leaves the entry absent and the match cards simply
+   * render without supporting officials, exactly as before.
+   */
+  static async primeAuxiliaryPersonsCache(eventNo: string): Promise<void> {
+    try {
+      const roster = await this.getEventOfficials(eventNo);
+
+      if (roster.error) {
+        console.warn(`[OfficialsService] AuxiliaryPersons unavailable for event ${eventNo}: ${roster.error}`);
+        return;
+      }
+
+      const persons = roster.auxiliaryOfficials.map(official => ({
+        No: official.no,
+        FirstName: official.firstName,
+        LastName: official.lastName,
+        NationalityCode: official.nationalityCode,
+        Gender: official.gender === '0' ? 'M' : official.gender === '1' ? 'F' : '',
+        Functions: official.functionCode
+      }));
+
+      // 120 min, the TTL auxiliaryPersonsSync used — kept so a long session on
+      // one tournament does not re-request the roster on every match render.
+      await cacheMmkvStorage.cacheAuxiliaryPersons(eventNo, persons, 120 * 60);
+    } catch (error) {
+      console.warn(`[OfficialsService] Failed to prime AuxiliaryPersons for event ${eventNo}:`, error);
     }
   }
 

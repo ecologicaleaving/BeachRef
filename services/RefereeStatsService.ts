@@ -252,10 +252,10 @@ export class RefereeStatsService {
         maxRetries: 2,
         retryDelayMs: 1000,
         enableLogging: true,
-        exponentialBackoff: true,
-        headers: {
-          'X-FIVB-App-ID': '2a9523517c52420da73d927c6d6bab23'
-        }
+        // No custom headers on purpose: any header outside the CORS safelist makes
+        // the POST non-simple, and the VIS preflight is not cacheable — every
+        // request would cost two round trips. See VisApiClientConfig.headers (#67).
+        exponentialBackoff: true
       });
     }
     return RefereeStatsService.visApiClient;

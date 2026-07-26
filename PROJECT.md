@@ -71,8 +71,9 @@
 - **Push Notifications**: Expo Notifications
 - **OfficialsService** (`services/OfficialsService.ts`): nomi degli officials di un
   torneo (scorer, assistant scorer, line judge) e delegazione arbitrale, dalla VIS.
-  Costo **2 chiamate per torneo**, indipendente dal numero di match. Vedi sezione
-  "Officials di torneo" più sotto.
+  Costo **2 chiamate per torneo**, indipendente dal numero di match — e dalla
+  #67 anche **2 round trip**, non più 4: il client non manda più header custom.
+  Vedi sezione "Officials di torneo" più sotto.
 - **RefereeDirectoryService** (`services/RefereeDirectoryService.ts`): anagrafica
   arbitri per la UI — roster di evento, direttorio globale, singolo arbitro,
   officials di evento, ritratto e ID card. È l'unico punto da cui le schermate
@@ -335,6 +336,15 @@ re-parsing in `utils/visEmbeddedXml.ts` (entità nominate **e** numeriche
 match. `OfficialsService.getTournamentOfficials()` riporta il conteggio reale su
 `apiCallCount`; un test lo verifica contando le chiamate al client mockato.
 
+> **Correzione (#67).** Fino alla #67 questa riga — e la stessa affermazione
+> fatta a voce a Davide quando la #40 è stata consegnata — contava le chiamate
+> *applicative* e taceva sui **round trip di rete**, che sul web erano il
+> doppio: il client di questo servizio mandava `X-FIVB-App-ID`, la POST
+> diventava non-simple, e il preflight `OPTIONS` non era cachabile perché la VIS
+> risponde senza `Access-Control-Max-Age`. **2 chiamate = 4 round trip.** La #67
+> ha tolto l'header: oggi 2 chiamate sono **2 round trip**. Il numero di
+> chiamate era giusto; era la conclusione "quindi costa poco" a non esserlo.
+
 ### Codici `Functions`
 
 `2` = line judge, `4` = scorer / assistant scorer. Nessun altro codice osservato.
@@ -418,14 +428,17 @@ aprire → indietro → riaprire. Ora sono **2 e 2**. Congelato da
 
 ### Niente header custom, o ogni richiesta costa il doppio
 
-La config del client in questo servizio ha `headers: {}` **di proposito**. Una
-POST con il solo `Content-Type: application/x-www-form-urlencoded` e' una CORS
-*simple request*; basta aggiungere `X-FIVB-App-ID` (come fa `OfficialsService`)
+**Vale per tutti i client VIS, non solo per questo servizio** — dalla #67 nessun
+`VisApiClient` dell'app manda header custom. Una POST con il solo
+`Content-Type: application/x-www-form-urlencoded` e' una CORS *simple request*;
+basta aggiungere un header fuori dalla safelist (per esempio `X-FIVB-App-ID`)
 per renderla non-simple, e il browser antepone una `OPTIONS` di preflight. La
 VIS risponde **senza `Access-Control-Max-Age`**, quindi il preflight non viene
-cachato: **ogni richiesta diventa due round trip**. Misurato sul deploy preview
-della #46: un caricamento di `all-referees` con l'header ha prodotto **31
-`OPTIONS` e zero POST completate**. Non rimetterlo "per uniformita'".
+cachato: **ogni richiesta diventa due round trip**, per sempre, e su un ciclo di
+polling e' un ×2 a ogni tick. Misurato sul deploy preview della #46: un
+caricamento di `all-referees` con l'header ha prodotto **31 `OPTIONS` e zero
+POST completate**. Congelato da `__tests__/no-vis-custom-headers.test.ts`.
+Non rimetterlo "per uniformita'".
 
 ### Limite noto — NON re-indagare
 

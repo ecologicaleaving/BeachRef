@@ -203,6 +203,22 @@ The project uses Expo Router with a comprehensive screen-based navigation system
 - **IMPORTANT**: Use `tournament.visNo` directly as TournamentNo in `GetBeachMatchList` calls
 - **API Call Flow**: `GetEventList` → Extract EventNo → Use EventNo in `GetBeachMatchList`
 - Referee assignment synchronization
+- **Never send a custom request header (issue #67).** `VisApiClient` sends only
+  `Content-Type: application/x-www-form-urlencoded`, which keeps the POST a CORS
+  *simple request* — one round trip. Any header outside the CORS safelist makes
+  it non-simple, and the VIS answers the resulting `OPTIONS` preflight **without
+  `Access-Control-Max-Age`**, so the browser cannot cache it and re-runs it
+  before **every** request. That is a permanent ×2 on VIS round trips, and a ×2
+  per tick on the live-score polling loop. `X-FIVB-App-ID` — which ten files
+  were sending — is not required by the VIS: ten endpoints were probed with and
+  without it and every response came back byte-identical. Frozen by
+  `__tests__/no-vis-custom-headers.test.ts`; the evidence lives in the doc
+  comment on `VisApiClientConfig.headers` (`types/api-v2.ts`).
+- **Counting VIS *calls* is not counting VIS *round trips*.** Until #67 this
+  file and PROJECT.md described `OfficialsService` as "2 calls per tournament,
+  independent of the match count". The call count was right; on the web those 2
+  calls were **4 round trips**, because of the preflight above. When you
+  document an API cost, say which of the two you measured.
 
 **Caching Strategy** (✨ Enhanced - specs/001-vis-api-optimization):
 - **Level 1**: Memory cache (LRU eviction, instant access <1ms)

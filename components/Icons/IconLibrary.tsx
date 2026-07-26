@@ -21,6 +21,36 @@ export interface CommonIconProps extends Omit<IconProps, 'category' | 'name'> {
 }
 
 /**
+ * Fabbrica per le voci di libreria che non hanno bisogno di configurazione
+ * particolare (issue #49).
+ *
+ * 36 nomi erano gia' referenziati dai componenti — `ActionIcons.Submit`,
+ * `UtilityIcons.Warning`, `DataIcons.Location`, ... — ma non esistevano in questi
+ * oggetti. In TypeScript erano 88 TS2339; a runtime sarebbero stati `undefined`
+ * passati come tipo di elemento a React, cioe' lo stesso schermo bianco della
+ * issue #71. I componenti che li usano oggi non sono raggiungibili da nessuna
+ * rotta, quindi il crash non e' mai avvenuto: la libreria e' completata qui
+ * perche' la lacuna resti chiusa se e quando lo diventeranno.
+ */
+const libraryIcon = (
+  category: IconProps['category'],
+  name: string,
+  accessibilityLabel: string,
+  extra?: Partial<IconProps>
+) =>
+  React.memo((props: CommonIconProps) => (
+    <Icon
+      category={category}
+      name={name}
+      theme="default"
+      colorKey="secondary"
+      accessibilityLabel={accessibilityLabel}
+      {...extra}
+      {...props}
+    />
+  ));
+
+/**
  * Navigation Icons - High-visibility icons for app navigation
  */
 export const NavigationIcons = {
@@ -237,6 +267,27 @@ export const ActionIcons = {
       {...props}
     />
   )),
+
+  // Issue #49 — voci gia' referenziate dai componenti ma mai definite.
+  Alert: libraryIcon('action', 'alert', 'Alert'),
+  Assignment: libraryIcon('action', 'assignment', 'Assignment'),
+  ChevronRight: libraryIcon('action', 'chevron-right', 'Next'),
+  Contact: libraryIcon('action', 'contact', 'Contact'),
+  Fast: libraryIcon('action', 'fast', 'Fast'),
+  History: libraryIcon('action', 'history', 'History'),
+  LiveScore: libraryIcon('action', 'live-score', 'Live score'),
+  Match: libraryIcon('action', 'match', 'Match'),
+  Minus: libraryIcon('action', 'minus', 'Decrease', { isInteractive: true }),
+  Phone: libraryIcon('action', 'phone', 'Phone'),
+  Player: libraryIcon('action', 'player', 'Player'),
+  Plus: libraryIcon('action', 'plus', 'Increase', { isInteractive: true }),
+  Referee: libraryIcon('action', 'referee', 'Referee'),
+  Results: libraryIcon('action', 'results', 'Results'),
+  Serve: libraryIcon('action', 'serve', 'Serve'),
+  Stats: libraryIcon('action', 'stats', 'Statistics'),
+  Submit: libraryIcon('action', 'submit', 'Submit', { isInteractive: true }),
+  Team: libraryIcon('action', 'team', 'Team'),
+  Undo: libraryIcon('action', 'undo', 'Undo', { isInteractive: true }),
 };
 
 /**
@@ -340,15 +391,25 @@ export const DataIcons = {
   )),
   
   Stats: React.memo((props: CommonIconProps) => (
-    <Icon 
-      category="data" 
-      name="stats" 
+    <Icon
+      category="data"
+      name="stats"
       theme="default"
       colorKey="secondary"
       accessibilityLabel="Statistics"
-      {...props} 
+      {...props}
     />
   )),
+
+  // Issue #49 — voci gia' referenziate dai componenti ma mai definite.
+  Emergency: libraryIcon('data', 'emergency', 'Emergency'),
+  Health: libraryIcon('data', 'health', 'Health'),
+  Info: libraryIcon('data', 'info', 'Information'),
+  Location: libraryIcon('data', 'location', 'Location'),
+  Organization: libraryIcon('data', 'organization', 'Organization'),
+  Person: libraryIcon('data', 'person', 'Person'),
+  Phone: libraryIcon('data', 'phone', 'Phone'),
+  Time: libraryIcon('data', 'time', 'Time'),
 };
 
 /**
@@ -378,15 +439,26 @@ export const UtilityIcons = {
   )),
   
   External: React.memo((props: CommonIconProps) => (
-    <Icon 
-      category="utility" 
-      name="external" 
+    <Icon
+      category="utility"
+      name="external"
       theme="default"
       colorKey="secondary"
       accessibilityLabel="Open external link"
-      {...props} 
+      {...props}
     />
   )),
+
+  // Issue #49 — voci gia' referenziate dai componenti ma mai definite.
+  Activity: libraryIcon('utility', 'activity', 'Activity'),
+  Check: libraryIcon('utility', 'check', 'Confirmed'),
+  ChevronDown: libraryIcon('utility', 'chevron-down', 'Expand'),
+  Close: libraryIcon('utility', 'close', 'Close', { isInteractive: true }),
+  Refresh: libraryIcon('utility', 'refresh', 'Refresh', { isInteractive: true }),
+  Security: libraryIcon('utility', 'security', 'Security'),
+  Settings: libraryIcon('utility', 'settings', 'Settings', { isInteractive: true }),
+  Warning: libraryIcon('utility', 'warning', 'Warning'),
+  Weather: libraryIcon('utility', 'weather', 'Weather'),
 };
 
 // Set display names for better debugging

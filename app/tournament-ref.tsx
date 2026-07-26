@@ -8,6 +8,10 @@ import { colors, designTokens } from '../theme/tokens';
 import { AssignmentStatusProvider } from '../hooks/useAssignmentStatus';
 import { RefereeStatsService, SeasonStats, CareerStats } from '../services/RefereeStatsService';
 import { FlagImage } from '../components/FlagImage';
+import {
+  RefereeDirectoryService,
+  type DirectoryReferee
+} from '../services/RefereeDirectoryService';
 
 interface Referee {
   RefereeId: string; // 6-digit NoReferee from VIS API
@@ -17,6 +21,20 @@ interface Referee {
   gender: string;
   level?: string;
 }
+
+/**
+ * Adapt a service referee to the shape this screen renders, keeping the
+ * normalisation the screen used to apply inline: a `RefereeId` is only kept
+ * when it really is the 6-digit `NoReferee`.
+ */
+const toScreenReferee = (referee: DirectoryReferee): Referee => ({
+  RefereeId: /^\d{6}$/.test(referee.RefereeId) ? referee.RefereeId : '',
+  firstName: referee.firstName,
+  lastName: referee.lastName,
+  federationCode: referee.federationCode,
+  gender: referee.gender,
+  level: referee.level ?? ''
+});
 
 interface RefereeStats {
   totalMatches: number;
@@ -302,168 +320,41 @@ function TournamentRefScreenContent() {
     }
   };
 
+  /**
+   * Event referee roster (issue #46).
+   *
+   * This screen used to request the same `GetEventRefereeList` from three
+   * different places in a single load. All three now go through
+   * RefereeDirectoryService and share one cached entry.
+   */
   const loadRefereesFromAPI = async (): Promise<boolean> => {
-    try {
-      const xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Role Status">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
+    const { referees: eventReferees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
 
-      const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-      
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        const parsedReferees = parseRefereeXML(xmlResponse);
-        if (parsedReferees.length > 0) {
-          const normalized = parsedReferees.map(r => ({
-            ...r,
-            RefereeId: /^\d{6}$/.test(r.RefereeId || '') ? (r.RefereeId as string) : ''
-          })).filter(r => r.firstName?.trim() || r.lastName?.trim());
-          setReferees(normalized);
-          return normalized.length > 0;
-        }
-      }
-      return false;
-    } catch (error) {
-      console.error('Error in loadRefereesFromAPI:', error);
-      return false;
+    const normalized = eventReferees.map(toScreenReferee);
+    if (normalized.length > 0) {
+      setReferees(normalized);
     }
-  };
 
-  // Helper function to parse XML response into match objects
-  const parseMatchesFromXML = (xmlText: string) => {
-    const matches: any[] = [];
-    
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      
-      // Try different possible XML structures
-      const selectors = [
-        'BeachMatch',
-        'Beachvolleyball > BeachMatch',
-        'Response > BeachMatch',
-        'Responses > Response > BeachMatch'
-      ];
-      
-      let matchNodes: NodeListOf<Element> | null = null;
-      for (const selector of selectors) {
-        matchNodes = xmlDoc.querySelectorAll(selector);
-        if (matchNodes.length > 0) {
-          break;
-        }
-      }
-      
-      if (!matchNodes || matchNodes.length === 0) {
-        // Fallback: Use regex to extract BeachMatch elements
-        const matchRegex = /<BeachMatch[^>]*>/g;
-        const regexMatches = [...xmlText.matchAll(matchRegex)];
-        
-        regexMatches.forEach((matchStr) => {
-          const match: any = {};
-          const fullMatch = matchStr[0];
-          
-          // Extract all attributes using regex
-          const attrRegex = /(\w+)="([^"]*)"/g;
-          let attrMatch;
-          while ((attrMatch = attrRegex.exec(fullMatch)) !== null) {
-            match[attrMatch[1]] = attrMatch[2];
-          }
-          
-          matches.push(match);
-        });
-      } else {
-        // Use DOM parsing
-        matchNodes.forEach((matchNode) => {
-          const match: any = {};
-          
-          // Extract all attributes from the match node
-          const attributes = matchNode.attributes;
-          for (let i = 0; i < attributes.length; i++) {
-            const attr = attributes[i];
-            match[attr?.name] = attr.value;
-          }
-          
-          matches.push(match);
-        });
-      }
-      
-    } catch (error) {
-      // Silent fail
-    }
-    
-    return matches;
+    return normalized.length > 0;
   };
 
 
 
+
+  /**
+   * Referee names used to enrich the ones extracted from the match list:
+   * the event roster first, the global directory as a fallback (issue #46).
+   * Both requests are cached, and the first one is the very same entry
+   * {@link loadRefereesFromAPI} already populated.
+   */
   const fetchAllRefereesFromAPI = async (): Promise<Referee[]> => {
-    try {
-      
-      // Try GetEventRefereeList first
-      let xml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
-
-      let response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        const referees = parseRefereeXML(xmlResponse);
-        
-        if (referees.length > 0) {
-          return referees;
-        }
-      }
-      
-      // Fallback: Try GetRefereeList without event filter
-      xml = `<Requests>
-  <Request Type="GetRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Level Status">
-  </Request>
-</Requests>`;
-
-      response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-        method: "POST",
-        headers: {
-          "Accept": "application/xml",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({ Request: xml })
-      });
-
-      if (response.ok) {
-        const xmlResponse = await response.text();
-        const referees = parseRefereeListXML(xmlResponse);
-        if (referees.length > 0) {
-          return referees;
-        }
-      }
-      
-      return [];
-    } catch (error) {
-      console.error('Failed to fetch all referees from API:', error);
-      return [];
+    const { referees: eventReferees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
+    if (eventReferees.length > 0) {
+      return eventReferees.map(toScreenReferee);
     }
+
+    const { referees: allReferees } = await RefereeDirectoryService.getAllReferees();
+    return allReferees.map(toScreenReferee);
   };
 
 
@@ -671,47 +562,12 @@ function TournamentRefScreenContent() {
     
     // Fallback to API call if no match data passed or if parsing failed
     try {
-      
-      // Use CacheService first to get matches if available
-      let matches: any[] = [];
-      
-      // Skip CacheService for referee data - it doesn't include NoReferee1/NoReferee2 fields
-      // We need to use direct API call to get referee NoReferee IDs
-      
-      // If CacheService didn't work, make direct API call
-      if (matches.length === 0) {
-        const xml = `<Requests>
-  <Request Type="GetBeachMatchList"
-           Fields="No NoInTournament TournamentGender TeamAName TeamBName LocalDate LocalTime Court Status Round MatchPointsA MatchPointsB PointsTeamASet1 PointsTeamBSet1 PointsTeamASet2 PointsTeamBSet2 PointsTeamASet3 PointsTeamBSet3 NoReferee1 NoReferee2 Referee1Name Referee2Name Referee1FederationCode Referee2FederationCode">
-    <Filter NoEvent="${tournamentNo}" IncludeReferees="true"/>
-  </Request>
-</Requests>`;
+      // Match list of the event, through RefereeDirectoryService (issue #46).
+      // The client's GetBeachMatchList field set is a superset of the one this
+      // screen used to spell out, NoReferee1 / NoReferee2 included, and the
+      // 45 s abort is now the client's own timeout.
+      const { matches } = await RefereeDirectoryService.getEventMatches(tournamentNo);
 
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 45000);
-        
-        const response = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-          method: "POST",
-          headers: {
-            "Accept": "application/xml",
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: new URLSearchParams({ Request: xml }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`);
-        }
-        
-        const xmlResponse = await response.text();
-        
-        matches = parseMatchesFromXML(xmlResponse);
-      }
-      
       // Extract referee names using refereeAssignments field (more robust)
       const refereeNames = new Set<string>();
       
@@ -770,52 +626,22 @@ function TournamentRefScreenContent() {
       // Create a reverse mapping: NoReferee ID → Referee name using GetEventRefereeList
       const idToRefereeMap = new Map<string, {firstName: string, lastName: string, federationCode: string, gender: string}>();
       
-      if (true) {
-        try {
-          // Get all referees for this event to build ID-to-name mapping
-          const refereeListXml = `<Requests>
-  <Request Type="GetEventRefereeList"
-           Fields="NoReferee FirstName LastName FederationCode Gender Status Role">
-    <Filter NoEvent="${tournamentNo}"/>
-  </Request>
-</Requests>`;
+      // Third and last read of the same event roster in this load — served from
+      // the cache RefereeDirectoryService populated above (issue #46).
+      const { referees: rosterReferees } = await RefereeDirectoryService.getEventReferees(tournamentNo);
 
-          const refereeResponse = await fetch('https://www.fivb.org/Vis2009/XmlRequest.asmx', {
-            method: "POST",
-            headers: {
-              "Accept": "application/xml",
-              "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({ Request: refereeListXml })
-          });
-          
-          if (refereeResponse.ok) {
-            const refereeXml = await refereeResponse.text();
-            
-            // Parse referee list to build ID mapping
-            const refereeMatches = refereeXml.match(/<EventReferee[^>]*>/g);
-            if (refereeMatches) {
-              refereeMatches.forEach(match => {
-                const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
-                const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
-                const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
-                const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
-                const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-                
-                if (noReferee && /^\d{6}$/.test(noReferee)) {
-                  idToRefereeMap.set(noReferee, { firstName, lastName, federationCode, gender });
-                  const key1 = `${firstName} ${lastName}`.trim().toLowerCase();
-                  const key2 = `${lastName} ${firstName}`.trim().toLowerCase();
-                  if (key1) nameToIdFromAPI.set(key1, noReferee);
-                  if (key2) nameToIdFromAPI.set(key2, noReferee);
-                }
-              });
-            }
-          }
-        } catch (error) {
-          // Silent error handling for referee details fetch
+      rosterReferees.forEach(({ RefereeId, firstName, lastName, federationCode, gender }) => {
+        if (!/^\d{6}$/.test(RefereeId)) {
+          return;
         }
-      }
+
+        idToRefereeMap.set(RefereeId, { firstName, lastName, federationCode, gender });
+
+        const key1 = `${firstName} ${lastName}`.trim().toLowerCase();
+        const key2 = `${lastName} ${firstName}`.trim().toLowerCase();
+        if (key1) nameToIdFromAPI.set(key1, RefereeId);
+        if (key2) nameToIdFromAPI.set(key2, RefereeId);
+      });
       
 
       // Create referees directly from the ID-to-referee mapping
@@ -881,67 +707,6 @@ function TournamentRefScreenContent() {
       setReferees([]);
     }
   };
-
-  const parseRefereeXML = (xmlString: string): Referee[] => {
-    const referees: Referee[] = [];
-    const refereeMatches = xmlString.match(/<EventReferee[^>]*>/g);
-    
-    if (refereeMatches) {
-      refereeMatches.forEach(match => {
-        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || '';
-        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
-        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
-        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
-        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
-        
-        // Only add referee if they have at least a name
-        if (firstName.trim() || lastName.trim()) {
-          referees.push({
-            RefereeId: noReferee,
-            firstName,
-            lastName,
-            federationCode,
-            gender,
-            level
-          });
-        }
-      });
-    }
-    
-    return referees;
-  };
-
-  const parseRefereeListXML = (xmlString: string): Referee[] => {
-    const referees: Referee[] = [];
-    const refereeMatches = xmlString.match(/<Referee[^>]*>/g);
-    
-    if (refereeMatches) {
-      refereeMatches.forEach(match => {
-        const noReferee = match.match(/NoReferee="([^"]*)"/)?.[1] || match.match(/No="([^"]*)"/)?.[1] || '';
-        const firstName = match.match(/FirstName="([^"]*)"/)?.[1] || '';
-        const lastName = match.match(/LastName="([^"]*)"/)?.[1] || '';
-        const federationCode = match.match(/FederationCode="([^"]*)"/)?.[1] || '';
-        const gender = match.match(/Gender="([^"]*)"/)?.[1] || '';
-        const level = match.match(/Level="([^"]*)"/)?.[1] || '';
-        
-        // Only add referee if they have at least a name
-        if (firstName.trim() || lastName.trim()) {
-          referees.push({
-            RefereeId: noReferee,
-            firstName,
-            lastName,
-            federationCode,
-            gender,
-            level
-          });
-        }
-      });
-    }
-    
-    return referees;
-  };
-
 
   useEffect(() => {
     loadReferees();

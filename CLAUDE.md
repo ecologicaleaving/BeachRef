@@ -1136,16 +1136,65 @@ demands a *simulated* fallback, not one deduced from the presence of a
 
 `npm run verify:rls` (`scripts/verify-rls-anon.ts`) answers AC1: what can the
 **public** anon key actually do? It refuses to run without a key, **refuses a
-`service_role` key** (decodes the JWT `role` claim — auditing RLS with
-privileged credentials proves nothing), aborts if the project rejects the key,
-and probes 25 tables non-destructively (`insert({})` dies on NOT NULL *after*
-RLS has had its say; update/delete filter on an impossible id, so zero rows are
-ever matched). Exit 1 on a finding, exit 2 when the verification could not
-happen — "we could not tell" is never reported as "it is safe".
+`service_role` key** (decodes the JWT `role` claim — auditing with privileged
+credentials proves nothing), aborts if the project rejects the key, and probes
+25 tables non-destructively. Exit 1 on a finding, exit 2 when the verification
+could not happen — "we could not tell" is never reported as "it is safe".
 
 ```bash
 export SUPABASE_URL='https://<project>.supabase.co'
 export SUPABASE_ANON_KEY='<anon key>'
 npm run verify:rls
 ```
+
+---
+
+## The database is closed by default (issue #77)
+
+**`anon` and `authenticated` reach nothing in `public`.** Not "tight policies" —
+no privilege, RLS on every table, every inherited policy dropped, and default
+privileges revoked so a table created tomorrow is closed the moment it exists.
+`supabase/migrations/017_deny_all_public_api_roles.sql`; the reasoning, the
+postmortem and the re-opening procedure are in **`supabase/RLS.md`**, which you
+should read before touching any policy.
+
+Why deny-all rather than tightening: nothing consumes this database through the
+public API — the web app has no Supabase variables configured and the Flutter
+app was never distributed — so there was no consumer to preserve, and every
+grant left standing would have been a concession nobody could later justify.
+Phase 3 of #54 re-opens what it needs, per table, per column, per verb.
+
+### Two things that are easy to get wrong here
+
+**A policy protects a verb, not a table.** Issue #22 declared "restrictive
+policies on `matches`, `sync_error_log`, `analytics_events`" and shipped
+`016_security_hardening.sql`, which is genuinely applied and genuinely works —
+for `INSERT` and `UPDATE`. It says so in its own comment (§3c: *"Keep read
+access, restrict writes to service_role"*). Five internal tables stayed
+world-readable through `FOR SELECT USING (true)` policies written in
+migrations 004/009/011 for a monitoring dashboard that was never built. Nothing
+regressed; the declaration was made in the wrong units.
+
+**RLS filters rows, it does not reject statements.** A `SELECT` denied by a
+policy returns `[]`, not an error. An `UPDATE`/`DELETE` matching zero rows
+succeeds whether or not any policy permits it. The first version of
+`verify-rls-anon.ts` probed writes with `.eq('id', <impossible id>)`, so
+"statement accepted" was the only outcome it could ever observe — which is how
+issue #77 came to report 17 writable tables from a database where most of them
+had no write policy at all. The script now has an `inconclusive` verdict and
+**inconclusive fails the run**; deny-all makes every refusal an explicit
+`42501` raised before row matching, so the ambiguity is gone.
+
+Both facts are executable assertions in `supabase/tests/rls_deny_all.test.sql`
+(A2–A5), which also verifies migration 017 against a real PostgreSQL in Docker.
+
+### The recurring check
+
+`.github/workflows/rls-verify.yml` runs `npm run verify:rls` daily, on every PR
+touching `supabase/**` or the script, and on demand. It needs the repository
+secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` — the anon key is public by
+design, the `service_role` key must never be added. **If the secrets are absent
+the job fails rather than skipping**: a recurring check that quietly stops
+running looks exactly like one that passes, which is the failure mode it exists
+to prevent.
 

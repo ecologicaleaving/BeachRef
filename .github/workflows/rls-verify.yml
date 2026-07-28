@@ -1,0 +1,89 @@
+name: RLS verification (public key)
+
+# =============================================================================
+# Holds the *public* anon key and asks the production project what it can reach.
+# =============================================================================
+# Issue #77. The database is deny-all for `anon` and `authenticated`
+# (`supabase/migrations/017_deny_all_public_api_roles.sql`); this job is what
+# notices if that ever stops being true.
+#
+# It exists because the previous hole survived a security issue that declared it
+# closed — #22 hardened the writes, left the reads open, and nothing ever held
+# the key and looked. A migration cannot detect a change made afterwards in the
+# Supabase dashboard; only a recurring probe can. See `supabase/RLS.md`.
+#
+# Secrets required (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL        https://<project>.supabase.co
+#   SUPABASE_ANON_KEY   the anon key — public by design, safe to store here
+#
+# NEVER add the `service_role` key. `verify-rls-anon.ts` decodes the JWT `role`
+# claim and refuses to run with anything other than `anon`, because auditing
+# with privileged credentials would report that everything is open and prove
+# nothing.
+#
+# If the secrets are missing this job FAILS rather than skipping. A recurring
+# check that quietly stops running is indistinguishable from one that passes,
+# which is the failure mode this workflow exists to prevent.
+# =============================================================================
+
+on:
+  schedule:
+    # 06:15 UTC daily. A change made in the dashboard surfaces within a day.
+    - cron: '15 6 * * *'
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'scripts/verify-rls-anon.ts'
+      - '.github/workflows/rls-verify.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Refuse to run without credentials
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: |
+        missing=""
+        [ -z "$SUPABASE_URL" ] && missing="$missing SUPABASE_URL"
+        [ -z "$SUPABASE_ANON_KEY" ] && missing="$missing SUPABASE_ANON_KEY"
+        if [ -n "$missing" ]; then
+          echo "::error::missing repository secret(s):$missing"
+          echo "This job does not skip when it cannot run. Add the secrets under"
+          echo "Settings → Secrets and variables → Actions. The anon key is public"
+          echo "by design; never add the service_role key."
+          exit 1
+        fi
+
+    # The script prints table names and error codes, never the key.
+    - name: Probe the project with the public anon key
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: npm run verify:rls
+
+    - name: Explain a failure
+      if: failure()
+      run: |
+        echo "::notice::exit 1 = something is reachable with the public key, or a probe"
+        echo "::notice::could not establish what the database would allow."
+        echo "::notice::exit 2 = the verification did not happen at all."
+        echo "::notice::Read supabase/RLS.md before changing any policy."

@@ -1,7 +1,7 @@
 import { DataConsistencyValidator } from '../DataConsistencyValidator';
 import { VisApiClient } from '../api/VisApiClient';
 import { ErrorLogger } from '../ErrorLogger';
-import { NetworkMonitor } from '../NetworkStateManager';
+import { NetworkStateManager as NetworkMonitor } from '../NetworkStateManager';
 
 // Mock dependencies.
 //
@@ -19,34 +19,29 @@ jest.mock('../api/VisApiClient', () => {
   return { VisApiClient: jest.fn(() => instance), __mockInstance: instance };
 });
 
-jest.mock('../ErrorLogger', () => ({
-  ErrorLogger: {
-    getInstance: jest.fn(() => ({
-      log: jest.fn(),
-      logError: jest.fn()
-    }))
-  }
-}));
+// `getInstance` must return the *same* object every call. When the factory built
+// a fresh object per call, the instance the SUT held and the one the test
+// asserted on were different objects, so every `toHaveBeenCalledWith` saw zero
+// calls.
+jest.mock('../ErrorLogger', () => {
+  const instance = { log: jest.fn(), logError: jest.fn() };
+  return { ErrorLogger: { getInstance: jest.fn(() => instance) } };
+});
 
-jest.mock('../NetworkStateManager', () => ({
-  NetworkMonitor: {
-    getInstance: jest.fn(() => ({
-      isOnline: true,
-      subscribe: jest.fn(),
-      unsubscribe: jest.fn()
-    }))
-  }
-}));
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => ({
+jest.mock('../NetworkStateManager', () => {
+  const instance = { isOnline: true, subscribe: jest.fn(), unsubscribe: jest.fn() };
+  return { NetworkStateManager: { getInstance: jest.fn(() => instance) } };
+});
+// Same shared-instance requirement as above: the test reaches the SUT's client
+// by calling `createClient()` itself, so it must hand back the same object.
+jest.mock('@supabase/supabase-js', () => {
+  const client = {
     from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        data: [],
-        error: null
-      }))
+      select: jest.fn(() => ({ data: [], error: null }))
     }))
-  }))
-}));
+  };
+  return { createClient: jest.fn(() => client) };
+});
 
 // Mock Node.js crypto
 jest.mock('crypto', () => ({
@@ -88,14 +83,14 @@ describe('DataConsistencyValidator', () => {
 
   const mockApiTournaments = [
     {
-      tournamentCode: 'T001',
+      code: 'T001',
       name: 'Test Tournament 1',
       startDate: '2024-01-01',
       endDate: '2024-01-05',
       venue: 'Test Venue 1'
     },
     {
-      tournamentCode: 'T003',
+      code: 'T003',
       name: 'Test Tournament 3',
       startDate: '2024-03-01',
       endDate: '2024-03-05',
@@ -235,7 +230,7 @@ describe('DataConsistencyValidator', () => {
     const mockApiEvents = [
       {
         eventNo: 'E001',
-        tournamentCode: 'T001',
+        code: 'T001',
         name: 'Men Singles'
       }
     ];

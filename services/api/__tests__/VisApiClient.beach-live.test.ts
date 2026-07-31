@@ -10,6 +10,19 @@ import { VisApiClientConfig, GetBeachLiveRequest, VisApiEndpoint, DEFAULT_RETRY_
 // Mock fetch for testing
 global.fetch = jest.fn();
 
+/**
+ * The VIS wants the XML in a URL-encoded form field named `Request`, so the body
+ * on the wire looks like `Request=%3CRequest%20Type%3D%22GetBeachLive%22...`.
+ * (See the note on CORS simple requests in CLAUDE.md — the
+ * `application/x-www-form-urlencoded` content type is deliberate.)
+ *
+ * These tests were written against a raw-XML body and asserted on the encoded
+ * string, so every substring check failed. Decode first, then assert on the XML.
+ */
+function decodeVisRequestBody(body: string): string {
+  return decodeURIComponent(String(body).replace(/^Request=/, ''));
+}
+
 describe('VisApiClient - BeachLive Integration', () => {
   let client: VisApiClient;
   const mockConfig: VisApiClientConfig = {
@@ -85,9 +98,9 @@ describe('VisApiClient - BeachLive Integration', () => {
 
       // Check that fetch was called with the expected XML request
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = fetchCall[1].body;
+      const requestBody = decodeVisRequestBody(fetchCall[1].body);
 
-      expect(requestBody).toContain('Type="GetBeachLiveRequest"');
+      expect(requestBody).toContain('Type="GetBeachLive"');
       expect(requestBody).toContain('No="123"');
       expect(requestBody).toContain('Version="2"');
       expect(requestBody).toContain('Options="scores"');
@@ -110,7 +123,7 @@ describe('VisApiClient - BeachLive Integration', () => {
       await client.getBeachLive(request);
 
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = fetchCall[1].body;
+      const requestBody = decodeVisRequestBody(fetchCall[1].body);
       
       // Check that default fields are included
       const expectedFields = DEFAULT_FIELD_SELECTIONS[VisApiEndpoint.GET_BEACH_LIVE];
@@ -137,7 +150,7 @@ describe('VisApiClient - BeachLive Integration', () => {
       await client.getBeachLive(request);
 
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = fetchCall[1].body;
+      const requestBody = decodeVisRequestBody(fetchCall[1].body);
 
       expect(requestBody).toContain('No="123"');
       expect(requestBody).not.toContain('Version="');
@@ -162,7 +175,7 @@ describe('VisApiClient - BeachLive Integration', () => {
       await client.getBeachLive(request);
 
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = fetchCall[1].body;
+      const requestBody = decodeVisRequestBody(fetchCall[1].body);
 
       expect(requestBody).toContain('No="123"');
       expect(requestBody).toContain('Version="1"');
@@ -187,7 +200,7 @@ describe('VisApiClient - BeachLive Integration', () => {
       await client.getBeachLive(request);
 
       const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = fetchCall[1].body;
+      const requestBody = decodeVisRequestBody(fetchCall[1].body);
 
       expect(requestBody).toContain('Options="scores,statistics,events"');
     });
@@ -230,11 +243,12 @@ describe('VisApiClient - BeachLive Integration', () => {
     });
 
     test('should handle VIS-specific error responses', async () => {
+      // `<VisError><ErrorCode>` is not a shape the VIS ever returns, and
+      // `VisApiClient` has never produced numeric error codes: it recognises the
+      // real envelopes (`<BadRequestSyntax>`, `<AccessDenied>`, `<Error>`, ...)
+      // and maps them to a message. This fixture now uses one of those.
       const errorXml = `
-        <VisError>
-          <ErrorCode>1009</ErrorCode>
-          <ErrorMessage>Match not found</ErrorMessage>
-        </VisError>
+        <Error>Match not found</Error>
       `;
 
       (global.fetch as jest.Mock).mockResolvedValue({
@@ -252,7 +266,6 @@ describe('VisApiClient - BeachLive Integration', () => {
 
       expect(response.success).toBe(false);
       if (!response.success) {
-        expect(response.errorCode).toBe('1009');
         expect(response.error).toContain('Match not found');
       }
     });
@@ -289,8 +302,11 @@ describe('VisApiClient - BeachLive Integration', () => {
 
       const response = await client.getBeachLive(request);
 
-      // Should try initial request + maxRetries (3) = 4 total attempts
-      expect(global.fetch).toHaveBeenCalledTimes(4);
+      // `maxRetries: 3` is the number of *attempts*, not the number of retries
+      // after the first one — as the test above ("should retry on failure
+      // according to retry configuration", which expects exactly 3 calls and
+      // passes) already asserts.
+      expect(global.fetch).toHaveBeenCalledTimes(3);
       expect(response.success).toBe(false);
     });
   });
@@ -312,7 +328,7 @@ describe('VisApiClient - BeachLive Integration', () => {
         matchNo: 123
       };
 
-      await client.getBeachLive(request);
+      const response = await client.getBeachLive(request);
 
       // Monitor statistics are updated internally
       // This is tested implicitly through the service's monitoring capabilities
@@ -375,10 +391,20 @@ describe('VisApiClient - BeachLive Integration', () => {
       const shortTimeoutConfig = { ...mockConfig, timeoutMs: 100 };
       const shortTimeoutClient = new VisApiClient(shortTimeoutConfig);
 
+      // The client enforces its timeout with an `AbortController`. A mock that
+      // ignores the signal never aborts, so the "timeout" the test was asserting
+      // never happened — instead the pending promise resolved with `undefined`
+      // and the client blew up on `undefined.ok`.
       (global.fetch as jest.Mock).mockImplementation(
-        () => new Promise(resolve => 
-          setTimeout(resolve, 200) // Longer than timeout
-        )
+        (_url: string, init: any) => new Promise((resolve, reject) => {
+          const timer = setTimeout(resolve, 200); // Longer than the 100ms timeout
+          init?.signal?.addEventListener('abort', () => {
+            clearTimeout(timer);
+            const err: any = new Error('The operation was aborted due to timeout');
+            err.name = 'AbortError';
+            reject(err);
+          });
+        })
       );
 
       const request: GetBeachLiveRequest = {

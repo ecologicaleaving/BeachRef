@@ -10,7 +10,7 @@ import { IVisApiClient, MatchPollingStatus, FieldSelectionMode, GetBeachLiveRequ
 import { ConnectionCircuitBreaker } from '../../../services/ConnectionCircuitBreaker';
 
 // Mock dependencies
-jest.mock('../../../services/CacheService');
+jest.mock('../../../hooks/compatibility/CacheServiceCompatibility');
 jest.mock('../../../types/beach-live');
 
 describe('LiveScorePollingService - Adaptive Polling', () => {

@@ -1,11 +1,11 @@
 import { RealtimeSubscriptionService, ConnectionState } from '../RealtimeSubscriptionService';
-import { CacheService } from '../CacheService';
+import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { supabase } from '../supabase';
 import { AppState } from 'react-native';
 
 // Mock dependencies
 jest.mock('../supabase');
-jest.mock('../CacheService');
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
 jest.mock('react-native', () => ({
   AppState: {
     addEventListener: jest.fn(),

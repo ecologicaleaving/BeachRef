@@ -1,87 +1,31 @@
 /**
  * @fileoverview Unit tests for useRepositoryData hook
  * Tests unified repository data access with caching, error handling, and loading states
+ *
+ * This suite mounts React into a DOM container, so it needs a DOM. The project
+ * default is `testEnvironment: 'node'` (services are the bulk of the suite), and
+ * without this docblock all 16 tests died on `document is not defined`.
+ *
+ * @jest-environment jsdom
  */
 
-import React from 'react';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useRepositoryData, useRepositoryDataWithRefresh } from '../../hooks/useRepositoryData';
 
-// Simple test renderer for hooks
-function renderHook<T>(hook: () => T): { result: { current: T }; rerender: () => void; unmount: () => void } {
-  let result: { current: T };
-  let mounted = true;
-  
-  function TestComponent() {
-    result = { current: hook() };
-    return null;
-  }
-  
-  const container = document.createElement('div');
-  const ReactDOM = require('react-dom');
-  
-  ReactDOM.render(React.createElement(TestComponent), container);
-  
-  return {
-    result,
-    rerender: () => {
-      if (mounted) {
-        ReactDOM.render(React.createElement(TestComponent), container);
-      }
-    },
-    unmount: () => {
-      mounted = false;
-      ReactDOM.unmountComponentAtNode(container);
-    }
-  };
-}
-
-// Simple act function
-function act(callback: () => void | Promise<void>) {
-  return Promise.resolve(callback());
-}
-
-// Simple waitFor function
-function waitFor(callback: () => boolean | void, options: { timeout?: number } = {}): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timeout = options.timeout || 1000;
-    const start = Date.now();
-    
-    function check() {
-      try {
-        const result = callback();
-        if (result !== false) {
-          resolve();
-          return;
-        }
-      } catch (error) {
-        // Continue waiting
-      }
-      
-      if (Date.now() - start > timeout) {
-        reject(new Error('waitFor timeout'));
-        return;
-      }
-      
-      setTimeout(check, 10);
-    }
-    
-    check();
-  });
-}
-
-// Mock performance for testing
-const mockPerformance = {
-  now: jest.fn(() => Date.now())
-};
-Object.defineProperty(global, 'performance', {
-  value: mockPerformance,
-  writable: true
-});
+// The harness that used to live here was hand-rolled: it mounted with
+// `ReactDOM.render` (removed in React 19), polled with a `setTimeout` that
+// `jest.useFakeTimers()` had frozen, and never implemented the `initialProps` /
+// `rerender(props)` API the tests below were written against. All 16 tests
+// failed. The project already depends on a hook renderer that does all three.
 
 describe('useRepositoryData', () => {
+  // NOTE: timers are deliberately real here, for the same reason jest.setup.js
+  // gives for not faking them globally. `waitFor` needs a timer that actually
+  // fires; with `jest.useFakeTimers()` in `beforeEach` every wait in this file
+  // deadlocked and 13 of 16 tests died on the jest timeout rather than on an
+  // assertion. Tests that need to jump forward in time opt in themselves.
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
   afterEach(() => {

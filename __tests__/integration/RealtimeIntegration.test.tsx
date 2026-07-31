@@ -11,7 +11,7 @@ import { Tournament } from '../../types/tournament';
 
 // Mock all external dependencies
 jest.mock('../../services/supabase');
-jest.mock('../../services/CacheService');
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
 jest.mock('../../services/visApi');
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),

@@ -5,7 +5,6 @@
 
 import { getBrandColor, getAdaptiveColor, colorPalette } from '../../utils/colors';
 import { brandColors, colors } from '../../theme/tokens';
-import { colors } from '../theme/tokens';
 
 describe('Brand Color Utilities', () => {
   describe('getBrandColor', () => {

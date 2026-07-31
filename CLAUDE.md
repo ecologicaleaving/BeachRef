@@ -628,12 +628,43 @@ exit 2.
 | `typescript` | `tsc` diagnostics | whole project (`tsconfig.json`) |
 | `eslint` | ESLint errors/warnings via the project's `eslint.config.js` | `AUDIT_CONFIG.lintRoots` = `src`, `app`, `components` |
 | `complexity` | Cyclomatic complexity (threshold 15) | `AUDIT_CONFIG.complexityRoots` (adds `services`, `hooks`, `utils`, `lib`, `theme`, `screens`, `repositories`, `config`) |
-| `security` | Hardcoded credentials, `http://`, MMKV encryption, Sentry sanitisation | walks the project, honours `excludePaths` |
+| `security` | Hardcoded credentials, `http://`, MMKV encryption, Sentry sanitisation | walks the **whole** project, honours `excludePaths` |
 | `architecture` | DI patterns, Expo Router compliance, component separation | `services`, `app`, `components` |
 | `error-handling` | try/catch around API calls, error boundaries, unhandled promises | `services`, `app` |
 | `performance` | Cache config, polling config, resource usage | `services`, `app`, `components` |
 | `data-flow` | Subscription cleanup, sync patterns, immutability | `hooks`, `services` |
 | `build` | `app.json` / `tsconfig.json` validity, platform compatibility | config files |
+
+#### Audit scope per checker: the Deno Edge Functions (issue #60)
+
+`supabase/functions/**` holds Deno Edge Functions. They are **first-party code
+that runs in production and handles data**, so they are not excluded the way
+`BeachRef-app/**` is. But most of the checkers encode assumptions about an
+Expo / React Native app, and on a Deno HTTP handler those rules are noise. The
+scope is therefore decided **per checker**, not in one block:
+
+| Checker | `supabase/functions` | Why |
+|---|---|---|
+| `security` | ✅ **in scope** | First-party production code handling data. It is the one checker whose value is highest exactly there — see #56. Never exclude it. |
+| `typescript` | in scope by config, empty in practice | Framework-agnostic, so nothing excludes it here. It sees no file anyway because **`tsconfig.json` excludes `supabase/functions`** (issue #49): Deno resolves `npm:` / `jsr:` specifiers `tsc` cannot, and typechecking them produced 424 phantom errors. Deno code is typechecked by `deno check`, not by this repo's `tsc`. |
+| `complexity` | in scope by config, empty in practice | Framework-agnostic — cyclomatic complexity means the same thing in Deno. Not reached today only because `complexityRoots` does not list `supabase`; that is a roots decision, and nothing in the exclusion config blocks it. |
+| `eslint` | out of scope | Framework-agnostic, but deliberately scoped to `lintRoots` for parity with `npm run lint`. Edge Functions are linted by `deno lint` and its own `deno.json`. |
+| `architecture` | ❌ excluded | Checks Expo Router file conventions, React component separation, constructor DI in `services/`. None of those concepts exist in a Deno handler. |
+| `error-handling` | ❌ excluded | Looks for React error boundaries and the app's client-side fetch-in-try-catch pattern. A Deno handler signals failure by returning a non-2xx `Response`, which the heuristic reads as a missing catch. |
+| `performance` | ❌ excluded | Audits the client `CacheService`, polling intervals and React render cost. Edge Functions are request-scoped and hold none of that machinery. |
+| `data-flow` | ❌ excluded | Audits hook subscriptions, `SyncManager` and React state immutability. A stateless request handler has no subscription to leak and no shared state to mutate. |
+| `build` | ❌ excluded | Validates `app.json`/`tsconfig` and React Native platform compatibility. Edge Functions are not part of the Expo build and ship no native APIs. |
+
+The exclusions live in `AUDIT_CONFIG.checkerExcludePaths` — **a different list
+from `excludePaths`, and strictly additive to it**. `excludePaths` answers "is
+this our code?"; `checkerExcludePaths` answers "do this checker's rules mean
+anything for that code?". Passing a checker id to `shouldExcludePath()` can only
+ever exclude *more*, never re-open something the global list closed.
+
+Every exclusion carries a `reason` string, and **the run prints it** before the
+checkers start — the `Scope:` block lists which checkers see the full tree and
+which do not, with the reason. Frozen by
+`__tests__/scripts/audit/deno-edge-function-scope.test.ts`.
 
 | Command | Checkers | Blocks on |
 |---|---|---|
@@ -645,13 +676,16 @@ exit 2.
 | `.husky/pre-commit` | typescript, eslint, complexity, security (`npm run audit:precommit`) | **Critical** regressions only (fast) |
 | `.husky/pre-push` | **all 9** (`npm run audit:ci`) | Critical + High regressions |
 
-Every run prints its roster — which checkers are running and which are **NOT**.
-A reduced run is allowed; a *silent* reduced run is not. An unrecognised
-`--checks` id exits 2 rather than quietly narrowing coverage.
+Every run prints its roster — which checkers are running and which are **NOT** —
+and its scope: which of the running checkers skip part of the tree, and why
+(issue #60). A reduced run is allowed; a *silent* reduced run is not. An
+unrecognised `--checks` id exits 2 rather than quietly narrowing coverage.
 
-Full run cost: ~62 s (TypeScript ~20 s, ESLint ~20 s, Complexity ~21 s, the
-other six ~1 s combined). Before issue #44 it was ~187 s, because four of those
-six walked `node_modules`.
+Full run cost, measured on this machine in issue #60: **~270 s** (TypeScript
+~79 s, ESLint ~80 s, Complexity ~98 s, the other six ~14 s combined — of which
+security ~4 s). The "~62 s" this line claimed after #44 is not reproducible
+here; treat it as a machine-dependent figure, not a target. Before #44 it was
+much worse still, because four validators walked `node_modules`.
 
 **Verifying the ESLint checker**: its scope is deliberately identical to what
 `expo lint` covers, so `npm run lint` and the `eslint` checker report the same
@@ -726,7 +760,8 @@ specs/002-production-refactoring/reports/
 | Key | Purpose |
 |---|---|
 | `projectRoot` | Repo root. Overridable via `AUDIT_PROJECT_ROOT` (used by tests to point the audit at a broken fixture). |
-| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. #42 fixed this in the shared `shouldExcludePath()` but wired **only the security scanner** to it; the error-handling, performance, data-flow and build validators each kept a copy-pasted, non-normalised walker and went on scanning `node_modules` until issue #44. **Any checker that walks the tree must call `shouldExcludePath()` — never re-implement the matching.** Frozen by `__tests__/scripts/audit/checker-exclusions.test.ts`. |
+| `excludePaths` | Glob exclusions, matched against **POSIX-normalised** relative paths. Before #42 they were matched against raw `path.relative()` output, so on Windows none of them matched and the security scanner walked `node_modules`, `docs/` and build artifacts. #42 fixed this in the shared `shouldExcludePath()` but wired **only the security scanner** to it; the error-handling, performance, data-flow and build validators each kept a copy-pasted, non-normalised walker and went on scanning `node_modules` until issue #44. **Any checker that walks the tree must call `shouldExcludePath()` — never re-implement the matching.** Issue #60 found the last two survivors: `architecture-validator` had no exclusion check *at all* (it got away with it only because its call sites are `services/`, `app/`, `components/`), and `typescript-checker` still carried its own raw-`path.relative()` copy, so `excludePaths` had never applied to a single TypeScript finding on Windows. Both are on the shared helper now. Frozen by `__tests__/scripts/audit/checker-exclusions.test.ts`. |
+| `checkerExcludePaths` | **Per-checker** exclusions, `{ pattern, reason }`, applied *on top of* `excludePaths` — never instead of it (issue #60). Used to keep the Deno Edge Functions out of the Expo-shaped checkers while `security` keeps scanning them. Pass the checker id: `shouldExcludePath(file, this.id)`. Every entry needs a `reason`, because the run prints it. |
 | `lintRoots` | Dirs linted by the ESLint checker — kept equal to `expo lint`'s defaults for cross-checkability. |
 | `complexityRoots` | Dirs analysed by the Complexity checker (wider than `lintRoots`). |
 | `baselineFile` | `.audit-baseline.json` — the frozen backlog. |
@@ -747,6 +782,11 @@ specs/002-production-refactoring/reports/
 - `checker-exclusions.test.ts` — every tree-walking checker honours
   `excludePaths` on any platform, and none of them descends into
   `node_modules` (issue #44).
+- `deno-edge-function-scope.test.ts` — the per-checker scope of
+  `supabase/functions` (issue #60): `security` walks it and reports a planted
+  credential there; the five Expo-shaped checkers do not walk it; a checker id
+  can only *add* exclusions, never re-open a globally excluded path; and the
+  security scan reaches the whole tree rather than a truncated prefix.
 
 If you touch the audit, these must stay green.
 
@@ -765,7 +805,10 @@ If you touch the audit, these must stay green.
 > ```
 
 **Stato attuale (issue #71/#73)**: **1708 errori**. Erano 1757 dopo la #49, 2462 prima.
-Baseline audit congelata a **1795** finding bloccanti (era 2721).
+Baseline audit congelata a **1741** finding bloccanti dopo la #60 (era 1795,
+2721 prima della #49). Vedi "Monitoring & Metrics" per la scomposizione: solo
+−5 vengono dal cambio di scope della #60, −49 erano scarto di una baseline non
+rigenerata dopo #71/#73.
 
 | Campagna | Da | A | Δ |
 |---|---|---|---|
@@ -892,26 +935,39 @@ authority on current behaviour**; treat those documents as historical.
 numbers are now reproducible on a machine with `node_modules` installed, which
 before #44 they were not (see `excludePaths` above):
 
-> Aggiornato da issue #49: TypeScript e' passato da 2677 a **1757** finding e la
-> baseline congelata da 2721 a **1795**. La riga TypeScript qui sotto e' quella
-> post-#49; le altre non sono state toccate.
+> Aggiornata da issue #60 (misurata sullo stesso commit, prima e dopo il
+> cambio di scope). La colonna "prima" e' il run su `master`, non i numeri
+> storici di #49, che erano di due campagne fa.
 
-| Checker | Findings |
-|---|---|
-| TypeScript | 1757 |
-| ESLint | 922 (5 errors / 917 warnings — matches `npm run lint`) |
-| Complexity | 176 |
-| Security | **0** |
-| Architecture | 15 |
-| Error Handling | 39 |
-| Performance | 2049 |
-| Data Flow | 25 |
-| Build | 4 |
+| Checker | Before #60 | After #60 | Δ |
+|---|---|---|---|
+| TypeScript | 1708 | 1706 | −2 |
+| ESLint | 901 (5 errors / 896 warnings — matches `npm run lint`) | 901 | — |
+| Complexity | 173 | 173 | — |
+| Security | **0** | **0** | — |
+| Architecture | 16 | 16 | — |
+| Error Handling | 33 | 30 | −3 |
+| Performance | 2048 | 2048 | — |
+| Data Flow | 26 | 26 | — |
+| Build | 3 | 3 | — |
+| **Total** | **4908** | **4903** | **−5** |
 
-1795 blocking findings are frozen in `.audit-baseline.json` (2780 before issue
-#56, 2721 before issue #49). The gate therefore reports PASS today, and will report FAIL the
-moment any of those counts grows. This number is the epic's real starting
-point — not zero.
+All five removed findings are **High**, and all five were noise:
+
+- 3 × `error-handling-promise` in `supabase/functions` — a Deno handler's
+  `.then()` chain judged against the app's React error-handling rules (#60);
+- 2 × `typescript-error` in `netlify/functions` — `netlify/**` has been in
+  `excludePaths` all along; it had simply never been applied to TypeScript
+  findings, because that checker carried its own broken matcher.
+
+**1741** blocking findings are now frozen in `.audit-baseline.json` (1795 before
+#60, 2780 before #56, 2721 before #49). The step from 1795 to 1741 is −54, of
+which only −5 belongs to #60: the other −49 was slack, because #71/#73 removed
+findings without re-freezing the baseline. A baseline that is not regenerated
+overstates the backlog, so re-freeze it when the number moves.
+
+The gate reports PASS today, and will report FAIL the moment any of those counts
+grows. This number is the epic's real starting point — not zero.
 
 > Issue #44 did **not** regenerate the baseline, and the counts above did not
 > move. Before #44 the same table was only reproducible on a checkout without
@@ -932,8 +988,9 @@ because before #42 six of the nine checkers were never instantiated.
 Two things changed so it cannot recur silently:
 
 - **`security` runs at commit time**, not only at push. `.husky/pre-commit` uses
-  the `precommit` preset (`quality` + `security`). The scanner costs <1s on the
-  whole tree; there was no reason for the commit gate to be blind to the only
+  the `precommit` preset (`quality` + `security`). The scanner costs ~4s on the
+  whole tree (it was "<1s" only because it was reading 64% of it — see below);
+  there was no reason for the commit gate to be blind to the only
   finding class that is Critical by definition.
 - **The scanner stopped crying wolf.** 13 of its 14 findings were
   `xmlns="http://..."` and `SOAPAction:` inside SOAP envelopes for the VIS API.
@@ -942,6 +999,24 @@ Two things changed so it cannot recur silently:
   exempts them **per occurrence** — a line carrying both a namespace and a real
   `http://` endpoint is still reported.
   Frozen by `__tests__/scripts/audit/security-scanner.test.ts`.
+- **The scan stopped stopping** (issue #60). `getFilesToScan()` capped the walk
+  at 500 files with a `priorityDirs` exemption, but the exemption was checked on
+  the recursive call while the root-level loop had its own early return: once
+  the budget ran out, every remaining top-level directory was dropped
+  **alphabetically**. Measured: **516 of 801** first-party files scanned, and
+  **zero** under `supabase/` — the walk never got past `services/`. A planted
+  credential in an Edge Function was not reported. There is no cap now, only a
+  guard rail (`SCAN_FILE_LIMIT`) that **throws** — a truncated credential scan
+  must not be able to say "no secrets found" when it means "none in the part I
+  read". Full uncapped walk: ~4s.
+- **Two more false-positive classes are exempt**, for the same reason as the
+  namespaces: `isInTestOrComment` now normalises separators (`test/` never
+  matched a Windows path, which is why Deno test directories were flagged) and
+  recognises the Deno `-test.ts` / `_test.ts` convention;
+  `SecurityScanner.isNonLiteralCredentialOnly` skips values that are `${...}`
+  interpolations or env lookups — `Password="${this.credentials.password}"` is
+  how a credential is *supposed* to be carried, and flagging it teaches people
+  to ignore the one finding class that must never be baselined.
 
 If the gate reports `security-credential`, **do not** run `audit:baseline` and
 **do not** `--no-verify` past it. Move the value to an environment variable and

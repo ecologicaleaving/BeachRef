@@ -6,7 +6,12 @@
  * parameters for the audit system as per spec clarifications.
  */
 
-import { AuditConfig, Severity } from './types';
+import {
+  AuditConfig,
+  CheckerScopeExclusion,
+  CheckerScopeReduction,
+  Severity,
+} from './types';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -59,6 +64,86 @@ export const AUDIT_CONFIG: AuditConfig = {
     'public/**',
     '**/*.min.js',
   ],
+
+  // Per-checker path exclusions (issue #60).
+  //
+  // `excludePaths` above answers "is this our code?". This map answers a
+  // different question: "do THIS checker's rules mean anything for that code?".
+  //
+  // `supabase/functions/**` holds the Deno Edge Functions. They are first-party
+  // production code that handles data, so excluding them wholesale — the way
+  // `BeachRef-app/**` is excluded above — would be the comfortable and wrong
+  // choice: it would leave the only server-side code in the repo with no
+  // credential scanning at all, which is exactly the hole that cost ten months
+  // of exposed production credentials in #56. So `security` still walks them,
+  // and only the checkers whose rules encode Expo/React-Native assumptions
+  // stop at the door.
+  //
+  // Decision per checker is documented in CLAUDE.md ("Audit scope per checker").
+  // A checker absent from this map audits the whole tree.
+  checkerExcludePaths: {
+    architecture: [
+      {
+        pattern: 'supabase/functions/**',
+        reason:
+          'Deno Edge Functions: the rules check Expo Router file conventions, ' +
+          'React component separation and constructor DI in services/. None of ' +
+          'those concepts exist in a Deno HTTP handler.',
+      },
+    ],
+    'error-handling': [
+      {
+        pattern: 'supabase/functions/**',
+        reason:
+          'Deno Edge Functions: the rules look for React error boundaries and ' +
+          'for the app\'s client-side fetch-in-try-catch pattern. A Deno handler ' +
+          'reports failures by returning a non-2xx Response, which these ' +
+          'heuristics read as a missing catch.',
+      },
+    ],
+    performance: [
+      {
+        pattern: 'supabase/functions/**',
+        reason:
+          'Deno Edge Functions: the rules audit the client CacheService, ' +
+          'polling intervals and React render cost. Edge Functions are ' +
+          'request-scoped and hold none of that machinery.',
+      },
+    ],
+    'data-flow': [
+      {
+        pattern: 'supabase/functions/**',
+        reason:
+          'Deno Edge Functions: the rules audit hook subscriptions, SyncManager ' +
+          'and React state immutability. A stateless request handler has no ' +
+          'subscriptions to leak and no shared state to mutate.',
+      },
+    ],
+    build: [
+      {
+        pattern: 'supabase/functions/**',
+        reason:
+          'Deno Edge Functions: the rules validate app.json/tsconfig and ' +
+          'React Native platform compatibility (Platform.OS guards). Edge ' +
+          'Functions are not part of the Expo build and ship no native APIs.',
+      },
+    ],
+    // Deliberately NOT listed, i.e. they keep auditing supabase/functions:
+    //   security   — first-party production code handling data; the one
+    //                checker whose value is highest exactly there (#56).
+    //   typescript — framework-agnostic. Note it already sees nothing under
+    //                supabase/functions because tsconfig.json excludes that
+    //                directory (Deno resolves npm:/jsr: specifiers that tsc
+    //                cannot). No per-checker rule needed; adding one would
+    //                imply a decision the tsconfig already makes.
+    //   complexity — framework-agnostic; cyclomatic/cognitive complexity means
+    //                the same thing in Deno. Its `complexityRoots` list does
+    //                not include supabase today, but that is a roots question,
+    //                not an exclusion: nothing here blocks it.
+    //   eslint     — framework-agnostic, but scoped to `lintRoots` for parity
+    //                with `npm run lint`; supabase/functions is linted by
+    //                `deno lint`, not by this config.
+  },
 
   // Source roots linted by the ESLint checker.
   // Kept deliberately identical to what `npm run lint` (expo lint) covers, so
@@ -245,11 +330,46 @@ function globToRegExp(pattern: string): RegExp {
 }
 
 /**
- * Check if a file path should be excluded from auditing
+ * Per-checker exclusions in force for a checker (issue #60).
+ * Unknown / unlisted checker ids get an empty list: audit everything.
+ */
+export function getCheckerScopeExclusions(
+  checkerId?: string
+): CheckerScopeExclusion[] {
+  if (!checkerId) {
+    return [];
+  }
+  return AUDIT_CONFIG.checkerExcludePaths[checkerId] ?? [];
+}
+
+/**
+ * Scope reductions in force for a set of checkers, for reporting (issue #60,
+ * AC3). Only checkers that actually have exclusions are returned.
+ */
+export function describeScopeReductions(
+  checkerIds: string[]
+): CheckerScopeReduction[] {
+  return checkerIds
+    .map((checkerId) => ({
+      checkerId,
+      exclusions: getCheckerScopeExclusions(checkerId),
+    }))
+    .filter((r) => r.exclusions.length > 0);
+}
+
+/**
+ * Check if a file path should be excluded from auditing.
+ *
  * @param filePath - Absolute or project-relative file path
+ * @param checkerId - Optional checker id. When given, that checker's own
+ *   exclusions (AUDIT_CONFIG.checkerExcludePaths) apply ON TOP of the global
+ *   list — the global list is never weakened by passing an id (issue #60, AC4).
  * @returns True if file should be excluded
  */
-export function shouldExcludePath(filePath: string): boolean {
+export function shouldExcludePath(
+  filePath: string,
+  checkerId?: string
+): boolean {
   const relativePath = toProjectRelativePosixPath(filePath);
 
   // Anything outside the project root (starts with ../) is always excluded
@@ -257,8 +377,16 @@ export function shouldExcludePath(filePath: string): boolean {
     return true;
   }
 
-  return AUDIT_CONFIG.excludePaths.some((pattern) =>
+  const globalHit = AUDIT_CONFIG.excludePaths.some((pattern) =>
     globToRegExp(pattern).test(relativePath)
+  );
+
+  if (globalHit) {
+    return true;
+  }
+
+  return getCheckerScopeExclusions(checkerId).some((exclusion) =>
+    globToRegExp(exclusion.pattern).test(relativePath)
   );
 }
 

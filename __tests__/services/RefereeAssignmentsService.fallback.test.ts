@@ -1,10 +1,10 @@
 import { RefereeAssignmentsService } from '../../services/RefereeAssignmentsService';
-import { CacheService } from '../../services/CacheService';
+import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { BeachMatch } from '../../types/match';
 import { RefereeAssignmentStatus } from '../../types/RefereeAssignments';
 
 // Mock dependencies
-jest.mock('../../services/CacheService');
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
 jest.mock('../../services/ConnectionCircuitBreaker');
 jest.mock('@react-native-async-storage/async-storage');
 

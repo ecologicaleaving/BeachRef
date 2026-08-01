@@ -21,7 +21,7 @@ jest.mock('../ConnectionCircuitBreaker', () => ({
   }
 }));
 
-jest.mock('../CacheService', () => ({
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility', () => ({
   CacheService: {
     getInstance: jest.fn()
   }
@@ -77,7 +77,7 @@ describe('DualReadService', () => {
     (NetworkMonitor.getInstance as jest.Mock).mockReturnValue(mockNetworkMonitor);
     (ErrorLogger.getInstance as jest.Mock).mockReturnValue(mockErrorLogger);
     
-    const { CacheService } = require('../CacheService');
+    const { CacheService } = require('../../hooks/compatibility/CacheServiceCompatibility');
     (CacheService.getInstance as jest.Mock).mockReturnValue(mockCacheService);
 
     const { ConnectionCircuitBreaker } = require('../ConnectionCircuitBreaker');
@@ -579,7 +579,7 @@ describe('DualReadService', () => {
 
   describe('Cache Integration', () => {
     it('should invalidate cache when requested', async () => {
-      const { CacheService } = require('../CacheService');
+      const { CacheService } = require('../../hooks/compatibility/CacheServiceCompatibility');
       const mockCacheService = CacheService.getInstance();
 
       await dualReadService.invalidateCache('tournaments');

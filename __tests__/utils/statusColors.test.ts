@@ -4,7 +4,6 @@
  */
 
 import {
-import { colors } from '../theme/tokens';
   getStatusColor,
   getAssignmentStatusColor,
   getMatchStatusColor,

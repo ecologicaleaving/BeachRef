@@ -10,6 +10,76 @@ import { IVisApiClient, VisApiResponse, VisApiSuccessResponse } from '../../type
 import { BeachLive, BeachSetStatus } from '../../types/beach-live';
 import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
 
+// Mock dependencies
+const mockVisApiClient: IVisApiClient = {
+  getBeachLive: jest.fn(),
+  getEventList: jest.fn(),
+  getBeachTournament: jest.fn(),
+  getEvent: jest.fn(),
+  getBeachMatchList: jest.fn(),
+  getBeachRound: jest.fn(),
+  testConnection: jest.fn(),
+  getConfig: jest.fn()
+};
+
+const mockCircuitBreaker: ConnectionCircuitBreaker = {
+  canExecute: jest.fn(),
+  onSuccess: jest.fn(),
+  onFailure: jest.fn(),
+  getState: jest.fn()
+} as any;
+
+const mockBeachLive: BeachLive = {
+  version: 1,
+  pollDelay: 5000,
+  isBallInPlay: true,
+  isMatchPointTeamA: false,
+  isMatchPointTeamB: false,
+  isSetPointTeamA: false,
+  isSetPointTeamB: false,
+  noServingTeam: 1,
+  noServingPlayer: 1,
+  noTeamAtLeft: 1,
+  noTeamAtRight: 2,
+  match: {
+    no: 123,
+    noInTournament: 1,
+    status: 'InProgress' as any,
+    dateTime: '2025-08-25T10:00:00Z',
+    court: { no: 1, name: 'Court 1', surface: 'Sand' },
+    round: { no: 1, name: 'Pool A', phase: 'Pool', type: 'Pool' as any }
+  },
+  sets: [
+    { no: 1, pointsTeamA: 15, pointsTeamB: 12, status: 'InProgress' as any }
+  ],
+  teamA: {
+    no: 1,
+    name: 'Team A',
+    federationCode: 'USA',
+    players: [],
+    matchPoints: 0,
+    isServing: true,
+    timeoutsRemaining: 1
+  },
+  teamB: {
+    no: 2,
+    name: 'Team B', 
+    federationCode: 'BRA',
+    players: [],
+    matchPoints: 0,
+    isServing: false,
+    timeoutsRemaining: 1
+  },
+  tournament: {
+    no: 1,
+    name: 'Test Tournament',
+    code: 'TEST2025',
+    city: 'Test City',
+    country: 'Test Country',
+    federation: 'Test Federation'
+  }
+};
+
 
 describe('LiveScorePollingService', () => {
   let service: LiveScorePollingService;
@@ -66,12 +136,16 @@ describe('LiveScorePollingService', () => {
       (mockVisApiClient.getBeachLive as jest.Mock).mockResolvedValue(mockResponse);
       
       service.startPolling(123, mockCallback);
-      service.updateVersion(123, 2);
 
-      // Wait for async poll to complete
+      // `startPolling` fires the first poll synchronously, so the request for it
+      // is already built by the time `updateVersion` runs. The version only
+      // reaches the wire on the *next* poll — which is what this test is about.
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(mockVisApiClient.getBeachLive).toHaveBeenCalledWith(
+      service.updateVersion(123, 2);
+      await (service as any).performPoll((service as any).pollingConfigs.get(123));
+
+      expect(mockVisApiClient.getBeachLive).toHaveBeenLastCalledWith(
         expect.objectContaining({
           matchNo: 123,
           version: 2
@@ -166,9 +240,11 @@ describe('LiveScorePollingService', () => {
       
       service.startPolling(123, mockCallback);
 
-      // Initial poll delay should be default (5000ms)
+      // `startPolling` polls immediately, so one poll is already in flight here.
+      // (This assertion used to read `toBe(0)`, from when the first poll waited
+      // for the interval.)
       const initialStats = service.getStatistics();
-      expect(initialStats.totalPolls).toBe(0);
+      expect(initialStats.totalPolls).toBeLessThanOrEqual(1);
 
       // Wait for first failed poll
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -209,7 +285,11 @@ describe('LiveScorePollingService', () => {
 
   describe('Cache Integration', () => {
     test('should provide method to get cached live score', () => {
-      const cachedData = service.getCachedLiveScore(123);
+      // `getCachedLiveScore` reads the module-level `CacheService`, which is
+      // shared by every suite in this file: match 123 is polled by the tests
+      // above, so asking for it here would read their leftovers. Use a match
+      // number nothing else touches.
+      const cachedData = service.getCachedLiveScore(999123);
       // Cache integration is tested separately in CacheService.test.ts
       expect(cachedData).toBeNull(); // No cache data initially
     });
@@ -231,7 +311,11 @@ describe('LiveScorePollingService', () => {
         success: true,
         timestamp: new Date().toISOString(),
         durationMs: 100,
-        xmlData: JSON.stringify({ ...mockBeachLive, pollDelay: 3000 })
+        // The parser reads XML. This fixture used to be `JSON.stringify(...)`,
+        // which `parseBeachLiveResponse` cannot read, so the service silently
+        // fell back to its defaults and the assertion below could never be
+        // about the server's value.
+        xmlData: '<BeachLive><Version>1</Version><PollDelay>3000</PollDelay><Match MatchNo="123" Status="Running" /></BeachLive>'
       };
 
       (mockVisApiClient.getBeachLive as jest.Mock).mockResolvedValue(mockResponse);
@@ -305,7 +389,10 @@ describe('LiveScorePollingService', () => {
       expect(result.sets).toHaveLength(2);
       expect(result.sets[0].pointsTeamA).toBe(19);
       expect(result.sets[0].status).toBe(BeachSetStatus.FINISHED);
-      expect(result.sets[1].status).toBe(BeachSetStatus.NOT_STARTED);
+      // A set with no `Status` attribute but a live score (12-10) is inferred as
+      // in progress by `normalizeSetStatus`. The old expectation (NOT_STARTED)
+      // predates that inference.
+      expect(result.sets[1].status).toBe(BeachSetStatus.IN_PROGRESS);
       expect(result.teamA.matchPoints).toBe(0);
       expect(result.teamB.matchPoints).toBe(1);
       expect(result.sets[1].rawAttributes?.PointsA).toBe('12');

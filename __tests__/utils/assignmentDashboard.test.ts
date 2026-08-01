@@ -197,9 +197,23 @@ describe('assignmentDashboard utilities', () => {
   });
 
   describe('formatAssignmentTimeForDashboard', () => {
+    // The clock is frozen for this test. It reads `new Date()` here and the
+    // function under test reads `Date.now()` a moment later, so any millisecond
+    // elapsing between the two turns "30 min" into "29 min" — which is exactly
+    // how this suite came to be flaky in a full parallel run while passing in
+    // isolation (issue #61, AC8). Freezing time removes the race rather than
+    // widening the assertion.
+    beforeEach(() => {
+      jest.useFakeTimers({ now: new Date('2026-06-01T12:00:00Z') });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should format time correctly for different durations', () => {
       const now = new Date();
-      
+
       // 30 minutes from now
       const thirtyMin = new Date(now.getTime() + 30 * 60 * 1000);
       expect(formatAssignmentTimeForDashboard(thirtyMin)).toBe('30 min');

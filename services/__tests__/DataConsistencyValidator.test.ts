@@ -1,47 +1,47 @@
 import { DataConsistencyValidator } from '../DataConsistencyValidator';
 import { VisApiClient } from '../api/VisApiClient';
 import { ErrorLogger } from '../ErrorLogger';
-import { NetworkMonitor } from '../NetworkStateManager';
+import { NetworkStateManager as NetworkMonitor } from '../NetworkStateManager';
 
-// Mock dependencies
-jest.mock('../api/VisApiClient', () => ({
-  VisApiClient: {
-    getInstance: jest.fn(() => ({
-      getTournaments: jest.fn(),
-      getEvents: jest.fn(),
-      getMatches: jest.fn()
-    }))
-  }
-}));
+// Mock dependencies.
+//
+// `VisApiClient` has no static `getInstance()`: since #73 the SUT builds it with
+// `new VisApiClient(config)`. The mock is therefore a constructor returning one
+// shared instance, and the method names are the ones the SUT actually calls
+// (`fetchBeachTournamentsThisYear` / `getEvents` / `fetchMatchesForTournament`),
+// not the pre-#73 `getTournaments`/`getMatches` pair.
+jest.mock('../api/VisApiClient', () => {
+  const instance = {
+    fetchBeachTournamentsThisYear: jest.fn(),
+    getEvents: jest.fn(),
+    fetchMatchesForTournament: jest.fn(),
+  };
+  return { VisApiClient: jest.fn(() => instance), __mockInstance: instance };
+});
 
-jest.mock('../ErrorLogger', () => ({
-  ErrorLogger: {
-    getInstance: jest.fn(() => ({
-      log: jest.fn(),
-      logError: jest.fn()
-    }))
-  }
-}));
+// `getInstance` must return the *same* object every call. When the factory built
+// a fresh object per call, the instance the SUT held and the one the test
+// asserted on were different objects, so every `toHaveBeenCalledWith` saw zero
+// calls.
+jest.mock('../ErrorLogger', () => {
+  const instance = { log: jest.fn(), logError: jest.fn() };
+  return { ErrorLogger: { getInstance: jest.fn(() => instance) } };
+});
 
-jest.mock('../NetworkStateManager', () => ({
-  NetworkMonitor: {
-    getInstance: jest.fn(() => ({
-      isOnline: true,
-      subscribe: jest.fn(),
-      unsubscribe: jest.fn()
-    }))
-  }
-}));
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => ({
+jest.mock('../NetworkStateManager', () => {
+  const instance = { isOnline: true, subscribe: jest.fn(), unsubscribe: jest.fn() };
+  return { NetworkStateManager: { getInstance: jest.fn(() => instance) } };
+});
+// Same shared-instance requirement as above: the test reaches the SUT's client
+// by calling `createClient()` itself, so it must hand back the same object.
+jest.mock('@supabase/supabase-js', () => {
+  const client = {
     from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        data: [],
-        error: null
-      }))
+      select: jest.fn(() => ({ data: [], error: null }))
     }))
-  }))
-}));
+  };
+  return { createClient: jest.fn(() => client) };
+});
 
 // Mock Node.js crypto
 jest.mock('crypto', () => ({
@@ -58,7 +58,7 @@ process.env.EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 
 describe('DataConsistencyValidator', () => {
   let validator: DataConsistencyValidator;
-  let mockVisApiClient: jest.Mocked<VisApiClient>;
+  let mockVisApiClient: any;
   let mockErrorLogger: jest.Mocked<ErrorLogger>;
   let mockNetworkMonitor: jest.Mocked<NetworkMonitor>;
   let mockSupabaseFrom: jest.Mock;
@@ -83,14 +83,14 @@ describe('DataConsistencyValidator', () => {
 
   const mockApiTournaments = [
     {
-      tournamentCode: 'T001',
+      code: 'T001',
       name: 'Test Tournament 1',
       startDate: '2024-01-01',
       endDate: '2024-01-05',
       venue: 'Test Venue 1'
     },
     {
-      tournamentCode: 'T003',
+      code: 'T003',
       name: 'Test Tournament 3',
       startDate: '2024-03-01',
       endDate: '2024-03-05',
@@ -105,13 +105,13 @@ describe('DataConsistencyValidator', () => {
     (DataConsistencyValidator as any).instance = undefined;
     
     // Setup mocks
-    mockVisApiClient = VisApiClient.getInstance() as jest.Mocked<VisApiClient>;
+    mockVisApiClient = jest.requireMock('../api/VisApiClient').__mockInstance;
     mockErrorLogger = ErrorLogger.getInstance() as jest.Mocked<ErrorLogger>;
     mockNetworkMonitor = NetworkMonitor.getInstance() as jest.Mocked<NetworkMonitor>;
     
-    mockVisApiClient.getTournaments.mockResolvedValue(mockApiTournaments);
+    mockVisApiClient.fetchBeachTournamentsThisYear.mockResolvedValue(mockApiTournaments);
     mockVisApiClient.getEvents.mockResolvedValue([]);
-    mockVisApiClient.getMatches.mockResolvedValue([]);
+    mockVisApiClient.fetchMatchesForTournament.mockResolvedValue([]);
     
     mockErrorLogger.log.mockImplementation(() => {});
     mockErrorLogger.logError.mockImplementation(() => {});
@@ -211,7 +211,7 @@ describe('DataConsistencyValidator', () => {
     });
 
     it('should handle API errors', async () => {
-      mockVisApiClient.getTournaments.mockRejectedValue(new Error('API unavailable'));
+      mockVisApiClient.fetchBeachTournamentsThisYear.mockRejectedValue(new Error('API unavailable'));
 
       await expect(validator.validateTournaments()).rejects.toThrow('API unavailable');
     });
@@ -230,7 +230,7 @@ describe('DataConsistencyValidator', () => {
     const mockApiEvents = [
       {
         eventNo: 'E001',
-        tournamentCode: 'T001',
+        code: 'T001',
         name: 'Men Singles'
       }
     ];
@@ -310,7 +310,7 @@ describe('DataConsistencyValidator', () => {
         });
       });
 
-      mockVisApiClient.getMatches.mockResolvedValue(mockApiMatches);
+      mockVisApiClient.fetchMatchesForTournament.mockResolvedValue(mockApiMatches);
     });
 
     it('should validate matches successfully', async () => {
@@ -358,7 +358,7 @@ describe('DataConsistencyValidator', () => {
         });
       });
 
-      mockVisApiClient.getMatches.mockResolvedValue(mockApiMatches);
+      mockVisApiClient.fetchMatchesForTournament.mockResolvedValue(mockApiMatches);
     });
 
     it('should validate referee assignments successfully', async () => {
@@ -407,7 +407,7 @@ describe('DataConsistencyValidator', () => {
     });
 
     it('should handle validation errors gracefully', async () => {
-      mockVisApiClient.getTournaments.mockRejectedValue(new Error('API failed'));
+      mockVisApiClient.fetchBeachTournamentsThisYear.mockRejectedValue(new Error('API failed'));
 
       const report = await validator.validateAll();
       expect(report.overallStatus).toBe('failed');

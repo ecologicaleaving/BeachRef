@@ -5,7 +5,7 @@
 
 import { renderHook, act } from '@testing-library/react-native';
 import { useAssignmentCountdown } from '../../hooks/useAssignmentCountdown';
-import { colors } from '../theme/tokens';
+import { colors } from '../../theme/tokens';
 
 // Mock timers
 jest.useFakeTimers();

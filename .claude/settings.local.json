@@ -252,7 +252,10 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json \"use chrome-devtool mcp to look at the matchcard with the newly implemented challenge ref and auxiliary officials, propose me a different, professional and clean layout\" -ShortName \"match-card-layout-redesign\")",
       "mcp__chrome-devtools__new_page",
       "Bash(do echo \"File: $file\")",
-      "Bash(do echo \"\")"
+      "Bash(do echo \"\")",
+      "mcp__chrome-devtools__performance_start_trace",
+      "Bash(sleep 5)",
+      "mcp__chrome-devtools__performance_analyze_insight"
     ],
     "deny": [],
     "ask": [],

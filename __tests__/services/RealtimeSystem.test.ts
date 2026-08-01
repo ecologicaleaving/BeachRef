@@ -14,8 +14,8 @@ jest.mock('../../services/supabase', () => ({
   }
 }));
 
-jest.mock('../../services/CacheService', () => ({
-  CacheService: {
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility', () => ({
+  CacheServiceCompatibility: {
     invalidateMatchCache: jest.fn(() => Promise.resolve()),
   }
 }));

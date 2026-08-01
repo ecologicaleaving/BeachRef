@@ -4,7 +4,6 @@
  */
 
 import {
-import { colors } from '../theme/tokens';
   calculateContrastRatio,
   validateWCAG,
   calculateContrast,

@@ -4,7 +4,6 @@
  */
 
 import { designTokens, validateAllContrasts, colors, typography, spacing } from '../../theme/tokens';
-import { colors } from '../theme/tokens';
 
 describe('Design Tokens', () => {
   describe('Color Tokens', () => {

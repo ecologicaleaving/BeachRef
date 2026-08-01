@@ -1,11 +1,11 @@
 import { RefereeAssignmentsService } from '../../services/RefereeAssignmentsService';
-import { CacheService } from '../../services/CacheService';
+import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { TournamentRefereeData, OfficialStatus, OfficialType } from '../../types/referee-v2';
 import { BeachMatch } from '../../types/match';
 import { RefereeProfile } from '../../types/RefereeAssignments';
 
 // Mock dependencies
-jest.mock('../../services/CacheService');
+jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
 jest.mock('../../services/ConnectionCircuitBreaker');
 
 const mockCacheService = CacheService as jest.Mocked<typeof CacheService>;

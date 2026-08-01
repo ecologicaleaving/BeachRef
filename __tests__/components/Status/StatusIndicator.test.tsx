@@ -7,7 +7,6 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { StatusIndicator } from '../../../components/Status/StatusIndicator';
 import { StatusType } from '../../../types/status';
-import { colors } from '../theme/tokens';
 
 // Mock dependencies
 jest.mock('../../../components/Icons/IconLibrary', () => ({

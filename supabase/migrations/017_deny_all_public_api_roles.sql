@@ -101,25 +101,79 @@ END $$;
 -- the roles that create objects, so a brand new table arrives readable and
 -- writable by the public key before anyone has thought about it.
 
+-- NOTE: on hosted Supabase this runs as `postgres`, which is NOT a member of
+-- `supabase_admin`. `ALTER DEFAULT PRIVILEGES FOR ROLE <other>` then fails with
+-- 42501 `permission denied to change default privileges`, and — because the
+-- whole migration is one transaction — takes the entire deny-all down with it.
+--
+-- A role we cannot reach is a real, if narrow, residual risk: it only affects
+-- objects that role creates in the FUTURE, never the current state, which
+-- sections 1, 3 and 4 close regardless. So the loop records what it could not
+-- do and says so loudly, instead of either failing or staying silent.
+
 DO $$
 DECLARE
   creator TEXT;
+  covered TEXT[] := '{}';
+  skipped TEXT[] := '{}';
+  owns_objects BOOLEAN;
 BEGIN
-  FOREACH creator IN ARRAY ARRAY['postgres', 'supabase_admin', 'service_role'] LOOP
+  -- `current_user` is always reachable: a role may always change its own
+  -- default privileges. Without it, an install running as anything other than
+  -- `postgres` would cover nothing at all.
+  FOREACH creator IN ARRAY ARRAY[current_user, 'postgres', 'supabase_admin', 'service_role'] LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = creator) THEN
       CONTINUE;
     END IF;
-    EXECUTE format(
-      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated',
-      creator);
-    EXECUTE format(
-      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated',
-      creator);
-    EXECUTE format(
-      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON ROUTINES FROM anon, authenticated',
-      creator);
-    RAISE NOTICE 'default privileges for role % now exclude anon/authenticated', creator;
+    IF creator = ANY (covered) OR creator = ANY (skipped) THEN
+      CONTINUE;  -- current_user may repeat one of the named roles
+    END IF;
+
+    BEGIN
+      EXECUTE format(
+        'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated',
+        creator);
+      EXECUTE format(
+        'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated',
+        creator);
+      EXECUTE format(
+        'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON ROUTINES FROM anon, authenticated',
+        creator);
+      covered := covered || creator;
+      RAISE NOTICE 'default privileges for role % now exclude anon/authenticated', creator;
+    EXCEPTION WHEN insufficient_privilege THEN
+      skipped := skipped || creator;
+    END;
   END LOOP;
+
+  IF array_length(skipped, 1) IS NOT NULL THEN
+    RAISE WARNING 'default privileges NOT changed for role(s): % — the current '
+                  'user lacks permission. Objects those roles create in the '
+                  'future may arrive granted to anon/authenticated.',
+                  array_to_string(skipped, ', ');
+
+    -- Only worth escalating if such a role actually creates things here.
+    SELECT EXISTS (
+      SELECT 1
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      JOIN pg_roles r ON r.oid = c.relowner
+      WHERE n.nspname = 'public'
+        AND c.relkind IN ('r', 'p', 'v', 'm')
+        AND r.rolname = ANY (skipped)
+    ) INTO owns_objects;
+
+    IF owns_objects THEN
+      RAISE WARNING 'at least one un-coverable role OWNS objects in schema '
+                    'public: re-run this section as a superuser, or accept '
+                    'that future objects it creates need a manual REVOKE.';
+    END IF;
+  END IF;
+
+  IF array_length(covered, 1) IS NULL THEN
+    RAISE EXCEPTION 'could not set default privileges for ANY role — future '
+                    'objects would all arrive open to anon/authenticated';
+  END IF;
 END $$;
 
 -- =============================================================================

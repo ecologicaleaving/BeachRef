@@ -1,3 +1,23 @@
+-- ############################################################################
+-- SUPERSEDED by migration 018 (issue #89). Do not re-apply.
+--
+-- The `match_referees` this file creates no longer exists on production:
+-- migration 013 dropped it (`DROP TABLE IF EXISTS match_referees CASCADE`,
+-- line 27) in order to rebuild `matches` with a uuid primary key, and never
+-- recreated it. What survives is `match_referees_backup` — this file's shape,
+-- with 0 rows.
+--
+-- Re-applying it would not restore anything usable, because its types no
+-- longer fit the tables around it:
+--
+--   here                       production today
+--   match_id   TEXT            matches.id    uuid
+--   referee_id INTEGER         referees.id   bigint
+--
+-- Migration 018 declares the table once, against the types the database
+-- actually has. Read its header before touching referee assignments.
+-- ############################################################################
+
 -- Migration 006.5: Add match_referees table
 -- This migration creates the match_referees table to link referees to matches
 

@@ -46,6 +46,13 @@ const base = {
     }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  // The companion of the `/\.claude/` entry in `testPathIgnorePatterns` below.
+  // That one stops jest *running* the worktree copies; this one stops it
+  // *indexing* them. Without it the module map still crawls all 13 checkouts
+  // and emits ~104 "haste module naming collision" warnings for the duplicated
+  // `__mocks__/expo-virtual-env.js` and `__mocks__/react-native-mmkv.js` —
+  // noise that buries real failures, on top of the crawl cost.
+  modulePathIgnorePatterns: ['/\\.claude/'],
   transformIgnorePatterns: [
     // Everything listed here IS transformed. These packages ship ESM (or Flow,
     // for react-native itself) and would otherwise blow up on `export`/`import`.
@@ -54,6 +61,15 @@ const base = {
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
+    // Agent worktrees (issue #89). `.claude/worktrees/` holds one full checkout
+    // per past agent session — 13 of them at the time of writing, each a
+    // complete copy of this repository on an old feature branch. Without this
+    // line jest discovers the suite 14 times over: the run takes many minutes
+    // and reports failures from branches nobody is working on, attributed to
+    // files whose path merely *looks* like the project's. The directory is
+    // gitignored (.gitignore:98) and `scripts/audit/config.ts` already excludes
+    // `.claude/**`; jest was the last tool still reading it.
+    '/\\.claude/',
     '/__tests__/.*\\.tsx$', // Skip tsx test files for now due to React Native setup complexity
     // Supabase Edge Functions are Deno programs: their tests import
     // `https://deno.land/...` and use the `Deno` global. They are executed by

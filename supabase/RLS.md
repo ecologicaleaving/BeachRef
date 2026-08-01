@@ -263,3 +263,47 @@ anyway.
 
 If the secrets are absent the job **fails**, it does not skip. A recurring check
 that quietly stops running is how this issue happened in the first place.
+
+---
+
+## 8. The first re-opening: what issue #89 did, and what it deliberately did not
+
+Section 5 says re-opening a table must be "a deliberate, motivated, reviewable
+act". Issue #89 is the first occasion, and the answer turned out to be **do not
+re-open anything yet**.
+
+The goal is referee statistics served from the database instead of ~3 VIS
+requests per referee per season. The obvious shape is: let `anon` read
+`referees` and the aggregate tables, and join in the client. That was rejected.
+
+**What #89 did instead.** Migration 018 restores `match_referees` — the
+junction table migration 013 dropped in 2026-02 and never recreated (see its
+header for the full account) — and it restores it **closed**: RLS on, no grant
+to `anon` or `authenticated`, an explicit `service_role` policy. It is the
+first table created since 017, and therefore the first to depend on 017 §2
+holding. It does not depend on it: it revokes explicitly, and
+`supabase/tests/match_referees_restore.leak.test.sql` proves the table stays
+closed even on a project where 017 §2 never took effect.
+
+**Why `referees` stays closed.** It is personal data — names, federation,
+gender — for 480 real people, and the app does not actually need the table: the
+aggregate tables of issue #91 carry the referee identity they need
+(`vis_referee_no` and a display name) denormalised into each row. So the
+client reads statistics and nothing else. Opening a personal-data table to the
+public key in order to save a denormalised column would be the same trade
+migrations 004/009/011 made for a monitoring dashboard that never shipped.
+
+**So the read whitelist is granted by the migration that creates the tables**
+(issue #91), not by 018. A `GRANT` on a table that does not exist yet is not a
+decision, it is a placeholder — and placeholders in this file are how the
+database got into the state section 1 describes.
+
+### Verifying migration 018
+
+```bash
+npm run test:migrations
+```
+
+Docker only, never the project. It runs both the happy path (21 assertions:
+real production types, constraints, cascade behaviour, closure, idempotency)
+and the adversarial default-privileges case.

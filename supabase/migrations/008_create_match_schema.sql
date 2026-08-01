@@ -1,3 +1,24 @@
+-- ############################################################################
+-- The `match_referees` section of this file is SUPERSEDED by migration 018
+-- (issue #89). Do not re-apply that part.
+--
+-- It declares `match_id bigint REFERENCES matches(id)` and `referee_id bigint
+-- REFERENCES referees(id)`. On production `matches.id` is a **uuid**, so that
+-- foreign key cannot be created — and migration 013 later dropped the table
+-- outright while rebuilding `matches`. The result measured on 2026-08-01:
+-- `match_referees` returns HTTP 404, it is simply not there.
+--
+-- This file also disagrees with 006.5, which declares the same table with
+-- `match_id TEXT` / `referee_id INTEGER`. Two incompatible declarations of one
+-- table is what made the absence hard to notice.
+--
+-- The `role` CHECK here allows 'CHALLENGE'; migration 018 deliberately does
+-- not, because the VIS GetBeachMatchList response carries exactly two referee
+-- slots and no writer can produce a third.
+--
+-- The `events` and `matches` sections are historical too — see 013.
+-- ############################################################################
+
 -- Migration 008: Create Match Schema (Events, Matches, Match-Referees)
 -- This migration implements the match schema as specified in Story 2.2
 -- Creates events, matches, and match_referees tables with proper relationships

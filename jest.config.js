@@ -63,6 +63,10 @@ const base = {
     // Two stray Deno test files living outside supabase/ (same reason).
     '__tests__/performance/sync-performance\\.test\\.ts$',
     '__tests__/error-scenarios/sync-error-handling\\.test\\.ts$',
+    // Same reason: it imports `supabase/functions/vis-adapter/index.ts`, whose
+    // own first import is `std/http/server.ts` — a Deno URL specifier jest
+    // cannot resolve. It is a `deno test`, filed under __tests__/integration/.
+    '__tests__/integration/timezone-vis-api\\.test\\.ts$',
   ],
 };
 

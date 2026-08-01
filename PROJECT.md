@@ -206,6 +206,53 @@ file che leggesse una variabile d'ambiente moriva all'import**.
 Guida completa (DI, `fetch` finto, timer, formato del body VIS):
 **`TESTING.md`**.
 
+### Baseline della suite (issue #61)
+
+`npm test` gira **due progetti jest** (`jest.config.js`):
+
+| Progetto | Cosa esegue | Perché separato |
+|---|---|---|
+| `unit` | tutto tranne `__tests__/integration/` | — |
+| `integration` | solo `__tests__/integration/**` | ha bisogno di `__tests__/integration/setup/jest.integration.setup.js`, che definisce `global.testUtils` e i matcher `toHaveValidDTOStructure` / `toBeWithinPerformanceRange`. Prima della #61 quel setup era cablato solo in `npm run test:integration`, mentre `npm test` raccoglieva **le stesse suite senza di esso**: 10 morivano su `Cannot read properties of undefined (reading 'addCleanup')` |
+
+**Numeri, misurati su `master` prima e dopo la #61:**
+
+| | Prima | Dopo |
+|---|---|---|
+| Suite verdi | 69 | **77** |
+| Suite rosse | 82 | **61** |
+| Test verdi | 1466 | **1644** |
+| Test rossi | 281 | **219** |
+
+Nessuna suite verde è diventata rossa: il confronto è stato fatto **per nome**,
+diffando gli elenchi `PASS` prima/dopo, non per conteggio (la suite oscilla di
+±2 e un conteggio stabile può nascondere uno scambio).
+
+**I 219 rossi residui non sono più dominati dal marciume.** La quota maggiore
+sono difetti veri che i test dicono correttamente, e che restano rossi apposta:
+
+| Causa | Test rossi | Issue |
+|---|---|---|
+| Contrasto WCAG non raggiunto dopo la migrazione palette "Titanium & Gold" | 60 | #84 |
+| `useRepositoryData` rifà la fetch a ogni render | 13 | #81 |
+| `DataConsistencyValidator`: `tournamentCode` inesistente + nessun mapping snake_case↔camelCase | 5 | #83 |
+| `PollDelay` del VIS moltiplicato ×1000 | 2 | #80 |
+| `durationMs` sempre 0 sulle risposte VIS riuscite | 1 | #82 |
+
+**Un test rosso che dice il vero vale più di un contatore pulito.** Se stai per
+cancellare un test per far scendere questo numero, verifica prima quale delle due
+cose stai togliendo.
+
+### Test `.tsx` che nessuno esegue
+
+`testPathIgnorePatterns` contiene `'/__tests__/.*\\.tsx$'`, con la motivazione
+*"Skip tsx test files for now due to React Native setup complexity"*. Sono
+**17 file** (`AssignmentCard`, `MatchCard`, `Icon`, `RefereeDashboardScreen`,
+`RealtimeIntegration`, …) che non girano da tempo indefinito e non compaiono in
+nessun conteggio — né verde né rosso. Non sono stati riattivati nella #61 perché
+è lavoro a sé (serve un harness RN funzionante), ma vanno considerati
+**copertura dichiarata e non esistente**, non copertura.
+
 ## Backlog
 - **TODO**: Integrazione AI per analisi performance arbitri
 - **TODO**: Offline mode per gestione tornei senza connessione

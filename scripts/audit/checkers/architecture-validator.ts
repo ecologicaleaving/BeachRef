@@ -8,7 +8,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import { AUDIT_CONFIG, shouldExcludePath } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath } from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -153,6 +153,7 @@ export class ArchitectureValidator implements AuditChecker {
 
   private async findFiles(dir: string, pattern: RegExp): Promise<string[]> {
     const files: string[] = [];
+    const checkerId = this.id;
 
     async function walk(currentDir: string): Promise<void> {
       try {
@@ -160,6 +161,18 @@ export class ArchitectureValidator implements AuditChecker {
 
         for (const entry of entries) {
           const fullPath = path.join(currentDir, entry.name);
+
+          // Skip excluded paths.
+          // #42 fixed this in the security scanner and #44 in four more
+          // walkers; this walker had no exclusion check AT ALL — it only got
+          // away with it because its call sites are services/, app/ and
+          // components/, which contain no node_modules. It still walked
+          // __tests__/ and any future nested vendored directory. Sixth copy of
+          // the same omission, now on the shared helper like everyone else
+          // (issue #60).
+          if (shouldExcludePath(fullPath, checkerId)) {
+            continue;
+          }
 
           if (entry.isDirectory()) {
             await walk(fullPath);

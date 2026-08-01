@@ -170,6 +170,9 @@ export class ErrorHandlingValidator implements AuditChecker {
 
   private async findFiles(dir: string, pattern: RegExp): Promise<string[]> {
     const files: string[] = [];
+    // Passed to shouldExcludePath so this checker's own scope exclusions apply
+    // on top of the global ones (issue #60).
+    const checkerId = this.id;
 
     async function walk(currentDir: string): Promise<void> {
       try {
@@ -184,7 +187,7 @@ export class ErrorHandlingValidator implements AuditChecker {
           // against raw path.relative() output, so on Windows 'node_modules/**'
           // never matched 'node_modules\@types\node\...' and this validator
           // walked the whole dependency tree (issue #44).
-          if (shouldExcludePath(fullPath)) {
+          if (shouldExcludePath(fullPath, checkerId)) {
             continue;
           }
 

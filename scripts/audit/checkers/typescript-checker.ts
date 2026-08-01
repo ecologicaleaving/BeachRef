@@ -9,7 +9,7 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import { Finding, FindingType, AuditChecker } from '../types';
-import { AUDIT_CONFIG } from '../config';
+import { AUDIT_CONFIG, shouldExcludePath } from '../config';
 import { generateFindingId } from '../tracking/finding-id-generator';
 import { sanitizeFilePath, sanitizeFindingMessage } from '../utils/sanitizer';
 import { classifySeverity } from '../utils/severity-classifier';
@@ -170,17 +170,19 @@ export class TypeScriptChecker implements AuditChecker {
   }
 
   /**
-   * Check if finding should be included (not in excluded paths)
+   * Check if finding should be included (not in excluded paths).
+   *
+   * This used to carry its own copy of the exclusion matcher, matching the
+   * POSIX patterns against raw `path.relative()` output — the exact bug #42
+   * fixed in the security scanner and #44 fixed in four walkers. It was the
+   * last surviving copy: on Windows every pattern silently failed to match, so
+   * `excludePaths` never applied to TypeScript findings at all. Now on the
+   * shared helper, with this checker's id so per-checker scope applies
+   * (issue #60).
    */
   private shouldIncludeFinding(finding: Finding): boolean {
     const fullPath = path.join(AUDIT_CONFIG.projectRoot, finding.file);
-    const relativePath = path.relative(AUDIT_CONFIG.projectRoot, fullPath);
 
-    return !AUDIT_CONFIG.excludePaths.some((pattern) => {
-      const regex = new RegExp(
-        '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
-      );
-      return regex.test(relativePath);
-    });
+    return !shouldExcludePath(fullPath, this.id);
   }
 }

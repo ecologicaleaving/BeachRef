@@ -67,7 +67,9 @@ export class ComplexityChecker implements AuditChecker {
         continue;
       }
 
-      if (shouldExcludePath(result.filePath)) {
+      // `this.id` so a future per-checker exclusion applies here too; today
+      // complexity has none — it is framework-agnostic (issue #60).
+      if (shouldExcludePath(result.filePath, this.id)) {
         continue;
       }
 

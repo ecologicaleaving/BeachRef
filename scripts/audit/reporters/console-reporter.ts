@@ -6,7 +6,13 @@
  * Provides immediate feedback during audit execution.
  */
 
-import { AuditReport, CheckerResult, CheckerRoster, CheckerStatus } from '../types';
+import {
+  AuditReport,
+  CheckerResult,
+  CheckerRoster,
+  CheckerScopeReduction,
+  CheckerStatus,
+} from '../types';
 import { countBySeverity } from '../utils/severity-classifier';
 import {
   getExitCodeEmoji,
@@ -107,6 +113,50 @@ export function printCheckerRoster(roster: CheckerRoster): void {
 
   if (roster.unknown.length > 0) {
     console.log(`  ${RED}unknown ids:${RESET} ${roster.unknown.join(', ')}`);
+  }
+
+  console.log('');
+}
+
+/**
+ * Print the per-checker scope reductions in force (issue #60, AC3).
+ *
+ * #42 established that a reduced run is acceptable but a silent one is not.
+ * The same applies one level down: a checker that skips part of the tree must
+ * say so, and say why, or the green result overstates what was inspected.
+ *
+ * @param reductions - Checkers with per-checker exclusions, and their reasons
+ * @param requested - Every checker in this run, so the ones with FULL scope
+ *   are named too (the interesting fact is often that `security` is not here)
+ */
+export function printScopeReductions(
+  reductions: CheckerScopeReduction[],
+  requested: string[]
+): void {
+  const reducedIds = new Set(reductions.map((r) => r.checkerId));
+  const fullScope = requested.filter((id) => !reducedIds.has(id));
+
+  console.log(`${BOLD}Scope:${RESET}`);
+
+  if (reductions.length === 0) {
+    console.log(
+      `  ${GREEN}full tree:${RESET} ${requested.join(', ') || '(none)'}`
+    );
+    console.log('');
+    return;
+  }
+
+  console.log(
+    `  ${GREEN}full tree:${RESET} ${fullScope.join(', ') || '(none)'}`
+  );
+
+  for (const reduction of reductions) {
+    for (const exclusion of reduction.exclusions) {
+      console.log(
+        `  ${YELLOW}reduced:${RESET} ${reduction.checkerId} ${DIM}skips${RESET} ${exclusion.pattern}`
+      );
+      console.log(`      ${DIM}${exclusion.reason}${RESET}`);
+    }
   }
 
   console.log('');

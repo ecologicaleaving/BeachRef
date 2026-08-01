@@ -305,6 +305,12 @@ export interface AuditReport {
 
   /** How PASS/FAIL was decided (issue #42, AC7) */
   gate: GateResult;
+
+  /**
+   * Paths deliberately outside a given checker's scope, with the reason
+   * (issue #60, AC3). Empty array = every checker saw the whole tree.
+   */
+  scopeReductions: CheckerScopeReduction[];
 }
 
 // ============================================================================
@@ -377,12 +383,46 @@ export interface ComplexityThresholds {
 /**
  * Audit system configuration
  */
+/**
+ * One per-checker path exclusion, with the reason it exists (issue #60).
+ *
+ * The reason is not decoration: it is printed in the audit output so that a
+ * reduced run is never a silent one (issue #42 principle, issue #60 AC3).
+ */
+export interface CheckerScopeExclusion {
+  /** Glob pattern, POSIX separators, relative to the project root */
+  pattern: string;
+
+  /** Why this checker's rules do not apply to those paths */
+  reason: string;
+}
+
+/**
+ * What a single checker did NOT look at in this run, and why (issue #60, AC3).
+ */
+export interface CheckerScopeReduction {
+  /** Checker id */
+  checkerId: string;
+
+  /** Per-checker exclusions in force for this checker */
+  exclusions: CheckerScopeExclusion[];
+}
+
 export interface AuditConfig {
   /** Project root directory */
   projectRoot: string;
 
-  /** Paths to exclude from auditing */
+  /** Paths to exclude from auditing, for every checker */
   excludePaths: string[];
+
+  /**
+   * Additional path exclusions that apply to ONE checker only (issue #60).
+   *
+   * The global `excludePaths` list answers "is this code ours?". This map
+   * answers a different question: "do this checker's rules mean anything for
+   * this code?". A path listed here is still audited by every other checker.
+   */
+  checkerExcludePaths: Record<string, CheckerScopeExclusion[]>;
 
   /** Source roots linted by the ESLint checker (parity with `npm run lint`) */
   lintRoots: string[];

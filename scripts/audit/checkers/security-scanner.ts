@@ -23,6 +23,14 @@ export class SecurityScanner implements AuditChecker {
   readonly name = 'Security Scanner';
 
   /**
+   * Guard rail, not a budget (issue #60). The scan walks the whole first-party
+   * tree; this only exists so an accidental inclusion of a huge vendored
+   * directory fails loudly instead of silently truncating the scan.
+   * ~800 files today.
+   */
+  static readonly SCAN_FILE_LIMIT = 5000;
+
+  /**
    * Deliberately does not catch: a security scanner that fails must not report
    * "no security problems found" (issue #42, AC1). Errors propagate to the
    * orchestrator, which marks the run ERROR.
@@ -77,6 +85,16 @@ export class SecurityScanner implements AuditChecker {
             if (regex.test(line)) {
               // Check if it's in a comment or test file
               if (this.isInTestOrComment(filePath, line)) {
+                return;
+              }
+
+              // Skip values that are not literals: `${...}` interpolations and
+              // env lookups are the *correct* way to carry a credential, and
+              // flagging them trains people to ignore this finding class — the
+              // one class CLAUDE.md says must never be baselined. Same
+              // per-occurrence shape as the XML-namespace exemption (#56): a
+              // line with both an interpolation and a literal is still flagged.
+              if (SecurityScanner.isNonLiteralCredentialOnly(line)) {
                 return;
               }
 
@@ -282,29 +300,44 @@ export class SecurityScanner implements AuditChecker {
   }
 
   /**
-   * Get files to scan based on glob patterns (optimized with limit)
+   * Get files to scan based on glob patterns.
+   *
+   * ISSUE #60 — the walk used to stop after 500 files, keeping only a
+   * `priorityDirs` list (`services`, `app`, `components`, `utils`, `api`)
+   * exempt. But the exemption was evaluated on the *recursive* call, while the
+   * root-level loop kept its own `files.length >= maxFiles` early return: once
+   * the budget was spent, the root loop returned and every remaining top-level
+   * directory was dropped — alphabetically, everything from `store/` onward.
+   *
+   * Measured on this repo: 516 of 801 first-party files scanned, and **zero**
+   * files under `supabase/` — the walk never got past `services/`. So the one
+   * checker that #60 keeps pointed at the Deno Edge Functions was not reading
+   * them at all, and a planted credential there was not reported.
+   *
+   * There is no cap now, only a guard rail: if the tree ever grows past
+   * SCAN_FILE_LIMIT this **throws**, which the orchestrator reports as
+   * `ERROR` / exit 2. Truncating silently is the failure mode #42 exists to
+   * prevent, and for the credential scanner specifically it is the difference
+   * between "no secrets" and "no secrets in the part we looked at". The full
+   * uncapped walk costs a few seconds.
    */
-  private async getFilesToScan(patterns: string[], maxFiles: number = 500): Promise<string[]> {
+  private async getFilesToScan(
+    patterns: string[],
+    maxFiles: number = SecurityScanner.SCAN_FILE_LIMIT
+  ): Promise<string[]> {
     const files: string[] = [];
+    // The security scanner has NO per-checker exclusions (issue #60): it is the
+    // one checker that must see every line of first-party code, including the
+    // Deno Edge Functions in supabase/functions. The id is passed anyway so the
+    // call site is uniform with the other walkers and a future exclusion cannot
+    // be added here by accident without editing config.ts.
+    const checkerId = this.id;
 
-    // Priority directories to scan (most likely to have security issues)
-    const priorityDirs = ['services', 'app', 'components', 'utils', 'api'];
-
-    async function walkDir(dir: string, isPriority: boolean = false): Promise<void> {
-      // Stop if we've reached the limit (unless it's a priority directory)
-      if (!isPriority && files.length >= maxFiles) {
-        return;
-      }
-
+    async function walkDir(dir: string): Promise<void> {
       try {
         const entries = await fs.readdir(dir, { withFileTypes: true });
 
         for (const entry of entries) {
-          // Early exit if limit reached
-          if (!isPriority && files.length >= maxFiles) {
-            return;
-          }
-
           const fullPath = path.join(dir, entry.name);
           const relativePath = toProjectRelativePosixPath(fullPath);
 
@@ -312,16 +345,14 @@ export class SecurityScanner implements AuditChecker {
           // For directories we also test `<dir>/` so that a `foo/**` pattern
           // prunes the whole subtree instead of only its files.
           if (
-            shouldExcludePath(fullPath) ||
-            (entry.isDirectory() && shouldExcludePath(`${relativePath}/x`))
+            shouldExcludePath(fullPath, checkerId) ||
+            (entry.isDirectory() && shouldExcludePath(`${relativePath}/x`, checkerId))
           ) {
             continue;
           }
 
           if (entry.isDirectory()) {
-            // Check if this is a priority directory
-            const dirIsPriority = priorityDirs.some(p => relativePath.startsWith(p));
-            await walkDir(fullPath, dirIsPriority);
+            await walkDir(fullPath);
           } else if (entry.isFile()) {
             // Check if matches patterns
             if (patterns.some(pattern => {
@@ -329,11 +360,24 @@ export class SecurityScanner implements AuditChecker {
               return pattern.includes(ext);
             })) {
               files.push(fullPath);
+
+              if (files.length > maxFiles) {
+                throw new Error(
+                  `Security scan aborted: more than ${maxFiles} files to scan. ` +
+                  `Raise SecurityScanner.SCAN_FILE_LIMIT or add an entry to ` +
+                  `AUDIT_CONFIG.excludePaths — do not let the scan truncate ` +
+                  `silently (issue #60).`
+                );
+              }
             }
           }
         }
       } catch (error) {
-        // Skip directories we can't read
+        // A directory we cannot read is skipped; the scan-limit guard must not
+        // be swallowed by that same catch.
+        if ((error as Error).message?.startsWith('Security scan aborted')) {
+          throw error;
+        }
       }
     }
 
@@ -357,6 +401,23 @@ export class SecurityScanner implements AuditChecker {
    * The check is deliberately per-occurrence: a line that carries both a
    * namespace and a real `http://` endpoint is still reported.
    */
+  static isNonLiteralCredentialOnly(line: string): boolean {
+    const assignments = [
+      ...line.matchAll(
+        /(?:api[_-]?key|password|token|secret)\s*[:=]\s*['"`]?([^'"`\s>]{4,})/gi
+      ),
+    ];
+
+    if (assignments.length === 0) {
+      return false;
+    }
+
+    // `${x}`, `$x`, `process.env.X`, `Deno.env.get(...)`, `config.password`
+    const nonLiteral = /^(?:\$\{|\$[A-Za-z_]|process\.env|Deno\.env|import\.meta\.env)/;
+
+    return assignments.every((m) => nonLiteral.test(m[1] ?? ''));
+  }
+
   static isXmlNamespaceOnly(line: string): boolean {
     const insecureUri = /http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0)[^\s'"`<>)]*/gi;
     const namespaceContext =
@@ -380,12 +441,21 @@ export class SecurityScanner implements AuditChecker {
   }
 
   private isInTestOrComment(filePath: string, line: string): boolean {
-    // Check if test file
+    // Normalise separators before matching. `test/` never matched on Windows,
+    // where the path reads `...\vis-data-sync\test\error-handling-test.ts` —
+    // the same raw-separator bug as #42/#44, in its last hiding place. It only
+    // surfaced with #60, because until then the scan never walked far enough
+    // to reach a Deno test directory.
+    const normalisedPath = filePath.replace(/\\/g, '/');
+
+    // Check if test file. `_test.ts` / `-test.ts` are the Deno conventions used
+    // under supabase/functions.
     if (
-      filePath.includes('__tests__') ||
-      filePath.includes('.test.') ||
-      filePath.includes('.spec.') ||
-      filePath.includes('test/')
+      normalisedPath.includes('__tests__') ||
+      normalisedPath.includes('.test.') ||
+      normalisedPath.includes('.spec.') ||
+      normalisedPath.includes('test/') ||
+      /[-_]test\.[cm]?[jt]sx?$/.test(normalisedPath)
     ) {
       return true;
     }

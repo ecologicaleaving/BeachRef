@@ -124,9 +124,20 @@ describe('Outdoor Visibility Validation', () => {
       
       const endTime = performance.now();
       const duration = endTime - startTime;
-      
-      // Should complete 100 checks in under 50ms for smooth UX
-      expect(duration).toBeLessThan(50);
+
+      // La soglia era 50 ms, ed e' stata una delle sorgenti di instabilita'
+      // della suite (issue #94, AC6): tre esecuzioni consecutive dello stesso
+      // commit davano tre risultati, perche' un micro-benchmark a orologio
+      // misura il carico della macchina, non il codice. Su questa macchina,
+      // con l'audit in parallelo, sono stati misurati 55 ms.
+      //
+      // Il ciclo resta — esercitare 100 volte il percorso e' un fumo utile, e
+      // intercetta un ricalcolo accidentalmente quadratico o un'esplosione di
+      // allocazioni. Ma il limite ora e' largo di proposito: cattura una
+      // regressione catastrofica (ordini di grandezza), non una fluttuazione.
+      // Se serve davvero un budget di 50 ms sul dispositivo, va misurato sul
+      // dispositivo, non in jest su un portatile.
+      expect(duration).toBeLessThan(2000);
     });
   });
 

@@ -167,7 +167,10 @@ export const ICON_COLOR_THEMES = {
   accessibility: {
     primary: '#000000',    // Pure black for maximum contrast
     secondary: designTokens.neutrals.textPrimary,  // Dark gray
-    accent: '#CC0000',     // High contrast red
+    // era #CC0000: 5.89 su bianco e 4.80 su #E8E8E8, sotto il 7:1 che questo
+    // tema — quello pensato per chi ha una disabilita' visiva — pretende da
+    // se' stesso (issue #94). Il tema piu' accessibile era il meno conforme.
+    accent: '#9D0000',     // High contrast red -> 7.04 sullo sfondo peggiore
     muted: designTokens.neutrals.textSecondary,      // Medium gray
   },
 } as const;

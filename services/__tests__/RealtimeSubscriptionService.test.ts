@@ -6,11 +6,14 @@ import { AppState } from 'react-native';
 // Mock dependencies
 jest.mock('../supabase');
 jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
-jest.mock('react-native', () => ({
-  AppState: {
-    addEventListener: jest.fn(),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2.
+// Questo file ne aveva uno che sostituiva l'INTERO modulo con il solo
+// `AppState`, cancellando il mock globale di `jest.env.js` — e con esso
+// `Platform`, che qualcosa nella catena di import legge. Risultato:
+// `Cannot read properties of undefined (reading 'OS')` all'import, cioè la
+// suite non caricava affatto e nessuno dei suoi test girava (issue #94).
+// Il mock globale fornisce già `AppState.addEventListener`, e in versione
+// migliore: restituisce una subscription con `remove`, come quella vera.
 
 describe('RealtimeSubscriptionService', () => {
   const mockTournamentNo = 'TEST_TOURNAMENT_123';

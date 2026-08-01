@@ -27,12 +27,15 @@ describe('useAnalyticsCollection', () => {
   let queryClient: QueryClient;
   let mockErrorLogger: any;
 
+  // React.createElement invece di JSX: questo file e' un `.ts`, e il transform
+  // per `.ts` non abilita il parsing JSX — il `<QueryClientProvider>` che
+  // stava qui faceva morire l'INTERA suite all'import con
+  // `Unexpected token, expected ","`, quindi nessuno dei suoi test girava
+  // (issue #94). Rinominare in `.tsx` non era una soluzione: quelli sono
+  // esclusi da `testPathIgnorePatterns`, sarebbe stato nasconderla.
   const createWrapper = () => {
-    return ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 
   beforeEach(() => {
@@ -394,12 +397,15 @@ describe('useAnalyticsCollection', () => {
 describe('useRefereeScreenAnalytics', () => {
   let queryClient: QueryClient;
 
+  // React.createElement invece di JSX: questo file e' un `.ts`, e il transform
+  // per `.ts` non abilita il parsing JSX — il `<QueryClientProvider>` che
+  // stava qui faceva morire l'INTERA suite all'import con
+  // `Unexpected token, expected ","`, quindi nessuno dei suoi test girava
+  // (issue #94). Rinominare in `.tsx` non era una soluzione: quelli sono
+  // esclusi da `testPathIgnorePatterns`, sarebbe stato nasconderla.
   const createWrapper = () => {
-    return ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 
   beforeEach(() => {

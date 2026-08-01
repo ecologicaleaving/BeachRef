@@ -2,11 +2,10 @@ import { RealtimePerformanceMonitor } from '../RealtimePerformanceMonitor';
 import { AppState } from 'react-native';
 
 // Mock React Native AppState
-jest.mock('react-native', () => ({
-  AppState: {
-    addEventListener: jest.fn(),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2, e la nota
+// identica in RealtimeSubscriptionService.test.ts. Sostituire l'intero modulo
+// per avere il solo `AppState` cancellava `Platform` e impediva alla suite di
+// caricare (issue #94).
 
 // Mock global timers
 jest.useFakeTimers();

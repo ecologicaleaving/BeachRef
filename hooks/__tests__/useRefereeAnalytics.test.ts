@@ -3,7 +3,7 @@
  * Story 4.2: Referee Performance Analytics - Task 6
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { useRefereeAnalytics, RefereeAnalyticsFilters } from '../useRefereeAnalytics';
@@ -15,11 +15,20 @@ jest.mock('../../services/AnalyticsService');
 jest.mock('../../services/RefereeAnalyticsExportService');
 jest.mock('../../services/ErrorLogger');
 
-// Mock performance API
-Object.defineProperty(window, 'performance', {
+// Mock performance API.
+//
+// `global`, non `window`: l'ambiente jest di questo progetto e' `node` e
+// questa e' un'app React Native — `window` non esiste ne' nel test ne' in
+// produzione. La riga con `window` faceva morire l'intera suite all'import
+// con `ReferenceError: window is not defined`, quindi nessuno dei suoi test
+// girava (issue #94). Passare a `jsdom`, come suggerisce il messaggio di
+// jest, avrebbe introdotto un ambiente browser in un progetto che non gira
+// in un browser: la correzione e' usare il globale che c'e' davvero.
+Object.defineProperty(global, 'performance', {
   value: {
     now: jest.fn(() => 123.456),
   },
+  configurable: true,
 });
 
 // Test data

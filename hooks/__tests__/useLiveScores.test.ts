@@ -14,12 +14,10 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: () => Promise.resolve({ isConnected: true })
 }));
 
-jest.mock('react-native', () => ({
-  AppState: {
-    currentState: 'active',
-    addEventListener: jest.fn(() => ({ remove: jest.fn() }))
-  }
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2. Il mock
+// globale di `jest.env.js` fornisce gia' esattamente questo `AppState`
+// (`currentState: 'active'` e un `addEventListener` che ritorna `{ remove }`),
+// ma senza cancellare il resto del modulo (issue #94).
 
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: jest.fn((callback) => {

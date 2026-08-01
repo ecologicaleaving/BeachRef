@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAnalyticsDashboard } from '../../hooks/useAnalyticsDashboard';
 import { useAnalyticsSettings } from '../../hooks/useAnalyticsSettings';
@@ -74,9 +74,8 @@ const createTestQueryClient = () =>
 
 const createWrapper = () => {
   const queryClient = createTestQueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
 describe('Analytics Dashboard Integration Tests', () => {
@@ -356,9 +355,8 @@ describe('Analytics Dashboard Integration Tests', () => {
     it('integrates with TanStack Query cache strategies correctly', async () => {
       const queryClient = createTestQueryClient();
       
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       const { result } = renderHook(
         () => useAnalyticsDashboard(mockTimeRange, {
@@ -391,9 +389,8 @@ describe('Analytics Dashboard Integration Tests', () => {
     it('maintains data consistency across multiple hook instances', async () => {
       const queryClient = createTestQueryClient();
       
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       // Render two instances of the hook
       const { result: result1 } = renderHook(
@@ -520,9 +517,8 @@ describe('Analytics Dashboard Integration Tests', () => {
         },
       });
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       const { result } = renderHook(
         () => useAnalyticsDashboard(mockTimeRange),

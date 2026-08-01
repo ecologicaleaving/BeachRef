@@ -12,6 +12,14 @@ const base = {
     '^expo/virtual/env$': '<rootDir>/__mocks__/expo-virtual-env.js',
     // Native (JSI) module with no JS fallback — replaced by an in-memory store.
     '^react-native-mmkv$': '<rootDir>/__mocks__/react-native-mmkv.js',
+    // Ogni set di `@expo/vector-icons` passa da `expo-modules-core`, che sotto
+    // jest non ha runtime nativo: il primo import solleva
+    // `Cannot read properties of undefined (reading 'NativeModule')` e fa
+    // morire l'intera suite. Colpisce chiunque importi
+    // `components/Icons/vectorIconSets`, cioe' quasi ogni componente che
+    // disegna un'icona (issue #94). Il pattern copre sia il barrel sia i
+    // sottopercorsi `@expo/vector-icons/Feather`.
+    '^@expo/vector-icons(/.*)?$': '<rootDir>/__mocks__/expo-vector-icons.js',
   },
   testMatch: [
     '**/__tests__/**/*.test.{js,jsx,ts,tsx}',

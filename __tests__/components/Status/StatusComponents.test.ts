@@ -13,15 +13,13 @@ import {
 } from '../../../components/Status';
 import { TournamentStatus } from '../../../utils/statusColors';
 
-// Mock React Native components for testing
-jest.mock('react-native', () => ({
-  View: 'View',
-  Text: 'Text',
-  TouchableOpacity: 'TouchableOpacity',
-  StyleSheet: {
-    create: jest.fn((styles) => styles),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2.
+// Ne aveva uno che sostituiva l'intero modulo con quattro chiavi, cancellando
+// il mock globale di `jest.env.js` e con esso `Platform` — `Cannot read
+// properties of undefined (reading 'OS')` all'import, suite che non caricava
+// (issue #94). Il mock globale fornisce gia' un `StyleSheet.create` che non
+// tocca il bridge nativo, che era l'altra ragione per cui questo mock locale
+// esisteva.
 
 jest.mock('../../../components/Typography', () => ({
   Text: 'Text',

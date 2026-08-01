@@ -20,11 +20,18 @@ jest.mock('../../hooks/compatibility/CacheServiceCompatibility', () => ({
   }
 }));
 
-jest.mock('../../services/visApi', () => ({
-  VisApiService: {
-    getBeachMatchList: jest.fn(() => Promise.resolve([])),
-  }
-}));
+// Rimosso: `jest.mock('../../services/visApi', ...)`.
+//
+// Quel percorso non esiste — il modulo e' `services/api/visApi.ts` — e
+// `jest.mock` su un percorso inesistente non e' un no-op: solleva
+// `Cannot find module` e fa morire l'INTERA suite all'import, quindi nessuno
+// dei suoi test girava (issue #94).
+//
+// Non e' stato corretto in `../../services/api/visApi` ma eliminato, perche'
+// nessuno dei quattro servizi sotto test lo importa: era un mock di un modulo
+// che non entra in questa catena. Un mock che finge di proteggere da una
+// dipendenza inesistente e' peggio di nessun mock, perche' sembra
+// intenzionale.
 
 describe('Real-Time System Core Tests', () => {
   beforeEach(() => {

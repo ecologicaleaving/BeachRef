@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import { render, fireEvent, waitFor, screen } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RefereeAnalyticsDashboard } from '../RefereeAnalyticsDashboard';
 import { useRefereeAnalytics } from '../../../hooks/useRefereeAnalytics';

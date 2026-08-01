@@ -111,11 +111,25 @@ describe('Contrast Utilities', () => {
   });
 
   describe('Referee Color Palette WCAG AAA Compliance', () => {
+    // NOTA (issue #94): questo blocco duplica la palette invece di leggerla da
+    // `theme/tokens.ts`, ed e' esattamente cosi' che si e' rotto. Il commit
+    // f8384cd ("complete blue-teal color palette migration", 2025-08-22) ha
+    // sostituito gli esadecimali con i token, e su questa riga ha prodotto
+    // `success: colors.success` **dentro la dichiarazione di `colors` stesso**:
+    // un'autoreferenza in TDZ, quindi `undefined.success` all'import.
+    //
+    // Non era un test che falliva: era l'INTERA suite che non caricava, e non
+    // caricava da agosto 2025. Nessuno se n'e' accorto perche' un file che non
+    // parte non produce fallimenti, produce silenzio.
+    //
+    // Il valore sotto e' `colors.success` di `theme/tokens.ts` alla data
+    // odierna. La duplicazione resta un difetto: se il tema cambia, questo
+    // numero mente. E' registrato nella #94.
     const colors = {
       primary: '#1B365D',
       secondary: '#2B5F75',
       accent: '#9B2D07',
-      success: colors.success,
+      success: '#15803D',
       warning: '#7A4405',
       error: '#8B1538',
       textPrimary: '#2C3E50',

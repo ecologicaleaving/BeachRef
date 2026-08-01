@@ -1,6 +1,29 @@
 /**
  * Design Tokens - Professional Sport Tech Visual Design System
  * "Titanium & Gold" Theme - Sober, Professional, High Contrast
+ *
+ * ## WCAG AAA su OGNI tema (issue #94)
+ *
+ * Ogni colore usato per testo o per un'icona che veicola stato rispetta un
+ * contrasto **>= 7:1**, e `error` (da cui deriva `statusColors.emergency`)
+ * rispetta **>= 9:1**. Non solo sul tema ad alto contrasto: su tutti, perche'
+ * il tema di default e' l'unico che le persone vedono davvero — il
+ * `toggleHighContrast` esiste in `ThemeContext` ma nessuna schermata lo
+ * chiama, quindi non e' raggiungibile dall'utente.
+ *
+ * ### Il contrasto va misurato sullo sfondo peggiore, non sul bianco
+ *
+ * `__tests__/outdoor-visibility-validation.test.ts` valuta le icone su cinque
+ * condizioni di luce (`#FFFFFF` sole diretto, `#F5F5F5` ombra, `#E8E8E8`
+ * nuvoloso, `#FFF8DC` golden hour, `#E6F3FF` blue hour) piu' tre scenari
+ * d'uso, fra cui il riflesso della sabbia `#FFFEF7`. Su bianco puro `accent`
+ * dava 3.19; su `#E8E8E8` dava **2.60**. Tarare sul bianco avrebbe lasciato
+ * l'app illeggibile esattamente nella condizione per cui esiste: un arbitro
+ * in campo, di pomeriggio.
+ *
+ * I valori sotto sono quindi calcolati sul **minimo** fra tutti quegli
+ * sfondi. Se cambi un colore, ricalcola cosi' — `utils/contrast.ts` ha la
+ * funzione, e i test falliscono se sbagli.
  */
 
 import { DesignTokens, IconTokens, StatusColors } from '../types/theme';
@@ -10,7 +33,7 @@ import { calculateContrast } from '../utils/contrast';
 export const brandBlue = {
   900: '#18181B',  // Zinc 950 - Main Header/Nav
   700: '#3F3F46',  // Zinc 700 - Titles
-  600: '#52525B',  // Zinc 600 - Subtitles
+  600: '#4B4B54',  // era #52525B — 6.31 sullo sfondo peggiore, sotto 7:1 (#94)
   500: '#71717A',  // Zinc 500 - Muted text
   300: '#D4D4D8',  // Zinc 300 - Borders
 } as const;
@@ -21,18 +44,21 @@ export const neutrals = {
   bgSurface: '#FFFFFF',
   borderSubtle: '#E4E4E7',  // Zinc 200
   textPrimary: '#18181B',   // Zinc 950
-  textSecondary: '#52525B', // Zinc 600
-  textTertiary: '#71717A',  // Zinc 500 - Muted text
+  textSecondary: '#4B4B54', // era #52525B — 6.31 sullo sfondo peggiore (#94)
+  textTertiary: '#4B4B51',  // era #71717A — 3.94 sullo sfondo peggiore (#94)
 } as const;
 
 // Base Colors (without statusColors to avoid circular dependency)
 const baseColors = {
   primary: brandBlue[900],      // Dark Titanium
   secondary: brandBlue[600],    // Medium Titanium
-  accent: '#D97706',            // Amber 600 (Professional Gold)
-  success: '#15803D',           // Green 700 (Sober Green)
-  warning: '#B45309',           // Amber 700
-  error: '#B91C1C',             // Red 700
+  // Contrasto sul minimo fra gli sfondi di outdoor-visibility (vedi header).
+  // `error` punta a 9:1 e non a 7:1 perche' `statusColors.emergency` ne deriva,
+  // e lo stato di emergenza ha una soglia propria piu' alta.
+  accent: '#733F03',            // era #D97706 (2.60) -> 7.02
+  success: '#0E582A',           // era #15803D (4.09) -> 7.00
+  warning: '#7C3906',           // era #B45309 (4.10) -> 7.01
+  error: '#781212',             // era #B91C1C (5.28) -> 9.05
   text: neutrals.textPrimary,   // Alias for textPrimary (TS2339 fix)
   textPrimary: neutrals.textPrimary,
   textSecondary: neutrals.textSecondary,
@@ -55,11 +81,13 @@ const baseColors = {
 // Legacy Brand Colors (Mapped to new theme)
 export const brandColors = {
   fivbPrimary: '#18181B',
-  fivbSecondary: '#52525B',
-  fivbAccent: '#D97706',
-  fivbSuccess: '#15803D',
-  fivbWarning: '#B45309',
-  fivbError: '#B91C1C',
+  // Allineati ai token sopra (#94): erano copie degli stessi esadecimali, e
+  // lasciarli indietro avrebbe creato due palette divergenti con lo stesso nome.
+  fivbSecondary: '#4B4B54',
+  fivbAccent: '#733F03',
+  fivbSuccess: '#0E582A',
+  fivbWarning: '#7C3906',
+  fivbError: '#781212',
   primaryLight: '#F4F4F5',
   secondaryLight: '#F4F4F5',
   accentLight: '#FEF3C7',
@@ -68,17 +96,19 @@ export const brandColors = {
 // STEP 3: Badge and Status Colors
 export const badgeColors = {
   live: {
-    text: '#B91C1C',      // Red 700
-    background: '#FEE2E2', // Red 100
-    dot: '#DC2626',       // Red 600
+    // `statusColors.current` deriva da qui e ha soglia 7:1, non 9:1 come
+    // `emergency`: sono due colori distinti che prima coincidevano su #B91C1C.
+    text: '#961717',      // era #B91C1C (5.28) -> 7.05
+    background: '#FEE2E2', // Red 100 — sfondo, non testo
+    dot: '#941A1A',       // era #DC2626 (3.94) -> 7.08
   },
   scheduled: {
     text: '#3F3F46',      // Zinc 700
     background: '#F4F4F5', // Zinc 100
   },
   completed: {
-    text: '#15803D',      // Green 700
-    background: '#DCFCE7', // Green 100
+    text: '#0E582A',      // era #15803D (4.09) -> 7.00
+    background: '#DCFCE7', // Green 100 — sfondo, non testo
   },
 } as const;
 

@@ -21,7 +21,7 @@ import {
   GateResult,
   Severity,
 } from './types';
-import { AUDIT_CONFIG } from './config';
+import { AUDIT_CONFIG, describeScopeReductions } from './config';
 import { TypeScriptChecker } from './checkers/typescript-checker';
 import { EslintChecker } from './checkers/eslint-checker';
 import { ComplexityChecker } from './checkers/complexity-checker';
@@ -52,6 +52,7 @@ import {
   printAuditStart,
   printCheckerStart,
   printCheckerRoster,
+  printScopeReductions,
   printReportPaths,
 } from './reporters/console-reporter';
 import {
@@ -85,6 +86,12 @@ async function main(): Promise<void> {
     // Resolve which checkers run — and, just as importantly, which do not
     const roster = resolveRoster(args.checks);
     printCheckerRoster(roster);
+
+    // A reduced run is allowed; a *silent* reduced run is not (issue #42
+    // principle, issue #60 AC3). Print what each checker will not look at,
+    // and why, before it runs.
+    const scopeReductions = describeScopeReductions(roster.requested);
+    printScopeReductions(scopeReductions, roster.requested);
 
     if (roster.unknown.length > 0) {
       // An unknown checker id used to be a console.warn that still produced a
@@ -311,6 +318,9 @@ function generateReport(
     checkerResults,
     checkerRoster,
     gate,
+    // Issue #60, AC3: the reduced scope travels with the report, so the JSON
+    // and Markdown artifacts state it too — not just the console.
+    scopeReductions: describeScopeReductions(checkerRoster.requested),
   };
 
   // Add trend analysis only if it exists

@@ -242,6 +242,9 @@ export class DataFlowValidator implements AuditChecker {
 
   private async findFiles(dir: string, pattern: RegExp): Promise<string[]> {
     const files: string[] = [];
+    // Passed to shouldExcludePath so this checker's own scope exclusions apply
+    // on top of the global ones (issue #60).
+    const checkerId = this.id;
 
     async function walk(currentDir: string): Promise<void> {
       try {
@@ -253,7 +256,7 @@ export class DataFlowValidator implements AuditChecker {
           // Skip excluded paths — see the note in error-handling-validator.ts:
           // the inline copy matched against raw path.relative() output and so
           // never excluded anything on Windows (issue #44).
-          if (shouldExcludePath(fullPath)) {
+          if (shouldExcludePath(fullPath, checkerId)) {
             continue;
           }
 

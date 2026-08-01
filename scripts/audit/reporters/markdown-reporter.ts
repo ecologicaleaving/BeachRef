@@ -292,6 +292,37 @@ function generateCheckerResultsSection(report: AuditReport): string {
     }
   }
 
+  // Per-checker scope reductions (issue #60, AC3). A reduced run is allowed,
+  // a silent one is not — so the artifact states what was skipped and why.
+  const reductions = report.scopeReductions ?? [];
+  const reducedIds = new Set(reductions.map((r) => r.checkerId));
+  const fullScope = (checkerRoster?.requested ?? []).filter(
+    (id) => !reducedIds.has(id)
+  );
+
+  sections.push('');
+  sections.push('**Scope**');
+  sections.push('');
+
+  if (reductions.length === 0) {
+    sections.push('- Every checker in this run inspected the full tree.');
+    return sections.join('\n');
+  }
+
+  sections.push(
+    `- Full tree: \`${fullScope.join('`, `') || 'none'}\``
+  );
+  sections.push('');
+  sections.push('| Checker | Not inspected | Why |');
+  sections.push('|---|---|---|');
+  for (const reduction of reductions) {
+    for (const exclusion of reduction.exclusions) {
+      sections.push(
+        `| \`${reduction.checkerId}\` | \`${exclusion.pattern}\` | ${exclusion.reason} |`
+      );
+    }
+  }
+
   return sections.join('\n');
 }
 

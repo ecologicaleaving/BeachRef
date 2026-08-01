@@ -8,7 +8,9 @@ echo ""
 
 # Fast quality subset + the security scanner. Security is here because of issue
 # #56: a production superuser password sat in a tracked file for ten months, and
-# the scanner that would have caught it only ran on push. It costs <1s.
+# the scanner that would have caught it only ran on push. It costs ~4s on the
+# whole tree (issue #60 removed the 500-file cap that was silently hiding 36%
+# of it, including every Deno Edge Function).
 # The audit itself prints which checkers are NOT running.
 npm run audit:precommit -- --fail-on=critical
 AUDIT_EXIT_CODE=$?

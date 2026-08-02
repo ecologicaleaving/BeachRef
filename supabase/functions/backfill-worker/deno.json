@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "test": "deno test --allow-env --allow-net test/",
+    "check": "deno check index.ts vis.ts",
+    "dev": "deno run --allow-env --allow-net --watch index.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  }
+}

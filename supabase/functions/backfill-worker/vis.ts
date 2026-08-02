@@ -268,13 +268,31 @@ export async function visRequest(xmlRequest: string, timeoutMs = 30_000): Promis
   }
 }
 
+/**
+ * I FILTRI VANNO IN UN `<Filter />` ANNIDATO, non come attributi di
+ * `<Request>`.
+ *
+ * Misurato sul VIS reale il 2026-08-02: con `<Request … NoEvent="1713" />` il
+ * filtro viene **ignorato in silenzio** e la risposta contiene l'intero
+ * archivio — oltre 20 MB, cioe' la guardia di `guardAgainstHostileXml` che
+ * scatta. Non c'e' errore, non c'e' avviso: solo tutto invece di qualcosa.
+ *
+ * E' la forma che `services/api/VisApiClient.ts` usa da sempre
+ * (`buildGetBeachMatchListXml`, `buildGetEventListXml`) e che qui non avevo
+ * replicato. Un filtro che non filtra e' peggio di un filtro assente: sembra
+ * che stia funzionando.
+ */
 export function buildMatchListRequest(eventNo: string): string {
-  return `<Request Type="GetBeachMatchList" Fields="${MATCH_FIELDS}" NoEvent="${escapeXmlAttribute(eventNo)}" />`;
+  return `<Request Type="GetBeachMatchList" Fields="${MATCH_FIELDS}">` +
+    `<Filter NoEvent="${escapeXmlAttribute(eventNo)}" />` +
+    `</Request>`;
 }
 
 export function buildEventListRequest(season?: number): string {
-  const seasonAttr = season ? ` Season="${escapeXmlAttribute(String(season))}"` : '';
-  return `<Request Type="GetEventList" Fields="${EVENT_FIELDS}"${seasonAttr} />`;
+  const filter = season
+    ? `<Filter Season="${escapeXmlAttribute(String(season))}" />`
+    : '';
+  return `<Request Type="GetEventList" Fields="${EVENT_FIELDS}">${filter}</Request>`;
 }
 
 /**

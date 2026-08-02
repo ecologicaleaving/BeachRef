@@ -128,6 +128,23 @@ Deno.test('le richieste chiedono NoReferee1/NoReferee2 e filtrano per evento', (
   assertEquals(req.includes('GetBeachMatchList'), true);
 });
 
+Deno.test('il filtro sta in un <Filter> annidato, non sugli attributi di <Request>', () => {
+  // Misurato sul VIS reale il 2026-08-02: con `<Request … NoEvent="1713" />`
+  // il filtro viene ignorato IN SILENZIO e torna l'intero archivio, oltre
+  // 20 MB. Nessun errore, nessun avviso: solo tutto invece di qualcosa. Un
+  // filtro che non filtra e' peggio di un filtro assente, perche' sembra che
+  // stia funzionando — e questo test e' l'unica cosa che se ne accorge senza
+  // interrogare il VIS.
+  const req = buildMatchListRequest('1713');
+  assertEquals(req.includes('<Filter NoEvent="1713" />'), true);
+  // L'attributo NON deve stare sull'elemento esterno.
+  assertEquals(/<Request[^>]*NoEvent=/.test(req), false);
+
+  const events = buildEventListRequest(2026);
+  assertEquals(events.includes('<Filter Season="2026" />'), true);
+  assertEquals(/<Request[^>]*Season=/.test(events), false);
+});
+
 Deno.test('gli attributi sono escapati', () => {
   const req = buildMatchListRequest('82"42');
   assertEquals(req.includes('82"42'), false);

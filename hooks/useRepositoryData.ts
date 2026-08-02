@@ -154,13 +154,32 @@ export const useRepositoryData = <T>(
   }, [fetchData]);
 
   // Initial fetch effect
+  //
+  // `dependencies` e' un ARRAY fornito dal chiamante, e non puo' stare dentro
+  // l'array di dipendenze di useEffect: React confronta per riferimento, e la
+  // forma d'uso normale — `useRepositoryData(metodo, [])`, oppure
+  // `[tournamentNo]` — costruisce un array nuovo a ogni render. L'effetto si
+  // ri-eseguiva sempre, quindi `fetchData()` partiva a ogni render: un ciclo di
+  // fetch infinito, con `loading` che non tornava mai `false`.
+  //
+  // Non era un difetto dei test: qualunque schermata che passi un array
+  // letterale — cioe' tutte — martellava il repository a ogni render. Il test
+  // lo diceva da tempo, chiedendo 1 chiamata e contandone 38 (issue #94).
+  //
+  // Si confronta il CONTENUTO. `JSON.stringify` copre i valori che questo hook
+  // riceve davvero (id, numeri, date, stringhe); se un giorno servisse passare
+  // una funzione o una classe, questa riga va ripensata — non aggirata
+  // rimettendo l'array.
+  const dependenciesKey = JSON.stringify(dependencies);
+
   useEffect(() => {
     if (!skip) {
       fetchData();
     }
 
     return cleanup;
-  }, [skip, fetchData, cleanup, dependencies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skip, fetchData, cleanup, dependenciesKey]);
 
   // Polling effect
   useEffect(() => {

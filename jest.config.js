@@ -53,6 +53,20 @@ const base = {
       configFile: false,
     }],
   },
+  // React Native distribuisce i moduli in varianti per piattaforma
+  // (`Platform.ios.js`, `Platform.android.js`) e nessun `Platform.js`. Senza
+  // questa configurazione jest non risolve gli import RELATIVI INTERNI di
+  // react-native: `node_modules/react-native/Libraries/StyleSheet/processColor.js`
+  // richiede `../Utilities/Platform` e fallisce con `Cannot find module`,
+  // quindi qualunque test che renderizzi un componente vero muore (issue #94).
+  //
+  // E' cio' che il preset `react-native` imposta di suo; questo progetto non lo
+  // usa (compone i transform a mano, vedi TESTING.md) e quindi deve dichiararlo.
+  // `ios` come default e' coerente con `Platform.OS: 'ios'` in `jest.env.js`.
+  haste: {
+    defaultPlatform: 'ios',
+    platforms: ['android', 'ios', 'native'],
+  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   // The companion of the `/\.claude/` entry in `testPathIgnorePatterns` below.
   // That one stops jest *running* the worktree copies; this one stops it

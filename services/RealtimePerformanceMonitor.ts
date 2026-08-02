@@ -9,14 +9,18 @@ import { AppStateManager, AppLifecycleState } from './AppStateManager';
 // never at module evaluation time.
 import { RealtimeSubscriptionService } from './RealtimeSubscriptionService';
 
-// Avoid circular dependency by using type-only import
-export enum ConnectionState {
-  DISCONNECTED = 'DISCONNECTED',
-  CONNECTING = 'CONNECTING', 
-  CONNECTED = 'CONNECTED',
-  RECONNECTING = 'RECONNECTING',
-  ERROR = 'ERROR'
-}
+// `ConnectionState` vive in `types/realtime.ts`, un modulo foglia (issue #94).
+// Stava qui, sotto l'import di RealtimeSubscriptionService, che lo importava a
+// sua volta: importando questo file per primo, il subscription service
+// dereferenziava l'enum tre righe prima che fosse dichiarato e otteneva
+// `undefined`. Il commento che stava qui diceva "Avoid circular dependency by
+// using type-only import" — ma un enum e' un valore, non un tipo, e la riga 48
+// del subscription service lo legge a tempo di valutazione del modulo.
+//
+// Ri-esportato per non rompere i consumatori che lo importano da qui
+// (`components/ConnectionStatusIndicator.tsx`, `components/ManualRefreshButton.tsx`).
+export { ConnectionState } from '../types/realtime';
+import { ConnectionState } from '../types/realtime';
 
 /**
  * Performance monitoring and optimization service for real-time subscriptions

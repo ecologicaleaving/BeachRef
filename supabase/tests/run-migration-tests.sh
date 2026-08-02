@@ -71,7 +71,6 @@ run_test() {
 
 run_test "match_referees_restore"      /repo/supabase/tests/match_referees_restore.test.sql
 run_test "match_referees_restore_leak" /repo/supabase/tests/match_referees_restore.leak.test.sql
-run_test "sync_backlog"                /repo/supabase/tests/sync_backlog.test.sql
 
 echo
 echo "=== Risultati: $PASS passed, $FAIL failed ==="

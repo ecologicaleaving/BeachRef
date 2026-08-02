@@ -5,6 +5,24 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'mock-supabase-anon-key';
 // Mock global objects that React Native provides
 global.__DEV__ = true;
 
+// NON definire `global.window` qui (issue #94).
+//
+// Sembra la correzione ovvia per `ReferenceError: window is not defined`, e il
+// runtime di React Native in effetti definisce `window` come alias di `global`.
+// Ma in QUESTO codebase almeno due moduli decidono di essere sul web proprio
+// da quella assenza:
+//
+//   services/api/VisApiClient.ts:55   const isWebEnvironment = typeof window !== 'undefined'
+//   services/supabase.ts:18           const isClient = typeof window !== 'undefined'
+//
+// piu' `app/_layout.tsx`, `utils/memoryProfiler.ts`, `MatchListV2` e altri.
+// Definirlo fa credere a tutti loro di girare in un browser, cambia il
+// comportamento sotto test di codice che nessuno stava testando, e — misurato —
+// fa passare una suite da verde a rossa.
+//
+// Il posto giusto per `window` e' il singolo test che ne ha bisogno, e la
+// risposta di solito e' che non ne ha bisogno: usa `global`.
+
 // Mock React Native modules
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
@@ -48,13 +66,14 @@ jest.mock('react-native', () => {
   }, RN);
 });
 
-// Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(() => Promise.resolve(null)),
-  setItem: jest.fn(() => Promise.resolve()),
-  removeItem: jest.fn(() => Promise.resolve()),
-  clear: jest.fn(() => Promise.resolve()),
-}));
+// AsyncStorage e' mockato in `jest.setup.js`, non qui (issue #94).
+//
+// Qui ce n'era un secondo, cieco: `getItem` restituiva sempre `null` e
+// `setItem` non memorizzava. Due `jest.mock` sullo stesso modulo, in due file
+// diversi, con due comportamenti incompatibili — e quale vincesse dipendeva
+// dall'ordine fra `setupFiles` e `setupFilesAfterEnv`, cioe' da un dettaglio
+// di configurazione che nessuno stava guardando. Ne resta uno solo, quello con
+// una memoria vera.
 
 // Mock Expo modules
 jest.mock('expo-constants', () => ({

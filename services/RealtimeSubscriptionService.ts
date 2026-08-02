@@ -2,7 +2,13 @@ import { BeachMatch } from '../types/match';
 import { supabase } from './supabase';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { AppState } from 'react-native';
-import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
+import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
+// `ConnectionState` arriva dal modulo foglia `types/realtime.ts`, non dal
+// monitor: quel percorso era un ciclo, e la riga 48 di questo file lo
+// dereferenzia durante l'inizializzazione degli statici — cioe' nel momento
+// esatto in cui, importando il monitor per primo, l'enum non esisteva ancora
+// (issue #94).
+import { ConnectionState } from '../types/realtime';
 // `ConnectionState` is a runtime enum and `hooks/useRealtimeSubscription.ts`
 // imports it *from this module* and compares against its members. Importing a
 // name is not re-exporting it: without this line the hook received `undefined`

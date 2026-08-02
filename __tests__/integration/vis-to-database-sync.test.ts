@@ -134,14 +134,15 @@ const createMockQueryClient = () => {
   return queryClient;
 };
 
+// React.createElement invece di JSX: questo file e' un `.ts`, e il transform
+// per `.ts` non abilita il parsing JSX — la suite moriva all'import con
+// `Unexpected token, expected ","`, quindi nessuno dei suoi test girava
+// (issue #94). Rinominarla in `.tsx` l'avrebbe fatta sparire: quelle sono
+// escluse da `testPathIgnorePatterns`.
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = createMockQueryClient();
-  
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+
+  return React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
 describe('VIS-to-Database Sync Integration', () => {
@@ -160,9 +161,7 @@ describe('VIS-to-Database Sync Integration', () => {
   describe('Tournament Data Integration', () => {
     it('should display synced tournament data in TournamentList component', async () => {
       render(
-        <TestWrapper>
-          <TournamentList />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(TournamentList))
       );
 
       // Wait for tournaments to load from synced data
@@ -180,9 +179,7 @@ describe('VIS-to-Database Sync Integration', () => {
 
     it('should handle tournament data with proper VIS field mapping', async () => {
       const { getByTestId } = render(
-        <TestWrapper>
-          <TournamentList />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(TournamentList))
       );
 
       await waitFor(() => {
@@ -200,9 +197,7 @@ describe('VIS-to-Database Sync Integration', () => {
   describe('Match Data Integration', () => {
     it('should display synced match data in MatchListV2 component', async () => {
       render(
-        <TestWrapper>
-          <MatchListV2 selectedDate="2025-06-03" />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(MatchListV2, { selectedDate: '2025-06-03' }))
       );
 
       // Wait for matches to load from synced data
@@ -220,9 +215,7 @@ describe('VIS-to-Database Sync Integration', () => {
 
     it('should show completed matches with scores from synced data', async () => {
       render(
-        <TestWrapper>
-          <MatchListV2 selectedDate="2025-07-17" />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(MatchListV2, { selectedDate: '2025-07-17' }))
       );
 
       await waitFor(() => {
@@ -239,9 +232,7 @@ describe('VIS-to-Database Sync Integration', () => {
   describe('Analytics Dashboard Integration', () => {
     it('should display analytics calculated from synced database data', async () => {
       render(
-        <TestWrapper>
-          <AnalyticsDashboard />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(AnalyticsDashboard))
       );
 
       // Wait for analytics to load
@@ -260,9 +251,7 @@ describe('VIS-to-Database Sync Integration', () => {
 
     it('should show real-time sync status in analytics dashboard', async () => {
       render(
-        <TestWrapper>
-          <AnalyticsDashboard />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(AnalyticsDashboard))
       );
 
       await waitFor(() => {
@@ -281,9 +270,7 @@ describe('VIS-to-Database Sync Integration', () => {
       const startTime = Date.now();
       
       render(
-        <TestWrapper>
-          <TournamentList />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(TournamentList))
       );
 
       // Measure time to render with database-sourced data
@@ -303,9 +290,7 @@ describe('VIS-to-Database Sync Integration', () => {
       const startTime = Date.now();
       
       render(
-        <TestWrapper>
-          <AnalyticsDashboard />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(AnalyticsDashboard))
       );
 
       // Analytics dashboard should load under 2 seconds
@@ -376,16 +361,11 @@ describe('VIS-to-Database Sync Integration', () => {
         },
       });
 
-      const ErrorWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-        <QueryClientProvider client={errorQueryClient}>
-          {children}
-        </QueryClientProvider>
-      );
+      const ErrorWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
+        React.createElement(QueryClientProvider, { client: errorQueryClient }, children);
 
       render(
-        <ErrorWrapper>
-          <AnalyticsDashboard />
-        </ErrorWrapper>
+        React.createElement(ErrorWrapper, null, React.createElement(AnalyticsDashboard))
       );
 
       await waitFor(() => {
@@ -418,9 +398,7 @@ describe('VIS-to-Database Sync Integration', () => {
 
       // Step 3: Verify Epic 4 Analytics can consume the data
       render(
-        <TestWrapper>
-          <AnalyticsDashboard />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(AnalyticsDashboard))
       );
 
       await waitFor(() => {
@@ -434,9 +412,7 @@ describe('VIS-to-Database Sync Integration', () => {
       const componentStartTime = Date.now();
       
       render(
-        <TestWrapper>
-          <TournamentList />
-        </TestWrapper>
+        React.createElement(TestWrapper, null, React.createElement(TournamentList))
       );
 
       await waitFor(() => {

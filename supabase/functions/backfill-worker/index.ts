@@ -105,13 +105,21 @@ function refereesFrom(matches: VisMatch[]) {
   return [...seen.values()];
 }
 
-function matchRow(m: VisMatch, eventNo: string) {
+function matchRow(m: VisMatch, eventNo: string, knownTournamentNo?: string) {
   return {
     no: m.no,
-    // `tournament_no` e' NOT NULL. Quando il VIS non lo espone si ripiega
-    // sull'evento, che e' l'unita' di lavoro della coda: meglio una riga
-    // riconducibile all'evento che nessuna riga.
-    tournament_no: m.noTournament ?? eventNo,
+    // `tournament_no` e' NOT NULL, quindi serve sempre un valore.
+    //
+    // L'ordine di preferenza NON e' un dettaglio: con `merge-duplicates` ogni
+    // colonna qui elencata SOVRASCRIVE quella esistente. Ripiegare sull'evento
+    // per una partita gia' in tabella significherebbe sostituire un
+    // `tournament_no` corretto con l'identificativo dell'evento — su 9.570
+    // righe che il database ha gia'.
+    //
+    //   1. quello che dice il VIS adesso (fonte di verita');
+    //   2. quello che la riga ha GIA' (se esiste): non peggioriamo un dato;
+    //   3. l'evento, solo per una riga nuova che altrimenti non entrerebbe.
+    tournament_no: m.noTournament ?? knownTournamentNo ?? eventNo,
     no_in_tournament: m.noInTournament ?? null,
     team_a_name: m.teamAName ?? null,
     team_b_name: m.teamBName ?? null,
@@ -168,7 +176,18 @@ async function processEvent(item: BacklogItem): Promise<number> {
 
   // 2. Partite. `merge-duplicates` qui SI: il VIS e' la fonte di verita' per
   //    punteggi e stato, che cambiano.
-  const rows = matches.map((m) => matchRow(m, item.event_no));
+  //
+  //    Prima pero' si legge il `tournament_no` gia' presente per queste
+  //    partite: serve a non peggiorare righe esistenti quando il VIS non
+  //    espone `NoTournament` (vedi `matchRow`). Una query in piu' per evento,
+  //    a fronte di 9.570 righe che non vanno sporcate.
+  const nos = matches.map((m) => m.no);
+  const existing = await pgJson<{ no: string; tournament_no: string }[]>(
+    `matches?select=no,tournament_no&no=in.(${nos.map((n) => `"${n}"`).join(',')})`,
+  );
+  const knownTournament = new Map(existing.map((r) => [r.no, r.tournament_no]));
+
+  const rows = matches.map((m) => matchRow(m, item.event_no, knownTournament.get(m.no)));
   const stored = await pgJson<{ id: string; no: string }[]>(`matches?on_conflict=no&select=id,no`, {
     method: 'POST',
     body: JSON.stringify(rows),

@@ -109,7 +109,17 @@ const TABLES: readonly TableSpec[] = [
   { table: 'events', primaryKey: 'id' },
   { table: 'matches', primaryKey: 'id' },
   { table: 'referees', primaryKey: 'id', note: 'personal data' },
-  { table: 'match_referees', primaryKey: 'id' },
+  // `match_referees` non ha una colonna `id`: la sua chiave primaria e'
+  // composta, `(match_id, role)` — vedi migration 018 (issue #89), che l'ha
+  // ricreata sui tipi che il database ha davvero dopo che la 013 l'aveva
+  // lasciata cadere.
+  //
+  // Dichiararla `id` non produceva un falso "sicuro" ma un INCONCLUSIVO
+  // (`42703: column match_referees.id does not exist`), che questo script
+  // tratta come fallimento — ed e' la ragione per cui il gate era rosso su un
+  // database in cui tutto e' effettivamente chiuso. "Non ho potuto stabilirlo"
+  // non e' "e' sicuro": e' la lezione della issue #77.
+  { table: 'match_referees', primaryKey: 'match_id' },
   { table: 'match_events', primaryKey: 'id' },
 
   // Analytics.
@@ -126,6 +136,14 @@ const TABLES: readonly TableSpec[] = [
   // 009 and 010 both redeclare it with an `id bigint`; production kept the older
   // shape, which is why an `id` filter came back as PGRST204.
   { table: 'sync_status', primaryKey: 'entity_type' },
+
+  // La coda del backfill (migration 019, issue #90). Tabelle puramente
+  // operative: nessun client deve vederle, mai. Sono qui perche' una tabella
+  // nuova che nessuno sonda e' esattamente il modo in cui questo database e'
+  // arrivato allo stato che la issue #77 documenta.
+  { table: 'sync_backlog', primaryKey: 'event_no' },
+  { table: 'sync_backlog_config', primaryKey: 'id' },
+
   { table: 'sync_execution_history', primaryKey: 'id' },
   { table: 'sync_tournament_results', primaryKey: 'id' },
   { table: 'sync_error_log', primaryKey: 'id', note: 'error payloads can leak internals' },

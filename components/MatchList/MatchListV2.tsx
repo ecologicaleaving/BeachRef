@@ -400,7 +400,24 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // State for set scores enhancement
   const [enhancedMatches, setEnhancedMatches] = useState<ExtendedBeachMatch[]>([]);
-  const [setScoreService] = useState(() => (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
+  // Rimosso (issue #94):
+  //
+  //   const [setScoreService] = useState(() =>
+  //     (window as any).SetScoreService ? new (window as any).SetScoreService() : null);
+  //
+  // Leggeva un servizio da una variabile globale del browser che **nessuno
+  // assegna mai**: `SetScoreService` e' un modulo (`services/SetScoreService.ts`),
+  // non un globale, e in tutto il progetto quella riga era l'unico riferimento
+  // a `window.SetScoreService`. Valeva quindi sempre `null`, e il ramo che lo
+  // usava era codice morto — coerentemente con `hooks/useMatches.ts:54`:
+  // "SetScoreService enhancement removed - VIS API now provides complete data
+  // with set scores directly".
+  //
+  // Il costo non era teorico: `window` non esiste nell'ambiente jest `node` di
+  // questo progetto, quindi la lettura sollevava `ReferenceError` **durante il
+  // render** e faceva cadere per intero ogni suite che monti questo
+  // componente. Rimuoverla non cambia il comportamento — l'`else` qui sotto e'
+  // cio' che gia' girava sempre.
 
   // State for live score refresh
   const [liveScoreRefresh, setLiveScoreRefresh] = useState<number>(0);
@@ -546,27 +563,11 @@ export const MatchListV2: React.FC<MatchListV2Props> = ({
 
   // Enhanced matches with FULL VIS API data including duration
   useEffect(() => {
-    const enhanceMatches = async () => {
-      try {
-        // TEMPORARILY DISABLE enhanced match data to fix the issue
-        if (setScoreService) {
-          const enhanced = await setScoreService.enhanceMatchesWithSetScores(activeMatches);
-          setEnhancedMatches(enhanced);
-        } else {
-          setEnhancedMatches(activeMatches);
-        }
-      } catch (error) {
-        console.error('Failed to enhance matches:', error);
-        setEnhancedMatches(activeMatches);
-      }
-    };
-
-    if (activeMatches.length > 0) {
-      enhanceMatches();
-    } else {
-      setEnhancedMatches([]);
-    }
-  }, [activeMatches, setScoreService]);
+    // Il VIS fornisce gia' i punteggi dei set completi, quindi non c'e' piu'
+    // nulla da "arricchire": il ramo con `setScoreService` era irraggiungibile
+    // (vedi la nota sopra) e questo e' cio' che gia' girava sempre.
+    setEnhancedMatches(activeMatches.length > 0 ? activeMatches : []);
+  }, [activeMatches]);
 
   // Timer to refresh live scores every 5 seconds for LIVE matches
   useEffect(() => {

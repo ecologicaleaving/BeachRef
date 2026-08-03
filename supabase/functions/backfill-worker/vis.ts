@@ -248,7 +248,56 @@ function escapeXmlAttribute(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
+/**
+ * DISTANZA MINIMA FRA DUE RICHIESTE AL VIS.
+ *
+ * Non e' una precauzione teorica. L'ultima volta che questo archivio e' stato
+ * letto in blocco, il VIS e' andato in affanno e la FIVB ha telefonato per
+ * chiedere di smettere: non ha restituito un 429, non ha chiuso la
+ * connessione, non ha dato alcun segnale che il codice potesse leggere. Un
+ * backfill che si regola sugli errori HTTP, quindi, non si regola affatto —
+ * accelererebbe fino alla telefonata.
+ *
+ * Il ritardo sta QUI e non nel ciclo del worker perche' qui ci passano tutte
+ * le richieste: abbassare `batch_size` distanzia i lotti, non le chiamate
+ * dentro un lotto. E' lo stesso motivo per cui l'app ha un solo
+ * `VisApiClient`.
+ *
+ * La coda serializza: due chiamate concorrenti si mettono in fila invece di
+ * partire insieme, cosi' `vis_concurrency` non puo' aggirare l'intervallo.
+ */
+let visMinIntervalMs = 20_000;
+let visGate: Promise<void> = Promise.resolve();
+
+export function setVisMinIntervalMs(ms: number): void {
+  if (Number.isFinite(ms) && ms >= 0) visMinIntervalMs = ms;
+}
+
+export function getVisMinIntervalMs(): number {
+  return visMinIntervalMs;
+}
+
+let visLastCallAt = 0;
+
+/**
+ * Fa passare il chiamante solo quando e' trascorso l'intervallo dal precedente.
+ * Aspetta il RESIDUO, non l'intervallo intero: se fra due invocazioni del cron
+ * sono gia' passati cinque minuti, la prima richiesta parte subito.
+ */
+function waitTurn(): Promise<void> {
+  const mine = visGate.then(async () => {
+    const residuo = visLastCallAt + visMinIntervalMs - Date.now();
+    if (residuo > 0) await new Promise<void>((r) => setTimeout(r, residuo));
+    visLastCallAt = Date.now();
+  });
+  // La catena avanza anche se una richiesta fallisce: un errore non deve
+  // lasciare il cancello chiuso per sempre.
+  visGate = mine.catch(() => {});
+  return mine;
+}
+
 export async function visRequest(xmlRequest: string, timeoutMs = 30_000): Promise<string> {
+  await waitTurn();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {

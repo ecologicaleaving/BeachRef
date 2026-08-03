@@ -32,6 +32,7 @@ import {
   mapWithConcurrency,
   parseEvents,
   parseMatches,
+  setVisMinIntervalMs,
   visRequest,
   type VisMatch,
 } from './vis.ts';
@@ -227,18 +228,34 @@ async function processEvent(item: BacklogItem): Promise<number> {
   return matches.length;
 }
 
+/**
+ * Legge la configurazione e APPLICA subito il ritmo verso il VIS.
+ *
+ * Va chiamata prima di qualunque richiesta al VIS, seeding compreso: il
+ * `GetEventList` di una risemina e' una chiamata come le altre, e non aveva
+ * motivo di essere l'unica esente.
+ */
+async function loadConfig(): Promise<{ vis_concurrency: number }> {
+  const [cfg] = await pgJson<{ vis_concurrency: number; vis_min_interval_ms: number }[]>(
+    'sync_backlog_config?select=vis_concurrency,vis_min_interval_ms',
+  );
+  if (cfg && typeof cfg.vis_min_interval_ms === 'number') {
+    setVisMinIntervalMs(cfg.vis_min_interval_ms);
+  }
+  return { vis_concurrency: cfg?.vis_concurrency ?? 1 };
+}
+
 async function runCycle() {
+  const cfg = await loadConfig();
   const claimed = await rpc<BacklogItem[]>('claim_backfill_batch');
 
   if (!claimed || claimed.length === 0) {
     return { claimed: 0, done: 0, failed: 0, matches: 0, note: 'niente da fare' };
   }
 
-  const [cfg] = await pgJson<{ vis_concurrency: number }[]>('sync_backlog_config?select=vis_concurrency');
-
   let done = 0, failed = 0, matches = 0;
 
-  await mapWithConcurrency(claimed, cfg?.vis_concurrency ?? 2, async (item) => {
+  await mapWithConcurrency(claimed, cfg.vis_concurrency, async (item) => {
     try {
       const seen = await processEvent(item);
       await rpc('complete_backfill_item', { p_event_no: item.event_no, p_matches_seen: seen });
@@ -259,6 +276,7 @@ async function runCycle() {
 }
 
 async function runSeed(seasons: number[]) {
+  await loadConfig();
   let added = 0, total = 0;
   for (const season of seasons) {
     const xml = await visRequest(buildEventListRequest(season));

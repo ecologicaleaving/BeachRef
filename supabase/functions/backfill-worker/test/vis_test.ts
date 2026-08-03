@@ -18,6 +18,8 @@ import {
   parseEvents,
   parseMatches,
   seasonFromDate,
+  setVisMinIntervalMs,
+  visRequest,
 } from '../vis.ts';
 
 /**
@@ -194,4 +196,90 @@ Deno.test('un errore in mapWithConcurrency non resta silenzioso', async () => {
     Error,
     'boom',
   );
+});
+
+// =============================================================================
+// Il ritmo verso il VIS
+// =============================================================================
+//
+// Questi test montano un `fetch` finto: non serve la rete, e non deve
+// servire — cio' che si verifica e' QUANDO le richieste partono, non cosa
+// rispondono.
+
+function stubFetch(): number[] {
+  const istanti: number[] = [];
+  // deno-lint-ignore no-explicit-any
+  (globalThis as any).fetch = () => {
+    istanti.push(Date.now());
+    return Promise.resolve(new Response('<Responses />', { status: 200 }));
+  };
+  return istanti;
+}
+
+Deno.test('due richieste al VIS non partono ravvicinate', async () => {
+  const vero = globalThis.fetch;
+  const istanti = stubFetch();
+  try {
+    setVisMinIntervalMs(0);
+    await visRequest('<Request />'); // azzera il cronometro
+    setVisMinIntervalMs(120);
+    istanti.length = 0;
+
+    await visRequest('<Request />');
+    await visRequest('<Request />');
+
+    const distanza = istanti[1] - istanti[0];
+    // Il margine assorbe la risoluzione dei timer, non l'assenza di attesa:
+    // senza il cancello la distanza sarebbe di pochi millisecondi.
+    assertEquals(distanza >= 110, true, `distanza ${distanza}ms`);
+  } finally {
+    globalThis.fetch = vero;
+    setVisMinIntervalMs(0);
+  }
+});
+
+Deno.test('la concorrenza non aggira l intervallo', async () => {
+  const vero = globalThis.fetch;
+  const istanti = stubFetch();
+  try {
+    setVisMinIntervalMs(0);
+    await visRequest('<Request />');
+    setVisMinIntervalMs(100);
+    istanti.length = 0;
+
+    // Tre richieste lanciate INSIEME: e' il caso che conta, perche' e' cosi'
+    // che il worker le lancia quando `vis_concurrency` e' maggiore di 1.
+    await Promise.all([
+      visRequest('<Request />'),
+      visRequest('<Request />'),
+      visRequest('<Request />'),
+    ]);
+
+    assertEquals(istanti.length, 3);
+    for (let i = 1; i < istanti.length; i++) {
+      const d = istanti[i] - istanti[i - 1];
+      assertEquals(d >= 90, true, `richieste ${i - 1}->${i} distanti ${d}ms`);
+    }
+  } finally {
+    globalThis.fetch = vero;
+    setVisMinIntervalMs(0);
+  }
+});
+
+Deno.test('un errore non lascia il cancello chiuso', async () => {
+  const vero = globalThis.fetch;
+  try {
+    setVisMinIntervalMs(0);
+    // deno-lint-ignore no-explicit-any
+    (globalThis as any).fetch = () => Promise.reject(new Error('rete giu'));
+    await assertRejects(() => visRequest('<Request />'), Error, 'rete giu');
+
+    // Se la catena di attesa si fosse rotta sull'errore, questa non tornerebbe
+    // mai — il backfill si fermerebbe in silenzio al primo guasto di rete.
+    stubFetch();
+    await visRequest('<Request />');
+  } finally {
+    globalThis.fetch = vero;
+    setVisMinIntervalMs(0);
+  }
 });

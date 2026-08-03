@@ -40,9 +40,62 @@
 -- Togliere un vincolo UNIQUE non puo' fallire per i dati gia' presenti, e non
 -- ne cancella nessuno.
 --
+-- =============================================================================
+-- CHI SI APPOGGIAVA AL VINCOLO SBAGLIATO
+-- =============================================================================
+--
+-- Il primo tentativo di applicare questa migration e' fallito cosi':
+--
+--   2BP01: cannot drop constraint referees_referee_id_unique on table referees
+--          because other objects depend on it
+--   DETAIL: constraint referee_analytics_referee_id_fkey on table
+--           referee_analytics depends on index referees_referee_id_unique
+--
+-- Una foreign key puo' puntare solo a una colonna univoca: `referee_analytics`
+-- identifica un arbitro PER NOME, ed e' quel vincolo a renderlo possibile. E'
+-- lo stesso errore di partenza, una tabella piu' in la'. Finche' quella FK
+-- esiste, il nome resta un'identita' per decreto del database.
+--
+-- La FK viene quindi rimossa — cercata per DEFINIZIONE (qualunque FK verso
+-- `referees.referee_id`), non per nome. Non con `DROP ... CASCADE`: cascade
+-- rimuoverebbe in silenzio anche cio' che non abbiamo guardato, e qui l'unica
+-- cosa che vogliamo togliere e' la pretesa che due arbitri non possano
+-- chiamarsi allo stesso modo.
+--
+-- Cosa resta di `referee_analytics`: le sue 4 righe, intatte. Sono dati di
+-- prova (`tournaments_worked = {BVISTEST}`, 2025-09-11) di una tabella che
+-- nessun codice legge, e che le aggregazioni della issue #91 sostituiranno con
+-- tabelle chiavate su `vis_referee_no`. Non la si ricollega qui: rifarle
+-- puntare a `referees.id` sarebbe progettare la #91 dentro la #90, e su dati
+-- di test.
+--
 -- Applicare questa migration e' sicuro e ripetibile.
 
 BEGIN;
+
+-- Prima le dipendenze: nessuna FK puo' restare appesa al nome.
+DO $$
+DECLARE
+  fk RECORD;
+BEGIN
+  FOR fk IN
+    SELECT c.conname, t.relname AS tabella
+      FROM pg_constraint c
+      JOIN pg_class t  ON t.oid = c.conrelid
+      JOIN pg_class rt ON rt.oid = c.confrelid
+      JOIN pg_namespace rn ON rn.oid = rt.relnamespace
+     WHERE c.contype = 'f'
+       AND rn.nspname = 'public'
+       AND rt.relname = 'referees'
+       AND (SELECT array_agg(a.attname::text ORDER BY a.attname)
+              FROM unnest(c.confkey) AS k(attnum)
+              JOIN pg_attribute a ON a.attrelid = c.confrelid AND a.attnum = k.attnum)
+           = ARRAY['referee_id']
+  LOOP
+    EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT %I', fk.tabella, fk.conname);
+    RAISE NOTICE 'rimossa la FK verso il NOME dell''arbitro: %.%', fk.tabella, fk.conname;
+  END LOOP;
+END $$;
 
 DO $$
 DECLARE
@@ -135,6 +188,29 @@ BEGIN
   IF still_unique > 0 THEN
     RAISE EXCEPTION 'referees.referee_id e'' ancora univoco: il backfill '
                     'continuera'' a cadere sugli omonimi';
+  END IF;
+END $$;
+
+-- E nessuno puo' ricrearlo per interposta persona: una FK verso quella colonna
+-- esigerebbe di nuovo un indice univoco su un nome.
+DO $$
+DECLARE
+  fks INT;
+BEGIN
+  SELECT count(*) INTO fks
+    FROM pg_constraint c
+    JOIN pg_class rt ON rt.oid = c.confrelid
+    JOIN pg_namespace rn ON rn.oid = rt.relnamespace
+   WHERE c.contype = 'f'
+     AND rn.nspname = 'public'
+     AND rt.relname = 'referees'
+     AND (SELECT array_agg(a.attname::text ORDER BY a.attname)
+            FROM unnest(c.confkey) AS k(attnum)
+            JOIN pg_attribute a ON a.attrelid = c.confrelid AND a.attnum = k.attnum)
+         = ARRAY['referee_id'];
+
+  IF fks > 0 THEN
+    RAISE EXCEPTION '% foreign key puntano ancora a referees.referee_id', fks;
   END IF;
 END $$;
 

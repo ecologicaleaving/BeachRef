@@ -73,6 +73,7 @@ run_test "match_referees_restore"      /repo/supabase/tests/match_referees_resto
 run_test "match_referees_restore_leak" /repo/supabase/tests/match_referees_restore.leak.test.sql
 run_test "sync_backlog"                /repo/supabase/tests/sync_backlog.test.sql
 run_test "referees_name_not_identity"  /repo/supabase/tests/referees_name_not_identity.test.sql
+run_test "referee_stats"               /repo/supabase/tests/referee_stats.test.sql
 
 echo
 echo "=== Risultati: $PASS passed, $FAIL failed ==="

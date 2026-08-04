@@ -272,7 +272,23 @@ async function runCycle() {
     }
   });
 
-  return { claimed: claimed.length, done, failed, matches };
+  // Le statistiche si ricalcolano qui e non su richiesta: la pagina che le
+  // legge non deve poter innescare un'aggregazione (vedi migration 022), e
+  // farlo a ogni ciclo tiene la sintesi allineata ai dati senza che nessuno se
+  // ne ricordi. Se il ricalcolo fallisce, il ciclo NON fallisce: le partite
+  // sono gia' salvate, e perderle per un aggregato sarebbe sproporzionato.
+  let stats: unknown = null;
+  if (done > 0) {
+    try {
+      stats = await rpc('refresh_referee_stats');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[backfill] ricalcolo statistiche fallito: ${message}`);
+      stats = { error: message };
+    }
+  }
+
+  return { claimed: claimed.length, done, failed, matches, stats };
 }
 
 async function runSeed(seasons: number[]) {

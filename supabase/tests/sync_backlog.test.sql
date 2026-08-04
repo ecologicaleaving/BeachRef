@@ -304,7 +304,70 @@ BEGIN
   RAISE NOTICE 'F1/F2 ok: riapplicare la 019 non cambia nulla';
 END $$;
 
+-- =============================================================================
+-- PARTE G: il ritmo verso il VIS (migration 021)
+-- =============================================================================
+
+\ir ../migrations/021_vis_min_interval.sql
+
+DO $$
+DECLARE
+  v INT;
+BEGIN
+  SELECT vis_min_interval_ms INTO v FROM public.sync_backlog_config WHERE id;
+  IF v IS DISTINCT FROM 20000 THEN
+    RAISE EXCEPTION 'G1 FALLITO: intervallo predefinito %, atteso 20000', v;
+  END IF;
+  RAISE NOTICE 'G1 ok: la riga esistente eredita 20s, non NULL';
+END $$;
+
+-- G2: il valore si cambia senza rideploy — e' l'intero motivo per cui vive nel
+-- database. Se una UPDATE non bastasse, rallentare il backfill richiederebbe
+-- un rilascio proprio nel momento in cui serve subito.
+DO $$
+DECLARE
+  v INT;
+BEGIN
+  UPDATE public.sync_backlog_config SET vis_min_interval_ms = 60000 WHERE id;
+  SELECT vis_min_interval_ms INTO v FROM public.sync_backlog_config WHERE id;
+  IF v <> 60000 THEN
+    RAISE EXCEPTION 'G2 FALLITO: il valore non e'' stato accettato (%)', v;
+  END IF;
+  RAISE NOTICE 'G2 ok: si rallenta con una UPDATE';
+END $$;
+
+-- G3: un valore assurdo viene rifiutato. Un intervallo negativo diventerebbe
+-- "nessuna attesa" nel worker, cioe' l'opposto di cio' che chi lo scrive
+-- intendeva.
+DO $$
+BEGIN
+  BEGIN
+    UPDATE public.sync_backlog_config SET vis_min_interval_ms = -1 WHERE id;
+    RAISE EXCEPTION 'G3 FALLITO: intervallo negativo accettato';
+  EXCEPTION WHEN check_violation THEN
+    RAISE NOTICE 'G3 ok: un intervallo negativo non entra';
+  END;
+END $$;
+
+\ir ../migrations/021_vis_min_interval.sql
+
+DO $$
+DECLARE
+  v INT;
+  n INT;
+BEGIN
+  SELECT vis_min_interval_ms INTO v FROM public.sync_backlog_config WHERE id;
+  IF v <> 60000 THEN
+    RAISE EXCEPTION 'G4 FALLITO: riapplicare la 021 ha riportato il valore a %', v;
+  END IF;
+  SELECT count(*) INTO n FROM public.schema_versions WHERE version = '4.2.2';
+  IF n <> 1 THEN
+    RAISE EXCEPTION 'G4 FALLITO: schema_versions ha % righe per 4.2.2', n;
+  END IF;
+  RAISE NOTICE 'G4 ok: riapplicarla non calpesta il valore scelto';
+END $$;
+
 \echo ''
 \echo '================================================================'
-\echo ' migration 019 / coda backfill (issue #90): TUTTE LE ASSERZIONI OK'
+\echo ' migration 019+021 / coda backfill (issue #90): TUTTE LE ASSERZIONI OK'
 \echo '================================================================'

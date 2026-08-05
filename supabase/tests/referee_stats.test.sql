@@ -12,6 +12,7 @@
 \ir ../migrations/018_restore_match_referees.sql
 \ir ../migrations/020_referees_name_is_not_an_identity.sql
 \ir ../migrations/022_referee_stats.sql
+\ir ../migrations/023_refresh_stats_safeupdate.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -237,7 +238,14 @@ END $$;
 -- PARTE E: idempotenza della migration
 -- =============================================================================
 
+-- Si riapplicano ENTRAMBE, e in ordine. Non e' pedanteria: la 023 sostituisce
+-- la funzione definita dalla 022, quindi riapplicare la sola 022 la riporta
+-- indietro alla versione con i DELETE nudi — che su Supabase non gira. E'
+-- proprio cio' che ha fatto fallire l'asserzione F1 la prima volta che questo
+-- file e' stato scritto, ed e' il motivo per cui le migration si rigiocano
+-- tutte nell'ordine in cui sono nate, mai a scelta.
 \ir ../migrations/022_referee_stats.sql
+\ir ../migrations/023_refresh_stats_safeupdate.sql
 
 DO $$
 DECLARE
@@ -254,7 +262,30 @@ BEGIN
   RAISE NOTICE 'E1 ok: riapplicarla non cambia nulla e non cancella nulla';
 END $$;
 
+-- =============================================================================
+-- PARTE F: nessun DELETE nudo (migration 023)
+-- =============================================================================
+--
+-- La produzione carica `safeupdate` e rifiuta i DELETE senza WHERE; questo
+-- PostgreSQL usa-e-getta e' un'immagine di base e non ce l'ha, quindi la
+-- prima versione della 022 passava qui e falliva la' con 21000. Non potendo
+-- caricare l'estensione, si verifica la proprieta' direttamente sul sorgente
+-- della funzione: e' una spia grezza, ma copre esattamente la regressione
+-- osservata.
+
+DO $$
+DECLARE
+  def TEXT;
+BEGIN
+  SELECT pg_get_functiondef('public.refresh_referee_stats()'::regprocedure) INTO def;
+  IF def ~* 'DELETE\s+FROM\s+[a-z_.]+\s*;' THEN
+    RAISE EXCEPTION 'F1 FALLITO: c''e'' un DELETE senza WHERE — su Supabase '
+                    'fallirebbe con "DELETE requires a WHERE clause"';
+  END IF;
+  RAISE NOTICE 'F1 ok: ogni DELETE dichiara cosa cancella';
+END $$;
+
 \echo ''
 \echo '================================================================'
-\echo ' migration 022 / statistiche arbitro (issue #91): TUTTE LE ASSERZIONI OK'
+\echo ' migration 022+023 / statistiche arbitro (issue #91): TUTTE LE ASSERZIONI OK'
 \echo '================================================================'

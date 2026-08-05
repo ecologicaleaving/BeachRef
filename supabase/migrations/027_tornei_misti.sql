@@ -59,7 +59,8 @@ COMMENT ON COLUMN public.tournaments.gender IS
 -- produzione a ogni esecuzione.
 DO $$
 DECLARE
-  def TEXT;
+  def  TEXT;
+  nudo TEXT;
 BEGIN
   SELECT pg_get_constraintdef(c.oid) INTO def
     FROM pg_constraint c
@@ -70,13 +71,23 @@ BEGIN
      AND c.conname = 'tournaments_gender_check';
 
   IF def IS NULL THEN
-    RAISE EXCEPTION '027: il vincolo sul genere non esiste — la colonna '
-                    'accetterebbe qualunque stringa';
+    RAISE EXCEPTION '027: il vincolo sul genere non esiste, la colonna accetterebbe qualunque stringa';
   END IF;
-  IF def NOT LIKE '%MIXED%' THEN
+
+  -- Si tolgono gli apici dalla definizione e si cercano i valori nudi.
+  --
+  -- Cercare direttamente il valore fra apici raddoppiati era la scrittura
+  -- naturale, e ha fatto fallire questa migration nel SQL Editor di Supabase
+  -- con un errore di sintassi su RAISE alla riga 1: chi divide gli statement
+  -- lato client perde il conto di dove finisce la stringa e spezza il blocco a
+  -- meta. Vale anche per il commento che stai leggendo, motivo per cui qui non
+  -- compare nessun apice.
+  nudo := replace(def, chr(39), '');
+
+  IF nudo NOT LIKE '%MIXED%' THEN
     RAISE EXCEPTION '027: il vincolo non ammette MIXED (%)', def;
   END IF;
-  IF def NOT LIKE '%''M''%' OR def NOT LIKE '%''W''%' THEN
+  IF nudo NOT LIKE '%ARRAY[M%' OR nudo NOT LIKE '%W::text%' THEN
     RAISE EXCEPTION '027: il vincolo ha perso M o W per strada (%)', def;
   END IF;
   RAISE NOTICE '027 ok: %', def;

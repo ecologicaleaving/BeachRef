@@ -1273,3 +1273,97 @@ the job fails rather than skipping**: a recurring check that quietly stops
 running looks exactly like one that passes, which is the failure mode it exists
 to prevent.
 
+
+---
+
+## The schema in this repo is not the schema on production (issue #89)
+
+**Before writing a migration, read the live schema — not `supabase/migrations/`.**
+The two have diverged, and the divergence is not a detail: it is why the
+referee statistics could not be built from the database.
+
+### What was measured (2026-08-01, production, service_role)
+
+| | |
+|---|---|
+| `tournaments` | 236 rows |
+| `matches` | 9,570 rows — but from only **19 distinct tournaments**; `local_date` spans 2011-06-13 … 2026-03-15 |
+| `referees` | 480 rows (479 with `vis_referee_no`) |
+| `match_referees` | **HTTP 404 — the table does not exist** |
+| `match_referees_backup` | exists, 0 rows |
+| `matches.no_referee1` populated | **0 / 9,570** |
+| `matches.referee1_name` populated | 2,843 / 9,570 |
+
+Tables present on production and declared in **no** migration at all:
+`designations` (1,581 rows), `documents` (16), `rate_limit_tracker`,
+`sync_health_summary`, `tournament_sync_monitoring`.
+
+### How it happened
+
+`schema_versions` dates it: version **2.3.0**, applied 2026-02-08, *"Aligned
+matches table with simplified schema for referee stats and dual read service"*
+— that is migration `013_fix_matches_schema_alignment.sql`, and its line 27 is
+
+```sql
+DROP TABLE IF EXISTS match_referees CASCADE;
+```
+
+013 rebuilt `matches` with a `uuid` primary key and had to drop the dependent
+junction table to do it. **It never recreated it.** Nothing failed loudly,
+because nothing reads it — the app has always taken referee statistics from the
+VIS.
+
+The repository made the absence hard to see, because `match_referees` is
+declared **twice, incompatibly**, and neither declaration matches production:
+`006.5` wants `match_id TEXT` / `referee_id INTEGER`; `008` wants
+`match_id bigint REFERENCES matches(id)`, which cannot even be created against
+a uuid `matches.id`. Both are now marked SUPERSEDED in their headers.
+Migration `018_restore_match_referees.sql` declares the table once, against the
+types the database actually has.
+
+### The join key, and the trap
+
+`matches.no_referee1` / `no_referee2` (VIS `NoReferee1` / `NoReferee2`) are
+**the** canonical link to `referees.vis_referee_no`. They are empty on every
+row until issue #90 fills them.
+
+**Do not join on the referee name.** `matches.referee1_name` is
+`"Lowry Suzanne"` while `referees.referee_id` is `"Jonathan Lamprecht"` — two
+conventions, no normalisation, and homonyms across 480 referees from every
+federation are not hypothetical. A statistic attributed to the wrong person is
+worse than a missing one, because nothing about it looks wrong. Migration 018
+deliberately leaves `match_referees` empty rather than deriving 2,843 rows from
+names; assertion C4 of its test enforces that.
+
+### How to check the live schema yourself
+
+PostgREST publishes the real column types. No DDL access needed, and no
+guessing from migrations:
+
+```bash
+curl -s "$SUPABASE_URL/rest/v1/" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" > openapi.json
+# .definitions.<table>.properties.<column>.format is the Postgres type
+```
+
+Row counts, non-destructively, via `Prefer: count=exact` with `limit=0` — the
+count arrives in the `Content-Range` header.
+
+`supabase/tests/fixtures/production_shape.sql` is a miniature of that live
+schema and is what the migration tests run against. **If you change it, change
+it to match production, not to match the migrations.**
+
+### Running the migration tests
+
+```bash
+npm run test:migrations   # Docker only, never touches the project
+```
+
+### Applying a migration
+
+There is **no** RPC that executes DDL, and the `service_role` key does not grant
+schema access through PostgREST. Migrations are applied by Davide from the
+Supabase SQL Editor (per the team workflow: infra actions are listed by the
+agent, executed by Davide), then verified from the client side — a table that
+exists answers 200 instead of 404.

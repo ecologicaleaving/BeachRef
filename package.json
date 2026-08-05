@@ -27,6 +27,7 @@
     "audit:watch": "tsx scripts/audit/run-audit.ts --watch",
     "fix-undefined": "tsx scripts/fix-possibly-undefined.ts",
     "verify:rls": "tsx scripts/verify-rls-anon.ts",
+    "test:migrations": "bash supabase/tests/run-migration-tests.sh",
     "prepare": "husky"
   },
   "dependencies": {

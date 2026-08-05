@@ -84,7 +84,9 @@ CREATE TABLE public.tournaments (
   country                  TEXT,
   city                     TEXT,
   season                   INTEGER,
-  gender                   TEXT,
+  -- La produzione ha un CHECK qui, e la 027 lo allarga: il fixture deve
+  -- portarselo, altrimenti la migration verificherebbe un vincolo assente.
+  gender                   TEXT CHECK (gender IN ('M','W')),
   type                     TEXT,
   start_qualification      DATE,
   start_main_draw          DATE,

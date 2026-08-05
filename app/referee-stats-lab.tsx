@@ -91,7 +91,9 @@ const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica:
 function etichettaGenere(g: string | null): string {
   if (g === 'M') return 'M';
   if (g === 'W') return 'F';
-  if (g === 'MIXED') return 'MISTO';
+  // "M + W" e' l'etichetta che l'app usa gia' nella selezione tornei: non
+  // vale la pena inventarne una seconda per la stessa cosa.
+  if (g === 'MIXED') return 'M + W';
   return '';
 }
 

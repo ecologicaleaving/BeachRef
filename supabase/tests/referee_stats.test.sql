@@ -18,6 +18,7 @@
 \ir ../migrations/023_refresh_stats_safeupdate.sql
 \ir ../migrations/024_referee_drilldown.sql
 \ir ../migrations/025_gender_e_fase.sql
+\ir ../migrations/027_tornei_misti.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -466,6 +467,23 @@ BEGIN
                     'di aver gia'' rinfrescato', q;
   END IF;
   RAISE NOTICE 'H5 ok: "mai rinfrescato" e'' distinguibile';
+END $$;
+
+-- H6: un torneo misto entra. Il vincolo della 007 ammetteva due generi; sui
+-- 9.260 tornei dell'archivio VIS ce ne sono 222 con entrambi i tabelloni, e
+-- basta uno per far fallire l'intero riempimento (migration 027).
+DO $$
+BEGIN
+  INSERT INTO public.tournaments (vis_tournament_no, name, gender)
+  VALUES (77, 'Torneo con entrambi i tabelloni', 'MIXED');
+
+  BEGIN
+    INSERT INTO public.tournaments (vis_tournament_no, name, gender)
+    VALUES (78, 'Genere inventato', 'BOH');
+    RAISE EXCEPTION 'H6 FALLITO: il vincolo accetta un genere qualsiasi';
+  EXCEPTION WHEN check_violation THEN
+    RAISE NOTICE 'H6 ok: MIXED entra, un genere inventato no';
+  END;
 END $$;
 
 -- =============================================================================

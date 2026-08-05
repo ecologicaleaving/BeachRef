@@ -380,17 +380,26 @@ async function syncTournaments() {
   const xml = await visRequest(buildTournamentListRequest(), 60_000);
   const tornei = parseTournaments(xml);
 
+  // `tournaments.name` e `tournaments.tournament_code` sono NOT NULL in
+  // produzione, e l'archivio VIS non lo rispetta: su 9.260 tornei ce n'e'
+  // ESATTAMENTE UNO senza nome (il 1734, codice MBLR2013). Uno solo basta a
+  // far fallire l'intero riempimento, perche' l'upsert va a blocchi di 500 e
+  // un blocco rifiutato porta via anche le 499 righe buone.
+  //
+  // Si ripiega sul codice, che nessun torneo ha vuoto: "MBLR2013" dice
+  // comunque piu' di "Torneo VIS 1734". Chi non ha ne' l'uno ne' l'altro non
+  // e' rappresentabile e viene scartato — oggi nessuno.
   const righe = tornei.map((t) => ({
     vis_tournament_no: Number(t.no),
     tournament_code: t.code ?? null,
-    name: t.name ?? null,
+    name: t.name ?? t.code ?? null,
     country: t.countryCode ?? null,
     city: t.city ?? null,
     season: t.season ?? null,
     gender: t.gender ?? null,
     type: t.type ?? null,
     updated_at: new Date().toISOString(),
-  })).filter((r) => Number.isFinite(r.vis_tournament_no));
+  })).filter((r) => Number.isFinite(r.vis_tournament_no) && r.tournament_code && r.name);
 
   const BLOCCO = 500;
   let scritti = 0;

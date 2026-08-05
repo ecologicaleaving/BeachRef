@@ -32,8 +32,8 @@ INSERT INTO public.referees (id, vis_referee_no, referee_id, federation_code) VA
   (103, '164206', 'Brady Nicholson',  'AUS');
 
 -- Un torneo con nome, uno senza: il dettaglio deve reggere entrambi.
-INSERT INTO public.tournaments (vis_tournament_no, name, country, season, gender) VALUES
-  (1, 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M');
+INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, country, season, gender) VALUES
+  (1, 'MNZL0126', 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M');
 
 INSERT INTO public.matches (id, no, tournament_no, local_date, round, referee1_name, referee2_name) VALUES
   ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Pool A', 'Kerekere Mary', 'Nicholson Brady'),
@@ -474,12 +474,12 @@ END $$;
 -- basta uno per far fallire l'intero riempimento (migration 027).
 DO $$
 BEGIN
-  INSERT INTO public.tournaments (vis_tournament_no, name, gender)
-  VALUES (77, 'Torneo con entrambi i tabelloni', 'MIXED');
+  INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, gender)
+  VALUES (77, 'NJPN0112', 'Torneo con entrambi i tabelloni', 'MIXED');
 
   BEGIN
-    INSERT INTO public.tournaments (vis_tournament_no, name, gender)
-    VALUES (78, 'Genere inventato', 'BOH');
+    INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, gender)
+    VALUES (78, 'XXXX0000', 'Genere inventato', 'BOH');
     RAISE EXCEPTION 'H6 FALLITO: il vincolo accetta un genere qualsiasi';
   EXCEPTION WHEN check_violation THEN
     RAISE NOTICE 'H6 ok: MIXED entra, un genere inventato no';

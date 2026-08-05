@@ -46,22 +46,40 @@ COMMENT ON COLUMN public.tournaments.gender IS
   'che l''app mostra come "M + W". NULL significa "non ancora rinfrescato", '
   'ed e'' una cosa diversa: vedi migration 027.';
 
--- Post-condizione: il vincolo deve accettare i tre valori e continuare a
--- rifiutare tutto il resto. Un CHECK riscritto troppo largo non protesterebbe
--- mai piu', e nessuno se ne accorgerebbe.
+-- Post-condizione: il vincolo accetta i tre valori e rifiuta tutto il resto.
+-- Un CHECK riscritto troppo largo non protesterebbe mai piu', e nessuno se ne
+-- accorgerebbe.
+--
+-- Si ISPEZIONA la definizione invece di tentare un inserimento di prova. La
+-- prima stesura inseriva una riga fittizia e la cancellava: e' fallita in
+-- produzione con 23502, perche' `tournament_code` e' NOT NULL li' e non nel
+-- fixture dei test. Ma il difetto vero non era la colonna mancante — era il
+-- metodo: una verifica che scrive dipende da OGNI vincolo della tabella,
+-- compresi quelli che non sta verificando, e per giunta consuma un id di
+-- produzione a ogni esecuzione.
 DO $$
+DECLARE
+  def TEXT;
 BEGIN
-  BEGIN
-    INSERT INTO public.tournaments (vis_tournament_no, name, gender)
-    VALUES (-999, '__verifica 027__', 'BOH');
-    RAISE EXCEPTION '027: il vincolo accetta un genere inventato';
-  EXCEPTION WHEN check_violation THEN
-    NULL; -- atteso
-  END;
+  SELECT pg_get_constraintdef(c.oid) INTO def
+    FROM pg_constraint c
+    JOIN pg_class t ON t.oid = c.conrelid
+    JOIN pg_namespace n ON n.oid = t.relnamespace
+   WHERE n.nspname = 'public'
+     AND t.relname = 'tournaments'
+     AND c.conname = 'tournaments_gender_check';
 
-  INSERT INTO public.tournaments (vis_tournament_no, name, gender)
-  VALUES (-999, '__verifica 027__', 'MIXED');
-  DELETE FROM public.tournaments WHERE vis_tournament_no = -999;
+  IF def IS NULL THEN
+    RAISE EXCEPTION '027: il vincolo sul genere non esiste — la colonna '
+                    'accetterebbe qualunque stringa';
+  END IF;
+  IF def NOT LIKE '%MIXED%' THEN
+    RAISE EXCEPTION '027: il vincolo non ammette MIXED (%)', def;
+  END IF;
+  IF def NOT LIKE '%''M''%' OR def NOT LIKE '%''W''%' THEN
+    RAISE EXCEPTION '027: il vincolo ha perso M o W per strada (%)', def;
+  END IF;
+  RAISE NOTICE '027 ok: %', def;
 END $$;
 
 INSERT INTO public.schema_versions (version, description)

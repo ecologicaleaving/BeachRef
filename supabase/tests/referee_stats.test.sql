@@ -13,6 +13,7 @@
 \ir ../migrations/020_referees_name_is_not_an_identity.sql
 \ir ../migrations/022_referee_stats.sql
 \ir ../migrations/023_refresh_stats_safeupdate.sql
+\ir ../migrations/024_referee_drilldown.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -25,9 +26,13 @@ INSERT INTO public.referees (id, vis_referee_no, referee_id, federation_code) VA
   (102, '900002', 'Mary Kerekere',    'AUS'),
   (103, '164206', 'Brady Nicholson',  'AUS');
 
+-- Un torneo con nome, uno senza: il dettaglio deve reggere entrambi.
+INSERT INTO public.tournaments (vis_tournament_no, name, country, season) VALUES
+  (1, 'BPT Futures Mount Maunganui 2026', 'NZ', 2026);
+
 INSERT INTO public.matches (id, no, tournament_no, local_date, referee1_name, referee2_name) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'M1', 'T1', '2026-02-06', 'Kerekere Mary', 'Nicholson Brady'),
-  ('22222222-2222-2222-2222-222222222222', 'M2', 'T1', '2026-02-07', 'Kerekere Mary', NULL),
+  ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Kerekere Mary', 'Nicholson Brady'),
+  ('22222222-2222-2222-2222-222222222222', 'M2', '1', '2026-02-07', 'Kerekere Mary', NULL),
   ('33333333-3333-3333-3333-333333333333', 'M3', 'T2', '2026-03-01', NULL,            NULL),
   -- Stagione diversa: serve a separare season da career.
   ('44444444-4444-4444-4444-444444444444', 'M4', 'T3', '2025-08-01', NULL,            NULL),
@@ -64,7 +69,8 @@ BEGIN
   END IF;
   -- M1 e M2 sono lo stesso torneo: i tornei distinti sono T1 e T2.
   IF r.tournaments <> 2 THEN
-    RAISE EXCEPTION 'A3 FALLITO: % tornei, attesi 2 (T1 conta una volta)', r.tournaments;
+    RAISE EXCEPTION 'A3 FALLITO: % tornei, attesi 2 (il torneo 1 conta una volta)',
+      r.tournaments;
   END IF;
   IF r.first_match <> '2026-02-06' OR r.last_match <> '2026-03-01' THEN
     RAISE EXCEPTION 'A4 FALLITO: intervallo % .. %', r.first_match, r.last_match;
@@ -238,14 +244,18 @@ END $$;
 -- PARTE E: idempotenza della migration
 -- =============================================================================
 
--- Si riapplicano ENTRAMBE, e in ordine. Non e' pedanteria: la 023 sostituisce
--- la funzione definita dalla 022, quindi riapplicare la sola 022 la riporta
--- indietro alla versione con i DELETE nudi — che su Supabase non gira. E'
--- proprio cio' che ha fatto fallire l'asserzione F1 la prima volta che questo
--- file e' stato scritto, ed e' il motivo per cui le migration si rigiocano
--- tutte nell'ordine in cui sono nate, mai a scelta.
-\ir ../migrations/022_referee_stats.sql
-\ir ../migrations/023_refresh_stats_safeupdate.sql
+-- Si riapplica LA MIGRATION IN PROVA, non quelle che l'hanno preceduta.
+--
+-- Riapplicare la 022 a questo punto non fallirebbe per un difetto: fallirebbe
+-- perche' la 024 ha cambiato il tipo di ritorno di `refresh_referee_stats()` e
+-- PostgreSQL rifiuta un `CREATE OR REPLACE` che lo cambierebbe di nuovo. E'
+-- una protezione — riapplicare una migration vecchia dopo una nuova e' un
+-- DOWNGRADE, e qui il database si rifiuta di subirlo in silenzio.
+--
+-- Lo stesso caso, senza protezione, e' gia' costato un'asserzione rossa: la
+-- prima stesura di questo file rigiocava la 022 dopo la 023 e riportava
+-- indietro la funzione ai DELETE nudi, che su Supabase non girano.
+\ir ../migrations/024_referee_drilldown.sql
 
 DO $$
 DECLARE
@@ -260,6 +270,128 @@ BEGIN
     RAISE EXCEPTION 'E1 FALLITO: riapplicare la 022 ha cancellato le statistiche';
   END IF;
   RAISE NOTICE 'E1 ok: riapplicarla non cambia nulla e non cancella nulla';
+END $$;
+
+-- =============================================================================
+-- PARTE G: il dettaglio (migration 024)
+-- =============================================================================
+--
+-- Nota: la parte C ha rimosso la designazione della stagione 2025, quindi
+-- l'arbitro '900001' ha ora 3 partite, tutte nel 2026, su due tornei.
+
+DO $$
+DECLARE
+  n INT;
+  r public.referee_tournament_stats;
+BEGIN
+  SELECT count(*) INTO n FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001';
+  IF n <> 2 THEN
+    RAISE EXCEPTION 'G1 FALLITO: % tornei per l''arbitro, attesi 2', n;
+  END IF;
+
+  -- Il torneo con nome: la LEFT JOIN deve averlo risolto, malgrado i tipi
+  -- diversi ai due lati (BIGINT contro VARCHAR).
+  SELECT * INTO r FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF r.tournament_name IS DISTINCT FROM 'BPT Futures Mount Maunganui 2026' THEN
+    RAISE EXCEPTION 'G1 FALLITO: nome torneo "%", la join non ha risolto',
+      r.tournament_name;
+  END IF;
+  IF r.matches <> 2 OR r.as_first <> 2 THEN
+    RAISE EXCEPTION 'G1 FALLITO: % partite / % da primo su quel torneo',
+      r.matches, r.as_first;
+  END IF;
+  RAISE NOTICE 'G1 ok: il dettaglio per torneo, con il nome risolto';
+END $$;
+
+-- G2: un torneo SENZA riga in `tournaments` non fa sparire le sue partite.
+-- E' il caso normale, non l'eccezione: il backfill non riempie `tournaments`.
+DO $$
+DECLARE
+  r public.referee_tournament_stats;
+BEGIN
+  SELECT * INTO r FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF r IS NULL THEN
+    RAISE EXCEPTION 'G2 FALLITO: il torneo senza nome e'' sparito — la join '
+                    'si comporta come INNER';
+  END IF;
+  IF r.tournament_name IS NOT NULL THEN
+    RAISE EXCEPTION 'G2 FALLITO: nome "%" inventato dal nulla', r.tournament_name;
+  END IF;
+  RAISE NOTICE 'G2 ok: senza nome resta il numero, non un buco';
+END $$;
+
+-- G3: il registro delle singole partite.
+DO $$
+DECLARE
+  n INT;
+  riga public.referee_match_log;
+BEGIN
+  SELECT count(*) INTO n FROM public.referee_match_log WHERE vis_referee_no = '900001';
+  IF n <> 3 THEN
+    RAISE EXCEPTION 'G3 FALLITO: % partite nel registro, attese 3', n;
+  END IF;
+
+  SELECT * INTO riga FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF riga.role <> 'FIRST' OR riga.local_date <> '2026-02-06' THEN
+    RAISE EXCEPTION 'G3 FALLITO: ruolo % del %', riga.role, riga.local_date;
+  END IF;
+
+  -- La partita M5 non ha data: non deve comparire, come non compare nei totali.
+  IF EXISTS (SELECT 1 FROM public.referee_match_log WHERE match_no = 'M5') THEN
+    RAISE EXCEPTION 'G3 FALLITO: una partita senza data e'' entrata nel registro';
+  END IF;
+  RAISE NOTICE 'G3 ok: registro partite coerente con i totali';
+END $$;
+
+-- G4: totale e dettaglio dicono la stessa cosa. E' la ragione per cui le
+-- quattro tabelle si ricalcolano nella STESSA funzione: separarle permetterebbe
+-- di aggiornarne una e non l'altra, e nessuno se ne accorgerebbe finche' non
+-- apre il pannello.
+DO $$
+DECLARE
+  tot INT;
+  det INT;
+  per_torneo INT;
+BEGIN
+  SELECT matches INTO tot FROM public.referee_career_stats WHERE vis_referee_no = '900001';
+  SELECT count(*) INTO det FROM public.referee_match_log   WHERE vis_referee_no = '900001';
+  SELECT sum(matches) INTO per_torneo FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001';
+
+  IF tot <> det OR tot <> per_torneo THEN
+    RAISE EXCEPTION 'G4 FALLITO: carriera %, registro %, somma per torneo % — '
+                    'il numero mostrato non corrisponde a cio'' che si apre',
+      tot, det, per_torneo;
+  END IF;
+  RAISE NOTICE 'G4 ok: % partite, dette allo stesso modo da tre tabelle', tot;
+END $$;
+
+-- G5: il dettaglio e' aperto in lettura, e cio' che sostituisce resta chiuso.
+DO $$
+DECLARE
+  t TEXT;
+  v TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['referee_tournament_stats', 'referee_match_log'] LOOP
+    IF NOT has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'G5 FALLITO: anon non legge %', t;
+    END IF;
+    FOREACH v IN ARRAY ARRAY['INSERT', 'UPDATE', 'DELETE'] LOOP
+      IF has_table_privilege('anon', 'public.' || t, v) THEN
+        RAISE EXCEPTION 'G5 FALLITO: anon puo'' fare % su %', v, t;
+      END IF;
+    END LOOP;
+  END LOOP;
+
+  IF has_table_privilege('anon', 'public.tournaments', 'SELECT') THEN
+    RAISE EXCEPTION 'G5 FALLITO: anon legge `tournaments` — il modello di '
+                    'lettura non serviva a nulla';
+  END IF;
+  RAISE NOTICE 'G5 ok: si legge il modello, non le tabelle da cui nasce';
 END $$;
 
 -- =============================================================================

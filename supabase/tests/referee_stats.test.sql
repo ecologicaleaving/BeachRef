@@ -10,10 +10,14 @@
 
 \ir fixtures/production_shape.sql
 \ir ../migrations/018_restore_match_referees.sql
+-- La 019 crea `sync_backlog_config`, a cui la 025 aggiunge il segnatempo del
+-- rinfresco tornei: senza, la 025 fallisce su una tabella che non esiste.
+\ir ../migrations/019_sync_backlog.sql
 \ir ../migrations/020_referees_name_is_not_an_identity.sql
 \ir ../migrations/022_referee_stats.sql
 \ir ../migrations/023_refresh_stats_safeupdate.sql
 \ir ../migrations/024_referee_drilldown.sql
+\ir ../migrations/025_gender_e_fase.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -27,17 +31,19 @@ INSERT INTO public.referees (id, vis_referee_no, referee_id, federation_code) VA
   (103, '164206', 'Brady Nicholson',  'AUS');
 
 -- Un torneo con nome, uno senza: il dettaglio deve reggere entrambi.
-INSERT INTO public.tournaments (vis_tournament_no, name, country, season) VALUES
-  (1, 'BPT Futures Mount Maunganui 2026', 'NZ', 2026);
+INSERT INTO public.tournaments (vis_tournament_no, name, country, season, gender) VALUES
+  (1, 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M');
 
-INSERT INTO public.matches (id, no, tournament_no, local_date, referee1_name, referee2_name) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Kerekere Mary', 'Nicholson Brady'),
-  ('22222222-2222-2222-2222-222222222222', 'M2', '1', '2026-02-07', 'Kerekere Mary', NULL),
-  ('33333333-3333-3333-3333-333333333333', 'M3', 'T2', '2026-03-01', NULL,            NULL),
+INSERT INTO public.matches (id, no, tournament_no, local_date, round, referee1_name, referee2_name) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Pool A', 'Kerekere Mary', 'Nicholson Brady'),
+  -- Senza fase: il VIS non la espone su tutte le partite, e va mostrata assente
+  -- invece che indovinata.
+  ('22222222-2222-2222-2222-222222222222', 'M2', '1',  '2026-02-07', NULL, 'Kerekere Mary', NULL),
+  ('33333333-3333-3333-3333-333333333333', 'M3', 'T2', '2026-03-01', NULL, NULL,            NULL),
   -- Stagione diversa: serve a separare season da career.
-  ('44444444-4444-4444-4444-444444444444', 'M4', 'T3', '2025-08-01', NULL,            NULL),
+  ('44444444-4444-4444-4444-444444444444', 'M4', 'T3', '2025-08-01', NULL, NULL,            NULL),
   -- Senza data: non ha stagione, quindi non ha diritto di entrare nei conteggi.
-  ('55555555-5555-5555-5555-555555555555', 'M5', 'T9', NULL,          NULL,           NULL);
+  ('55555555-5555-5555-5555-555555555555', 'M5', 'T9', NULL,         NULL, NULL,            NULL);
 
 INSERT INTO public.match_referees (match_id, referee_id, role) VALUES
   ('11111111-1111-1111-1111-111111111111', 101, 'FIRST'),
@@ -255,7 +261,7 @@ END $$;
 -- Lo stesso caso, senza protezione, e' gia' costato un'asserzione rossa: la
 -- prima stesura di questo file rigiocava la 022 dopo la 023 e riportava
 -- indietro la funzione ai DELETE nudi, che su Supabase non girano.
-\ir ../migrations/024_referee_drilldown.sql
+\ir ../migrations/025_gender_e_fase.sql
 
 DO $$
 DECLARE
@@ -392,6 +398,74 @@ BEGIN
                     'lettura non serviva a nulla';
   END IF;
   RAISE NOTICE 'G5 ok: si legge il modello, non le tabelle da cui nasce';
+END $$;
+
+-- =============================================================================
+-- PARTE H: genere e fase (migration 025)
+-- =============================================================================
+
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  -- H1: il genere arriva da `tournaments`, ed e' cio' che distingue due
+  -- tabelloni con lo stesso nome. Senza, il pannello mostrava due righe
+  -- identiche e nessun modo di capire quale fosse quale.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.gender IS DISTINCT FROM 'M' THEN
+    RAISE EXCEPTION 'H1 FALLITO: genere "%", atteso M', t.gender;
+  END IF;
+
+  -- H2: un torneo che `tournaments` non conosce non ha genere, e va bene:
+  -- meglio assente che inventato.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF t.gender IS NOT NULL THEN
+    RAISE EXCEPTION 'H2 FALLITO: genere "%" per un torneo sconosciuto', t.gender;
+  END IF;
+  RAISE NOTICE 'H1/H2 ok: il genere c''e'' quando si sa, e manca quando non si sa';
+
+  -- H3: la fase della partita. Viene da `matches.round`, che il worker riempie
+  -- da `RoundName` — non da `Round`, che nel VIS non esiste e che veniva
+  -- ignorato in silenzio su tutte le 5.963 partite gia' scaricate.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.round_name IS DISTINCT FROM 'Pool A' THEN
+    RAISE EXCEPTION 'H3 FALLITO: fase "%", attesa "Pool A"', p.round_name;
+  END IF;
+
+  -- H4: e una partita senza fase resta senza fase.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M2';
+  IF p.round_name IS NOT NULL THEN
+    RAISE EXCEPTION 'H4 FALLITO: fase "%" comparsa dal nulla', p.round_name;
+  END IF;
+  RAISE NOTICE 'H3/H4 ok: la fase c''e'' dove il VIS l''ha data';
+END $$;
+
+-- H5: il segnatempo del rinfresco tornei esiste e parte vuoto — "mai
+-- rinfrescato" e "rinfrescato tempo fa" devono essere distinguibili, altrimenti
+-- il worker non saprebbe se e' la prima volta.
+DO $$
+DECLARE
+  q TIMESTAMPTZ;
+  n INT;
+BEGIN
+  SELECT count(*) INTO n FROM information_schema.columns
+   WHERE table_schema = 'public' AND table_name = 'sync_backlog_config'
+     AND column_name = 'tournaments_synced_at';
+  IF n <> 1 THEN
+    RAISE EXCEPTION 'H5 FALLITO: `tournaments_synced_at` non esiste';
+  END IF;
+
+  SELECT tournaments_synced_at INTO q FROM public.sync_backlog_config WHERE id;
+  IF q IS NOT NULL THEN
+    RAISE EXCEPTION 'H5 FALLITO: parte valorizzato (%), il worker crederebbe '
+                    'di aver gia'' rinfrescato', q;
+  END IF;
+  RAISE NOTICE 'H5 ok: "mai rinfrescato" e'' distinguibile';
 END $$;
 
 -- =============================================================================

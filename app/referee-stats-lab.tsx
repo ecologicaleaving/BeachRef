@@ -20,7 +20,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -52,6 +51,7 @@ type Torneo = {
   tournament_no: string;
   tournament_name: string | null;
   country: string | null;
+  gender: string | null;
   season: number | null;
   matches: number;
   as_first: number;
@@ -67,6 +67,8 @@ type Partita = {
   season: number | null;
   local_date: string | null;
   local_time: string | null;
+  round_name: string | null;
+  gender: string | null;
   role: string | null;
   team_a_name: string | null;
   team_b_name: string | null;
@@ -84,6 +86,14 @@ const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica:
   { chiave: 'as_second', etichetta: '2°', larghezza: 60, numerica: true },
   { chiave: 'tournaments', etichetta: 'Tornei', larghezza: 70, numerica: true },
 ];
+
+/** Il VIS parla per cifre; qui si parla a un umano. */
+function etichettaGenere(g: string | null): string {
+  if (g === 'M') return 'M';
+  if (g === 'W') return 'F';
+  if (g === 'MIXED') return 'MISTO';
+  return '';
+}
 
 async function leggi<T = Riga>(tabella: string, query: string): Promise<T[]> {
   const risposta = await fetch(`${SUPABASE_URL}/rest/v1/${tabella}?${query}`, {
@@ -342,10 +352,16 @@ export default function RefereeStatsLab() {
           </View>
 
           {righe.map((r, i) => (
+            <React.Fragment key={`${r.vis_referee_no}-${r.season ?? 'c'}`}>
             <Pressable
-              key={`${r.vis_referee_no}-${r.season ?? 'c'}`}
-              style={[stili.riga, i % 2 === 1 && stili.rigaAlterna]}
-              onPress={() => apriDettaglio(r)}
+              style={[
+                stili.riga,
+                i % 2 === 1 && stili.rigaAlterna,
+                aperto?.vis_referee_no === r.vis_referee_no && stili.rigaAperta,
+              ]}
+              onPress={() =>
+                aperto?.vis_referee_no === r.vis_referee_no ? setAperto(null) : apriDettaglio(r)
+              }
             >
               <View style={[stili.cella, { width: 200 }]}>
                 <Text style={stili.nome} numberOfLines={1}>
@@ -374,6 +390,93 @@ export default function RefereeStatsLab() {
                 </Text>
               </View>
             </Pressable>
+
+            {aperto?.vis_referee_no === r.vis_referee_no && (
+              <View style={stili.dettaglio}>
+                {caricaDettaglio && (
+                  <View style={stili.pannelloCentro}>
+                    <ActivityIndicator color={colors.primary} />
+                  </View>
+                )}
+
+                {erroreDettaglio && (
+                  <Text style={stili.testoErrore}>{erroreDettaglio}</Text>
+                )}
+
+                {!caricaDettaglio && !erroreDettaglio && torneiVisibili.length === 0 && (
+                  <Text style={stili.debole}>Nessun torneo per questa selezione.</Text>
+                )}
+
+                {!caricaDettaglio &&
+                  !erroreDettaglio &&
+                  torneiVisibili.map((t) => {
+                    const espanso = torneoEspanso === t.tournament_no;
+                    const sue = (partitePerTorneo.get(t.tournament_no) ?? []).filter(
+                      (p) => stagione === 'carriera' || p.season === stagione
+                    );
+                    return (
+                      <View key={t.tournament_no} style={stili.torneo}>
+                        <Pressable
+                          style={stili.torneoTesta}
+                          onPress={() => setTorneoEspanso(espanso ? null : t.tournament_no)}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={stili.torneoNome}>
+                              {espanso ? '▾ ' : '▸ '}
+                              {t.tournament_name ?? `Torneo VIS ${t.tournament_no}`}
+                              {t.gender ? (
+                                <Text style={stili.genere}>{`  ${etichettaGenere(t.gender)}`}</Text>
+                              ) : null}
+                            </Text>
+                            <Text style={stili.debole}>
+                              {t.first_match ?? '—'} → {t.last_match ?? '—'}
+                              {t.country ? ` · ${t.country}` : ''}
+                              {t.season ? ` · ${t.season}` : ''}
+                            </Text>
+                          </View>
+                          <Text style={stili.torneoConto}>
+                            {t.matches}
+                            <Text
+                              style={stili.debole}
+                            >{`  ${t.as_first}×1° ${t.as_second}×2°`}</Text>
+                          </Text>
+                        </Pressable>
+
+                        {espanso &&
+                          sue.map((p) => (
+                            <View key={p.match_no} style={stili.partita}>
+                              <Text style={stili.partitaData}>
+                                {p.local_date ?? '—'}
+                                {p.local_time ? ` ${p.local_time.slice(0, 5)}` : ''}
+                              </Text>
+                              <Text style={stili.partitaFase} numberOfLines={1}>
+                                {p.round_name ?? '—'}
+                              </Text>
+                              <Text style={stili.partitaRuolo}>
+                                {p.role === 'FIRST' ? '1°' : '2°'}
+                              </Text>
+                              <Text style={stili.partitaSquadre} numberOfLines={1}>
+                                {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
+                              </Text>
+                              <Text style={stili.partitaPunti}>
+                                {p.match_points_a != null && p.match_points_b != null
+                                  ? `${p.match_points_a}–${p.match_points_b}`
+                                  : '—'}
+                              </Text>
+                            </View>
+                          ))}
+
+                        {espanso && sue.length === 0 && (
+                          <Text style={[stili.debole, stili.partitaVuota]}>
+                            Nessuna partita registrata per questo torneo nella selezione corrente.
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })}
+              </View>
+            )}
+            </React.Fragment>
           ))}
 
           {righe.length === 0 && (
@@ -395,110 +498,6 @@ export default function RefereeStatsLab() {
         </Text>
       </View>
 
-      <Modal
-        visible={aperto !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setAperto(null)}
-      >
-        <Pressable style={stili.velo} onPress={() => setAperto(null)}>
-          {/* Il click DENTRO il pannello non deve chiuderlo. */}
-          <Pressable style={stili.pannello} onPress={() => {}}>
-            <View style={stili.pannelloIntestazione}>
-              <View style={{ flex: 1 }}>
-                <Text style={stili.pannelloTitolo}>
-                  {aperto?.referee_name ?? `#${aperto?.vis_referee_no}`}
-                </Text>
-                <Text style={stili.debole}>
-                  {aperto?.federation_code ?? '—'} · VIS {aperto?.vis_referee_no} ·{' '}
-                  {stagione === 'carriera' ? 'tutta la carriera' : `stagione ${stagione}`}
-                </Text>
-              </View>
-              <Pressable style={stili.chiudi} onPress={() => setAperto(null)}>
-                <Text style={stili.testoChiudi}>✕</Text>
-              </Pressable>
-            </View>
-
-            {caricaDettaglio && (
-              <View style={stili.pannelloCentro}>
-                <ActivityIndicator color={colors.primary} />
-              </View>
-            )}
-
-            {erroreDettaglio && (
-              <View style={stili.pannelloCentro}>
-                <Text style={stili.testoErrore}>{erroreDettaglio}</Text>
-              </View>
-            )}
-
-            {!caricaDettaglio && !erroreDettaglio && (
-              <ScrollView style={stili.pannelloCorpo}>
-                {torneiVisibili.length === 0 && (
-                  <Text style={stili.debole}>Nessun torneo per questa selezione.</Text>
-                )}
-
-                {torneiVisibili.map((t) => {
-                  const espanso = torneoEspanso === t.tournament_no;
-                  const sue = (partitePerTorneo.get(t.tournament_no) ?? []).filter(
-                    (p) => stagione === 'carriera' || p.season === stagione
-                  );
-                  return (
-                    <View key={t.tournament_no} style={stili.torneo}>
-                      <Pressable
-                        style={stili.torneoTesta}
-                        onPress={() => setTorneoEspanso(espanso ? null : t.tournament_no)}
-                      >
-                        <View style={{ flex: 1 }}>
-                          <Text style={stili.torneoNome}>
-                            {espanso ? '▾ ' : '▸ '}
-                            {t.tournament_name ?? `Torneo VIS ${t.tournament_no}`}
-                          </Text>
-                          <Text style={stili.debole}>
-                            {t.first_match ?? '—'} → {t.last_match ?? '—'}
-                            {t.country ? ` · ${t.country}` : ''}
-                            {t.season ? ` · ${t.season}` : ''}
-                          </Text>
-                        </View>
-                        <Text style={stili.torneoConto}>
-                          {t.matches}
-                          <Text style={stili.debole}>{`  ${t.as_first}×1° ${t.as_second}×2°`}</Text>
-                        </Text>
-                      </Pressable>
-
-                      {espanso &&
-                        sue.map((p) => (
-                          <View key={p.match_no} style={stili.partita}>
-                            <Text style={stili.partitaData}>
-                              {p.local_date ?? '—'}
-                              {p.local_time ? ` ${p.local_time.slice(0, 5)}` : ''}
-                            </Text>
-                            <Text style={stili.partitaRuolo}>
-                              {p.role === 'FIRST' ? '1°' : '2°'}
-                            </Text>
-                            <Text style={stili.partitaSquadre} numberOfLines={1}>
-                              {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
-                            </Text>
-                            <Text style={stili.partitaPunti}>
-                              {p.match_points_a != null && p.match_points_b != null
-                                ? `${p.match_points_a}–${p.match_points_b}`
-                                : '—'}
-                            </Text>
-                          </View>
-                        ))}
-
-                      {espanso && sue.length === 0 && (
-                        <Text style={[stili.debole, stili.partitaVuota]}>
-                          Nessuna partita registrata per questo torneo nella selezione corrente.
-                        </Text>
-                      )}
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            )}
-          </Pressable>
-        </Pressable>
-      </Modal>
     </ScrollView>
   );
 }
@@ -581,33 +580,20 @@ const stili = StyleSheet.create({
   vuoto: { padding: spacing.lg, maxWidth: 560 },
   piede: { padding: spacing.lg },
 
-  velo: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
-  },
-  pannello: {
-    width: '100%',
-    maxWidth: 720,
-    maxHeight: '88%',
-    backgroundColor: colors.surface,
-    borderRadius: spacing.borderRadius,
-    overflow: 'hidden',
-  },
-  pannelloIntestazione: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
+  // Il dettaglio si apre SOTTO la riga, dentro la tabella: cosi' resta
+  // visibile chi si sta guardando e quali sono i suoi numeri, che un pannello
+  // sovrapposto nascondeva.
+  rigaAperta: { backgroundColor: '#F4F4F5' },
+  dettaglio: {
+    width: 730,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: '#FAFAFA',
+    borderBottomWidth: 2,
     borderBottomColor: colors.border,
   },
-  pannelloTitolo: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
-  chiudi: { padding: spacing.sm },
-  testoChiudi: { fontSize: 18, color: colors.textSecondary },
-  pannelloCorpo: { padding: spacing.lg },
-  pannelloCentro: { padding: spacing.xl, alignItems: 'center' },
+  pannelloCentro: { padding: spacing.lg, alignItems: 'center' },
+  genere: { color: colors.textTertiary, fontSize: 13, fontWeight: '400' },
 
   torneo: { marginBottom: spacing.sm },
   torneoTesta: {
@@ -628,6 +614,7 @@ const stili = StyleSheet.create({
     gap: spacing.sm,
   },
   partitaData: { width: 110, color: colors.textSecondary, fontSize: 13 },
+  partitaFase: { width: 90, color: colors.textTertiary, fontSize: 13 },
   partitaRuolo: { width: 28, color: colors.textSecondary, fontSize: 13, fontWeight: '700' },
   partitaSquadre: { flex: 1, color: colors.textPrimary, fontSize: 14 },
   partitaPunti: { width: 50, textAlign: 'right', color: colors.textPrimary, fontSize: 14 },

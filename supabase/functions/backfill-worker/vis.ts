@@ -40,7 +40,14 @@ export const VIS_BASE_URL = 'https://www.fivb.org/Vis2009/XmlRequest.asmx';
  */
 export const MATCH_FIELDS = [
   'No', 'NoInTournament', 'NoEvent', 'NoTournament',
-  'LocalDate', 'LocalTime', 'Court', 'Status', 'Round',
+  // `RoundName` e NON `Round`: il VIS ignora in SILENZIO un campo che non
+  // conosce — nessun errore, nessun avviso, semplicemente l'attributo non
+  // compare nella risposta. Misurato il 2026-08-05: chiedendo `Round` su
+  // 5.963 partite ne sono tornate 5.963 senza fase, e il difetto si e' visto
+  // solo perche' la pagina mostrava una colonna vuota. E' lo stesso silenzio
+  // del filtro messo sugli attributi invece che in `<Filter>`: quando una
+  // richiesta al VIS non porta cio' che ti aspetti, sospetta prima il NOME.
+  'LocalDate', 'LocalTime', 'Court', 'Status', 'RoundName',
   'TeamAName', 'TeamBName',
   'MatchPointsA', 'MatchPointsB',
   'PointsTeamASet1', 'PointsTeamBSet1',
@@ -53,6 +60,37 @@ export const MATCH_FIELDS = [
 ].join(' ');
 
 export const EVENT_FIELDS = ['No', 'Name', 'Code', 'StartDate', 'EndDate', 'Season'].join(' ');
+
+/**
+ * I TORNEI SONO UNA COSA DIVERSA DAGLI EVENTI.
+ *
+ * `sync_backlog` e' chiavata su `NoEvent`; `matches.tournament_no` contiene
+ * invece `NoTournament`, e i due numeri non coincidono (l'evento 1715 produce
+ * partite dei tornei 8940 e 8941). Un torneo per genere: e' per questo che
+ * nella pagina statistiche ogni torneo compariva DUE VOLTE con lo stesso nome
+ * — non era un difetto di visualizzazione, erano i due tabelloni.
+ *
+ * `GetBeachTournamentList` senza filtri restituisce l'archivio intero: 9.260
+ * tornei, ~1,2 MB, in UNA richiesta. E' l'unica ragione per cui vale la pena
+ * riempire `tournaments` invece di aggiungere una colonna `gender` al modello
+ * di lettura: una chiamata sola risolve sia i nomi mancanti (il 38% delle
+ * righe) sia i doppioni.
+ */
+export const TOURNAMENT_FIELDS = [
+  'No', 'Code', 'Name', 'CountryCode', 'City', 'Season', 'Gender', 'Type',
+].join(' ');
+
+export interface VisTournament {
+  no: string;
+  code?: string;
+  name?: string;
+  countryCode?: string;
+  city?: string;
+  season?: number;
+  /** 'M' | 'W' | 'MIXED' — il VIS lo codifica come 0 / 1 / 2. */
+  gender?: string;
+  type?: string;
+}
 
 export interface VisMatch {
   no: string;
@@ -188,7 +226,7 @@ export function parseMatches(xml: string): VisMatch[] {
       localTime: str(a.LocalTime),
       court: str(a.Court),
       status: str(a.Status),
-      round: str(a.Round),
+      round: str(a.RoundName),
       teamAName: str(a.TeamAName),
       teamBName: str(a.TeamBName),
       matchPointsA: num(a.MatchPointsA),
@@ -212,6 +250,35 @@ export function parseMatches(xml: string): VisMatch[] {
     // Una partita senza `No` non e' indirizzabile: non si puo' fare upsert, e
     // non si puo' ritrovare. Si scarta contandola, non in silenzio.
     .filter((m) => Boolean(m.no));
+}
+
+/**
+ * Il VIS codifica il genere come cifra. Si traduce QUI e non nella pagina:
+ * un '0' che arriva fino alla UI e' un numero che qualcuno prima o poi
+ * interpretera' come "zero partite".
+ */
+export function decodeGender(raw?: string): string | undefined {
+  switch (raw?.trim()) {
+    case '0': return 'M';
+    case '1': return 'W';
+    case '2': return 'MIXED';
+    default: return undefined;
+  }
+}
+
+export function parseTournaments(xml: string): VisTournament[] {
+  return parseElements(xml, 'BeachTournament')
+    .map((a) => ({
+      no: a.No,
+      code: str(a.Code),
+      name: str(a.Name),
+      countryCode: str(a.CountryCode),
+      city: str(a.City),
+      season: num(a.Season),
+      gender: decodeGender(str(a.Gender)),
+      type: str(a.Type),
+    }))
+    .filter((t) => Boolean(t.no));
 }
 
 export function parseEvents(xml: string): VisEvent[] {
@@ -342,6 +409,11 @@ export function buildEventListRequest(season?: number): string {
     ? `<Filter Season="${escapeXmlAttribute(String(season))}" />`
     : '';
   return `<Request Type="GetEventList" Fields="${EVENT_FIELDS}">${filter}</Request>`;
+}
+
+/** Senza filtro: l'archivio intero in una richiesta sola (~1,2 MB). */
+export function buildTournamentListRequest(): string {
+  return `<Request Type="GetBeachTournamentList" Fields="${TOURNAMENT_FIELDS}" />`;
 }
 
 /**

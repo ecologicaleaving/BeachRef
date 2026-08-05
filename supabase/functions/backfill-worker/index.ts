@@ -20,6 +20,7 @@
  *
  *   POST /            un ciclo di lavoro (e' quella che chiama il cron)
  *   POST /seed        semina la coda dagli eventi VIS; body: {"seasons":[...]}
+ *   POST /tournaments rinfresca `tournaments` dall'archivio VIS (1 richiesta)
  *   GET  /progress    lo stato della coda
  */
 
@@ -29,9 +30,11 @@ const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 import {
   buildEventListRequest,
   buildMatchListRequest,
+  buildTournamentListRequest,
   mapWithConcurrency,
   parseEvents,
   parseMatches,
+  parseTournaments,
   setVisMinIntervalMs,
   visRequest,
   type VisMatch,
@@ -235,22 +238,51 @@ async function processEvent(item: BacklogItem): Promise<number> {
  * `GetEventList` di una risemina e' una chiamata come le altre, e non aveva
  * motivo di essere l'unica esente.
  */
-async function loadConfig(): Promise<{ vis_concurrency: number }> {
-  const [cfg] = await pgJson<{ vis_concurrency: number; vis_min_interval_ms: number }[]>(
-    'sync_backlog_config?select=vis_concurrency,vis_min_interval_ms',
-  );
+async function loadConfig(): Promise<{ vis_concurrency: number; tournaments_synced_at: string | null }> {
+  const [cfg] = await pgJson<{
+    vis_concurrency: number;
+    vis_min_interval_ms: number;
+    tournaments_synced_at: string | null;
+  }[]>('sync_backlog_config?select=vis_concurrency,vis_min_interval_ms,tournaments_synced_at');
   if (cfg && typeof cfg.vis_min_interval_ms === 'number') {
     setVisMinIntervalMs(cfg.vis_min_interval_ms);
   }
-  return { vis_concurrency: cfg?.vis_concurrency ?? 1 };
+  return {
+    vis_concurrency: cfg?.vis_concurrency ?? 1,
+    tournaments_synced_at: cfg?.tournaments_synced_at ?? null,
+  };
+}
+
+const GIORNO_MS = 24 * 60 * 60 * 1000;
+
+/** Vecchio di piu' di un giorno, o mai fatto. */
+function torneiDaRinfrescare(quando: string | null): boolean {
+  if (!quando) return true;
+  const t = Date.parse(quando);
+  return !Number.isFinite(t) || Date.now() - t > GIORNO_MS;
 }
 
 async function runCycle() {
   const cfg = await loadConfig();
+
+  // Una richiesta al giorno, non una per ciclo: l'archivio tornei cambia
+  // quando nasce un torneo nuovo, non ogni quindici minuti. Se fallisce, il
+  // ciclo prosegue — i nomi mancanti sono un fastidio, le partite no.
+  let tornei: unknown = null;
+  if (torneiDaRinfrescare(cfg.tournaments_synced_at)) {
+    try {
+      tornei = await syncTournaments();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[backfill] sync tornei fallito: ${message}`);
+      tornei = { error: message };
+    }
+  }
+
   const claimed = await rpc<BacklogItem[]>('claim_backfill_batch');
 
   if (!claimed || claimed.length === 0) {
-    return { claimed: 0, done: 0, failed: 0, matches: 0, note: 'niente da fare' };
+    return { claimed: 0, done: 0, failed: 0, matches: 0, tornei, note: 'niente da fare' };
   }
 
   let done = 0, failed = 0, matches = 0;
@@ -288,7 +320,56 @@ async function runCycle() {
     }
   }
 
-  return { claimed: claimed.length, done, failed, matches, stats };
+  return { claimed: claimed.length, done, failed, matches, tornei, stats };
+}
+
+/**
+ * Riempie `tournaments` dall'archivio VIS.
+ *
+ * UNA richiesta per ~9.260 tornei. E' il motivo per cui questa e' la
+ * soluzione giusta al problema dei nomi mancanti (il 38% delle righe del
+ * dettaglio mostrava "Torneo VIS 8930") e a quello dei doppioni: i due
+ * tabelloni maschile e femminile sono due tornei distinti con lo stesso nome,
+ * e senza `gender` sono indistinguibili a schermo.
+ *
+ * Si scrive a blocchi: un solo upsert da 9.260 righe supera i limiti di
+ * PostgREST e fallirebbe per intero, perdendo anche le 9.000 righe buone.
+ */
+async function syncTournaments() {
+  const xml = await visRequest(buildTournamentListRequest(), 60_000);
+  const tornei = parseTournaments(xml);
+
+  const righe = tornei.map((t) => ({
+    vis_tournament_no: Number(t.no),
+    tournament_code: t.code ?? null,
+    name: t.name ?? null,
+    country: t.countryCode ?? null,
+    city: t.city ?? null,
+    season: t.season ?? null,
+    gender: t.gender ?? null,
+    type: t.type ?? null,
+    updated_at: new Date().toISOString(),
+  })).filter((r) => Number.isFinite(r.vis_tournament_no));
+
+  const BLOCCO = 500;
+  let scritti = 0;
+  for (let i = 0; i < righe.length; i += BLOCCO) {
+    const parte = righe.slice(i, i + BLOCCO);
+    await pgJson('tournaments?on_conflict=vis_tournament_no', {
+      method: 'POST',
+      body: JSON.stringify(parte),
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    });
+    scritti += parte.length;
+  }
+
+  await pgJson('sync_backlog_config?id=eq.true', {
+    method: 'PATCH',
+    body: JSON.stringify({ tournaments_synced_at: new Date().toISOString() }),
+    headers: { Prefer: 'return=minimal' },
+  });
+
+  return { visti: tornei.length, scritti };
 }
 
 async function runSeed(seasons: number[]) {
@@ -330,6 +411,13 @@ Deno.serve(async (req) => {
     if (path === '/progress') {
       const [progress] = await pgJson<unknown[]>('sync_backlog_progress?select=*');
       return json(progress ?? {});
+    }
+
+    if (path === '/tournaments') {
+      // Manuale: serve dopo un cambio dei campi richiesti al VIS, o quando si
+      // vuole il rinfresco subito invece che al prossimo giro utile.
+      await loadConfig();
+      return json(await syncTournaments());
     }
 
     if (path === '/seed') {

@@ -15,7 +15,13 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { router } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { colors, spacing } from '../theme/tokens';
-import { entraConGoogle, esci, statoAccesso, type StatoAccesso } from '../services/auth/AccessService';
+import {
+  completaRitorno,
+  entraConGoogle,
+  esci,
+  statoAccesso,
+  type StatoAccesso,
+} from '../services/auth/AccessService';
 
 export default function Accedi() {
   const [stato, setStato] = useState<StatoAccesso | null>(null);
@@ -31,7 +37,15 @@ export default function Accedi() {
   }, []);
 
   useEffect(() => {
-    aggiorna();
+    (async () => {
+      // Prima si chiude il giro su Google, poi si guarda chi siamo: al
+      // contrario, la sessione non esisterebbe ancora e la pagina direbbe
+      // "anonimo" a chi ha appena fatto l'accesso — che e' esattamente il
+      // sintomo osservato al primo tentativo reale.
+      const guasto = await completaRitorno();
+      if (guasto) setErrore(guasto);
+      await aggiorna();
+    })();
   }, [aggiorna]);
 
   const entra = async () => {

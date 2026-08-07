@@ -86,6 +86,81 @@ async function client(): Promise<SupabaseClient> {
   return clientPromise;
 }
 
+/**
+ * Cosa e' tornato indietro dal giro su Google.
+ *
+ * Supabase, quando qualcosa non va, riporta l'utente alla pagina con
+ * `?error=...&error_description=...` — oppure nel frammento, `#error=...`, a
+ * seconda del punto in cui fallisce. Leggerli e' l'unica differenza fra "non
+ * succede niente" e "il dominio non e' fra i Redirect URLs".
+ *
+ * E' il difetto che ha reso muto il primo tentativo reale: il messaggio
+ * c'era, e nessuno lo guardava.
+ */
+export type Ritorno =
+  | { tipo: 'niente' }
+  | { tipo: 'codice'; codice: string }
+  | { tipo: 'errore'; codice: string | null; descrizione: string | null };
+
+export function leggiRitorno(): Ritorno {
+  if (typeof window === 'undefined') return { tipo: 'niente' };
+
+  const query = new URLSearchParams(window.location.search);
+  // Il frammento non arriva mai al server, ed e' li' che finiscono gli errori
+  // del flusso implicito.
+  const frammento = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const prendi = (k: string) => query.get(k) ?? frammento.get(k);
+
+  const errore = prendi('error') ?? prendi('error_code');
+  if (errore) {
+    return {
+      tipo: 'errore',
+      codice: errore,
+      descrizione: prendi('error_description'),
+    };
+  }
+
+  const codice = query.get('code');
+  return codice ? { tipo: 'codice', codice } : { tipo: 'niente' };
+}
+
+/**
+ * Completa il giro, scambiando il codice con una sessione.
+ *
+ * Si fa a mano invece di affidarsi a `detectSessionInUrl`, che agisce quando
+ * il client viene costruito: qui il client nasce pigro, dentro una chiamata
+ * asincrona, e fra il ritorno dal browser e la sua costruzione c'e' una corsa
+ * che nessuno controlla. Uno scambio esplicito non ha corse — e se fallisce
+ * dice perche'.
+ */
+export async function completaRitorno(): Promise<string | null> {
+  const r = leggiRitorno();
+  if (r.tipo === 'errore') {
+    return r.descrizione ? `${r.codice}: ${r.descrizione}` : r.codice;
+  }
+  if (r.tipo !== 'codice') return null;
+
+  const sb = await client();
+  const { error } = await sb.auth.exchangeCodeForSession(r.codice);
+
+  // L'indirizzo si ripulisce comunque: un codice gia' speso, lasciato
+  // nell'URL, verrebbe riscambiato al prossimo caricamento e fallirebbe.
+  if (typeof window !== 'undefined' && window.history?.replaceState) {
+    const pulito = window.location.pathname + pulisciQuery(window.location.search);
+    window.history.replaceState({}, '', pulito);
+  }
+  return error ? error.message : null;
+}
+
+/** Toglie `code` e `state`, tiene il resto — l'invito deve sopravvivere. */
+function pulisciQuery(search: string): string {
+  const q = new URLSearchParams(search);
+  q.delete('code');
+  q.delete('state');
+  const s = q.toString();
+  return s ? `?${s}` : '';
+}
+
 /** Dove Google deve riportare l'utente dopo il consenso. */
 function ritorno(percorso: string): string | undefined {
   if (typeof window === 'undefined') return undefined;

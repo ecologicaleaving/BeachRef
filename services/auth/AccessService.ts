@@ -66,6 +66,14 @@ async function client(): Promise<SupabaseClient> {
         },
       })
     );
+    // Una promise respinta resta respinta. Memorizzandola senza questo,
+    // un `import()` fallito una volta — rete che cade mentre si scarica il
+    // chunk — renderebbe l'accesso impossibile per tutta la durata della
+    // pagina, e ricaricare sarebbe l'unico rimedio. Si dimentica il
+    // fallimento, cosi' il tentativo successivo riprova davvero.
+    clientPromise.catch(() => {
+      clientPromise = null;
+    });
   }
   return clientPromise;
 }

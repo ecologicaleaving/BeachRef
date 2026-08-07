@@ -58,6 +58,12 @@ export const AUDIT_CONFIG: AuditConfig = {
     // dist-map`, the build `scripts/analyze-bundle.js` reads (issue #38). Same
     // nature as `dist/**`: bundled third-party code, minified, not ours.
     'dist-map/**',
+    // Qualunque cartella di export, non solo le tre che qualcuno ha gia' usato.
+    // Enumerarle ha un modo di guastarsi preciso: chi esporta in `dist-auth`
+    // per misurare un chunk si ritrova cinque `security-http` fantasma dentro
+    // codice minificato di terze parti, e il push si blocca su una regressione
+    // che non esiste. E' successo (issue #97).
+    'dist-*/**',
     'coverage/**',
     'web-build/**',
     'netlify/**',

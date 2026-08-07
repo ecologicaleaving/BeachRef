@@ -6,10 +6,15 @@
  * mentre il backfill li riempie, non a mostrarli agli utenti. La schermata per
  * gli utenti e' la issue #92, e passera' dai flag di `DbReadFlags`.
  *
- * Legge SOLO `referee_career_stats` e `referee_season_stats`, le uniche due
- * tabelle che la migration 022 riapre in lettura ai ruoli pubblici. Partite,
- * designazioni e anagrafica restano chiuse: se questa pagina volesse
- * mostrarle, non potrebbe.
+ * Legge SOLO le quattro tabelle del modello di lettura. Partite, designazioni
+ * e anagrafica restano chiuse: se questa pagina volesse mostrarle, non
+ * potrebbe.
+ *
+ * **Dalla migration 028 servono un accesso e un invito.** La chiave anonima
+ * non apre piu' queste tabelle: le letture viaggiano con il token della
+ * sessione, e chi non e' in `app_users` riceve zero righe dal database — non
+ * una schermata vuota decisa qui. Il controllo nella pagina serve a dire
+ * perche' non si vede nulla, non a impedirlo: quello lo fa PostgREST.
  *
  * Usa `fetch` su PostgREST e non `@supabase/supabase-js` di proposito: sono
  * due GET senza autenticazione ne' realtime, e importare il client
@@ -27,8 +32,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { colors, spacing } from '../theme/tokens';
+import { statoAccesso, tokenCorrente, type StatoAccesso } from '../services/auth/AccessService';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -98,10 +105,14 @@ function etichettaGenere(g: string | null): string {
 }
 
 async function leggi<T = Riga>(tabella: string, query: string): Promise<T[]> {
+  // `apikey` resta la chiave anonima — identifica il progetto, non la persona.
+  // E' `Authorization` a portare il token della sessione: senza, PostgREST
+  // parla come `anon`, che dalla 028 non ha piu' nessun permesso qui.
+  const token = await tokenCorrente();
   const risposta = await fetch(`${SUPABASE_URL}/rest/v1/${tabella}?${query}`, {
     headers: {
       apikey: SUPABASE_ANON_KEY!,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      Authorization: `Bearer ${token ?? SUPABASE_ANON_KEY}`,
     },
   });
   if (!risposta.ok) {
@@ -123,6 +134,7 @@ export default function RefereeStatsLab() {
   const [cerca, setCerca] = useState('');
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState<string | null>(null);
+  const [accesso, setAccesso] = useState<StatoAccesso | null>(null);
 
   // Il pannello di dettaglio. I dati NON si caricano insieme al resto: sono
   // decine di migliaia di righe una volta che lo storico sara' completo, e
@@ -151,16 +163,20 @@ export default function RefereeStatsLab() {
   }, []);
 
   useEffect(() => {
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      setErrore(
-        'Mancano EXPO_PUBLIC_SUPABASE_URL e/o EXPO_PUBLIC_SUPABASE_ANON_KEY. ' +
-          'Vanno impostate su Netlify (Site settings → Environment variables) ' +
-          'e in .env per lo sviluppo locale.'
-      );
-      setCaricamento(false);
-      return;
-    }
-    carica();
+    let vivo = true;
+    (async () => {
+      const a = await statoAccesso();
+      if (!vivo) return;
+      setAccesso(a);
+      // Si carica solo se il database ci risponderebbe. Chiedere lo stesso
+      // produrrebbe zero righe e un "nessun dato" indistinguibile da un
+      // database vuoto.
+      if (a.stato === 'autorizzato') await carica();
+      else setCaricamento(false);
+    })();
+    return () => {
+      vivo = false;
+    };
   }, [carica]);
 
   const apriDettaglio = useCallback(
@@ -253,6 +269,32 @@ export default function RefereeStatsLab() {
       setCrescente(c === 'referee_name');
     }
   };
+
+  if (accesso && accesso.stato !== 'autorizzato') {
+    return (
+      <ScrollView contentContainerStyle={stili.centro}>
+        <Text style={stili.titoloErrore}>
+          {accesso.stato === 'non_configurato'
+            ? 'Accesso non configurato'
+            : accesso.stato === 'anonimo'
+              ? 'Serve l’accesso'
+              : 'Account non abilitato'}
+        </Text>
+        <Text style={stili.testoErrore}>
+          {accesso.stato === 'non_configurato'
+            ? accesso.dettaglio
+            : accesso.stato === 'anonimo'
+              ? 'Le statistiche sono riservate. Entra con Google per vederle.'
+              : `${accesso.email ?? 'Questo account'} ha fatto l’accesso, ma non è fra le persone autorizzate. Serve un invito.`}
+        </Text>
+        {accesso.stato !== 'non_configurato' && (
+          <Pressable style={stili.bottone} onPress={() => router.push('/accedi')}>
+            <Text style={stili.testoBottone}>Vai all&apos;accesso</Text>
+          </Pressable>
+        )}
+      </ScrollView>
+    );
+  }
 
   if (caricamento) {
     return (

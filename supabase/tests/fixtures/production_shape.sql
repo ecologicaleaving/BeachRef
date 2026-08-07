@@ -39,6 +39,37 @@ END $$;
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
+-- =============================================================================
+-- LO SCHEMA `auth`, IN MINIATURA
+-- =============================================================================
+--
+-- Supabase lo fornisce: `auth.users` con gli account, e `auth.uid()` che
+-- ricava l'utente corrente dal JWT della richiesta. Qui non c'e' un JWT, quindi
+-- `auth.uid()` legge una variabile di sessione che i test impostano a mano.
+--
+-- E' una SIMULAZIONE, e va detto: prova la logica di autorizzazione (chi puo'
+-- leggere cosa in base a chi e'), non il modo in cui Supabase stabilisce chi
+-- sei. Quella parte si verifica solo in produzione, facendo un accesso vero.
+CREATE SCHEMA IF NOT EXISTS auth;
+GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
+
+CREATE TABLE IF NOT EXISTS auth.users (
+  id                 UUID PRIMARY KEY,
+  email              TEXT,
+  raw_user_meta_data JSONB,
+  created_at         TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION auth.uid()
+RETURNS UUID
+LANGUAGE sql
+STABLE
+AS $auth_uid$
+  SELECT NULLIF(current_setting('test.uid', true), '')::UUID;
+$auth_uid$;
+
+GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated, service_role;
+
 CREATE TABLE public.matches (
   id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   no                       CHARACTER VARYING NOT NULL UNIQUE,

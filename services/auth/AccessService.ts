@@ -35,6 +35,31 @@ export type StatoAccesso =
 
 let clientPromise: Promise<SupabaseClient> | null = null;
 
+const OPZIONI = {
+  auth: {
+    // Il ritorno da Google arriva con il codice nell'URL: qui va letto, a
+    // differenza del client generale dell'app che lo disabilita.
+    detectSessionInUrl: true,
+    persistSession: true,
+    autoRefreshToken: true,
+    flowType: 'pkce' as const,
+  },
+};
+
+/**
+ * Una promise respinta resta respinta.
+ *
+ * Memorizzando il client senza dimenticare i fallimenti, un `import()` andato
+ * male una volta — la rete che cade mentre si scarica il chunk — renderebbe
+ * l'accesso impossibile per tutta la durata della pagina, e ricaricare sarebbe
+ * l'unico rimedio. Si rilancia comunque: chi ha chiamato deve vedere l'errore,
+ * ma il tentativo successivo riprova davvero.
+ */
+function dimenticaERilancia(err: unknown): never {
+  clientPromise = null;
+  throw err;
+}
+
 export function accessoConfigurato(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
@@ -54,26 +79,9 @@ async function client(): Promise<SupabaseClient> {
     );
   }
   if (!clientPromise) {
-    clientPromise = import('@supabase/supabase-js').then(({ createClient }) =>
-      createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-        auth: {
-          // Il ritorno da Google arriva con il codice nell'URL: qui va letto,
-          // a differenza del client generale dell'app che lo disabilita.
-          detectSessionInUrl: true,
-          persistSession: true,
-          autoRefreshToken: true,
-          flowType: 'pkce',
-        },
-      })
-    );
-    // Una promise respinta resta respinta. Memorizzandola senza questo,
-    // un `import()` fallito una volta — rete che cade mentre si scarica il
-    // chunk — renderebbe l'accesso impossibile per tutta la durata della
-    // pagina, e ricaricare sarebbe l'unico rimedio. Si dimentica il
-    // fallimento, cosi' il tentativo successivo riprova davvero.
-    clientPromise.catch(() => {
-      clientPromise = null;
-    });
+    clientPromise = import('@supabase/supabase-js')
+      .then((m) => m.createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, OPZIONI))
+      .catch(dimenticaERilancia);
   }
   return clientPromise;
 }

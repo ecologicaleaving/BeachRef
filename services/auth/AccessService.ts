@@ -37,12 +37,29 @@ let clientPromise: Promise<SupabaseClient> | null = null;
 
 const OPZIONI = {
   auth: {
-    // Il ritorno da Google arriva con il codice nell'URL: qui va letto, a
-    // differenza del client generale dell'app che lo disabilita.
-    detectSessionInUrl: true,
+    // SPENTO, e non e' una svista.
+    //
+    // `detectSessionInUrl` scambia il codice da solo quando il client viene
+    // costruito. Con `completaRitorno()` che fa la stessa cosa in modo
+    // esplicito, i due meccanismi corrono sullo stesso codice: il primo
+    // consuma il verificatore PKCE, il secondo lo trova vuoto e fallisce con
+    //
+    //   invalid request: both auth code and code verifier should be non-empty
+    //
+    // Un codice OAuth si spende UNA volta. Due meccanismi che provano a
+    // spenderlo sono uno di troppo, e quello da tenere e' l'esplicito: agisce
+    // quando decidiamo noi, e il suo errore arriva a chi puo' mostrarlo.
+    detectSessionInUrl: false,
     persistSession: true,
     autoRefreshToken: true,
     flowType: 'pkce' as const,
+    // Memoria PROPRIA. `services/supabase.ts` costruisce un altro client sullo
+    // stesso progetto, quindi con la stessa chiave predefinita
+    // (`sb-<progetto>-auth-token`) — e su web la sua AsyncStorage e' comunque
+    // localStorage. Due client che scrivono le stesse chiavi si sovrascrivono
+    // sessione e verificatore PKCE a vicenda, in un ordine che dipende da
+    // quale modulo viene importato prima.
+    storageKey: 'sb-beachref-accesso',
   },
 };
 

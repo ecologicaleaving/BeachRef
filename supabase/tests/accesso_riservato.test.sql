@@ -19,6 +19,9 @@
 \ir ../migrations/025_gender_e_fase.sql
 \ir ../migrations/027_tornei_misti.sql
 \ir ../migrations/028_accesso_riservato.sql
+-- La 029 arriva DOPO la chiusura: e' qui che si prova che aggiungere colonne
+-- non riapre niente.
+\ir ../migrations/029_categoria_torneo.sql
 
 -- Due persone: una verra' invitata, l'altra no.
 INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES
@@ -304,7 +307,21 @@ BEGIN
   RAISE NOTICE 'D1 ok: riapplicarla non cambia nulla e non sblocca nessuno';
 END $$;
 
+-- E1b: la 029, applicata dopo, non ha riaperto le tabelle. Una migration che
+-- aggiunge colonne non dovrebbe toccare i permessi — ma "non dovrebbe" e'
+-- esattamente il genere di cosa che va verificata.
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['referee_tournament_stats', 'referee_match_log'] LOOP
+    IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'E1b FALLITO: dopo la 029 anon legge %', t;
+    END IF;
+  END LOOP;
+  RAISE NOTICE 'E1b ok: aggiungere colonne non riapre le tabelle';
+END $$;
+
 \echo ''
 \echo '================================================================'
-\echo ' migration 028 / accesso riservato (issue #97): TUTTE LE ASSERZIONI OK'
+\echo ' migration 028+029 / accesso riservato (issue #97): TUTTE LE ASSERZIONI OK'
 \echo '================================================================'

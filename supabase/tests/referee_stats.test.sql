@@ -19,6 +19,7 @@
 \ir ../migrations/024_referee_drilldown.sql
 \ir ../migrations/025_gender_e_fase.sql
 \ir ../migrations/027_tornei_misti.sql
+\ir ../migrations/029_categoria_torneo.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -32,8 +33,8 @@ INSERT INTO public.referees (id, vis_referee_no, referee_id, federation_code) VA
   (103, '164206', 'Brady Nicholson',  'AUS');
 
 -- Un torneo con nome, uno senza: il dettaglio deve reggere entrambi.
-INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, country, season, gender) VALUES
-  (1, 'MNZL0126', 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M');
+INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, country, season, gender, type) VALUES
+  (1, 'MNZL0126', 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M', '53');
 
 INSERT INTO public.matches (id, no, tournament_no, local_date, round, referee1_name, referee2_name) VALUES
   ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Pool A', 'Kerekere Mary', 'Nicholson Brady'),
@@ -262,7 +263,7 @@ END $$;
 -- Lo stesso caso, senza protezione, e' gia' costato un'asserzione rossa: la
 -- prima stesura di questo file rigiocava la 022 dopo la 023 e riportava
 -- indietro la funzione ai DELETE nudi, che su Supabase non girano.
-\ir ../migrations/025_gender_e_fase.sql
+\ir ../migrations/029_categoria_torneo.sql
 
 DO $$
 DECLARE
@@ -484,6 +485,66 @@ BEGIN
   EXCEPTION WHEN check_violation THEN
     RAISE NOTICE 'H6 ok: MIXED entra, un genere inventato no';
   END;
+END $$;
+
+-- =============================================================================
+-- PARTE I: la categoria (migration 029)
+-- =============================================================================
+
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  -- I1: il codice 53 diventa "BPT Futures". La categoria viene dal CODICE e
+  -- non dal nome: nell'archivio i tornei di questo tipo si chiamano spesso
+  -- solo con la citta', e classificare per nome ne perderebbe un quarto.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.category IS DISTINCT FROM 'BPT Futures' THEN
+    RAISE EXCEPTION 'I1 FALLITO: categoria "%", attesa BPT Futures', t.category;
+  END IF;
+  IF t.tournament_type IS DISTINCT FROM '53' THEN
+    RAISE EXCEPTION 'I1 FALLITO: codice grezzo "%" perso', t.tournament_type;
+  END IF;
+
+  -- I2: la categoria arriva anche alle singole partite, se no il pannello
+  -- dovrebbe ricavarla incrociando due tabelle.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.category IS DISTINCT FROM 'BPT Futures' THEN
+    RAISE EXCEPTION 'I2 FALLITO: categoria "%" sulla partita', p.category;
+  END IF;
+
+  -- I3: un torneo che `tournaments` non conosce non ha categoria, e va bene.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF t.category IS NOT NULL THEN
+    RAISE EXCEPTION 'I3 FALLITO: categoria "%" per un torneo sconosciuto', t.category;
+  END IF;
+  RAISE NOTICE 'I1-I3 ok: categoria dal codice, sul torneo e sulla partita';
+END $$;
+
+-- I4: un codice che non sappiamo classificare resta SENZA categoria. E' la
+-- proprieta' che distingue "non lo so" da un'etichetta inventata, e senza di
+-- essa una categoria sbagliata sarebbe indistinguibile da una giusta.
+DO $$
+DECLARE
+  c TEXT;
+BEGIN
+  SELECT public.tournament_category('15') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 15 ha ricevuto la categoria "%"', c;
+  END IF;
+  SELECT public.tournament_category('51') INTO c;
+  IF c <> 'BPT Elite16' THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 51 da "%"', c;
+  END IF;
+  SELECT public.tournament_category(NULL) INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: un tipo nullo ha una categoria';
+  END IF;
+  RAISE NOTICE 'I4 ok: cio che non e dimostrato resta senza etichetta';
 END $$;
 
 -- =============================================================================

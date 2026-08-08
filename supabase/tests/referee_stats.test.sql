@@ -20,6 +20,7 @@
 \ir ../migrations/025_gender_e_fase.sql
 \ir ../migrations/027_tornei_misti.sql
 \ir ../migrations/029_categoria_torneo.sql
+\ir ../migrations/030_categorie_mancanti.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -532,9 +533,22 @@ DO $$
 DECLARE
   c TEXT;
 BEGIN
-  SELECT public.tournament_category('15') INTO c;
+  -- I codici 8 e 9 sono gli unici rimasti senza etichetta dopo la 030, e
+  -- l'astensione e' deliberata: per l'8 c'e' un solo nome, per il 9 i campioni
+  -- non concordano. Se un giorno qualcuno li mappasse per completezza, questa
+  -- asserzione lo fermerebbe abbastanza a lungo da leggere il perche'.
+  SELECT public.tournament_category('9') INTO c;
   IF c IS NOT NULL THEN
-    RAISE EXCEPTION 'I4 FALLITO: il codice 15 ha ricevuto la categoria "%"', c;
+    RAISE EXCEPTION 'I4 FALLITO: il codice 9 ha ricevuto la categoria "%"', c;
+  END IF;
+  SELECT public.tournament_category('8') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 8 ha ricevuto la categoria "%"', c;
+  END IF;
+  -- E cio' che la 030 ha aggiunto c'e' davvero.
+  SELECT public.tournament_category('4') INTO c;
+  IF c <> 'Campionati del Mondo' THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 4 da "%"', c;
   END IF;
   SELECT public.tournament_category('51') INTO c;
   IF c <> 'BPT Elite16' THEN

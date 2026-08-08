@@ -21,6 +21,7 @@
 \ir ../migrations/027_tornei_misti.sql
 \ir ../migrations/029_categoria_torneo.sql
 \ir ../migrations/030_categorie_mancanti.sql
+\ir ../migrations/031_confederazione.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -559,6 +560,68 @@ BEGIN
     RAISE EXCEPTION 'I4 FALLITO: un tipo nullo ha una categoria';
   END IF;
   RAISE NOTICE 'I4 ok: cio che non e dimostrato resta senza etichetta';
+END $$;
+
+-- =============================================================================
+-- PARTE L: la confederazione (migration 031)
+-- =============================================================================
+
+DO $$
+DECLARE c TEXT;
+BEGIN
+  -- L1: un BPT e' FIVB anche se si chiama come una citta' e basta. E' il caso
+  -- che il nome da solo non copre: 11.265 partite su 49.386 non contengono
+  -- nessuna sigla, e sono quasi tutte queste.
+  SELECT public.tournament_confederation('BPT Futures', 'Tlaxcala') INTO c;
+  IF c <> 'FIVB' THEN
+    RAISE EXCEPTION 'L1 FALLITO: un BPT senza sigla da "%"', c;
+  END IF;
+
+  -- L2: la sigla vince dove la categoria non decide.
+  SELECT public.tournament_confederation('U18', 'CEV U18 ECH 2023') INTO c;
+  IF c <> 'CEV' THEN RAISE EXCEPTION 'L2 FALLITO: CEV da "%"', c; END IF;
+  SELECT public.tournament_confederation('Continental Tour', 'AVC Beach Tour Samila Open') INTO c;
+  IF c <> 'AVC' THEN RAISE EXCEPTION 'L2 FALLITO: AVC da "%"', c; END IF;
+  SELECT public.tournament_confederation('U21', 'CAVB U21 Nations Championship') INTO c;
+  IF c <> 'CAVB' THEN RAISE EXCEPTION 'L2 FALLITO: CAVB da "%"', c; END IF;
+  SELECT public.tournament_confederation('U18', 'NEVZA U18 First-round Qualifier') INTO c;
+  IF c <> 'CEV' THEN RAISE EXCEPTION 'L2 FALLITO: NEVZA da "%"', c; END IF;
+
+  -- L3: l'aggettivo, dove la sigla manca.
+  SELECT public.tournament_confederation('U21', 'Asian U21 Beach Volleyball Championships') INTO c;
+  IF c <> 'AVC' THEN RAISE EXCEPTION 'L3 FALLITO: "Asian" da "%"', c; END IF;
+
+  -- L4: cio' che una confederazione NON ce l'ha resta senza. I giochi
+  -- multisport li organizza il comitato dei Giochi, i tour nazionali la
+  -- federazione: attribuirli per riempire la colonna sarebbe inventare.
+  SELECT public.tournament_confederation('Giochi multisport', '2024 FISU World University Championships') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'L4 FALLITO: i giochi universitari sono finiti in "%"', c;
+  END IF;
+  SELECT public.tournament_confederation('Tour nazionale', 'Austrian Beachvolleyball Tour Pro Baden') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'L4 FALLITO: un tour nazionale e finito in "%"', c;
+  END IF;
+  RAISE NOTICE 'L1-L4 ok: categoria, sigla, aggettivo — e il vuoto dove serve';
+END $$;
+
+-- L5: la confederazione arriva su torneo e partita, come la categoria.
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.confederation IS DISTINCT FROM 'FIVB' THEN
+    RAISE EXCEPTION 'L5 FALLITO: confederazione "%" sul torneo', t.confederation;
+  END IF;
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.confederation IS DISTINCT FROM 'FIVB' THEN
+    RAISE EXCEPTION 'L5 FALLITO: confederazione "%" sulla partita', p.confederation;
+  END IF;
+  RAISE NOTICE 'L5 ok: confederazione su torneo e partita';
 END $$;
 
 -- =============================================================================

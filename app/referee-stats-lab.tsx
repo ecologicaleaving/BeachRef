@@ -61,6 +61,7 @@ type Torneo = {
   gender: string | null;
   tournament_type: string | null;
   category: string | null;
+  confederation: string | null;
   season: number | null;
   matches: number;
   as_first: number;
@@ -79,6 +80,7 @@ type Partita = {
   round_name: string | null;
   gender: string | null;
   category: string | null;
+  confederation: string | null;
   role: string | null;
   team_a_name: string | null;
   team_b_name: string | null;
@@ -99,6 +101,7 @@ const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica:
 
 /** Il VIS parla per cifre; qui si parla a un umano. */
 const ALTRO = 'Altro';
+const ALTRA = 'Non determinata';
 
 function etichettaGenere(g: string | null): string {
   if (g === 'M') return 'M';
@@ -149,6 +152,7 @@ export default function RefereeStatsLab() {
   const [partite, setPartite] = useState<Partita[]>([]);
   const [torneoEspanso, setTorneoEspanso] = useState<string | null>(null);
   const [categoria, setCategoria] = useState<string | null>(null);
+  const [confed, setConfed] = useState<string | null>(null);
   const [caricaDettaglio, setCaricaDettaglio] = useState(false);
   const [erroreDettaglio, setErroreDettaglio] = useState<string | null>(null);
 
@@ -229,26 +233,47 @@ export default function RefereeStatsLab() {
   // Nel pannello si mostra la stagione selezionata, non tutta la carriera:
   // altrimenti cliccare su una riga del 2026 aprirebbe anche i tornei del 2025,
   // e il totale nel pannello non corrisponderebbe al numero appena cliccato.
-  const torneiVisibili = useMemo(() => {
-    const perStagione =
-      stagione === 'carriera' ? tornei : tornei.filter((t) => t.season === stagione);
-    if (!categoria) return perStagione;
-    // `null` come categoria e' un valore vero — "non classificato" — e va
-    // filtrabile come gli altri, non confuso con "nessun filtro".
-    return perStagione.filter((t) => (t.category ?? ALTRO) === categoria);
-  }, [tornei, stagione, categoria]);
+  const perStagione = useMemo(
+    () => (stagione === 'carriera' ? tornei : tornei.filter((t) => t.season === stagione)),
+    [tornei, stagione]
+  );
 
-  /** Le categorie presenti per QUESTO arbitro, con quante partite ciascuna. */
-  const categorie = useMemo(() => {
-    const perStagione =
-      stagione === 'carriera' ? tornei : tornei.filter((t) => t.season === stagione);
+  // I due filtri si sommano: confederazione E categoria. Sono domande diverse
+  // — "chi organizzava" e "che livello era" — e la piu' interessante e'
+  // proprio l'intersezione: quanti Futures FIVB, quanti U18 CEV.
+  const torneiVisibili = useMemo(
+    () =>
+      perStagione.filter(
+        (t) =>
+          // `null` e' un valore vero — "non determinata", "non classificato" —
+          // e va filtrabile come gli altri, non confuso con "nessun filtro".
+          (!confed || (t.confederation ?? ALTRA) === confed) &&
+          (!categoria || (t.category ?? ALTRO) === categoria)
+      ),
+    [perStagione, confed, categoria]
+  );
+
+  /** Conteggi calcolati sull'ALTRO filtro gia' applicato: cosi' i numeri sulle
+   *  pillole dicono cosa si otterrebbe cliccandole, non un totale generico. */
+  const confederazioni = useMemo(() => {
     const m = new Map<string, number>();
     for (const t of perStagione) {
+      if (categoria && (t.category ?? ALTRO) !== categoria) continue;
+      const k = t.confederation ?? ALTRA;
+      m.set(k, (m.get(k) ?? 0) + t.matches);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [perStagione, categoria]);
+
+  const categorie = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const t of perStagione) {
+      if (confed && (t.confederation ?? ALTRA) !== confed) continue;
       const k = t.category ?? ALTRO;
       m.set(k, (m.get(k) ?? 0) + t.matches);
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [tornei, stagione]);
+  }, [perStagione, confed]);
 
   const stagioni = useMemo(() => {
     const viste = new Set<number>();
@@ -469,8 +494,39 @@ export default function RefereeStatsLab() {
                   <Text style={stili.testoErrore}>{erroreDettaglio}</Text>
                 )}
 
+                {!caricaDettaglio && !erroreDettaglio && confederazioni.length > 1 && (
+                  <View style={stili.categorie}>
+                    <Text style={stili.etichettaFiltro}>Confederazione</Text>
+                    <Pressable
+                      style={[stili.pillolaPiccola, !confed && stili.pillolaAttiva]}
+                      onPress={() => setConfed(null)}
+                    >
+                      <Text style={[stili.testoPillolaPiccola, !confed && stili.testoPillolaAttiva]}>
+                        Tutte
+                      </Text>
+                    </Pressable>
+                    {confederazioni.map(([nome, n]) => (
+                      <Pressable
+                        key={nome}
+                        style={[stili.pillolaPiccola, confed === nome && stili.pillolaAttiva]}
+                        onPress={() => setConfed(confed === nome ? null : nome)}
+                      >
+                        <Text
+                          style={[
+                            stili.testoPillolaPiccola,
+                            confed === nome && stili.testoPillolaAttiva,
+                          ]}
+                        >
+                          {nome} · {n}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+
                 {!caricaDettaglio && !erroreDettaglio && categorie.length > 1 && (
                   <View style={stili.categorie}>
+                    <Text style={stili.etichettaFiltro}>Categoria</Text>
                     <Pressable
                       style={[stili.pillolaPiccola, !categoria && stili.pillolaAttiva]}
                       onPress={() => setCategoria(null)}
@@ -523,7 +579,9 @@ export default function RefereeStatsLab() {
                                 <Text style={stili.genere}>{`  ${etichettaGenere(t.gender)}`}</Text>
                               ) : null}
                               <Text style={stili.categoria}>
-                                {`  ${t.category ?? `${ALTRO} (tipo ${t.tournament_type ?? '?'})`}`}
+                                {`  ${t.confederation ?? ''}${t.confederation ? ' · ' : ''}${
+                                  t.category ?? `${ALTRO} (tipo ${t.tournament_type ?? '?'})`
+                                }`}
                               </Text>
                             </Text>
                             <Text style={stili.debole}>
@@ -695,7 +753,19 @@ const stili = StyleSheet.create({
   // La categoria non e' un ornamento: e' cio' che distingue un Futures da un
   // Elite16 quando il nome del torneo e' solo il nome della citta'.
   categoria: { color: colors.accent, fontSize: 12, fontWeight: '600' },
-  categorie: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
+  categorie: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: spacing.sm,
+  },
+  etichettaFiltro: {
+    color: colors.textTertiary,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    width: 96,
+  },
   pillolaPiccola: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,

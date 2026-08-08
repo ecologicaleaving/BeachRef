@@ -18,10 +18,15 @@
 \ir ../migrations/023_refresh_stats_safeupdate.sql
 \ir ../migrations/024_referee_drilldown.sql
 \ir ../migrations/025_gender_e_fase.sql
+-- La 028 chiude le statistiche ai ruoli pubblici, e la 032 ne dipende (la sua
+-- policy nomina `app_users`). Va applicata qui perche' e' l'ordine reale: una
+-- migration che presuppone lo stato lasciato da un'altra deve trovarcelo.
+\ir ../migrations/028_accesso_riservato.sql
 \ir ../migrations/027_tornei_misti.sql
 \ir ../migrations/029_categoria_torneo.sql
 \ir ../migrations/030_categorie_mancanti.sql
 \ir ../migrations/031_confederazione.sql
+\ir ../migrations/032_stats_per_categoria.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -203,25 +208,24 @@ BEGIN
 END $$;
 
 -- =============================================================================
--- PARTE D: la riapertura e' di sola lettura
+-- PARTE D: chi legge, e chi no
 -- =============================================================================
+--
+-- Le asserzioni sui permessi vivono in `accesso_riservato.test.sql`, che ha
+-- solo quel compito. Qui resta il minimo che serve a non confondersi: dopo la
+-- 028 la chiave anonima non apre piu' nulla, nemmeno gli aggregati.
 
 DO $$
 DECLARE
   t TEXT;
-  v TEXT;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['referee_season_stats', 'referee_career_stats'] LOOP
-    IF NOT has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
-      RAISE EXCEPTION 'D1 FALLITO: anon non legge %', t;
+  FOREACH t IN ARRAY ARRAY['referee_season_stats', 'referee_career_stats',
+                           'referee_tournament_stats', 'referee_match_log'] LOOP
+    IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'D1 FALLITO: anon legge ancora %', t;
     END IF;
-    FOREACH v IN ARRAY ARRAY['INSERT', 'UPDATE', 'DELETE'] LOOP
-      IF has_table_privilege('anon', 'public.' || t, v) THEN
-        RAISE EXCEPTION 'D2 FALLITO: anon puo'' fare % su %', v, t;
-      END IF;
-    END LOOP;
   END LOOP;
-  RAISE NOTICE 'D1/D2 ok: lettura si, scrittura no';
+  RAISE NOTICE 'D1 ok: dopo la 028 gli aggregati non sono piu'' pubblici';
 END $$;
 
 -- D3: e cio' che era chiuso resta chiuso. Aprire gli aggregati non deve aver
@@ -380,27 +384,17 @@ BEGIN
   RAISE NOTICE 'G4 ok: % partite, dette allo stesso modo da tre tabelle', tot;
 END $$;
 
--- G5: il dettaglio e' aperto in lettura, e cio' che sostituisce resta chiuso.
+-- G5: cio' che il modello di lettura esiste per NON aprire resta chiuso.
 DO $$
 DECLARE
   t TEXT;
-  v TEXT;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['referee_tournament_stats', 'referee_match_log'] LOOP
-    IF NOT has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
-      RAISE EXCEPTION 'G5 FALLITO: anon non legge %', t;
+  FOREACH t IN ARRAY ARRAY['matches', 'match_referees', 'referees', 'tournaments'] LOOP
+    IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'G5 FALLITO: anon legge % — il modello di lettura non '
+                      'serviva a nulla', t;
     END IF;
-    FOREACH v IN ARRAY ARRAY['INSERT', 'UPDATE', 'DELETE'] LOOP
-      IF has_table_privilege('anon', 'public.' || t, v) THEN
-        RAISE EXCEPTION 'G5 FALLITO: anon puo'' fare % su %', v, t;
-      END IF;
-    END LOOP;
   END LOOP;
-
-  IF has_table_privilege('anon', 'public.tournaments', 'SELECT') THEN
-    RAISE EXCEPTION 'G5 FALLITO: anon legge `tournaments` — il modello di '
-                    'lettura non serviva a nulla';
-  END IF;
   RAISE NOTICE 'G5 ok: si legge il modello, non le tabelle da cui nasce';
 END $$;
 
@@ -622,6 +616,55 @@ BEGIN
     RAISE EXCEPTION 'L5 FALLITO: confederazione "%" sulla partita', p.confederation;
   END IF;
   RAISE NOTICE 'L5 ok: confederazione su torneo e partita';
+END $$;
+
+-- =============================================================================
+-- PARTE M: le colonne per categoria (migration 032)
+-- =============================================================================
+
+DO $$
+DECLARE
+  r public.referee_category_stats;
+  n INT;
+  somma INT;
+  totale INT;
+BEGIN
+  -- M1: le partite del 2026 del nostro arbitro sono 3, tutte su tornei di
+  -- categoria BPT Futures (torneo 1) o senza categoria (torneo T2).
+  SELECT count(*) INTO n FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  IF n <> 2 THEN
+    RAISE EXCEPTION 'M1 FALLITO: % righe categoria nel 2026, attese 2', n;
+  END IF;
+
+  SELECT * INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026 AND category = 'BPT Futures';
+  IF r.matches <> 2 OR r.as_first <> 2 THEN
+    RAISE EXCEPTION 'M1 FALLITO: BPT Futures % partite / % da primo',
+      r.matches, r.as_first;
+  END IF;
+
+  -- M2: un torneo senza categoria non sparisce, diventa "Altro". Un arbitro
+  -- che avesse arbitrato SOLO eventi non classificati resterebbe altrimenti
+  -- fuori dalla tabella, con zero righe e nessun indizio del perche'.
+  SELECT * INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026 AND category = 'Altro';
+  IF r.matches <> 1 THEN
+    RAISE EXCEPTION 'M2 FALLITO: la categoria Altro ha % partite, attesa 1', r.matches;
+  END IF;
+  RAISE NOTICE 'M1/M2 ok: per categoria, e cio che non ha categoria e Altro';
+
+  -- M3: la somma delle categorie ricostruisce il totale della stagione. E' la
+  -- proprieta' che rende le colonne affidabili: se non tornasse, la riga
+  -- direbbe 3 e le sue colonne 2, senza che nulla segnali l'incoerenza.
+  SELECT sum(matches) INTO somma FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  SELECT matches INTO totale FROM public.referee_season_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  IF somma <> totale THEN
+    RAISE EXCEPTION 'M3 FALLITO: colonne % contro totale %', somma, totale;
+  END IF;
+  RAISE NOTICE 'M3 ok: la somma delle categorie e il totale della stagione (%)', totale;
 END $$;
 
 -- =============================================================================

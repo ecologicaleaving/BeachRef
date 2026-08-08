@@ -22,6 +22,9 @@
 -- La 029 arriva DOPO la chiusura: e' qui che si prova che aggiungere colonne
 -- non riapre niente.
 \ir ../migrations/029_categoria_torneo.sql
+\ir ../migrations/030_categorie_mancanti.sql
+\ir ../migrations/031_confederazione.sql
+\ir ../migrations/032_stats_per_categoria.sql
 
 -- Due persone: una verra' invitata, l'altra no.
 INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES
@@ -313,9 +316,10 @@ END $$;
 DO $$
 DECLARE t TEXT;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['referee_tournament_stats', 'referee_match_log'] LOOP
+  FOREACH t IN ARRAY ARRAY['referee_tournament_stats', 'referee_match_log',
+                           'referee_category_stats'] LOOP
     IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
-      RAISE EXCEPTION 'E1b FALLITO: dopo la 029 anon legge %', t;
+      RAISE EXCEPTION 'E1b FALLITO: dopo la 029-032 anon legge %', t;
     END IF;
   END LOOP;
   RAISE NOTICE 'E1b ok: aggiungere colonne non riapre le tabelle';

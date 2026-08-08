@@ -89,7 +89,20 @@ type Partita = {
   status: string | null;
 };
 
-type Ordine = 'matches' | 'as_first' | 'as_second' | 'tournaments' | 'referee_name';
+type PerCategoria = {
+  vis_referee_no: string;
+  season: number;
+  category: string;
+  matches: number;
+};
+
+/** Le colonne fisse. Quelle per categoria si aggiungono a runtime: quali
+ *  categorie esistano lo dicono i dati, non il codice. */
+type Ordine = 'matches' | 'as_first' | 'as_second' | 'tournaments' | 'referee_name' | string;
+
+/** Quante categorie mostrare come colonne. Oltre, la tabella non si legge piu'
+ *  e il pannello resta il posto giusto per il dettaglio. */
+const COLONNE_CATEGORIA = 6;
 
 const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica: boolean }[] = [
   { chiave: 'referee_name', etichetta: 'Arbitro', larghezza: 200, numerica: false },
@@ -102,6 +115,17 @@ const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica:
 /** Il VIS parla per cifre; qui si parla a un umano. */
 const ALTRO = 'Altro';
 const ALTRA = 'Non determinata';
+
+/** Le intestazioni devono stare in due righe da 92px. */
+function etichettaCorta(c: string): string {
+  return c
+    .replace('BPT ', '')
+    .replace('Campionati del Mondo', 'Mondiali')
+    .replace('Campionati continentali', 'Continentali')
+    .replace('Continental ', 'Cont. ')
+    .replace('Giochi multisport', 'Multisport')
+    .replace('Qualificazione ', 'Qual. ');
+}
 
 function etichettaGenere(g: string | null): string {
   if (g === 'M') return 'M';
@@ -136,6 +160,7 @@ async function leggi<T = Riga>(tabella: string, query: string): Promise<T[]> {
 export default function RefereeStatsLab() {
   const [carriera, setCarriera] = useState<Riga[]>([]);
   const [stagionali, setStagionali] = useState<Riga[]>([]);
+  const [perCategoria, setPerCategoria] = useState<PerCategoria[]>([]);
   const [stagione, setStagione] = useState<number | 'carriera'>('carriera');
   const [ordine, setOrdine] = useState<Ordine>('matches');
   const [crescente, setCrescente] = useState(false);
@@ -159,12 +184,17 @@ export default function RefereeStatsLab() {
   const carica = useCallback(async () => {
     setErrore(null);
     try {
-      const [c, s] = await Promise.all([
+      const [c, s, k] = await Promise.all([
         leggi('referee_career_stats', 'select=*&order=matches.desc&limit=2000'),
         leggi('referee_season_stats', 'select=*&order=season.desc,matches.desc&limit=20000'),
+        leggi<PerCategoria>(
+          'referee_category_stats',
+          'select=vis_referee_no,season,category,matches&limit=50000'
+        ),
       ]);
       setCarriera(c);
       setStagionali(s);
+      setPerCategoria(k);
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
     } finally {
@@ -281,6 +311,38 @@ export default function RefereeStatsLab() {
     return [...viste].sort((a, b) => b - a);
   }, [stagionali]);
 
+  /** Le categorie da mostrare come colonne: le piu' frequenti nella selezione
+   *  corrente, non un elenco deciso a priori. Cambiando stagione cambiano, ed
+   *  e' giusto — nel 2013 il Beach Pro Tour non esisteva. */
+  const colonneCategoria = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of perCategoria) {
+      if (stagione !== 'carriera' && r.season !== stagione) continue;
+      m.set(r.category, (m.get(r.category) ?? 0) + r.matches);
+    }
+    return [...m.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, COLONNE_CATEGORIA)
+      .map(([c]) => c);
+  }, [perCategoria, stagione]);
+
+  /** arbitro -> categoria -> partite, per la selezione corrente. */
+  const conteggi = useMemo(() => {
+    const m = new Map<string, Map<string, number>>();
+    for (const r of perCategoria) {
+      if (stagione !== 'carriera' && r.season !== stagione) continue;
+      if (!m.has(r.vis_referee_no)) m.set(r.vis_referee_no, new Map());
+      const p = m.get(r.vis_referee_no)!;
+      p.set(r.category, (p.get(r.category) ?? 0) + r.matches);
+    }
+    return m;
+  }, [perCategoria, stagione]);
+
+  const perCat = useCallback(
+    (visNo: string, cat: string) => conteggi.get(visNo)?.get(cat) ?? 0,
+    [conteggi]
+  );
+
   const righe = useMemo(() => {
     const base =
       stagione === 'carriera' ? carriera : stagionali.filter((r) => r.season === stagione);
@@ -297,9 +359,16 @@ export default function RefereeStatsLab() {
       if (ordine === 'referee_name') {
         return segno * (a.referee_name ?? '').localeCompare(b.referee_name ?? '');
       }
-      return segno * ((a[ordine] as number) - (b[ordine] as number));
+      // Una colonna di categoria non e' un campo della riga: il valore va
+      // cercato nei conteggi. Il prefisso la distingue da `matches`, che e' un
+      // campo vero e potrebbe chiamarsi come una categoria.
+      if (ordine.startsWith('cat:')) {
+        const c = ordine.slice(4);
+        return segno * (perCat(a.vis_referee_no, c) - perCat(b.vis_referee_no, c));
+      }
+      return segno * ((a[ordine as keyof Riga] as number) - (b[ordine as keyof Riga] as number));
     });
-  }, [carriera, stagionali, stagione, cerca, ordine, crescente]);
+  }, [carriera, stagionali, stagione, cerca, ordine, crescente, perCat]);
 
   const totali = useMemo(
     () => ({
@@ -434,6 +503,25 @@ export default function RefereeStatsLab() {
                 </Text>
               </Pressable>
             ))}
+            {colonneCategoria.map((c) => (
+              <Pressable
+                key={c}
+                style={[stili.cella, { width: 92 }]}
+                onPress={() => cambiaOrdine(`cat:${c}`)}
+              >
+                <Text
+                  style={[
+                    stili.testoIntestazione,
+                    stili.numerica,
+                    ordine === `cat:${c}` && stili.ordinata,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {etichettaCorta(c)}
+                  {ordine === `cat:${c}` ? (crescente ? ' ▲' : ' ▼') : ''}
+                </Text>
+              </Pressable>
+            ))}
             <View style={[stili.cella, { width: 70 }]}>
               <Text style={stili.testoIntestazione}>Fed.</Text>
             </View>
@@ -471,6 +559,18 @@ export default function RefereeStatsLab() {
               <View style={[stili.cella, { width: 70 }]}>
                 <Text style={[stili.valore, stili.numerica]}>{r.tournaments}</Text>
               </View>
+              {colonneCategoria.map((c) => {
+                const n = perCat(r.vis_referee_no, c);
+                return (
+                  <View key={c} style={[stili.cella, { width: 92 }]}>
+                    {/* Uno zero scritto e' rumore su una tabella di 700 righe:
+                        cio' che conta e' dove i numeri ci sono. */}
+                    <Text style={[stili.valore, stili.numerica, n === 0 && stili.zero]}>
+                      {n === 0 ? '·' : n}
+                    </Text>
+                  </View>
+                );
+              })}
               <View style={[stili.cella, { width: 70 }]}>
                 <Text style={stili.valore}>{r.federation_code ?? '—'}</Text>
               </View>
@@ -732,6 +832,7 @@ const stili = StyleSheet.create({
   nome: { color: colors.textPrimary, fontSize: 15 },
   valore: { color: colors.textSecondary, fontSize: 15 },
   forte: { color: colors.textPrimary, fontWeight: '700' },
+  zero: { color: colors.border },
   debole: { color: colors.textTertiary, fontSize: 13, lineHeight: 18 },
   vuoto: { padding: spacing.lg, maxWidth: 560 },
   piede: { padding: spacing.lg },
@@ -741,7 +842,8 @@ const stili = StyleSheet.create({
   // sovrapposto nascondeva.
   rigaAperta: { backgroundColor: '#F4F4F5' },
   dettaglio: {
-    width: 730,
+    // Larga quanto la tabella, colonne di categoria comprese.
+    width: 730 + 92 * COLONNE_CATEGORIA,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: '#FAFAFA',

@@ -62,6 +62,7 @@ type Torneo = {
   tournament_type: string | null;
   category: string | null;
   confederation: string | null;
+  rank: number | null;
   season: number | null;
   matches: number;
   as_first: number;
@@ -94,6 +95,10 @@ type PerCategoria = {
   season: number;
   category: string;
   matches: number;
+  /** Ordine di importanza: piu' basso = piu' importante. Viene dal database
+   *  (`category_rank`), non da un elenco duplicato qui: due copie della stessa
+   *  scala divergono, e quella sbagliata sarebbe la nostra. */
+  rank: number | null;
 };
 
 /** Le colonne fisse. Quelle per categoria si aggiungono a runtime: quali
@@ -189,7 +194,7 @@ export default function RefereeStatsLab() {
         leggi('referee_season_stats', 'select=*&order=season.desc,matches.desc&limit=20000'),
         leggi<PerCategoria>(
           'referee_category_stats',
-          'select=vis_referee_no,season,category,matches&limit=50000'
+          'select=vis_referee_no,season,category,matches,rank&limit=50000'
         ),
       ]);
       setCarriera(c);
@@ -232,7 +237,8 @@ export default function RefereeStatsLab() {
         const [t, p] = await Promise.all([
           leggi<Torneo>(
             'referee_tournament_stats',
-            `select=*&${filtro}&order=last_match.desc&limit=2000`
+            // Prima i tornei che contano, poi i piu' recenti fra pari grado.
+            `select=*&${filtro}&order=rank.asc,last_match.desc&limit=2000`
           ),
           leggi<Partita>(
             'referee_match_log',
@@ -302,7 +308,13 @@ export default function RefereeStatsLab() {
       const k = t.category ?? ALTRO;
       m.set(k, (m.get(k) ?? 0) + t.matches);
     }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    // Per importanza, non per volume: e' la stessa scala delle colonne, e
+    // averne due diverse nella stessa schermata confonderebbe.
+    const peso = new Map<string, number>();
+    for (const t of perStagione) if (t.rank != null) peso.set(t.category ?? ALTRO, t.rank);
+    return [...m.entries()].sort(
+      (a, b) => (peso.get(a[0]) ?? 9999) - (peso.get(b[0]) ?? 9999)
+    );
   }, [perStagione, confed]);
 
   const stagioni = useMemo(() => {
@@ -320,10 +332,19 @@ export default function RefereeStatsLab() {
       if (stagione !== 'carriera' && r.season !== stagione) continue;
       m.set(r.category, (m.get(r.category) ?? 0) + r.matches);
     }
+    const rank = new Map<string, number>();
+    for (const r of perCategoria) if (r.rank != null) rank.set(r.category, r.rank);
+    const peso = (c: string) => rank.get(c) ?? 9999;
+
+    // Si SCEGLIE per volume — le colonne devono dire qualcosa su questo
+    // arbitro — ma si ORDINA per importanza. Scegliere per importanza
+    // riempirebbe la tabella di Olimpiadi e Mondiali, dove quasi nessuno ha un
+    // numero, lasciando fuori i Futures dove ce l'hanno tutti.
     return [...m.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, COLONNE_CATEGORIA)
-      .map(([c]) => c);
+      .map(([c]) => c)
+      .sort((a, b) => peso(a) - peso(b));
   }, [perCategoria, stagione]);
 
   /** arbitro -> categoria -> partite, per la selezione corrente. */

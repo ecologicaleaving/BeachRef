@@ -29,6 +29,7 @@
 \ir ../migrations/032_stats_per_categoria.sql
 \ir ../migrations/033_world_tour.sql
 \ir ../migrations/034_ricalcolo_non_concorrente.sql
+\ir ../migrations/035_importanza_categoria.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -278,7 +279,7 @@ END $$;
 -- `refresh_referee_stats()`: **aggiornare questa riga**. Non e' una formalita',
 -- e' l'unica cosa che tiene la prova di idempotenza puntata sulla migration
 -- che si sta davvero provando.
-\ir ../migrations/034_ricalcolo_non_concorrente.sql
+\ir ../migrations/035_importanza_categoria.sql
 
 DO $$
 DECLARE
@@ -732,6 +733,74 @@ BEGIN
     RAISE EXCEPTION 'N2 FALLITO: dopo il lucchetto il ricalcolo non produce nulla';
   END IF;
   RAISE NOTICE 'N2 ok: % carriere ricalcolate con il lucchetto attivo', n;
+END $$;
+
+-- =============================================================================
+-- PARTE O: l'ordine di importanza (migration 035)
+-- =============================================================================
+
+DO $$
+BEGIN
+  -- O1: la scala data da Davide, nell'ordine in cui l'ha data.
+  IF NOT (public.category_rank('Giochi Olimpici')
+        < public.category_rank('Campionati del Mondo')
+        AND public.category_rank('Campionati del Mondo')
+        < public.category_rank('BPT Elite16')
+        AND public.category_rank('BPT Elite16')
+        < public.category_rank('BPT Challenge')
+        AND public.category_rank('BPT Challenge')
+        < public.category_rank('BPT Futures')
+        AND public.category_rank('BPT Futures')
+        < public.category_rank('Campionati continentali')) THEN
+    RAISE EXCEPTION 'O1 FALLITO: la scala di importanza non e nell ordine dato';
+  END IF;
+  RAISE NOTICE 'O1 ok: Olimpiadi > Mondiali > Elite > Challenge > ... > continentali';
+END $$;
+
+-- O2: LE DUE ERE SI CORRISPONDONO. E' la conseguenza meno ovvia della scala e
+-- la piu' facile da perdere: un arbitro che nel 2019 faceva i Major e nel 2024
+-- gli Elite16 non ha cambiato livello, ha cambiato circuito. Senza questa
+-- uguaglianza la sua carriera sembrerebbe spezzata in due.
+DO $$
+BEGIN
+  IF public.category_rank('BPT Elite16') <> public.category_rank('World Tour 5 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Elite16 e 5 stelle su gradini diversi';
+  END IF;
+  IF public.category_rank('BPT Challenge') <> public.category_rank('World Tour 4 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Challenge e 4 stelle su gradini diversi';
+  END IF;
+  IF public.category_rank('BPT Futures') <> public.category_rank('World Tour 3 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Futures e 3 stelle su gradini diversi';
+  END IF;
+  RAISE NOTICE 'O2 ok: le due ere sono allineate gradino per gradino';
+END $$;
+
+-- O3: cio' che non e' classificato va in fondo, ma PRIMA dei test: e' roba
+-- vera di cui non conosciamo il livello, non un'esercitazione.
+DO $$
+BEGIN
+  IF NOT (public.category_rank('Tour nazionale')
+        < public.category_rank('Altro')
+        AND public.category_rank('Altro')
+        < public.category_rank('Test / formazione')) THEN
+    RAISE EXCEPTION 'O3 FALLITO: "Altro" non sta fra i tornei veri e i test';
+  END IF;
+  RAISE NOTICE 'O3 ok: ignoto in fondo, ma sopra le esercitazioni';
+END $$;
+
+-- O4: il rank finisce nelle tabelle, se no la pagina dovrebbe conoscere la
+-- scala per conto suo — e due copie della stessa scala divergono.
+DO $$
+DECLARE
+  r INT;
+BEGIN
+  SELECT rank INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND category = 'BPT Futures' AND season = 2026;
+  IF r IS DISTINCT FROM public.category_rank('BPT Futures') THEN
+    RAISE EXCEPTION 'O4 FALLITO: rank % nella tabella, % nella funzione',
+      r, public.category_rank('BPT Futures');
+  END IF;
+  RAISE NOTICE 'O4 ok: la scala vive in un posto solo';
 END $$;
 
 -- =============================================================================

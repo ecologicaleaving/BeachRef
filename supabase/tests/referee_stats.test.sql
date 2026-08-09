@@ -27,6 +27,7 @@
 \ir ../migrations/030_categorie_mancanti.sql
 \ir ../migrations/031_confederazione.sql
 \ir ../migrations/032_stats_per_categoria.sql
+\ir ../migrations/033_world_tour.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -544,6 +545,24 @@ BEGIN
   SELECT public.tournament_category('4') INTO c;
   IF c <> 'Campionati del Mondo' THEN
     RAISE EXCEPTION 'I4 FALLITO: il codice 4 da "%"', c;
+  END IF;
+
+  -- I5: i livelli del World Tour restano DISTINTI. Fonderli in un unico
+  -- "World Tour" farebbe sparire la differenza fra un Major e un 1 stella, che
+  -- e' esattamente cio' che si vuole leggere in una carriera.
+  IF public.tournament_category('38') <> 'World Tour 5 stelle'
+  OR public.tournament_category('39') <> 'World Tour 4 stelle'
+  OR public.tournament_category('40') <> 'World Tour 3 stelle'
+  OR public.tournament_category('41') <> 'World Tour 2 stelle'
+  OR public.tournament_category('42') <> 'World Tour 1 stella'
+  OR public.tournament_category('33') <> 'World Tour Finals' THEN
+    RAISE EXCEPTION 'I5 FALLITO: i livelli del World Tour non sono distinti';
+  END IF;
+
+  -- I6: e sono FIVB. Senza, 15.000 partite finirebbero in "confederazione non
+  -- determinata" pur essendo il circuito mondiale per definizione.
+  IF public.tournament_confederation('World Tour 4 stelle', 'Ostrava') <> 'FIVB' THEN
+    RAISE EXCEPTION 'I6 FALLITO: un World Tour non risulta FIVB';
   END IF;
   SELECT public.tournament_category('51') INTO c;
   IF c <> 'BPT Elite16' THEN

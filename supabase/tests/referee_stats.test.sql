@@ -28,6 +28,7 @@
 \ir ../migrations/031_confederazione.sql
 \ir ../migrations/032_stats_per_categoria.sql
 \ir ../migrations/033_world_tour.sql
+\ir ../migrations/034_ricalcolo_non_concorrente.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -267,10 +268,17 @@ END $$;
 -- una protezione — riapplicare una migration vecchia dopo una nuova e' un
 -- DOWNGRADE, e qui il database si rifiuta di subirlo in silenzio.
 --
--- Lo stesso caso, senza protezione, e' gia' costato un'asserzione rossa: la
--- prima stesura di questo file rigiocava la 022 dopo la 023 e riportava
--- indietro la funzione ai DELETE nudi, che su Supabase non girano.
-\ir ../migrations/029_categoria_torneo.sql
+-- Lo stesso caso, senza protezione, e' costato DUE asserzioni rosse. La prima
+-- stesura rigiocava la 022 dopo la 023 e riportava la funzione ai DELETE nudi.
+-- Poi questa riga e' rimasta ferma sulla 029 mentre le migration avanzavano,
+-- e la 034 — che aggiunge il lucchetto contro i ricalcoli sovrapposti — veniva
+-- disfatta da una riapplicazione della 029, che quel lucchetto non ce l'ha.
+--
+-- La regola per chi aggiunge una migration che ridefinisce
+-- `refresh_referee_stats()`: **aggiornare questa riga**. Non e' una formalita',
+-- e' l'unica cosa che tiene la prova di idempotenza puntata sulla migration
+-- che si sta davvero provando.
+\ir ../migrations/034_ricalcolo_non_concorrente.sql
 
 DO $$
 DECLARE
@@ -684,6 +692,46 @@ BEGIN
     RAISE EXCEPTION 'M3 FALLITO: colonne % contro totale %', somma, totale;
   END IF;
   RAISE NOTICE 'M3 ok: la somma delle categorie e il totale della stagione (%)', totale;
+END $$;
+
+-- =============================================================================
+-- PARTE N: un ricalcolo alla volta (migration 034)
+-- =============================================================================
+--
+-- La concorrenza vera non si riproduce in un test a sessione singola: due
+-- transazioni servirebbero due connessioni. Si verifica quindi che il lucchetto
+-- ci SIA e che sia quello giusto — l'unica cosa che, se sparisse, riporterebbe
+-- il 23505 osservato sul 2016.
+
+DO $$
+DECLARE
+  def TEXT;
+BEGIN
+  SELECT pg_get_functiondef('public.refresh_referee_stats()'::regprocedure) INTO def;
+  IF def NOT LIKE '%pg_advisory_xact_lock(91)%' THEN
+    RAISE EXCEPTION 'N1 FALLITO: il ricalcolo non prende il lucchetto — due '
+                    'esecuzioni sovrapposte violerebbero la chiave primaria';
+  END IF;
+  -- `try` uscirebbe senza fare nulla, e chi ha chiesto il ricalcolo si
+  -- sentirebbe rispondere "fatto" mentre le sue modifiche non sono entrate.
+  IF def LIKE '%pg_try_advisory%' THEN
+    RAISE EXCEPTION 'N1 FALLITO: il lucchetto e'' un try — il secondo ricalcolo '
+                    'uscirebbe in silenzio senza ricalcolare';
+  END IF;
+  RAISE NOTICE 'N1 ok: il ricalcolo si serializza, e chi aspetta ricalcola';
+END $$;
+
+-- N2: e il lucchetto non ha rotto il ricalcolo.
+DO $$
+DECLARE
+  n INT;
+BEGIN
+  PERFORM public.refresh_referee_stats();
+  SELECT count(*) INTO n FROM public.referee_career_stats;
+  IF n = 0 THEN
+    RAISE EXCEPTION 'N2 FALLITO: dopo il lucchetto il ricalcolo non produce nulla';
+  END IF;
+  RAISE NOTICE 'N2 ok: % carriere ricalcolate con il lucchetto attivo', n;
 END $$;
 
 -- =============================================================================

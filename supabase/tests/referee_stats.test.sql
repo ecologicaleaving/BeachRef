@@ -30,6 +30,7 @@
 \ir ../migrations/033_world_tour.sql
 \ir ../migrations/034_ricalcolo_non_concorrente.sql
 \ir ../migrations/035_importanza_categoria.sql
+\ir ../migrations/036_fase_normalizzata.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -279,7 +280,7 @@ END $$;
 -- `refresh_referee_stats()`: **aggiornare questa riga**. Non e' una formalita',
 -- e' l'unica cosa che tiene la prova di idempotenza puntata sulla migration
 -- che si sta davvero provando.
-\ir ../migrations/035_importanza_categoria.sql
+\ir ../migrations/036_fase_normalizzata.sql
 
 DO $$
 DECLARE
@@ -801,6 +802,96 @@ BEGIN
       r, public.category_rank('BPT Futures');
   END IF;
   RAISE NOTICE 'O4 ok: la scala vive in un posto solo';
+END $$;
+
+-- =============================================================================
+-- PARTE P: la fase, e cio' che le somiglia (migration 036)
+-- =============================================================================
+
+DO $$
+BEGIN
+  -- P1: i quattro modi di scrivere "semifinale" sono la stessa fase.
+  IF public.match_phase('Semifinals')  <> 'Semifinale'
+  OR public.match_phase('Semi-finals') <> 'Semifinale'
+  OR public.match_phase('Semifinal 1') <> 'Semifinale'
+  OR public.match_phase('Semifinal 2') <> 'Semifinale' THEN
+    RAISE EXCEPTION 'P1 FALLITO: le semifinali non sono normalizzate';
+  END IF;
+
+  -- P2: la finale, comunque il VIS la chiami.
+  IF public.match_phase('Final 1st Place') <> 'Finale'
+  OR public.match_phase('Final 1st place') <> 'Finale'
+  OR public.match_phase('Gold Medal Match') <> 'Finale' THEN
+    RAISE EXCEPTION 'P2 FALLITO: la finale non e riconosciuta in tutte le forme';
+  END IF;
+  RAISE NOTICE 'P1/P2 ok: 93 nomi, una dozzina di fasi';
+END $$;
+
+-- P3: LE TRAPPOLE. Sono la ragione per cui questa funzione esiste: hanno i
+-- nomi delle fasi vere e non lo sono. Contare le finali cercando "Final"
+-- gonfierebbe il numero, e un totale gonfiato non si distingue da uno giusto.
+DO $$
+BEGIN
+  IF public.match_phase('Semifinals for place 25 to 32') = 'Semifinale' THEN
+    RAISE EXCEPTION 'P3 FALLITO: una semifinale di piazzamento conta come semifinale';
+  END IF;
+  IF public.match_phase('Quarterfinals for place 9 to 16') = 'Quarti' THEN
+    RAISE EXCEPTION 'P3 FALLITO: quarti di piazzamento contano come quarti';
+  END IF;
+  IF public.match_phase('Loser Semifinals') = 'Semifinale' THEN
+    RAISE EXCEPTION 'P3 FALLITO: "Loser Semifinals" conta come semifinale';
+  END IF;
+  FOR i IN 1..1 LOOP
+    IF public.match_phase('Final 5th Place')  = 'Finale'
+    OR public.match_phase('Final 7th Place')  = 'Finale'
+    OR public.match_phase('Final 9th Place')  = 'Finale'
+    OR public.match_phase('Final 13th Place') = 'Finale'
+    OR public.match_phase('Final 11st Place') = 'Finale' THEN
+      RAISE EXCEPTION 'P3 FALLITO: una finale di piazzamento conta come finale';
+    END IF;
+  END LOOP;
+  RAISE NOTICE 'P3 ok: piazzamenti fuori dalle fasi vere';
+END $$;
+
+-- P4: e cio' che invece DEVE entrare. Un'esclusione troppo larga farebbe
+-- sparire finali vere, che e' l'errore opposto e altrettanto silenzioso.
+DO $$
+BEGIN
+  IF public.match_phase('Final 3rd Place')     <> 'Finale 3o posto'
+  OR public.match_phase('Final 2nd - 3rd place') <> 'Finale 3o posto'
+  OR public.match_phase('Bronze Medal Match')  <> 'Finale 3o posto' THEN
+    RAISE EXCEPTION 'P4 FALLITO: la finale 3-4 e stata esclusa per errore';
+  END IF;
+  IF public.match_phase('Eight final 3') <> 'Ottavi'
+  OR public.match_phase('Round of 16')   <> 'Ottavi' THEN
+    RAISE EXCEPTION 'P4 FALLITO: gli ottavi non sono riconosciuti';
+  END IF;
+  IF public.match_phase('Pool C')  <> 'Pool'
+  OR public.match_phase('Round 2') <> 'Turno preliminare' THEN
+    RAISE EXCEPTION 'P4 FALLITO: pool e turni preliminari confusi';
+  END IF;
+  IF public.match_phase(NULL) IS NOT NULL OR public.match_phase('') IS NOT NULL THEN
+    RAISE EXCEPTION 'P4 FALLITO: una fase assente ha ricevuto un nome';
+  END IF;
+  RAISE NOTICE 'P4 ok: nessuna esclusione di troppo';
+END $$;
+
+-- P5: la fase arriva nel registro, e l'ordine di visualizzazione con lei.
+DO $$
+DECLARE
+  f TEXT;
+BEGIN
+  SELECT phase INTO f FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF f IS DISTINCT FROM 'Pool' THEN
+    RAISE EXCEPTION 'P5 FALLITO: fase "%" nel registro, attesa Pool', f;
+  END IF;
+  IF public.phase_rank('Finale') >= public.phase_rank('Semifinale')
+  OR public.phase_rank('Semifinale') >= public.phase_rank('Quarti')
+  OR public.phase_rank('Pool') >= public.phase_rank('Piazzamento') THEN
+    RAISE EXCEPTION 'P5 FALLITO: l ordine delle fasi non scende dalla finale';
+  END IF;
+  RAISE NOTICE 'P5 ok: fase nel registro, e ordinata dalla finale in giu';
 END $$;
 
 -- =============================================================================

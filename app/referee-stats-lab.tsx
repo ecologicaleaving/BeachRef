@@ -563,11 +563,22 @@ export default function RefereeStatsLab() {
                 aperto?.vis_referee_no === r.vis_referee_no ? setAperto(null) : apriDettaglio(r)
               }
             >
-              <View style={[stili.cella, { width: 200 }]}>
-                <Text style={stili.nome} numberOfLines={1}>
+              {/* Il NOME porta alla scheda; il resto della riga apre il
+                  pannello in linea. Due gesti, due profondita': l'occhiata
+                  veloce senza perdere il posto, e la scheda intera. */}
+              <Pressable
+                style={[stili.cella, { width: 200 }]}
+                onPress={(e) => {
+                  // Senza questo il click arriva anche alla riga, che aprirebbe
+                  // il pannello un istante prima di lasciare la pagina.
+                  (e as unknown as { stopPropagation?: () => void }).stopPropagation?.();
+                  router.push(`/arbitro/${encodeURIComponent(r.vis_referee_no)}`);
+                }}
+              >
+                <Text style={[stili.nome, stili.nomeCliccabile]} numberOfLines={1}>
                   {r.referee_name ?? `#${r.vis_referee_no}`}
                 </Text>
-              </View>
+              </Pressable>
               <View style={[stili.cella, { width: 80 }]}>
                 <Text style={[stili.valore, stili.numerica, stili.forte]}>{r.matches}</Text>
               </View>
@@ -851,6 +862,7 @@ const stili = StyleSheet.create({
   ordinata: { color: colors.textPrimary },
   numerica: { textAlign: 'right' },
   nome: { color: colors.textPrimary, fontSize: 15 },
+  nomeCliccabile: { color: colors.accent, textDecorationLine: 'underline' },
   valore: { color: colors.textSecondary, fontSize: 15 },
   forte: { color: colors.textPrimary, fontWeight: '700' },
   zero: { color: colors.border },

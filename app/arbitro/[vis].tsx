@@ -3,17 +3,43 @@
  *
  * Si arriva qui cliccando il NOME nella tabella; cliccando altrove si apre il
  * pannello in linea, che resta comodo per un'occhiata veloce senza perdere il
- * posto nell'elenco. Due gesti, due profondita' diverse.
+ * posto nell'elenco. Due gesti, due profondita'.
  *
- * Riservata come tutto il resto: senza accesso e senza invito il database non
+ * ## Il disegno, e cosa ha guidato le scelte
+ *
+ * La domanda che una scheda arbitro deve saper rispondere in tre secondi non
+ * e' "quante partite ha fatto" — quella e' facile e la sa gia' la tabella. E':
+ * **a che livello arbitra questa persona, e da quanto**. Da qui:
+ *
+ * 1. **Le finali stanno in cima**, con il livello del torneo accanto. "Tre
+ *    finali" non dice nulla finche' non sai se erano Futures o Elite16, ed e'
+ *    la prima cosa che un designatore guarda.
+ * 2. **La linea del tempo prima dei totali.** Una carriera e' una forma: chi
+ *    cresce, chi si e' fermato, chi torna. Un totale di 600 partite nasconde
+ *    tutte e tre.
+ * 3. **Le categorie in ordine di importanza, non di volume** (`category_rank`,
+ *    migration 035). Ordinarle per numero metterebbe i Futures in cima a ogni
+ *    scheda, che e' vero e inutile.
+ * 4. **Niente colore dove non significa.** L'oro (`colors.accent`) e' riservato
+ *    a cio' che e' di vertice: finali e barra piu' alta. Se colorassi tutto,
+ *    non guiderebbe piu' l'occhio da nessuna parte.
+ *
+ * Riservata come il resto: senza accesso e senza invito il database non
  * risponde, e la pagina lo dice invece di mostrare zeri.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '../../components/Typography/Text';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, brandBlue, neutrals } from '../../theme/tokens';
 import { statoAccesso, tokenCorrente, type StatoAccesso } from '../../services/auth/AccessService';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -43,7 +69,6 @@ type PerStagione = {
 type PerCategoria = {
   season: number;
   category: string;
-  confederation: string | null;
   matches: number;
   rank: number | null;
 };
@@ -57,13 +82,14 @@ type Partita = {
   confederation: string | null;
   tournament_name: string | null;
   tournament_no: string | null;
+  gender: string | null;
   role: string | null;
   team_a_name: string | null;
   team_b_name: string | null;
+  match_points_a: number | null;
+  match_points_b: number | null;
 };
 
-/** L'ordine delle fasi. Lo stesso di `phase_rank` nel database — qui serve
- *  perche' il registro non porta il numero, solo il nome. */
 const ORDINE_FASI = [
   'Finale',
   'Finale 3o posto',
@@ -78,8 +104,19 @@ const ORDINE_FASI = [
   'Piazzamento',
 ];
 
-/** Le fasi che vale la pena mettere in evidenza: quelle che si raccontano. */
-const FASI_IN_VISTA = ['Finale', 'Finale 3o posto', 'Semifinale', 'Quarti'];
+/** Le fasi che raccontano qualcosa di una carriera. */
+const FASI_DI_VERTICE = ['Finale', 'Finale 3o posto', 'Semifinale', 'Quarti'];
+
+/**
+ * L'anno da cui il VIS pubblica gli identificativi degli arbitri.
+ *
+ * Prima di questo confine le partite portano un nome abbreviato
+ * ("Oliveira, E.") e nessun numero: verificato sul VIS con tre richieste
+ * diverse, incluso il roster dell'evento, che per il 2013 torna vuoto e per il
+ * 2026 torna popolato. Non e' un buco nel backfill, ed e' scritto in pagina
+ * perche' una carriera che sembra iniziare nel 2014 non venga letta come tale.
+ */
+const PRIMO_ANNO_CON_IDENTIFICATIVI = 2014;
 
 async function leggi<T>(tabella: string, query: string): Promise<T[]> {
   const token = await tokenCorrente();
@@ -95,6 +132,9 @@ async function leggi<T>(tabella: string, query: string): Promise<T[]> {
 
 export default function SchedaArbitro() {
   const { vis } = useLocalSearchParams<{ vis: string }>();
+  const { width } = useWindowDimensions();
+  const stretto = width < 760;
+
   const [accesso, setAccesso] = useState<StatoAccesso | null>(null);
   const [carriera, setCarriera] = useState<Carriera | null>(null);
   const [stagioni, setStagioni] = useState<PerStagione[]>([]);
@@ -106,13 +146,13 @@ export default function SchedaArbitro() {
 
   const carica = useCallback(async () => {
     if (!vis) return;
-    const filtro = `vis_referee_no=eq.${encodeURIComponent(String(vis))}`;
+    const f = `vis_referee_no=eq.${encodeURIComponent(String(vis))}`;
     try {
       const [c, s, k, p] = await Promise.all([
-        leggi<Carriera>('referee_career_stats', `select=*&${filtro}`),
-        leggi<PerStagione>('referee_season_stats', `select=*&${filtro}&order=season.desc`),
-        leggi<PerCategoria>('referee_category_stats', `select=*&${filtro}&order=rank.asc`),
-        leggi<Partita>('referee_match_log', `select=*&${filtro}&order=local_date.desc&limit=10000`),
+        leggi<Carriera>('referee_career_stats', `select=*&${f}`),
+        leggi<PerStagione>('referee_season_stats', `select=*&${f}&order=season.asc`),
+        leggi<PerCategoria>('referee_category_stats', `select=*&${f}&order=rank.asc`),
+        leggi<Partita>('referee_match_log', `select=*&${f}&order=local_date.desc&limit=10000`),
       ]);
       setCarriera(c[0] ?? null);
       setStagioni(s);
@@ -134,46 +174,38 @@ export default function SchedaArbitro() {
     })();
   }, [carica]);
 
-  const partiteVisibili = useMemo(
+  const inSelezione = useMemo(
     () => (stagione === 'carriera' ? partite : partite.filter((p) => p.season === stagione)),
     [partite, stagione]
   );
 
-  /** Quante partite per fase. E' il conteggio che l'utente cerca per primo —
-   *  "quante finali ha fatto" — e dipende dalla normalizzazione della 036: i
-   *  tabelloni di piazzamento hanno i nomi delle fasi vere. */
-  const perFase = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const p of partiteVisibili) {
-      const k = p.phase ?? 'Senza fase';
-      m.set(k, (m.get(k) ?? 0) + 1);
-    }
-    return [...m.entries()].sort((a, b) => {
-      const ia = ORDINE_FASI.indexOf(a[0]);
-      const ib = ORDINE_FASI.indexOf(b[0]);
-      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
-    });
-  }, [partiteVisibili]);
-
-  /** Le fasi di vertice incrociate con la categoria: "tre finali, ma di che
-   *  tipo" e' una domanda diversa da "tre finali". */
   const vertice = useMemo(() => {
     const m = new Map<string, Map<string, number>>();
-    for (const p of partiteVisibili) {
-      if (!p.phase || !FASI_IN_VISTA.includes(p.phase)) continue;
+    for (const p of inSelezione) {
+      if (!p.phase || !FASI_DI_VERTICE.includes(p.phase)) continue;
       const cat = p.category ?? 'Altro';
       if (!m.has(p.phase)) m.set(p.phase, new Map());
       const q = m.get(p.phase)!;
       q.set(cat, (q.get(cat) ?? 0) + 1);
     }
-    return FASI_IN_VISTA.filter((f) => m.has(f)).map((f) => ({
+    return FASI_DI_VERTICE.map((f) => ({
       fase: f,
-      per: [...m.get(f)!.entries()].sort((a, b) => b[1] - a[1]),
-      totale: [...m.get(f)!.values()].reduce((a, b) => a + b, 0),
+      totale: m.has(f) ? [...m.get(f)!.values()].reduce((a, b) => a + b, 0) : 0,
+      per: m.has(f) ? [...m.get(f)!.entries()].sort((a, b) => b[1] - a[1]) : [],
     }));
-  }, [partiteVisibili]);
+  }, [inSelezione]);
 
-  const categorieVisibili = useMemo(() => {
+  const perFase = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of inSelezione) m.set(p.phase ?? 'Senza fase', (m.get(p.phase ?? 'Senza fase') ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => {
+      const i = ORDINE_FASI.indexOf(a[0]);
+      const j = ORDINE_FASI.indexOf(b[0]);
+      return (i < 0 ? 999 : i) - (j < 0 ? 999 : j);
+    });
+  }, [inSelezione]);
+
+  const perCategoria = useMemo(() => {
     const m = new Map<string, { n: number; rank: number }>();
     for (const c of categorie) {
       if (stagione !== 'carriera' && c.season !== stagione) continue;
@@ -186,14 +218,14 @@ export default function SchedaArbitro() {
 
   const perConfederazione = useMemo(() => {
     const m = new Map<string, number>();
-    for (const p of partiteVisibili) {
-      const k = p.confederation ?? 'Non determinata';
-      m.set(k, (m.get(k) ?? 0) + 1);
-    }
+    for (const p of inSelezione) m.set(p.confederation ?? 'n.d.', (m.get(p.confederation ?? 'n.d.') ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [partiteVisibili]);
+  }, [inSelezione]);
 
-  const anni = useMemo(() => stagioni.map((s) => s.season), [stagioni]);
+  const maxStagione = useMemo(
+    () => stagioni.reduce((a, s) => Math.max(a, s.matches), 0),
+    [stagioni]
+  );
 
   if (caricamento) {
     return (
@@ -205,255 +237,460 @@ export default function SchedaArbitro() {
 
   if (accesso && accesso.stato !== 'autorizzato') {
     return (
-      <ScrollView contentContainerStyle={st.centro}>
-        <Text style={st.titoloErrore}>Serve l&apos;accesso</Text>
+      <View style={st.centro}>
+        <Text style={st.vuotoTitolo}>Serve l&apos;accesso</Text>
+        <Text style={st.vuotoTesto}>Le statistiche sono riservate a chi è stato invitato.</Text>
         <Pressable style={st.bottone} onPress={() => router.push('/accedi')}>
           <Text style={st.testoBottone}>Vai all&apos;accesso</Text>
         </Pressable>
-      </ScrollView>
+      </View>
     );
   }
 
   if (errore || !carriera) {
     return (
-      <ScrollView contentContainerStyle={st.centro}>
-        <Text style={st.titoloErrore}>Arbitro non trovato</Text>
-        <Text style={st.debole}>{errore ?? `Nessuna statistica per il VIS ${vis}.`}</Text>
+      <View style={st.centro}>
+        <Text style={st.vuotoTitolo}>Arbitro non trovato</Text>
+        <Text style={st.vuotoTesto}>{errore ?? `Nessuna statistica per il VIS ${vis}.`}</Text>
         <Pressable style={st.bottone} onPress={() => router.push('/referee-stats-lab')}>
           <Text style={st.testoBottone}>Torna all&apos;elenco</Text>
         </Pressable>
-      </ScrollView>
+      </View>
     );
   }
 
   const sel = stagione === 'carriera' ? null : stagioni.find((s) => s.season === stagione);
-  const partiteTot = sel ? sel.matches : carriera.matches;
-  const primo = sel ? sel.as_first : carriera.as_first;
-  const secondo = sel ? sel.as_second : carriera.as_second;
-  const tornei = sel ? sel.tournaments : carriera.tournaments;
+  const nPartite = sel ? sel.matches : carriera.matches;
+  const nPrimo = sel ? sel.as_first : carriera.as_first;
+  const nSecondo = sel ? sel.as_second : carriera.as_second;
+  const nTornei = sel ? sel.tournaments : carriera.tournaments;
+  const quotaPrimo = nPartite > 0 ? Math.round((100 * nPrimo) / nPartite) : 0;
+  const iniziato = Number((carriera.first_match ?? '').slice(0, 4));
+  const troncato = iniziato > 0 && iniziato <= PRIMO_ANNO_CON_IDENTIFICATIVI;
 
   return (
-    <ScrollView style={st.pagina} contentContainerStyle={{ paddingBottom: spacing.xxl }}>
-      <Pressable onPress={() => router.push('/referee-stats-lab')} style={st.indietro}>
-        <Text style={st.testoIndietro}>← Elenco arbitri</Text>
-      </Pressable>
-
-      <View style={st.testata}>
-        <Text style={st.nome}>{carriera.referee_name ?? `#${carriera.vis_referee_no}`}</Text>
-        <Text style={st.sottotitolo}>
-          {carriera.federation_code ?? '—'} · VIS {carriera.vis_referee_no} ·{' '}
-          {carriera.first_match} → {carriera.last_match}
-        </Text>
-      </View>
-
-      <View style={st.pillole}>
-        <Pressable
-          style={[st.pillola, stagione === 'carriera' && st.pillolaAttiva]}
-          onPress={() => setStagione('carriera')}
-        >
-          <Text style={[st.testoPillola, stagione === 'carriera' && st.testoPillolaAttiva]}>
-            Carriera
-          </Text>
+    <ScrollView style={st.pagina} contentContainerStyle={st.contenuto}>
+      <View style={st.colonna}>
+        <Pressable onPress={() => router.push('/referee-stats-lab')} hitSlop={8}>
+          <Text style={st.indietro}>← Elenco arbitri</Text>
         </Pressable>
-        {anni.map((a) => (
-          <Pressable
-            key={a}
-            style={[st.pillola, stagione === a && st.pillolaAttiva]}
-            onPress={() => setStagione(a)}
-          >
-            <Text style={[st.testoPillola, stagione === a && st.testoPillolaAttiva]}>{a}</Text>
-          </Pressable>
-        ))}
-      </View>
 
-      <View style={st.numeroni}>
-        <Numerone n={partiteTot} etichetta="partite" forte />
-        <Numerone n={primo} etichetta="da 1° arbitro" />
-        <Numerone n={secondo} etichetta="da 2° arbitro" />
-        <Numerone n={tornei} etichetta="tornei" />
-        {stagione === 'carriera' && <Numerone n={carriera.seasons} etichetta="stagioni" />}
-      </View>
+        {/* ---- Testata ---------------------------------------------------- */}
+        <View style={st.testata}>
+          <View style={st.medaglione}>
+            <Text style={st.iniziali}>{iniziali(carriera.referee_name)}</Text>
+          </View>
+          <View style={{ flex: 1, minWidth: 220 }}>
+            <Text style={st.nome}>{carriera.referee_name ?? `#${carriera.vis_referee_no}`}</Text>
+            <View style={st.targhette}>
+              <Targhetta testo={carriera.federation_code ?? '—'} forte />
+              <Targhetta testo={`VIS ${carriera.vis_referee_no}`} />
+              <Targhetta
+                testo={`${(carriera.first_match ?? '').slice(0, 4)} – ${(carriera.last_match ?? '').slice(0, 4)}`}
+              />
+              <Targhetta testo={`${carriera.seasons} stagioni`} />
+            </View>
+          </View>
+        </View>
 
-      <Sezione titolo="Fasi di vertice">
-        {vertice.length === 0 ? (
-          <Text style={st.debole}>
-            Nessuna partita di vertice in questa selezione. I tabelloni di piazzamento — che nel
-            VIS si chiamano anche loro &quot;semifinale&quot; o &quot;finale&quot; — non contano
-            qui.
-          </Text>
-        ) : (
-          vertice.map((v) => (
-            <View key={v.fase} style={st.rigaVertice}>
-              <Text style={st.faseNome}>{v.fase}</Text>
-              <Text style={st.faseTotale}>{v.totale}</Text>
-              <Text style={st.faseDettaglio} numberOfLines={2}>
-                {v.per.map(([c, n]) => `${c} ${n}`).join(' · ')}
+        {/* ---- Selettore stagione ----------------------------------------- */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={st.selettore}>
+          <Chip attivo={stagione === 'carriera'} onPress={() => setStagione('carriera')}>
+            Carriera
+          </Chip>
+          {[...stagioni].reverse().map((s) => (
+            <Chip key={s.season} attivo={stagione === s.season} onPress={() => setStagione(s.season)}>
+              {String(s.season)}
+            </Chip>
+          ))}
+        </ScrollView>
+
+        {/* ---- Le finali, per prime --------------------------------------- */}
+        <Sezione titolo="Fasi di vertice" nota="Escluse le finali e semifinali di piazzamento">
+          <View style={st.vertice}>
+            {vertice.map((v) => (
+              <View key={v.fase} style={[st.cartaVertice, v.fase === 'Finale' && st.cartaOro]}>
+                <Text style={[st.verticeN, v.fase === 'Finale' && st.verticeNOro]}>{v.totale}</Text>
+                <Text style={st.verticeFase}>{v.fase}</Text>
+                {v.per.length > 0 && (
+                  <Text style={st.verticeDettaglio} numberOfLines={3}>
+                    {v.per.map(([c, n]) => `${n} ${c}`).join('\n')}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        </Sezione>
+
+        {/* ---- La forma della carriera ------------------------------------ */}
+        {stagione === 'carriera' && stagioni.length > 1 && (
+          <Sezione titolo="La carriera nel tempo" nota="Partite per stagione">
+            <View style={st.timeline}>
+              {stagioni.map((s) => (
+                <Pressable key={s.season} style={st.annoCol} onPress={() => setStagione(s.season)}>
+                  <Text style={st.annoN}>{s.matches}</Text>
+                  <View style={st.annoFondo}>
+                    <View
+                      style={[
+                        st.annoBarra,
+                        { height: Math.max(3, Math.round((72 * s.matches) / (maxStagione || 1))) },
+                      ]}
+                    />
+                  </View>
+                  <Text style={st.annoEtichetta}>{String(s.season).slice(2)}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {troncato && (
+              <Text style={st.avviso}>
+                Il VIS pubblica gli identificativi degli arbitri solo dal {PRIMO_ANNO_CON_IDENTIFICATIVI}.
+                Prima di allora le partite portano un nome abbreviato e nessun numero: se questa
+                carriera è cominciata prima, la parte precedente non è ricostruibile.
+              </Text>
+            )}
+          </Sezione>
+        )}
+
+        {/* ---- I numeri --------------------------------------------------- */}
+        <Sezione titolo={stagione === 'carriera' ? 'In carriera' : `Stagione ${stagione}`}>
+          <View style={st.numeri}>
+            <Numero n={nPartite} etichetta="partite" grande />
+            <Numero n={nTornei} etichetta="tornei" />
+            <Numero n={nPrimo} etichetta="da 1° arbitro" sotto={`${quotaPrimo}%`} />
+            <Numero n={nSecondo} etichetta="da 2° arbitro" sotto={`${100 - quotaPrimo}%`} />
+          </View>
+        </Sezione>
+
+        {/* ---- Livello e area --------------------------------------------- */}
+        <View style={[st.duecolonne, stretto && st.unacolonna]}>
+          <View style={st.mezza}>
+            <Sezione titolo="Livello dei tornei" nota="In ordine di importanza">
+              {perCategoria.map(([c, v], i) => (
+                <Barra
+                  key={c}
+                  etichetta={c}
+                  n={v.n}
+                  max={Math.max(...perCategoria.map(([, x]) => x.n), 1)}
+                  evidenzia={i === 0}
+                />
+              ))}
+            </Sezione>
+          </View>
+          <View style={st.mezza}>
+            <Sezione titolo="Confederazione">
+              {perConfederazione.map(([c, n], i) => (
+                <Barra
+                  key={c}
+                  etichetta={c}
+                  n={n}
+                  max={perConfederazione[0]?.[1] ?? 1}
+                  evidenzia={i === 0}
+                />
+              ))}
+            </Sezione>
+          </View>
+        </View>
+
+        {/* ---- Tutte le fasi ---------------------------------------------- */}
+        <Sezione titolo="Tutte le fasi">
+          <View style={st.fasi}>
+            {perFase.map(([f, n]) => (
+              <View key={f} style={st.fasePillola}>
+                <Text style={st.fasePillolaN}>{n}</Text>
+                <Text style={st.fasePillolaT}>{f}</Text>
+              </View>
+            ))}
+          </View>
+        </Sezione>
+
+        {/* ---- Partite ----------------------------------------------------- */}
+        <Sezione titolo={`Partite (${inSelezione.length})`}>
+          {inSelezione.slice(0, 50).map((p) => (
+            <View key={p.match_no} style={st.riga}>
+              <Text style={st.rData}>{p.local_date ?? '—'}</Text>
+              {!stretto && (
+                <Text style={st.rTorneo} numberOfLines={1}>
+                  {p.tournament_name ?? `Torneo ${p.tournament_no}`}
+                  {p.gender ? ` · ${p.gender === 'W' ? 'F' : p.gender === 'M' ? 'M' : 'M+W'}` : ''}
+                </Text>
+              )}
+              <Text
+                style={[st.rFase, FASI_DI_VERTICE.includes(p.phase ?? '') && st.rFaseVertice]}
+                numberOfLines={1}
+              >
+                {p.phase ?? '—'}
+              </Text>
+              <Text style={st.rRuolo}>{p.role === 'FIRST' ? '1°' : '2°'}</Text>
+              <Text style={st.rSquadre} numberOfLines={1}>
+                {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
+              </Text>
+              <Text style={st.rPunti}>
+                {p.match_points_a != null && p.match_points_b != null
+                  ? `${p.match_points_a}–${p.match_points_b}`
+                  : ''}
               </Text>
             </View>
-          ))
-        )}
-      </Sezione>
-
-      <Sezione titolo="Tutte le fasi">
-        <View style={st.griglia}>
-          {perFase.map(([f, n]) => (
-            <View key={f} style={st.cella}>
-              <Text style={st.cellaN}>{n}</Text>
-              <Text style={st.cellaEtichetta}>{f}</Text>
-            </View>
           ))}
-        </View>
-      </Sezione>
-
-      <Sezione titolo="Per categoria">
-        {categorieVisibili.map(([c, v]) => (
-          <Barra key={c} etichetta={c} n={v.n} max={categorieVisibili[0]?.[1].n ?? 1} />
-        ))}
-      </Sezione>
-
-      <Sezione titolo="Per confederazione">
-        {perConfederazione.map(([c, n]) => (
-          <Barra key={c} etichetta={c} n={n} max={perConfederazione[0]?.[1] ?? 1} />
-        ))}
-      </Sezione>
-
-      <Sezione titolo={`Ultime partite (${partiteVisibili.length})`}>
-        {partiteVisibili.slice(0, 60).map((p) => (
-          <View key={p.match_no} style={st.partita}>
-            <Text style={st.pData}>{p.local_date ?? '—'}</Text>
-            <Text style={st.pFase}>{p.phase ?? '—'}</Text>
-            <Text style={st.pRuolo}>{p.role === 'FIRST' ? '1°' : '2°'}</Text>
-            <Text style={st.pTorneo} numberOfLines={1}>
-              {p.tournament_name ?? `Torneo ${p.tournament_no}`}
+          {inSelezione.length > 50 && (
+            <Text style={st.nota}>
+              …e altre {inSelezione.length - 50}. L&apos;elenco si ferma a 50 per restare leggibile;
+              i conteggi qui sopra le contano tutte.
             </Text>
-            <Text style={st.pSquadre} numberOfLines={1}>
-              {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
-            </Text>
-          </View>
-        ))}
-        {partiteVisibili.length > 60 && (
-          <Text style={st.debole}>
-            …e altre {partiteVisibili.length - 60}. L&apos;elenco si ferma a 60 per restare
-            leggibile; i conteggi qui sopra le contano tutte.
-          </Text>
-        )}
-      </Sezione>
+          )}
+        </Sezione>
+      </View>
     </ScrollView>
   );
 }
 
-function Numerone({ n, etichetta, forte }: { n: number; etichetta: string; forte?: boolean }) {
+/* ------------------------------------------------------------------------- */
+
+function iniziali(nome: string | null): string {
+  if (!nome) return '?';
+  // `split` non restituisce mai un array vuoto, ma con `noUncheckedIndexedAccess`
+  // TypeScript non lo sa — e ha ragione a non fidarsi: una stringa di soli spazi
+  // darebbe `['']`, e `''[0]` e' undefined.
+  const p = nome.trim().split(/\s+/).filter(Boolean);
+  const primo = p[0]?.[0] ?? '';
+  const ultimo = p.length > 1 ? (p[p.length - 1]?.[0] ?? '') : '';
+  return (primo + ultimo).toUpperCase() || '?';
+}
+
+function Targhetta({ testo, forte }: { testo: string; forte?: boolean }) {
   return (
-    <View style={st.numerone}>
-      <Text style={[st.numeroneN, forte && st.numeroneForte]}>{n}</Text>
-      <Text style={st.numeroneEtichetta}>{etichetta}</Text>
+    <View style={[st.targhetta, forte && st.targhettaForte]}>
+      <Text style={[st.targhettaT, forte && st.targhettaTForte]}>{testo}</Text>
     </View>
   );
 }
 
-function Sezione({ titolo, children }: { titolo: string; children: React.ReactNode }) {
+function Chip({
+  children,
+  attivo,
+  onPress,
+}: {
+  children: React.ReactNode;
+  attivo: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={[st.chip, attivo && st.chipAttivo]} onPress={onPress}>
+      <Text style={[st.chipT, attivo && st.chipTAttivo]}>{children}</Text>
+    </Pressable>
+  );
+}
+
+function Sezione({
+  titolo,
+  nota,
+  children,
+}: {
+  titolo: string;
+  nota?: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={st.sezione}>
-      <Text style={st.sezioneTitolo}>{titolo}</Text>
+      <View style={st.sezioneTestata}>
+        <Text style={st.sezioneTitolo}>{titolo}</Text>
+        {nota ? <Text style={st.sezioneNota}>{nota}</Text> : null}
+      </View>
       {children}
     </View>
   );
 }
 
-function Barra({ etichetta, n, max }: { etichetta: string; n: number; max: number }) {
+function Numero({
+  n,
+  etichetta,
+  sotto,
+  grande,
+}: {
+  n: number;
+  etichetta: string;
+  sotto?: string;
+  grande?: boolean;
+}) {
+  return (
+    <View style={st.numero}>
+      <Text style={[st.numeroN, grande && st.numeroNGrande]}>{n.toLocaleString('it-IT')}</Text>
+      <Text style={st.numeroE}>{etichetta}</Text>
+      {sotto ? <Text style={st.numeroS}>{sotto}</Text> : null}
+    </View>
+  );
+}
+
+function Barra({
+  etichetta,
+  n,
+  max,
+  evidenzia,
+}: {
+  etichetta: string;
+  n: number;
+  max: number;
+  evidenzia?: boolean;
+}) {
   const quota = max > 0 ? Math.max(2, Math.round((100 * n) / max)) : 0;
   return (
     <View style={st.barraRiga}>
-      <Text style={st.barraEtichetta} numberOfLines={1}>
+      <Text style={st.barraE} numberOfLines={1}>
         {etichetta}
       </Text>
       <View style={st.barraFondo}>
-        <View style={[st.barraPieno, { width: `${quota}%` }]} />
+        <View style={[st.barraPieno, evidenzia && st.barraPienoOro, { width: `${quota}%` }]} />
       </View>
       <Text style={st.barraN}>{n}</Text>
     </View>
   );
 }
 
+/* ------------------------------------------------------------------------- */
+
 const st = StyleSheet.create({
   pagina: { flex: 1, backgroundColor: colors.background },
+  contenuto: { paddingBottom: spacing.xxl, alignItems: 'center' },
+  colonna: { width: '100%', maxWidth: 960, paddingHorizontal: spacing.lg },
   centro: {
-    flexGrow: 1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
     backgroundColor: colors.background,
   },
-  indietro: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  testoIndietro: { color: colors.textSecondary },
-  testata: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
-  nome: { fontSize: 28, fontWeight: '700', color: colors.textPrimary },
-  sottotitolo: { color: colors.textSecondary, marginTop: 2 },
 
-  pillole: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+  indietro: { color: colors.textSecondary, paddingVertical: spacing.md, fontSize: 14 },
+
+  testata: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.md },
+  medaglione: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pillola: {
+  iniziali: { color: colors.onPrimary, fontSize: 24, fontWeight: '700', letterSpacing: 0.5 },
+  nome: { fontSize: 32, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.25 },
+  targhette: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm },
+  targhetta: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: 4,
+    backgroundColor: '#F4F4F5',
+  },
+  targhettaForte: { backgroundColor: brandBlue[900] },
+  targhettaT: { fontSize: 12, color: colors.textSecondary, fontWeight: '600' },
+  targhettaTForte: { color: neutrals.bgSurface },
+
+  selettore: { marginTop: spacing.lg, marginBottom: spacing.xs },
+  chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
+    marginRight: 6,
   },
-  pillolaAttiva: { backgroundColor: colors.primary, borderColor: colors.primary },
-  testoPillola: { color: colors.textSecondary, fontSize: 13 },
-  testoPillolaAttiva: { color: colors.onPrimary, fontWeight: '600' },
+  chipAttivo: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipT: { color: colors.textSecondary, fontSize: 13 },
+  chipTAttivo: { color: colors.onPrimary, fontWeight: '600' },
 
-  numeroni: { flexDirection: 'row', flexWrap: 'wrap', padding: spacing.lg, gap: spacing.lg },
-  numerone: { minWidth: 96 },
-  numeroneN: { fontSize: 26, fontWeight: '700', color: colors.textSecondary },
-  numeroneForte: { color: colors.textPrimary },
-  numeroneEtichetta: { color: colors.textTertiary, fontSize: 12 },
-
-  sezione: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
+  sezione: { marginTop: spacing.xl },
+  sezioneTestata: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.md },
   sezioneTitolo: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.textSecondary,
     textTransform: 'uppercase',
-    marginBottom: spacing.sm,
+    letterSpacing: 0.6,
+  },
+  sezioneNota: { fontSize: 12, color: colors.textTertiary },
+
+  vertice: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  cartaVertice: {
+    flexGrow: 1,
+    flexBasis: 150,
+    minHeight: 108,
+    padding: spacing.md,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  cartaOro: { borderColor: colors.accent, borderWidth: 2 },
+  verticeN: { fontSize: 34, fontWeight: '700', color: colors.textPrimary, lineHeight: 38 },
+  verticeNOro: { color: colors.accent },
+  verticeFase: { fontSize: 13, color: colors.textSecondary, fontWeight: '600' },
+  verticeDettaglio: { marginTop: 6, fontSize: 11, color: colors.textTertiary, lineHeight: 15 },
+
+  timeline: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, flexWrap: 'wrap' },
+  annoCol: { alignItems: 'center', width: 40 },
+  annoN: { fontSize: 10, color: colors.textTertiary, marginBottom: 2 },
+  annoFondo: { height: 76, justifyContent: 'flex-end' },
+  annoBarra: { width: 22, backgroundColor: brandBlue[600], borderRadius: 3 },
+  annoEtichetta: { fontSize: 11, color: colors.textSecondary, marginTop: 4 },
+  avviso: {
+    marginTop: spacing.md,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textTertiary,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+    paddingLeft: spacing.sm,
   },
 
-  rigaVertice: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, gap: spacing.sm },
-  faseNome: { width: 130, color: colors.textPrimary, fontWeight: '600' },
-  faseTotale: { width: 44, textAlign: 'right', color: colors.textPrimary, fontWeight: '700' },
-  faseDettaglio: { flex: 1, color: colors.textTertiary, fontSize: 12 },
+  numeri: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xl },
+  numero: { minWidth: 92 },
+  numeroN: { fontSize: 24, fontWeight: '700', color: colors.textPrimary },
+  numeroNGrande: { fontSize: 40, lineHeight: 44, letterSpacing: -0.5 },
+  numeroE: { fontSize: 12, color: colors.textTertiary },
+  numeroS: { fontSize: 12, color: colors.textSecondary, fontWeight: '600' },
 
-  griglia: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  cella: { minWidth: 104, paddingVertical: 4 },
-  cellaN: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
-  cellaEtichetta: { color: colors.textTertiary, fontSize: 12 },
+  duecolonne: { flexDirection: 'row', gap: spacing.xl },
+  unacolonna: { flexDirection: 'column', gap: 0 },
+  mezza: { flex: 1, minWidth: 260 },
 
   barraRiga: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 3 },
-  barraEtichetta: { width: 150, color: colors.textSecondary, fontSize: 13 },
-  barraFondo: { flex: 1, height: 10, backgroundColor: colors.surfaceDisabled, borderRadius: 5 },
-  barraPieno: { height: 10, backgroundColor: colors.accent, borderRadius: 5 },
-  barraN: { width: 52, textAlign: 'right', color: colors.textPrimary, fontSize: 13 },
+  barraE: { width: 148, color: colors.textSecondary, fontSize: 13 },
+  barraFondo: { flex: 1, height: 8, backgroundColor: '#F4F4F5', borderRadius: 4 },
+  barraPieno: { height: 8, backgroundColor: brandBlue[600], borderRadius: 4 },
+  barraPienoOro: { backgroundColor: colors.accent },
+  barraN: { width: 48, textAlign: 'right', color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
 
-  partita: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 4 },
-  pData: { width: 92, color: colors.textSecondary, fontSize: 12 },
-  pFase: { width: 110, color: colors.textTertiary, fontSize: 12 },
-  pRuolo: { width: 26, color: colors.textSecondary, fontSize: 12, fontWeight: '700' },
-  pTorneo: { width: 200, color: colors.textPrimary, fontSize: 13 },
-  pSquadre: { flex: 1, color: colors.textSecondary, fontSize: 13 },
+  fasi: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  fasePillola: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minWidth: 96,
+  },
+  fasePillolaN: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
+  fasePillolaT: { fontSize: 11, color: colors.textTertiary },
 
-  titoloErrore: { fontSize: 20, fontWeight: '700', color: colors.error, marginBottom: spacing.sm },
-  debole: { color: colors.textTertiary, fontSize: 13, lineHeight: 18 },
+  riga: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  rData: { width: 88, color: colors.textTertiary, fontSize: 12 },
+  rTorneo: { width: 190, color: colors.textPrimary, fontSize: 13 },
+  rFase: { width: 104, color: colors.textTertiary, fontSize: 12 },
+  rFaseVertice: { color: colors.accent, fontWeight: '700' },
+  rRuolo: { width: 24, color: colors.textSecondary, fontSize: 12, fontWeight: '700' },
+  rSquadre: { flex: 1, color: colors.textSecondary, fontSize: 13 },
+  rPunti: { width: 44, textAlign: 'right', color: colors.textPrimary, fontSize: 13 },
+
+  nota: { marginTop: spacing.md, fontSize: 12, color: colors.textTertiary, lineHeight: 17 },
+  vuotoTitolo: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
+  vuotoTesto: { color: colors.textSecondary, textAlign: 'center', maxWidth: 420 },
   bottone: {
     marginTop: spacing.lg,
     backgroundColor: colors.primary,

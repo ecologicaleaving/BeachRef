@@ -467,7 +467,14 @@ export enum BeachLiveEventType {
  * @returns True if data is valid BeachLive
  */
 export function isValidBeachLive(data: any): data is BeachLive {
-  return (
+  // `Boolean(...)`: una catena di `&&` restituisce l'ULTIMO valore valutato,
+  // non un booleano. Questa guardia tornava quindi `data.teamB` (un oggetto)
+  // per un dato valido, `null` per `null` e `undefined` per un oggetto
+  // incompleto. In TypeScript il tipo di ritorno dichiarato (`data is BeachLive`)
+  // nasconde l'errore: al compilatore basta un valore veritiero, e chi scrive
+  // `if (isValidBeachLive(x))` non nota nulla. Lo notano invece
+  // `=== true`/`=== false` e chiunque serializzi il risultato.
+  return Boolean(
     data &&
     typeof data.version === 'number' &&
     typeof data.pollDelay === 'number' &&
@@ -485,7 +492,9 @@ export function isValidBeachLive(data: any): data is BeachLive {
  * @returns True if no changes since last version
  */
 export function isNoChangesResponse(data: any): boolean {
-  return data && data.noChanges === true;
+  // Stessa ragione: senza `Boolean` questa tornava `null`/`undefined`
+  // invece di `false`, pur dichiarando `: boolean`.
+  return Boolean(data && data.noChanges === true);
 }
 
 /**

@@ -65,6 +65,11 @@ const createTestQueryClient = () =>
         retry: false,
         gcTime: 0,
         staleTime: 0,
+        // Un test che aspetta 30 secondi per rinfrescare non sta verificando
+        // niente che gli serva: sta solo tenendo vivo un timer.
+        refetchInterval: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: false,
@@ -72,11 +77,40 @@ const createTestQueryClient = () =>
     },
   });
 
+/**
+ * UN client per test, e viene distrutto.
+ *
+ * Prima `createWrapper()` ne creava uno nuovo a ogni chiamata — dieci volte in
+ * questa suite — e nessuno veniva mai smontato: non c'era un `unmount()`, non
+ * c'era un `afterEach`. Ogni client restava vivo con dentro una query che
+ * `useAnalyticsDashboard` rinfresca ogni 30 secondi
+ * (`enableRealTimeUpdates: true` e' il suo predefinito), e con `gcTime: 0`
+ * ogni rinfresco produceva oggetti che nessuno raccoglieva.
+ *
+ * Esito misurato: 4 GB di heap e `FATAL ERROR: Reached heap limit` dopo sei
+ * minuti. E siccome un worker che muore si porta dietro le suite che stava
+ * eseguendo, questa e' la spiegazione di "tre run danno tre numeri" (#94):
+ * non test instabili, ma un test che avvelena il processo — con vittime
+ * diverse a ogni giro, a seconda di come jest ha distribuito il lavoro.
+ */
+let clientCorrente: QueryClient | null = null;
+
 const createWrapper = () => {
-  const queryClient = createTestQueryClient();
+  clientCorrente?.clear();
+  clientCorrente = createTestQueryClient();
+  const client = clientCorrente;
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
+    React.createElement(QueryClientProvider, { client }, children);
 };
+
+afterEach(() => {
+  // `clear()` svuota la cache, `unmount()` ferma gli osservatori: senza il
+  // secondo, gli intervalli restano accesi anche a cache vuota.
+  clientCorrente?.unmount();
+  clientCorrente?.clear();
+  clientCorrente = null;
+  jest.clearAllTimers();
+});
 
 describe('Analytics Dashboard Integration Tests', () => {
   let mockAnalyticsService: jest.Mocked<AnalyticsService>;
@@ -99,16 +133,23 @@ describe('Analytics Dashboard Integration Tests', () => {
     
     (AnalyticsService.getInstance as jest.Mock).mockReturnValue(mockAnalyticsService);
 
-    // Mock LocalStorageManager
+    // `LocalStorageManager` NON ha `getInstance`, e non ha nemmeno
+    // `getItem`/`setItem`: e' una cache TTL con API `get` / `set` / `delete`
+    // su prefisso `@VisCache:`. Il test mockava tre metodi inesistenti, e la
+    // riga successiva — `LocalStorageManager.getInstance as jest.Mock` —
+    // chiamava `.mockReturnValue` su `undefined`, uccidendo l'intera suite
+    // in `beforeEach`: 12 test falliti, tutti con lo stesso errore che non
+    // c'entrava niente con cio' che volevano verificare.
+    //
+    // Il codice di produzione era gia' stato corretto (issue #71/#65,
+    // `useAnalyticsSettings` persiste le preferenze su AsyncStorage con una
+    // chiave esplicita). Era il test a essere rimasto indietro.
     mockLocalStorageManager = {
-      getInstance: jest.fn(),
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      removeItem: jest.fn(),
-      clear: jest.fn(),
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      clear: jest.fn().mockResolvedValue(undefined),
     } as any;
-    
-    (LocalStorageManager.getInstance as jest.Mock).mockReturnValue(mockLocalStorageManager);
   });
 
   describe('End-to-End Analytics Dashboard Flow', () => {
@@ -131,7 +172,7 @@ describe('Analytics Dashboard Integration Tests', () => {
         lastUpdated: '2025-01-09T12:00:00Z',
       };
 
-      mockLocalStorageManager.getItem.mockResolvedValue(JSON.stringify(mockSettings));
+      mockLocalStorageManager.get.mockResolvedValue(JSON.stringify(mockSettings));
 
       // Render both hooks
       const settingsWrapper = createWrapper();
@@ -182,8 +223,8 @@ describe('Analytics Dashboard Integration Tests', () => {
         lastUpdated: '2025-01-09T12:00:00Z',
       };
 
-      mockLocalStorageManager.getItem.mockResolvedValue(JSON.stringify(mockSettings));
-      mockLocalStorageManager.setItem.mockResolvedValue(undefined);
+      mockLocalStorageManager.get.mockResolvedValue(JSON.stringify(mockSettings));
+      mockLocalStorageManager.set.mockResolvedValue(undefined);
 
       const wrapper = createWrapper();
 
@@ -209,7 +250,7 @@ describe('Analytics Dashboard Integration Tests', () => {
       });
 
       // Verify persistence
-      expect(mockLocalStorageManager.setItem).toHaveBeenCalledWith(
+      expect(mockLocalStorageManager.set).toHaveBeenCalledWith(
         'analytics_settings',
         expect.stringContaining('"enableRealTimeUpdates":true')
       );

@@ -178,10 +178,19 @@ export function useRefereeAnalytics(
             second_referee_count: agg.second_referee_count,
             challenge_referee_count: agg.challenge_referee_count,
             completion_rate: completionRate,
-            tournaments_worked: agg.tournaments_worked,
+            // `?? []` e non un passaggio diretto: `RefereePerformanceMetrics`
+            // dichiara `tournaments_worked: string[]`, ma la colonna del
+            // database e' `text[]` ANNULLABILE. Un null che arriva qui non
+            // viola solo il tipo — lo viola in silenzio, perche' il valore
+            // arriva da una riga non tipizzata e TypeScript non ha modo di
+            // accorgersene. A rompersi e' il primo consumatore che fa `.map()`
+            // o `.length`, lontano da qui.
+            tournaments_worked: agg.tournaments_worked ?? [],
             performance_score: performanceScore,
             workload_trend: workloadTrend,
-            geographic_coverage: currentConfig.includeGeographicData ? agg.tournaments_worked : [],
+            geographic_coverage: currentConfig.includeGeographicData
+              ? (agg.tournaments_worked ?? [])
+              : [],
             avg_matches_per_day: Math.round(avgMatchesPerDay * 100) / 100
           };
         })

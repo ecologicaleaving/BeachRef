@@ -9,15 +9,44 @@ jest.mock('../RealtimeSubscriptionService');
 jest.mock('../ConnectionCircuitBreaker');
 jest.mock('../RealtimePerformanceMonitor');
 
+/**
+ * Il servizio raggruppa gli eventi con `BATCH_DELAY_MS = 2000`.
+ *
+ * I test aspettavano 150 ms reali e poi asserivano che l'ascoltatore fosse
+ * stato chiamato: non lo era, e non poteva esserlo — mancavano 1850 ms. Sei
+ * fallimenti tutti con "Number of calls: 0", nessuno dei quali riguardava il
+ * comportamento in prova.
+ *
+ * Aspettare 2 secondi veri sette volte avrebbe aggiunto quattordici secondi
+ * alla suite per non provare niente di piu'. Con i timer finti l'attesa e'
+ * istantanea E deterministica: se un giorno la soglia cambia, il test continua
+ * a valere perche' avanza di piu' della costante, non di un numero scelto a
+ * occhio.
+ */
+const RITARDO_BATCH_MS = 2000;
+
+async function avanzaOltreIlBatch(): Promise<void> {
+  await jest.advanceTimersByTimeAsync(RITARDO_BATCH_MS + 50);
+}
+
 describe('TournamentStatusSubscriptionService', () => {
   let mockSubscription: any;
   let mockChannel: any;
   let tournamentStatusCallback: any;
   let matchStatusCallback: any;
 
+  afterEach(() => {
+    // I timer pendenti non devono sopravvivere al test che li ha accesi: il
+    // servizio ne tiene uno solo (`batchTimeout`) ma e' statico, quindi
+    // sarebbe condiviso con la prova successiva.
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    
+    jest.useFakeTimers();
+
     // Clean up service state
     TournamentStatusSubscriptionService.cleanup();
     
@@ -230,7 +259,7 @@ describe('TournamentStatusSubscriptionService', () => {
       tournamentStatusCallback(completionPayload);
 
       // Wait for batched processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       expect(listener).toHaveBeenCalledWith(
         expect.arrayContaining([
@@ -283,7 +312,7 @@ describe('TournamentStatusSubscriptionService', () => {
       matchStatusCallback(payload);
 
       // Wait for batched processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       expect(listener).toHaveBeenCalledWith(
         expect.arrayContaining([
@@ -334,7 +363,7 @@ describe('TournamentStatusSubscriptionService', () => {
       matchStatusCallback(payload);
 
       // Wait for batched processing  
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       // Should not trigger any events
       expect(listener).not.toHaveBeenCalled();
@@ -369,7 +398,7 @@ describe('TournamentStatusSubscriptionService', () => {
       tournamentStatusCallback(payload2);
 
       // Wait for batched processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       // Should receive both events in single batch
       expect(listener).toHaveBeenCalledTimes(1);
@@ -409,7 +438,7 @@ describe('TournamentStatusSubscriptionService', () => {
       tournamentStatusCallback(highPriorityPayload);
 
       // Wait for batched processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       const calledWith = listener.mock.calls[0][0];
       expect(calledWith[0].priority).toBe('high'); // High priority should be first
@@ -461,7 +490,7 @@ describe('TournamentStatusSubscriptionService', () => {
       tournamentStatusCallback(payload);
 
       // Wait for processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       // Listener should not have been called
       expect(listener).not.toHaveBeenCalled();
@@ -559,7 +588,7 @@ describe('TournamentStatusSubscriptionService', () => {
       tournamentStatusCallback(payload);
 
       // Wait for processing
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await avanzaOltreIlBatch();
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in tournament status listener:',

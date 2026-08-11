@@ -237,7 +237,11 @@ export class TournamentStatusSubscriptionService {
       this.queueEvent(event);
       
     } catch (error) {
-      // console.error('Error handling tournament status change:', error);
+      // Un `catch` muto trasforma un guasto in un non-evento: la
+      // sottoscrizione smette di funzionare e nessuno lo sa. Nel resto dei
+      // servizi `console.error` e' viva (39 occorrenze) e non c'e' nessuna
+      // regola `no-console`: qui era stata spenta e basta.
+      console.error('Error handling tournament status change:', error);
     }
   }
 
@@ -264,7 +268,7 @@ export class TournamentStatusSubscriptionService {
       }
       
     } catch (error) {
-      // console.error('Error handling match schedule change:', error);
+      console.error('Error handling match schedule change:', error);
     }
   }
 
@@ -455,7 +459,9 @@ export class TournamentStatusSubscriptionService {
       try {
         listener([...sortedEvents]);
       } catch (error) {
-        // console.error('Error in tournament status listener:', error);
+        // L'errore e' di un ASCOLTATORE, non del servizio: va segnalato ma
+        // non deve fermare gli altri ascoltatori del lotto.
+        console.error('Error in tournament status listener:', error);
       }
     });
 

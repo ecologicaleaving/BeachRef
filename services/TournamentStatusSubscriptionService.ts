@@ -132,7 +132,10 @@ export class TournamentStatusSubscriptionService {
       return success;
       
     } catch (error) {
-      // console.error('Failed to subscribe to tournament status:', error);
+      // Qui la sottoscrizione NON si stabilisce: senza questa riga il realtime
+      // resta spento e l'unico sintomo e' che gli aggiornamenti non arrivano
+      // piu'. E' il guasto piu' grave dei cinque, perche' non degrada — sparisce.
+      console.error('Failed to subscribe to tournament status:', error);
       this.circuitBreaker.onFailure(error instanceof Error ? error.message : 'Unknown error');
       return false;
     }
@@ -171,7 +174,7 @@ export class TournamentStatusSubscriptionService {
       return true;
       
     } catch (error) {
-      // console.error('Failed to establish tournament subscriptions:', error);
+      console.error('Failed to establish tournament subscriptions:', error);
       return false;
     }
   }
@@ -209,7 +212,7 @@ export class TournamentStatusSubscriptionService {
       return true;
       
     } catch (error) {
-      // console.error('Failed to establish match subscriptions:', error);
+      console.error('Failed to establish match subscriptions:', error);
       return false;
     }
   }
@@ -557,21 +560,27 @@ export class TournamentStatusSubscriptionService {
     }
 
     // Remove all tournament subscriptions
-    for (const [_key, subscription] of this.activeTournamentSubscriptions) {
+    // `key` e non `_key`: il trattino basso diceva "non usata", ed era vero
+    // solo perche' l'unico uso stava dentro un commento. Ripristinare la riga
+    // ha fatto emergere un `ReferenceError` che nessuno poteva vedere, perche'
+    // codice commentato non si compila.
+    for (const [key, subscription] of this.activeTournamentSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
       } catch (error) {
-        // console.error(`Error removing tournament subscription ${key}:`, error);
+        // Una rimozione fallita lascia una sottoscrizione appesa: non si vede
+        // subito, si vede come consumo che non scende dopo il cleanup.
+        console.error(`Error removing tournament subscription ${key}:`, error);
       }
     }
     this.activeTournamentSubscriptions.clear();
 
     // Remove all match subscriptions  
-    for (const [_key, subscription] of this.activeMatchSubscriptions) {
+    for (const [key, subscription] of this.activeMatchSubscriptions) {
       try {
         await supabase.removeChannel(subscription);
       } catch (error) {
-        // console.error(`Error removing match subscription ${key}:`, error);
+        console.error(`Error removing match subscription ${key}:`, error);
       }
     }
     this.activeMatchSubscriptions.clear();

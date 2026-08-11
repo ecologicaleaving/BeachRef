@@ -152,7 +152,7 @@ describe('useRepositoryData', () => {
       // Fast-forward through retries
       await act(async () => {
         jest.advanceTimersByTime(300); // Allow for retry delays
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       await waitFor(() => {
@@ -174,7 +174,7 @@ describe('useRepositoryData', () => {
 
       await act(async () => {
         jest.advanceTimersByTime(1000);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       await waitFor(() => {

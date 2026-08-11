@@ -38,6 +38,27 @@ describe('useAnalyticsCollection', () => {
       React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 
+  // `useAnalyticsCollection` ha una protezione: su web SENZA
+  // `EXPO_PUBLIC_ANALYTICS_URL` spegne lo scarico automatico e alza
+  // `batchSize` a 1000, per non tentare invii verso un endpoint che non
+  // esiste. I test girano proprio in quella condizione, quindi la protezione
+  // scattava e `batchSize: 2` diventava 1000: nessun flush, nessuna fetch, e
+  // dodici asserzioni rosse su un codice che si comportava correttamente.
+  //
+  // Configurando l'endpoint si prova il comportamento CON analytics attive,
+  // che e' quello che queste prove vogliono verificare. La protezione ha il
+  // suo test a parte, sotto.
+  const URL_ORIGINALE = process.env.EXPO_PUBLIC_ANALYTICS_URL;
+
+  beforeAll(() => {
+    process.env.EXPO_PUBLIC_ANALYTICS_URL = '/api/analytics/events';
+  });
+
+  afterAll(() => {
+    if (URL_ORIGINALE === undefined) delete process.env.EXPO_PUBLIC_ANALYTICS_URL;
+    else process.env.EXPO_PUBLIC_ANALYTICS_URL = URL_ORIGINALE;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -62,6 +83,15 @@ describe('useAnalyticsCollection', () => {
   });
 
   afterEach(() => {
+    // I timer pendenti vanno buttati PRIMA di tornare a quelli veri.
+    //
+    // `useAnalyticsCollection` accende un intervallo per lo scarico
+    // automatico. Alla fine del test il componente viene smontato, ma il timer
+    // finto resta in coda: al giro dopo scatta dentro il render della nuova
+    // prova e tocca un renderer ormai morto — "Can't access .root on unmounted
+    // test renderer". Ecco perche' i primi test passavano e i successivi no:
+    // non erano rotti, erano avvelenati da quello prima.
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
@@ -188,7 +218,7 @@ describe('useAnalyticsCollection', () => {
 
       // Wait for async flush
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       expect(global.fetch).toHaveBeenCalledWith('/api/analytics/events', expect.objectContaining({

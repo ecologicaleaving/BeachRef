@@ -26,6 +26,35 @@ jest.mock('../../services/NewAnalyticsService', () => ({
   }
 }));
 
+// `useRefereeAnalytics` usa `AnalyticsService`, NON `NewAnalyticsService`.
+//
+// La suite mockava solo il secondo, quindi il primo restava quello vero e
+// tentava di interrogare Supabase: la query non riusciva mai e tutti e dodici
+// i test fallivano sullo stesso `expect(result.current.isSuccess).toBe(true)`.
+// Dodici fallimenti identici, nessuno dei quali riguardava cio' che il test
+// voleva verificare.
+jest.mock('../../services/AnalyticsService', () => ({
+  AnalyticsService: {
+    getInstance: jest.fn(() => ({
+      aggregateRefereeAnalytics: jest.fn().mockResolvedValue([
+        {
+          referee_id: '1',
+          referee_name: 'Test Referee',
+          federation_code: 'FIVB',
+          total_assignments: 10,
+          first_referee_count: 6,
+          second_referee_count: 4,
+          challenge_referee_count: 0,
+          tournaments_worked: ['T1'],
+          performance_score: 90,
+          date: '2026-01-01',
+        },
+      ]),
+      calculatePerformanceScore: jest.fn().mockResolvedValue(90),
+    })),
+  },
+}));
+
 jest.mock('../../services/RefereeAnalyticsExportService', () => ({
   __esModule: true,
   default: {
@@ -57,6 +86,13 @@ describe('Analytics End-to-End Integration Tests', () => {
       defaultOptions: {
         queries: {
           retry: false,
+          // Senza questi, gli hook che hanno `enableRealTimeUpdates` acceso
+          // per difetto aprono un intervallo che nessuno chiude: il client non
+          // viene mai smontato e la suite si blocca fino al timeout.
+          refetchInterval: false,
+          refetchOnWindowFocus: false,
+          refetchOnReconnect: false,
+          gcTime: 0,
         },
       },
     });
@@ -66,6 +102,14 @@ describe('Analytics End-to-End Integration Tests', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // `unmount()` ferma gli osservatori, `clear()` svuota la cache. Senza il
+    // primo gli intervalli restano accesi anche a cache vuota, e il worker si
+    // porta dietro le suite successive.
+    queryClient?.unmount();
+    queryClient?.clear();
   });
 
   describe('Feature Flag Integration', () => {

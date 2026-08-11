@@ -10,7 +10,24 @@ import React from 'react';
 // Mock dependencies
 jest.mock('../../services/NetworkMonitor');
 jest.mock('../../services/SyncManager');
-jest.mock('../../services/supabase');
+// `supabase` si sostituisce con una FABBRICA, non riassegnando l'import.
+// `(supabase as any) = mockSupabase` faceva morire l'intera suite al
+// caricamento con `"supabase" is read-only`: un import e' un legame di sola
+// lettura, e nessuno dei 25 test girava (issue #94). La fabbrica deve stare
+// qui perche' `jest.mock` viene issato sopra le dichiarazioni.
+jest.mock('../../services/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({ data: [], error: null })),
+        in: jest.fn(() => ({ data: [], error: null }))
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => ({ data: null, error: null }))
+      }))
+    }))
+  }
+}));
 jest.mock('@react-native-async-storage/async-storage');
 
 // Mock timers
@@ -40,26 +57,10 @@ const mockSyncManager = {
   addSyncCallback: jest.fn(() => jest.fn()),
 };
 
-const mockSupabase = {
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        data: [],
-        error: null
-      })),
-      in: jest.fn(() => ({
-        data: [],
-        error: null
-      }))
-    })),
-    update: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        data: null,
-        error: null
-      }))
-    }))
-  }))
-};
+// Il doppio si LEGGE dall'import (che e' gia' quello della fabbrica qui
+// sopra), non si riassegna: i test che vogliono cambiare la risposta chiamano
+// `mockSupabase.from.mockReturnValue(...)` su quello stesso oggetto.
+const mockSupabase = supabase as unknown as { from: jest.Mock };
 
 const mockAsyncStorage = {
   setItem: jest.fn(() => Promise.resolve()),
@@ -70,7 +71,6 @@ const mockAsyncStorage = {
 // Setup mocks
 (NetworkMonitor as jest.Mocked<typeof NetworkMonitor>).getInstance = mockNetworkMonitor.getInstance;
 (SyncManager as jest.Mocked<typeof SyncManager>).getInstance = mockSyncManager.getInstance;
-(supabase as any) = mockSupabase;
 (AsyncStorage as jest.Mocked<typeof AsyncStorage>).setItem = mockAsyncStorage.setItem;
 (AsyncStorage as jest.Mocked<typeof AsyncStorage>).getItem = mockAsyncStorage.getItem;
 (AsyncStorage as jest.Mocked<typeof AsyncStorage>).removeItem = mockAsyncStorage.removeItem;

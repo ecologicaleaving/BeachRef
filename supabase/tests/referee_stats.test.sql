@@ -10,9 +10,27 @@
 
 \ir fixtures/production_shape.sql
 \ir ../migrations/018_restore_match_referees.sql
+-- La 019 crea `sync_backlog_config`, a cui la 025 aggiunge il segnatempo del
+-- rinfresco tornei: senza, la 025 fallisce su una tabella che non esiste.
+\ir ../migrations/019_sync_backlog.sql
 \ir ../migrations/020_referees_name_is_not_an_identity.sql
 \ir ../migrations/022_referee_stats.sql
 \ir ../migrations/023_refresh_stats_safeupdate.sql
+\ir ../migrations/024_referee_drilldown.sql
+\ir ../migrations/025_gender_e_fase.sql
+-- La 028 chiude le statistiche ai ruoli pubblici, e la 032 ne dipende (la sua
+-- policy nomina `app_users`). Va applicata qui perche' e' l'ordine reale: una
+-- migration che presuppone lo stato lasciato da un'altra deve trovarcelo.
+\ir ../migrations/028_accesso_riservato.sql
+\ir ../migrations/027_tornei_misti.sql
+\ir ../migrations/029_categoria_torneo.sql
+\ir ../migrations/030_categorie_mancanti.sql
+\ir ../migrations/031_confederazione.sql
+\ir ../migrations/032_stats_per_categoria.sql
+\ir ../migrations/033_world_tour.sql
+\ir ../migrations/034_ricalcolo_non_concorrente.sql
+\ir ../migrations/035_importanza_categoria.sql
+\ir ../migrations/036_fase_normalizzata.sql
 
 -- =============================================================================
 -- I DATI: costruiti per far cadere l'aggregazione, non per farla passare
@@ -25,14 +43,20 @@ INSERT INTO public.referees (id, vis_referee_no, referee_id, federation_code) VA
   (102, '900002', 'Mary Kerekere',    'AUS'),
   (103, '164206', 'Brady Nicholson',  'AUS');
 
-INSERT INTO public.matches (id, no, tournament_no, local_date, referee1_name, referee2_name) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'M1', 'T1', '2026-02-06', 'Kerekere Mary', 'Nicholson Brady'),
-  ('22222222-2222-2222-2222-222222222222', 'M2', 'T1', '2026-02-07', 'Kerekere Mary', NULL),
-  ('33333333-3333-3333-3333-333333333333', 'M3', 'T2', '2026-03-01', NULL,            NULL),
+-- Un torneo con nome, uno senza: il dettaglio deve reggere entrambi.
+INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, country, season, gender, type) VALUES
+  (1, 'MNZL0126', 'BPT Futures Mount Maunganui 2026', 'NZ', 2026, 'M', '53');
+
+INSERT INTO public.matches (id, no, tournament_no, local_date, round, referee1_name, referee2_name) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'M1', '1', '2026-02-06', 'Pool A', 'Kerekere Mary', 'Nicholson Brady'),
+  -- Senza fase: il VIS non la espone su tutte le partite, e va mostrata assente
+  -- invece che indovinata.
+  ('22222222-2222-2222-2222-222222222222', 'M2', '1',  '2026-02-07', NULL, 'Kerekere Mary', NULL),
+  ('33333333-3333-3333-3333-333333333333', 'M3', 'T2', '2026-03-01', NULL, NULL,            NULL),
   -- Stagione diversa: serve a separare season da career.
-  ('44444444-4444-4444-4444-444444444444', 'M4', 'T3', '2025-08-01', NULL,            NULL),
+  ('44444444-4444-4444-4444-444444444444', 'M4', 'T3', '2025-08-01', NULL, NULL,            NULL),
   -- Senza data: non ha stagione, quindi non ha diritto di entrare nei conteggi.
-  ('55555555-5555-5555-5555-555555555555', 'M5', 'T9', NULL,          NULL,           NULL);
+  ('55555555-5555-5555-5555-555555555555', 'M5', 'T9', NULL,         NULL, NULL,            NULL);
 
 INSERT INTO public.match_referees (match_id, referee_id, role) VALUES
   ('11111111-1111-1111-1111-111111111111', 101, 'FIRST'),
@@ -64,7 +88,8 @@ BEGIN
   END IF;
   -- M1 e M2 sono lo stesso torneo: i tornei distinti sono T1 e T2.
   IF r.tournaments <> 2 THEN
-    RAISE EXCEPTION 'A3 FALLITO: % tornei, attesi 2 (T1 conta una volta)', r.tournaments;
+    RAISE EXCEPTION 'A3 FALLITO: % tornei, attesi 2 (il torneo 1 conta una volta)',
+      r.tournaments;
   END IF;
   IF r.first_match <> '2026-02-06' OR r.last_match <> '2026-03-01' THEN
     RAISE EXCEPTION 'A4 FALLITO: intervallo % .. %', r.first_match, r.last_match;
@@ -187,25 +212,24 @@ BEGIN
 END $$;
 
 -- =============================================================================
--- PARTE D: la riapertura e' di sola lettura
+-- PARTE D: chi legge, e chi no
 -- =============================================================================
+--
+-- Le asserzioni sui permessi vivono in `accesso_riservato.test.sql`, che ha
+-- solo quel compito. Qui resta il minimo che serve a non confondersi: dopo la
+-- 028 la chiave anonima non apre piu' nulla, nemmeno gli aggregati.
 
 DO $$
 DECLARE
   t TEXT;
-  v TEXT;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['referee_season_stats', 'referee_career_stats'] LOOP
-    IF NOT has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
-      RAISE EXCEPTION 'D1 FALLITO: anon non legge %', t;
+  FOREACH t IN ARRAY ARRAY['referee_season_stats', 'referee_career_stats',
+                           'referee_tournament_stats', 'referee_match_log'] LOOP
+    IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'D1 FALLITO: anon legge ancora %', t;
     END IF;
-    FOREACH v IN ARRAY ARRAY['INSERT', 'UPDATE', 'DELETE'] LOOP
-      IF has_table_privilege('anon', 'public.' || t, v) THEN
-        RAISE EXCEPTION 'D2 FALLITO: anon puo'' fare % su %', v, t;
-      END IF;
-    END LOOP;
   END LOOP;
-  RAISE NOTICE 'D1/D2 ok: lettura si, scrittura no';
+  RAISE NOTICE 'D1 ok: dopo la 028 gli aggregati non sono piu'' pubblici';
 END $$;
 
 -- D3: e cio' che era chiuso resta chiuso. Aprire gli aggregati non deve aver
@@ -238,14 +262,25 @@ END $$;
 -- PARTE E: idempotenza della migration
 -- =============================================================================
 
--- Si riapplicano ENTRAMBE, e in ordine. Non e' pedanteria: la 023 sostituisce
--- la funzione definita dalla 022, quindi riapplicare la sola 022 la riporta
--- indietro alla versione con i DELETE nudi — che su Supabase non gira. E'
--- proprio cio' che ha fatto fallire l'asserzione F1 la prima volta che questo
--- file e' stato scritto, ed e' il motivo per cui le migration si rigiocano
--- tutte nell'ordine in cui sono nate, mai a scelta.
-\ir ../migrations/022_referee_stats.sql
-\ir ../migrations/023_refresh_stats_safeupdate.sql
+-- Si riapplica LA MIGRATION IN PROVA, non quelle che l'hanno preceduta.
+--
+-- Riapplicare la 022 a questo punto non fallirebbe per un difetto: fallirebbe
+-- perche' la 024 ha cambiato il tipo di ritorno di `refresh_referee_stats()` e
+-- PostgreSQL rifiuta un `CREATE OR REPLACE` che lo cambierebbe di nuovo. E'
+-- una protezione — riapplicare una migration vecchia dopo una nuova e' un
+-- DOWNGRADE, e qui il database si rifiuta di subirlo in silenzio.
+--
+-- Lo stesso caso, senza protezione, e' costato DUE asserzioni rosse. La prima
+-- stesura rigiocava la 022 dopo la 023 e riportava la funzione ai DELETE nudi.
+-- Poi questa riga e' rimasta ferma sulla 029 mentre le migration avanzavano,
+-- e la 034 — che aggiunge il lucchetto contro i ricalcoli sovrapposti — veniva
+-- disfatta da una riapplicazione della 029, che quel lucchetto non ce l'ha.
+--
+-- La regola per chi aggiunge una migration che ridefinisce
+-- `refresh_referee_stats()`: **aggiornare questa riga**. Non e' una formalita',
+-- e' l'unica cosa che tiene la prova di idempotenza puntata sulla migration
+-- che si sta davvero provando.
+\ir ../migrations/036_fase_normalizzata.sql
 
 DO $$
 DECLARE
@@ -260,6 +295,603 @@ BEGIN
     RAISE EXCEPTION 'E1 FALLITO: riapplicare la 022 ha cancellato le statistiche';
   END IF;
   RAISE NOTICE 'E1 ok: riapplicarla non cambia nulla e non cancella nulla';
+END $$;
+
+-- =============================================================================
+-- PARTE G: il dettaglio (migration 024)
+-- =============================================================================
+--
+-- Nota: la parte C ha rimosso la designazione della stagione 2025, quindi
+-- l'arbitro '900001' ha ora 3 partite, tutte nel 2026, su due tornei.
+
+DO $$
+DECLARE
+  n INT;
+  r public.referee_tournament_stats;
+BEGIN
+  SELECT count(*) INTO n FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001';
+  IF n <> 2 THEN
+    RAISE EXCEPTION 'G1 FALLITO: % tornei per l''arbitro, attesi 2', n;
+  END IF;
+
+  -- Il torneo con nome: la LEFT JOIN deve averlo risolto, malgrado i tipi
+  -- diversi ai due lati (BIGINT contro VARCHAR).
+  SELECT * INTO r FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF r.tournament_name IS DISTINCT FROM 'BPT Futures Mount Maunganui 2026' THEN
+    RAISE EXCEPTION 'G1 FALLITO: nome torneo "%", la join non ha risolto',
+      r.tournament_name;
+  END IF;
+  IF r.matches <> 2 OR r.as_first <> 2 THEN
+    RAISE EXCEPTION 'G1 FALLITO: % partite / % da primo su quel torneo',
+      r.matches, r.as_first;
+  END IF;
+  RAISE NOTICE 'G1 ok: il dettaglio per torneo, con il nome risolto';
+END $$;
+
+-- G2: un torneo SENZA riga in `tournaments` non fa sparire le sue partite.
+-- E' il caso normale, non l'eccezione: il backfill non riempie `tournaments`.
+DO $$
+DECLARE
+  r public.referee_tournament_stats;
+BEGIN
+  SELECT * INTO r FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF r IS NULL THEN
+    RAISE EXCEPTION 'G2 FALLITO: il torneo senza nome e'' sparito — la join '
+                    'si comporta come INNER';
+  END IF;
+  IF r.tournament_name IS NOT NULL THEN
+    RAISE EXCEPTION 'G2 FALLITO: nome "%" inventato dal nulla', r.tournament_name;
+  END IF;
+  RAISE NOTICE 'G2 ok: senza nome resta il numero, non un buco';
+END $$;
+
+-- G3: il registro delle singole partite.
+DO $$
+DECLARE
+  n INT;
+  riga public.referee_match_log;
+BEGIN
+  SELECT count(*) INTO n FROM public.referee_match_log WHERE vis_referee_no = '900001';
+  IF n <> 3 THEN
+    RAISE EXCEPTION 'G3 FALLITO: % partite nel registro, attese 3', n;
+  END IF;
+
+  SELECT * INTO riga FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF riga.role <> 'FIRST' OR riga.local_date <> '2026-02-06' THEN
+    RAISE EXCEPTION 'G3 FALLITO: ruolo % del %', riga.role, riga.local_date;
+  END IF;
+
+  -- La partita M5 non ha data: non deve comparire, come non compare nei totali.
+  IF EXISTS (SELECT 1 FROM public.referee_match_log WHERE match_no = 'M5') THEN
+    RAISE EXCEPTION 'G3 FALLITO: una partita senza data e'' entrata nel registro';
+  END IF;
+  RAISE NOTICE 'G3 ok: registro partite coerente con i totali';
+END $$;
+
+-- G4: totale e dettaglio dicono la stessa cosa. E' la ragione per cui le
+-- quattro tabelle si ricalcolano nella STESSA funzione: separarle permetterebbe
+-- di aggiornarne una e non l'altra, e nessuno se ne accorgerebbe finche' non
+-- apre il pannello.
+DO $$
+DECLARE
+  tot INT;
+  det INT;
+  per_torneo INT;
+BEGIN
+  SELECT matches INTO tot FROM public.referee_career_stats WHERE vis_referee_no = '900001';
+  SELECT count(*) INTO det FROM public.referee_match_log   WHERE vis_referee_no = '900001';
+  SELECT sum(matches) INTO per_torneo FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001';
+
+  IF tot <> det OR tot <> per_torneo THEN
+    RAISE EXCEPTION 'G4 FALLITO: carriera %, registro %, somma per torneo % — '
+                    'il numero mostrato non corrisponde a cio'' che si apre',
+      tot, det, per_torneo;
+  END IF;
+  RAISE NOTICE 'G4 ok: % partite, dette allo stesso modo da tre tabelle', tot;
+END $$;
+
+-- G5: cio' che il modello di lettura esiste per NON aprire resta chiuso.
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['matches', 'match_referees', 'referees', 'tournaments'] LOOP
+    IF has_table_privilege('anon', 'public.' || t, 'SELECT') THEN
+      RAISE EXCEPTION 'G5 FALLITO: anon legge % — il modello di lettura non '
+                      'serviva a nulla', t;
+    END IF;
+  END LOOP;
+  RAISE NOTICE 'G5 ok: si legge il modello, non le tabelle da cui nasce';
+END $$;
+
+-- =============================================================================
+-- PARTE H: genere e fase (migration 025)
+-- =============================================================================
+
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  -- H1: il genere arriva da `tournaments`, ed e' cio' che distingue due
+  -- tabelloni con lo stesso nome. Senza, il pannello mostrava due righe
+  -- identiche e nessun modo di capire quale fosse quale.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.gender IS DISTINCT FROM 'M' THEN
+    RAISE EXCEPTION 'H1 FALLITO: genere "%", atteso M', t.gender;
+  END IF;
+
+  -- H2: un torneo che `tournaments` non conosce non ha genere, e va bene:
+  -- meglio assente che inventato.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF t.gender IS NOT NULL THEN
+    RAISE EXCEPTION 'H2 FALLITO: genere "%" per un torneo sconosciuto', t.gender;
+  END IF;
+  RAISE NOTICE 'H1/H2 ok: il genere c''e'' quando si sa, e manca quando non si sa';
+
+  -- H3: la fase della partita. Viene da `matches.round`, che il worker riempie
+  -- da `RoundName` — non da `Round`, che nel VIS non esiste e che veniva
+  -- ignorato in silenzio su tutte le 5.963 partite gia' scaricate.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.round_name IS DISTINCT FROM 'Pool A' THEN
+    RAISE EXCEPTION 'H3 FALLITO: fase "%", attesa "Pool A"', p.round_name;
+  END IF;
+
+  -- H4: e una partita senza fase resta senza fase.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M2';
+  IF p.round_name IS NOT NULL THEN
+    RAISE EXCEPTION 'H4 FALLITO: fase "%" comparsa dal nulla', p.round_name;
+  END IF;
+  RAISE NOTICE 'H3/H4 ok: la fase c''e'' dove il VIS l''ha data';
+END $$;
+
+-- H5: il segnatempo del rinfresco tornei esiste e parte vuoto — "mai
+-- rinfrescato" e "rinfrescato tempo fa" devono essere distinguibili, altrimenti
+-- il worker non saprebbe se e' la prima volta.
+DO $$
+DECLARE
+  q TIMESTAMPTZ;
+  n INT;
+BEGIN
+  SELECT count(*) INTO n FROM information_schema.columns
+   WHERE table_schema = 'public' AND table_name = 'sync_backlog_config'
+     AND column_name = 'tournaments_synced_at';
+  IF n <> 1 THEN
+    RAISE EXCEPTION 'H5 FALLITO: `tournaments_synced_at` non esiste';
+  END IF;
+
+  SELECT tournaments_synced_at INTO q FROM public.sync_backlog_config WHERE id;
+  IF q IS NOT NULL THEN
+    RAISE EXCEPTION 'H5 FALLITO: parte valorizzato (%), il worker crederebbe '
+                    'di aver gia'' rinfrescato', q;
+  END IF;
+  RAISE NOTICE 'H5 ok: "mai rinfrescato" e'' distinguibile';
+END $$;
+
+-- H6: un torneo misto entra. Il vincolo della 007 ammetteva due generi; sui
+-- 9.260 tornei dell'archivio VIS ce ne sono 222 con entrambi i tabelloni, e
+-- basta uno per far fallire l'intero riempimento (migration 027).
+DO $$
+BEGIN
+  INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, gender)
+  VALUES (77, 'NJPN0112', 'Torneo con entrambi i tabelloni', 'MIXED');
+
+  BEGIN
+    INSERT INTO public.tournaments (vis_tournament_no, tournament_code, name, gender)
+    VALUES (78, 'XXXX0000', 'Genere inventato', 'BOH');
+    RAISE EXCEPTION 'H6 FALLITO: il vincolo accetta un genere qualsiasi';
+  EXCEPTION WHEN check_violation THEN
+    RAISE NOTICE 'H6 ok: MIXED entra, un genere inventato no';
+  END;
+END $$;
+
+-- =============================================================================
+-- PARTE I: la categoria (migration 029)
+-- =============================================================================
+
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  -- I1: il codice 53 diventa "BPT Futures". La categoria viene dal CODICE e
+  -- non dal nome: nell'archivio i tornei di questo tipo si chiamano spesso
+  -- solo con la citta', e classificare per nome ne perderebbe un quarto.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.category IS DISTINCT FROM 'BPT Futures' THEN
+    RAISE EXCEPTION 'I1 FALLITO: categoria "%", attesa BPT Futures', t.category;
+  END IF;
+  IF t.tournament_type IS DISTINCT FROM '53' THEN
+    RAISE EXCEPTION 'I1 FALLITO: codice grezzo "%" perso', t.tournament_type;
+  END IF;
+
+  -- I2: la categoria arriva anche alle singole partite, se no il pannello
+  -- dovrebbe ricavarla incrociando due tabelle.
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.category IS DISTINCT FROM 'BPT Futures' THEN
+    RAISE EXCEPTION 'I2 FALLITO: categoria "%" sulla partita', p.category;
+  END IF;
+
+  -- I3: un torneo che `tournaments` non conosce non ha categoria, e va bene.
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = 'T2';
+  IF t.category IS NOT NULL THEN
+    RAISE EXCEPTION 'I3 FALLITO: categoria "%" per un torneo sconosciuto', t.category;
+  END IF;
+  RAISE NOTICE 'I1-I3 ok: categoria dal codice, sul torneo e sulla partita';
+END $$;
+
+-- I4: un codice che non sappiamo classificare resta SENZA categoria. E' la
+-- proprieta' che distingue "non lo so" da un'etichetta inventata, e senza di
+-- essa una categoria sbagliata sarebbe indistinguibile da una giusta.
+DO $$
+DECLARE
+  c TEXT;
+BEGIN
+  -- I codici 8 e 9 sono gli unici rimasti senza etichetta dopo la 030, e
+  -- l'astensione e' deliberata: per l'8 c'e' un solo nome, per il 9 i campioni
+  -- non concordano. Se un giorno qualcuno li mappasse per completezza, questa
+  -- asserzione lo fermerebbe abbastanza a lungo da leggere il perche'.
+  SELECT public.tournament_category('9') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 9 ha ricevuto la categoria "%"', c;
+  END IF;
+  SELECT public.tournament_category('8') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 8 ha ricevuto la categoria "%"', c;
+  END IF;
+  -- E cio' che la 030 ha aggiunto c'e' davvero.
+  SELECT public.tournament_category('4') INTO c;
+  IF c <> 'Campionati del Mondo' THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 4 da "%"', c;
+  END IF;
+
+  -- I5: i livelli del World Tour restano DISTINTI. Fonderli in un unico
+  -- "World Tour" farebbe sparire la differenza fra un Major e un 1 stella, che
+  -- e' esattamente cio' che si vuole leggere in una carriera.
+  IF public.tournament_category('38') <> 'World Tour 5 stelle'
+  OR public.tournament_category('39') <> 'World Tour 4 stelle'
+  OR public.tournament_category('40') <> 'World Tour 3 stelle'
+  OR public.tournament_category('41') <> 'World Tour 2 stelle'
+  OR public.tournament_category('42') <> 'World Tour 1 stella'
+  OR public.tournament_category('33') <> 'World Tour Finals' THEN
+    RAISE EXCEPTION 'I5 FALLITO: i livelli del World Tour non sono distinti';
+  END IF;
+
+  -- I6: e sono FIVB. Senza, 15.000 partite finirebbero in "confederazione non
+  -- determinata" pur essendo il circuito mondiale per definizione.
+  IF public.tournament_confederation('World Tour 4 stelle', 'Ostrava') <> 'FIVB' THEN
+    RAISE EXCEPTION 'I6 FALLITO: un World Tour non risulta FIVB';
+  END IF;
+  SELECT public.tournament_category('51') INTO c;
+  IF c <> 'BPT Elite16' THEN
+    RAISE EXCEPTION 'I4 FALLITO: il codice 51 da "%"', c;
+  END IF;
+  SELECT public.tournament_category(NULL) INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'I4 FALLITO: un tipo nullo ha una categoria';
+  END IF;
+  RAISE NOTICE 'I4 ok: cio che non e dimostrato resta senza etichetta';
+END $$;
+
+-- =============================================================================
+-- PARTE L: la confederazione (migration 031)
+-- =============================================================================
+
+DO $$
+DECLARE c TEXT;
+BEGIN
+  -- L1: un BPT e' FIVB anche se si chiama come una citta' e basta. E' il caso
+  -- che il nome da solo non copre: 11.265 partite su 49.386 non contengono
+  -- nessuna sigla, e sono quasi tutte queste.
+  SELECT public.tournament_confederation('BPT Futures', 'Tlaxcala') INTO c;
+  IF c <> 'FIVB' THEN
+    RAISE EXCEPTION 'L1 FALLITO: un BPT senza sigla da "%"', c;
+  END IF;
+
+  -- L2: la sigla vince dove la categoria non decide.
+  SELECT public.tournament_confederation('U18', 'CEV U18 ECH 2023') INTO c;
+  IF c <> 'CEV' THEN RAISE EXCEPTION 'L2 FALLITO: CEV da "%"', c; END IF;
+  SELECT public.tournament_confederation('Continental Tour', 'AVC Beach Tour Samila Open') INTO c;
+  IF c <> 'AVC' THEN RAISE EXCEPTION 'L2 FALLITO: AVC da "%"', c; END IF;
+  SELECT public.tournament_confederation('U21', 'CAVB U21 Nations Championship') INTO c;
+  IF c <> 'CAVB' THEN RAISE EXCEPTION 'L2 FALLITO: CAVB da "%"', c; END IF;
+  SELECT public.tournament_confederation('U18', 'NEVZA U18 First-round Qualifier') INTO c;
+  IF c <> 'CEV' THEN RAISE EXCEPTION 'L2 FALLITO: NEVZA da "%"', c; END IF;
+
+  -- L3: l'aggettivo, dove la sigla manca.
+  SELECT public.tournament_confederation('U21', 'Asian U21 Beach Volleyball Championships') INTO c;
+  IF c <> 'AVC' THEN RAISE EXCEPTION 'L3 FALLITO: "Asian" da "%"', c; END IF;
+
+  -- L4: cio' che una confederazione NON ce l'ha resta senza. I giochi
+  -- multisport li organizza il comitato dei Giochi, i tour nazionali la
+  -- federazione: attribuirli per riempire la colonna sarebbe inventare.
+  SELECT public.tournament_confederation('Giochi multisport', '2024 FISU World University Championships') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'L4 FALLITO: i giochi universitari sono finiti in "%"', c;
+  END IF;
+  SELECT public.tournament_confederation('Tour nazionale', 'Austrian Beachvolleyball Tour Pro Baden') INTO c;
+  IF c IS NOT NULL THEN
+    RAISE EXCEPTION 'L4 FALLITO: un tour nazionale e finito in "%"', c;
+  END IF;
+  RAISE NOTICE 'L1-L4 ok: categoria, sigla, aggettivo — e il vuoto dove serve';
+END $$;
+
+-- L5: la confederazione arriva su torneo e partita, come la categoria.
+DO $$
+DECLARE
+  t public.referee_tournament_stats;
+  p public.referee_match_log;
+BEGIN
+  SELECT * INTO t FROM public.referee_tournament_stats
+   WHERE vis_referee_no = '900001' AND tournament_no = '1';
+  IF t.confederation IS DISTINCT FROM 'FIVB' THEN
+    RAISE EXCEPTION 'L5 FALLITO: confederazione "%" sul torneo', t.confederation;
+  END IF;
+  SELECT * INTO p FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF p.confederation IS DISTINCT FROM 'FIVB' THEN
+    RAISE EXCEPTION 'L5 FALLITO: confederazione "%" sulla partita', p.confederation;
+  END IF;
+  RAISE NOTICE 'L5 ok: confederazione su torneo e partita';
+END $$;
+
+-- =============================================================================
+-- PARTE M: le colonne per categoria (migration 032)
+-- =============================================================================
+
+DO $$
+DECLARE
+  r public.referee_category_stats;
+  n INT;
+  somma INT;
+  totale INT;
+BEGIN
+  -- M1: le partite del 2026 del nostro arbitro sono 3, tutte su tornei di
+  -- categoria BPT Futures (torneo 1) o senza categoria (torneo T2).
+  SELECT count(*) INTO n FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  IF n <> 2 THEN
+    RAISE EXCEPTION 'M1 FALLITO: % righe categoria nel 2026, attese 2', n;
+  END IF;
+
+  SELECT * INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026 AND category = 'BPT Futures';
+  IF r.matches <> 2 OR r.as_first <> 2 THEN
+    RAISE EXCEPTION 'M1 FALLITO: BPT Futures % partite / % da primo',
+      r.matches, r.as_first;
+  END IF;
+
+  -- M2: un torneo senza categoria non sparisce, diventa "Altro". Un arbitro
+  -- che avesse arbitrato SOLO eventi non classificati resterebbe altrimenti
+  -- fuori dalla tabella, con zero righe e nessun indizio del perche'.
+  SELECT * INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026 AND category = 'Altro';
+  IF r.matches <> 1 THEN
+    RAISE EXCEPTION 'M2 FALLITO: la categoria Altro ha % partite, attesa 1', r.matches;
+  END IF;
+  RAISE NOTICE 'M1/M2 ok: per categoria, e cio che non ha categoria e Altro';
+
+  -- M3: la somma delle categorie ricostruisce il totale della stagione. E' la
+  -- proprieta' che rende le colonne affidabili: se non tornasse, la riga
+  -- direbbe 3 e le sue colonne 2, senza che nulla segnali l'incoerenza.
+  SELECT sum(matches) INTO somma FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  SELECT matches INTO totale FROM public.referee_season_stats
+   WHERE vis_referee_no = '900001' AND season = 2026;
+  IF somma <> totale THEN
+    RAISE EXCEPTION 'M3 FALLITO: colonne % contro totale %', somma, totale;
+  END IF;
+  RAISE NOTICE 'M3 ok: la somma delle categorie e il totale della stagione (%)', totale;
+END $$;
+
+-- =============================================================================
+-- PARTE N: un ricalcolo alla volta (migration 034)
+-- =============================================================================
+--
+-- La concorrenza vera non si riproduce in un test a sessione singola: due
+-- transazioni servirebbero due connessioni. Si verifica quindi che il lucchetto
+-- ci SIA e che sia quello giusto — l'unica cosa che, se sparisse, riporterebbe
+-- il 23505 osservato sul 2016.
+
+DO $$
+DECLARE
+  def TEXT;
+BEGIN
+  SELECT pg_get_functiondef('public.refresh_referee_stats()'::regprocedure) INTO def;
+  IF def NOT LIKE '%pg_advisory_xact_lock(91)%' THEN
+    RAISE EXCEPTION 'N1 FALLITO: il ricalcolo non prende il lucchetto — due '
+                    'esecuzioni sovrapposte violerebbero la chiave primaria';
+  END IF;
+  -- `try` uscirebbe senza fare nulla, e chi ha chiesto il ricalcolo si
+  -- sentirebbe rispondere "fatto" mentre le sue modifiche non sono entrate.
+  IF def LIKE '%pg_try_advisory%' THEN
+    RAISE EXCEPTION 'N1 FALLITO: il lucchetto e'' un try — il secondo ricalcolo '
+                    'uscirebbe in silenzio senza ricalcolare';
+  END IF;
+  RAISE NOTICE 'N1 ok: il ricalcolo si serializza, e chi aspetta ricalcola';
+END $$;
+
+-- N2: e il lucchetto non ha rotto il ricalcolo.
+DO $$
+DECLARE
+  n INT;
+BEGIN
+  PERFORM public.refresh_referee_stats();
+  SELECT count(*) INTO n FROM public.referee_career_stats;
+  IF n = 0 THEN
+    RAISE EXCEPTION 'N2 FALLITO: dopo il lucchetto il ricalcolo non produce nulla';
+  END IF;
+  RAISE NOTICE 'N2 ok: % carriere ricalcolate con il lucchetto attivo', n;
+END $$;
+
+-- =============================================================================
+-- PARTE O: l'ordine di importanza (migration 035)
+-- =============================================================================
+
+DO $$
+BEGIN
+  -- O1: la scala data da Davide, nell'ordine in cui l'ha data.
+  IF NOT (public.category_rank('Giochi Olimpici')
+        < public.category_rank('Campionati del Mondo')
+        AND public.category_rank('Campionati del Mondo')
+        < public.category_rank('BPT Elite16')
+        AND public.category_rank('BPT Elite16')
+        < public.category_rank('BPT Challenge')
+        AND public.category_rank('BPT Challenge')
+        < public.category_rank('BPT Futures')
+        AND public.category_rank('BPT Futures')
+        < public.category_rank('Campionati continentali')) THEN
+    RAISE EXCEPTION 'O1 FALLITO: la scala di importanza non e nell ordine dato';
+  END IF;
+  RAISE NOTICE 'O1 ok: Olimpiadi > Mondiali > Elite > Challenge > ... > continentali';
+END $$;
+
+-- O2: LE DUE ERE SI CORRISPONDONO. E' la conseguenza meno ovvia della scala e
+-- la piu' facile da perdere: un arbitro che nel 2019 faceva i Major e nel 2024
+-- gli Elite16 non ha cambiato livello, ha cambiato circuito. Senza questa
+-- uguaglianza la sua carriera sembrerebbe spezzata in due.
+DO $$
+BEGIN
+  IF public.category_rank('BPT Elite16') <> public.category_rank('World Tour 5 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Elite16 e 5 stelle su gradini diversi';
+  END IF;
+  IF public.category_rank('BPT Challenge') <> public.category_rank('World Tour 4 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Challenge e 4 stelle su gradini diversi';
+  END IF;
+  IF public.category_rank('BPT Futures') <> public.category_rank('World Tour 3 stelle') THEN
+    RAISE EXCEPTION 'O2 FALLITO: Futures e 3 stelle su gradini diversi';
+  END IF;
+  RAISE NOTICE 'O2 ok: le due ere sono allineate gradino per gradino';
+END $$;
+
+-- O3: cio' che non e' classificato va in fondo, ma PRIMA dei test: e' roba
+-- vera di cui non conosciamo il livello, non un'esercitazione.
+DO $$
+BEGIN
+  IF NOT (public.category_rank('Tour nazionale')
+        < public.category_rank('Altro')
+        AND public.category_rank('Altro')
+        < public.category_rank('Test / formazione')) THEN
+    RAISE EXCEPTION 'O3 FALLITO: "Altro" non sta fra i tornei veri e i test';
+  END IF;
+  RAISE NOTICE 'O3 ok: ignoto in fondo, ma sopra le esercitazioni';
+END $$;
+
+-- O4: il rank finisce nelle tabelle, se no la pagina dovrebbe conoscere la
+-- scala per conto suo — e due copie della stessa scala divergono.
+DO $$
+DECLARE
+  r INT;
+BEGIN
+  SELECT rank INTO r FROM public.referee_category_stats
+   WHERE vis_referee_no = '900001' AND category = 'BPT Futures' AND season = 2026;
+  IF r IS DISTINCT FROM public.category_rank('BPT Futures') THEN
+    RAISE EXCEPTION 'O4 FALLITO: rank % nella tabella, % nella funzione',
+      r, public.category_rank('BPT Futures');
+  END IF;
+  RAISE NOTICE 'O4 ok: la scala vive in un posto solo';
+END $$;
+
+-- =============================================================================
+-- PARTE P: la fase, e cio' che le somiglia (migration 036)
+-- =============================================================================
+
+DO $$
+BEGIN
+  -- P1: i quattro modi di scrivere "semifinale" sono la stessa fase.
+  IF public.match_phase('Semifinals')  <> 'Semifinale'
+  OR public.match_phase('Semi-finals') <> 'Semifinale'
+  OR public.match_phase('Semifinal 1') <> 'Semifinale'
+  OR public.match_phase('Semifinal 2') <> 'Semifinale' THEN
+    RAISE EXCEPTION 'P1 FALLITO: le semifinali non sono normalizzate';
+  END IF;
+
+  -- P2: la finale, comunque il VIS la chiami.
+  IF public.match_phase('Final 1st Place') <> 'Finale'
+  OR public.match_phase('Final 1st place') <> 'Finale'
+  OR public.match_phase('Gold Medal Match') <> 'Finale' THEN
+    RAISE EXCEPTION 'P2 FALLITO: la finale non e riconosciuta in tutte le forme';
+  END IF;
+  RAISE NOTICE 'P1/P2 ok: 93 nomi, una dozzina di fasi';
+END $$;
+
+-- P3: LE TRAPPOLE. Sono la ragione per cui questa funzione esiste: hanno i
+-- nomi delle fasi vere e non lo sono. Contare le finali cercando "Final"
+-- gonfierebbe il numero, e un totale gonfiato non si distingue da uno giusto.
+DO $$
+BEGIN
+  IF public.match_phase('Semifinals for place 25 to 32') = 'Semifinale' THEN
+    RAISE EXCEPTION 'P3 FALLITO: una semifinale di piazzamento conta come semifinale';
+  END IF;
+  IF public.match_phase('Quarterfinals for place 9 to 16') = 'Quarti' THEN
+    RAISE EXCEPTION 'P3 FALLITO: quarti di piazzamento contano come quarti';
+  END IF;
+  IF public.match_phase('Loser Semifinals') = 'Semifinale' THEN
+    RAISE EXCEPTION 'P3 FALLITO: "Loser Semifinals" conta come semifinale';
+  END IF;
+  FOR i IN 1..1 LOOP
+    IF public.match_phase('Final 5th Place')  = 'Finale'
+    OR public.match_phase('Final 7th Place')  = 'Finale'
+    OR public.match_phase('Final 9th Place')  = 'Finale'
+    OR public.match_phase('Final 13th Place') = 'Finale'
+    OR public.match_phase('Final 11st Place') = 'Finale' THEN
+      RAISE EXCEPTION 'P3 FALLITO: una finale di piazzamento conta come finale';
+    END IF;
+  END LOOP;
+  RAISE NOTICE 'P3 ok: piazzamenti fuori dalle fasi vere';
+END $$;
+
+-- P4: e cio' che invece DEVE entrare. Un'esclusione troppo larga farebbe
+-- sparire finali vere, che e' l'errore opposto e altrettanto silenzioso.
+DO $$
+BEGIN
+  IF public.match_phase('Final 3rd Place')     <> 'Finale 3o posto'
+  OR public.match_phase('Final 2nd - 3rd place') <> 'Finale 3o posto'
+  OR public.match_phase('Bronze Medal Match')  <> 'Finale 3o posto' THEN
+    RAISE EXCEPTION 'P4 FALLITO: la finale 3-4 e stata esclusa per errore';
+  END IF;
+  IF public.match_phase('Eight final 3') <> 'Ottavi'
+  OR public.match_phase('Round of 16')   <> 'Ottavi' THEN
+    RAISE EXCEPTION 'P4 FALLITO: gli ottavi non sono riconosciuti';
+  END IF;
+  IF public.match_phase('Pool C')  <> 'Pool'
+  OR public.match_phase('Round 2') <> 'Turno preliminare' THEN
+    RAISE EXCEPTION 'P4 FALLITO: pool e turni preliminari confusi';
+  END IF;
+  IF public.match_phase(NULL) IS NOT NULL OR public.match_phase('') IS NOT NULL THEN
+    RAISE EXCEPTION 'P4 FALLITO: una fase assente ha ricevuto un nome';
+  END IF;
+  RAISE NOTICE 'P4 ok: nessuna esclusione di troppo';
+END $$;
+
+-- P5: la fase arriva nel registro, e l'ordine di visualizzazione con lei.
+DO $$
+DECLARE
+  f TEXT;
+BEGIN
+  SELECT phase INTO f FROM public.referee_match_log
+   WHERE vis_referee_no = '900001' AND match_no = 'M1';
+  IF f IS DISTINCT FROM 'Pool' THEN
+    RAISE EXCEPTION 'P5 FALLITO: fase "%" nel registro, attesa Pool', f;
+  END IF;
+  IF public.phase_rank('Finale') >= public.phase_rank('Semifinale')
+  OR public.phase_rank('Semifinale') >= public.phase_rank('Quarti')
+  OR public.phase_rank('Pool') >= public.phase_rank('Piazzamento') THEN
+    RAISE EXCEPTION 'P5 FALLITO: l ordine delle fasi non scende dalla finale';
+  END IF;
+  RAISE NOTICE 'P5 ok: fase nel registro, e ordinata dalla finale in giu';
 END $$;
 
 -- =============================================================================

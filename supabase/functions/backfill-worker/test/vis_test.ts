@@ -13,10 +13,12 @@ import { assertEquals, assertRejects, assertThrows } from 'jsr:@std/assert@1';
 import {
   buildEventListRequest,
   buildMatchListRequest,
+  buildTournamentListRequest,
   mapWithConcurrency,
   parseElements,
   parseEvents,
   parseMatches,
+  parseTournaments,
   seasonFromDate,
   setVisMinIntervalMs,
   visRequest,
@@ -282,4 +284,61 @@ Deno.test('un errore non lascia il cancello chiuso', async () => {
     globalThis.fetch = vero;
     setVisMinIntervalMs(0);
   }
+});
+
+// =============================================================================
+// Tornei e fase
+// =============================================================================
+
+Deno.test('la fase si chiede come RoundName, non come Round', () => {
+  const xml = buildMatchListRequest('1715');
+  // `Round` non esiste nel VIS: chiedendolo si ottiene silenzio, non un errore.
+  // Misurato il 2026-08-05 su 5.963 partite, tutte senza fase.
+  assertEquals(xml.includes('RoundName'), true);
+  assertEquals(/Fields="[^"]*\bRound\b(?!Name)/.test(xml), false);
+});
+
+Deno.test('parseMatches legge la fase da RoundName', () => {
+  const [m] = parseMatches(
+    '<BeachMatches><BeachMatch No="1" RoundName="Pool A" /></BeachMatches>'
+  );
+  assertEquals(m.round, 'Pool A');
+});
+
+Deno.test('il genere del torneo smette di essere una cifra', () => {
+  const tornei = parseTournaments(
+    '<BeachTournaments>' +
+      '<BeachTournament No="8930" Code="MCEVNC26" Name="Nations Cup - MEN" ' +
+      'CountryCode="HU" Season="2026" Gender="0" />' +
+      '<BeachTournament No="8931" Code="WCEVNC26" Name="Nations Cup - WOMEN" ' +
+      'CountryCode="HU" Season="2026" Gender="1" />' +
+      '<BeachTournament No="8932" Name="Misto" Gender="2" />' +
+      '<BeachTournament No="8933" Name="Ignoto" Gender="9" />' +
+      '</BeachTournaments>'
+  );
+  assertEquals(tornei.length, 4);
+  assertEquals(tornei[0].gender, 'M');
+  assertEquals(tornei[1].gender, 'W');
+  assertEquals(tornei[2].gender, 'MIXED');
+  // Un codice che non conosciamo diventa `undefined`, non la stringa "9": e'
+  // esattamente il genere di valore che finisce a schermo e nessuno sa leggere.
+  assertEquals(tornei[3].gender, undefined);
+  assertEquals(tornei[0].season, 2026);
+  assertEquals(tornei[0].countryCode, 'HU');
+});
+
+Deno.test('un torneo senza No viene scartato', () => {
+  const tornei = parseTournaments(
+    '<BeachTournaments><BeachTournament Name="Senza numero" /></BeachTournaments>'
+  );
+  assertEquals(tornei.length, 0);
+});
+
+Deno.test('la richiesta tornei non porta filtri', () => {
+  const xml = buildTournamentListRequest();
+  assertEquals(xml.includes('GetBeachTournamentList'), true);
+  assertEquals(xml.includes('Gender'), true);
+  // Senza filtro si ottiene l'archivio intero in una richiesta sola; un filtro
+  // sbagliato qui costerebbe una chiamata al VIS per scoprirlo.
+  assertEquals(xml.includes('<Filter'), false);
 });

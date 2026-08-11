@@ -20,6 +20,7 @@
  *
  *   POST /            un ciclo di lavoro (e' quella che chiama il cron)
  *   POST /seed        semina la coda dagli eventi VIS; body: {"seasons":[...]}
+ *   POST /tournaments rinfresca `tournaments` dall'archivio VIS (1 richiesta)
  *   GET  /progress    lo stato della coda
  */
 
@@ -29,9 +30,11 @@ const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 import {
   buildEventListRequest,
   buildMatchListRequest,
+  buildTournamentListRequest,
   mapWithConcurrency,
   parseEvents,
   parseMatches,
+  parseTournaments,
   setVisMinIntervalMs,
   visRequest,
   type VisMatch,
@@ -151,8 +154,14 @@ function matchRow(m: VisMatch, eventNo: string, knownTournamentNo?: string) {
   };
 }
 
-/** Un evento: scarica, scrive, restituisce quante partite ha visto. */
-async function processEvent(item: BacklogItem): Promise<number> {
+/**
+ * Un evento: scarica, scrive, restituisce quante partite ha visto.
+ *
+ * `torneiVisti` raccoglie i `tournament_no` incontrati. Serve a decidere DOPO
+ * il ciclo se l'archivio tornei va rinfrescato: si rinfresca quando compare un
+ * torneo che non conosciamo, non a scadenza fissa.
+ */
+async function processEvent(item: BacklogItem, torneiVisti: Set<string>): Promise<number> {
   const xml = await visRequest(buildMatchListRequest(item.event_no));
   const matches = parseMatches(xml);
 
@@ -189,6 +198,7 @@ async function processEvent(item: BacklogItem): Promise<number> {
   const knownTournament = new Map(existing.map((r) => [r.no, r.tournament_no]));
 
   const rows = matches.map((m) => matchRow(m, item.event_no, knownTournament.get(m.no)));
+  for (const r of rows) torneiVisti.add(r.tournament_no);
   const stored = await pgJson<{ id: string; no: string }[]>(`matches?on_conflict=no&select=id,no`, {
     method: 'POST',
     body: JSON.stringify(rows),
@@ -235,29 +245,79 @@ async function processEvent(item: BacklogItem): Promise<number> {
  * `GetEventList` di una risemina e' una chiamata come le altre, e non aveva
  * motivo di essere l'unica esente.
  */
-async function loadConfig(): Promise<{ vis_concurrency: number }> {
-  const [cfg] = await pgJson<{ vis_concurrency: number; vis_min_interval_ms: number }[]>(
-    'sync_backlog_config?select=vis_concurrency,vis_min_interval_ms',
-  );
+async function loadConfig(): Promise<{ vis_concurrency: number; tournaments_synced_at: string | null }> {
+  const [cfg] = await pgJson<{
+    vis_concurrency: number;
+    vis_min_interval_ms: number;
+    tournaments_synced_at: string | null;
+  }[]>('sync_backlog_config?select=vis_concurrency,vis_min_interval_ms,tournaments_synced_at');
   if (cfg && typeof cfg.vis_min_interval_ms === 'number') {
     setVisMinIntervalMs(cfg.vis_min_interval_ms);
   }
-  return { vis_concurrency: cfg?.vis_concurrency ?? 1 };
+  return {
+    vis_concurrency: cfg?.vis_concurrency ?? 1,
+    tournaments_synced_at: cfg?.tournaments_synced_at ?? null,
+  };
+}
+
+/**
+ * Pavimento fra due rinfreschi dell'archivio tornei.
+ *
+ * Non e' una scadenza: e' una protezione. Un `tournament_no` puo' mancare
+ * dall'archivio VIS per ragioni sue — e senza questo limite ogni ciclo
+ * riscaricherebbe 1,2 MB inseguendo un torneo che non arrivera' mai.
+ */
+const PAVIMENTO_RINFRESCO_MS = 60 * 60 * 1000;
+
+function troppoPresto(quando: string | null): boolean {
+  if (!quando) return false;
+  const t = Date.parse(quando);
+  return Number.isFinite(t) && Date.now() - t < PAVIMENTO_RINFRESCO_MS;
+}
+
+/**
+ * Rinfresca `tournaments` SOLO se il ciclo ha incontrato un torneo che non
+ * conosciamo. A regime — archivio completo — non fa nessuna richiesta al VIS.
+ */
+async function rinfrescaTorneiSeServe(visti: Set<string>, ultimo: string | null) {
+  const numerici = [...visti].filter((n) => /^\d+$/.test(n));
+  if (numerici.length === 0) return null;
+
+  const noti = await pgJson<{ vis_tournament_no: number }[]>(
+    `tournaments?select=vis_tournament_no&vis_tournament_no=in.(${numerici.join(',')})`,
+  );
+  const conosciuti = new Set(noti.map((r) => String(r.vis_tournament_no)));
+  const ignoti = numerici.filter((n) => !conosciuti.has(n));
+
+  if (ignoti.length === 0) return { ignoti: 0 };
+  if (troppoPresto(ultimo)) return { ignoti: ignoti.length, saltato: 'troppo presto' };
+
+  try {
+    // Se fallisce, il ciclo prosegue: i nomi mancanti sono un fastidio, le
+    // partite no.
+    return { ignoti: ignoti.length, ...(await syncTournaments()) };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[backfill] sync tornei fallito: ${message}`);
+    return { ignoti: ignoti.length, error: message };
+  }
 }
 
 async function runCycle() {
   const cfg = await loadConfig();
+
   const claimed = await rpc<BacklogItem[]>('claim_backfill_batch');
 
   if (!claimed || claimed.length === 0) {
-    return { claimed: 0, done: 0, failed: 0, matches: 0, note: 'niente da fare' };
+  return { claimed: 0, done: 0, failed: 0, matches: 0, note: 'niente da fare' };
   }
 
   let done = 0, failed = 0, matches = 0;
+  const torneiVisti = new Set<string>();
 
   await mapWithConcurrency(claimed, cfg.vis_concurrency, async (item) => {
     try {
-      const seen = await processEvent(item);
+      const seen = await processEvent(item, torneiVisti);
       await rpc('complete_backfill_item', { p_event_no: item.event_no, p_matches_seen: seen });
       done++;
       matches += seen;
@@ -271,6 +331,19 @@ async function runCycle() {
       console.error(`[backfill] evento ${item.event_no}: ${message}`);
     }
   });
+
+  // L'archivio tornei si rinfresca A RICHIESTA, non a scadenza.
+  //
+  // La versione precedente lo riscaricava una volta al giorno: 1,2 MB per
+  // accorgersi di una manciata di tornei nuovi all'anno, contro un servizio che
+  // abbiamo appena deciso di trattare con i guanti. Ma l'archivio lo salviamo
+  // gia' per intero — il ritmo non serviva a conservarlo, serviva a scoprire i
+  // tornei nuovi. E un torneo nuovo si scopre nel momento in cui il backfill lo
+  // incontra e non lo trova in `tournaments`.
+  //
+  // Costo a regime, quando l'archivio e' completo: una query a PostgREST per
+  // ciclo, zero richieste al VIS.
+  const tornei = await rinfrescaTorneiSeServe(torneiVisti, cfg.tournaments_synced_at);
 
   // Le statistiche si ricalcolano qui e non su richiesta: la pagina che le
   // legge non deve poter innescare un'aggregazione (vedi migration 022), e
@@ -288,7 +361,65 @@ async function runCycle() {
     }
   }
 
-  return { claimed: claimed.length, done, failed, matches, stats };
+  return { claimed: claimed.length, done, failed, matches, tornei, stats };
+}
+
+/**
+ * Riempie `tournaments` dall'archivio VIS.
+ *
+ * UNA richiesta per ~9.260 tornei. E' il motivo per cui questa e' la
+ * soluzione giusta al problema dei nomi mancanti (il 38% delle righe del
+ * dettaglio mostrava "Torneo VIS 8930") e a quello dei doppioni: i due
+ * tabelloni maschile e femminile sono due tornei distinti con lo stesso nome,
+ * e senza `gender` sono indistinguibili a schermo.
+ *
+ * Si scrive a blocchi: un solo upsert da 9.260 righe supera i limiti di
+ * PostgREST e fallirebbe per intero, perdendo anche le 9.000 righe buone.
+ */
+async function syncTournaments() {
+  const xml = await visRequest(buildTournamentListRequest(), 60_000);
+  const tornei = parseTournaments(xml);
+
+  // `tournaments.name` e `tournaments.tournament_code` sono NOT NULL in
+  // produzione, e l'archivio VIS non lo rispetta: su 9.260 tornei ce n'e'
+  // ESATTAMENTE UNO senza nome (il 1734, codice MBLR2013). Uno solo basta a
+  // far fallire l'intero riempimento, perche' l'upsert va a blocchi di 500 e
+  // un blocco rifiutato porta via anche le 499 righe buone.
+  //
+  // Si ripiega sul codice, che nessun torneo ha vuoto: "MBLR2013" dice
+  // comunque piu' di "Torneo VIS 1734". Chi non ha ne' l'uno ne' l'altro non
+  // e' rappresentabile e viene scartato — oggi nessuno.
+  const righe = tornei.map((t) => ({
+    vis_tournament_no: Number(t.no),
+    tournament_code: t.code ?? null,
+    name: t.name ?? t.code ?? null,
+    country: t.countryCode ?? null,
+    city: t.city ?? null,
+    season: t.season ?? null,
+    gender: t.gender ?? null,
+    type: t.type ?? null,
+    updated_at: new Date().toISOString(),
+  })).filter((r) => Number.isFinite(r.vis_tournament_no) && r.tournament_code && r.name);
+
+  const BLOCCO = 500;
+  let scritti = 0;
+  for (let i = 0; i < righe.length; i += BLOCCO) {
+    const parte = righe.slice(i, i + BLOCCO);
+    await pgJson('tournaments?on_conflict=vis_tournament_no', {
+      method: 'POST',
+      body: JSON.stringify(parte),
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    });
+    scritti += parte.length;
+  }
+
+  await pgJson('sync_backlog_config?id=eq.true', {
+    method: 'PATCH',
+    body: JSON.stringify({ tournaments_synced_at: new Date().toISOString() }),
+    headers: { Prefer: 'return=minimal' },
+  });
+
+  return { visti: tornei.length, scritti };
 }
 
 async function runSeed(seasons: number[]) {
@@ -330,6 +461,13 @@ Deno.serve(async (req) => {
     if (path === '/progress') {
       const [progress] = await pgJson<unknown[]>('sync_backlog_progress?select=*');
       return json(progress ?? {});
+    }
+
+    if (path === '/tournaments') {
+      // Manuale: serve dopo un cambio dei campi richiesti al VIS, o quando si
+      // vuole il rinfresco subito invece che al prossimo giro utile.
+      await loadConfig();
+      return json(await syncTournaments());
     }
 
     if (path === '/seed') {

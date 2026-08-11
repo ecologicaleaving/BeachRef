@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReferees, RefereesFilters } from '../useReferees';
 import { supabase } from '../../services/supabase';
 import React from 'react';
+import { setDbReadOverride, resetDbReadFlagsForTests } from '../../services/flags/DbReadFlags';
 
 // Mock Supabase
 jest.mock('../../services/supabase', () => ({
@@ -67,6 +68,11 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
   };
 
   beforeEach(() => {
+    // Le letture dal DB sono spente per definizione (issue #54 fase 2).
+    // Questa suite prova PROPRIO il percorso database, quindi la accende
+    // esplicitamente invece di dare per scontato che sia attiva.
+    resetDbReadFlagsForTests();
+    setDbReadOverride(['referees']);
     jest.clearAllMocks();
     (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
     impostaRisultato({ data: [], error: null });

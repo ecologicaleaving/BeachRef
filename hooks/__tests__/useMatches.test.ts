@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMatches, MatchesFilters } from '../useMatches';
 import { supabase } from '../../services/supabase';
 import React from 'react';
+import { setDbReadOverride, resetDbReadFlagsForTests } from '../../services/flags/DbReadFlags';
 
 // Mock Supabase
 jest.mock('../../services/supabase', () => ({
@@ -46,19 +47,46 @@ const createWrapper = () => {
 };
 
 describe('useMatches Hook - Database First Strategy with Intelligent Cache', () => {
-  const mockSupabaseQuery = {
-    select: jest.fn(() => mockSupabaseQuery),
-    eq: jest.fn(() => mockSupabaseQuery),
-    gte: jest.fn(() => mockSupabaseQuery),
-    lt: jest.fn(() => mockSupabaseQuery),
-    data: [],
-    error: null
+  // Doppio INCATENABILE e ATTENDIBILE, come il costruttore di query vero: il
+  // risultato non puo' dipendere da quale filtro capita per ultimo. Prima era
+  // appeso a `.lt()`, che il hook chiama solo con un filtro di data — con
+  // `{ tournamentCode: 'TEST2024' }` la catena finisce su `.eq()` e il dato
+  // preparato non arrivava mai.
+  let risultato: { data: unknown[]; error: unknown } = { data: [], error: null };
+  const impostaRisultato = (r: { data: unknown[]; error: unknown }) => {
+    risultato = r;
   };
+
+  // I metodi dichiarati a mano restano (i test ci asseriscono sopra), ma
+  // QUALUNQUE altro filtro deve incatenarsi lo stesso. Mancava `lte`, che il
+  // hook chiama sempre per limitare la stagione (FIX #27): `gte(...).lte(...)`
+  // sollevava un TypeError, il try/catch lo inghiottiva e la query restava in
+  // sospeso a ritentare. Un doppio parziale di un costruttore di query e' una
+  // trappola a orologeria: si rompe al primo filtro nuovo, e si rompe in
+  // silenzio.
+  const metodi: Record<string, jest.Mock> = {};
+  const mockSupabaseQuery: any = new Proxy(
+    {},
+    {
+      get: (_b, chiave: string) => {
+        if (chiave === 'then') {
+          return (ok: any, ko: any) => Promise.resolve(risultato).then(ok, ko);
+        }
+        if (!metodi[chiave]) metodi[chiave] = jest.fn(() => mockSupabaseQuery);
+        return metodi[chiave];
+      },
+    }
+  );
   
   beforeEach(() => {
+    // Le letture dal DB sono spente per definizione (issue #54 fase 2).
+    // Questa suite prova PROPRIO il percorso database, quindi la accende
+    // esplicitamente invece di dare per scontato che sia attiva.
+    resetDbReadFlagsForTests();
+    setDbReadOverride(['matches']);
     jest.clearAllMocks();
     (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
-    mockSupabaseQuery.lt.mockReturnValue({ data: [], error: null });
+    impostaRisultato({ data: [], error: null });
   });
 
   describe('Database-First Strategy', () => {
@@ -83,7 +111,7 @@ describe('useMatches Hook - Database First Strategy with Intelligent Cache', () 
         match_referees: []
       }];
 
-      mockSupabaseQuery.lt.mockResolvedValue({
+      impostaRisultato({
         data: mockMatches,
         error: null
       });
@@ -142,7 +170,7 @@ describe('useMatches Hook - Database First Strategy with Intelligent Cache', () 
         date: '2024-08-15'
       };
 
-      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       renderHook(
         () => useMatches(filters),
@@ -162,7 +190,7 @@ describe('useMatches Hook - Database First Strategy with Intelligent Cache', () 
 
   describe('VIS Adapter Fallback', () => {
     it('should fallback to VIS Adapter when database is empty', async () => {
-      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
       
       const mockVisResponse = {
         success: true,
@@ -218,7 +246,7 @@ describe('useMatches Hook - Database First Strategy with Intelligent Cache', () 
     });
 
     it('should not fallback when fallback is disabled', async () => {
-      mockSupabaseQuery.lt.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       const { result } = renderHook(
         () => useMatches({}, { enableFallback: false }),

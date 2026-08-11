@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 import { queryKeys, cacheStrategies } from '../lib/queryClient';
 import { TournamentDTO } from '../services/DualReadService';
+/**
+ * `supabase` era USATO in questo file e non importato da nessuna parte.
+ * `if (supabase)` su un identificatore inesistente solleva un
+ * ReferenceError, che il try/catch intorno cattura e traduce in "database
+ * vuoto": il ramo che legge dal DB non e' mai stato eseguito, e il difetto
+ * si presentava come un ripiego sul VIS perfettamente normale. Terza
+ * occorrenza dopo useOfflineSync e le altre due sorelle di questo hook.
+ *
+ * L'import arriva con la sua barriera: senza `isDbReadEnabled` questa
+ * correzione riaprirebbe le letture dal database appena qualcuno
+ * configurasse le variabili su Netlify — che e' esattamente cio' che la
+ * issue #54 fase 2 ha chiuso. La bandiera e' spenta per definizione.
+ */
+import { supabase } from '../services/supabase';
+import { isDbReadEnabled } from '../services/flags/DbReadFlags';
 
 export interface TournamentsFilters {
   season?: number;
@@ -83,7 +98,7 @@ export function useTournaments(
     
     try {
       // Priority 1: Direct Supabase database query
-      if (supabase) {
+      if (supabase && isDbReadEnabled('tournaments')) {
         let query = supabase
           .from('tournaments')
           .select(`

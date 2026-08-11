@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTournaments, TournamentsFilters } from '../useTournaments';
 import { supabase } from '../../services/supabase';
 import React from 'react';
+import { setDbReadOverride, resetDbReadFlagsForTests } from '../../services/flags/DbReadFlags';
 
 // Mock Supabase
 jest.mock('../../services/supabase', () => ({
@@ -40,16 +41,33 @@ const createWrapper = () => {
 };
 
 describe('useTournaments Hook - Database First Strategy', () => {
-  const mockSupabaseQuery = {
+  // Doppio INCATENABILE e ATTENDIBILE.
+  //
+  // Prima i test facevano `eq.mockResolvedValue(...)`, che sostituisce il
+  // valore di ritorno di `.eq()` con una PROMESSA: il filtro successivo
+  // (`query.eq('gender', ...)`) veniva quindi chiamato su una promessa, che
+  // non ha `.eq`. TypeError, catturato dal try/catch del hook, e una sola
+  // chiamata registrata su quattro filtri applicati. Il test poi asseriva
+  // proprio sulle chiamate che il suo stesso doppio aveva impedito.
+  let risultato: { data: unknown[]; error: unknown } = { data: [], error: null };
+  const impostaRisultato = (r: { data: unknown[]; error: unknown }) => {
+    risultato = r;
+  };
+
+  const mockSupabaseQuery: any = {
     select: jest.fn(() => mockSupabaseQuery),
     eq: jest.fn(() => mockSupabaseQuery),
-    data: [],
-    error: null
+    then: (ok: any, ko: any) => Promise.resolve(risultato).then(ok, ko),
   };
   beforeEach(() => {
+    // Le letture dal DB sono spente per definizione (issue #54 fase 2).
+    // Questa suite prova PROPRIO il percorso database, quindi la accende
+    // esplicitamente invece di dare per scontato che sia attiva.
+    resetDbReadFlagsForTests();
+    setDbReadOverride(['tournaments']);
     jest.clearAllMocks();
     (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
-    mockSupabaseQuery.eq.mockReturnValue({ data: [], error: null });
+    impostaRisultato({ data: [], error: null });
   });
 
   describe('Database-First Strategy', () => {
@@ -67,7 +85,7 @@ describe('useTournaments Hook - Database First Strategy', () => {
         updated_at: '2024-01-01T00:00:00Z'
       }];
 
-      mockSupabaseQuery.eq.mockResolvedValue({
+      impostaRisultato({
         data: mockTournaments,
         error: null
       });
@@ -95,7 +113,7 @@ describe('useTournaments Hook - Database First Strategy', () => {
         status: 'ACTIVE'
       };
 
-      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       renderHook(
         () => useTournaments(filters),
@@ -113,7 +131,7 @@ describe('useTournaments Hook - Database First Strategy', () => {
 
   describe('VIS Adapter Fallback', () => {
     it('should fallback to VIS Adapter when database is empty', async () => {
-      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
       
       const mockVisResponse = {
         success: true,
@@ -160,7 +178,7 @@ describe('useTournaments Hook - Database First Strategy', () => {
     });
 
     it('should not fallback when fallback is disabled', async () => {
-      mockSupabaseQuery.eq.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       const { result } = renderHook(
         () => useTournaments({}, { enableFallback: false }),

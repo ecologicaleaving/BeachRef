@@ -1,4 +1,5 @@
 import { RealtimeSubscriptionService, ConnectionState } from '../RealtimeSubscriptionService';
+import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
 import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { supabase } from '../supabase';
 import { AppState } from 'react-native';
@@ -26,6 +27,16 @@ describe('RealtimeSubscriptionService', () => {
     
     // Reset service state
     RealtimeSubscriptionService.cleanup();
+
+    // I circuit breaker sono un registro STATICO, e sopravvivono al test che
+    // li ha aperti (issue #94). `establishSubscription` chiede il permesso al
+    // breaker del torneo prima di iscriversi: dopo un test che simula
+    // fallimenti, il circuito resta aperto e la ri-sottoscrizione del test
+    // successivo viene rifiutata — correttamente, ma per una ragione che
+    // appartiene a un altro test. E' questo che rendeva impossibile "should
+    // resume subscriptions when app becomes active", non un difetto della
+    // ripresa.
+    ConnectionCircuitBreaker.cleanupAll();
     
     // Mock supabase channel methods
     const mockChannel = {
@@ -182,6 +193,19 @@ describe('RealtimeSubscriptionService', () => {
    * test non riceveva niente. Il sistema operativo, quando l'app va in
    * sottofondo, avvisa tutti gli iscritti — questa e' la simulazione fedele.
    */
+  /**
+   * Attende che una condizione diventi vera, invece di dormire un tempo fisso.
+   * Niente `waitFor` di @testing-library qui: e' un test di servizio, non
+   * renderizza nulla, e importarlo tirerebbe dentro il renderer React Native.
+   */
+  const finoA = async (condizione: () => boolean, timeoutMs = 2000): Promise<void> => {
+    const scadenza = Date.now() + timeoutMs;
+    while (!condizione()) {
+      if (Date.now() > scadenza) return;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+  };
+
   const cambiaStatoApp = (stato: string) => {
     (AppState.addEventListener as jest.Mock).mock.calls.forEach(([, callback]) => {
       if (typeof callback === 'function') callback(stato);
@@ -206,13 +230,10 @@ describe('RealtimeSubscriptionService', () => {
       cambiaStatoApp('active');
 
       // La ripresa ri-sottoscrive in modo ASINCRONO (`resumeAllSubscriptions`
-      // non viene atteso dal gestore di stato, che e' sincrono): il test
-      // guardava il contatore prima che la nuova iscrizione fosse partita.
-      // NOTA (#94): questo caso resta rosso e non e' stato forzato.
-      // `resumeAllSubscriptions` -> `reconnectTournament` ->
-      // `establishSubscription` sembra corretto a lettura, e ho atteso fino a
-      // mezzo secondo che la seconda iscrizione partisse, senza successo. La
-      // causa non e' stata isolata.
+      // non viene atteso dal gestore di stato, che e' sincrono): il contatore
+      // va guardato dopo che la nuova iscrizione e' partita, non subito.
+      await finoA(() => (supabase.channel as jest.Mock).mock.calls.length >= 2);
+
       expect(supabase.channel).toHaveBeenCalledTimes(2);
     });
   });

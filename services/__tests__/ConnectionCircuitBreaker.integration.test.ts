@@ -186,12 +186,29 @@ describe('ConnectionCircuitBreaker Integration', () => {
 
   describe('Network State Change Handling', () => {
     it('should reset circuit when network quality significantly improves', async () => {
-      // NOTA (#94): questo caso resta rosso e non e' stato forzato.
-      // L'azzeramento scatta solo se la qualita' sale di oltre 20 punti
-      // mentre il circuito e' aperto, e la rete di partenza qui e' gia' un
-      // Wi-Fi ottimo: la "migliorata" non ha margine. Simulare prima una rete
-      // scadente non e' bastato — la rivalutazione non risale in tempo — e
-      // non ho isolato il perche'.
+      // "Migliorata" ha bisogno di un PRIMA da cui migliorare (issue #94).
+      //
+      // L'azzeramento scatta se il punteggio sale di oltre 20 punti mentre il
+      // circuito e' aperto. Il test partiva da un Wi-Fi gia' ottimo e passava
+      // a un Wi-Fi ottimo: nessun margine, condizione impossibile da
+      // soddisfare. Non era il codice a sbagliare, era lo scenario.
+      //
+      // Il punto da cui partire c'e' ed e' sincrono: con `isConnected: false`
+      // `assessConnectionQualitySync` fissa il punteggio a 0 *prima* di
+      // avvisare gli iscritti. Non serve attendere la sonda di latenza
+      // asincrona — che e' il motivo per cui i tentativi a base di `setTimeout`
+      // non risalivano in tempo.
+      const avvisaTuttiGliIscritti = (stato: Record<string, unknown>) => {
+        // A TUTTI, non solo al primo: piu' servizi si iscrivono a NetInfo, e
+        // `mock.calls[0][0]` e' la callback di quello registrato per primo,
+        // non necessariamente quella sotto esame.
+        NetInfo.addEventListener.mock.calls.forEach(([callback]: any[]) => {
+          if (typeof callback === 'function') {
+            callback(stato);
+          }
+        });
+      };
+
       // Force circuit to open
       for (let i = 0; i < 5; i++) {
         circuitBreaker.onFailure(`Failure ${i + 1}`);
@@ -199,30 +216,28 @@ describe('ConnectionCircuitBreaker Integration', () => {
 
       expect(circuitBreaker.getState()).toBe(CircuitState.OPEN);
 
-      // Simulate significant network quality improvement
       const networkManager = NetworkStateManager.getInstance();
-
-      // Mock excellent network conditions
       (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
 
-      // A TUTTI gli ascoltatori, non solo al primo: piu' servizi si iscrivono
-      // a NetInfo, e `mock.calls[0][0]` era la callback di quello registrato
-      // per primo — non necessariamente quella sotto esame. Il sistema
-      // operativo avvisa tutti gli iscritti.
-      NetInfo.addEventListener.mock.calls.forEach(([callback]: any[]) => {
-        if (typeof callback === 'function') {
-          callback({
-            isConnected: true,
-            type: 'wifi',
-            isInternetReachable: true,
-            details: { strength: 100, ssid: 'FastWiFi' }
-          });
-        }
+      // Prima: rete assente, punteggio 0. Il circuito resta aperto — 0 non e'
+      // un miglioramento.
+      avvisaTuttiGliIscritti({
+        isConnected: false,
+        type: 'none',
+        isInternetReachable: false,
+        details: {}
       });
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      expect(circuitBreaker.getState()).toBe(CircuitState.OPEN);
 
-      // Circuit should have been reset due to network improvement
+      // Poi: Wi-Fi eccellente. Il salto supera i 20 punti e azzera il circuito.
+      avvisaTuttiGliIscritti({
+        isConnected: true,
+        type: 'wifi',
+        isInternetReachable: true,
+        details: { strength: 100, ssid: 'FastWiFi' }
+      });
+
       expect(circuitBreaker.getState()).toBe(CircuitState.CLOSED);
 
       networkManager.cleanup();

@@ -429,12 +429,25 @@ export class RealtimeSubscriptionService {
    */
   private static async reconnectTournament(tournamentNo: string): Promise<void> {
     
+    // La configurazione si legge PRIMA di disiscriversi (issue #94).
+    //
+    // `unsubscribeTournament` cancella anche `subscriptionConfigs` (e' la sua
+    // pulizia, ed e' giusta): leggerla dopo restituiva sempre `undefined`, il
+    // ramo `if (config)` non veniva mai preso e **la riconnessione non
+    // ri-sottoscriveva mai**. Non e' un dettaglio di test: e' il percorso che
+    // riprende il realtime quando l'app torna in primo piano. L'arbitro che
+    // metteva l'app in background durante una partita e la riapriva smetteva
+    // di ricevere i punteggi dal vivo, in silenzio e per sempre — fino a un
+    // riavvio dell'app.
+    const config = this.subscriptionConfigs.get(tournamentNo);
+
     // Remove existing subscription if any
     await this.unsubscribeTournament(tournamentNo);
-    
+
     // Re-establish subscription
-    const config = this.subscriptionConfigs.get(tournamentNo);
     if (config) {
+      // Rimessa a posto perche' `establishSubscription` la rilegge dalla mappa.
+      this.subscriptionConfigs.set(tournamentNo, config);
       await this.establishSubscription(tournamentNo, true);
     }
   }

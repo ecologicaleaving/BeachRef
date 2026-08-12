@@ -554,13 +554,15 @@ describe('DualReadService', () => {
     });
 
     it('should handle database connection errors', async () => {
-      const mockDbQuery = {
-        eq: jest.fn().mockImplementation(() => Promise.reject(new Error('Connection failed')))
-      };
-
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
+      // Il doppio deve fallire quando la query viene ATTESA, non quando si
+      // chiama `.eq()` (issue #94). `getTournaments()` qui e' invocata senza
+      // filtri, quindi `.eq()` non veniva mai chiamata: la query non
+      // rifiutava, `getTournamentsFromDB` restituiva `undefined` e il servizio
+      // usciva dal ramo "nessuna strategia valida". Il test vedeva `data: null`
+      // e un `error` valorizzato — cioe' esattamente cio' che si aspettava — ma
+      // per una ragione che non era un errore di connessione, e infatti nessun
+      // errore veniva registrato.
+      mockSupabase.from.mockReturnValue(costruttoreQuery(new Error('Connection failed')));
 
       dualReadService.configure({
         readStrategy: 'db_only'

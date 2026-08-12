@@ -38,7 +38,13 @@ describe('PollingPerformanceMonitor', () => {
       monitor.recordIntervalChange(123, 5000, 3000, MatchPollingStatus.RUNNING);
 
       const metrics = monitor.getMetrics();
-      expect(metrics.byStatus[MatchPollingStatus.RUNNING].requestCount).toBe(1);
+      // Un cambio di intervallo non e' una richiesta (issue #94): la partita
+      // entra nel conteggio delle partite osservate e nella media degli
+      // intervalli, ma `requestCount` conta le interrogazioni al VIS, e qui non
+      // ne e' stata fatta nessuna. Prima questo campo veniva incrementato
+      // proprio qui, e mai da `recordRequest`.
+      expect(metrics.byStatus[MatchPollingStatus.RUNNING].requestCount).toBe(0);
+      expect(metrics.byStatus[MatchPollingStatus.RUNNING].matchCount).toBe(1);
       expect(metrics.avgPollingIntervalMs).toBe(3000);
     });
 
@@ -108,8 +114,13 @@ describe('PollingPerformanceMonitor', () => {
 
       const metrics = monitor.getMetrics();
       
-      expect(metrics.byStatus[MatchPollingStatus.RUNNING].requestCount).toBe(1);
-      expect(metrics.byStatus[MatchPollingStatus.SCHEDULED].requestCount).toBe(1);
+      // Le due richieste del beforeEach sono entrambe RUNNING (partite 123 e
+      // 124); i due cambi di intervallo non aggiungono richieste, ma portano
+      // la 124 anche fra le partite osservate in stato SCHEDULED.
+      expect(metrics.byStatus[MatchPollingStatus.RUNNING].requestCount).toBe(2);
+      expect(metrics.byStatus[MatchPollingStatus.RUNNING].matchCount).toBe(2);
+      expect(metrics.byStatus[MatchPollingStatus.SCHEDULED].requestCount).toBe(0);
+      expect(metrics.byStatus[MatchPollingStatus.SCHEDULED].matchCount).toBe(1);
       expect(metrics.byStatus[MatchPollingStatus.RUNNING].avgIntervalMs).toBe(3000);
       expect(metrics.byStatus[MatchPollingStatus.SCHEDULED].avgIntervalMs).toBe(5000);
     });

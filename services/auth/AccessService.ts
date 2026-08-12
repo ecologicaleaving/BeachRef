@@ -23,6 +23,7 @@
  */
 
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
+import { dimentica, ricorda } from './statoRicordato';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -198,6 +199,11 @@ export async function entraConGoogle(percorsoDiRitorno: string): Promise<void> {
 }
 
 export async function esci(): Promise<void> {
+  // Si dimentica PRIMA di uscire: se `signOut` fallisce, meglio un menu che
+  // mostra "Accedi" a chi e' ancora dentro (rimedio: un click) che un menu che
+  // mostra "Stats" a chi e' uscito.
+  await dimentica();
+
   if (!accessoConfigurato()) return;
   const sb = await client();
   await sb.auth.signOut();
@@ -217,6 +223,18 @@ async function sessione(): Promise<Session | null> {
  * sarebbe un'opinione del browser, e il browser e' di chi lo usa.
  */
 export async function statoAccesso(): Promise<StatoAccesso> {
+  const esito = await calcolaStatoAccesso();
+
+  // Se ne tiene una copia minuscola per il menu, che sta su ogni pagina e non
+  // puo' permettersi di caricare il client Supabase solo per sapere quali voci
+  // mostrare (issue #103). Vedi `statoRicordato.ts` per il perche' e per i
+  // limiti di quella copia.
+  await ricorda(esito);
+
+  return esito;
+}
+
+async function calcolaStatoAccesso(): Promise<StatoAccesso> {
   if (!accessoConfigurato()) {
     return {
       stato: 'non_configurato',

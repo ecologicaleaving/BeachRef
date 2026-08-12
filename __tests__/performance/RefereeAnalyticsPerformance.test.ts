@@ -27,6 +27,33 @@ jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(() => mockSupabase),
 }));
 
+/**
+ * Costruttore di query FINTO ma COMPLETO.
+ *
+ * I test costruivano a mano catene parziali (`select -> gte -> lte`), e il
+ * servizio ne chiama anche altre: bastava un `.in('referee_id', ...)` per
+ * ottenere "query.in is not a function". Un doppio parziale di un costruttore
+ * di query si rompe al primo filtro nuovo, e si rompe in silenzio dentro un
+ * try/catch.
+ *
+ * Qui QUALUNQUE metodo si incatena, e il risultato si attende alla fine —
+ * come fa PostgREST, che e' thenable.
+ */
+const costruttoreFinto = (risultato: { data: unknown; error: unknown }): any => {
+  const q: any = new Proxy(
+    {},
+    {
+      get: (_b, chiave: string) => {
+        if (chiave === 'then') {
+          return (ok: any, ko: any) => Promise.resolve(risultato).then(ok, ko);
+        }
+        return jest.fn(() => q);
+      },
+    }
+  );
+  return q;
+};
+
 // Performance test utilities
 const measurePerformance = async (operation: () => Promise<any>): Promise<number> => {
   const start = performance.now();
@@ -102,16 +129,7 @@ describe('Referee Analytics Performance Tests', () => {
     it('should load analytics dashboard within 2 seconds', async () => {
       // Mock large dataset response
       const largeDataset = generateLargeDataset(500);
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockResolvedValue({
-              data: largeDataset,
-              error: null,
-            }),
-          }),
-        }),
-      });
+      mockSupabase.from.mockReturnValue(costruttoreFinto({ data: largeDataset, error: null }));
 
       const performanceTime = await measurePerformance(async () => {
         await analyticsService.aggregateRefereeAnalytics(
@@ -129,16 +147,7 @@ describe('Referee Analytics Performance Tests', () => {
     it('should complete database analytics queries within 500ms', async () => {
       // Mock typical dataset response
       const normalDataset = generateLargeDataset(100);
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockResolvedValue({
-              data: normalDataset,
-              error: null,
-            }),
-          }),
-        }),
-      });
+      mockSupabase.from.mockReturnValue(costruttoreFinto({ data: normalDataset, error: null }));
 
       const performanceTime = await measurePerformance(async () => {
         await analyticsService.aggregateRefereeAnalytics(
@@ -291,16 +300,7 @@ describe('Referee Analytics Performance Tests', () => {
      */
     it('should handle concurrent analytics requests efficiently', async () => {
       // Mock responses for concurrent requests
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockResolvedValue({
-              data: generateLargeDataset(50),
-              error: null,
-            }),
-          }),
-        }),
-      });
+      mockSupabase.from.mockReturnValue(costruttoreFinto({ data: generateLargeDataset(50), error: null }));
 
       const concurrentOperations = Array.from({ length: 5 }, (_, i) =>
         analyticsService.aggregateRefereeAnalytics(
@@ -370,16 +370,7 @@ describe('Referee Analytics Performance Tests', () => {
      * Test performance with empty datasets
      */
     it('should handle empty datasets efficiently', async () => {
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockResolvedValue({
-              data: [],
-              error: null,
-            }),
-          }),
-        }),
-      });
+      mockSupabase.from.mockReturnValue(costruttoreFinto({ data: [], error: null }));
 
       const performanceTime = await measurePerformance(async () => {
         await analyticsService.aggregateRefereeAnalytics(
@@ -428,16 +419,7 @@ describe('Referee Analytics Performance Tests', () => {
     it('should have minimal performance monitoring overhead', async () => {
       const testData = generateLargeDataset(100);
       
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockResolvedValue({
-              data: testData,
-              error: null,
-            }),
-          }),
-        }),
-      });
+      mockSupabase.from.mockReturnValue(costruttoreFinto({ data: testData, error: null }));
 
       // Test with monitoring enabled
       const timeWithMonitoring = await measurePerformance(async () => {

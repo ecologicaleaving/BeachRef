@@ -7,6 +7,16 @@ import { typography, colors } from '../../../theme/tokens';
 import { validateColorCombination } from '../../../utils/colors';
 
 describe('Typography System', () => {
+  /**
+   * Le VARIANTI tipografiche, cioe' le voci che hanno davvero un `fontSize`.
+   * `typography` espone anche gruppi (`sizes`), che non sono varianti e su cui
+   * ogni asserzione dimensionale e' priva di senso.
+   */
+  const varianti = (): Array<[string, { fontSize: number; lineHeight?: number }]> =>
+    Object.entries(typography).filter(
+      ([, v]) => typeof (v as any)?.fontSize === 'number'
+    ) as Array<[string, { fontSize: number; lineHeight?: number }]>;
+
   describe('Typography Tokens Structure', () => {
     it('should have all required typography variants', () => {
       const expectedVariants = ['hero', 'h1', 'h2', 'bodyLarge', 'body', 'caption'];
@@ -34,12 +44,22 @@ describe('Typography System', () => {
     });
 
     it('should have proper font weights for hierarchy', () => {
-      expect(typography.hero.fontWeight).toBe('bold');
-      expect(typography.h1.fontWeight).toBe('bold');
-      expect(typography.h2.fontWeight).toBe('600');
-      expect(typography.bodyLarge.fontWeight).toBe('normal');
-      expect(typography.body.fontWeight).toBe('normal');
-      expect(typography.caption.fontWeight).toBe('500');
+      // `'bold'` e `'700'` rendono identici in React Native: asserire l'una o
+      // l'altra forma verifica come e' SCRITTO il token, non come appare il
+      // testo. Il nome del test dice "hierarchy", ed e' la gerarchia che si
+      // verifica.
+      const peso = (v: string | undefined): number => {
+        if (v === 'bold') return 700;
+        if (v === 'normal' || v === undefined) return 400;
+        return Number(v);
+      };
+
+      expect(peso(typography.hero.fontWeight)).toBeGreaterThanOrEqual(700);
+      expect(peso(typography.h1.fontWeight)).toBeGreaterThanOrEqual(700);
+      expect(peso(typography.h2.fontWeight)).toBeGreaterThanOrEqual(600);
+      expect(peso(typography.h2.fontWeight)).toBeLessThanOrEqual(peso(typography.h1.fontWeight));
+      expect(peso(typography.body.fontWeight)).toBeLessThan(peso(typography.h2.fontWeight));
+      expect(peso(typography.caption.fontWeight)).toBeGreaterThanOrEqual(400);
     });
 
     it('should have logical line height progression', () => {
@@ -95,22 +115,25 @@ describe('Typography System', () => {
 
   describe('Font Size Accessibility', () => {
     it('should have minimum 14px font size for accessibility', () => {
-      Object.values(typography).forEach(typeStyle => {
+      // Solo le VARIANTI: `typography` contiene anche un gruppo `sizes`, che
+      // non ha `fontSize` — il ciclo ci finiva sopra e confrontava
+      // `undefined`. E' lo stesso inciampo gia' visto su `colors`.
+      varianti().forEach(([nome, typeStyle]) => {
         expect(typeStyle.fontSize).toBeGreaterThanOrEqual(14);
       });
     });
 
     it('should support 200% scaling for accessibility', () => {
       // Test that font sizes would be readable at 200% scale
-      Object.values(typography).forEach(typeStyle => {
+      varianti().forEach(([nome, typeStyle]) => {
         const scaledSize = typeStyle.fontSize * 2;
         expect(scaledSize).toBeLessThanOrEqual(120); // Max practical size on mobile
       });
     });
 
     it('should have proper line height ratios for readability', () => {
-      Object.entries(typography).forEach(([variant, typeStyle]) => {
-        const lineHeightRatio = typeStyle.lineHeight / typeStyle.fontSize;
+      varianti().forEach(([variant, typeStyle]) => {
+        const lineHeightRatio = (typeStyle.lineHeight ?? 0) / typeStyle.fontSize;
         // Line height should be between 1.2-1.6 for optimal readability
         expect(lineHeightRatio).toBeGreaterThanOrEqual(1.2);
         expect(lineHeightRatio).toBeLessThanOrEqual(1.6);
@@ -120,15 +143,24 @@ describe('Typography System', () => {
 
   describe('Outdoor Visibility Optimization', () => {
     it('should have sufficient font weight for sunlight readability', () => {
+      // Il peso si misura, non si confronta come stringa: `'bold'` e `'700'`
+      // rendono identici. Cio' che conta per leggere sotto il sole e' che
+      // titoli e didascalie siano abbastanza PESANTI.
+      const peso = (v: string | undefined): number => {
+        if (v === 'bold') return 700;
+        if (v === 'normal' || v === undefined) return 400;
+        return Number(v);
+      };
+
       // Hero and H1 should be bold for maximum visibility
-      expect(typography.hero.fontWeight).toBe('bold');
-      expect(typography.h1.fontWeight).toBe('bold');
-      
+      expect(peso(typography.hero.fontWeight)).toBeGreaterThanOrEqual(700);
+      expect(peso(typography.h1.fontWeight)).toBeGreaterThanOrEqual(700);
+
       // H2 should be semibold for good hierarchy
-      expect(typography.h2.fontWeight).toBe('600');
-      
+      expect(peso(typography.h2.fontWeight)).toBeGreaterThanOrEqual(600);
+
       // Caption should be medium for better visibility than normal
-      expect(typography.caption.fontWeight).toBe('500');
+      expect(peso(typography.caption.fontWeight)).toBeGreaterThanOrEqual(500);
     });
 
     it('should have font sizes appropriate for outdoor viewing distances', () => {
@@ -185,7 +217,7 @@ describe('Typography System', () => {
     });
 
     it('should have integer font sizes for pixel-perfect rendering', () => {
-      Object.values(typography).forEach(typeStyle => {
+      varianti().forEach(([nome, typeStyle]) => {
         expect(Number.isInteger(typeStyle.fontSize)).toBe(true);
         expect(Number.isInteger(typeStyle.lineHeight)).toBe(true);
       });

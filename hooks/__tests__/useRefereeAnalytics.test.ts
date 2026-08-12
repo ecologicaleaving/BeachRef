@@ -3,7 +3,7 @@
  * Story 4.2: Referee Performance Analytics - Task 6
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { useRefereeAnalytics, RefereeAnalyticsFilters } from '../useRefereeAnalytics';
@@ -117,7 +117,18 @@ describe('useRefereeAnalytics', () => {
     // Mock AnalyticsService
     const mockAnalyticsInstance = {
       aggregateRefereeAnalytics: jest.fn().mockResolvedValue(mockAnalyticsData),
-      calculatePerformanceScore: jest.fn().mockResolvedValue(85),
+      // Il punteggio dipende dall'ARBITRO, non e' una costante.
+      //
+      // Il doppio restituiva 85 per tutti, e il hook ricalcola il punteggio
+      // sovrascrivendo quello dell'aggregazione: il 92 dell'arbitro '2'
+      // spariva, nessuno superava la soglia di 90 e il filtro restituiva un
+      // elenco vuoto. Un doppio che appiattisce il dato su cui il codice
+      // decide non prova il codice, prova la costante.
+      calculatePerformanceScore: jest.fn().mockImplementation((refereeId: string) =>
+        Promise.resolve(
+          mockAnalyticsData.find((a) => a.referee_id === refereeId)?.performance_score ?? 85
+        )
+      ),
     };
     mockAnalyticsService.getInstance.mockReturnValue(mockAnalyticsInstance as any);
 
@@ -186,12 +197,21 @@ describe('useRefereeAnalytics', () => {
         { wrapper }
       );
 
-      await waitFor(() => {
-        expect(result.current.isError).toBe(true);
-      });
+      // Timeout largo: il hook definisce un proprio `retry` (2 tentativi con
+      // backoff) che ha la precedenza sul `retry: false` del client di prova —
+      // in TanStack le opzioni per-query vincono, per progetto. L'errore
+      // arriva, ma dopo i tentativi, e l'attesa predefinita di 1s scade prima.
+      await waitFor(
+        () => {
+          expect(result.current.isError).toBe(true);
+        },
+        { timeout: 9000 }
+      );
 
       expect(result.current.error).toBeInstanceOf(Error);
-    });
+      // Il limite del singolo caso va alzato insieme a quello della waitFor:
+      // i due tentativi con backoff del hook non stanno nei 5s predefiniti.
+    }, 15000);
   });
 
   describe('filtering', () => {
@@ -355,12 +375,23 @@ describe('useRefereeAnalytics', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      // Spy on the refetch function
-      const refetchSpy = jest.spyOn(result.current, 'refetch');
+      // Si verifica l'EFFETTO, non una spia che non puo' scattare.
+      //
+      // `jest.spyOn(result.current, 'refetch')` sostituisce la proprieta'
+      // sull'oggetto restituito, ma `refreshAnalytics` chiama la funzione
+      // interna del hook: quella spia non poteva essere invocata in nessun
+      // caso. Cio' che conta e' che un rinfresco vada davvero a ripescare i
+      // dati, e questo si vede dalle chiamate al servizio.
+      const istanza = mockAnalyticsService.getInstance() as any;
+      const primaDelRinfresco = istanza.aggregateRefereeAnalytics.mock.calls.length;
 
-      await result.current.refreshAnalytics();
+      await act(async () => {
+        await result.current.refreshAnalytics();
+      });
 
-      expect(refetchSpy).toHaveBeenCalled();
+      expect(istanza.aggregateRefereeAnalytics.mock.calls.length).toBeGreaterThan(
+        primaDelRinfresco
+      );
     });
   });
 

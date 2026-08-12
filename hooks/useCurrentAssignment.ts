@@ -131,10 +131,18 @@ export const useCurrentAssignment = (): CurrentAssignmentState & {
     }
   };
 
-  const updateAssignmentStatus = async (_assignmentId: string, _status: string) => {
+  const updateAssignmentStatus = async (assignmentId: string, status: string) => {
     try {
       // In a real implementation, this would call the assignment update API
-      // TODO: Use _assignmentId and _status to update assignment
+      // TODO: chiamare l'API di aggiornamento con questi due valori.
+      //
+      // Finche' non esiste, la traccia RESTA: i due parametri erano marcati
+      // come inutilizzati (`_assignmentId`, `_status`) e la funzione non ne
+      // faceva assolutamente nulla, quindi chi la chiamava credeva di aver
+      // aggiornato uno stato. Un segnaposto che dice cosa avrebbe fatto e' una
+      // cosa diversa da una funzione rotta, e solo la riga qui sotto distingue
+      // i due casi.
+      console.log(`Updating assignment ${assignmentId} status to ${status}`);
 
       // Refresh assignments after status update
       await refreshAssignments();

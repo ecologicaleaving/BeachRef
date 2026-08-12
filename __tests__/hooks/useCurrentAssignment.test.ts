@@ -38,8 +38,11 @@ describe('useCurrentAssignment', () => {
   it('should have current assignment with correct properties', async () => {
     const { result } = renderHook(() => useCurrentAssignment());
 
+    // `toBeDefined()` e' vero anche per `null`: l'attesa terminava subito,
+    // mentre l'incarico non era ancora arrivato, e la riga dopo leggeva
+    // `null.homeTeam`. Serve `not.toBeNull()`.
     await waitFor(() => {
-      expect(result.current.currentAssignment).toBeDefined();
+      expect(result.current.currentAssignment).not.toBeNull();
     });
 
     const currentAssignment = result.current.currentAssignment!;

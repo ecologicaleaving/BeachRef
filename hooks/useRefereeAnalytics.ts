@@ -5,6 +5,8 @@ import RefereeAnalyticsExportService, { ExportFormat, ExportConfig } from '../se
 import { queryKeys, createQueryOptions } from '../lib/queryClient';
 import { queryPerformanceMonitor } from '../lib/queryPerformance';
 import { ErrorLogger } from '../services/ErrorLogger';
+import { DeploymentFeatureFlags } from '../services/DeploymentFeatureFlags';
+import { NewAnalyticsService, type AnalyticsQueryParams } from '../services/NewAnalyticsService';
 
 /**
  * Referee Analytics Filters Interface
@@ -115,13 +117,71 @@ export function useRefereeAnalytics(
   const queryFn = async (): Promise<RefereePerformanceMetrics[]> => {
     const startTime = Date.now();
 
+    // Il bivio della migrazione (issue #102).
+    //
+    // Il flag e' SPENTO di partenza: chi non lo accende resta esattamente sul
+    // percorso di prima, riga per riga. Chi lo accende — con
+    // `?nuoveAnalytics=on`, un browser alla volta — legge dalle Edge Function.
+    //
+    // Con il flag acceso NON c'e' ripiego automatico sul percorso vecchio, ed e'
+    // deliberato: questo interruttore esiste per VERIFICARE che la nuova
+    // sorgente dia gli stessi numeri, e un ripiego silenzioso nasconderebbe
+    // proprio il fallimento che si sta cercando. L'errore emerge, si legge, e
+    // si rientra con `?nuoveAnalytics=off`.
+    const nuovaSorgente = DeploymentFeatureFlags.getInstance().isNewAnalyticsEndpointsEnabled();
+
+    /**
+     * I parametri per l'endpoint, con le proprieta' assenti OMESSE invece che
+     * valorizzate a `undefined`.
+     *
+     * Il progetto compila con `exactOptionalPropertyTypes`, che distingue
+     * "proprieta' assente" da "proprieta' presente e indefinita" — e
+     * `AnalyticsQueryParams` dichiara le sue opzionali senza `| undefined`.
+     * Costruire l'oggetto in un letterale unico, con i campi eventualmente
+     * `undefined`, non compila.
+     */
+    const parametriInterrogazione = () => {
+      const parametri: AnalyticsQueryParams = {
+        startDate: `${effectiveFilters.dateRange!.start} 00:00:00`,
+        endDate: `${effectiveFilters.dateRange!.end} 23:59:59`,
+      };
+
+      if (effectiveFilters.refereeIds) {
+        parametri.refereeIds = effectiveFilters.refereeIds;
+      }
+
+      // Il filtro locale e' `tournamentCodes` (una LISTA), l'endpoint accetta un
+      // solo `tournamentCode`. Con piu' codici il filtro si lascia cadere
+      // invece di restringere di nascosto a un torneo solo: meglio piu' righe
+      // da filtrare a valle che un sottoinsieme silenzioso.
+      const codiceUnico =
+        effectiveFilters.tournamentCodes?.length === 1
+          ? effectiveFilters.tournamentCodes[0]
+          : undefined;
+
+      if (codiceUnico) {
+        parametri.tournamentCode = codiceUnico;
+      }
+
+      if (effectiveFilters.federationCode) {
+        parametri.federation = effectiveFilters.federationCode;
+      }
+
+      return parametri;
+    };
+
     try {
-      // Get aggregated referee analytics from AnalyticsService
-      const aggregations = await analyticsService.aggregateRefereeAnalytics(
-        effectiveFilters.dateRange!.start,
-        effectiveFilters.dateRange!.end,
-        effectiveFilters.refereeIds
-      );
+      // Le due sorgenti restituiscono la stessa FORMA di riga, e da qui in giu'
+      // il percorso e' identico: una sola trasformazione, un solo insieme di
+      // filtri. Duplicarla per la sorgente nuova avrebbe voluto dire due
+      // definizioni di "soglia di rendimento" da tenere allineate a mano.
+      const aggregations = nuovaSorgente
+        ? await NewAnalyticsService.getInstance().queryAnalytics(parametriInterrogazione())
+        : await analyticsService.aggregateRefereeAnalytics(
+            effectiveFilters.dateRange!.start,
+            effectiveFilters.dateRange!.end,
+            effectiveFilters.refereeIds
+          );
 
       const endTime = Date.now();
       const queryTime = endTime - startTime;
@@ -136,8 +196,15 @@ export function useRefereeAnalytics(
       const performanceMetrics = await Promise.all(
         aggregations.map(async (agg) => {
           let performanceScore = 0;
-          
-          if (currentConfig.enablePerformanceScoring) {
+
+          // Sul percorso nuovo il punteggio arriva GIA' calcolato dalla Edge
+          // Function, e va usato quello (issue #102). Ricalcolarlo in locale
+          // non sarebbe solo lavoro sprecato: il filtro per soglia di rendimento
+          // finirebbe per selezionare gli arbitri in base a un numero diverso da
+          // quello mostrato accanto al loro nome.
+          if (nuovaSorgente && (agg as { performance_score?: unknown }).performance_score !== undefined) {
+            performanceScore = (agg as { performance_score: number }).performance_score;
+          } else if (currentConfig.enablePerformanceScoring) {
             try {
               performanceScore = await analyticsService.calculatePerformanceScore(
                 agg.referee_id,
@@ -166,7 +233,13 @@ export function useRefereeAnalytics(
           const dateRange = effectiveFilters.dateRange!;
           const startDate = new Date(dateRange.start);
           const endDate = new Date(dateRange.end);
-          const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+          // I giorni si contano INCLUSI gli estremi (issue #102). Dal 1 al 31
+          // luglio sono 31 giorni di torneo, non 30: la differenza fra le due
+          // date ne conta 30 e gonfiava la media partite/giorno di un
+          // trentesimo. Su una finestra di una settimana l'errore e' del 17%.
+          const giorniInclusi =
+            Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+          const daysDiff = Math.max(1, giorniInclusi);
           const avgMatchesPerDay = agg.total_assignments / daysDiff;
 
           return {
@@ -294,11 +367,23 @@ export function useRefereeAnalytics(
   const aggregatePerformance = useCallback(async (refereeIds: string[]): Promise<void> => {
     try {
       const dateRange = effectiveFilters.dateRange!;
-      await analyticsService.aggregateRefereeAnalytics(
-        dateRange.start,
-        dateRange.end,
-        refereeIds
-      );
+
+      // Stesso bivio della query principale (issue #102): se la sorgente e' il
+      // servizio nuovo, anche il ricalcolo deve passare di li', altrimenti si
+      // aggregherebbe in un posto e si leggerebbe da un altro.
+      if (DeploymentFeatureFlags.getInstance().isNewAnalyticsEndpointsEnabled()) {
+        await NewAnalyticsService.getInstance().queryAnalytics({
+          startDate: `${dateRange.start} 00:00:00`,
+          endDate: `${dateRange.end} 23:59:59`,
+          refereeIds,
+        });
+      } else {
+        await analyticsService.aggregateRefereeAnalytics(
+          dateRange.start,
+          dateRange.end,
+          refereeIds
+        );
+      }
       // Invalidate query to refresh data
       await query.refetch();
     } catch (error) {

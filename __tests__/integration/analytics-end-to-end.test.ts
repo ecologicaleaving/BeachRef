@@ -6,25 +6,33 @@ import { DeploymentFeatureFlags } from '../../services/DeploymentFeatureFlags';
 import { NewAnalyticsService } from '../../services/NewAnalyticsService';
 
 // Mock the services
-jest.mock('../../services/DeploymentFeatureFlags', () => ({
-  DeploymentFeatureFlags: {
-    getInstance: jest.fn(() => ({
-      isNewAnalyticsEndpointsEnabled: jest.fn(() => true),
-      isAnalyticsMonitoringEnabled: jest.fn(() => true),
-      isAnalyticsCacheEnabled: jest.fn(() => true),
-    }))
-  }
-}));
+// Stessa ragione del doppio qui sotto: una sola istanza, condivisa fra il test
+// e il codice sotto esame. Altrimenti `mockReturnValue(false)` non arriva mai
+// dove serve e ogni test girerebbe col flag acceso.
+jest.mock('../../services/DeploymentFeatureFlags', () => {
+  const instance = {
+    isNewAnalyticsEndpointsEnabled: jest.fn(() => true),
+    isAnalyticsMonitoringEnabled: jest.fn(() => true),
+    isAnalyticsCacheEnabled: jest.fn(() => true),
+  };
+  return { DeploymentFeatureFlags: { getInstance: jest.fn(() => instance) } };
+});
 
-jest.mock('../../services/NewAnalyticsService', () => ({
-  NewAnalyticsService: {
-    getInstance: jest.fn(() => ({
-      queryAnalytics: jest.fn(),
-      exportAnalytics: jest.fn(),
-      getHealthStatus: jest.fn(),
-    }))
-  }
-}));
+// `getInstance` deve restituire lo STESSO oggetto a ogni chiamata.
+//
+// Con una fabbrica che ne costruisce uno nuovo ogni volta, l'istanza che il
+// test configura e quella che il hook usa sono due oggetti diversi: il
+// `mockResolvedValue` del test non arriva mai al codice sotto esame, che riceve
+// una `queryAnalytics` senza implementazione. E' lo stesso difetto gia'
+// documentato qui sotto per `ErrorLogger`.
+jest.mock('../../services/NewAnalyticsService', () => {
+  const instance = {
+    queryAnalytics: jest.fn(),
+    exportAnalytics: jest.fn(),
+    getHealthStatus: jest.fn(),
+  };
+  return { NewAnalyticsService: { getInstance: jest.fn(() => instance) } };
+});
 
 // `useRefereeAnalytics` usa `AnalyticsService`, NON `NewAnalyticsService`.
 //
@@ -55,15 +63,16 @@ jest.mock('../../services/AnalyticsService', () => ({
   },
 }));
 
-jest.mock('../../services/RefereeAnalyticsExportService', () => ({
-  __esModule: true,
-  default: {
-    getInstance: jest.fn(() => ({
-      exportAnalytics: jest.fn(),
-      getAvailableTemplates: jest.fn(() => ({}))
-    }))
-  }
-}));
+// Istanza unica, per la stessa ragione degli altri doppi: il test recupera
+// `getInstance()` per configurarlo, il hook ne chiama un altro, e senza questa
+// stabilita' i due non sono lo stesso oggetto.
+jest.mock('../../services/RefereeAnalyticsExportService', () => {
+  const instance = {
+    exportAnalytics: jest.fn(),
+    getAvailableTemplates: jest.fn(() => ({})),
+  };
+  return { __esModule: true, default: { getInstance: jest.fn(() => instance) } };
+});
 
 jest.mock('../../services/ErrorLogger', () => ({
   ErrorLogger: {
@@ -74,25 +83,17 @@ jest.mock('../../services/ErrorLogger', () => ({
 }));
 
 /**
- * Sospesi: provano un'integrazione che non e' mai stata cablata (issue #94).
+ * Riattivati dalla #102: la migrazione ora e' cablata.
  *
- * `NewAnalyticsService` non e' importato da NESSUN file dell'applicazione — solo
- * dal proprio, e da questa suite. `useRefereeAnalytics` chiama direttamente
- * `AnalyticsService`, senza consultare alcun feature flag, ed espone
- * `exportAnalytics`/`aggregatePerformance` implementate su
- * `RefereeAnalyticsExportService`. Esiste il file del servizio, esiste la suite
- * che lo prova, e in mezzo non c'e' niente.
+ * Erano sospesi dalla #94 perche' descrivevano un'integrazione che non
+ * esisteva: `NewAnalyticsService` non era importato da nessun file
+ * dell'applicazione. `useRefereeAnalytics` ora consulta
+ * `isNewAnalyticsEndpointsEnabled()` e, quando e' acceso, legge dalle Edge
+ * Function.
  *
- * Questi otto test quindi non falliscono per un difetto: descrivono una
- * migrazione rimasta a meta'. Cablarla e' sviluppo di una feature non spedita —
- * cambierebbe da dove arrivano le statistiche arbitri in produzione appena il
- * flag viene acceso — e va deciso come feature, non risolto dentro un
- * risanamento della suite. Da aprire come issue dedicata.
- *
- * Restano attivi i quattro test che provano il comportamento REALE del hook:
- * 'Zero Breaking Changes Validation' e 'Performance and Caching'.
+ * Il flag e' **spento di partenza**: chi non lo accende resta sul percorso di
+ * prima. Si accende un browser alla volta con `?nuoveAnalytics=on`.
  */
-const describeMigrazioneNonCablata = describe.skip;
 
 describe('Analytics End-to-End Integration Tests', () => {
   let queryClient: QueryClient;
@@ -123,6 +124,18 @@ describe('Analytics End-to-End Integration Tests', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
+
+    // `clearAllMocks` azzera le CHIAMATE, non le implementazioni: un
+    // `mockReturnValue(false)` sul flag, o un `mockRejectedValue` sulla query,
+    // sopravviveva al proprio test e decideva l'esito dei successivi. Quattro
+    // casi risultavano rossi perche' giravano col flag lasciato spento da un
+    // test precedente, non per cio' che volevano provare. I doppi si riarmano
+    // qui, in modo che ogni test parta dallo stesso stato dichiarato.
+    mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
+    mockFeatureFlags.isAnalyticsMonitoringEnabled.mockReturnValue(true);
+    mockFeatureFlags.isAnalyticsCacheEnabled.mockReturnValue(true);
+    mockAnalyticsService.queryAnalytics.mockResolvedValue([]);
+    mockAnalyticsService.exportAnalytics.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -133,7 +146,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     queryClient?.clear();
   });
 
-  describeMigrazioneNonCablata('Feature Flag Integration', () => {
+  describe('Feature Flag Integration', () => {
     it('should use new analytics endpoints when feature flag is enabled', async () => {
       // Setup mocks
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
@@ -191,8 +204,16 @@ describe('Analytics End-to-End Integration Tests', () => {
       expect(result.current.source).toBe('database');
     });
 
-    it('should fallback to legacy system when new endpoints fail', async () => {
-      // Setup mocks
+    it('con il flag spento il servizio nuovo non viene interrogato affatto', async () => {
+      // Il test originale si chiamava "fallback to legacy when new endpoints
+      // fail" ma metteva il flag a `false` e poi faceva fallire il servizio
+      // NUOVO, aspettandosi un errore. Con il flag spento quel servizio non
+      // viene nemmeno chiamato, quindi il suo fallimento non puo' produrre
+      // niente: il caso era irrealizzabile.
+      //
+      // La proprieta' che conta davvero — ed e' quella che protegge gli utenti
+      // finche' la migrazione non e' verificata — e' che a flag spento il
+      // percorso nuovo sia FUORI dal circuito, non che ripieghi con garbo.
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(false);
       mockAnalyticsService.queryAnalytics.mockRejectedValue(new Error('Endpoint failed'));
 
@@ -207,11 +228,10 @@ describe('Analytics End-to-End Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.isError).toBe(true);
+        expect(result.current.isSuccess).toBe(true);
       });
 
-      // Verify source detection shows cache (legacy)
-      expect(result.current.source).toBe('cache');
+      expect(mockAnalyticsService.queryAnalytics).not.toHaveBeenCalled();
     });
   });
 
@@ -319,7 +339,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describeMigrazioneNonCablata('Error Handling and Resilience', () => {
+  describe('Error Handling and Resilience', () => {
     it('should handle network failures gracefully', async () => {
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
       mockAnalyticsService.queryAnalytics.mockRejectedValue(new Error('Network error'));
@@ -329,9 +349,17 @@ describe('Analytics End-to-End Integration Tests', () => {
         { wrapper: createWrapper }
       );
 
-      await waitFor(() => {
-        expect(result.current.isError).toBe(true);
-      });
+      // `useRefereeAnalytics` ha un `retry` PROPRIO — due tentativi con attesa
+      // crescente — che sovrascrive il `retry: false` del client di test. Con
+      // il timeout di default di `waitFor` (1000 ms) la query e' ancora in
+      // mezzo ai ritentativi, quindi `isError` e' legittimamente falso e il
+      // test falliva su una condizione non ancora raggiunta.
+      await waitFor(
+        () => {
+          expect(result.current.isError).toBe(true);
+        },
+        { timeout: 10000 }
+      );
 
       expect(result.current.error).toBeDefined();
       expect(result.current.data).toBeUndefined();
@@ -363,8 +391,15 @@ describe('Analytics End-to-End Integration Tests', () => {
       // Should handle malformed data without crashing
       const refereeMetrics = result.current.data![0];
       expect(refereeMetrics.total_assignments).toBe(null);
-      expect(refereeMetrics.tournaments_worked).toBe(null);
       expect(refereeMetrics.performance_score).toBe('invalid');
+
+      // `tournaments_worked` viene NORMALIZZATO a `[]`, e deliberatamente: il
+      // tipo dichiara `string[]` mentre la colonna e' `text[]` annullabile, e
+      // un `null` che passa di qui non rompe niente sul momento — rompe il
+      // primo consumatore che fa `.map()`, lontano da qui. La ragione e'
+      // scritta per esteso nel hook. Il test chiedeva il passaggio del `null`
+      // grezzo, che e' esattamente cio' che quella riga esiste per impedire.
+      expect(refereeMetrics.tournaments_worked).toEqual([]);
     });
   });
 
@@ -411,7 +446,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describeMigrazioneNonCablata('Export and Advanced Features', () => {
+  describe('Export and Advanced Features', () => {
     it('should support analytics export functionality', async () => {
       const mockBlob = new Blob(['test data'], { type: 'text/csv' });
       const mockExportService = require('../../services/RefereeAnalyticsExportService').default.getInstance();
@@ -469,7 +504,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describeMigrazioneNonCablata('Real-world Integration Scenarios', () => {
+  describe('Real-world Integration Scenarios', () => {
     it('should handle typical tournament analytics workflow', async () => {
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
       mockAnalyticsService.queryAnalytics.mockResolvedValue([

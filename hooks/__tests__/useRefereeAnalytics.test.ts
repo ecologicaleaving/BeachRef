@@ -408,7 +408,13 @@ describe('useRefereeAnalytics', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(result.current.performance.queryTime).toBeGreaterThan(0);
+      // `queryTime` e' una differenza di `Date.now()` attorno a una query su
+      // dati finti: dura meno di un millisecondo, quindi zero e' la misura
+      // giusta e non un difetto. Pretendere `> 0` significa pretendere che la
+      // macchina sia lenta — ed e' la stessa famiglia di asserzioni che la #94
+      // ha dovuto smontare in mezza suite.
+      expect(Number.isFinite(result.current.performance.queryTime)).toBe(true);
+      expect(result.current.performance.queryTime).toBeGreaterThanOrEqual(0);
     });
 
     it('should handle performance score calculation errors gracefully', async () => {

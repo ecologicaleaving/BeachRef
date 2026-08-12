@@ -58,8 +58,14 @@ describe('DeploymentFeatureFlags', () => {
   describe('Default Configuration', () => {
     it('should have correct default values', () => {
       featureFlags = DeploymentFeatureFlags.getInstance();
-      
-      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(true);
+
+      // SPENTO di partenza (issue #102). Era acceso, e finche' nessuno
+      // consultava il flag non faceva danni. Ora che `useRefereeAnalytics` lo
+      // consulta, un default acceso significherebbe spostare le statistiche di
+      // TUTTI gli utenti su una sorgente che nessuno ha ancora verificato, con
+      // un rientro che richiede un commit e un deploy. Si accende un browser
+      // alla volta con `?nuoveAnalytics=on`.
+      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(false);
       expect(featureFlags.isAnalyticsMonitoringEnabled()).toBe(true);
       expect(featureFlags.isAnalyticsCacheEnabled()).toBe(true);
       expect(featureFlags.isAnalyticsPerformanceLoggingEnabled()).toBe(false);
@@ -126,10 +132,14 @@ describe('DeploymentFeatureFlags', () => {
     });
 
     it('should clear specific flag override', async () => {
-      await featureFlags.setOverride('USE_NEW_ANALYTICS_ENDPOINTS', false);
+      // Si accende con l'override e si torna al default togliendolo. Dal #102
+      // il default e' SPENTO, quindi l'andata e ritorno si prova in questo
+      // verso: altrimenti si verificherebbe che togliere un override lascia le
+      // cose come stavano, che e' vero anche se `clearOverride` non fa niente.
+      await featureFlags.setOverride('USE_NEW_ANALYTICS_ENDPOINTS', true);
       await featureFlags.clearOverride('USE_NEW_ANALYTICS_ENDPOINTS');
-      
-      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(true); // Back to default
+
+      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(false); // Back to default
       expect(mockAsyncStorage.setItem).toHaveBeenCalledWith(
         'feature_flag_overrides',
         JSON.stringify({})
@@ -137,11 +147,14 @@ describe('DeploymentFeatureFlags', () => {
     });
 
     it('should clear all overrides', async () => {
-      await featureFlags.setOverride('USE_NEW_ANALYTICS_ENDPOINTS', false);
+      await featureFlags.setOverride('USE_NEW_ANALYTICS_ENDPOINTS', true);
       await featureFlags.setOverride('ANALYTICS_CACHE_ENABLED', false);
       await featureFlags.clearAllOverrides();
-      
-      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(true);
+
+      // Ognuno torna al PROPRIO default: spento il primo (#102), acceso il
+      // secondo. Prima entrambi venivano spenti e ci si aspettava che
+      // tornassero accesi, il che nascondeva la differenza fra i due.
+      expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(false);
       expect(featureFlags.isAnalyticsCacheEnabled()).toBe(true);
       expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith('feature_flag_overrides');
     });
@@ -153,8 +166,13 @@ describe('DeploymentFeatureFlags', () => {
     });
 
     it('should disable new analytics endpoints during emergency rollback', async () => {
+      // Il rientro d'emergenza si prova partendo da ACCESO. Dal #102 il default
+      // e' spento: senza questa riga il test verificherebbe che spegnere
+      // qualcosa di gia' spento lo lascia spento — vero anche se
+      // `emergencyRollback()` non facesse assolutamente nulla.
+      await featureFlags.setOverride('USE_NEW_ANALYTICS_ENDPOINTS', true);
       expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(true);
-      
+
       await featureFlags.emergencyRollback();
       
       expect(featureFlags.isNewAnalyticsEndpointsEnabled()).toBe(false);
@@ -189,7 +207,7 @@ describe('DeploymentFeatureFlags', () => {
     });
 
     it('should get specific flag values', () => {
-      expect(featureFlags.getFlag('USE_NEW_ANALYTICS_ENDPOINTS')).toBe(true);
+      expect(featureFlags.getFlag('USE_NEW_ANALYTICS_ENDPOINTS')).toBe(false); // spento dalla #102
       expect(featureFlags.getFlag('ENABLE_ANALYTICS_MONITORING')).toBe(true);
       expect(featureFlags.getFlag('ANALYTICS_CACHE_ENABLED')).toBe(true);
       expect(featureFlags.getFlag('ANALYTICS_PERFORMANCE_LOGGING')).toBe(false);

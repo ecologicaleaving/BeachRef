@@ -315,7 +315,17 @@ describe('LiveScorePollingService', () => {
         // which `parseBeachLiveResponse` cannot read, so the service silently
         // fell back to its defaults and the assertion below could never be
         // about the server's value.
-        xmlData: '<BeachLive><Version>1</Version><PollDelay>3000</PollDelay><Match MatchNo="123" Status="Running" /></BeachLive>'
+        // `PollDelay` e' in SECONDI nella risposta VIS, e il servizio lo
+        // converte in millisecondi (vedi il commento in
+        // `parseBeachLiveResponse`). La base di prova usava 3000 come se
+        // fossero gia' millisecondi, e il servizio restituiva 3.000.000 —
+        // cioe' il test leggeva la conversione come un difetto.
+        //
+        // Tre secondi e' un valore che il VIS puo' davvero suggerire; 3000
+        // secondi (50 minuti) su un punteggio dal vivo, no. Se un giorno si
+        // scoprisse che il VIS manda millisecondi, e' il commento nel parser
+        // ad andare corretto per primo, non questa riga.
+        xmlData: '<BeachLive><Version>1</Version><PollDelay>3</PollDelay><Match MatchNo="123" Status="Running" /></BeachLive>'
       };
 
       (mockVisApiClient.getBeachLive as jest.Mock).mockResolvedValue(mockResponse);
@@ -327,9 +337,11 @@ describe('LiveScorePollingService', () => {
 
       // Poll delay should be updated to server-provided value
       // This is tested implicitly through service internal state
+      // Un solo argomento: senza errore il servizio invoca `callback(dato)`,
+      // non `callback(dato, undefined)`, e `toHaveBeenCalledWith` confronta
+      // l'intera lista.
       expect(mockCallback).toHaveBeenCalledWith(
-        expect.objectContaining({ pollDelay: 3000 }),
-        undefined
+        expect.objectContaining({ pollDelay: 3000 })
       );
     });
   });
@@ -339,7 +351,7 @@ describe('LiveScorePollingService', () => {
       const xml = `
         <BeachLive>
           <Version>5</Version>
-          <PollDelay>4000</PollDelay>
+          <PollDelay>4</PollDelay>  <!-- secondi: il servizio converte in ms -->
           <Match MatchNo="555" Status="Running" DateTime="2025-09-18T10:00:00Z" />
           <Teams>
             <Team No="1" Name="Alpha" FederationCode="USA" />

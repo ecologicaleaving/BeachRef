@@ -93,10 +93,12 @@ describe('Adaptive Polling Integration', () => {
       // Wait for first poll
       await new Promise(resolve => setTimeout(resolve, 100));
 
+      // `options: []` e non `undefined`: e' il test stesso a passare `[]` a
+      // `startPolling`, e il servizio lo inoltra fedelmente.
       expect(mockApiClient.getBeachLive).toHaveBeenCalledWith({
         matchNo: 123,
         version: undefined,
-        options: undefined
+        options: []
       });
 
       // Verify performance monitoring recorded the request
@@ -274,6 +276,33 @@ describe('Adaptive Polling Integration', () => {
       statusManager.updateMatchStatus(runningMatchNo, MatchPollingStatus.RUNNING);
       statusManager.updateMatchStatus(scheduledMatchNo, MatchPollingStatus.SCHEDULED);
 
+      // La risposta deve dipendere dalla PARTITA.
+      //
+      // Il doppio restituiva la stessa risposta a entrambe — una partita in
+      // corso — e il servizio aggiorna lo stato leggendolo dal contenuto:
+      // subito dopo il primo sondaggio la partita "programmata" risultava
+      // anch'essa in corso, e la statistica per stato SCHEDULED restava a
+      // zero. Il codice ha ragione (il server e' l'autorita' sullo stato); era
+      // lo scenario a non essere realistico.
+      mockApiClient.getBeachLive.mockImplementation((richiesta: any) => {
+        const inCorso = richiesta?.matchNo === runningMatchNo;
+        return Promise.resolve({
+          success: true,
+          xmlData: `
+            <BeachLive>
+              <Version>1</Version>
+              <PollDelay>3</PollDelay>
+              <Match MatchNo="${richiesta?.matchNo}" Status="${inCorso ? 'Running' : 'Scheduled'}">
+                <TeamA>Team A</TeamA>
+                <TeamB>Team B</TeamB>
+              </Match>
+            </BeachLive>
+          `,
+          responseTime: 150,
+          cached: false,
+        });
+      });
+
       // Start polling both
       pollingService.startPolling(runningMatchNo, callback1, [], true);
       pollingService.startPolling(scheduledMatchNo, callback2, [], true);
@@ -284,6 +313,15 @@ describe('Adaptive Polling Integration', () => {
       expect(pollingService.isPolling(scheduledMatchNo)).toBe(true);
 
       const metrics = pollingPerformanceMonitor.getMetrics();
+      // NOTA (#94): questa asserzione resta rossa e non e' stata forzata.
+      //
+      // Misurato: i due sondaggi RIESCONO (getStatistics riporta
+      // successfulPolls: 2), gli stati sono corretti ('Running' e
+      // 'Scheduled'), le callback scattano — ma `getMetrics()` non vede
+      // nessun evento. `recordRequest` sta sulla stessa riga di codice che
+      // incrementa `successfulPolls`, e il monitor e' un singolo modulo senza
+      // duplicati. La causa non e' stata isolata; forzare il verde qui
+      // significherebbe nascondere che una statistica non registra.
       expect(metrics.byStatus[MatchPollingStatus.RUNNING].matchCount).toBeGreaterThan(0);
       expect(metrics.byStatus[MatchPollingStatus.SCHEDULED].matchCount).toBeGreaterThan(0);
     });

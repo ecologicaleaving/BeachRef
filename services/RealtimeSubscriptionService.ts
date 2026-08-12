@@ -572,7 +572,11 @@ export class RealtimeSubscriptionService {
         this.checkTournamentSubscriptionNeeded(updatedMatch.tournament_no);
       }
     } catch (error) {
-      // console.error('Error handling match update:', error);
+      // Dodicesima diagnostica muta della campagna. Questo catch avvolge
+      // l'intera gestione di un aggiornamento dal vivo: senza la riga, un
+      // guasto qui si presentava come "il punteggio non si aggiorna", senza
+      // alcun indizio su dove guardare.
+      console.error('Error handling match update:', error);
     }
   }
 

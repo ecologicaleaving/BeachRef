@@ -548,13 +548,19 @@ export class RefereeStatsService {
       // Merge and deduplicate
       const allMatches = [...firstRefMatches, ...secondRefMatches];
       const uniqueMatches = deduplicateMatchesByIdCompat(allMatches);
-      
-      if (uniqueMatches.length === 0) {
-        return null;
-      }
-      
-      
-      // Calculate statistics
+
+      // Zero partite NON e' "nessun dato" (issue #94).
+      //
+      // Qui `null` significava due cose incompatibili: "l'arbitro non esiste /
+      // non l'ho risolto" — il ritorno poche righe sopra, giusto — e "l'arbitro
+      // c'e', ha zero partite in questo torneo", che e' la condizione NORMALE
+      // di ogni arbitro il giorno prima dell'inizio. Collassate sulla stessa
+      // risposta, la scheda mostra "statistiche non disponibili" a chi ha
+      // semplicemente ancora zero designazioni.
+      //
+      // `calculateStatsFromParsedMatchesCompat([])` restituisce gia' l'oggetto
+      // a zeri corretto, ed e' la stessa scelta che `getCareerStats` fa da
+      // sempre con `generateNoDataCareerStats()`.
       return calculateStatsFromParsedMatchesCompat(uniqueMatches);
     } catch (error) {
       console.error('Ã¢ÂÅ’ Error fetching current tournament stats:', error);
@@ -1105,11 +1111,25 @@ export class RefereeStatsService {
       if (response.success) {
         const xmlResponse = response.xmlData ?? '';
 
-        // Try direct attribute match first
+        // Try direct attribute match first.
+        //
+        // Il valore va VALIDATO, non solo estratto (issue #94). `NoReferee` e'
+        // numerico, ma qui si accettava qualunque cosa stesse fra gli apici e
+        // la si passava al VIS come filtro della query partite: un
+        // `NoReferee="INVALID123"` diventava una richiesta con un filtro
+        // insensato. Non se ne accorgeva nessuno perche' la risposta vuota
+        // faceva poi tornare `null` al chiamante — cioe' la risposta giusta,
+        // per la ragione sbagliata e dopo aver interrogato il VIS.
         const refereeNoMatch = xmlResponse.match(/NoReferee="([^"]*)"/);
-        const resolvedNoReferee = refereeNoMatch?.[1];
-        if (resolvedNoReferee) {
+        const resolvedNoReferee = refereeNoMatch?.[1]?.trim();
+        if (resolvedNoReferee && /^\d+$/.test(resolvedNoReferee)) {
           return resolvedNoReferee;
+        }
+        if (resolvedNoReferee) {
+          console.warn(
+            `NoReferee "${resolvedNoReferee}" non e' numerico: non lo uso come filtro VIS`
+          );
+          return null;
         }
 
         // Fallback: match by name client-side against the event roster.

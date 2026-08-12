@@ -88,8 +88,27 @@ jest.mock('expo-constants', () => ({
   },
 }));
 
-// Set up fetch mock
-global.fetch = jest.fn();
+// Fetch mock — con un comportamento di default, e non e' un dettaglio.
+//
+// `jest.fn()` nudo restituisce `undefined`, e il client VIS fa `response.ok`.
+// Il risultato non e' "nessuno ha mockato la fetch": e' un TypeError dentro una
+// promessa che nessuno attende, che rimbalza fuori dal test e spesso fuori
+// dall'intero file — e jest lo attribuisce al primo test del file che gira
+// dopo, nello stesso worker. Cosi' `useOfflineSync` e `useAssignmentCountdown`
+// morivano a run alterni lamentando `BeachMatchList`, che nessuna delle due
+// interroga (issue #94).
+//
+// Il default e' quindi una risposta BEN FORMATA che fallisce: il percorso di
+// errore del client viene esercitato per davvero e il rifiuto ha un padrone.
+// I test che vogliono un'altra risposta continuano a impostarla come prima.
+global.fetch = jest.fn(async () => ({
+  ok: false,
+  status: 503,
+  statusText: 'Service Unavailable (fetch non mockata in questo test)',
+  headers: { get: () => null },
+  text: async () => '',
+  json: async () => ({}),
+}));
 
 // Mock console methods in tests to reduce noise
 global.console = {

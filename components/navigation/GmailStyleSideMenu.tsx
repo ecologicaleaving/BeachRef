@@ -26,6 +26,14 @@ import { useFavoriteTournaments } from '../../hooks/useFavoriteTournaments';
 import { Icon } from '../Icons/MaterialCommunityIcons';
 import { colors } from '../../theme/tokens';
 import { DefaultTournamentService } from '../../services/DefaultTournamentService';
+// Lo stato di accesso si legge dalla copia LOCALE (issue #103). Importare
+// `AccessService` per chiedere `statoAccesso()` qui dentro trascinerebbe
+// `@supabase/supabase-js` nel chunk d'ingresso — il menu sta su ogni pagina —
+// e vanificherebbe l'`import()` dinamico che quel servizio usa apposta.
+// `esci` invece si importa: e' solo un riferimento a funzione, e il client
+// arriva soltanto se qualcuno preme davvero il bottone.
+import { useAccessoRicordato } from '../../hooks/useAccessoRicordato';
+import { esci } from '../../services/auth/AccessService';
 
 interface SubMenuItem {
   key: 'schedule' | 'ranking' | 'entryList' | 'officials';
@@ -262,6 +270,40 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     onClose();
     router.push(route as any);
   };
+
+  // --- Accesso (issue #103) -------------------------------------------------
+  //
+  // `/accedi` e `/referee-stats-lab` esistono dalla #97 ma non erano collegate
+  // da nessuna parte: si raggiungevano solo digitando l'indirizzo.
+  //
+  // `/iscrizione` NON compare qui, ed e' voluto: ci si iscrive solo con un
+  // indirizzo mandato a mano, perche' autenticarsi con Google e' alla portata di
+  // chiunque mentre l'autorizzazione e' un invito.
+  const accesso = useAccessoRicordato();
+
+  useEffect(() => {
+    if (isVisible) accesso.rileggi();
+  }, [isVisible, accesso.rileggi]);
+
+  const handleEsci = async () => {
+    onClose();
+    await esci();
+    accesso.rileggi();
+    router.replace('/' as any);
+  };
+
+  const vociAccesso: { titolo: string; onPress: () => void }[] = accesso.autenticato
+    ? [
+        // "Stats" solo a chi e' autorizzato. Chi si e' autenticato senza invito
+        // non la vede: la distinzione fra "chi sei" e "se puoi" e' la stessa
+        // che la #97 ha messo nel database, e il menu la rispecchia invece di
+        // mostrare una porta che si apre su un rifiuto.
+        ...(accesso.autorizzato
+          ? [{ titolo: 'Stats', onPress: () => handleMenuItemPress('/referee-stats-lab') }]
+          : [{ titolo: 'Accesso', onPress: () => handleMenuItemPress('/accedi') }]),
+        { titolo: 'Esci', onPress: handleEsci },
+      ]
+    : [{ titolo: 'Accedi con Google', onPress: () => handleMenuItemPress('/accedi') }];
 
   const handleTournamentToggle = (tournamentId: string) => {
     setExpandedTournaments(prev => {
@@ -509,6 +551,19 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
                       </TouchableOpacity>
                     );
                   })}
+
+                  {vociAccesso.map(voce => (
+                    <TouchableOpacity
+                      key={voce.titolo}
+                      style={styles.mainMenuItem}
+                      onPress={voce.onPress}
+                      activeOpacity={0.7}
+                      accessibilityLabel={voce.titolo}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.mainMenuText}>{voce.titolo}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               </View>
             </ScrollView>

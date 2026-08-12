@@ -636,7 +636,10 @@ export class RealtimeSubscriptionService {
     try {
       await CacheService.invalidateMatchCache(tournamentNo);
     } catch (error) {
-      // console.error(`Failed to invalidate cache for tournament ${tournamentNo}:`, error);
+      // Undicesima diagnostica muta della campagna: e' proprio questo catch
+      // che ha tenuto nascosto per mesi il fatto che
+      // `CacheService.invalidateMatchCache` non esistesse.
+      console.error(`Failed to invalidate cache for tournament ${tournamentNo}:`, error);
     }
   }
 

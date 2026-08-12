@@ -57,11 +57,19 @@ describe('RealtimeSubscriptionService', () => {
     });
 
     test('should not initialize twice', () => {
+      // Si confronta il PRIMA e il DOPO, non un numero assoluto.
+      //
+      // `initialize()` avvia anche i servizi collegati (monitor delle
+      // prestazioni, ripiego), e anche loro registrano un ascoltatore di stato
+      // sull'stesso `AppState` finto: il conteggio globale non misura "quante
+      // volte questo servizio si e' inizializzato". Cio' che conta e' che la
+      // SECONDA chiamata non aggiunga niente.
       RealtimeSubscriptionService.initialize();
+      const dopoLaPrima = (AppState.addEventListener as jest.Mock).mock.calls.length;
+
       RealtimeSubscriptionService.initialize();
-      
-      // Should only be called once
-      expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+
+      expect((AppState.addEventListener as jest.Mock).mock.calls.length).toBe(dopoLaPrima);
     });
   });
 
@@ -159,14 +167,28 @@ describe('RealtimeSubscriptionService', () => {
     });
   });
 
+  /**
+   * Consegna un cambio di stato a TUTTI gli ascoltatori registrati.
+   *
+   * I test prendevano `mock.calls[0][1]`, cioe' il PRIMO ascoltatore: ma
+   * `initialize()` avvia anche i servizi collegati, che si registrano prima,
+   * quindi quella callback apparteneva a un altro servizio e il gestore sotto
+   * test non riceveva niente. Il sistema operativo, quando l'app va in
+   * sottofondo, avvisa tutti gli iscritti — questa e' la simulazione fedele.
+   */
+  const cambiaStatoApp = (stato: string) => {
+    (AppState.addEventListener as jest.Mock).mock.calls.forEach(([, callback]) => {
+      if (typeof callback === 'function') callback(stato);
+    });
+  };
+
   describe('App State Handling', () => {
     test('should pause subscriptions when app goes to background', async () => {
       await RealtimeSubscriptionService.subscribeTournament(mockTournamentNo);
       
       // Simulate app state change to background
-      const appStateCallback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
-      appStateCallback('background');
-      
+      cambiaStatoApp('background');
+
       expect(mockSubscription.unsubscribe).toHaveBeenCalled();
     });
 
@@ -174,9 +196,8 @@ describe('RealtimeSubscriptionService', () => {
       await RealtimeSubscriptionService.subscribeTournament(mockTournamentNo);
       
       // Simulate background then active
-      const appStateCallback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
-      appStateCallback('background');
-      appStateCallback('active');
+      cambiaStatoApp('background');
+      cambiaStatoApp('active');
       
       // Should attempt to reconnect
       expect(supabase.channel).toHaveBeenCalledTimes(2);

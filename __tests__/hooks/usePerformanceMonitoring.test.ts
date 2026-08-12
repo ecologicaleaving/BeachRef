@@ -23,17 +23,54 @@ const mockPerformance = {
     usedJSHeapSize: 1000000
   }
 };
-Object.defineProperty(global, 'performance', {
-  value: mockPerformance,
-  writable: true
-});
+/**
+ * Si sostituisce il METODO, non l'oggetto globale.
+ *
+ * `Object.defineProperty(global, 'performance', { value: mockPerformance })`
+ * non aveva effetto: misurato, `globalThis.performance !== mockPerformance`
+ * anche subito dopo l'assegnazione, e `mockPerformance.now` non veniva mai
+ * chiamata. Le durate misurate dal hook erano quindi sempre 0 — due letture
+ * dell'orologio vero nello stesso millisecondo — e cinque test leggevano quello
+ * zero come un difetto del codice.
+ *
+ * Rimpiazzare `performance.now` con una spia funziona qualunque sia l'oggetto
+ * che il hook si trova davanti, ed e' anche piu' onesto: si finge una sola
+ * cosa, l'orologio.
+ */
+let orologio = 1000;
+const avanzaOrologio = (ms: number) => {
+  orologio += ms;
+};
+
+const installaOrologioFinto = () => {
+  jest.spyOn(globalThis.performance, 'now').mockImplementation(() => orologio);
+  (globalThis.performance as any).memory = mockPerformance.memory;
+};
 
 describe('usePerformanceMonitoring', () => {
+  /**
+   * Orologio controllabile.
+   *
+   * I test impostavano `mockPerformance.now.mockReturnValueOnce(1000)
+   * .mockReturnValueOnce(1150)`, ma il hook legge l'orologio anche al
+   * montaggio: la coda veniva consumata PRIMA che il cronometro partisse, e
+   * `startTiming`/`stopTiming` ricadevano sull'implementazione predefinita —
+   * due letture nello stesso millisecondo, durata zero.
+   *
+   * Un orologio con un valore corrente regge qualunque numero di letture, che
+   * e' l'unica ipotesi onesta su un dettaglio interno del hook.
+   */
+
   let mockRepositoryFactory: jest.Mocked<RepositoryFactory>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    // DOPO `useFakeTimers`: i timer finti di jest rimpiazzano anche
+    // `performance.now` con la propria versione congelata, quindi qualunque
+    // orologio installato prima veniva sovrascritto. E' la ragione per cui
+    // sostituire l'intero oggetto `performance` non aveva alcun effetto.
+    installaOrologioFinto();
     clearAllPerformanceMetrics();
 
     mockRepositoryFactory = {
@@ -90,9 +127,7 @@ describe('usePerformanceMonitoring', () => {
     });
 
     it('should start and stop timing measurements', () => {
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -104,6 +139,7 @@ describe('usePerformanceMonitoring', () => {
         stopTiming = result.current.startTiming('test_operation', 'data_fetch');
       });
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });
@@ -242,9 +278,7 @@ describe('usePerformanceMonitoring', () => {
     it('should track memory usage during timing', () => {
       (mockPerformance as any).memory.usedJSHeapSize = 1000000;
       
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -259,6 +293,7 @@ describe('usePerformanceMonitoring', () => {
       // Change memory usage
       (mockPerformance as any).memory.usedJSHeapSize = 1002000; // +2KB
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });
@@ -276,9 +311,7 @@ describe('usePerformanceMonitoring', () => {
     it('should record separate memory metrics for significant changes', () => {
       (mockPerformance as any).memory.usedJSHeapSize = 1000000;
       
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -293,6 +326,7 @@ describe('usePerformanceMonitoring', () => {
       // Significant memory increase
       (mockPerformance as any).memory.usedJSHeapSize = 1010000; // +10KB
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });

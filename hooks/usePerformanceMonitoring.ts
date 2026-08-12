@@ -385,7 +385,11 @@ export const usePerformanceMonitoring = (
       // Clear buffer after successful flush
       metricsBuffer.current = [];
     } catch (error) {
-      // console.error('Failed to flush performance metrics:', error);
+      // Un invio di metriche fallito e' l'unica cosa che spiega perche' i
+      // numeri di prestazione non arrivano mai: senza questa riga il difetto
+      // si presenta come "le metriche non ci sono", che e' indistinguibile da
+      // "nessuno le ha mai registrate".
+      console.error('Failed to flush performance metrics:', error);
     }
   }, [source, implementation, abTestGroup]);
 

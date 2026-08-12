@@ -7,15 +7,36 @@ import { UnifiedCacheManager } from './UnifiedCacheManager';
 import { CacheStrategies } from './CacheStrategy';
 
 // Mock AsyncStorage
-const mockAsyncStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  getAllKeys: jest.fn(() => Promise.resolve([])),
-  multiRemove: jest.fn()
-};
+//
+// L'oggetto si costruisce DENTRO la fabbrica e si riprende con
+// `requireMock`. Prima era un `const` dichiarato sopra e referenziato dalla
+// fabbrica: ma `jest.mock` viene issata in cima al file, quindi quando la
+// fabbrica gira — al primo import del modulo — quel `const` non e' ancora
+// inizializzato, e il modulo finto veniva costruito attorno a `undefined`.
+// Dentro il gestore `AsyncStorage.setItem` non esisteva, ogni `set`/`get`
+// falliva, e sei test leggevano quel fallimento come un difetto della cache.
+//
+// Serve anche `default`: AsyncStorage si importa come export predefinito.
+jest.mock('@react-native-async-storage/async-storage', () => {
+  const doppio = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    getAllKeys: jest.fn(() => Promise.resolve([])),
+    multiRemove: jest.fn(),
+  };
+  return { __esModule: true, default: doppio, ...doppio };
+});
 
-jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
+const mockAsyncStorage = jest.requireMock(
+  '@react-native-async-storage/async-storage'
+).default as {
+  getItem: jest.Mock;
+  setItem: jest.Mock;
+  removeItem: jest.Mock;
+  getAllKeys: jest.Mock;
+  multiRemove: jest.Mock;
+};
 
 describe('UnifiedCacheManager', () => {
   let cacheManager: UnifiedCacheManager;

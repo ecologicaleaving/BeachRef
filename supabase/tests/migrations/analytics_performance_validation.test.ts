@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 // Test suite for Analytics Performance Index Migration Validation
@@ -7,19 +10,26 @@ describe('Analytics Performance Index Migration', () => {
   
   describe('Migration SQL Structure Validation', () => {
     it('should use CONCURRENTLY for all index creation', () => {
-      // Validate that all index creation statements use CONCURRENTLY to avoid production downtime
-      const migrationContent = `
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_matches_utc_datetime_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_matches_datetime_tournament_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_match_referees_referee_role_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_match_referees_match_referee_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_referees_federation_name_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_matches_tournament_status_analytics
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_matches_datetime_status_analytics
-      `;
-      
+      // Si legge la MIGRAZIONE VERA, non una sua copia incollata qui dentro.
+      //
+      // Il test conteneva le sette righe scritte a mano in un template
+      // literal: verificava quindi che una costante scritta dal test stesso
+      // contenesse CONCURRENTLY, cosa che non poteva che essere vera, e non
+      // avrebbe notato nulla se qualcuno avesse aggiunto un indice senza
+      // CONCURRENTLY nel file applicato in produzione — che e' l'unica cosa
+      // che questo test dovrebbe impedire (un CREATE INDEX non concorrente
+      // blocca la tabella in scrittura per tutta la durata).
+      //
+      // In piu' il conteggio non poteva funzionare: `/CREATE INDEX[^;]*/g` su
+      // un testo senza punti e virgola restituisce UNA corrispondenza che
+      // ingoia tutto.
+      const migrationContent = readFileSync(
+        join(__dirname, '../../migrations/20240911120000_analytics_performance_indexes.sql'),
+        'utf-8'
+      );
+
       // All CREATE INDEX statements should include CONCURRENTLY
-      const createIndexStatements = migrationContent.match(/CREATE INDEX[^;]*/g) || [];
+      const createIndexStatements = migrationContent.match(/CREATE\s+INDEX[\s\S]*?ON\s+[^\s(]+/gi) || [];
       
       expect(createIndexStatements.length).toBe(7);
       createIndexStatements.forEach(statement => {

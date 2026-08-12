@@ -1122,6 +1122,18 @@ export class VisApiClient implements IVisApiClient {
    * Execute HTTP request with retry logic and error handling
    */
   private async executeRequest(_endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
+    // La durata si misura QUI, dove si sa quanto e' durata davvero.
+    //
+    // La risposta portava `durationMs: 0` con il commento "Will be set by
+    // caller", e nessuno dei chiamanti la impostava: passavano il tempo a
+    // `updateMonitor` e restituivano la risposta intatta. Ogni risposta VIS
+    // riuscita, di OGNI endpoint, dichiarava quindi latenza zero — e questo
+    // progetto ha gia' pagato caro il non sapere quanto costa una chiamata al
+    // VIS (vedi la nota sui round trip in CLAUDE.md).
+    //
+    // Il tempo copre TUTTI i tentativi, ritardi di backoff compresi: e' quello
+    // che ha atteso chi ha chiamato.
+    const inizio = Date.now();
     let lastError: Error | null = null;
     let transformedError: APIErrorState | null = null;
 
@@ -1134,7 +1146,7 @@ export class VisApiClient implements IVisApiClient {
           success: true,
           xmlData: response,
           timestamp: new Date().toISOString(),
-          durationMs: 0, // Will be set by caller
+          durationMs: Date.now() - inizio,
           sizeBytes: response.length
         } as VisApiSuccessResponse;
 

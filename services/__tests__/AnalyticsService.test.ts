@@ -68,9 +68,14 @@ describe('AnalyticsService', () => {
   });
 
   describe('aggregateRefereeAnalytics', () => {
+    // Il `role` mancava del tutto nel dato di prova, mentre la query del
+    // servizio lo seleziona e ci conta sopra: i totali per ruolo restavano a
+    // zero e il test pretendeva 1 e 1. Un dato di prova che non ha le colonne
+    // che la query chiede non prova il percorso che dichiara di provare.
     const mockAssignmentData = [
       {
         referee_id: '1',
+        role: 'FIRST',
         matches: {
           id: 'match1',
           tournament_code: 'TOURNAMENT1',
@@ -79,6 +84,7 @@ describe('AnalyticsService', () => {
       },
       {
         referee_id: '1',
+        role: 'SECOND',
         matches: {
           id: 'match2',
           tournament_code: 'TOURNAMENT1',
@@ -88,18 +94,34 @@ describe('AnalyticsService', () => {
     ];
 
     beforeEach(() => {
-      mockSupabaseClient.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          gte: jest.fn().mockReturnValue({
-            lte: jest.fn().mockReturnValue({
-              in: jest.fn().mockResolvedValue({
-                data: mockAssignmentData,
-                error: null
-              })
-            })
-          })
-        })
-      });
+      // Costruttore di query completo: incatenabile, attendibile, e con i
+      // metodi MEMORIZZATI.
+      //
+      // Il doppio precedente appendeva il risultato a `.in()`, che il servizio
+      // chiama solo quando gli si passano degli id: senza filtro la catena
+      // finiva su `.lte()`, che restituiva un oggetto qualunque, e
+      // `await` su quello dava un oggetto senza `data`. Il servizio
+      // aggregava zero righe e il test vedeva un elenco vuoto.
+      //
+      // I metodi vanno memorizzati perche' un test riattraversa la catena
+      // (`from().select().gte().lte().in`) per asserire sulle chiamate: se
+      // ogni accesso creasse una jest.fn() nuova, quell'asserzione
+      // guarderebbe un oggetto diverso da quello che il servizio ha usato.
+      const metodi: Record<string, jest.Mock> = {};
+      const query: any = new Proxy(
+        {},
+        {
+          get: (_b, chiave: string) => {
+            if (chiave === 'then') {
+              return (ok: any, ko: any) =>
+                Promise.resolve({ data: mockAssignmentData, error: null }).then(ok, ko);
+            }
+            if (!metodi[chiave]) metodi[chiave] = jest.fn(() => query);
+            return metodi[chiave];
+          },
+        }
+      );
+      mockSupabaseClient.from.mockReturnValue(query);
 
       mockSupabaseClient.rpc.mockResolvedValue({
         data: [{

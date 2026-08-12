@@ -185,6 +185,13 @@ export class MatchProcessingService {
     if (!dateStr) return 'Unknown Date';
     try {
       const date = new Date(dateStr);
+      // `new Date('robaccia')` NON lancia: costruisce una data non valida, e
+      // `toLocaleDateString` su quella restituisce la stringa "Invalid Date".
+      // Il `catch` qui sotto non e' quindi mai scattato, e la UI mostrava
+      // "Invalid Date" all'arbitro invece del valore originale.
+      if (Number.isNaN(date.getTime())) {
+        return dateStr;
+      }
       return date.toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',

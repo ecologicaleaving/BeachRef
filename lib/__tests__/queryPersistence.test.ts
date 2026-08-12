@@ -24,10 +24,14 @@ describe('Query Persistence', () => {
   describe('asyncStoragePersister', () => {
     test('should be defined and configured', () => {
       expect(asyncStoragePersister).toBeDefined();
-      expect(typeof asyncStoragePersister.persistQuery).toBe('function');
-      expect(typeof asyncStoragePersister.restoreQueries).toBe('function');
-      expect(typeof asyncStoragePersister.persisterGc).toBe('function');
-      expect(typeof asyncStoragePersister.retrieveQuery).toBe('function');
+      // Il contratto vero di `Persister` (TanStack Query) e' persistClient /
+      // restoreClient / removeClient. `persistQuery`, `restoreQueries`,
+      // `persisterGc` e `retrieveQuery` non esistono in quell'interfaccia e
+      // non sono mai esistiti qui: il test asseriva su un'API immaginaria, e
+      // sarebbe rimasto rosso qualunque cosa facesse il codice.
+      expect(typeof asyncStoragePersister.persistClient).toBe('function');
+      expect(typeof asyncStoragePersister.restoreClient).toBe('function');
+      expect(typeof asyncStoragePersister.removeClient).toBe('function');
     });
 
     test('should handle storage operations gracefully', async () => {

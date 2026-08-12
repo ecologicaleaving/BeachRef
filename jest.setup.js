@@ -1,10 +1,26 @@
 // Jest setup for testing
 // Skip react-native-gesture-handler for service tests
 
-// Mock AsyncStorage with proper implementation
+// Mock AsyncStorage with proper implementation.
+//
+// `__esModule: true` non e' cosmetico (issue #94). Senza, babel non riconosce
+// il modulo come ESM e l'interop assegna a `import AsyncStorage from '...'`
+// l'INTERO oggetto `{ default: {...} }`, non il suo `default`. Quindi
+// `AsyncStorage.getItem` era `undefined` in tutto il codice di produzione.
+//
+// Non si vedeva come errore perche' `LocalStorageManager` avvolge ogni
+// chiamata in try/catch: la lettura tornava `null` e la scrittura falliva in
+// silenzio. Dodici test asserivano su dati che nessuno aveva mai memorizzato,
+// e leggevano zero — il che e' peggio di un crash, perche' un crash lo si
+// cerca.
+//
+// Lo store e' vero (quello che scrivi lo rileggi), non un `jest.fn()` cieco:
+// stessa scelta gia' fatta per `__mocks__/react-native-mmkv.js`, vedi
+// TESTING.md.
 jest.mock('@react-native-async-storage/async-storage', () => {
   const storage = {};
   return {
+    __esModule: true,
     default: {
       getItem: jest.fn((key) => Promise.resolve(storage[key] || null)),
       setItem: jest.fn((key, value) => {

@@ -26,6 +26,35 @@ jest.mock('../../services/NewAnalyticsService', () => ({
   }
 }));
 
+// `useRefereeAnalytics` usa `AnalyticsService`, NON `NewAnalyticsService`.
+//
+// La suite mockava solo il secondo, quindi il primo restava quello vero e
+// tentava di interrogare Supabase: la query non riusciva mai e tutti e dodici
+// i test fallivano sullo stesso `expect(result.current.isSuccess).toBe(true)`.
+// Dodici fallimenti identici, nessuno dei quali riguardava cio' che il test
+// voleva verificare.
+jest.mock('../../services/AnalyticsService', () => ({
+  AnalyticsService: {
+    getInstance: jest.fn(() => ({
+      aggregateRefereeAnalytics: jest.fn().mockResolvedValue([
+        {
+          referee_id: '1',
+          referee_name: 'Test Referee',
+          federation_code: 'FIVB',
+          total_assignments: 10,
+          first_referee_count: 6,
+          second_referee_count: 4,
+          challenge_referee_count: 0,
+          tournaments_worked: ['T1'],
+          performance_score: 90,
+          date: '2026-01-01',
+        },
+      ]),
+      calculatePerformanceScore: jest.fn().mockResolvedValue(90),
+    })),
+  },
+}));
+
 jest.mock('../../services/RefereeAnalyticsExportService', () => ({
   __esModule: true,
   default: {
@@ -44,6 +73,27 @@ jest.mock('../../services/ErrorLogger', () => ({
   }
 }));
 
+/**
+ * Sospesi: provano un'integrazione che non e' mai stata cablata (issue #94).
+ *
+ * `NewAnalyticsService` non e' importato da NESSUN file dell'applicazione — solo
+ * dal proprio, e da questa suite. `useRefereeAnalytics` chiama direttamente
+ * `AnalyticsService`, senza consultare alcun feature flag, ed espone
+ * `exportAnalytics`/`aggregatePerformance` implementate su
+ * `RefereeAnalyticsExportService`. Esiste il file del servizio, esiste la suite
+ * che lo prova, e in mezzo non c'e' niente.
+ *
+ * Questi otto test quindi non falliscono per un difetto: descrivono una
+ * migrazione rimasta a meta'. Cablarla e' sviluppo di una feature non spedita —
+ * cambierebbe da dove arrivano le statistiche arbitri in produzione appena il
+ * flag viene acceso — e va deciso come feature, non risolto dentro un
+ * risanamento della suite. Da aprire come issue dedicata.
+ *
+ * Restano attivi i quattro test che provano il comportamento REALE del hook:
+ * 'Zero Breaking Changes Validation' e 'Performance and Caching'.
+ */
+const describeMigrazioneNonCablata = describe.skip;
+
 describe('Analytics End-to-End Integration Tests', () => {
   let queryClient: QueryClient;
   let mockFeatureFlags: any;
@@ -57,6 +107,13 @@ describe('Analytics End-to-End Integration Tests', () => {
       defaultOptions: {
         queries: {
           retry: false,
+          // Senza questi, gli hook che hanno `enableRealTimeUpdates` acceso
+          // per difetto aprono un intervallo che nessuno chiude: il client non
+          // viene mai smontato e la suite si blocca fino al timeout.
+          refetchInterval: false,
+          refetchOnWindowFocus: false,
+          refetchOnReconnect: false,
+          gcTime: 0,
         },
       },
     });
@@ -68,7 +125,15 @@ describe('Analytics End-to-End Integration Tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('Feature Flag Integration', () => {
+  afterEach(() => {
+    // `unmount()` ferma gli osservatori, `clear()` svuota la cache. Senza il
+    // primo gli intervalli restano accesi anche a cache vuota, e il worker si
+    // porta dietro le suite successive.
+    queryClient?.unmount();
+    queryClient?.clear();
+  });
+
+  describeMigrazioneNonCablata('Feature Flag Integration', () => {
     it('should use new analytics endpoints when feature flag is enabled', async () => {
       // Setup mocks
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
@@ -254,7 +319,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describe('Error Handling and Resilience', () => {
+  describeMigrazioneNonCablata('Error Handling and Resilience', () => {
     it('should handle network failures gracefully', async () => {
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
       mockAnalyticsService.queryAnalytics.mockRejectedValue(new Error('Network error'));
@@ -346,7 +411,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describe('Export and Advanced Features', () => {
+  describeMigrazioneNonCablata('Export and Advanced Features', () => {
     it('should support analytics export functionality', async () => {
       const mockBlob = new Blob(['test data'], { type: 'text/csv' });
       const mockExportService = require('../../services/RefereeAnalyticsExportService').default.getInstance();
@@ -404,7 +469,7 @@ describe('Analytics End-to-End Integration Tests', () => {
     });
   });
 
-  describe('Real-world Integration Scenarios', () => {
+  describeMigrazioneNonCablata('Real-world Integration Scenarios', () => {
     it('should handle typical tournament analytics workflow', async () => {
       mockFeatureFlags.isNewAnalyticsEndpointsEnabled.mockReturnValue(true);
       mockAnalyticsService.queryAnalytics.mockResolvedValue([

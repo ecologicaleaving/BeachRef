@@ -144,8 +144,22 @@ class FeatureFlagManager {
     hookType: 'tournaments' | 'matches' | 'referees' | 'offlineSync'
   ): Promise<void> {
     const flagKey = `useNew${hookType.charAt(0).toUpperCase() + hookType.slice(1)}Hook` as keyof FeatureFlagConfig;
-    
+
     await this.setFlag(flagKey, true);
+
+    // Si accende ANCHE la bandiera del componente, quando esiste.
+    //
+    // `shouldUseNewHook` legge `use<Componente>NewHook` e tratta qualunque
+    // valore diverso da `undefined` come una scelta esplicita che ha la
+    // precedenza. Ma quelle chiavi stanno fra i valori PREDEFINITI, tutte a
+    // `false`: per i quattro componenti che ne hanno una (TournamentList,
+    // MatchList, RefereeCard, AssignmentCard) questo metodo non poteva
+    // funzionare — accendeva la bandiera globale e il controllo la scavalcava
+    // subito dopo con il predefinito del componente.
+    const componentFlagKey = `use${component}NewHook` as keyof FeatureFlagConfig;
+    if (componentFlagKey in this.defaultFlags) {
+      await this.setFlag(componentFlagKey, true as never);
+    }
     
     // Update migration status
     this.migrationStatuses.set(component, {

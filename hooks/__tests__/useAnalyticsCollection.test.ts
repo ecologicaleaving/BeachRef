@@ -27,13 +27,37 @@ describe('useAnalyticsCollection', () => {
   let queryClient: QueryClient;
   let mockErrorLogger: any;
 
+  // React.createElement invece di JSX: questo file e' un `.ts`, e il transform
+  // per `.ts` non abilita il parsing JSX — il `<QueryClientProvider>` che
+  // stava qui faceva morire l'INTERA suite all'import con
+  // `Unexpected token, expected ","`, quindi nessuno dei suoi test girava
+  // (issue #94). Rinominare in `.tsx` non era una soluzione: quelli sono
+  // esclusi da `testPathIgnorePatterns`, sarebbe stato nasconderla.
   const createWrapper = () => {
-    return ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
+
+  // `useAnalyticsCollection` ha una protezione: su web SENZA
+  // `EXPO_PUBLIC_ANALYTICS_URL` spegne lo scarico automatico e alza
+  // `batchSize` a 1000, per non tentare invii verso un endpoint che non
+  // esiste. I test girano proprio in quella condizione, quindi la protezione
+  // scattava e `batchSize: 2` diventava 1000: nessun flush, nessuna fetch, e
+  // dodici asserzioni rosse su un codice che si comportava correttamente.
+  //
+  // Configurando l'endpoint si prova il comportamento CON analytics attive,
+  // che e' quello che queste prove vogliono verificare. La protezione ha il
+  // suo test a parte, sotto.
+  const URL_ORIGINALE = process.env.EXPO_PUBLIC_ANALYTICS_URL;
+
+  beforeAll(() => {
+    process.env.EXPO_PUBLIC_ANALYTICS_URL = '/api/analytics/events';
+  });
+
+  afterAll(() => {
+    if (URL_ORIGINALE === undefined) delete process.env.EXPO_PUBLIC_ANALYTICS_URL;
+    else process.env.EXPO_PUBLIC_ANALYTICS_URL = URL_ORIGINALE;
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,6 +83,15 @@ describe('useAnalyticsCollection', () => {
   });
 
   afterEach(() => {
+    // I timer pendenti vanno buttati PRIMA di tornare a quelli veri.
+    //
+    // `useAnalyticsCollection` accende un intervallo per lo scarico
+    // automatico. Alla fine del test il componente viene smontato, ma il timer
+    // finto resta in coda: al giro dopo scatta dentro il render della nuova
+    // prova e tocca un renderer ormai morto — "Can't access .root on unmounted
+    // test renderer". Ecco perche' i primi test passavano e i successivi no:
+    // non erano rotti, erano avvelenati da quello prima.
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
@@ -185,7 +218,7 @@ describe('useAnalyticsCollection', () => {
 
       // Wait for async flush
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       expect(global.fetch).toHaveBeenCalledWith('/api/analytics/events', expect.objectContaining({
@@ -193,6 +226,55 @@ describe('useAnalyticsCollection', () => {
         headers: { 'Content-Type': 'application/json' },
         body: expect.stringContaining('screen1')
       }));
+    });
+
+    // Non regressione, issue #99: SOTTO la soglia non deve partire nulla.
+    //
+    // L'effetto di smontaggio aveva `eventQueue.length` fra le dipendenze, e
+    // la pulizia di un effetto gira prima di ogni riesecuzione: dal secondo
+    // evento in poi la coda veniva scaricata a ogni singola aggiunta. Il
+    // raggruppamento non esisteva, e nessun test se ne accorgeva perche' tutti
+    // guardavano il caso in cui lo scarico DEVE avvenire.
+    it('non deve scaricare prima della soglia', async () => {
+      const { result } = renderHook(() => useAnalyticsCollection({ batchSize: 5 }), {
+        wrapper: createWrapper()
+      });
+
+      act(() => {
+        result.current.trackScreenView({ screen_name: 'screen1' });
+        result.current.trackScreenView({ screen_name: 'screen2' });
+        result.current.trackScreenView({ screen_name: 'screen3' });
+      });
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(0);
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.current.queueSize).toBe(3);
+    });
+
+    // Non regressione, issue #99: la soglia manda UN invio, non due.
+    //
+    // La decisione di scaricare stava dentro l'aggiornatore di `setEventQueue`.
+    // React puo' invocare un aggiornatore piu' volte per lo stesso valore, e
+    // ogni invocazione programmava il proprio `setTimeout`.
+    it('raggiunta la soglia invia una volta sola', async () => {
+      const { result } = renderHook(() => useAnalyticsCollection({ batchSize: 2 }), {
+        wrapper: createWrapper()
+      });
+
+      act(() => {
+        result.current.trackScreenView({ screen_name: 'screen1' });
+        result.current.trackScreenView({ screen_name: 'screen2' });
+      });
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(0);
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(result.current.queueSize).toBe(0);
     });
 
     it('should flush events manually', async () => {
@@ -230,7 +312,13 @@ describe('useAnalyticsCollection', () => {
       expect(result.current.queueSize).toBe(0);
     });
 
-    it('should auto-flush based on timer interval', () => {
+    // `async`, e i timer si fanno avanzare DENTRO un `act` asincrono.
+    //
+    // Lo scarico automatico e' un `setTimeout` che chiama una funzione
+    // asincrona: far scattare il timer mette in coda dei microtask, non esegue
+    // la `fetch`. Asserire subito dopo un `act` sincrono era una gara che il
+    // test perdeva sempre — falliva anche col codice giusto (issue #99).
+    it('should auto-flush based on timer interval', async () => {
       const { result } = renderHook(() => useAnalyticsCollection({ 
         flushIntervalMs: 1000 
       }), {
@@ -244,7 +332,7 @@ describe('useAnalyticsCollection', () => {
       expect(result.current.queueSize).toBe(1);
 
       // Fast-forward timer
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(1000);
       });
 
@@ -322,6 +410,16 @@ describe('useAnalyticsCollection', () => {
 
   describe('performance tracking', () => {
     it('should update performance metrics on successful flush', async () => {
+      // L'orologio va fatto AVANZARE durante l'invio, altrimenti la durata
+      // misurata e' onestamente zero: `jest.useFakeTimers()` congela anche
+      // `performance.now()`, quindi inizio e fine dello scarico coincidono.
+      // Asserire `> 0` senza muovere il tempo non prova che la durata sia
+      // misurata: prova solo che l'orologio sia vero.
+      (global.fetch as jest.Mock).mockImplementation(async () => {
+        jest.advanceTimersByTime(25);
+        return { ok: true, json: jest.fn().mockResolvedValue({ success: true }) };
+      });
+
       const { result } = renderHook(() => useAnalyticsCollection(), {
         wrapper: createWrapper()
       });
@@ -394,12 +492,15 @@ describe('useAnalyticsCollection', () => {
 describe('useRefereeScreenAnalytics', () => {
   let queryClient: QueryClient;
 
+  // React.createElement invece di JSX: questo file e' un `.ts`, e il transform
+  // per `.ts` non abilita il parsing JSX — il `<QueryClientProvider>` che
+  // stava qui faceva morire l'INTERA suite all'import con
+  // `Unexpected token, expected ","`, quindi nessuno dei suoi test girava
+  // (issue #94). Rinominare in `.tsx` non era una soluzione: quelli sono
+  // esclusi da `testPathIgnorePatterns`, sarebbe stato nasconderla.
   const createWrapper = () => {
-    return ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 
   beforeEach(() => {
@@ -449,7 +550,8 @@ describe('useRefereeScreenAnalytics', () => {
       expect(result.current.performance.eventsTracked).toBe(1);
     });
 
-    it('should have configured smaller batch size for screen events', () => {
+    // Stessa ragione dell'auto-scarico a timer: `async` e attesa esplicita.
+    it('should have configured smaller batch size for screen events', async () => {
       const { result } = renderHook(() => useRefereeScreenAnalytics(), {
         wrapper: createWrapper()
       });
@@ -460,6 +562,12 @@ describe('useRefereeScreenAnalytics', () => {
         for (let i = 0; i < 5; i++) {
           result.current.trackRefereeScreenView('referee_dashboard');
         }
+      });
+
+      // La soglia programma lo scarico con `setTimeout(..., 0)`: con i timer
+      // finti va fatto scattare, e poi va atteso.
+      await act(async () => {
+        jest.advanceTimersByTime(0);
       });
 
       // Should trigger auto-flush at batch size 5

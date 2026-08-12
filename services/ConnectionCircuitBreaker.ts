@@ -12,7 +12,7 @@ export enum CircuitState {
 }
 
 interface CircuitBreakerConfig {
-  failureThreshold: number;    // Number of failures before opening circuit
+  failureThreshold: number;    // Fallimenti consecutivi che APRONO il circuito (>=), non quelli tollerati prima
   recoveryTimeout: number;     // Time to wait before trying half-open
   successThreshold: number;    // Successes needed in half-open to close circuit
   maxTimeout: number;          // Maximum recovery timeout (with backoff)

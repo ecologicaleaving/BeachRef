@@ -427,6 +427,26 @@ export class CacheServiceCompatibility {
   /**
    * Clear cache with backward compatibility
    */
+  /**
+   * Invalida la cache delle partite di un torneo.
+   *
+   * ESISTEVA GIA' UN CHIAMANTE, e non questo metodo:
+   * `RealtimeSubscriptionService.invalidateMatchCache` faceva
+   * `CacheService.invalidateMatchCache(tournamentNo)` su questa classe, che
+   * non lo espone. Ogni aggiornamento dal vivo sollevava quindi un TypeError,
+   * raccolto da un catch muto: la cache non veniva mai invalidata e l'app
+   * mostrava punteggi vecchi proprio durante il live, cioe' l'unico momento in
+   * cui il realtime serve a qualcosa.
+   *
+   * E' la famiglia dei "membri che il modulo non espone" gia' documentata in
+   * CLAUDE.md dopo le issue #71 e #73 — questa stava sul percorso caldo.
+   */
+  static async invalidateMatchCache(tournamentNo: string): Promise<void> {
+    // Le partite del torneo, piu' la voce specifica se la chiave la distingue.
+    queryClient.removeQueries({ queryKey: ['matches', tournamentNo] });
+    await CacheServiceCompatibility.clearCache(['matches']);
+  }
+
   static async clearCache(keys?: string[]): Promise<void> {
     // The TanStack Query side is unconditional: it is local state and clearing
     // it is correct regardless of where reads come from. Only the DualRead

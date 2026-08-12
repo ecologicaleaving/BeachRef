@@ -4,6 +4,34 @@ import { SyncManager } from '../services/SyncManager';
 import { queryClient } from '../lib/queryClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FilterOptions } from '../types/cache';
+/**
+ * `supabase` era usato in TRE punti di questo file e non era importato da
+ * nessuna parte: `checkDataFreshness` e `resolveConflicts` lanciavano
+ * `ReferenceError: supabase is not defined` a ogni invocazione, in produzione.
+ * Nessuno se ne era accorto perche' entrambe stanno dentro un `try/catch` che
+ * riporta l'errore come un fallimento di sincronizzazione qualunque.
+ *
+ * L'import e' sicuro: il modulo esporta `null` quando le variabili d'ambiente
+ * mancano, non costruisce un client che esplode (lezione della #45).
+ */
+import { supabase } from '../services/supabase';
+
+/**
+ * Il messaggio di un errore, da qualunque forma arrivi.
+ *
+ * Serve perche' in questo hook convivono due famiglie: le `Error` lanciate dal
+ * codice e gli oggetti semplici `{ message, code, details }` restituiti da
+ * PostgREST. Trattare solo le prime significa perdere proprio la diagnosi che
+ * viene dal database.
+ */
+function messaggioErrore(errore: unknown, ripiego: string): string {
+  if (errore instanceof Error) return errore.message;
+  if (typeof errore === 'object' && errore !== null) {
+    const m = (errore as { message?: unknown }).message;
+    if (typeof m === 'string' && m.length > 0) return m;
+  }
+  return ripiego;
+}
 
 export interface OfflineSyncConfig {
   enableAutoSync?: boolean;
@@ -141,6 +169,10 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
   // Check data freshness using Story 5.1 sync status
   const checkDataFreshness = useCallback(async () => {
     try {
+      // `supabase` e' `SupabaseClient | null`: senza variabili d'ambiente il
+      // modulo esporta null, e questa lettura non ha senso.
+      if (!supabase) return;
+
       const { data: syncStatuses, error } = await supabase
         .from('sync_status')
         .select('table_name, last_sync_at')
@@ -450,6 +482,10 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
     }
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase non configurato: impossibile risolvere i conflitti');
+      }
+
       // Check for conflicts in sync_status table (Story 5.1 integration)
       const { data: conflicts, error } = await supabase
         .from('sync_status')
@@ -489,7 +525,13 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
       }
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to resolve conflicts';
+      // `instanceof Error` non basta: gli errori di PostgREST/Supabase sono
+      // oggetti semplici con un campo `message`, non istanze di Error. La
+      // guardia scartava quindi SEMPRE il messaggio vero del database e ne
+      // metteva in coda uno generico — in produzione, non solo nei test. Chi
+      // leggeva `syncErrors` vedeva "Failed to resolve conflicts" qualunque
+      // cosa fosse successa.
+      const errorMessage = messaggioErrore(error, 'Failed to resolve conflicts');
       setSyncStatus(prev => ({
         ...prev,
         syncErrors: [...prev.syncErrors, errorMessage]

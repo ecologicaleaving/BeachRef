@@ -222,12 +222,33 @@ export function useAnalyticsDashboard(
     });
   }, [queryClient]);
 
-  // Effect to handle real-time update configuration changes
+  // Effetto sul cambio di CONFIGURAZIONE del tempo reale.
+  //
+  // `dashboardQuery` NON puo' stare fra le dipendenze: e' l'oggetto restituito
+  // da `useQuery` e cambia identita' a ogni render. Con `refetch()` dentro il
+  // corpo si chiudeva un ciclo infinito —
+  //
+  //     effetto -> refetch() -> render -> nuovo dashboardQuery -> effetto
+  //
+  // — che con `enableRealTimeUpdates: true` (il predefinito) partiva da solo.
+  // In jest riempiva 4 GB di heap e uccideva il worker, portandosi dietro le
+  // suite che gli erano state assegnate: e' la spiegazione di "tre run danno
+  // tre numeri" (#94). In un browser non si vede come un crash, si vede come
+  // una richiesta dietro l'altra.
+  //
+  // E' lo stesso difetto della #81 su `useRepositoryData`, secondo hook.
+  //
+  // `refetch()` qui e' anche ridondante: quando il tempo reale e' acceso,
+  // `refetchInterval` (riga 176) rinfresca gia' di suo. L'effetto serve solo a
+  // non aspettare il primo intervallo dopo un'accensione manuale — per questo
+  // guarda le due chiavi di configurazione e nient'altro.
+  const refetchDashboard = dashboardQuery.refetch;
   useEffect(() => {
     if (currentConfig.enableRealTimeUpdates) {
-      dashboardQuery.refetch();
+      refetchDashboard();
     }
-  }, [currentConfig.enableRealTimeUpdates, currentConfig.refreshInterval, dashboardQuery]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentConfig.enableRealTimeUpdates, currentConfig.refreshInterval]);
 
   return {
     data: dashboardQuery.data,

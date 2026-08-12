@@ -42,8 +42,36 @@ describe('VisApiClient - Batch Requests', () => {
       maxDelayMs: 50
     });
 
-    mockFetch.mockClear();
+    // `mockReset`, non `mockClear` (issue #94). `mockClear` azzera le chiamate
+    // ma NON le implementazioni: un `mockResolvedValue` (senza `Once`)
+    // impostato da un test restava in piedi per tutti i test successivi,
+    // rispondendo a ogni chiamata che avesse esaurito la propria coda `Once` —
+    // ritentativi compresi. Alcuni test erano quindi verdi grazie alla risposta
+    // preparata da un altro test.
+    mockFetch.mockReset();
   });
+
+  /** Quante volte il client ritenta prima di arrendersi. */
+  const TENTATIVI = DEFAULT_RETRY_CONFIG.maxAttempts;
+
+  /** Corpo della richiesta, decodificato, per l'ennesima chiamata a fetch. */
+  const corpoChiamata = (indice: number): string => {
+    const init = mockFetch.mock.calls[indice]?.[1] as RequestInit | undefined;
+    return typeof init?.body === 'string' ? decodeURIComponent(init.body) : '';
+  };
+
+  const chiamateBatch = (): number =>
+    mockFetch.mock.calls.filter((_call, i) => corpoChiamata(i).includes('BatchRequest')).length;
+
+  /**
+   * Chiamate INDIVIDUALI di un certo tipo. Il corpo di un batch contiene i tipi
+   * delle proprie sotto-richieste, quindi un conteggio per sola sottostringa
+   * conterebbe anche i tentativi del batch.
+   */
+  const chiamateIndividualiDiTipo = (marcatore: string): number =>
+    mockFetch.mock.calls.filter(
+      (_call, i) => !corpoChiamata(i).includes('BatchRequest') && corpoChiamata(i).includes(marcatore)
+    ).length;
 
   describe('buildBatchRequestXml', () => {
     it('should build XML for multiple requests', async () => {
@@ -187,7 +215,12 @@ describe('VisApiClient - Batch Requests', () => {
         failureStrategy: 'continue_on_partial'
       };
 
-      mockFetch.mockResolvedValueOnce({
+      // `mockResolvedValue`, non `...Once`: il client RITENTA (fino a 3
+      // volte), e dalla seconda chiamata la coda del doppio era vuota,
+      // restituendo `undefined`. Il client moriva su `response.ok` e marcava
+      // come fallito anche il risultato riuscito. Un server vero, alla
+      // stessa richiesta, risponde di nuovo.
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         text: async () => `
@@ -222,7 +255,11 @@ describe('VisApiClient - Batch Requests', () => {
         ]
       };
 
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      // `mockRejectedValue`, non `...Once`: una rete caduta resta caduta anche
+      // al ritentativo. Con `Once` il secondo tentativo ereditava la risposta
+      // preparata da un altro test e il batch "completamente fallito"
+      // finiva per riuscire.
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
       const response = await client.executeBatchRequest(batchRequest);
 
@@ -230,6 +267,7 @@ describe('VisApiClient - Batch Requests', () => {
       expect(response.results).toHaveLength(1);
       expect(response.results[0].success).toBe(false);
       expect(response.hasPartialFailures).toBe(true);
+      expect(mockFetch).toHaveBeenCalledTimes(TENTATIVI);
     });
   });
 
@@ -366,20 +404,30 @@ describe('VisApiClient - Batch Requests', () => {
         includeRounds: false
       };
 
-      // Mock batch request failure
-      mockFetch
-        .mockRejectedValueOnce(new Error('Batch request failed'))
-        // Mock successful individual fallback requests
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          text: async () => '<Tournament No="12345" Name="Individual Success" />'
-        })
-        .mockResolvedValueOnce({
+      // La risposta dipende dal TIPO di richiesta, non dalla posizione in una
+      // coda (issue #94). Con una coda `Once`, il ritentativo del batch
+      // consumava la risposta preparata per la PRIMA richiesta individuale: il
+      // batch "fallito" riusciva al secondo colpo e il conteggio finale
+      // dipendeva da quante volte il client avesse ritentato.
+      mockFetch.mockImplementation(async (_url: any, init: any) => {
+        const corpo = typeof init?.body === 'string' ? decodeURIComponent(init.body) : '';
+
+        if (corpo.includes('BatchRequest')) {
+          throw new Error('Batch request failed');
+        }
+        if (corpo.includes('GetBeachTournament')) {
+          return {
+            ok: true,
+            status: 200,
+            text: async () => '<Tournament No="12345" Name="Individual Success" />'
+          } as Response;
+        }
+        return {
           ok: true,
           status: 200,
           text: async () => '<Match No="1" Status="Finished" />'
-        });
+        } as Response;
+      });
 
       const response = await client.getTournamentDetailBatch(request);
 
@@ -387,9 +435,13 @@ describe('VisApiClient - Batch Requests', () => {
       expect(response.results).toHaveLength(2);
       expect(response.results[0].success).toBe(true);
       expect(response.results[1].success).toBe(true);
-      
-      // Should have made 3 total requests (1 failed batch + 2 successful individual)
-      expect(mockFetch).toHaveBeenCalledTimes(3);
+
+      // Il batch fallito viene RITENTATO — il test dava per scontata una sola
+      // chiamata. Poi una richiesta individuale per elemento, che e' la
+      // proprieta' che questo caso deve dimostrare.
+      expect(chiamateBatch()).toBe(TENTATIVI);
+      expect(chiamateIndividualiDiTipo('GetBeachTournament')).toBe(1);
+      expect(chiamateIndividualiDiTipo('GetBeachMatchList')).toBe(1);
     });
   });
 

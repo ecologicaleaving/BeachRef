@@ -61,10 +61,16 @@ describe('Status Colors Utility Functions', () => {
 
   describe('getStatusColorWithText', () => {
     it('should return status color with optimal text color', () => {
+      // `current` (LIVE) e' un caso speciale DELIBERATO in
+      // `utils/statusColors.ts`: sfondo bianco e testo colorato, non il
+      // contrario. Questo test asseriva il comportamento precedente
+      // (`backgroundColor === statusColors.current`) e falliva da quando la
+      // scelta e' stata fatta — qui aveva ragione il codice, che porta la
+      // motivazione scritta accanto all'implementazione (issue #94).
       const currentResult = getStatusColorWithText('current');
-      expect(currentResult.backgroundColor).toBe(statusColors.current);
-      expect(['#FFFFFF', colors.textPrimary]).toContain(currentResult.textColor);
-      expect(currentResult.contrastRatio).toBeGreaterThan(4.5); // At least WCAG AA requirement
+      expect(currentResult.backgroundColor).toBe('#FFFFFF');
+      expect(currentResult.textColor).toBe(statusColors.current);
+      expect(currentResult.contrastRatio).toBeGreaterThanOrEqual(7); // WCAG AAA
     });
 
     it('should ensure all status colors meet WCAG AA requirements', () => {
@@ -164,9 +170,14 @@ describe('Status Colors Utility Functions', () => {
 
   describe('statusColorThemes', () => {
     it('should provide badge theme configurations', () => {
-      expect(statusColorThemes.badge.current.bg).toBe(statusColors.current);
-      expect(statusColorThemes.badge.current.text).toBe('#FFFFFF');
+      // `current` (LIVE) e' invertito rispetto agli altri stati, di proposito:
+      // sfondo bianco e testo colorato. Il test asseriva il contrario e
+      // falliva da quando la scelta e' stata fatta (issue #94).
+      expect(statusColorThemes.badge.current.bg).toBe('#FFFFFF');
+      expect(statusColorThemes.badge.current.text).toBe(statusColors.current);
+      // Gli altri seguono la convenzione opposta: sfondo colorato, testo bianco.
       expect(statusColorThemes.badge.emergency.bg).toBe(statusColors.emergency);
+      expect(statusColorThemes.badge.emergency.text).toBe('#FFFFFF');
     });
 
     it('should provide border theme configurations', () => {
@@ -184,20 +195,29 @@ describe('Status Colors Utility Functions', () => {
 
   describe('Story 1.4 Acceptance Criteria Compliance', () => {
     it('AC 1: Should implement color coding for all assignment states', () => {
-      // Current/Active: High-visibility (using existing WCAG AAA textPrimary color)
-      expect(statusColors.current).toBe('#2C3E50');
-      
-      // Upcoming: Professional blue (using existing WCAG AAA secondary color)
-      expect(statusColors.upcoming).toBe('#2B5F75');
-      
-      // Completed: Success green (using existing WCAG AAA success color)
-      expect(statusColors.completed).toBe(colors.success);
-      
-      // Cancelled/Changed: Clear indicators (using existing WCAG AAA primary color)
-      expect(statusColors.cancelled).toBe('#1B365D');
-      
-      // Emergency/Urgent: Maximum visibility treatment (using existing WCAG AAA error color)
-      expect(statusColors.emergency).toBe('#8B1538');
+      // Questo test congelava cinque esadecimali (`#2C3E50`, `#2B5F75`,
+      // `#1B365D`, `#8B1538`) di una palette di DUE migrazioni fa: la
+      // "blue-teal" del 2025-08 e poi "Titanium & Gold". Falliva a ogni
+      // decisione di design, il che lo rendeva un test della palette contro
+      // se' stessa — non dell'accettazione della Story 1.4 (issue #94).
+      //
+      // L'AC 1 chiede "color coding for all assignment states": cio' che deve
+      // valere e' che ogni stato ABBIA un colore, e che gli stati siano
+      // DISTINGUIBILI fra loro. Quale tonalita' sia e' una scelta di design,
+      // e la sua conformita' e' verificata dall'AC 1 & 2 qui sotto.
+      const states: TournamentStatus[] = ['current', 'upcoming', 'completed', 'cancelled', 'emergency'];
+
+      states.forEach(state => {
+        expect(statusColors[state]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      });
+
+      // `emergency` deve restare distinguibile da `current`: sono i due stati
+      // che un arbitro non puo' permettersi di confondere a colpo d'occhio.
+      expect(statusColors.emergency).not.toBe(statusColors.current);
+
+      // E nessuno stato puo' collassare su un altro.
+      const distinct = new Set(states.map(s => statusColors[s].toUpperCase()));
+      expect(distinct.size).toBe(states.length);
     });
 
     it('AC 1 & 2: Should ensure colors meet WCAG AAA (7:1) contrast requirements', () => {
@@ -227,16 +247,22 @@ describe('Status Colors Utility Functions', () => {
   describe('Performance and Accessibility Requirements', () => {
     it('should provide efficient color calculation', () => {
       const start = performance.now();
-      
+
       // Test multiple calls to ensure performance
       for (let i = 0; i < 100; i++) {
         getStatusColor('current');
         getStatusColorWithText('upcoming');
         getStatusColorForBackground('completed');
       }
-      
+
       const end = performance.now();
-      expect(end - start).toBeLessThan(50); // Should complete quickly
+      // 300 pure lookups. The bound is deliberately two orders of magnitude
+      // above the real cost (~1 ms): it exists to catch a lookup that starts
+      // doing IO or goes quadratic, not to measure this machine. The previous
+      // bound was 50 ms, which is inside the noise of a jest run with parallel
+      // workers — measured 109 ms on a loaded machine and 3 ms on an idle one,
+      // so the suite's colour depended on what else was running (issue #94).
+      expect(end - start).toBeLessThan(2000);
     });
 
     it('should maintain consistent color values', () => {

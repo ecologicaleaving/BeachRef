@@ -82,7 +82,13 @@ describe('useTournamentStatus', () => {
       );
     });
 
-    expect(result.current.subscriptionActive).toBe(true);
+    // Dentro `waitFor`, non dopo: la `waitFor` sopra aspetta soltanto che il
+    // servizio venga CHIAMATO, mentre `subscriptionActive` diventa vero quando
+    // la promessa si risolve e React riesegue il render. Leggerlo subito dopo
+    // e' una gara che il test perde.
+    await waitFor(() => {
+      expect(result.current.subscriptionActive).toBe(true);
+    });
     expect(result.current.error).toBeNull();
   });
 

@@ -2,11 +2,10 @@ import { RealtimePerformanceMonitor } from '../RealtimePerformanceMonitor';
 import { AppState } from 'react-native';
 
 // Mock React Native AppState
-jest.mock('react-native', () => ({
-  AppState: {
-    addEventListener: jest.fn(),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2, e la nota
+// identica in RealtimeSubscriptionService.test.ts. Sostituire l'intero modulo
+// per avere il solo `AppState` cancellava `Platform` e impediva alla suite di
+// caricare (issue #94).
 
 // Mock global timers
 jest.useFakeTimers();
@@ -149,8 +148,11 @@ describe('RealtimePerformanceMonitor', () => {
       RealtimePerformanceMonitor.trackMessageReceived(100, 'TOURNAMENT_1');
       RealtimePerformanceMonitor.trackMessageReceived(100, 'TOURNAMENT_2');
 
-      // Fast-forward time for memory cleanup
-      jest.advanceTimersByTime(300000); // 5 minutes
+      // La pulizia tiene UN MINUTO di dati (`now - time < 60000`). Il test
+      // avanzava di cinque minuti e poi pretendeva che i limitatori fossero
+      // "ancora recenti": erano stati buttati, correttamente. Si avanza quindi
+      // meno della soglia.
+      jest.advanceTimersByTime(30000); // 30 secondi: dentro la finestra
 
       // Rate limiters should still exist as they're recent
       const metrics = RealtimePerformanceMonitor.getPerformanceMetrics();
@@ -160,8 +162,13 @@ describe('RealtimePerformanceMonitor', () => {
       jest.advanceTimersByTime(3600000); // 1 hour
 
       // Old rate limiters should be cleaned up
+      //
+      // La seconda meta' del test non verificava NIENTE: leggeva le metriche
+      // in una variabile inutilizzata e lasciava una nota che ammetteva di non
+      // controllare. La pulizia periodica gira davvero con i timer finti, e
+      // dopo un'ora nessun limitatore puo' essere sopravvissuto.
       const metricsAfterCleanup = RealtimePerformanceMonitor.getPerformanceMetrics();
-      // Note: This test would need the internal cleanup cycle to run
+      expect(metricsAfterCleanup.activeRateLimiters).toBe(0);
     });
   });
 

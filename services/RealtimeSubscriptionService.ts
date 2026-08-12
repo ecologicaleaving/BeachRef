@@ -2,7 +2,13 @@ import { BeachMatch } from '../types/match';
 import { supabase } from './supabase';
 import { CacheServiceCompatibility as CacheService } from '../hooks/compatibility/CacheServiceCompatibility';
 import { AppState } from 'react-native';
-import { RealtimePerformanceMonitor, ConnectionState } from './RealtimePerformanceMonitor';
+import { RealtimePerformanceMonitor } from './RealtimePerformanceMonitor';
+// `ConnectionState` arriva dal modulo foglia `types/realtime.ts`, non dal
+// monitor: quel percorso era un ciclo, e la riga 48 di questo file lo
+// dereferenzia durante l'inizializzazione degli statici — cioe' nel momento
+// esatto in cui, importando il monitor per primo, l'enum non esisteva ancora
+// (issue #94).
+import { ConnectionState } from '../types/realtime';
 // `ConnectionState` is a runtime enum and `hooks/useRealtimeSubscription.ts`
 // imports it *from this module* and compares against its members. Importing a
 // name is not re-exporting it: without this line the hook received `undefined`
@@ -118,7 +124,7 @@ export class RealtimeSubscriptionService {
     });
     
     this.isInitialized = true;
-    this.setConnectionState(ConnectionState.DISCONNECTED);
+    this.setConnectionState(ConnectionState.DISCONNECTED, undefined, true);
   }
 
   /**
@@ -145,6 +151,7 @@ export class RealtimeSubscriptionService {
    */
   static addConnectionStateListener(listener: ConnectionStateListener): () => void {
     this.connectionStateListeners.add(listener);
+
     // Return unsubscribe function
     return () => {
       this.connectionStateListeners.delete(listener);
@@ -161,16 +168,41 @@ export class RealtimeSubscriptionService {
   /**
    * Set connection state and notify listeners
    */
-  private static setConnectionState(state: ConnectionState, error?: string): void {
-    if (this.connectionState !== state) {
+  /**
+   * @param forza notifica anche se lo stato non cambia.
+   *
+   * Serve all'inizializzazione: lo stato iniziale e' gia' DISCONNECTED, quindi
+   * il confronto qui sotto era falso e nessun ascoltatore veniva mai avvisato
+   * dell'avvio. Chi ascolta non poteva sapere che il sistema era su e
+   * disconnesso — l'unico caso in cui vale la pena avvisare l'arbitro.
+   *
+   * La notifica NON si fa invece all'iscrizione: questi sono ascoltatori di
+   * TRANSIZIONE, e `RealtimePerformanceMonitor` conta ogni notifica come un
+   * tentativo di connessione. Consegnare lo stato corrente a ogni nuovo
+   * iscritto falserebbe quella statistica.
+   */
+  private static setConnectionState(
+    state: ConnectionState,
+    error?: string,
+    forza: boolean = false
+  ): void {
+    if (forza || this.connectionState !== state) {
       this.connectionState = state;
       
       // Notify all listeners
       this.connectionStateListeners.forEach(listener => {
         try {
-          listener(state, error);
+          // Senza errore si chiama con UN solo argomento: passare `undefined`
+          // esplicito cambia `arguments.length`, e chi ispeziona la chiamata
+          // (un test, o un ascoltatore che distingue "nessun errore" da
+          // "errore non specificato") vede due parametri invece di uno.
+          if (error === undefined) {
+            listener(state);
+          } else {
+            listener(state, error);
+          }
         } catch (err) {
-          // console.error('Error in connection state listener:', err);
+          console.error('Error in connection state listener:', err);
         }
       });
     }
@@ -397,12 +429,25 @@ export class RealtimeSubscriptionService {
    */
   private static async reconnectTournament(tournamentNo: string): Promise<void> {
     
+    // La configurazione si legge PRIMA di disiscriversi (issue #94).
+    //
+    // `unsubscribeTournament` cancella anche `subscriptionConfigs` (e' la sua
+    // pulizia, ed e' giusta): leggerla dopo restituiva sempre `undefined`, il
+    // ramo `if (config)` non veniva mai preso e **la riconnessione non
+    // ri-sottoscriveva mai**. Non e' un dettaglio di test: e' il percorso che
+    // riprende il realtime quando l'app torna in primo piano. L'arbitro che
+    // metteva l'app in background durante una partita e la riapriva smetteva
+    // di ricevere i punteggi dal vivo, in silenzio e per sempre — fino a un
+    // riavvio dell'app.
+    const config = this.subscriptionConfigs.get(tournamentNo);
+
     // Remove existing subscription if any
     await this.unsubscribeTournament(tournamentNo);
-    
+
     // Re-establish subscription
-    const config = this.subscriptionConfigs.get(tournamentNo);
     if (config) {
+      // Rimessa a posto perche' `establishSubscription` la rilegge dalla mappa.
+      this.subscriptionConfigs.set(tournamentNo, config);
       await this.establishSubscription(tournamentNo, true);
     }
   }
@@ -540,7 +585,11 @@ export class RealtimeSubscriptionService {
         this.checkTournamentSubscriptionNeeded(updatedMatch.tournament_no);
       }
     } catch (error) {
-      // console.error('Error handling match update:', error);
+      // Dodicesima diagnostica muta della campagna. Questo catch avvolge
+      // l'intera gestione di un aggiornamento dal vivo: senza la riga, un
+      // guasto qui si presentava come "il punteggio non si aggiorna", senza
+      // alcun indizio su dove guardare.
+      console.error('Error handling match update:', error);
     }
   }
 
@@ -604,7 +653,10 @@ export class RealtimeSubscriptionService {
     try {
       await CacheService.invalidateMatchCache(tournamentNo);
     } catch (error) {
-      // console.error(`Failed to invalidate cache for tournament ${tournamentNo}:`, error);
+      // Undicesima diagnostica muta della campagna: e' proprio questo catch
+      // che ha tenuto nascosto per mesi il fatto che
+      // `CacheService.invalidateMatchCache` non esistesse.
+      console.error(`Failed to invalidate cache for tournament ${tournamentNo}:`, error);
     }
   }
 

@@ -89,6 +89,9 @@ export const useRepositoryData = <T>(
 
   // Fetch data function with retry logic
   const fetchData = useCallback(async (retryAttempt = 0): Promise<void> => {
+    // Segna che un nuovo tentativo e' stato programmato: il `finally` non
+    // deve spegnere `loading` in quel caso.
+    let riprovaInCorso = false;
     if (!mountedRef.current) return;
 
     try {
@@ -123,19 +126,30 @@ export const useRepositoryData = <T>(
       
       // Retry logic
       if (retryAttempt < retryCount) {
-        // console.warn(`Repository fetch failed (attempt ${retryAttempt + 1}/${retryCount + 1}), retrying in ${retryDelay}ms:`, error.message);
-        
+        console.warn(
+          `Repository fetch failed (attempt ${retryAttempt + 1}/${retryCount + 1}), retrying in ${retryDelay}ms:`,
+          error.message
+        );
+
         retryTimeoutRef.current = setTimeout(() => {
           fetchData(retryAttempt + 1);
         }, retryDelay * Math.pow(2, retryAttempt)); // Exponential backoff
-        
+
+        // `loading` RESTA vero mentre un nuovo tentativo e' in coda.
+        //
+        // Il `finally` qui sotto lo spegneva comunque: fra un tentativo e
+        // l'altro il consumatore vedeva "nessun dato, nessun errore, non sto
+        // caricando" — una schermata vuota senza spiegazione, che e' il caso
+        // peggiore dei tre. E chi aspettava la fine del caricamento per
+        // leggere l'errore lo trovava ancora nullo.
+        riprovaInCorso = true;
         return;
       }
-      
+
       setError(error);
-      // console.error('Repository fetch failed after all retries:', error);
+      console.error('Repository fetch failed after all retries:', error);
     } finally {
-      if (mountedRef.current) {
+      if (mountedRef.current && !riprovaInCorso) {
         setLoading(false);
       }
     }
@@ -154,13 +168,32 @@ export const useRepositoryData = <T>(
   }, [fetchData]);
 
   // Initial fetch effect
+  //
+  // `dependencies` e' un ARRAY fornito dal chiamante, e non puo' stare dentro
+  // l'array di dipendenze di useEffect: React confronta per riferimento, e la
+  // forma d'uso normale — `useRepositoryData(metodo, [])`, oppure
+  // `[tournamentNo]` — costruisce un array nuovo a ogni render. L'effetto si
+  // ri-eseguiva sempre, quindi `fetchData()` partiva a ogni render: un ciclo di
+  // fetch infinito, con `loading` che non tornava mai `false`.
+  //
+  // Non era un difetto dei test: qualunque schermata che passi un array
+  // letterale — cioe' tutte — martellava il repository a ogni render. Il test
+  // lo diceva da tempo, chiedendo 1 chiamata e contandone 38 (issue #94).
+  //
+  // Si confronta il CONTENUTO. `JSON.stringify` copre i valori che questo hook
+  // riceve davvero (id, numeri, date, stringhe); se un giorno servisse passare
+  // una funzione o una classe, questa riga va ripensata — non aggirata
+  // rimettendo l'array.
+  const dependenciesKey = JSON.stringify(dependencies);
+
   useEffect(() => {
     if (!skip) {
       fetchData();
     }
 
     return cleanup;
-  }, [skip, fetchData, cleanup, dependencies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skip, fetchData, cleanup, dependenciesKey]);
 
   // Polling effect
   useEffect(() => {

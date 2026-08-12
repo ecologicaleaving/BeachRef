@@ -12,6 +12,12 @@ jest.useFakeTimers();
 
 describe('useAssignmentCountdown', () => {
   beforeEach(() => {
+    // I timer finti si REINSTALLANO a ogni prova: `afterEach` li disattiva con
+    // `useRealTimers()`, quindi dalla seconda in poi il tempo scorreva davvero.
+    // Fra il calcolo di `Date.now() + 90 minuti` e la lettura del contatore
+    // passavano alcuni millisecondi, e 30 minuti diventavano 29 e 59 secondi.
+    // Non era uno scarto del codice: era il tempo che passa.
+    jest.useFakeTimers();
     jest.clearAllMocks();
     jest.clearAllTimers();
   });

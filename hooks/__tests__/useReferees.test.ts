@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReferees, RefereesFilters } from '../useReferees';
 import { supabase } from '../../services/supabase';
 import React from 'react';
+import { setDbReadOverride, resetDbReadFlagsForTests } from '../../services/flags/DbReadFlags';
 
 // Mock Supabase
 jest.mock('../../services/supabase', () => ({
@@ -44,18 +45,37 @@ const createWrapper = () => {
 };
 
 describe('useReferees Hook - Database First Strategy with Assignment Status', () => {
-  const mockSupabaseQuery = {
+  // Il doppio del costruttore di query e' INCATENABILE e ATTENDIBILE, come
+  // l'originale: PostgREST restituisce sempre lo stesso costruttore e lo si
+  // attende alla fine, qualunque filtro sia stato applicato.
+  //
+  // Prima il risultato era appeso a `.not()`, ma il hook chiama `.not()` solo
+  // quando c'e' un filtro `status`: con `{ federationCode: 'USA' }` la catena
+  // finisce su `.eq()`, il dato preparato non arrivava mai e il hook cadeva sul
+  // ripiego VIS. Sette test asserivano cosi' su un percorso che non stavano
+  // esercitando.
+  let risultato: { data: unknown[]; error: unknown } = { data: [], error: null };
+  const impostaRisultato = (r: { data: unknown[]; error: unknown }) => {
+    risultato = r;
+  };
+
+  const mockSupabaseQuery: any = {
     select: jest.fn(() => mockSupabaseQuery),
     eq: jest.fn(() => mockSupabaseQuery),
     not: jest.fn(() => mockSupabaseQuery),
-    data: [],
-    error: null
+    // `then` rende l'oggetto attendibile: `await query` risolve qui.
+    then: (ok: any, ko: any) => Promise.resolve(risultato).then(ok, ko),
   };
-  
+
   beforeEach(() => {
+    // Le letture dal DB sono spente per definizione (issue #54 fase 2).
+    // Questa suite prova PROPRIO il percorso database, quindi la accende
+    // esplicitamente invece di dare per scontato che sia attiva.
+    resetDbReadFlagsForTests();
+    setDbReadOverride(['referees']);
     jest.clearAllMocks();
     (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
-    mockSupabaseQuery.not.mockReturnValue({ data: [], error: null });
+    impostaRisultato({ data: [], error: null });
   });
 
   describe('Database-First Strategy', () => {
@@ -72,7 +92,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
         updated_at: '2024-01-01T00:00:00Z'
       }];
 
-      mockSupabaseQuery.not.mockResolvedValue({
+      impostaRisultato({
         data: mockReferees,
         error: null
       });
@@ -99,7 +119,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
         assignmentStatus: 'available'
       };
 
-      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       renderHook(
         () => useReferees(filters),
@@ -138,7 +158,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
         }
       ];
 
-      mockSupabaseQuery.not.mockResolvedValue({
+      impostaRisultato({
         data: mockReferees,
         error: null
       });
@@ -159,7 +179,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
 
   describe('VIS Adapter Fallback', () => {
     it('should fallback to VIS Adapter when database is empty', async () => {
-      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
       
       const mockVisResponse = {
         success: true,
@@ -211,7 +231,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
     });
 
     it('should not fallback when fallback is disabled', async () => {
-      mockSupabaseQuery.not.mockResolvedValue({ data: [], error: null });
+      impostaRisultato({ data: [], error: null });
 
       const { result } = renderHook(
         () => useReferees({}, { enableFallback: false }),
@@ -289,7 +309,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
         }
       ];
 
-      mockSupabaseQuery.not.mockResolvedValue({
+      impostaRisultato({
         data: mockReferees,
         error: null
       });
@@ -332,7 +352,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
         }
       ];
 
-      mockSupabaseQuery.not.mockResolvedValue({
+      impostaRisultato({
         data: mockReferees,
         error: null
       });
@@ -396,7 +416,7 @@ describe('useReferees Hook - Database First Strategy with Assignment Status', ()
 
   describe('Error Handling', () => {
     it('should handle database query errors gracefully', async () => {
-      mockSupabaseQuery.not.mockResolvedValue({
+      impostaRisultato({
         data: null,
         error: { message: 'Database connection failed' }
       });

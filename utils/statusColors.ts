@@ -172,7 +172,11 @@ export const generateStatusColorCSSVars = (): Record<string, string> => {
 // Status color themes for different contexts
 export const statusColorThemes = {
   badge: {
-    current: { bg: '#FFFFFF', text: statusColors.current }, // White background, blue text for LIVE
+    // Sfondo bianco e testo colorato: l'inverso degli altri stati, di
+    // proposito, perche' LIVE deve staccarsi dalla riga senza diventare un
+    // blocco pieno. (Il commento diceva "blue text": era rimasto di una
+    // palette fa, il colore e' rosso dai tempi di "Titanium & Gold".)
+    current: { bg: '#FFFFFF', text: statusColors.current },
     upcoming: { bg: statusColors.upcoming, text: '#FFFFFF' },
     completed: { bg: statusColors.completed, text: '#FFFFFF' },
     cancelled: { bg: statusColors.cancelled, text: '#FFFFFF' },

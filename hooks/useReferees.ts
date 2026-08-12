@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 import { queryKeys, cacheStrategies } from '../lib/queryClient';
 import { RefereeDTO } from '../services/DualReadService';
+/**
+ * `supabase` era USATO in questo file e non importato da nessuna parte.
+ * `if (supabase)` su un identificatore inesistente solleva un
+ * ReferenceError, che il try/catch intorno cattura e traduce in "database
+ * vuoto": il ramo che legge dal DB non e' mai stato eseguito, e il difetto
+ * si presentava come un ripiego sul VIS perfettamente normale. Terza
+ * occorrenza dopo useOfflineSync e le altre due sorelle di questo hook.
+ *
+ * L'import arriva con la sua barriera: senza `isDbReadEnabled` questa
+ * correzione riaprirebbe le letture dal database appena qualcuno
+ * configurasse le variabili su Netlify — che e' esattamente cio' che la
+ * issue #54 fase 2 ha chiuso. La bandiera e' spenta per definizione.
+ */
+import { supabase } from '../services/supabase';
+import { isDbReadEnabled } from '../services/flags/DbReadFlags';
 
 export interface RefereesFilters {
   tournamentCodes?: string[];
@@ -55,7 +70,9 @@ export function useReferees(
   const [currentConfig] = useState<RefereesConfig>({
     enableFallback: true,
     enablePerformanceMonitoring: true,
-    cacheStrategy: 'static',
+    // `cacheStrategy` NON ha un valore predefinito qui, di proposito: metterlo
+    // rendeva irraggiungibile tutta la determinazione automatica in
+    // `determineCacheStrategy()` (vedi il commento la' sotto).
     includeAssignments: false,
     groupByFederation: false,
     ...config
@@ -77,7 +94,13 @@ export function useReferees(
 
   // Determine cache strategy based on filters and configuration
   const determineCacheStrategy = (): 'live' | 'historical' | 'static' => {
-    if (currentConfig.cacheStrategy) return currentConfig.cacheStrategy;
+    // La scelta ESPLICITA di chi chiama vince. Prima questo controllo leggeva
+    // `currentConfig.cacheStrategy`, che aveva `'static'` come predefinito:
+    // era quindi sempre veritiero, la funzione usciva alla prima riga e le
+    // cinque regole qui sotto non venivano mai valutate. Codice morto che
+    // sembrava vivo — un arbitro assegnato riceveva dati con cache `static`
+    // (validi 24 ore) invece che `live`.
+    if (config.cacheStrategy) return config.cacheStrategy;
     
     // Auto-determine based on assignment status
     if (filters?.assignmentStatus === 'assigned') return 'live';
@@ -100,7 +123,7 @@ export function useReferees(
     
     try {
       // Priority 1: Direct Supabase database query
-      if (supabase) {
+      if (supabase && isDbReadEnabled('referees')) {
         let query = supabase
           .from('referees')
           .select(`
@@ -323,7 +346,11 @@ export function useReferees(
     ...query,
     source: readMetadata.source,
     performance: readMetadata.performance,
-    config: currentConfig,
+    // La configurazione ESPOSTA porta la strategia RISOLTA, non quella
+    // richiesta: chi legge `config.cacheStrategy` vuole sapere quale cache si
+    // sta usando davvero, e con il campo assente (perche' non lo si dichiara
+    // piu' fra i predefiniti) leggeva `undefined`.
+    config: { ...currentConfig, cacheStrategy },
     forceRefresh,
     assignmentCounts
   };

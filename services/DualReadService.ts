@@ -512,6 +512,49 @@ export class DualReadService {
           
           this.updatePerformanceMetrics('matches', 'api', Date.now() - startTime, false);
 
+          // Ripiego SIMMETRICO: se l'API era la primaria, l'altra sorgente e'
+          // il database (issue #94).
+          //
+          // `fallbackEnabled` esisteva in una sola direzione: `shouldTryAPI()`
+          // contempla `db_first && fallbackEnabled`, ma `shouldTryDatabase()`
+          // non ha mai avuto la clausola gemella per `api_first`. In
+          // `api_first` il blocco database veniva quindi saltato del tutto e
+          // un'API caduta restituiva `data: null` con un database perfettamente
+          // leggibile a fianco. La guardia non poteva stare in
+          // `shouldTryDatabase()`: quella funzione decide anche l'ORDINE, e
+          // renderla vera per `api_first` avrebbe fatto leggere il database per
+          // primo, cioe' l'opposto della strategia richiesta.
+          if (
+            this.config.readStrategy === 'api_first' &&
+            this.config.fallbackEnabled &&
+            DualReadService.isSupabaseConfigured()
+          ) {
+            try {
+              const dbResult = await this.withDbTimeout('matches', this.getMatchesFromDB(filters));
+              if (dbResult && dbResult.length > 0) {
+                this.updatePerformanceMetrics('matches', 'db', Date.now() - startTime, true);
+
+                return {
+                  data: dbResult,
+                  source: 'database',
+                  timestamp: Date.now(),
+                  performance: {
+                    queryTime: Date.now() - startTime,
+                    fallbackUsed: true
+                  }
+                };
+              }
+            } catch (dbError) {
+              await this.errorLogger.logError({
+                entity_type: 'matches',
+                error: dbError as Error,
+                context: { service: 'DualReadService.getMatches.databaseFallback', severity: 'high' }
+              });
+
+              this.updatePerformanceMetrics('matches', 'db', Date.now() - startTime, false);
+            }
+          }
+
           return {
             data: null,
             source: 'api',

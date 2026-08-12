@@ -91,9 +91,15 @@ describe('LocalStorageManager', () => {
         ttl: 60000 // 1 minute TTL (expired)
       };
       
-      mockedAsyncStorage.getItem.mockResolvedValue(JSON.stringify(expiredData));
+      // `mockResolvedValue` non e' una coda: la seconda chiamata SOSTITUISCE
+      // la prima. Il test preparava la voce scaduta e subito dopo la
+      // rimpiazzava con i metadati, quindi `get()` leggeva `{}` — non una
+      // voce scaduta, una voce senza campi — e l'asserzione falliva su un
+      // codice che si comportava correttamente.
+      mockedAsyncStorage.getItem.mockImplementation(async (chiave: string) =>
+        chiave === '@VisCache:expired-key' ? JSON.stringify(expiredData) : '{}'
+      );
       mockedAsyncStorage.removeItem.mockResolvedValue();
-      mockedAsyncStorage.getItem.mockResolvedValue('{}'); // metadata
       mockedAsyncStorage.setItem.mockResolvedValue(); // metadata update
       
       const result = await localStorage.get('expired-key');

@@ -239,9 +239,21 @@ describe('Automated Contrast Validation', () => {
     });
 
     it('should validate all color tokens have valid hex values', () => {
-      Object.entries(colors).forEach(([name, hex]) => {
-        expect(hex).toMatch(/^#[0-9A-F]{6}$/i);
-        expect(hex.length).toBe(7); // '#' + 6 characters
+      // `colors` contiene anche GRUPPI annidati (`statusColors` e simili): il
+      // ciclo pretendeva un esadecimale da ogni voce e inciampava sul primo
+      // oggetto. I gruppi si verificano in profondita', cosi' la copertura
+      // aumenta invece di diminuire.
+      const verificaEsa = (valore: string) => {
+        expect(valore).toMatch(/^#[0-9A-F]{6}$/i);
+        expect(valore.length).toBe(7); // '#' + 6 characters
+      };
+
+      Object.values(colors).forEach((valore) => {
+        if (typeof valore === 'string') {
+          verificaEsa(valore);
+          return;
+        }
+        Object.values(valore as Record<string, string>).forEach(verificaEsa);
       });
     });
   });
@@ -258,7 +270,14 @@ describe('Automated Contrast Validation', () => {
 
     it('should handle large batches of combinations efficiently', () => {
       // Test with all possible color combinations
-      const allColors = Object.keys(colors) as (keyof typeof colors)[];
+      // Solo i token SEMPLICI: `colors` contiene anche gruppi annidati, e su
+      // quelli `validateColorCombination` muore con "Invalid hex color:
+      // [object Object]". La firma dichiara `keyof typeof colors`, cioe'
+      // accetta anche le chiavi dei gruppi che non sa gestire — una trappola
+      // nel tipo, non solo nel test.
+      const allColors = (Object.entries(colors)
+        .filter(([, v]) => typeof v === 'string')
+        .map(([k]) => k)) as (keyof typeof colors)[];
       const startTime = Date.now();
       
       let validationCount = 0;

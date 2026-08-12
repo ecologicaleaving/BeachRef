@@ -60,7 +60,10 @@ describe('LiveScorePollingService - Adaptive Polling', () => {
       
       expect(config).toEqual({
         status: MatchPollingStatus.RUNNING,
-        intervalMs: 3000,
+        // Gli intervalli sono stati alzati deliberatamente da 3s/30s a
+        // 15s/60s dal commit 246a289 ("optimize polling intervals"), per
+        // ridurre il carico sul VIS. I test erano rimasti ai valori di prima.
+        intervalMs: 15000,
         shouldPoll: true,
         fieldSelectionMode: FieldSelectionMode.SLIM
       });
@@ -71,7 +74,7 @@ describe('LiveScorePollingService - Adaptive Polling', () => {
       
       expect(config).toEqual({
         status: MatchPollingStatus.SCHEDULED,
-        intervalMs: 30000,
+        intervalMs: 60000,
         shouldPoll: true,
         fieldSelectionMode: FieldSelectionMode.FULL
       });

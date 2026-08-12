@@ -23,17 +23,54 @@ const mockPerformance = {
     usedJSHeapSize: 1000000
   }
 };
-Object.defineProperty(global, 'performance', {
-  value: mockPerformance,
-  writable: true
-});
+/**
+ * Si sostituisce il METODO, non l'oggetto globale.
+ *
+ * `Object.defineProperty(global, 'performance', { value: mockPerformance })`
+ * non aveva effetto: misurato, `globalThis.performance !== mockPerformance`
+ * anche subito dopo l'assegnazione, e `mockPerformance.now` non veniva mai
+ * chiamata. Le durate misurate dal hook erano quindi sempre 0 — due letture
+ * dell'orologio vero nello stesso millisecondo — e cinque test leggevano quello
+ * zero come un difetto del codice.
+ *
+ * Rimpiazzare `performance.now` con una spia funziona qualunque sia l'oggetto
+ * che il hook si trova davanti, ed e' anche piu' onesto: si finge una sola
+ * cosa, l'orologio.
+ */
+let orologio = 1000;
+const avanzaOrologio = (ms: number) => {
+  orologio += ms;
+};
+
+const installaOrologioFinto = () => {
+  jest.spyOn(globalThis.performance, 'now').mockImplementation(() => orologio);
+  (globalThis.performance as any).memory = mockPerformance.memory;
+};
 
 describe('usePerformanceMonitoring', () => {
+  /**
+   * Orologio controllabile.
+   *
+   * I test impostavano `mockPerformance.now.mockReturnValueOnce(1000)
+   * .mockReturnValueOnce(1150)`, ma il hook legge l'orologio anche al
+   * montaggio: la coda veniva consumata PRIMA che il cronometro partisse, e
+   * `startTiming`/`stopTiming` ricadevano sull'implementazione predefinita —
+   * due letture nello stesso millisecondo, durata zero.
+   *
+   * Un orologio con un valore corrente regge qualunque numero di letture, che
+   * e' l'unica ipotesi onesta su un dettaglio interno del hook.
+   */
+
   let mockRepositoryFactory: jest.Mocked<RepositoryFactory>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    // DOPO `useFakeTimers`: i timer finti di jest rimpiazzano anche
+    // `performance.now` con la propria versione congelata, quindi qualunque
+    // orologio installato prima veniva sovrascritto. E' la ragione per cui
+    // sostituire l'intero oggetto `performance` non aveva alcun effetto.
+    installaOrologioFinto();
     clearAllPerformanceMetrics();
 
     mockRepositoryFactory = {
@@ -49,6 +86,14 @@ describe('usePerformanceMonitoring', () => {
   });
 
   afterEach(() => {
+    // I timer PENDENTI vanno buttati prima di tornare a quelli veri (issue
+    // #94). Ogni hook montato programma un intervallo di auto-flush; con
+    // `useRealTimers` da solo quei timer finti restano in coda e vengono
+    // eseguiti dentro l'`act()` di un test successivo, facendo scattare
+    // callback di componenti gia' smontati. Il sintomo era un AggregateError
+    // opaco negli ultimi test del file — che passavano tutti se eseguiti da
+    // soli.
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
@@ -90,9 +135,7 @@ describe('usePerformanceMonitoring', () => {
     });
 
     it('should start and stop timing measurements', () => {
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -104,6 +147,7 @@ describe('usePerformanceMonitoring', () => {
         stopTiming = result.current.startTiming('test_operation', 'data_fetch');
       });
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });
@@ -242,9 +286,7 @@ describe('usePerformanceMonitoring', () => {
     it('should track memory usage during timing', () => {
       (mockPerformance as any).memory.usedJSHeapSize = 1000000;
       
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -259,6 +301,7 @@ describe('usePerformanceMonitoring', () => {
       // Change memory usage
       (mockPerformance as any).memory.usedJSHeapSize = 1002000; // +2KB
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });
@@ -276,9 +319,7 @@ describe('usePerformanceMonitoring', () => {
     it('should record separate memory metrics for significant changes', () => {
       (mockPerformance as any).memory.usedJSHeapSize = 1000000;
       
-      mockPerformance.now
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1150);
+      orologio = 1000;
 
       const { result } = renderHook(() =>
         usePerformanceMonitoring({ source: 'test-component' })
@@ -293,6 +334,7 @@ describe('usePerformanceMonitoring', () => {
       // Significant memory increase
       (mockPerformance as any).memory.usedJSHeapSize = 1010000; // +10KB
 
+      avanzaOrologio(150);
       act(() => {
         stopTiming();
       });
@@ -351,8 +393,11 @@ describe('usePerformanceMonitoring', () => {
         result.current.recordMetric('component_render', 'metric2', 200, 'ms');
       });
 
-      // Buffer should be flushed
-      expect(result.current.getMetrics()).toHaveLength(0);
+      // Il flush e' ASINCRONO — attende un timer prima di svuotare il buffer —
+      // quindi va atteso, non letto subito dopo `act` (issue #94).
+      await waitFor(() => {
+        expect(result.current.getMetrics()).toHaveLength(0);
+      });
     });
   });
 
@@ -439,8 +484,11 @@ describe('usePerformanceMonitoring', () => {
       // Unmount should trigger flush
       unmount();
 
-      // Verify cleanup
-      expect(result.current.getMetrics()).toHaveLength(0);
+      // Il flush attende un timer prima di svuotare il buffer: va atteso, non
+      // letto nella riga successiva (issue #94).
+      await waitFor(() => {
+        expect(result.current.getMetrics()).toHaveLength(0);
+      });
     });
 
     it('should handle flush errors gracefully', async () => {
@@ -450,12 +498,34 @@ describe('usePerformanceMonitoring', () => {
         usePerformanceMonitoring({ source: 'test-component' })
       );
 
-      // Mock fetch to fail
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-
-      await act(async () => {
-        await result.current.flushMetrics();
+      // `flushMetrics` non usa `fetch` (issue #94).
+      //
+      // Il test sostituiva `global.fetch` con un doppio che rifiuta e si
+      // aspettava che l'invio delle metriche fallisse: ma il flush non fa
+      // nessuna richiesta — il commento nel sorgente dice "in a real
+      // implementation, this would send metrics to analytics service". Quindi
+      // non falliva niente e il ramo di errore non veniva mai esercitato.
+      // Peggio: quel `global.fetch` rifiutante restava in piedi per TUTTI i
+      // test successivi del file, che morivano con un AggregateError da rifiuto
+      // non gestito.
+      //
+      // Si fa fallire cio' che il flush usa davvero, per il tempo strettamente
+      // necessario: un `setTimeout` rotto piu' a lungo travolge anche lo
+      // scheduler di React e i test successivi.
+      act(() => {
+        result.current.recordMetric('component_render', 'da_svuotare', 1, 'ms');
       });
+
+      const setTimeoutOriginale = global.setTimeout;
+      (global as any).setTimeout = () => {
+        throw new Error('Network error');
+      };
+
+      try {
+        await result.current.flushMetrics();
+      } finally {
+        (global as any).setTimeout = setTimeoutOriginale;
+      }
 
       // Should not throw, but log error
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -479,6 +549,16 @@ describe('usePerformanceMonitoring', () => {
       unmount();
 
       expect(clearIntervalSpy).toHaveBeenCalled();
+
+      // La spia va RIMOSSA (issue #94). `jest.spyOn(global, 'clearInterval')`
+      // senza `mockRestore` resta installata per tutto il resto del file, e
+      // siccome viene creata DOPO `jest.useFakeTimers()` avvolge la
+      // `clearInterval` catturata in quel momento: gli intervalli programmati
+      // dai test successivi non venivano piu' annullati davvero, continuavano a
+      // scattare dentro l'`act()` di altri test e facevano eseguire callback di
+      // componenti gia' smontati. Gli ultimi tre test del file morivano con un
+      // AggregateError opaco, e passavano tutti se eseguiti da soli.
+      clearIntervalSpy.mockRestore();
     });
   });
 

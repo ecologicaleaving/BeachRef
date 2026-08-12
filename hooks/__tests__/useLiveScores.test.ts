@@ -14,20 +14,24 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: () => Promise.resolve({ isConnected: true })
 }));
 
-jest.mock('react-native', () => ({
-  AppState: {
-    currentState: 'active',
-    addEventListener: jest.fn(() => ({ remove: jest.fn() }))
-  }
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2. Il mock
+// globale di `jest.env.js` fornisce gia' esattamente questo `AppState`
+// (`currentState: 'active'` e un `addEventListener` che ritorna `{ remove }`),
+// ma senza cancellare il resto del modulo (issue #94).
 
-jest.mock('@react-navigation/native', () => ({
-  useFocusEffect: jest.fn((callback) => {
-    // Simulate screen focus
-    const cleanup = callback();
-    return cleanup;
-  })
-}));
+// `useFocusEffect` vero esegue la callback dentro un EFFETTO. Il doppio la
+// invocava durante il render, quindi `startPolling()` chiamava `setLiveScores`
+// mentre React stava renderizzando: nuovo render, nuova callback, di nuovo
+// startPolling. "Too many re-renders" — un ciclo che apparteneva al doppio, non
+// al hook, ma che nel conto dei fallimenti sembrava un difetto del codice.
+jest.mock('@react-navigation/native', () => {
+  const { useEffect } = require('react');
+  return {
+    useFocusEffect: jest.fn((callback: React.EffectCallback) => {
+      useEffect(callback, [callback]);
+    })
+  };
+});
 
 // Mock the polling service
 const mockPollingService = {
@@ -50,11 +54,17 @@ jest.mock('../../services/live-score/LiveScorePollingService', () => ({
   createLiveScorePollingService: jest.fn(() => mockPollingService)
 }));
 
-jest.mock('../../services/api/VisApiClient', () => ({
-  VisApiClient: {
-    getInstance: jest.fn(() => ({}))
-  }
-}));
+// `VisApiClient` e' una CLASSE, e il hook la istanzia con `new`. Il doppio la
+// dichiarava come oggetto con un `getInstance()`, quindi ogni render moriva su
+// "VisApiClient is not a constructor" — quattordici test su quindici, tutti
+// fermi prima di provare qualunque cosa. E' la stessa famiglia del mock di
+// ErrorLogger (#94): un doppio che dichiara di esistere e non regge la forma
+// dell'originale.
+jest.mock('../../services/api/VisApiClient', () => {
+  const costruttore: any = jest.fn().mockImplementation(() => ({}));
+  costruttore.getInstance = jest.fn(() => ({}));
+  return { VisApiClient: costruttore };
+});
 
 jest.mock('../../services/ConnectionCircuitBreaker');
 
@@ -175,9 +185,15 @@ describe('useLiveScores', () => {
     }));
 
     await waitFor(() => {
+      // La firma vera e' (matchNo, callback, options?, useAdaptivePolling):
+      // il hook li passa tutti e quattro, correttamente. L'asserzione ne
+      // dichiarava due, e `toHaveBeenCalledWith` confronta l'intera lista —
+      // falliva sul codice giusto.
       expect(mockPollingService.startPolling).toHaveBeenCalledWith(
         123,
-        expect.any(Function)
+        expect.any(Function),
+        [],
+        false
       );
     });
   });
@@ -268,9 +284,15 @@ describe('useLiveScores', () => {
     });
 
     await waitFor(() => {
+      // La firma vera e' (matchNo, callback, options?, useAdaptivePolling):
+      // il hook li passa tutti e quattro, correttamente. L'asserzione ne
+      // dichiarava due, e `toHaveBeenCalledWith` confronta l'intera lista —
+      // falliva sul codice giusto.
       expect(mockPollingService.startPolling).toHaveBeenCalledWith(
         123,
-        expect.any(Function)
+        expect.any(Function),
+        [],
+        false
       );
     });
   });

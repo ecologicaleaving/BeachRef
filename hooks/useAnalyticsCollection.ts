@@ -120,6 +120,30 @@ export function useAnalyticsCollection(
   });
 
   const flushTimeoutRef = useRef<TimerHandle>();
+
+  /**
+   * LA CODA VERA STA QUI, non in `eventQueue`.
+   *
+   * `eventQueue` resta come specchio per il render (e per `performance`), ma
+   * ogni lettura e scrittura passa dal riferimento. La ragione e' che lo
+   * scarico automatico viene programmato con un `setTimeout` dentro
+   * `trackEvent`: un `useCallback` che leggesse lo stato vedrebbe il valore
+   * catturato al render precedente — vuoto — e uscirebbe subito. E' il difetto
+   * della issue #99: la soglia di batch non ha mai fatto partire un invio, e
+   * gli eventi uscivano solo al timer periodico.
+   *
+   * Un `useRef` non viene catturato: punta sempre al valore corrente, ed e'
+   * sincrono, quindi due `trackEvent` nello stesso tick si vedono a vicenda.
+   * Tenere DUE verita' allineate a mano — stato e riferimento — e' cio' che ha
+   * fatto fallire i due tentativi precedenti; qui la verita' e' una sola.
+   */
+  const codaRef = useRef<AnalyticsEvent[]>([]);
+
+  /** Scrive la coda: prima la verita', poi lo specchio. */
+  const scriviCoda = useCallback((prossima: AnalyticsEvent[]) => {
+    codaRef.current = prossima;
+    setEventQueue(prossima);
+  }, []);
   const errorLogger = ErrorLogger.getInstance();
 
   // On web without an analytics endpoint configured, disable auto-flush and raise batch size to avoid frequent flush attempts
@@ -137,7 +161,14 @@ export function useAnalyticsCollection(
   // Mutation for sending analytics events to backend
   const sendEventsMutation = useMutation({
     mutationFn: async (events: AnalyticsEvent[]) => {
-      const now = () => (typeof performance !== 'undefined' && typeof performance.now === 'function') ? performance.now() : Date.now();
+      // `globalThis.performance` e non `performance`: in questo modulo il nome
+      // `performance` e' gia' preso dallo STATO del hook (le metriche), che
+      // ovviamente non ha `now()`. La guardia `typeof performance.now ===
+      // 'function'` risultava quindi sempre falsa e si ricadeva su `Date.now()`,
+      // che ha risoluzione al millisecondo: uno scarico piu' veloce di 1 ms
+      // misurava 0, e `avgFlushTime` restava 0 per sempre.
+      const orologio = globalThis.performance;
+      const now = () => (typeof orologio?.now === 'function') ? orologio.now() : Date.now();
       const startTime = now();
       
       try {
@@ -223,11 +254,24 @@ export function useAnalyticsCollection(
   /**
    * Flush queued events to backend
    */
-  const flushEvents = useCallback(async () => {
-    if (eventQueue.length === 0) return;
+  /**
+   * Lo scarico ritardato di `queueEvent` passa da qui e non dalla chiusura.
+   *
+   * `setTimeout(() => flushEvents(), 0)` cattura la versione di `flushEvents`
+   * viva al momento della programmazione; se nel frattempo cambia la
+   * configurazione, allo scadere del timer parte quella vecchia. Il riferimento
+   * punta sempre all'ultima, e toglie `flushEvents` dalle dipendenze di
+   * `queueEvent` — che altrimenti si ricrea a ogni scarico.
+   */
+  const flushEventsRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
-    const eventsToSend = [...eventQueue];
-    setEventQueue([]);
+  const flushEvents = useCallback(async () => {
+    const eventsToSend = codaRef.current;
+    if (eventsToSend.length === 0) return;
+
+    // Si svuota SUBITO, prima dell'await: due scarichi che si sovrappongono
+    // devono spartirsi gli eventi, non spedirli entrambi.
+    scriviCoda([]);
     
     setPerformance(prev => ({
       ...prev,
@@ -239,12 +283,21 @@ export function useAnalyticsCollection(
     } catch (error) {
       // On failure, restore events to queue (with limit to prevent infinite growth)
       console.warn('Failed to flush analytics events:', error);
-      setEventQueue(prev => {
-        const restored = [...eventsToSend, ...prev];
-        return restored.slice(0, currentConfig.batchSize! * 5); // Max 5 batches in queue
-      });
+      const restored = [...eventsToSend, ...codaRef.current];
+      scriviCoda(restored.slice(0, currentConfig.batchSize! * 5)); // Max 5 batches in queue
+
+      // Rimessi gli eventi in coda, l'errore RISALE.
+      //
+      // Chi chiama `flushEvents()` di sua iniziativa lo fa per sapere se
+      // l'invio e' riuscito; ingoiare l'eccezione gli faceva credere di si'.
+      // Gli scarichi automatici (soglia, timer, smontaggio) non hanno nessuno a
+      // cui riferire, quindi la ignorano esplicitamente sul posto — il
+      // `console.warn` qui sopra e' gia' la loro diagnosi.
+      throw error;
     }
-  }, [eventQueue, sendEventsMutation, currentConfig.batchSize]);
+  }, [sendEventsMutation, currentConfig.batchSize, scriviCoda]);
+
+  flushEventsRef.current = flushEvents;
 
   /**
    * Add event to queue and handle batching
@@ -264,28 +317,33 @@ export function useAnalyticsCollection(
       timestamp: event.timestamp || new Date().toISOString()
     };
 
-    setEventQueue(prev => {
-      // Prevent memory overflow by limiting queue size
-      const maxQueueSize = (currentConfig.batchSize! * 10); // Allow 10 batches max
-      let newQueue = prev.length >= maxQueueSize ? 
-        [...prev.slice(1), enrichedEvent] : // Remove oldest event if at limit
-        [...prev, enrichedEvent];
-      
-      setPerformance(prevPerf => ({
-        ...prevPerf,
-        eventsTracked: prevPerf.eventsTracked + 1,
-        eventsQueued: newQueue.length
-      }));
+    // Prevent memory overflow by limiting queue size
+    const maxQueueSize = currentConfig.batchSize! * 10; // Allow 10 batches max
+    const precedente = codaRef.current;
+    const newQueue = precedente.length >= maxQueueSize
+      ? [...precedente.slice(1), enrichedEvent] // Remove oldest event if at limit
+      : [...precedente, enrichedEvent];
 
-      // Auto-flush if batch size reached
-      if (newQueue.length >= currentConfig.batchSize!) {
-        // Use setTimeout to avoid blocking the main thread
-        setTimeout(() => flushEvents(), 0);
-      }
+    scriviCoda(newQueue);
 
-      return newQueue;
-    });
-  }, [isCollecting, currentConfig.batchSize, flushEvents]);
+    setPerformance(prevPerf => ({
+      ...prevPerf,
+      eventsTracked: prevPerf.eventsTracked + 1,
+      eventsQueued: newQueue.length
+    }));
+
+    // Auto-flush if batch size reached.
+    //
+    // Il calcolo e la decisione stanno FUORI da un aggiornatore di stato: React
+    // puo' invocare un aggiornatore piu' di una volta per lo stesso valore (e in
+    // StrictMode lo fa apposta), quindi un effetto collaterale li' dentro viene
+    // eseguito un numero di volte non definito. Qui `setTimeout` partiva due
+    // volte per evento, e `setPerformance` contava il doppio.
+    if (newQueue.length >= currentConfig.batchSize!) {
+      // Use setTimeout to avoid blocking the main thread
+      setTimeout(() => { void flushEventsRef.current?.().catch(() => {}); }, 0);
+    }
+  }, [isCollecting, currentConfig.batchSize, scriviCoda]);
 
   /**
    * Track screen view events
@@ -342,7 +400,7 @@ export function useAnalyticsCollection(
    * Clear event queue
    */
   const clearQueue = useCallback(() => {
-    setEventQueue([]);
+    scriviCoda([]);
     setPerformance(prev => ({
       ...prev,
       eventsQueued: 0
@@ -369,8 +427,9 @@ export function useAnalyticsCollection(
 
     if (isCollecting && currentConfig.flushIntervalMs && currentConfig.flushIntervalMs > 0) {
       flushTimeoutRef.current = setTimeout(() => {
-        if (eventQueue.length > 0) {
-          flushEvents();
+        // La coda si legge allo SCADERE del timer, non quando lo si programma.
+        if (codaRef.current.length > 0) {
+          void flushEventsRef.current?.().catch(() => {});
         }
       }, currentConfig.flushIntervalMs);
     }
@@ -380,17 +439,29 @@ export function useAnalyticsCollection(
         clearTimeout(flushTimeoutRef.current);
       }
     };
-  }, [eventQueue.length, flushEvents, isCollecting, currentConfig.flushIntervalMs]);
+    // `eventQueue.length` NON e' una dipendenza: era li' per rileggere la coda,
+    // che ora si legge dal riferimento. Tenerlo significava azzerare e
+    // riprogrammare il timer a ogni evento, cioe' un intervallo periodico che
+    // non scadeva mai finche' arrivavano eventi.
+  }, [isCollecting, currentConfig.flushIntervalMs]);
 
   // Cleanup on unmount - flush remaining events
+  //
+  // Le dipendenze erano `[eventQueue.length, flushEvents]`, e con esse la
+  // PULIZIA non girava allo smontaggio: girava a ogni evento accodato, perche'
+  // React esegue la pulizia dell'effetto precedente prima di rieseguirlo. Dal
+  // secondo evento in poi la coda veniva quindi scaricata a ogni singola
+  // aggiunta — il raggruppamento non esisteva nemmeno quando la soglia
+  // funzionava. Con le dipendenze vuote l'effetto vive quanto il componente,
+  // che e' l'unica lettura sensata di "on unmount".
   useEffect(() => {
     return () => {
-      if (eventQueue.length > 0) {
+      if (codaRef.current.length > 0) {
         // Force flush remaining events on unmount
-        flushEvents();
+        void flushEventsRef.current?.().catch(() => {});
       }
     };
-  }, [eventQueue.length, flushEvents]);
+  }, []);
 
   // Performance monitoring integration
   useEffect(() => {

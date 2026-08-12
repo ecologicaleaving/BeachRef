@@ -118,7 +118,10 @@ export class NetworkStateManager {
   private constructor() {
     // Initialize synchronously for better testability
     this.initializeNetworkMonitoring().catch(error => {
-      // console.error('Failed to initialize NetworkStateManager:', error);
+      // Senza questa riga un fallimento di inizializzazione era invisibile:
+      // il gestore ripiegava su "offline" e nessuno poteva distinguere una
+      // rete davvero assente da un errore di avvio del monitor.
+      console.error('Failed to initialize NetworkStateManager:', error);
       this.setOfflineState();
     });
     this.startQualityAssessment();
@@ -576,7 +579,19 @@ export class NetworkStateManager {
     const jitter = exponentialDelay * 0.25;
     const randomOffset = (Math.random() - 0.5) * 2 * jitter;
     
-    return Math.max(1000, exponentialDelay + randomOffset); // Minimum 1 second delay
+    // Il taglio a `maxDelay` va applicato DOPO il jitter, non prima.
+    //
+    // Prima si tagliava a 5000 e poi si sommava fino a +25%: il risultato
+    // poteva arrivare a 6250, cioe' il "ritardo massimo" non era un massimo.
+    // Con un parametro che si chiama cosi', chi lo passa lo usa per garantire
+    // un limite superiore — per esempio per non superare il timeout di una
+    // richiesta.
+    // Prima il TETTO, poi il PAVIMENTO: in quest'ordine il minimo di un
+    // secondo vince quando `maxDelay` e' piu' basso, che e' l'unica lettura
+    // coerente delle due garanzie (non martellare mai piu' di una volta al
+    // secondo, e non aspettare piu' del tetto quando il tetto e' sensato).
+    const conJitter = exponentialDelay + randomOffset;
+    return Math.max(1000, Math.min(maxDelay, conJitter)); // Minimum 1 second delay
   }
 
   /**
@@ -602,8 +617,17 @@ export class NetworkStateManager {
     this.listeners.add(listener);
     
     // Immediately call with current state if available
+    //
+    // Protetta: la consegna iniziale non era in un try/catch, quindi un
+    // ascoltatore difettoso faceva esplodere CHI LO ISCRIVE — un guasto in un
+    // consumatore diventava un guasto della registrazione, e chi si iscriveva
+    // dopo di lui non veniva mai registrato.
     if (this.networkState && this.connectionQuality) {
-      listener(this.networkState, this.connectionQuality);
+      try {
+        listener(this.networkState, this.connectionQuality);
+      } catch (error) {
+        console.error('Error in network state listener (consegna iniziale):', error);
+      }
     }
 
     return () => this.listeners.delete(listener);
@@ -617,8 +641,11 @@ export class NetworkStateManager {
       this.listeners.forEach(listener => {
         try {
           listener(this.networkState!, this.connectionQuality!);
-        } catch {
-          // console.error('Error in network state listener:', error);
+        } catch (error) {
+          // Un ascoltatore che esplode non deve fermare gli altri, ma nemmeno
+          // sparire in silenzio: senza questa riga un consumatore rotto era
+          // indistinguibile da uno che funziona.
+          console.error('Error in network state listener:', error);
         }
       });
     }

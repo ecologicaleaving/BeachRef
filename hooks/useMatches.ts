@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback, useEffect } from 'react';
 import { queryKeys, cacheStrategies } from '../lib/queryClient';
 import { MatchDTO } from '../services/DualReadService';
+/**
+ * `supabase` era USATO in questo file e non importato da nessuna parte.
+ * `if (supabase)` su un identificatore inesistente solleva un
+ * ReferenceError, che il try/catch intorno cattura e traduce in "database
+ * vuoto": il ramo che legge dal DB non e' mai stato eseguito, e il difetto
+ * si presentava come un ripiego sul VIS perfettamente normale. Terza
+ * occorrenza dopo useOfflineSync e le altre due sorelle di questo hook.
+ *
+ * L'import arriva con la sua barriera: senza `isDbReadEnabled` questa
+ * correzione riaprirebbe le letture dal database appena qualcuno
+ * configurasse le variabili su Netlify — che e' esattamente cio' che la
+ * issue #54 fase 2 ha chiuso. La bandiera e' spenta per definizione.
+ */
+import { supabase } from '../services/supabase';
+import { isDbReadEnabled } from '../services/flags/DbReadFlags';
 
 export interface MatchesFilters {
   tournamentCode?: string;
@@ -60,7 +75,10 @@ export function useMatches(
   const [currentConfig] = useState<MatchesConfig>({
     enableFallback: true,
     enablePerformanceMonitoring: true,
-    cacheStrategy: 'live',
+    // Nessun predefinito per `cacheStrategy`, di proposito: averlo rendeva
+    // irraggiungibile tutta la determinazione automatica sotto (stesso difetto
+    // di useReferees). Ogni partita, anche conclusa nel 2011, veniva servita
+    // con cache `live` e ricaricata ogni 30 secondi.
     groupByReferee: false,
     includeCourt: true,
     ...config
@@ -76,7 +94,9 @@ export function useMatches(
 
   // Intelligent cache strategy: determine if data is live or historical
   const determineCacheStrategy = (): 'live' | 'historical' | 'static' => {
-    if (currentConfig.cacheStrategy) return currentConfig.cacheStrategy;
+    // La scelta ESPLICITA di chi chiama vince; il predefinito non conta come
+    // scelta, altrimenti le regole qui sotto non vengono mai valutate.
+    if (config.cacheStrategy) return config.cacheStrategy;
     
     // Auto-determine based on filters and dates
     if (filters?.status === 'RUNNING' || filters?.status === 'SCHEDULED') return 'live';
@@ -133,7 +153,21 @@ export function useMatches(
     try {
       // Priority 1: VIS API via VIS Adapter (as per documentation)
       // This ensures we get complete match data with set scores directly from VIS API
-      if (currentConfig.enableFallback !== false) { // VIS API is now primary, not fallback
+      //
+      // L'ORDINE lo decide la bandiera. `isDbReadEnabled('matches')` significa
+      // "leggi dal database": finche' e' spenta — cioe' sempre, in produzione,
+      // per definizione (#54 fase 2) — il VIS resta la sorgente primaria e qui
+      // non cambia nulla. Quando la si accende per un dominio, il ramo
+      // database deve venire PRIMA, altrimenti accenderla non ha alcun effetto
+      // osservabile e la fase 3 non potrebbe mai essere verificata.
+      // Il VIS diventa una FUNZIONE, non un blocco in una posizione fissa,
+      // perche' l'ordine delle due sorgenti dipende dalla bandiera e serve
+      // poterlo interpellare sia prima sia dopo il database. Gating il blocco
+      // dov'era lo avrebbe tolto di mezzo invece di spostarlo, e con la
+      // bandiera accesa una lettura a vuoto dal DB non avrebbe piu' avuto
+      // alcun ripiego.
+      const leggiDalVis = async (): Promise<MatchDTO[] | null> => {
+        if (currentConfig.enableFallback === false) return null;
         try {
           // Build query parameters for VIS Adapter (following documented architecture)
           const queryParams = new URLSearchParams();
@@ -166,7 +200,9 @@ export function useMatches(
               // Update metadata - VIS API is now primary source
               setReadMetadata({
                 source: 'api',
-                performance: { queryTime: endTime - startTime, fallbackUsed: false }
+                // La variabile, non la costante `false`: se si arriva qui dopo
+                // una lettura a vuoto dal database, il ripiego C'E' STATO.
+                performance: { queryTime: endTime - startTime, fallbackUsed }
               });
 
               let matches = visResult.data;
@@ -184,6 +220,13 @@ export function useMatches(
         } catch (error) {
           // VIS Adapter request failed, continue to database fallback
         }
+        return null;
+      };
+
+      // Bandiera SPENTA (il caso di produzione, oggi): il VIS e' primario.
+      if (!isDbReadEnabled('matches')) {
+        const daVis = await leggiDalVis();
+        if (daVis) return daVis;
       }
 
       // Priority 2: Database fallback (for cached/offline scenarios)
@@ -192,8 +235,13 @@ export function useMatches(
         return [];
       }
 
-      if (supabase) {
-        fallbackUsed = true;
+      if (supabase && isDbReadEnabled('matches')) {
+        // `fallbackUsed` dice se si e' RIPIEGATO su una seconda sorgente, non
+        // quale sorgente ha risposto (per quello c'e' `source`). Con la
+        // bandiera accesa il database e' la sorgente PRIMARIA e il VIS non
+        // viene nemmeno interpellato: marcarlo come ripiego riportava una
+        // degradazione che non e' avvenuta.
+        fallbackUsed = !isDbReadEnabled('matches');
 
         let query = supabase
           .from('matches')
@@ -263,9 +311,18 @@ export function useMatches(
           const matches: MatchDTO[] = dbData.map(row => {
             // Extract referee data
             const referees = row.match_referees || [];
-            const referee1 = referees.find(mr => mr.role === 'R1')?.referees;
-            const referee2 = referees.find(mr => mr.role === 'R2')?.referees;
-            const challengeReferee = referees.find(mr => mr.role === 'CHALLENGE')?.referees;
+            // `?.referees` puo' arrivare come oggetto o come array: PostgREST
+            // restituisce un oggetto per una relazione molti-a-uno, ma
+            // supabase-js con un client non tipizzato deduce un array dalla
+            // stringa di `select`. Normalizzare regge entrambe le forme, il che
+            // e' corretto comunque vada — e senza questo il codice leggeva
+            // `first_name` su un array, ottenendo `undefined` in silenzio.
+            const arbitro = (v: unknown): { first_name?: string; last_name?: string } | undefined =>
+              Array.isArray(v) ? v[0] : (v as { first_name?: string; last_name?: string } | undefined);
+
+            const referee1 = arbitro(referees.find(mr => mr.role === 'R1')?.referees);
+            const referee2 = arbitro(referees.find(mr => mr.role === 'R2')?.referees);
+            const challengeReferee = arbitro(referees.find(mr => mr.role === 'CHALLENGE')?.referees);
 
             const referee1Name = referee1 ? `${referee1.first_name} ${referee1.last_name}`.trim() : '';
             const referee2Name = referee2 ? `${referee2.first_name} ${referee2.last_name}`.trim() : '';
@@ -340,6 +397,14 @@ export function useMatches(
         }
       }
 
+      // Bandiera ACCESA: il database ha risposto a vuoto, ora tocca al VIS.
+      // Questo e' il ripiego vero, e qui `fallbackUsed` e' legittimo.
+      if (isDbReadEnabled('matches')) {
+        fallbackUsed = true;
+        const daVis = await leggiDalVis();
+        if (daVis) return daVis;
+      }
+
       // No data found from database or fallback
       const endTime = Date.now();
       setReadMetadata({
@@ -409,7 +474,8 @@ export function useMatches(
     ...query,
     source: readMetadata.source,
     performance: readMetadata.performance,
-    config: currentConfig,
+    // La configurazione esposta porta la strategia RISOLTA.
+    config: { ...currentConfig, cacheStrategy },
     forceRefresh
   };
 }

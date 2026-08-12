@@ -323,7 +323,7 @@ export class DataConsistencyValidator {
           api: apiChecksum
         },
         validationTime: Date.now() - startTime,
-        recordsCompared: Math.max(dbMap.size, apiMap.size)
+        recordsCompared: new Set([...dbMap.keys(), ...apiMap.keys()]).size
       };
     } catch (error) {
       this.errorLogger.logError('Tournament validation failed', error);
@@ -353,12 +353,22 @@ export class DataConsistencyValidator {
       const apiEvents: any[] = [];
       
       for (const tournament of tournaments || []) {
+        // `tournamentCode` non esiste su `TournamentCore` — il campo si chiama
+        // `code` (issue #94). Era `undefined` per OGNI torneo, quindi si
+        // chiedevano al VIS gli eventi di un torneo senza codice, una volta per
+        // torneo dell'anno, e anche la diagnostica dell'errore registrava
+        // `tournamentCode: undefined`. Stessa famiglia dei membri fantasma
+        // documentati in CLAUDE.md: il modulo non espone il nome che gli si
+        // chiede, e nessuno se ne accorge perche' il risultato e' `undefined`
+        // invece di un errore.
+        const codiceTorneo = tournament.code;
+
         try {
-          const events = await this.visApiClient.getEvents({ tournamentCode: tournament.tournamentCode });
+          const events = await this.visApiClient.getEvents({ tournamentCode: codiceTorneo });
           apiEvents.push(...events);
         } catch (error) {
-          this.errorLogger.logError('Failed to fetch events for tournament', error, { 
-            tournamentCode: tournament.tournamentCode 
+          this.errorLogger.logError('Failed to fetch events for tournament', error, {
+            tournamentCode: codiceTorneo
           });
         }
       }
@@ -381,7 +391,7 @@ export class DataConsistencyValidator {
           api: apiChecksum
         },
         validationTime: Date.now() - startTime,
-        recordsCompared: Math.max(dbMap.size, apiMap.size)
+        recordsCompared: new Set([...dbMap.keys(), ...apiMap.keys()]).size
       };
     } catch (error) {
       this.errorLogger.logError('Event validation failed', error);
@@ -438,7 +448,7 @@ export class DataConsistencyValidator {
           api: apiChecksum
         },
         validationTime: Date.now() - startTime,
-        recordsCompared: Math.max(dbMap.size, apiMap.size)
+        recordsCompared: new Set([...dbMap.keys(), ...apiMap.keys()]).size
       };
     } catch (error) {
       this.errorLogger.logError('Match validation failed', error);
@@ -511,7 +521,7 @@ export class DataConsistencyValidator {
           api: apiChecksum
         },
         validationTime: Date.now() - startTime,
-        recordsCompared: Math.max(dbMap.size, apiMap.size)
+        recordsCompared: new Set([...dbMap.keys(), ...apiMap.keys()]).size
       };
     } catch (error) {
       this.errorLogger.logError('Referee assignment validation failed', error);
@@ -642,16 +652,48 @@ export class DataConsistencyValidator {
       return discrepancies;
     }
 
-    // Deep field comparison
-    const allFields = new Set([...Object.keys(dbObject), ...Object.keys(apiObject)]);
-    
-    for (const field of allFields) {
-      if (this.config.ignoreFields.includes(field)) {
+    // Deep field comparison.
+    //
+    // Si confronta l'INTERSEZIONE dei campi, dopo aver ricondotto i nomi a una
+    // forma comune (issue #94).
+    //
+    // I due lati sono due rappresentazioni diverse della stessa entita': il
+    // database usa snake_case (`start_date`, `tournament_code`), l'API camelCase
+    // (`startDate`, `code`). Unire i due insiemi di chiavi e confrontarle per
+    // nome produceva DUE discordanze fasulle per ogni coppia di nomi diversi —
+    // `{apiValue: undefined, databaseValue: "2024-01-01"}` e la sua speculare —
+    // su OGNI record. Un torneo identico su entrambi i lati veniva riportato
+    // come sei discordanze, di cui due "critical".
+    //
+    // Un campo presente da un lato solo e' una differenza di rappresentazione,
+    // non una deriva dei dati: e' il livello di mappatura a doverla assorbire, e
+    // finche' non esiste non ha senso segnalarla una volta per record. Cio' che
+    // questo validatore deve trovare — valori che divergono fra le due fonti —
+    // vive tutto nell'intersezione.
+    const canonico = (chiave: string): string =>
+      chiave.replace(/_([a-z0-9])/g, (_intero, lettera: string) => lettera.toUpperCase());
+
+    const indicizza = (obj: any): Map<string, { campo: string; valore: any }> => {
+      const indice = new Map<string, { campo: string; valore: any }>();
+      for (const campo of Object.keys(obj)) {
+        if (this.config.ignoreFields.includes(campo)) continue;
+        indice.set(canonico(campo), { campo, valore: obj[campo] });
+      }
+      return indice;
+    };
+
+    const indiceDb = indicizza(dbObject);
+    const indiceApi = indicizza(apiObject);
+
+    for (const [chiave, voceDb] of indiceDb) {
+      const voceApi = indiceApi.get(chiave);
+      if (!voceApi) {
         continue;
       }
 
-      const dbValue = dbObject[field];
-      const apiValue = apiObject[field];
+      const field = voceDb.campo;
+      const dbValue = voceDb.valore;
+      const apiValue = voceApi.valore;
 
       if (dbValue !== apiValue) {
         const severity = this.determineSeverity(field, dbValue, apiValue);

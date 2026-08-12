@@ -390,7 +390,11 @@ export const getWeatherAlertSeverityColor = (severity: WeatherSeverity): string 
     case 'high':
       return '#D97706'; // Orange
     case 'medium':
-      return designTokens.linkTokens.default; // Blue
+      // Il commento diceva "Blue" ma questo token oggi vale un ambra scuro:
+      // e' stato ricalcolato per il contrasto AAA. Per un'allerta meteo di
+      // gravita' media l'ambra e' semanticamente piu' corretta del blu, quindi
+      // si tiene il token e si corregge il commento — non il contrario.
+      return designTokens.linkTokens.default; // Ambra (contrasto AAA)
     case 'low':
       return designTokens.neutrals.textSecondary; // Gray
     default:

@@ -1122,6 +1122,18 @@ export class VisApiClient implements IVisApiClient {
    * Execute HTTP request with retry logic and error handling
    */
   private async executeRequest(_endpoint: VisApiEndpoint, xmlRequest: string): Promise<VisApiResponse> {
+    // La durata si misura QUI, dove si sa quanto e' durata davvero.
+    //
+    // La risposta portava `durationMs: 0` con il commento "Will be set by
+    // caller", e nessuno dei chiamanti la impostava: passavano il tempo a
+    // `updateMonitor` e restituivano la risposta intatta. Ogni risposta VIS
+    // riuscita, di OGNI endpoint, dichiarava quindi latenza zero — e questo
+    // progetto ha gia' pagato caro il non sapere quanto costa una chiamata al
+    // VIS (vedi la nota sui round trip in CLAUDE.md).
+    //
+    // Il tempo copre TUTTI i tentativi, ritardi di backoff compresi: e' quello
+    // che ha atteso chi ha chiamato.
+    const inizio = Date.now();
     let lastError: Error | null = null;
     let transformedError: APIErrorState | null = null;
 
@@ -1134,7 +1146,7 @@ export class VisApiClient implements IVisApiClient {
           success: true,
           xmlData: response,
           timestamp: new Date().toISOString(),
-          durationMs: 0, // Will be set by caller
+          durationMs: Date.now() - inizio,
           sizeBytes: response.length
         } as VisApiSuccessResponse;
 
@@ -1941,12 +1953,34 @@ export class VisApiClient implements IVisApiClient {
    * Check if response contains VIS API specific errors
    */
   private containsVisError(responseText: string): boolean {
-    return responseText.includes('<BadRequestSyntax') ||
-           responseText.includes('<AccessDenied') ||
-           responseText.includes('<InternalError') ||
-           responseText.includes('<ServiceUnavailable') ||
-           responseText.includes('<RateLimitExceeded') ||
-           responseText.includes('<Error');
+    // Errori di BUSTA: riguardano la richiesta nel suo insieme.
+    const erroreDiBusta =
+      responseText.includes('<BadRequestSyntax') ||
+      responseText.includes('<AccessDenied') ||
+      responseText.includes('<InternalError') ||
+      responseText.includes('<ServiceUnavailable') ||
+      responseText.includes('<RateLimitExceeded');
+
+    if (erroreDiBusta) {
+      return true;
+    }
+
+    // In una risposta batch `<Error>` sta DENTRO un `<Response>` e riguarda
+    // quel singolo elemento, non la richiesta (issue #94).
+    //
+    // Trattarlo come errore di trasporto faceva fallire l'intero batch —
+    // ritentato tre volte — per una sola sotto-richiesta andata male, e
+    // `parseBatchResponse`, che sa distinguere elemento per elemento, non
+    // veniva mai raggiunto. A valle, `getTournamentDetailBatch` vedeva un
+    // fallimento totale e ripiegava su richieste individuali per TUTTI gli
+    // elementi: 7 chiamate al VIS dove ne bastavano 4. Il fallimento parziale,
+    // cioe' l'unica ragione per cui esiste `failureStrategy:
+    // 'continue_on_partial'`, era irraggiungibile.
+    if (/<BatchResponse[\s>]/.test(responseText)) {
+      return false;
+    }
+
+    return responseText.includes('<Error');
   }
 
   /**

@@ -40,6 +40,7 @@ import {
   WeatherAlert,
   CourtInfo
 } from '../../types/tournamentInfo';
+import { designTokens } from '../../theme/tokens';
 
 // Mock data
 const mockTournamentInfo: TournamentInfo = {
@@ -321,9 +322,14 @@ describe('Tournament Info Utilities', () => {
     test('getWeatherAlertSeverityColor should return correct colors', () => {
       expect(getWeatherAlertSeverityColor('critical')).toBe('#DC2626');
       expect(getWeatherAlertSeverityColor('high')).toBe('#D97706');
-      expect(getWeatherAlertSeverityColor('medium')).toBe('#2563EB');
-      expect(getWeatherAlertSeverityColor('low')).toBe('#6B7280');
-      expect(getWeatherAlertSeverityColor('unknown' as any)).toBe('#6B7280');
+      // Legati ai TOKEN, non a un esadecimale copiato: la tavolozza e' stata
+      // ricalcolata per il contrasto AAA e questi due valori sono cambiati.
+      // Un test che fotografa il colore si rompe a ogni ritocco del design e
+      // non dice nulla su cio' che conta, cioe' che la gravita' media e quella
+      // bassa peschino dal sistema invece che da costanti sparse.
+      expect(getWeatherAlertSeverityColor('medium')).toBe(designTokens.linkTokens.default);
+      expect(getWeatherAlertSeverityColor('low')).toBe(designTokens.neutrals.textSecondary);
+      expect(getWeatherAlertSeverityColor('unknown' as any)).toBe(designTokens.neutrals.textSecondary);
     });
   });
 

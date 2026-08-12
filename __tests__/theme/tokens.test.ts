@@ -4,6 +4,7 @@
  */
 
 import { designTokens, validateAllContrasts, colors, typography, spacing } from '../../theme/tokens';
+import { validateColorCombination } from '../../utils/contrastValidator';
 
 describe('Design Tokens', () => {
   describe('Color Tokens', () => {
@@ -28,15 +29,30 @@ describe('Design Tokens', () => {
     });
 
     it('should match WCAG AAA adjusted color values', () => {
-      expect(colors.primary).toBe('#1B365D');
-      expect(colors.secondary).toBe('#2B5F75');
-      expect(colors.accent).toBe('#B8391A'); // Updated FIVB accent
-      expect(colors.success).toBe('#0F4C75');
-      expect(colors.warning).toBe('#B8530A'); // Updated FIVB warning
-      expect(colors.error).toBe('#8B1538');
-      expect(colors.textPrimary).toBe('#2C3E50');
-      expect(colors.textSecondary).toBe('#445566');
-      expect(colors.background).toBe('#FFFFFF');
+      // Il nome di questo test promette "WCAG AAA", ma l'asserzione era su
+      // nove esadecimali copiati a mano: non verificava alcun contrasto, e si
+      // e' rotta appena la tavolozza e' stata ricalcolata — cioe' appena
+      // qualcuno ha fatto proprio il lavoro che il test dovrebbe sorvegliare.
+      //
+      // Ora misura il rapporto di contrasto con il validatore del progetto.
+      // AAA per il testo e' 7:1. Se un domani il design cambia ancora, questo
+      // test resta valido e continua a proteggere la leggibilita' a bordo
+      // campo, che e' la ragione per cui la soglia e' AAA e non AA.
+      const suFondo: Array<keyof typeof colors> = [
+        'primary',
+        'secondary',
+        'accent',
+        'success',
+        'warning',
+        'error',
+        'textPrimary',
+        'textSecondary',
+      ];
+
+      suFondo.forEach((token) => {
+        const esito = validateColorCombination(token, 'background');
+        expect(esito.ratio).toBeGreaterThanOrEqual(7.0);
+      });
     });
   });
 
@@ -67,12 +83,23 @@ describe('Design Tokens', () => {
     });
 
     it('should have proper font weights', () => {
-      expect(typography.hero.fontWeight).toBe('bold');
-      expect(typography.h1.fontWeight).toBe('bold');
-      expect(typography.h2.fontWeight).toBe('600');
-      expect(typography.bodyLarge.fontWeight).toBe('normal');
-      expect(typography.body.fontWeight).toBe('normal');
-      expect(typography.caption.fontWeight).toBe('500');
+      // `'bold'` e `'700'` rendono identici in React Native: asserire l'una o
+      // l'altra forma verifica come e' scritto il token, non come appare il
+      // testo. Cio' che conta davvero e' la GERARCHIA — che un titolo pesi
+      // piu' del corpo — e quella un test puo' proteggerla sul serio.
+      const peso = (v: string | undefined): number => {
+        if (v === 'bold') return 700;
+        if (v === 'normal' || v === undefined) return 400;
+        return Number(v);
+      };
+
+      expect(peso(typography.hero.fontWeight)).toBeGreaterThanOrEqual(700);
+      expect(peso(typography.h1.fontWeight)).toBeGreaterThanOrEqual(700);
+      expect(peso(typography.h2.fontWeight)).toBeGreaterThanOrEqual(600);
+      expect(peso(typography.h2.fontWeight)).toBeLessThanOrEqual(peso(typography.h1.fontWeight));
+      expect(peso(typography.body.fontWeight)).toBeLessThan(peso(typography.h2.fontWeight));
+      expect(peso(typography.bodyLarge.fontWeight)).toBeLessThan(peso(typography.h1.fontWeight));
+      expect(peso(typography.caption.fontWeight)).toBeGreaterThanOrEqual(400);
     });
 
     it('should have logical line height progression', () => {

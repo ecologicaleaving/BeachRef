@@ -64,13 +64,21 @@ describe('useRepositoryData', () => {
         useRepositoryData(mockRepositoryMethod, [])
       );
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-      });
+      // Si aspetta l'ERRORE, non la fine del caricamento, e con un margine
+      // ampio: il hook ritenta 3 volte con backoff esponenziale (1s, 2s, 4s)
+      // e registra l'errore solo alla fine. Aspettare `loading === false`
+      // sarebbe tornato utile solo per sbaglio, quando quel campo veniva
+      // spento anche fra un tentativo e l'altro.
+      await waitFor(
+        () => {
+          expect(result.current.error).toEqual(mockError);
+        },
+        { timeout: 12000 }
+      );
 
       expect(result.current.data).toBeNull();
-      expect(result.current.error).toEqual(mockError);
-    });
+      expect(result.current.loading).toBe(false);
+    }, 20000);
 
     it('should skip initial fetch when skip option is true', () => {
       const mockRepositoryMethod = jest.fn().mockResolvedValue({ id: '1' });
@@ -97,11 +105,12 @@ describe('useRepositoryData', () => {
         useRepositoryData(mockRepositoryMethod, [])
       );
 
-      // Wait for initial fetch
+      // Si aspetta il DATO, non lo spegnersi del caricamento: ora `loading`
+      // resta vero finche' ci sono tentativi in coda, quindi e' il dato il
+      // segnale che la prima lettura e' andata a buon fine.
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.data).toEqual(mockData1);
       });
-      expect(result.current.data).toEqual(mockData1);
 
       // Trigger refresh
       await act(async () => {
@@ -115,9 +124,12 @@ describe('useRepositoryData', () => {
     it('should handle refresh errors', async () => {
       const mockData = { id: '1', name: 'Test' };
       const mockError = new Error('Refresh failed');
+      // `mockRejectedValue` e non `...Once`: dopo il primo rifiuto il hook
+      // RITENTA, e con una sola risposta in coda i tentativi successivi
+      // ottenevano `undefined` — cioe' un successo — e l'errore spariva.
       const mockRepositoryMethod = jest.fn()
         .mockResolvedValueOnce(mockData)
-        .mockRejectedValueOnce(mockError);
+        .mockRejectedValue(mockError);
 
       const { result } = renderHook(() =>
         useRepositoryData(mockRepositoryMethod, [])
@@ -133,8 +145,14 @@ describe('useRepositoryData', () => {
         await result.current.refresh();
       });
 
-      expect(result.current.error).toEqual(mockError);
-    });
+      // Anche il rinfresco passa dai tentativi: l'errore compare in fondo.
+      await waitFor(
+        () => {
+          expect(result.current.error).toEqual(mockError);
+        },
+        { timeout: 12000 }
+      );
+    }, 20000);
   });
 
   describe('Retry functionality', () => {
@@ -152,7 +170,7 @@ describe('useRepositoryData', () => {
       // Fast-forward through retries
       await act(async () => {
         jest.advanceTimersByTime(300); // Allow for retry delays
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       await waitFor(() => {
@@ -174,7 +192,7 @@ describe('useRepositoryData', () => {
 
       await act(async () => {
         jest.advanceTimersByTime(1000);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await jest.advanceTimersByTimeAsync(0);
       });
 
       await waitFor(() => {
@@ -213,32 +231,53 @@ describe('useRepositoryData', () => {
 
   describe('Polling functionality', () => {
     it('should poll data at specified intervals', async () => {
-      const mockData1 = { id: '1', count: 1 };
-      const mockData2 = { id: '1', count: 2 };
-      const mockRepositoryMethod = jest.fn()
-        .mockResolvedValueOnce(mockData1)
-        .mockResolvedValueOnce(mockData2);
+      // Il doppio NON dipende dall'ordine di una coda.
+      //
+      // Con due `mockResolvedValueOnce` il test dava per scontato un numero
+      // preciso di letture iniziali: se ne partiva una in piu' la coda si
+      // esauriva, la lettura successiva otteneva `undefined` e il test
+      // diventava rosso — ma solo sotto carico, cioe' il tipo peggiore. Qui
+      // ogni risposta porta il proprio numero di chiamata, e si verifica la
+      // proprieta' vera: il sondaggio periodico produce una lettura in piu' e
+      // il dato mostrato e' quello dell'ultima risposta.
+      let chiamate = 0;
+      const mockRepositoryMethod = jest.fn(() => {
+        chiamate += 1;
+        return Promise.resolve({ id: '1', count: chiamate });
+      });
 
       const { result } = renderHook(() =>
         useRepositoryData(mockRepositoryMethod, [], { pollingInterval: 1000 })
       );
 
-      // Wait for initial fetch
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.data).not.toBeNull();
       });
-      expect(result.current.data).toEqual(mockData1);
 
-      // Advance time to trigger polling
-      act(() => {
-        jest.advanceTimersByTime(1000);
+      const primaDelSondaggio = mockRepositoryMethod.mock.calls.length;
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(1000);
       });
+
+      // Il timeout di default di `waitFor` e' 1000 ms, esattamente l'intervallo
+      // di sondaggio — e l'intervallo non parte al mount: l'effetto lo installa
+      // solo quando `loading` torna false, quindi il primo tick cade *dopo* la
+      // scadenza di `waitFor` invece che dentro. Testa o croce, e sotto carico
+      // piu' spesso croce. Con i timer finti alzare la soglia non costa nulla:
+      // sono 10 secondi di orologio simulato.
+      const ATTESA = { timeout: 10_000 };
 
       await waitFor(() => {
-        expect(result.current.data).toEqual(mockData2);
-      });
+        expect(mockRepositoryMethod.mock.calls.length).toBeGreaterThan(primaDelSondaggio);
+      }, ATTESA);
 
-      expect(mockRepositoryMethod).toHaveBeenCalledTimes(2);
+      await waitFor(() => {
+        expect(result.current.data).toEqual({
+          id: '1',
+          count: mockRepositoryMethod.mock.calls.length,
+        });
+      }, ATTESA);
     });
 
     it('should not poll when loading', async () => {
@@ -340,9 +379,17 @@ describe('useRepositoryData', () => {
     it('should auto-refresh when dependencies change', async () => {
       const mockData1 = { id: '1', name: 'First' };
       const mockData2 = { id: '1', name: 'Updated' };
-      const mockRepositoryMethod = jest.fn()
-        .mockResolvedValueOnce(mockData1)
-        .mockResolvedValueOnce(mockData2);
+      // La risposta dipende dall'ARGOMENTO, non dall'ordine delle chiamate.
+      //
+      // Con due `mockResolvedValueOnce` il test dava per scontata UNA lettura
+      // iniziale, ma il hook ne fa due: la coda si esauriva subito e il dato
+      // iniziale risultava gia' quello del secondo torneo. Un doppio che
+      // risponde in base a cio' che gli viene chiesto non dipende da un
+      // dettaglio interno del hook — ed e' anche come si comporta un
+      // repository vero.
+      const mockRepositoryMethod = jest.fn((id: string) =>
+        Promise.resolve(id === '1' ? mockData1 : mockData2)
+      );
 
       let tournamentId = '1';
       const { result, rerender } = renderHook(() =>
@@ -354,9 +401,8 @@ describe('useRepositoryData', () => {
 
       // Wait for initial fetch
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.data).toEqual(mockData1);
       });
-      expect(result.current.data).toEqual(mockData1);
 
       // Change dependency
       tournamentId = '2';
@@ -366,19 +412,30 @@ describe('useRepositoryData', () => {
         expect(result.current.data).toEqual(mockData2);
       });
 
-      expect(mockRepositoryMethod).toHaveBeenCalledTimes(2);
+      expect(mockRepositoryMethod).toHaveBeenCalledWith('1');
+      expect(mockRepositoryMethod).toHaveBeenCalledWith('2');
     });
   });
 
   describe('Cleanup', () => {
-    it('should cleanup intervals and timeouts on unmount', () => {
-      const mockRepositoryMethod = jest.fn().mockResolvedValue({ id: '1' });
+    it('should cleanup intervals and timeouts on unmount', async () => {
+      // Il metodo FALLISCE, di proposito: `clearTimeout` ha senso solo se c'e'
+      // davvero un nuovo tentativo in coda. Con una lettura riuscita non
+      // esiste alcun timeout da annullare, e il test pretendeva la pulizia di
+      // qualcosa che non era mai stato creato.
+      const mockRepositoryMethod = jest.fn().mockRejectedValue(new Error('boom'));
       const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
       const { unmount } = renderHook(() =>
         useRepositoryData(mockRepositoryMethod, [], { pollingInterval: 1000 })
       );
+
+      // Lascia fallire il primo tentativo, cosi' il ritentativo viene
+      // programmato.
+      await waitFor(() => {
+        expect(mockRepositoryMethod).toHaveBeenCalled();
+      });
 
       unmount();
 

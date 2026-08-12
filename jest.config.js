@@ -12,6 +12,14 @@ const base = {
     '^expo/virtual/env$': '<rootDir>/__mocks__/expo-virtual-env.js',
     // Native (JSI) module with no JS fallback — replaced by an in-memory store.
     '^react-native-mmkv$': '<rootDir>/__mocks__/react-native-mmkv.js',
+    // Ogni set di `@expo/vector-icons` passa da `expo-modules-core`, che sotto
+    // jest non ha runtime nativo: il primo import solleva
+    // `Cannot read properties of undefined (reading 'NativeModule')` e fa
+    // morire l'intera suite. Colpisce chiunque importi
+    // `components/Icons/vectorIconSets`, cioe' quasi ogni componente che
+    // disegna un'icona (issue #94). Il pattern copre sia il barrel sia i
+    // sottopercorsi `@expo/vector-icons/Feather`.
+    '^@expo/vector-icons(/.*)?$': '<rootDir>/__mocks__/expo-vector-icons.js',
   },
   testMatch: [
     '**/__tests__/**/*.test.{js,jsx,ts,tsx}',
@@ -44,6 +52,20 @@ const base = {
       babelrc: false,
       configFile: false,
     }],
+  },
+  // React Native distribuisce i moduli in varianti per piattaforma
+  // (`Platform.ios.js`, `Platform.android.js`) e nessun `Platform.js`. Senza
+  // questa configurazione jest non risolve gli import RELATIVI INTERNI di
+  // react-native: `node_modules/react-native/Libraries/StyleSheet/processColor.js`
+  // richiede `../Utilities/Platform` e fallisce con `Cannot find module`,
+  // quindi qualunque test che renderizzi un componente vero muore (issue #94).
+  //
+  // E' cio' che il preset `react-native` imposta di suo; questo progetto non lo
+  // usa (compone i transform a mano, vedi TESTING.md) e quindi deve dichiararlo.
+  // `ios` come default e' coerente con `Platform.OS: 'ios'` in `jest.env.js`.
+  haste: {
+    defaultPlatform: 'ios',
+    platforms: ['android', 'ios', 'native'],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   // The companion of the `/\.claude/` entry in `testPathIgnorePatterns` below.

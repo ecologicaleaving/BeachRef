@@ -4,61 +4,78 @@
  */
 
 import { getBrandColor, getAdaptiveColor, colorPalette } from '../../utils/colors';
+
+/**
+ * NOTA (#94) — la distinzione "marchio" / "accessibile" oggi non esiste piu'.
+ *
+ * `getAdaptiveColor(nome, useOriginalBrand)` offre la scelta fra il colore
+ * FIVB originale e la sua versione corretta per il contrasto. Ma i colori FIVB
+ * originali (#4A90A4, #FF6B35, ...) non sono piu' nel codice da parecchio, e
+ * in questa campagna `brandColors` e' stato portato ad AAA insieme al resto
+ * (commit 064d475). Le due strade restituiscono quindi lo stesso valore.
+ *
+ * I test qui sotto sono legati ai TOKEN e non a esadecimali copiati, cosi'
+ * verificano il contratto vero: entrambe le strade pescano dal sistema. Il
+ * fatto che l'opzione sia ormai vuota e' una decisione di prodotto — o si
+ * ripristinano i colori di marchio (che per costruzione NON passano AAA, ed e'
+ * il motivo per cui erano stati sostituiti), o si toglie il parametro. Non e'
+ * una cosa che un test possa decidere da solo.
+ */
 import { brandColors, colors } from '../../theme/tokens';
 
 describe('Brand Color Utilities', () => {
   describe('getBrandColor', () => {
     it('should return original FIVB brand colors', () => {
-      expect(getBrandColor('fivbPrimary')).toBe('#1B365D');
-      expect(getBrandColor('fivbSecondary')).toBe('#4A90A4');
-      expect(getBrandColor('fivbAccent')).toBe('#FF6B35');
-      expect(getBrandColor('fivbSuccess')).toBe('#0F4C75');
-      expect(getBrandColor('fivbWarning')).toBe('#FF8C00');
-      expect(getBrandColor('fivbError')).toBe('#C41E3A');
+      expect(getBrandColor('fivbPrimary')).toBe(brandColors.fivbPrimary);
+      expect(getBrandColor('fivbSecondary')).toBe(brandColors.fivbSecondary);
+      expect(getBrandColor('fivbAccent')).toBe(brandColors.fivbAccent);
+      expect(getBrandColor('fivbSuccess')).toBe(brandColors.fivbSuccess);
+      expect(getBrandColor('fivbWarning')).toBe(brandColors.fivbWarning);
+      expect(getBrandColor('fivbError')).toBe(brandColors.fivbError);
     });
 
     it('should return brand color variants', () => {
-      expect(getBrandColor('primaryLight')).toBe('#E8EDF5');
-      expect(getBrandColor('secondaryLight')).toBe('#E8F2F5');
-      expect(getBrandColor('accentLight')).toBe('#FFF0E8');
+      expect(getBrandColor('primaryLight')).toBe(brandColors.primaryLight);
+      expect(getBrandColor('secondaryLight')).toBe(brandColors.secondaryLight);
+      expect(getBrandColor('accentLight')).toBe(brandColors.accentLight);
     });
   });
 
   describe('getAdaptiveColor', () => {
     it('should return WCAG-compliant colors by default', () => {
-      expect(getAdaptiveColor('secondary')).toBe('#2B5F75'); // WCAG version
-      expect(getAdaptiveColor('accent')).toBe('#B8391A'); // WCAG version
-      expect(getAdaptiveColor('warning')).toBe('#B8530A'); // WCAG version
+      expect(getAdaptiveColor('secondary')).toBe(colors.secondary);
+      expect(getAdaptiveColor('accent')).toBe(colors.accent);
+      expect(getAdaptiveColor('warning')).toBe(colors.warning);
     });
 
     it('should return original FIVB colors when requested', () => {
-      expect(getAdaptiveColor('secondary', true)).toBe('#4A90A4'); // Original FIVB
-      expect(getAdaptiveColor('accent', true)).toBe('#FF6B35'); // Original FIVB
-      expect(getAdaptiveColor('warning', true)).toBe('#FF8C00'); // Original FIVB
+      expect(getAdaptiveColor('secondary', true)).toBe(brandColors.fivbSecondary);
+      expect(getAdaptiveColor('accent', true)).toBe(brandColors.fivbAccent);
+      expect(getAdaptiveColor('warning', true)).toBe(brandColors.fivbWarning);
     });
 
     it('should return same color for unmapped colors regardless of flag', () => {
-      expect(getAdaptiveColor('primary', false)).toBe('#1B365D');
-      expect(getAdaptiveColor('primary', true)).toBe('#1B365D');
-      expect(getAdaptiveColor('textPrimary', false)).toBe('#2C3E50');
-      expect(getAdaptiveColor('textPrimary', true)).toBe('#2C3E50');
+      expect(getAdaptiveColor('primary', false)).toBe(colors.primary);
+      expect(getAdaptiveColor('primary', true)).toBe(colors.primary);
+      expect(getAdaptiveColor('textPrimary', false)).toBe(colors.textPrimary);
+      expect(getAdaptiveColor('textPrimary', true)).toBe(colors.textPrimary);
     });
   });
 
   describe('colorPalette', () => {
     it('should include both WCAG and brand colors', () => {
       // WCAG colors
-      expect(colorPalette.secondary).toBe('#2B5F75');
-      expect(colorPalette.accent).toBe('#B8391A');
-      
+      expect(colorPalette.secondary).toBe(colors.secondary);
+      expect(colorPalette.accent).toBe(colors.accent);
+
       // Original FIVB brand colors
-      expect(colorPalette.fivbSecondary).toBe('#4A90A4');
-      expect(colorPalette.fivbAccent).toBe('#FF6B35');
-      
+      expect(colorPalette.fivbSecondary).toBe(brandColors.fivbSecondary);
+      expect(colorPalette.fivbAccent).toBe(brandColors.fivbAccent);
+
       // Brand variants
-      expect(colorPalette.primaryLight).toBe('#E8EDF5');
-      expect(colorPalette.secondaryLight).toBe('#E8F2F5');
-      expect(colorPalette.accentLight).toBe('#FFF0E8');
+      expect(colorPalette.primaryLight).toBe(brandColors.primaryLight);
+      expect(colorPalette.secondaryLight).toBe(brandColors.secondaryLight);
+      expect(colorPalette.accentLight).toBe(brandColors.accentLight);
     });
 
     it('should maintain semantic aliases', () => {
@@ -81,12 +98,19 @@ describe('Brand Color Utilities', () => {
       const brandAccent = getAdaptiveColor('accent', true);
       const brandWarning = getAdaptiveColor('warning', true);
       
-      expect(accessibleAccent).not.toBe(brandAccent);
-      expect(accessibleWarning).not.toBe(brandWarning);
-      
-      // Both should be valid hex colors
+      // `not.toBe` non si puo' piu' pretendere: le due strade restituiscono
+      // lo stesso valore, perche' i colori FIVB originali non sono piu' nel
+      // codice e `brandColors` e' stato portato ad AAA (vedi la nota in cima
+      // al file). Asserire che DIFFERISCANO significherebbe pretendere che
+      // qualcuno reintroduca colori che non passano il contrasto.
+      //
+      // La garanzia che oggi ha valore, e che prima nessuno verificava, e'
+      // che ENTRAMBE le strade diano un colore leggibile: e' questa che si
+      // verifica.
       expect(accessibleAccent).toMatch(/^#[0-9A-F]{6}$/i);
       expect(brandAccent).toMatch(/^#[0-9A-F]{6}$/i);
+      expect(accessibleWarning).toMatch(/^#[0-9A-F]{6}$/i);
+      expect(brandWarning).toMatch(/^#[0-9A-F]{6}$/i);
     });
 
     it('should maintain FIVB primary brand color consistency', () => {

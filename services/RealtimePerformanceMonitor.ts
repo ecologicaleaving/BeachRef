@@ -9,14 +9,18 @@ import { AppStateManager, AppLifecycleState } from './AppStateManager';
 // never at module evaluation time.
 import { RealtimeSubscriptionService } from './RealtimeSubscriptionService';
 
-// Avoid circular dependency by using type-only import
-export enum ConnectionState {
-  DISCONNECTED = 'DISCONNECTED',
-  CONNECTING = 'CONNECTING', 
-  CONNECTED = 'CONNECTED',
-  RECONNECTING = 'RECONNECTING',
-  ERROR = 'ERROR'
-}
+// `ConnectionState` vive in `types/realtime.ts`, un modulo foglia (issue #94).
+// Stava qui, sotto l'import di RealtimeSubscriptionService, che lo importava a
+// sua volta: importando questo file per primo, il subscription service
+// dereferenziava l'enum tre righe prima che fosse dichiarato e otteneva
+// `undefined`. Il commento che stava qui diceva "Avoid circular dependency by
+// using type-only import" — ma un enum e' un valore, non un tipo, e la riga 48
+// del subscription service lo legge a tempo di valutazione del modulo.
+//
+// Ri-esportato per non rompere i consumatori che lo importano da qui
+// (`components/ConnectionStatusIndicator.tsx`, `components/ManualRefreshButton.tsx`).
+export { ConnectionState } from '../types/realtime';
+import { ConnectionState } from '../types/realtime';
 
 /**
  * Performance monitoring and optimization service for real-time subscriptions
@@ -182,7 +186,10 @@ export class RealtimePerformanceMonitor {
     
     // Check if rate limit exceeded
     if (recentTimestamps.length >= this.PERFORMANCE_THRESHOLDS.MAX_MESSAGE_RATE_PER_SECOND) {
-      // console.warn(`Message rate limit exceeded for tournament ${tournamentNo}`);
+      // Senza questa riga il limite di frequenza era un `if` che non faceva
+      // NIENTE: nessuna strozzatura, nessun avviso. Superarlo era
+      // indistinguibile dal non superarlo.
+      console.warn(`Message rate limit exceeded for tournament ${tournamentNo}`);
       // Could implement throttling here if needed
     }
     
@@ -197,12 +204,21 @@ export class RealtimePerformanceMonitor {
     const now = Date.now();
     const timeSinceLastCheck = now - this.metrics.lastPerformanceCheck;
     
-    //   connectionSuccessRate: this.getConnectionSuccessRate(),
-    //   averageMessageSize: Math.round(this.metrics.averageMessageSize),
-    //   messagesPerMinute: Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000),
-    //   batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
-    //   memoryOptimized: this.optimizationState.isBackgroundOptimized,
-    // });
+    // Il rapporto era interamente commentato, e restavano righe orfane piu'
+    // un `timeSinceLastCheck` calcolato per nessuno: un monitor periodico che
+    // non riferisce niente sta facendo lavoro a vuoto ogni dieci minuti, e
+    // nessuno puo' accorgersene proprio perche' non parla.
+    console.log('Performance Monitor Report:', {
+      connectionSuccessRate: this.getConnectionSuccessRate(),
+      averageMessageSize: Math.round(this.metrics.averageMessageSize),
+      messagesPerMinute:
+        timeSinceLastCheck > 0
+          ? Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000)
+          : 0,
+      batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
+      memoryOptimized: this.optimizationState.isBackgroundOptimized,
+    });
+
     
     this.metrics.lastPerformanceCheck = now;
   }

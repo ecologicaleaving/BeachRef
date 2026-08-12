@@ -214,19 +214,47 @@ export class PollingPerformanceMonitor {
       [MatchPollingStatus.FINISHED]: { requestCount: 0, totalPollingTimeMs: 0, avgIntervalMs: 0, matchCount: 0 }
     };
 
+    // `requestCount` si conta dalle RICHIESTE e `matchCount` da ogni evento
+    // (issue #94).
+    //
+    // Entrambi venivano ricavati dai soli eventi `interval_change`: una partita
+    // sondata a intervallo costante — cioe' il caso normale — non compariva in
+    // nessuna statistica, e un campo chiamato `requestCount` veniva
+    // incrementato una volta per CAMBIO DI INTERVALLO, mai per una richiesta.
+    // Il sintomo era che due sondaggi riusciti (`successfulPolls: 2`)
+    // convivevano con `matchCount: 0` e `activeMatches: 0`: il monitor
+    // registrava gli eventi, ma la lettura guardava altrove.
     const intervalEvents = events.filter(e => e.eventType === 'interval_change');
+    const requestEvents = events.filter(e => e.eventType === 'request');
+
     const matchesByStatus: Record<MatchPollingStatus, Set<number>> = {
       [MatchPollingStatus.RUNNING]: new Set(),
       [MatchPollingStatus.SCHEDULED]: new Set(),
       [MatchPollingStatus.FINISHED]: new Set()
     };
 
+    // Quante volte si e' effettivamente interrogato il VIS, per stato.
+    requestEvents.forEach(event => {
+      if (event.status && event.matchNo) {
+        metrics[event.status].requestCount++;
+        matchesByStatus[event.status].add(event.matchNo);
+      }
+    });
+
+    // Il tempo di sondaggio resta ricavato dai cambi di intervallo: sono gli
+    // unici eventi che portano una durata.
+    const cambiPerStato: Record<MatchPollingStatus, number> = {
+      [MatchPollingStatus.RUNNING]: 0,
+      [MatchPollingStatus.SCHEDULED]: 0,
+      [MatchPollingStatus.FINISHED]: 0
+    };
+
     intervalEvents.forEach(event => {
       if (event.status && event.matchNo) {
         const status = event.status;
-        metrics[status].requestCount++;
         matchesByStatus[status].add(event.matchNo);
-        
+        cambiPerStato[status]++;
+
         if (event.intervalMs) {
           metrics[status].totalPollingTimeMs += event.intervalMs;
         }
@@ -237,10 +265,10 @@ export class PollingPerformanceMonitor {
     Object.keys(metrics).forEach(statusKey => {
       const status = statusKey as MatchPollingStatus;
       metrics[status].matchCount = matchesByStatus[status].size;
-      
-      if (metrics[status].requestCount > 0) {
+
+      if (cambiPerStato[status] > 0) {
         metrics[status].avgIntervalMs = Math.round(
-          metrics[status].totalPollingTimeMs / metrics[status].requestCount
+          metrics[status].totalPollingTimeMs / cambiPerStato[status]
         );
       }
     });

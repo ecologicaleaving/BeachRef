@@ -1,11 +1,13 @@
 import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAnalyticsDashboard } from '../../hooks/useAnalyticsDashboard';
 import { useAnalyticsSettings } from '../../hooks/useAnalyticsSettings';
 import { AnalyticsService } from '../../services/AnalyticsService';
 import { LocalStorageManager } from '../../services/LocalStorageManager';
 import { queryKeys } from '../../lib/queryClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRefereeAnalytics } from '../../hooks/useRefereeAnalytics';
 
 // Mock services
 jest.mock('../../services/AnalyticsService');
@@ -65,6 +67,11 @@ const createTestQueryClient = () =>
         retry: false,
         gcTime: 0,
         staleTime: 0,
+        // Un test che aspetta 30 secondi per rinfrescare non sta verificando
+        // niente che gli serva: sta solo tenendo vivo un timer.
+        refetchInterval: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: false,
@@ -72,12 +79,40 @@ const createTestQueryClient = () =>
     },
   });
 
+/**
+ * UN client per test, e viene distrutto.
+ *
+ * Prima `createWrapper()` ne creava uno nuovo a ogni chiamata — dieci volte in
+ * questa suite — e nessuno veniva mai smontato: non c'era un `unmount()`, non
+ * c'era un `afterEach`. Ogni client restava vivo con dentro una query che
+ * `useAnalyticsDashboard` rinfresca ogni 30 secondi
+ * (`enableRealTimeUpdates: true` e' il suo predefinito), e con `gcTime: 0`
+ * ogni rinfresco produceva oggetti che nessuno raccoglieva.
+ *
+ * Esito misurato: 4 GB di heap e `FATAL ERROR: Reached heap limit` dopo sei
+ * minuti. E siccome un worker che muore si porta dietro le suite che stava
+ * eseguendo, questa e' la spiegazione di "tre run danno tre numeri" (#94):
+ * non test instabili, ma un test che avvelena il processo — con vittime
+ * diverse a ogni giro, a seconda di come jest ha distribuito il lavoro.
+ */
+let clientCorrente: QueryClient | null = null;
+
 const createWrapper = () => {
-  const queryClient = createTestQueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  clientCorrente?.clear();
+  clientCorrente = createTestQueryClient();
+  const client = clientCorrente;
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client }, children);
 };
+
+afterEach(() => {
+  // `clear()` svuota la cache, `unmount()` ferma gli osservatori: senza il
+  // secondo, gli intervalli restano accesi anche a cache vuota.
+  clientCorrente?.unmount();
+  clientCorrente?.clear();
+  clientCorrente = null;
+  jest.clearAllTimers();
+});
 
 describe('Analytics Dashboard Integration Tests', () => {
   let mockAnalyticsService: jest.Mocked<AnalyticsService>;
@@ -100,16 +135,23 @@ describe('Analytics Dashboard Integration Tests', () => {
     
     (AnalyticsService.getInstance as jest.Mock).mockReturnValue(mockAnalyticsService);
 
-    // Mock LocalStorageManager
+    // `LocalStorageManager` NON ha `getInstance`, e non ha nemmeno
+    // `getItem`/`setItem`: e' una cache TTL con API `get` / `set` / `delete`
+    // su prefisso `@VisCache:`. Il test mockava tre metodi inesistenti, e la
+    // riga successiva — `LocalStorageManager.getInstance as jest.Mock` —
+    // chiamava `.mockReturnValue` su `undefined`, uccidendo l'intera suite
+    // in `beforeEach`: 12 test falliti, tutti con lo stesso errore che non
+    // c'entrava niente con cio' che volevano verificare.
+    //
+    // Il codice di produzione era gia' stato corretto (issue #71/#65,
+    // `useAnalyticsSettings` persiste le preferenze su AsyncStorage con una
+    // chiave esplicita). Era il test a essere rimasto indietro.
     mockLocalStorageManager = {
-      getInstance: jest.fn(),
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      removeItem: jest.fn(),
-      clear: jest.fn(),
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      clear: jest.fn().mockResolvedValue(undefined),
     } as any;
-    
-    (LocalStorageManager.getInstance as jest.Mock).mockReturnValue(mockLocalStorageManager);
   });
 
   describe('End-to-End Analytics Dashboard Flow', () => {
@@ -132,7 +174,7 @@ describe('Analytics Dashboard Integration Tests', () => {
         lastUpdated: '2025-01-09T12:00:00Z',
       };
 
-      mockLocalStorageManager.getItem.mockResolvedValue(JSON.stringify(mockSettings));
+      mockLocalStorageManager.get.mockResolvedValue(JSON.stringify(mockSettings));
 
       // Render both hooks
       const settingsWrapper = createWrapper();
@@ -183,8 +225,18 @@ describe('Analytics Dashboard Integration Tests', () => {
         lastUpdated: '2025-01-09T12:00:00Z',
       };
 
-      mockLocalStorageManager.getItem.mockResolvedValue(JSON.stringify(mockSettings));
-      mockLocalStorageManager.setItem.mockResolvedValue(undefined);
+      // Le impostazioni si seminano in AsyncStorage, non in LocalStorageManager
+      // (issue #94). `useAnalyticsSettings` legge
+      // `AsyncStorage.getItem('@BeachRef:analytics_settings')` direttamente —
+      // c'e' anche una nota nel hook che spiega perche' non usa
+      // `LocalStorageManager`. Il doppio era quindi montato sulla porta
+      // sbagliata: il hook non trovava niente, ripiegava sui valori di default
+      // (`enableRealTimeUpdates: true`) e il test falliva sulla prima
+      // asserzione, prima ancora di arrivare al cambiamento che voleva provare.
+      await AsyncStorage.setItem('@BeachRef:analytics_settings', JSON.stringify(mockSettings));
+
+      mockLocalStorageManager.get.mockResolvedValue(JSON.stringify(mockSettings));
+      mockLocalStorageManager.set.mockResolvedValue(undefined);
 
       const wrapper = createWrapper();
 
@@ -209,11 +261,12 @@ describe('Analytics Dashboard Integration Tests', () => {
         expect(settingsResult.current.settings?.refreshInterval).toBe(15000);
       });
 
-      // Verify persistence
-      expect(mockLocalStorageManager.setItem).toHaveBeenCalledWith(
-        'analytics_settings',
-        expect.stringContaining('"enableRealTimeUpdates":true')
-      );
+      // Verify persistence — sulla porta che il hook usa davvero, e sul
+      // CONTENUTO invece che sulla forma della chiamata: cosi' l'asserzione
+      // resta vera anche se cambia il modo in cui il valore viene scritto.
+      const persistito = await AsyncStorage.getItem('@BeachRef:analytics_settings');
+      expect(persistito).toContain('"enableRealTimeUpdates":true');
+      expect(persistito).toContain('"refreshInterval":15000');
     });
   });
 
@@ -269,9 +322,14 @@ describe('Analytics Dashboard Integration Tests', () => {
         expect(updatedPerformance.totalQueries).toBeGreaterThan(initialPerformance.totalQueries);
       });
 
-      // Verify average query time is calculated correctly
+      // La media si verifica come NUMERO, non come "maggiore di zero" (issue
+      // #94). `queryTime` e' un `Date.now()` di differenza attorno a una query
+      // che qui gira su dati finti: dura meno di un millisecondo, quindi zero e'
+      // la misura giusta, non un difetto. Pretendere `> 0` significa pretendere
+      // che la macchina sia lenta.
       const finalPerformance = result.current.performance;
-      expect(finalPerformance.averageQueryTime).toBeGreaterThan(0);
+      expect(Number.isFinite(finalPerformance.averageQueryTime)).toBe(true);
+      expect(finalPerformance.averageQueryTime).toBeGreaterThanOrEqual(0);
       expect(finalPerformance.averageQueryTime).toBeLessThan(1000); // Reasonable average
     });
   });
@@ -313,24 +371,23 @@ describe('Analytics Dashboard Integration Tests', () => {
     });
 
     it('handles real-time update failures gracefully', async () => {
-      // Mock a failing refresh
+      // Mock a failing refresh.
+      //
+      // Si sovrascrive il valore restituito dal doppio GIA' ATTIVO, non si
+      // dichiara un nuovo modulo (issue #94). `jest.doMock` registra una
+      // fabbrica per i `require` FUTURI: `useAnalyticsDashboard` era gia' stato
+      // importato in cima al file e continuava a usare il doppio originale, con
+      // il suo `refreshAnalytics` che riesce. Il refresh non falliva mai e
+      // `rejects.toThrow` trovava una promessa risolta.
       const mockFailingRefresh = jest.fn().mockRejectedValue(new Error('Network timeout'));
+      const doppioAnalytics = useRefereeAnalytics as jest.Mock;
+      const rispostaOriginale = doppioAnalytics();
 
-      jest.doMock('../../hooks/useRefereeAnalytics', () => ({
-        useRefereeAnalytics: jest.fn().mockReturnValue({
-          data: [],
-          isLoading: false,
-          error: null,
-          refetch: jest.fn(),
-          performance: { queryTime: 0 },
-          source: 'cache',
-          refreshAnalytics: mockFailingRefresh,
-          aggregatePerformance: jest.fn(),
-          exportAnalytics: jest.fn(),
-          calculateTrends: jest.fn(),
-          getAvailableTemplates: jest.fn(),
-        }),
-      }));
+      doppioAnalytics.mockReturnValue({
+        ...rispostaOriginale,
+        source: 'cache',
+        refreshAnalytics: mockFailingRefresh,
+      });
 
       const wrapper = createWrapper();
 
@@ -349,6 +406,10 @@ describe('Analytics Dashboard Integration Tests', () => {
       // Dashboard should still be functional after error
       expect(result.current.data).toBeDefined();
       expect(result.current.error).toBeNull(); // Dashboard should handle refresh errors gracefully
+
+      // Il doppio e' condiviso da tutto il file: va rimesso com'era, altrimenti
+      // ogni test successivo eredita un refresh che fallisce.
+      doppioAnalytics.mockReturnValue(rispostaOriginale);
     });
   });
 
@@ -356,9 +417,8 @@ describe('Analytics Dashboard Integration Tests', () => {
     it('integrates with TanStack Query cache strategies correctly', async () => {
       const queryClient = createTestQueryClient();
       
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       const { result } = renderHook(
         () => useAnalyticsDashboard(mockTimeRange, {
@@ -371,29 +431,36 @@ describe('Analytics Dashboard Integration Tests', () => {
         expect(result.current.data).toBeDefined();
       });
 
-      // Verify query is cached
-      const cachedData = queryClient.getQueryData(
-        queryKeys.analytics.dashboard({ timeRange: mockTimeRange, config: expect.any(Object) })
-      );
-      expect(cachedData).toBeDefined();
+      // La cache si interroga per PREFISSO di chiave (issue #94).
+      //
+      // `getQueryData` fa una corrispondenza esatta sulla chiave, e la chiave
+      // costruita qui conteneva `config: expect.any(Object)` — un matcher
+      // asimmetrico di jest, non la configurazione vera che il hook ha usato.
+      // Nessuna chiave poteva mai combaciare, quindi entrambe le letture erano
+      // `undefined` a prescindere da cosa ci fosse in cache: il test non
+      // distingueva una cache popolata da una vuota.
+      const datiInCache = () =>
+        queryClient
+          .getQueriesData({ queryKey: ['analytics', 'dashboard'] })
+          .map(([, dato]) => dato)
+          .filter(dato => dato !== undefined);
+
+      expect(datiInCache().length).toBeGreaterThan(0);
 
       // Clear cache through action
       await result.current.actions.clearCache();
 
-      // Cache should be invalidated
-      const postClearCache = queryClient.getQueryData(
-        queryKeys.analytics.dashboard({ timeRange: mockTimeRange, config: expect.any(Object) })
-      );
-      // Query should be refetched after cache clear
-      expect(postClearCache).toBeDefined();
+      // La query viene rifatta dopo lo svuotamento: la cache torna popolata.
+      await waitFor(() => {
+        expect(datiInCache().length).toBeGreaterThan(0);
+      });
     });
 
     it('maintains data consistency across multiple hook instances', async () => {
       const queryClient = createTestQueryClient();
       
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       // Render two instances of the hook
       const { result: result1 } = renderHook(
@@ -428,10 +495,23 @@ describe('Analytics Dashboard Integration Tests', () => {
 
   describe('Error Handling Integration', () => {
     it('integrates error logging across all services', async () => {
-      // Mock service failures
-      mockAnalyticsService.aggregateRefereeAnalytics.mockRejectedValue(
-        new Error('Database connection failed')
-      );
+      // L'errore va iniettato dove la dashboard LEGGE (issue #94).
+      //
+      // Il test faceva fallire `AnalyticsService.aggregateRefereeAnalytics`, ma
+      // `useAnalyticsDashboard` prende i dati arbitri dal doppio di
+      // `useRefereeAnalytics`, montato in cima a questo file: quel servizio non
+      // veniva mai chiamato e l'errore non arrivava a nessuno. Il test passava
+      // comunque la prima attesa, perche' `expect(null).toBeDefined()` e' vero:
+      // si accorgeva del problema solo una riga dopo, leggendo `.message` da
+      // `null`.
+      const doppioAnalytics = useRefereeAnalytics as jest.Mock;
+      const rispostaOriginale = doppioAnalytics();
+
+      doppioAnalytics.mockReturnValue({
+        ...rispostaOriginale,
+        data: undefined,
+        error: new Error('Database connection failed'),
+      });
 
       const wrapper = createWrapper();
 
@@ -441,15 +521,17 @@ describe('Analytics Dashboard Integration Tests', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.error).toBeDefined();
+        expect(result.current.error).not.toBeNull();
       });
 
       // Error should be handled gracefully
       expect(result.current.error?.message).toContain('Database connection failed');
-      
+
       // Hook should remain stable despite error
       expect(result.current.actions.refresh).toBeDefined();
       expect(result.current.status).toBeDefined();
+
+      doppioAnalytics.mockReturnValue(rispostaOriginale);
     });
 
     it('recovers from errors when services become available', async () => {
@@ -520,9 +602,8 @@ describe('Analytics Dashboard Integration Tests', () => {
         },
       });
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(QueryClientProvider, { client: queryClient }, children);
 
       const { result } = renderHook(
         () => useAnalyticsDashboard(mockTimeRange),

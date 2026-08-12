@@ -102,17 +102,29 @@ class CacheManager {
   /**
    * Get data from cache
    */
-  get<T>(key: string): CacheEntry<T> | null {
+  /**
+   * @param maxStaleMs quanto oltre il TTL la voce resta SERVIBILE, invece di
+   * essere buttata. Default 0: comportamento identico a prima per chi non lo
+   * passa.
+   *
+   * Senza questo parametro lo stale-while-revalidate non poteva funzionare
+   * (issue #94): la voce veniva cancellata nell'istante esatto in cui diventava
+   * stale, quindi il ramo `staleWhileRevalidate && isStale` del hook era codice
+   * irraggiungibile e ogni lettura oltre il TTL era un miss con attesa di rete.
+   * E' la funzionalita' descritta in CLAUDE.md come "serve stale data
+   * immediately, refetch in background", e non ha mai servito niente.
+   */
+  get<T>(key: string, maxStaleMs = 0): CacheEntry<T> | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.stats.misses++;
       this.updateStats();
       return null;
     }
-    
-    // Check if entry is expired
-    if (Date.now() - entry.timestamp > entry.ttl) {
+
+    // Check if entry is expired beyond what the caller can tolerate
+    if (Date.now() - entry.timestamp > entry.ttl + maxStaleMs) {
       this.cache.delete(key);
       this.stats.misses++;
       this.updateStats();
@@ -292,6 +304,10 @@ export const useCacheAwareData = <T>(
   } = options;
 
   const [data, setData] = useState<T | null>(null);
+  // Specchio di `data` per le chiusure: vedi la nota dentro `fetchData`.
+  const datoCorrente = useRef<T | null>(null);
+  datoCorrente.current = data;
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [cacheHit, setCacheHit] = useState<boolean>(false);
@@ -313,7 +329,12 @@ export const useCacheAwareData = <T>(
       
       // Check cache first (unless force refresh)
       if (!forceRefresh) {
-        const cachedEntry = globalCache.get<T>(cacheKey);
+        // La tolleranza allo stale la decide QUESTA chiamata, non la cache: e'
+        // qui che si sa se `staleWhileRevalidate` e' attivo e per quanto.
+        const cachedEntry = globalCache.get<T>(
+          cacheKey,
+          staleWhileRevalidate ? maxStaleTime : 0
+        );
         
         if (cachedEntry) {
           const age = Date.now() - cachedEntry.timestamp;
@@ -350,7 +371,14 @@ export const useCacheAwareData = <T>(
       }
       
       // Cache miss or stale data - fetch from source
-      if (!staleWhileRevalidate || !data) {
+      //
+      // Si legge dal RIFERIMENTO, non dallo stato: avere `data` fra le
+      // dipendenze di `fetchData` ne cambiava l'identita' a ogni lettura
+      // riuscita, e l'effetto di montaggio — che dipende da `fetchData` — si
+      // rieseguiva subito dopo. Il secondo giro trovava il dato in cache e
+      // marcava `cacheHit` come vero gia' alla PRIMA lettura, oltre a fare una
+      // lettura in piu' a ogni cambio di dato.
+      if (!staleWhileRevalidate || !datoCorrente.current) {
         setLoading(true);
       }
 
@@ -391,7 +419,10 @@ export const useCacheAwareData = <T>(
         setLoading(false);
       }
     }
-  }, [cacheKey, fetchMethod, ttl, staleWhileRevalidate, maxStaleTime, data, enablePerformanceTracking, priority]);
+    // `data` NON e' fra le dipendenze, di proposito: si legge dallo specchio
+    // `datoCorrente`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey, fetchMethod, ttl, staleWhileRevalidate, maxStaleTime, enablePerformanceTracking, priority]);
 
   // Manual refresh function
   const refresh = useCallback(async (): Promise<void> => {

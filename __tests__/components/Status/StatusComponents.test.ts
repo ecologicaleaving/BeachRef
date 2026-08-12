@@ -6,22 +6,27 @@
 import { 
   StatusBadge, 
   StatusCard, 
-  StatusIcon, 
-  MultiStatusIcon, 
+  // Il barrel lo esporta RINOMINATO — `export { StatusIcon as StatusStatusIcon }`
+  // in components/Status/index.ts:14, per non collidere con l'omonimo di
+  // components/Icons. Importare `StatusIcon` da qui restituiva `undefined` e il
+  // test moriva su `undefined.displayName` (issue #94). E' la famiglia "un
+  // membro che il modulo non espone" di CLAUDE.md, che
+  // `__tests__/no-phantom-imports.test.ts` non intercetta perche' non guarda
+  // dentro `__tests__/`.
+  StatusStatusIcon as StatusIcon,
+  MultiStatusIcon,
   StatusBar, 
   SimpleProgressBar 
 } from '../../../components/Status';
 import { TournamentStatus } from '../../../utils/statusColors';
 
-// Mock React Native components for testing
-jest.mock('react-native', () => ({
-  View: 'View',
-  Text: 'Text',
-  TouchableOpacity: 'TouchableOpacity',
-  StyleSheet: {
-    create: jest.fn((styles) => styles),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2.
+// Ne aveva uno che sostituiva l'intero modulo con quattro chiavi, cancellando
+// il mock globale di `jest.env.js` e con esso `Platform` — `Cannot read
+// properties of undefined (reading 'OS')` all'import, suite che non caricava
+// (issue #94). Il mock globale fornisce gia' un `StyleSheet.create` che non
+// tocca il bridge nativo, che era l'altra ragione per cui questo mock locale
+// esisteva.
 
 jest.mock('../../../components/Typography', () => ({
   Text: 'Text',
@@ -34,7 +39,7 @@ describe('Status Components', () => {
   describe('StatusBadge Component', () => {
     it('should be defined and exportable', () => {
       expect(StatusBadge).toBeDefined();
-      expect(typeof StatusBadge).toBe('function');
+      expect(['function', 'object']).toContain(typeof StatusBadge); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -45,7 +50,7 @@ describe('Status Components', () => {
   describe('StatusCard Component', () => {
     it('should be defined and exportable', () => {
       expect(StatusCard).toBeDefined();
-      expect(typeof StatusCard).toBe('function');
+      expect(['function', 'object']).toContain(typeof StatusCard); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -56,7 +61,7 @@ describe('Status Components', () => {
   describe('StatusIcon Component', () => {
     it('should be defined and exportable', () => {
       expect(StatusIcon).toBeDefined();
-      expect(typeof StatusIcon).toBe('function');
+      expect(['function', 'object']).toContain(typeof StatusIcon); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -67,7 +72,7 @@ describe('Status Components', () => {
   describe('MultiStatusIcon Component', () => {
     it('should be defined and exportable', () => {
       expect(MultiStatusIcon).toBeDefined();
-      expect(typeof MultiStatusIcon).toBe('function');
+      expect(['function', 'object']).toContain(typeof MultiStatusIcon); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -78,7 +83,7 @@ describe('Status Components', () => {
   describe('StatusBar Component', () => {
     it('should be defined and exportable', () => {
       expect(StatusBar).toBeDefined();
-      expect(typeof StatusBar).toBe('function');
+      expect(['function', 'object']).toContain(typeof StatusBar); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -89,7 +94,7 @@ describe('Status Components', () => {
   describe('SimpleProgressBar Component', () => {
     it('should be defined and exportable', () => {
       expect(SimpleProgressBar).toBeDefined();
-      expect(typeof SimpleProgressBar).toBe('function');
+      expect(['function', 'object']).toContain(typeof SimpleProgressBar); // React.memo() -> object
     });
 
     it('should be a memoized component', () => {
@@ -130,14 +135,14 @@ describe('Status Components', () => {
       
       components.forEach(component => {
         expect(component).toBeDefined();
-        expect(typeof component).toBe('function');
+        expect(['function', 'object']).toContain(typeof component); // React.memo() -> object
       });
     });
 
     it('AC 3: Should provide alternative indicators for color-blind accessibility', () => {
       // MultiStatusIcon component specifically addresses color-blind accessibility
       expect(MultiStatusIcon).toBeDefined();
-      expect(typeof MultiStatusIcon).toBe('function');
+      expect(['function', 'object']).toContain(typeof MultiStatusIcon); // React.memo() -> object
       expect(MultiStatusIcon.displayName).toBe('MultiStatusIcon');
     });
 
@@ -173,12 +178,12 @@ describe('Status Components', () => {
   describe('TypeScript Integration', () => {
     it('should properly export TypeScript types', () => {
       // Components should be typed functions
-      expect(typeof StatusBadge).toBe('function');
-      expect(typeof StatusCard).toBe('function');
-      expect(typeof StatusIcon).toBe('function');
-      expect(typeof MultiStatusIcon).toBe('function');
-      expect(typeof StatusBar).toBe('function');
-      expect(typeof SimpleProgressBar).toBe('function');
+      expect(['function', 'object']).toContain(typeof StatusBadge); // React.memo() -> object
+      expect(['function', 'object']).toContain(typeof StatusCard); // React.memo() -> object
+      expect(['function', 'object']).toContain(typeof StatusIcon); // React.memo() -> object
+      expect(['function', 'object']).toContain(typeof MultiStatusIcon); // React.memo() -> object
+      expect(['function', 'object']).toContain(typeof StatusBar); // React.memo() -> object
+      expect(['function', 'object']).toContain(typeof SimpleProgressBar); // React.memo() -> object
     });
   });
 
@@ -205,8 +210,8 @@ describe('Status Component Integration with Design System', () => {
     
     expect(getStatusColor).toBeDefined();
     expect(getStatusColorWithText).toBeDefined();
-    expect(typeof getStatusColor).toBe('function');
-    expect(typeof getStatusColorWithText).toBe('function');
+    expect(['function', 'object']).toContain(typeof getStatusColor); // React.memo() -> object
+    expect(['function', 'object']).toContain(typeof getStatusColorWithText); // React.memo() -> object
   });
 
   it('should maintain consistency with design token system', () => {

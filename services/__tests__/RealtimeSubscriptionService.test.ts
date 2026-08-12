@@ -1,4 +1,5 @@
 import { RealtimeSubscriptionService, ConnectionState } from '../RealtimeSubscriptionService';
+import { ConnectionCircuitBreaker } from '../ConnectionCircuitBreaker';
 import { CacheServiceCompatibility as CacheService } from '../../hooks/compatibility/CacheServiceCompatibility';
 import { supabase } from '../supabase';
 import { AppState } from 'react-native';
@@ -6,11 +7,14 @@ import { AppState } from 'react-native';
 // Mock dependencies
 jest.mock('../supabase');
 jest.mock('../../hooks/compatibility/CacheServiceCompatibility');
-jest.mock('react-native', () => ({
-  AppState: {
-    addEventListener: jest.fn(),
-  },
-}));
+// Nessun `jest.mock('react-native')` qui: vedi TESTING.md regola 2.
+// Questo file ne aveva uno che sostituiva l'INTERO modulo con il solo
+// `AppState`, cancellando il mock globale di `jest.env.js` — e con esso
+// `Platform`, che qualcosa nella catena di import legge. Risultato:
+// `Cannot read properties of undefined (reading 'OS')` all'import, cioè la
+// suite non caricava affatto e nessuno dei suoi test girava (issue #94).
+// Il mock globale fornisce già `AppState.addEventListener`, e in versione
+// migliore: restituisce una subscription con `remove`, come quella vera.
 
 describe('RealtimeSubscriptionService', () => {
   const mockTournamentNo = 'TEST_TOURNAMENT_123';
@@ -23,6 +27,16 @@ describe('RealtimeSubscriptionService', () => {
     
     // Reset service state
     RealtimeSubscriptionService.cleanup();
+
+    // I circuit breaker sono un registro STATICO, e sopravvivono al test che
+    // li ha aperti (issue #94). `establishSubscription` chiede il permesso al
+    // breaker del torneo prima di iscriversi: dopo un test che simula
+    // fallimenti, il circuito resta aperto e la ri-sottoscrizione del test
+    // successivo viene rifiutata — correttamente, ma per una ragione che
+    // appartiene a un altro test. E' questo che rendeva impossibile "should
+    // resume subscriptions when app becomes active", non un difetto della
+    // ripresa.
+    ConnectionCircuitBreaker.cleanupAll();
     
     // Mock supabase channel methods
     const mockChannel = {
@@ -54,11 +68,19 @@ describe('RealtimeSubscriptionService', () => {
     });
 
     test('should not initialize twice', () => {
+      // Si confronta il PRIMA e il DOPO, non un numero assoluto.
+      //
+      // `initialize()` avvia anche i servizi collegati (monitor delle
+      // prestazioni, ripiego), e anche loro registrano un ascoltatore di stato
+      // sull'stesso `AppState` finto: il conteggio globale non misura "quante
+      // volte questo servizio si e' inizializzato". Cio' che conta e' che la
+      // SECONDA chiamata non aggiunga niente.
       RealtimeSubscriptionService.initialize();
+      const dopoLaPrima = (AppState.addEventListener as jest.Mock).mock.calls.length;
+
       RealtimeSubscriptionService.initialize();
-      
-      // Should only be called once
-      expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+
+      expect((AppState.addEventListener as jest.Mock).mock.calls.length).toBe(dopoLaPrima);
     });
   });
 
@@ -113,7 +135,13 @@ describe('RealtimeSubscriptionService', () => {
       const result = await RealtimeSubscriptionService.subscribeTournament(mockTournamentNo);
       
       expect(result).toBe(false);
-      expect(RealtimeSubscriptionService.getConnectionState()).toBe(ConnectionState.ERROR);
+      // Lo stato passa per ERROR e prosegue subito in RECONNECTING, perche' il
+      // servizio programma un nuovo tentativo: il test fotografava un istante
+      // gia' superato. Entrambi significano "fallita, e gestita"; cio' che non
+      // deve mai risultare e' CONNECTED.
+      expect([ConnectionState.ERROR, ConnectionState.RECONNECTING]).toContain(
+        RealtimeSubscriptionService.getConnectionState()
+      );
     });
 
     test('should filter for live matches only', async () => {
@@ -156,14 +184,41 @@ describe('RealtimeSubscriptionService', () => {
     });
   });
 
+  /**
+   * Consegna un cambio di stato a TUTTI gli ascoltatori registrati.
+   *
+   * I test prendevano `mock.calls[0][1]`, cioe' il PRIMO ascoltatore: ma
+   * `initialize()` avvia anche i servizi collegati, che si registrano prima,
+   * quindi quella callback apparteneva a un altro servizio e il gestore sotto
+   * test non riceveva niente. Il sistema operativo, quando l'app va in
+   * sottofondo, avvisa tutti gli iscritti — questa e' la simulazione fedele.
+   */
+  /**
+   * Attende che una condizione diventi vera, invece di dormire un tempo fisso.
+   * Niente `waitFor` di @testing-library qui: e' un test di servizio, non
+   * renderizza nulla, e importarlo tirerebbe dentro il renderer React Native.
+   */
+  const finoA = async (condizione: () => boolean, timeoutMs = 2000): Promise<void> => {
+    const scadenza = Date.now() + timeoutMs;
+    while (!condizione()) {
+      if (Date.now() > scadenza) return;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+  };
+
+  const cambiaStatoApp = (stato: string) => {
+    (AppState.addEventListener as jest.Mock).mock.calls.forEach(([, callback]) => {
+      if (typeof callback === 'function') callback(stato);
+    });
+  };
+
   describe('App State Handling', () => {
     test('should pause subscriptions when app goes to background', async () => {
       await RealtimeSubscriptionService.subscribeTournament(mockTournamentNo);
       
       // Simulate app state change to background
-      const appStateCallback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
-      appStateCallback('background');
-      
+      cambiaStatoApp('background');
+
       expect(mockSubscription.unsubscribe).toHaveBeenCalled();
     });
 
@@ -171,11 +226,14 @@ describe('RealtimeSubscriptionService', () => {
       await RealtimeSubscriptionService.subscribeTournament(mockTournamentNo);
       
       // Simulate background then active
-      const appStateCallback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
-      appStateCallback('background');
-      appStateCallback('active');
-      
-      // Should attempt to reconnect
+      cambiaStatoApp('background');
+      cambiaStatoApp('active');
+
+      // La ripresa ri-sottoscrive in modo ASINCRONO (`resumeAllSubscriptions`
+      // non viene atteso dal gestore di stato, che e' sincrono): il contatore
+      // va guardato dopo che la nuova iscrizione e' partita, non subito.
+      await finoA(() => (supabase.channel as jest.Mock).mock.calls.length >= 2);
+
       expect(supabase.channel).toHaveBeenCalledTimes(2);
     });
   });
@@ -270,9 +328,18 @@ describe('RealtimeSubscriptionService', () => {
       const mockChannel = (supabase.channel as jest.Mock).mock.results[0].value;
       const updateHandler = mockChannel.on.mock.calls[0][2];
       
-      await expect(updateHandler(mockPayload)).resolves.not.toThrow();
+      // `Promise.resolve(...)`: il gestore puo' restituire `undefined` (non e'
+      // dichiarato async in ogni ramo), e `.resolves` su un non-promise e' un
+      // errore del matcher, non un fallimento del codice.
+      await expect(Promise.resolve(updateHandler(mockPayload))).resolves.not.toThrow();
+      // Il guasto viene riportato dal catch PIU' INTERNO, quello attorno
+      // all'invalidazione della cache: e' li' che l'errore nasce, e averlo
+      // gestito significa che quello esterno non deve scattare. Cio' che
+      // conta e' che un fallimento durante un aggiornamento dal vivo lasci
+      // una traccia, e che il gestore non esploda.
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Error handling match update')
+        expect.stringContaining('Failed to invalidate cache for tournament'),
+        expect.any(Error)
       );
       
       consoleSpy.mockRestore();

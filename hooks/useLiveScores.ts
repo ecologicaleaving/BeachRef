@@ -4,7 +4,7 @@
  * Part of EPIC-001 Live Score Display - Story 1.3
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
@@ -158,6 +158,32 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
   const [isOnline, setIsOnline] = useState(true);
   const [statistics, setStatistics] = useState({});
 
+  /**
+   * `matchNumbers` stabilizzato PER VALORE.
+   *
+   * Arriva dalle proprieta' come array, e chi chiama scrive quasi sempre un
+   * letterale (`matchNumbers: [1, 2]`): identita' nuova a ogni render. Con
+   * quell'array fra le dipendenze si chiudeva un ciclo —
+   *
+   *     effetto -> setLiveScores(oggetto nuovo) -> render
+   *             -> matchNumbers nuovo -> effetto
+   *
+   * — che non finiva mai. In jest riempiva 4 GB e uccideva il worker,
+   * portandosi dietro le suite assegnate a quel processo: e' la causa dei
+   * "tre run, tre numeri" della #94. In un browser non si vede come un crash,
+   * si vede come una sottoscrizione NetInfo dietro l'altra e un polling che
+   * riparte in continuazione.
+   *
+   * Terza occorrenza della stessa famiglia dopo #81 (useRepositoryData) e
+   * useAnalyticsDashboard: una dipendenza che cambia identita' ma non valore.
+   *
+   * La chiave e' il contenuto, quindi due array diversi con gli stessi numeri
+   * sono lo stesso ingresso — che e' esattamente cio' che il hook intende.
+   */
+  const chiaveIncontri = matchNumbers.join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const incontri = useMemo(() => matchNumbers, [chiaveIncontri]);
+
   // Service instances (created once)
   const pollingServiceRef = useRef<LiveScorePollingService>();
   const circuitBreakerRef = useRef<ConnectionCircuitBreaker>();
@@ -214,13 +240,28 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
     };
   }, []);
 
+  /**
+   * Le statistiche si leggono dal servizio anche PRIMA del primo sondaggio.
+   *
+   * `setStatistics` veniva chiamato solo dentro la callback di un sondaggio
+   * riuscito: chi montava il hook con `autoStart: false` — o chi lo montava e
+   * basta — leggeva `{}` mentre il servizio aveva gia' i suoi numeri. Il
+   * campo prometteva "statistiche del servizio di polling" e restituiva il
+   * vuoto.
+   */
+  useEffect(() => {
+    if (pollingServiceRef.current) {
+      setStatistics(pollingServiceRef.current.getStatistics());
+    }
+  }, [customPollingService]);
+
   // Start polling for all matches
   const startPolling = useCallback(() => {
     if (!pollingServiceRef.current || !isOnline || !isActiveRef.current) {
       return;
     }
 
-    matchNumbers.forEach(matchNo => {
+    incontri.forEach(matchNo => {
       // Set loading state
       setLiveScores(prev => ({
         ...prev,
@@ -236,7 +277,7 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
       const callback = createLiveScoreCallback(matchNo);
       pollingServiceRef.current!.startPolling(matchNo, callback, [], useAdaptivePolling);
     });
-  }, [matchNumbers, isOnline, createLiveScoreCallback, useAdaptivePolling]);
+  }, [incontri, isOnline, createLiveScoreCallback, useAdaptivePolling]);
 
   // Stop polling for all matches
   const stopPolling = useCallback(() => {
@@ -264,7 +305,7 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
   // Initialize live score states for all match numbers
   useEffect(() => {
     const initialStates: Record<number, LiveScoreState> = {};
-    matchNumbers.forEach(matchNo => {
+    incontri.forEach(matchNo => {
       initialStates[matchNo] = {
         matchNo,
         liveScore: pollingServiceRef.current?.getCachedLiveScore(matchNo) || null,
@@ -275,7 +316,7 @@ export function useLiveScores(options: UseLiveScoresOptions): UseLiveScoresRetur
       };
     });
     setLiveScores(initialStates);
-  }, [matchNumbers]);
+  }, [incontri]);
 
   // Network connectivity monitoring (following useAssignmentStatus pattern)
   useEffect(() => {

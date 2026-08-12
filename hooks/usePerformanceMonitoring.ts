@@ -210,8 +210,24 @@ class PerformanceMetricsManager {
   /**
    * Clear all metrics
    */
+  /**
+   * Buffer locali degli hook montati. Senza di questi, `clear()` svuotava solo
+   * la raccolta globale mentre ogni hook conservava le proprie metriche nel
+   * proprio buffer — che al flush successivo le avrebbe rimesse dentro (issue
+   * #94). Una "cancella tutto" da cui i dati riemergono e' peggio di nessuna.
+   */
+  private svuotatoriDiBuffer: Set<() => void> = new Set();
+
+  registerBuffer(svuota: () => void): () => void {
+    this.svuotatoriDiBuffer.add(svuota);
+    return () => {
+      this.svuotatoriDiBuffer.delete(svuota);
+    };
+  }
+
   clear(): void {
     this.metrics = [];
+    this.svuotatoriDiBuffer.forEach(svuota => svuota());
     this.listeners.forEach(listener => listener([]));
   }
 
@@ -385,7 +401,11 @@ export const usePerformanceMonitoring = (
       // Clear buffer after successful flush
       metricsBuffer.current = [];
     } catch (error) {
-      // console.error('Failed to flush performance metrics:', error);
+      // Un invio di metriche fallito e' l'unica cosa che spiega perche' i
+      // numeri di prestazione non arrivano mai: senza questa riga il difetto
+      // si presenta come "le metriche non ci sono", che e' indistinguibile da
+      // "nessuno le ha mai registrate".
+      console.error('Failed to flush performance metrics:', error);
     }
   }, [source, implementation, abTestGroup]);
 
@@ -393,6 +413,12 @@ export const usePerformanceMonitoring = (
   const clearMetrics = useCallback((): void => {
     metricsBuffer.current = [];
   }, []);
+
+  // `clearAllPerformanceMetrics()` deve svuotare anche QUESTO buffer, non solo
+  // la raccolta globale: vedi la nota su `registerBuffer`.
+  useEffect(() => metricsManager.registerBuffer(() => {
+    metricsBuffer.current = [];
+  }), []);
 
   // Auto-flush effect
   useEffect(() => {

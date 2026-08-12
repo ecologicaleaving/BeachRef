@@ -284,7 +284,14 @@ describe('NetworkStateManager', () => {
 
   describe('Connection Statistics', () => {
     it('should track connection statistics over time', async () => {
-      mockFetch.mockResolvedValue({ ok: true });
+      // La sonda deve METTERCI del tempo, altrimenti la latenza misurata e'
+      // zero — onestamente zero: `Date.now()` ha risoluzione al millisecondo e
+      // una promessa gia' risolta non ne consuma nemmeno uno. Asserire
+      // `> 0` su una sonda istantanea non prova che la latenza sia misurata,
+      // prova solo che l'orologio non e' fermo.
+      mockFetch.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 5))
+      );
       
       await manager.waitForInitialization(1000);
       // Force multiple quality assessments
@@ -314,11 +321,21 @@ describe('NetworkStateManager', () => {
   });
 
   describe('Cleanup', () => {
-    it('should cleanup resources properly', () => {
+    it('should cleanup resources properly', async () => {
       const unsubscribeListener = jest.fn();
       NetInfo.addEventListener.mockReturnValue(unsubscribeListener);
 
+      // Il singolo esiste gia' dalle prove precedenti, e si e' iscritto a
+      // NetInfo QUANDO E' STATO COSTRUITO: cambiare il valore restituito da
+      // `addEventListener` adesso non lo raggiunge, e `cleanup()` disiscriveva
+      // la funzione vecchia. Serve un'istanza nuova, che catturi questa.
+      NetworkStateManager.resetInstance();
+
       const cleanupManager = NetworkStateManager.getInstance();
+      // L'iscrizione a NetInfo avviene dentro un'inizializzazione ASINCRONA:
+      // al ritorno di `getInstance()` la funzione di disiscrizione non e'
+      // ancora stata catturata, e `cleanup()` non aveva niente da chiamare.
+      await cleanupManager.waitForInitialization(1000);
       cleanupManager.cleanup();
 
       expect(unsubscribeListener).toHaveBeenCalled();

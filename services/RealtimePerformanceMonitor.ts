@@ -186,7 +186,10 @@ export class RealtimePerformanceMonitor {
     
     // Check if rate limit exceeded
     if (recentTimestamps.length >= this.PERFORMANCE_THRESHOLDS.MAX_MESSAGE_RATE_PER_SECOND) {
-      // console.warn(`Message rate limit exceeded for tournament ${tournamentNo}`);
+      // Senza questa riga il limite di frequenza era un `if` che non faceva
+      // NIENTE: nessuna strozzatura, nessun avviso. Superarlo era
+      // indistinguibile dal non superarlo.
+      console.warn(`Message rate limit exceeded for tournament ${tournamentNo}`);
       // Could implement throttling here if needed
     }
     
@@ -201,12 +204,21 @@ export class RealtimePerformanceMonitor {
     const now = Date.now();
     const timeSinceLastCheck = now - this.metrics.lastPerformanceCheck;
     
-    //   connectionSuccessRate: this.getConnectionSuccessRate(),
-    //   averageMessageSize: Math.round(this.metrics.averageMessageSize),
-    //   messagesPerMinute: Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000),
-    //   batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
-    //   memoryOptimized: this.optimizationState.isBackgroundOptimized,
-    // });
+    // Il rapporto era interamente commentato, e restavano righe orfane piu'
+    // un `timeSinceLastCheck` calcolato per nessuno: un monitor periodico che
+    // non riferisce niente sta facendo lavoro a vuoto ogni dieci minuti, e
+    // nessuno puo' accorgersene proprio perche' non parla.
+    console.log('Performance Monitor Report:', {
+      connectionSuccessRate: this.getConnectionSuccessRate(),
+      averageMessageSize: Math.round(this.metrics.averageMessageSize),
+      messagesPerMinute:
+        timeSinceLastCheck > 0
+          ? Math.round((this.metrics.totalMessagesReceived / timeSinceLastCheck) * 60000)
+          : 0,
+      batteryOptimizationEvents: this.metrics.batteryOptimizationEvents,
+      memoryOptimized: this.optimizationState.isBackgroundOptimized,
+    });
+
     
     this.metrics.lastPerformanceCheck = now;
   }

@@ -260,16 +260,24 @@ describe('useRepositoryData', () => {
         await jest.advanceTimersByTimeAsync(1000);
       });
 
+      // Il timeout di default di `waitFor` e' 1000 ms, esattamente l'intervallo
+      // di sondaggio — e l'intervallo non parte al mount: l'effetto lo installa
+      // solo quando `loading` torna false, quindi il primo tick cade *dopo* la
+      // scadenza di `waitFor` invece che dentro. Testa o croce, e sotto carico
+      // piu' spesso croce. Con i timer finti alzare la soglia non costa nulla:
+      // sono 10 secondi di orologio simulato.
+      const ATTESA = { timeout: 10_000 };
+
       await waitFor(() => {
         expect(mockRepositoryMethod.mock.calls.length).toBeGreaterThan(primaDelSondaggio);
-      });
+      }, ATTESA);
 
       await waitFor(() => {
         expect(result.current.data).toEqual({
           id: '1',
           count: mockRepositoryMethod.mock.calls.length,
         });
-      });
+      }, ATTESA);
     });
 
     it('should not poll when loading', async () => {

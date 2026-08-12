@@ -302,38 +302,44 @@ describe('Status Indicators Utilities', () => {
     });
   });
 
+  /**
+   * Queste due soglie misuravano la macchina, non il codice: 130 ms contro un
+   * limite di 100 su un run con i worker jest in parallelo, 12 ms sulla stessa
+   * macchina ferma. Il test cambiava colore in base a cosa altro stava girando
+   * (issue #94). I limiti sono ora due ordini di grandezza sopra il costo
+   * reale: intercettano ancora una regressione vera — una lookup che comincia a
+   * fare IO, o che diventa quadratica — senza dipendere dallo scheduler.
+   */
   describe('Performance tests', () => {
     it('should execute status utility functions quickly', () => {
       const startTime = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
         getStatusColor('current');
         getStatusText('upcoming');
         getStatusCategory('completed');
         getStatusPriority('critical');
       }
-      
+
       const endTime = performance.now();
       const duration = endTime - startTime;
-      
-      // Should complete 1000 iterations in under 100ms
-      expect(duration).toBeLessThan(100);
+
+      expect(duration).toBeLessThan(3000);
     });
 
     it('should handle rapid status transition validations', () => {
       const startTime = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
         isValidStatusTransition('upcoming', 'current');
         isValidStatusTransition('current', 'completed');
         isValidStatusTransition('pre-match', 'in-progress');
       }
-      
+
       const endTime = performance.now();
       const duration = endTime - startTime;
-      
-      // Should complete 1000 validations in under 50ms
-      expect(duration).toBeLessThan(50);
+
+      expect(duration).toBeLessThan(2000);
     });
   });
 });

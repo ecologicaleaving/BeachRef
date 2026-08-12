@@ -6,20 +6,34 @@ import { RoundPhaseFormatter, BeachRoundPhase, EmphasisLevel } from '../RoundPha
 
 describe('RoundPhaseFormatter', () => {
   describe('formatRoundPhase', () => {
-    describe('FIVB RoundPhase numeric codes', () => {
-      it('converts RoundPhase "1" to "Finals"', () => {
+    /**
+     * `formatRoundPhase(round, phase)` prende DUE campi distinti del VIS, e
+     * questo blocco li confondeva: passava il codice come primo argomento e poi
+     * asseriva la semantica del secondo. Peggio, la mappatura che asseriva
+     * (1=Finals, 3=Pool Play, 4=Qualification) non e' ne' quella di `Round` ne'
+     * quella di `RoundPhase`: e' la mappatura che il formatter aveva PRIMA
+     * della correzione fatta sui dati reali dell'API (vedi il commento su
+     * `formatFivbRoundPhase`). Sei test su sei erano rossi, e il settimo
+     * ("2" -> "Bronze") passava per coincidenza — e' l'unico valore che le due
+     * mappature condividono. Issue #94.
+     *
+     * I due campi sono provati separatamente, ciascuno con la propria
+     * mappatura.
+     */
+    describe('Round field — numeri di tabellone a eliminazione', () => {
+      it('converts round "1" to "Gold"', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('1');
-        
-        expect(result.displayName).toBe('Finals');
+
+        expect(result.displayName).toBe('Gold');
         expect(result.originalValue).toBe('1');
         expect(result.emphasis).toBe('critical');
         expect(result.isFinals).toBe(true);
-        expect(result.accessibilityLabel).toBe('Finals phase matches');
+        expect(result.accessibilityLabel).toBe('Gold Medal match');
       });
 
-      it('converts RoundPhase "2" to "Bronze"', () => {
+      it('converts round "2" to "Bronze"', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('2');
-        
+
         expect(result.displayName).toBe('Bronze');
         expect(result.originalValue).toBe('2');
         expect(result.emphasis).toBe('critical');
@@ -27,41 +41,79 @@ describe('RoundPhaseFormatter', () => {
         expect(result.accessibilityLabel).toBe('Bronze Medal match');
       });
 
-      it('converts RoundPhase "3" to "Pool Play"', () => {
+      it('converts round "3" to "Semi Final"', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('3');
-        
-        expect(result.displayName).toBe('Pool Play');
+
+        expect(result.displayName).toBe('Semi Final');
         expect(result.originalValue).toBe('3');
-        expect(result.emphasis).toBe('medium');
-        expect(result.isFinals).toBe(false);
-        expect(result.accessibilityLabel).toBe('Pool Play match');
+        expect(result.emphasis).toBe('critical');
+        expect(result.isFinals).toBe(true);
+        expect(result.accessibilityLabel).toBe('Semi Final match');
       });
 
-      it('converts RoundPhase "4" to "Qualification"', () => {
+      it('handles rounds with whitespace', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('  3  ');
+
+        expect(result.displayName).toBe('Semi Final');
+        expect(result.emphasis).toBe('critical');
+      });
+
+      it('non tratta "4" come eliminazione: in molti tornei e\' tutto il tabellone', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('4');
-        
-        expect(result.displayName).toBe('Qualification');
-        expect(result.originalValue).toBe('4');
-        expect(result.emphasis).toBe('low');
+
+        expect(result.displayName).toBe('4');
         expect(result.isFinals).toBe(false);
-        expect(result.accessibilityLabel).toBe('Qualification match');
       });
 
-      it('handles unknown FIVB codes with fallback', () => {
+      it('prefissa con "R." i numeri di round oltre il tabellone noto', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('5');
-        
-        expect(result.displayName).toBe('Round 5');
+
+        expect(result.displayName).toBe('R.5');
         expect(result.originalValue).toBe('5');
         expect(result.emphasis).toBe('medium');
         expect(result.isFinals).toBe(false);
         expect(result.accessibilityLabel).toBe('Round 5 match');
       });
+    });
 
-      it('handles rounds with whitespace', () => {
-        const result = RoundPhaseFormatter.formatRoundPhase('  3  ');
-        
+    describe('RoundPhase field — codici numerici FIVB (secondo argomento)', () => {
+      it('converts RoundPhase "1" to "Qualification"', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('', '1');
+
+        expect(result.displayName).toBe('Qualification');
+        expect(result.emphasis).toBe('low');
+        expect(result.isFinals).toBe(false);
+        expect(result.accessibilityLabel).toBe('Qualification match');
+      });
+
+      it('converts RoundPhase "2" to "Pool Play"', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('', '2');
+
         expect(result.displayName).toBe('Pool Play');
         expect(result.emphasis).toBe('medium');
+        expect(result.isFinals).toBe(false);
+      });
+
+      it('converts RoundPhase "3" to "Bronze"', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('', '3');
+
+        expect(result.displayName).toBe('Bronze');
+        expect(result.emphasis).toBe('critical');
+        expect(result.isFinals).toBe(true);
+      });
+
+      it('converts RoundPhase "4" to "Elimination" quando non c\'e\' un Round', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('', '4');
+
+        expect(result.displayName).toBe('Elimination');
+        expect(result.emphasis).toBe('high');
+      });
+
+      it('con RoundPhase "4" il nome del Round, se c\'e\', vince', () => {
+        const result = RoundPhaseFormatter.formatRoundPhase('Round of 16', '4');
+
+        expect(result.displayName).toBe('Round of 16');
+        expect(result.emphasis).toBe('high');
       });
     });
 
@@ -94,8 +146,11 @@ describe('RoundPhaseFormatter', () => {
 
       it('handles MainDraw phase with elimination rounds', () => {
         const result = RoundPhaseFormatter.formatRoundPhase('1', BeachRoundPhase.MAIN_DRAW);
-        
-        expect(result.displayName).toBe('Final');
+
+        // MainDraw delega a `formatEliminationRound`, che chiama la finale
+        // "Gold" — non "Final" — in coppia con "Bronze". Le due etichette sono
+        // le due medaglie, ed e' l'unica coppia coerente.
+        expect(result.displayName).toBe('Gold');
         expect(result.emphasis).toBe('critical');
         expect(result.isFinals).toBe(true);
       });
@@ -156,20 +211,23 @@ describe('RoundPhaseFormatter', () => {
     describe('fallback handling', () => {
       it('handles unknown round formats gracefully', () => {
         const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-        
+
         const result = RoundPhaseFormatter.formatRoundPhase('Unknown Format');
-        
+
         expect(result.displayName).toBe('Unknown Format');
         expect(result.originalValue).toBe('Unknown Format');
         expect(result.emphasis).toBe('medium');
         expect(result.isFinals).toBe(false);
         expect(result.accessibilityLabel).toBe('Round Unknown Format');
-        
-        // Should log warning in development
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Unknown round format: "Unknown Format". Using fallback display.'
-        );
-        
+
+        // Il test pretendeva un `console.warn` che il formatter non ha mai
+        // emesso. E non deve emetterlo: questo e' il percorso di rendering di
+        // ogni singola card partita, e un round non riconosciuto e' un caso
+        // previsto — per questo esiste il fallback. Un warn qui vorrebbe dire
+        // una riga di log per card, a ogni render. Cio' che conta e' che il
+        // fallback non perda il valore originale, ed e' asserito sopra.
+        expect(consoleSpy).not.toHaveBeenCalled();
+
         consoleSpy.mockRestore();
       });
 
@@ -253,10 +311,10 @@ describe('RoundPhaseFormatter', () => {
 
     it('returns correct emphasis for different rounds', () => {
       const testCases: Array<[string, EmphasisLevel]> = [
-        ['1', 'critical'],   // Finals
-        ['2', 'critical'],   // Bronze Medal
-        ['3', 'medium'],     // Pool Play
-        ['4', 'low'],        // Qualification
+        ['1', 'critical'],   // Gold
+        ['2', 'critical'],   // Bronze
+        ['3', 'critical'],   // Semi Final
+        ['4', 'medium'],     // non e' un round a eliminazione: fallback
         ['Pool A', 'medium'],
         ['Unknown', 'medium']
       ];

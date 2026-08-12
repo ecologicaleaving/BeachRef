@@ -1953,12 +1953,34 @@ export class VisApiClient implements IVisApiClient {
    * Check if response contains VIS API specific errors
    */
   private containsVisError(responseText: string): boolean {
-    return responseText.includes('<BadRequestSyntax') ||
-           responseText.includes('<AccessDenied') ||
-           responseText.includes('<InternalError') ||
-           responseText.includes('<ServiceUnavailable') ||
-           responseText.includes('<RateLimitExceeded') ||
-           responseText.includes('<Error');
+    // Errori di BUSTA: riguardano la richiesta nel suo insieme.
+    const erroreDiBusta =
+      responseText.includes('<BadRequestSyntax') ||
+      responseText.includes('<AccessDenied') ||
+      responseText.includes('<InternalError') ||
+      responseText.includes('<ServiceUnavailable') ||
+      responseText.includes('<RateLimitExceeded');
+
+    if (erroreDiBusta) {
+      return true;
+    }
+
+    // In una risposta batch `<Error>` sta DENTRO un `<Response>` e riguarda
+    // quel singolo elemento, non la richiesta (issue #94).
+    //
+    // Trattarlo come errore di trasporto faceva fallire l'intero batch —
+    // ritentato tre volte — per una sola sotto-richiesta andata male, e
+    // `parseBatchResponse`, che sa distinguere elemento per elemento, non
+    // veniva mai raggiunto. A valle, `getTournamentDetailBatch` vedeva un
+    // fallimento totale e ripiegava su richieste individuali per TUTTI gli
+    // elementi: 7 chiamate al VIS dove ne bastavano 4. Il fallimento parziale,
+    // cioe' l'unica ragione per cui esiste `failureStrategy:
+    // 'continue_on_partial'`, era irraggiungibile.
+    if (/<BatchResponse[\s>]/.test(responseText)) {
+      return false;
+    }
+
+    return responseText.includes('<Error');
   }
 
   /**

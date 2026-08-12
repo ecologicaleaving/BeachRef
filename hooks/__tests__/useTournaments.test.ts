@@ -66,6 +66,25 @@ describe('useTournaments Hook - Database First Strategy', () => {
     resetDbReadFlagsForTests();
     setDbReadOverride(['tournaments']);
     jest.clearAllMocks();
+    // Un `jest.fn()` senza implementazione restituisce `undefined`, e il client
+    // VIS legge `response.ok` su quel valore. Il risultato non e' "la chiamata
+    // non era prevista": e' un TypeError dentro una promessa che nessuno
+    // attende. Rimbalza fuori dal test, spesso fuori dall'intero file, e jest
+    // lo attribuisce al primo test del file che gira dopo — e' cosi' che
+    // `useOfflineSync` moriva un run su due con un errore su `BeachMatchList`
+    // che non aveva niente a che vedere con la sincronizzazione offline
+    // (issue #94).
+    //
+    // Il default e' una risposta *ben formata* che fallisce: il percorso di
+    // errore del client viene esercitato davvero, e il rifiuto ha un padrone.
+    // I `mockResolvedValueOnce` dei singoli test hanno comunque la precedenza.
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: 'Service Unavailable',
+      text: async () => '',
+      json: async () => ({}),
+    } as unknown as Response);
     (supabase?.from as jest.Mock)?.mockReturnValue(mockSupabaseQuery);
     impostaRisultato({ data: [], error: null });
   });

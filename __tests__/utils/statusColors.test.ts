@@ -247,16 +247,22 @@ describe('Status Colors Utility Functions', () => {
   describe('Performance and Accessibility Requirements', () => {
     it('should provide efficient color calculation', () => {
       const start = performance.now();
-      
+
       // Test multiple calls to ensure performance
       for (let i = 0; i < 100; i++) {
         getStatusColor('current');
         getStatusColorWithText('upcoming');
         getStatusColorForBackground('completed');
       }
-      
+
       const end = performance.now();
-      expect(end - start).toBeLessThan(50); // Should complete quickly
+      // 300 pure lookups. The bound is deliberately two orders of magnitude
+      // above the real cost (~1 ms): it exists to catch a lookup that starts
+      // doing IO or goes quadratic, not to measure this machine. The previous
+      // bound was 50 ms, which is inside the noise of a jest run with parallel
+      // workers — measured 109 ms on a loaded machine and 3 ms on an idle one,
+      // so the suite's colour depended on what else was running (issue #94).
+      expect(end - start).toBeLessThan(2000);
     });
 
     it('should maintain consistent color values', () => {

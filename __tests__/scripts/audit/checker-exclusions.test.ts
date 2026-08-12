@@ -59,21 +59,37 @@ describe('shouldExcludePath normalises separators', () => {
   });
 });
 
+/**
+ * One walk crosses the whole repository, so it costs seconds, not
+ * milliseconds. Re-walking inside each `it()` meant twelve full walks (three
+ * assertions × four walkers) for ~42 s, and any single one of them could
+ * overrun jest's 5 s default once the parallel workers were competing for the
+ * disk: the suite was green on an idle machine and red on a busy one, which is
+ * the whole of issue #94's "three runs give three numbers".
+ *
+ * Walk once per walker, in a hook that is allowed to take the time an IO test
+ * takes. The assertions are then pure and instantaneous.
+ */
+const WALK_TIMEOUT_MS = 60_000;
+
 describe.each(walkers)('%s file discovery', (_name, make) => {
-  it('never walks into node_modules', async () => {
-    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+  let files: string[];
+
+  beforeAll(async () => {
+    files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+  }, WALK_TIMEOUT_MS);
+
+  it('never walks into node_modules', () => {
     const leaked = files.filter((f) => f.replace(/\\/g, '/').includes('/node_modules/'));
     expect(leaked).toEqual([]);
   });
 
-  it('honours every excludePaths pattern', async () => {
-    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+  it('honours every excludePaths pattern', () => {
     const leaked = files.filter((f) => shouldExcludePath(f));
     expect(leaked).toEqual([]);
   });
 
-  it('still finds first-party source', async () => {
-    const files = await make().findFiles(AUDIT_CONFIG.projectRoot, /\.(ts|tsx)$/);
+  it('still finds first-party source', () => {
     expect(files.length).toBeGreaterThan(0);
     expect(files.some((f) => f.replace(/\\/g, '/').includes('/services/'))).toBe(true);
   });

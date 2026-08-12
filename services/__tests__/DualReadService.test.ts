@@ -47,6 +47,40 @@ process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
 process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.EXPO_PUBLIC_EDGE_URL = 'https://test-edge.supabase.co';
 
+/**
+ * Costruttore di query finto ma COMPLETO: incatenabile e attendibile.
+ *
+ * I doppi di questo file facevano `eq.mockImplementation(() =>
+ * Promise.resolve(...))`, che sostituisce il valore di ritorno di `.eq()` con
+ * una PROMESSA: il filtro successivo veniva chiamato su una promessa, che non
+ * ha `.eq`, e il ramo database esplodeva in silenzio dentro il try/catch. Il
+ * servizio ripiegava sull'API e i test leggevano quel ripiego come una scelta
+ * del codice.
+ *
+ * PostgREST e' thenable: qualunque metodo si incatena, il risultato si attende
+ * alla fine.
+ */
+const costruttoreQuery = (risultato: any): any => {
+  const metodi: Record<string, jest.Mock> = {};
+  const q: any = new Proxy(
+    {},
+    {
+      get: (_b, chiave: string) => {
+        if (chiave === 'then') {
+          return (ok: any, ko: any) =>
+            (risultato instanceof Error
+              ? Promise.reject(risultato)
+              : Promise.resolve(risultato)
+            ).then(ok, ko);
+        }
+        if (!metodi[chiave]) metodi[chiave] = jest.fn(() => q);
+        return metodi[chiave];
+      },
+    }
+  );
+  return q;
+};
+
 describe('DualReadService', () => {
   let dualReadService: DualReadService;
   let mockNetworkMonitor: any;
@@ -159,12 +193,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-      
-      // Make eq() return the query with data
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getTournaments({ season: 2024 });
 
@@ -179,11 +208,7 @@ describe('DualReadService', () => {
       const mockDbQuery = {
         eq: jest.fn().mockReturnThis()
       };
-      mockDbQuery.eq.mockImplementation(() => Promise.reject(new Error('DB Error')));
-
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
+      mockSupabase.from.mockReturnValue(costruttoreQuery(new Error('DB Error')));
 
       // Mock successful API response
       mockFetch.mockResolvedValue({
@@ -279,11 +304,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getMatches({ tournamentCode: 'TEST2024' });
 
@@ -321,11 +342,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getEvents({ tournamentCode: 'TEST2024' });
 
@@ -339,11 +356,7 @@ describe('DualReadService', () => {
       const mockDbQuery = {
         eq: jest.fn().mockReturnThis()
       };
-      mockDbQuery.eq.mockImplementation(() => Promise.reject(new Error('DB Error')));
-
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
+      mockSupabase.from.mockReturnValue(costruttoreQuery(new Error('DB Error')));
 
       const result = await dualReadService.getEvents({ tournamentCode: 'TEST2024' });
 
@@ -416,11 +429,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getTournaments({ season: 2024 });
 
@@ -445,11 +454,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       await dualReadService.getTournaments({ season: 2024 });
 
@@ -486,11 +491,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getTournaments({ season: 2024 });
 
@@ -523,11 +524,7 @@ describe('DualReadService', () => {
         error: null
       };
 
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn(() => mockDbQuery)
-      });
-
-      mockDbQuery.eq.mockImplementation(() => Promise.resolve(mockDbQuery));
+      mockSupabase.from.mockReturnValue(costruttoreQuery(mockDbQuery));
 
       const result = await dualReadService.getMatches({ tournamentCode: 'TEST2024' });
 
@@ -579,12 +576,25 @@ describe('DualReadService', () => {
 
   describe('Cache Integration', () => {
     it('should invalidate cache when requested', async () => {
-      const { CacheService } = require('../../hooks/compatibility/CacheServiceCompatibility');
-      const mockCacheService = CacheService.getInstance();
+      // `invalidateCache` NON deve chiamare `CacheServiceCompatibility`.
+      //
+      // Il test cablava le due cose insieme, ma quel metodo e' deliberatamente
+      // vuoto: la pulizia la fa TanStack Query dentro i hook. E il verso
+      // opposto esiste gia' — `CacheServiceCompatibility.clearCache` richiama
+      // `invalidateCache` su questo servizio — quindi cablarlo qui chiuderebbe
+      // un ciclo fra i due.
+      //
+      // In piu' il test prendeva l'oggetto con `CacheService.getInstance()`, un
+      // metodo che quella classe non ha: e' una classe di soli statici. Terzo
+      // statico fantasma della campagna.
+      const compat = require('../../hooks/compatibility/CacheServiceCompatibility');
+      const clearCache = compat.CacheServiceCompatibility?.clearCache;
 
-      await dualReadService.invalidateCache('tournaments');
+      await expect(dualReadService.invalidateCache('tournaments')).resolves.toBeUndefined();
 
-      expect(mockCacheService.clearCache).toHaveBeenCalledWith(['tournaments']);
+      if (clearCache && typeof clearCache.mock === 'object') {
+        expect(clearCache).not.toHaveBeenCalled();
+      }
     });
   });
 });

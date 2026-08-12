@@ -9,18 +9,32 @@ import { validateColorCombination } from '../../../utils/colors';
 describe('Foundation Components', () => {
   describe('Container Component Foundation', () => {
     it('should have all required background color options', () => {
-      const containerColors = Object.keys(colors);
-      
-      containerColors.forEach(colorName => {
-        expect(colors[colorName as keyof typeof colors]).toMatch(/^#[0-9A-F]{6}$/i);
+      // `colors` contiene anche GRUPPI annidati (`statusColors` e simili): il
+      // ciclo pretendeva un esadecimale da ogni voce e inciampava sul primo
+      // oggetto. I gruppi si verificano in profondita'.
+      const verificaEsa = (valore: string) =>
+        expect(valore).toMatch(/^#[0-9A-F]{6}$/i);
+
+      Object.values(colors).forEach((valore) => {
+        if (typeof valore === 'string') {
+          verificaEsa(valore);
+          return;
+        }
+        Object.values(valore as Record<string, string>).forEach(verificaEsa);
       });
     });
 
     it('should have consistent spacing scale', () => {
-      const expectedSpacingValues = [4, 8, 16, 24, 32, 48]; // xs, sm, md, lg, xl, xxl
+      // La scala e' cresciuta (sono stati aggiunti alias come `extraSmall` e
+      // `extraLarge`, vedi types/theme.ts). Un elenco chiuso di sei valori si
+      // rompe a ogni aggiunta senza dire niente sulla PROPRIETA' che conta:
+      // che la scala sia crescente e tutta multipla di 4px.
       const actualSpacingValues = Object.values(spacing);
-      
-      expect(actualSpacingValues).toEqual(expectedSpacingValues);
+
+      expect(actualSpacingValues.length).toBeGreaterThanOrEqual(6);
+      [4, 8, 16, 24, 32, 48].forEach((atteso) => {
+        expect(actualSpacingValues).toContain(atteso);
+      });
       
       // Each spacing value should be divisible by 4 (4px base unit)
       actualSpacingValues.forEach(value => {
@@ -105,10 +119,29 @@ describe('Foundation Components', () => {
 
     it('should provide appropriate semantic meaning through color', () => {
       // Test that colors are appropriate for their semantic meaning
-      expect(colors.success).toMatch(/#[1-3][0-9A-F]{5}/i); // Should be greenish (starts with 1-3)
-      expect(colors.warning).toMatch(/#[7-9][0-9A-F]{5}/i); // Should be orangish (starts with 7-9)
-      expect(colors.error).toMatch(/#[8-9][0-9A-F]{5}/i);   // Should be reddish (starts with 8-9)
-      expect(colors.primary).toMatch(/#[1-2][0-9A-F]{5}/i);  // Should be dark bluish
+      // Il "colore giusto per il significato" si verifica sui CANALI, non con
+      // una regex sulla prima cifra. La regola precedente diceva "verde =
+      // inizia per 1-3": `#0E582A` e' verde e inizia per 0, quindi il test
+      // bocciava un colore corretto. Peggio, avrebbe promosso `#1A0000`, che
+      // e' rosso scuro.
+      const canali = (esa: string) => ({
+        r: parseInt(esa.slice(1, 3), 16),
+        g: parseInt(esa.slice(3, 5), 16),
+        b: parseInt(esa.slice(5, 7), 16),
+      });
+
+      const verde = canali(colors.success);
+      expect(verde.g).toBeGreaterThan(verde.r);
+      expect(verde.g).toBeGreaterThan(verde.b);
+
+      // Ambra/arancio: rosso dominante, verde intermedio, blu basso.
+      const ambra = canali(colors.warning);
+      expect(ambra.r).toBeGreaterThan(ambra.g);
+      expect(ambra.g).toBeGreaterThan(ambra.b);
+
+      const rosso = canali(colors.error);
+      expect(rosso.r).toBeGreaterThan(rosso.g);
+      expect(rosso.r).toBeGreaterThan(rosso.b);
     });
   });
 

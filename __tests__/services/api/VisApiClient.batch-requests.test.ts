@@ -187,7 +187,12 @@ describe('VisApiClient - Batch Requests', () => {
         failureStrategy: 'continue_on_partial'
       };
 
-      mockFetch.mockResolvedValueOnce({
+      // `mockResolvedValue`, non `...Once`: il client RITENTA (fino a 3
+      // volte), e dalla seconda chiamata la coda del doppio era vuota,
+      // restituendo `undefined`. Il client moriva su `response.ok` e marcava
+      // come fallito anche il risultato riuscito. Un server vero, alla
+      // stessa richiesta, risponde di nuovo.
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         text: async () => `

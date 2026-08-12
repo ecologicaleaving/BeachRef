@@ -39,10 +39,25 @@ export function useAccessoRicordato(): AccessoRicordato {
     };
   }, []);
 
+  /**
+   * `statoRicordato()` inghiotte gia' i propri errori e restituisce `null`,
+   * quindi il ramo di errore non dovrebbe scattare mai. C'e' lo stesso perche'
+   * la posta e' il menu di OGNI pagina: se un giorno quella funzione imparasse
+   * a rifiutare, un rifiuto non gestito qui diventerebbe un errore in console
+   * su tutto il sito. `null` significa "non so niente", e il menu ripiega sulla
+   * voce di accesso — che e' il ripiego giusto.
+   */
   const rileggi = useCallback(() => {
-    statoRicordato().then(letto => {
-      if (montato.current) setStato(letto);
-    });
+    const leggi = async () => {
+      try {
+        const letto = await statoRicordato();
+        if (montato.current) setStato(letto);
+      } catch {
+        if (montato.current) setStato(null);
+      }
+    };
+
+    void leggi();
   }, []);
 
   useEffect(() => {

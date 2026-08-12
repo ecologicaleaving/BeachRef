@@ -1021,10 +1021,37 @@ export class RefereeStatsService {
   }
 
   /**
+   * Un identificativo di arbitro si puo' risolvere?
+   *
+   * Si rifiuta PRIMA di parlare col VIS. Senza questo controllo i due
+   * risolutori costruivano comunque una richiesta con nome e cognome vuoti: un
+   * giro di rete che non puo' che tornare a mani vuote, o peggio agganciare
+   * l'arbitro sbagliato. E' la stessa classe di difetto che la correzione delle
+   * "185 partite" doveva chiudere — chiedere al VIS le statistiche di
+   * un'identita' che non c'e'.
+   *
+   * Le stringhe "null" e "undefined" arrivano da chiamanti che hanno
+   * interpolato un valore assente: sono identita' inesistenti quanto la stringa
+   * vuota, e vanno trattate allo stesso modo.
+   */
+  private static idArbitroUtilizzabile(refereeId: string): boolean {
+    const pulito = (refereeId ?? '').trim();
+    if (!pulito || pulito === 'null' || pulito === 'undefined') {
+      console.warn(
+        `Invalid referee ID "${refereeId}": impossibile risolverlo, nessuna chiamata al VIS`
+      );
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Resolve referee name to NoReferee ID using any available tournament
    */
   private static async resolveRefereeIdFromAnyTournament(refereeId: string): Promise<string | null> {
     try {
+      if (!RefereeStatsService.idArbitroUtilizzabile(refereeId)) return null;
+
       // First, check if refereeId is already a valid 6-digit NoReferee ID
       if (/^\d{6}$/.test(refereeId)) {
         return refereeId;
@@ -1051,6 +1078,8 @@ export class RefereeStatsService {
    */
   private static async resolveRefereeIdFromTournament(refereeId: string, tournamentNo: string): Promise<string | null> {
     try {
+      if (!RefereeStatsService.idArbitroUtilizzabile(refereeId)) return null;
+
       // First, check if refereeId is already a valid 6-digit NoReferee ID
       if (/^\d{6}$/.test(refereeId)) {
         return refereeId;

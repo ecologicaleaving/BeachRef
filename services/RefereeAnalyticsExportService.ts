@@ -170,6 +170,15 @@ export class RefereeAnalyticsExportService {
           throw new Error(`Unsupported export format: ${format}`);
       }
 
+      // `startTime` veniva misurato a inizio metodo e non usato da nessuna
+      // parte: la riga che lo consumava era stata tolta. Una misurazione che
+      // nessuno legge costa e non dice niente — e qui era anche l'unico modo
+      // di sapere quanto ci mette un'esportazione, che su qualche migliaio di
+      // righe non e' una curiosita'.
+      const durataMs = Math.round(performance.now() - startTime);
+      console.log(
+        `Export completed: ${format.toUpperCase()} | ${data.length} records | ${durataMs}ms`
+      );
 
       return blob;
     } catch (error) {

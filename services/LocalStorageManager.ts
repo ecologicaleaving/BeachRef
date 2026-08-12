@@ -249,6 +249,15 @@ export class LocalStorageManager {
    * Check if cached data is expired
    */
   private isExpired(cachedData: CachedData): boolean {
+    // Una voce senza `timestamp` o senza `ttl` e' SCADUTA, non eterna.
+    // `Date.now() - undefined > undefined` vale `NaN > NaN`, cioe' `false`:
+    // una voce corrotta risultava sempre valida e veniva servita per sempre.
+    if (
+      typeof cachedData?.timestamp !== 'number' ||
+      typeof cachedData?.ttl !== 'number'
+    ) {
+      return true;
+    }
     return Date.now() - cachedData.timestamp > cachedData.ttl;
   }
 

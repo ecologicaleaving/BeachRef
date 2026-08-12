@@ -70,6 +70,14 @@ export const migrateAsyncStorageData = async (): Promise<void> => {
     );
 
     if (legacyCacheKeys.length > 0) {
+      // La riga che consumava `legacyCacheKeys` era stata tolta, lasciando un
+      // `if` vuoto: la funzione leggeva TUTTE le chiavi di AsyncStorage, le
+      // filtrava e poi buttava via il risultato senza dirlo a nessuno. Chi
+      // deve decidere se scrivere una migrazione ha bisogno esattamente di
+      // questo numero.
+      console.log(
+        `Found ${legacyCacheKeys.length} legacy cache keys for migration consideration`
+      );
       // Note: Migration logic can be added here if needed
       // For now, we'll let the new system build fresh cache
     }

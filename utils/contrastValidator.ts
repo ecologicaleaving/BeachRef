@@ -180,10 +180,19 @@ export function validateContrastOrFail(): void {
       `Failed combinations: ${failureDetails}. All critical combinations must meet WCAG AAA (7:1 minimum).`
     );
   }
-  
-  
+
+  // Il messaggio di esito positivo era stato tolto, lasciando due righe vuote.
+  // Una funzione che si chiama "validate...OrFail" e non dice niente quando
+  // passa e' indistinguibile da una che non e' stata eseguita: e' proprio la
+  // riga che serve in un log di CI per sapere che il controllo c'e' stato.
+  console.log(
+    `✅ WCAG AAA Contrast Validation: All critical combinations passed (${report.passed.length})`
+  );
+
   if (report.warnings.length > 0) {
-    // console.warn(`⚠️  ${report.warnings.length} combinations meet WCAG AA but not AAA standards`);
+    console.warn(
+      `⚠️  ${report.warnings.length} combinations meet WCAG AA but not AAA standards`
+    );
   }
 }
 

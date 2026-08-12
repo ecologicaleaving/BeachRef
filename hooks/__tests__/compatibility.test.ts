@@ -276,6 +276,17 @@ describe('Backward Compatibility Layer', () => {
   });
 
   describe('FeatureFlagManager', () => {
+    // `featureFlags` e' un SINGOLO condiviso da tutta la suite: bandiere e
+    // stati di migrazione si accumulavano da una prova all'altra, e
+    // "quanti componenti sono migrati?" rispondeva 4 invece di 1. Ogni prova
+    // parte da una configurazione pulita.
+    beforeEach(async () => {
+      await featureFlags.importConfiguration({
+        flags: {} as any,
+        migrationStatuses: [],
+      });
+    });
+
     it('should get and set feature flags correctly', async () => {
       await featureFlags.setFlag('useNewTournamentsHook', true);
       expect(featureFlags.getFlag('useNewTournamentsHook')).toBe(true);
@@ -316,7 +327,11 @@ describe('Backward Compatibility Layer', () => {
       const status = featureFlags.getMigrationStatus('TournamentList');
       expect(status?.performanceComparison?.oldSystemTime).toBe(300);
       expect(status?.performanceComparison?.newSystemTime).toBe(200);
-      expect(status?.performanceComparison?.improvement).toBe(33.333333333333336);
+      // `toBeCloseTo`, non `toBe`: (300-200)/300*100 in virgola mobile vale
+      // 33.33333333333333 oppure ...336 a seconda dell'ordine delle
+      // operazioni. Fissare le ultime cifre di un numero periodico non
+      // verifica niente sul miglioramento misurato.
+      expect(status?.performanceComparison?.improvement).toBeCloseTo(33.3333, 3);
     });
 
     it('should handle gradual rollout correctly', async () => {

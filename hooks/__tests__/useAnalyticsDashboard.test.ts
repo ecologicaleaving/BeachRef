@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAnalyticsDashboard, validateAnalyticsPerformance } from '../useAnalyticsDashboard';
 import { useRefereeAnalytics } from '../useRefereeAnalytics';
@@ -381,13 +381,26 @@ describe('useAnalyticsDashboard', () => {
       });
 
       // Start refresh
-      const refreshPromise = result.current.actions.refresh();
+      //
+      // Dentro `act`, e lo stato si attende: `refresh()` chiamata cosi' com'era
+      // aggiorna lo stato fuori dal ciclo di render controllato dal test, e la
+      // riga successiva leggeva `result.current` prima che React lo avesse
+      // ricalcolato. Il test perdeva una gara con il renderer, non con il
+      // codice.
+      let refreshPromise!: Promise<void>;
+      act(() => {
+        refreshPromise = result.current.actions.refresh();
+      });
 
       // Should show refreshing state
-      expect(result.current.isRefreshing).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isRefreshing).toBe(true);
+      });
 
       // Wait for refresh completion
-      await refreshPromise;
+      await act(async () => {
+        await refreshPromise;
+      });
 
       await waitFor(() => {
         expect(result.current.isRefreshing).toBe(false);

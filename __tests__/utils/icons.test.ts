@@ -91,7 +91,26 @@ describe('Icon System Utilities', () => {
     it('should have accessibility theme with maximum contrast', () => {
       const accessibilityTheme = ICON_COLOR_THEMES.accessibility;
       expect(accessibilityTheme.primary).toBe('#000000'); // Pure black
-      expect(accessibilityTheme.accent).toBe('#CC0000');  // High contrast red
+      // "Massimo contrasto" e' una proprieta' MISURABILE, non un esadecimale.
+      // L'accento e' passato da #CC0000 a #9D0000, cioe' a un rosso piu' scuro
+      // e quindi piu' leggibile su bianco: il test fotografava il valore
+      // vecchio e sarebbe diventato rosso proprio perche' l'accessibilita' era
+      // migliorata. Ora verifica cio' che il tema promette.
+      const luminanza = (esa: string): number => {
+        const canale = (c: number) => {
+          const v = c / 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        };
+        const r = canale(parseInt(esa.slice(1, 3), 16));
+        const g = canale(parseInt(esa.slice(3, 5), 16));
+        const b = canale(parseInt(esa.slice(5, 7), 16));
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const rapportoSuBianco = (esa: string) => 1.05 / (luminanza(esa) + 0.05);
+
+      expect(accessibilityTheme.accent).toMatch(/^#[0-9A-F]{6}$/i);
+      // AAA per il testo: 7:1 su fondo bianco.
+      expect(rapportoSuBianco(accessibilityTheme.accent)).toBeGreaterThanOrEqual(7);
     });
   });
 

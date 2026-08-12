@@ -352,7 +352,10 @@ describe('Touch Target Utilities', () => {
       
       expect(metrics.touchCount).toBe(3);
       expect(metrics.averageResponseTime).toBe(20); // (10 + 20 + 30) / 3
-      expect(metrics.performanceScore).toBe('excellent'); // < 16ms average
+      // Il commento accanto all'asserzione dichiarava la regola giusta —
+      // "excellent" sotto i 16ms — e poi pretendeva "excellent" da una media
+      // di 20. Il test contraddiceva se stesso, e il codice aveva ragione.
+      expect(metrics.performanceScore).toBe('good'); // 20ms: sopra i 16ms di 'excellent'
     });
     
     it('should categorize performance correctly', () => {

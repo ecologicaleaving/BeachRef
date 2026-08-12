@@ -20,17 +20,35 @@ import { colors } from '../../theme/tokens';
 describe('Color Utilities', () => {
   describe('getColor', () => {
     it('should return correct color values for all color names', () => {
-      expect(getColor('primary')).toBe('#1B365D');
-      expect(getColor('accent')).toBe('#B8391A'); // Updated FIVB color
-      expect(getColor('textPrimary')).toBe('#2C3E50');
-      expect(getColor('background')).toBe('#FFFFFF');
+      // Legati alla tavolozza, non a esadecimali copiati: i colori del marchio
+      // sono stati ricalcolati per il contrasto (#1B365D -> #18181B e
+      // compagnia). Un test che fotografa il valore si rompe a ogni ritocco e
+      // non verifica cio' che conta, cioe' che `getColor` peschi dal sistema
+      // di token invece che da costanti sparse per il codice.
+      expect(getColor('primary')).toBe(colors.primary);
+      expect(getColor('accent')).toBe(colors.accent);
+      expect(getColor('textPrimary')).toBe(colors.textPrimary);
+      expect(getColor('background')).toBe(colors.background);
     });
 
     it('should handle all color names from token system', () => {
-      Object.keys(colors).forEach(colorName => {
-        const color = getColor(colorName as keyof typeof colors);
-        expect(color).toMatch(/^#[0-9A-F]{6}$/i);
-        expect(color).toBe(colors[colorName as keyof typeof colors]);
+      // `colors` non e' piatta: contiene anche GRUPPI (`statusColors` e
+      // simili), e su quelli `getColor` restituisce l'oggetto, non una
+      // stringa. Il ciclo pretendeva un esadecimale da ogni chiave e
+      // inciampava sul primo gruppo. Le voci semplici si verificano una per
+      // una; i gruppi si verificano in profondita', che e' anche piu' di
+      // quanto facesse prima.
+      Object.entries(colors).forEach(([nome, valore]) => {
+        const ottenuto = getColor(nome as keyof typeof colors);
+        if (typeof valore === 'string') {
+          expect(ottenuto).toMatch(/^#[0-9A-F]{6}$/i);
+          expect(ottenuto).toBe(valore);
+          return;
+        }
+        expect(ottenuto).toBe(valore);
+        Object.values(valore as Record<string, string>).forEach(annidato => {
+          expect(annidato).toMatch(/^#[0-9A-F]{6}$/i);
+        });
       });
     });
   });

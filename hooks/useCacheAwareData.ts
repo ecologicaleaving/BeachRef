@@ -292,6 +292,10 @@ export const useCacheAwareData = <T>(
   } = options;
 
   const [data, setData] = useState<T | null>(null);
+  // Specchio di `data` per le chiusure: vedi la nota dentro `fetchData`.
+  const datoCorrente = useRef<T | null>(null);
+  datoCorrente.current = data;
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [cacheHit, setCacheHit] = useState<boolean>(false);
@@ -350,7 +354,14 @@ export const useCacheAwareData = <T>(
       }
       
       // Cache miss or stale data - fetch from source
-      if (!staleWhileRevalidate || !data) {
+      //
+      // Si legge dal RIFERIMENTO, non dallo stato: avere `data` fra le
+      // dipendenze di `fetchData` ne cambiava l'identita' a ogni lettura
+      // riuscita, e l'effetto di montaggio — che dipende da `fetchData` — si
+      // rieseguiva subito dopo. Il secondo giro trovava il dato in cache e
+      // marcava `cacheHit` come vero gia' alla PRIMA lettura, oltre a fare una
+      // lettura in piu' a ogni cambio di dato.
+      if (!staleWhileRevalidate || !datoCorrente.current) {
         setLoading(true);
       }
 
@@ -391,7 +402,10 @@ export const useCacheAwareData = <T>(
         setLoading(false);
       }
     }
-  }, [cacheKey, fetchMethod, ttl, staleWhileRevalidate, maxStaleTime, data, enablePerformanceTracking, priority]);
+    // `data` NON e' fra le dipendenze, di proposito: si legge dallo specchio
+    // `datoCorrente`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey, fetchMethod, ttl, staleWhileRevalidate, maxStaleTime, enablePerformanceTracking, priority]);
 
   // Manual refresh function
   const refresh = useCallback(async (): Promise<void> => {

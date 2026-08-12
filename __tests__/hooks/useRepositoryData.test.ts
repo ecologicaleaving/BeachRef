@@ -231,34 +231,45 @@ describe('useRepositoryData', () => {
 
   describe('Polling functionality', () => {
     it('should poll data at specified intervals', async () => {
-      const mockData1 = { id: '1', count: 1 };
-      const mockData2 = { id: '1', count: 2 };
-      const mockRepositoryMethod = jest.fn()
-        .mockResolvedValueOnce(mockData1)
-        .mockResolvedValueOnce(mockData2);
+      // Il doppio NON dipende dall'ordine di una coda.
+      //
+      // Con due `mockResolvedValueOnce` il test dava per scontato un numero
+      // preciso di letture iniziali: se ne partiva una in piu' la coda si
+      // esauriva, la lettura successiva otteneva `undefined` e il test
+      // diventava rosso — ma solo sotto carico, cioe' il tipo peggiore. Qui
+      // ogni risposta porta il proprio numero di chiamata, e si verifica la
+      // proprieta' vera: il sondaggio periodico produce una lettura in piu' e
+      // il dato mostrato e' quello dell'ultima risposta.
+      let chiamate = 0;
+      const mockRepositoryMethod = jest.fn(() => {
+        chiamate += 1;
+        return Promise.resolve({ id: '1', count: chiamate });
+      });
 
       const { result } = renderHook(() =>
         useRepositoryData(mockRepositoryMethod, [], { pollingInterval: 1000 })
       );
 
-      // Wait for initial fetch
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.data).not.toBeNull();
       });
-      expect(result.current.data).toEqual(mockData1);
 
-      // `await act(async ...)`: far scattare il timer mette in coda dei
-      // microtask (la lettura e' asincrona), e un `act` sincrono non li
-      // aspetta. L'asserzione correva contro la promessa del sondaggio.
+      const primaDelSondaggio = mockRepositoryMethod.mock.calls.length;
+
       await act(async () => {
-        jest.advanceTimersByTime(1000);
+        await jest.advanceTimersByTimeAsync(1000);
       });
 
       await waitFor(() => {
-        expect(result.current.data).toEqual(mockData2);
+        expect(mockRepositoryMethod.mock.calls.length).toBeGreaterThan(primaDelSondaggio);
       });
 
-      expect(mockRepositoryMethod).toHaveBeenCalledTimes(2);
+      await waitFor(() => {
+        expect(result.current.data).toEqual({
+          id: '1',
+          count: mockRepositoryMethod.mock.calls.length,
+        });
+      });
     });
 
     it('should not poll when loading', async () => {

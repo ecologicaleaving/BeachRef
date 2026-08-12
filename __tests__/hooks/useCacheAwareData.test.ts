@@ -395,11 +395,16 @@ describe('useCacheAwareData', () => {
         jest.advanceTimersByTime(5000);
       });
 
+      // Si attende il DATO, non la chiamata (issue #94). La chiamata al
+      // metodo di fetch avviene un microtask prima che la sua promessa si
+      // risolva: `waitFor` sul contatore usciva subito, e la riga successiva
+      // leggeva lo stato precedente. La proprieta' da dimostrare e' che il
+      // refresh in background aggiorna il dato mostrato.
       await waitFor(() => {
-        expect(mockFetchMethod).toHaveBeenCalledTimes(2);
+        expect(result.current.data).toEqual(mockData2);
       });
 
-      expect(result.current.data).toEqual(mockData2);
+      expect(mockFetchMethod).toHaveBeenCalledTimes(2);
     });
 
     it('should not background refresh when still loading', async () => {
@@ -527,14 +532,25 @@ describe('useCacheAwareData', () => {
   });
 
   describe('Cleanup', () => {
-    it('should clear timeouts on unmount', () => {
+    it('should clear timeouts on unmount', async () => {
       const mockFetchMethod = jest.fn().mockResolvedValue({ id: '1' });
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
-      const { unmount } = renderHook(() =>
+      const { result, unmount } = renderHook(() =>
         useCacheAwareData('test-key', mockFetchMethod, { backgroundRefreshInterval: 5000 })
       );
 
+      // Il timer di refresh viene programmato solo QUANDO c'e' un dato e il
+      // caricamento e' finito (issue #94). Smontando subito non c'era nulla da
+      // annullare, e il test chiedeva a `clearTimeout` di essere stato chiamato
+      // comunque — cioe' asseriva una chiamata inutile invece della proprieta'
+      // vera: un timer PENDENTE viene annullato allo smontaggio.
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+      expect(result.current.data).toBeTruthy();
+
+      clearTimeoutSpy.mockClear();
       unmount();
 
       expect(clearTimeoutSpy).toHaveBeenCalled();

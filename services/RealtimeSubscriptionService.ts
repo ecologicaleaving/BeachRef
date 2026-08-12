@@ -124,7 +124,7 @@ export class RealtimeSubscriptionService {
     });
     
     this.isInitialized = true;
-    this.setConnectionState(ConnectionState.DISCONNECTED);
+    this.setConnectionState(ConnectionState.DISCONNECTED, undefined, true);
   }
 
   /**
@@ -151,6 +151,7 @@ export class RealtimeSubscriptionService {
    */
   static addConnectionStateListener(listener: ConnectionStateListener): () => void {
     this.connectionStateListeners.add(listener);
+
     // Return unsubscribe function
     return () => {
       this.connectionStateListeners.delete(listener);
@@ -167,16 +168,41 @@ export class RealtimeSubscriptionService {
   /**
    * Set connection state and notify listeners
    */
-  private static setConnectionState(state: ConnectionState, error?: string): void {
-    if (this.connectionState !== state) {
+  /**
+   * @param forza notifica anche se lo stato non cambia.
+   *
+   * Serve all'inizializzazione: lo stato iniziale e' gia' DISCONNECTED, quindi
+   * il confronto qui sotto era falso e nessun ascoltatore veniva mai avvisato
+   * dell'avvio. Chi ascolta non poteva sapere che il sistema era su e
+   * disconnesso — l'unico caso in cui vale la pena avvisare l'arbitro.
+   *
+   * La notifica NON si fa invece all'iscrizione: questi sono ascoltatori di
+   * TRANSIZIONE, e `RealtimePerformanceMonitor` conta ogni notifica come un
+   * tentativo di connessione. Consegnare lo stato corrente a ogni nuovo
+   * iscritto falserebbe quella statistica.
+   */
+  private static setConnectionState(
+    state: ConnectionState,
+    error?: string,
+    forza: boolean = false
+  ): void {
+    if (forza || this.connectionState !== state) {
       this.connectionState = state;
       
       // Notify all listeners
       this.connectionStateListeners.forEach(listener => {
         try {
-          listener(state, error);
+          // Senza errore si chiama con UN solo argomento: passare `undefined`
+          // esplicito cambia `arguments.length`, e chi ispeziona la chiamata
+          // (un test, o un ascoltatore che distingue "nessun errore" da
+          // "errore non specificato") vede due parametri invece di uno.
+          if (error === undefined) {
+            listener(state);
+          } else {
+            listener(state, error);
+          }
         } catch (err) {
-          // console.error('Error in connection state listener:', err);
+          console.error('Error in connection state listener:', err);
         }
       });
     }

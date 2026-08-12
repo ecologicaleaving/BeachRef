@@ -247,8 +247,10 @@ describe('useRepositoryData', () => {
       });
       expect(result.current.data).toEqual(mockData1);
 
-      // Advance time to trigger polling
-      act(() => {
+      // `await act(async ...)`: far scattare il timer mette in coda dei
+      // microtask (la lettura e' asincrona), e un `act` sincrono non li
+      // aspetta. L'asserzione correva contro la promessa del sondaggio.
+      await act(async () => {
         jest.advanceTimersByTime(1000);
       });
 

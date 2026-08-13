@@ -18,6 +18,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 - `npm test` - Run the jest suite
+- **Jest monta React Native** dalla issue #101 —
+  `render(React.createElement(TournamentList))` funziona. Non era vero prima:
+  qualunque `render()` moriva con `Invariant Violation:
+  __fbBatchedBridgeConfig is not set`, e il rimedio era sospendere il test.
+  Il taglio sta in `jest.native-modules.js`, che fornisce
+  `global.nativeModuleProxy` — il ramo che `NativeModules.js` prende **prima**
+  di sollevare l'invariant, cioe' il punto d'innesto previsto dal runtime.
+  **Non innestare `react-native/jest/setup.js`**: appende il runner (tentato
+  due volte, #94 e #101) e definisce `window`, che questo codebase vieta
+  perche' cinque moduli deducono di essere sul web dalla sua assenza (#94).
+  La barriera e' `__tests__/jest-native-modules.test.ts`; il perche' per esteso
+  e' in `TESTING.md`.
+- **I 28 test `.tsx` restano esclusi**, ma non per l'ambiente: si montano
+  tutti, e falliscono su asserzioni invecchiate (colori della palette,
+  `getByRole` di RNTL v13, conteggi di render). Numeri e famiglie nel commento
+  sopra l'esclusione in `jest.config.js`; il lavoro e' la issue #111.
 - **Prima di scrivere il test di un servizio, leggi `TESTING.md`.**
   `VisApiClient` e `CacheService` si importano **staticamente**: la config jest
   (`jest.config.js`, `__mocks__/`) risolve `expo/virtual/env`, `react-native-mmkv`

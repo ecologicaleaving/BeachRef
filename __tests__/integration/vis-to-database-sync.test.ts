@@ -146,30 +146,37 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 /**
- * Sospesi: renderizzano alberi di componenti React Native VERI (issue #94).
+ * Ancora sospesi — ma NON piu' per il motivo dichiarato dalla #94.
  *
- * `render(<TournamentList/>)` non tocca solo React. `View` importa
- * `ViewNativeComponent` -> `NativeComponentRegistry` ->
- * `getNativeComponentAttributes` -> `processColor` -> `Platform.ios` ->
- * `NativePlatformConstantsIOS`, che chiede il modulo al `TurboModuleRegistry`
- * e muore con `Invariant Violation: __fbBatchedBridgeConfig is not set`. Non e'
- * un difetto del codice sotto test: e' che questa configurazione jest non sa
- * montare react-native. Mockare `Platform` e `StyleSheet` sull'export pubblico
- * — come fa `jest.env.js` — non basta, perche' quella catena passa dagli import
- * interni di react-native.
+ * Quel motivo era che jest non sapeva montare react-native: `render()` moriva
+ * con `Invariant Violation: __fbBatchedBridgeConfig is not set`. **La #101 lo
+ * ha risolto** (`jest.native-modules.js`), e la prova e' che i quattro test
+ * gemelli di `components/__tests__/TournamentList.migration.test.ts` — che
+ * montano lo STESSO `TournamentList` — sono tornati attivi e passano.
  *
- * E' la stessa ragione per cui `jest.config.js` esclude gia' TUTTI i test
- * `.tsx` ("React Native setup complexity"). Questi sono `.ts` solo perche'
- * usano `React.createElement` invece del JSX, quindi l'esclusione non li
- * prendeva — ma il limite e' identico.
+ * Riattivare questi dieci fa invece **appendere il runner**, e la causa e' nel
+ * test, non nell'ambiente. Ogni blocco:
  *
- * Innestare `react-native/jest/setup.js` e' stato tentato e ritirato: appende
- * il runner (>9 minuti su 2 suite, nessun output) perche' collide con il
- * `jest.mock('react-native')` di `jest.env.js`. Farlo funzionare e' un lavoro
- * a se', da aprire come issue dedicata; nel frattempo questi test sono sospesi
- * DICHIARATAMENTE invece di essere rossi per sempre.
+ *   1. precarica un `QueryClient` con `setQueryData(['tournaments'], ...)`,
+ *      `['matches']`, `['analytics','dashboard']`, con righe in **snake_case
+ *      di database** (`vis_tournament_no`, `start_main_draw`, `team1_player1`);
+ *   2. monta i componenti VERI — `TournamentList`, `MatchListV2`,
+ *      `AnalyticsDashboard` — senza mockare gli hook che li alimentano;
+ *   3. asserisce su stringhe gia' formattate (`'Rio de Janeiro, BRA'`,
+ *      `'Male'`, `'21-19'`, `'50%'`, `'4 records processed'`).
  *
- * Cio' che NON dipende dal rendering resta attivo: 'Data Consistency
+ * Nessuno dei tre passi combacia con l'interfaccia reale: le chiavi che gli
+ * hook interrogano non sono quelle, il formato non e' quello, e i componenti
+ * emettono comunque le proprie fetch — che trovano la `global.fetch` di
+ * `jest.env.js` a 503 e ripartono con il backoff.
+ *
+ * E' codice che **non e' mai stato eseguito**: prima della #94 moriva
+ * all'import per il JSX in un file `.ts`, dalla #94 e' sospeso. Non descrive
+ * un comportamento che si e' rotto, descrive un comportamento immaginato.
+ * Riscriverlo contro l'interfaccia vera e' un lavoro di natura diversa dalla
+ * #101 e ha una issue propria.
+ *
+ * Cio' che non dipende dal rendering resta attivo: 'Data Consistency
  * Validation' e 'Sync Service Performance Benchmarks' girano e passano.
  */
 const describeRenderingRN = describe.skip;

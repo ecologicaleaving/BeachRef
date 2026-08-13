@@ -2,7 +2,13 @@
 const base = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  setupFiles: ['<rootDir>/jest.env.js'],
+  // L'ORDINE CONTA (issue #101): `jest.native-modules.js` deve girare per
+  // primo, perche' fornisce `global.nativeModuleProxy` — il ramo che
+  // `NativeModules.js` prende PRIMA di sollevare `Invariant Violation:
+  // __fbBatchedBridgeConfig is not set`. Deve essere in piedi quando il
+  // `jest.mock('react-native')` di `jest.env.js` fa `requireActual` e con esso
+  // carica il primo modulo nativo. Invertirli riporta l'invariant.
+  setupFiles: ['<rootDir>/jest.native-modules.js', '<rootDir>/jest.env.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     // `babel-preset-expo` rewrites every `process.env.EXPO_PUBLIC_*` read into an
@@ -92,7 +98,30 @@ const base = {
     // gitignored (.gitignore:98) and `scripts/audit/config.ts` already excludes
     // `.claude/**`; jest was the last tool still reading it.
     '/\\.claude/',
-    '/__tests__/.*\\.tsx$', // Skip tsx test files for now due to React Native setup complexity
+    // I 28 test `.tsx` restano esclusi — ma NON piu' per "React Native setup
+    // complexity", che e' cio' che questa riga ha dichiarato fino alla #101 e
+    // che ora e' falso: l'ambiente monta react-native
+    // (`jest.native-modules.js`, barriera in `__tests__/jest-native-modules.test.ts`).
+    //
+    // Misurato dopo la #101, togliendo l'esclusione: 2 file verdi su 28, con
+    // ~148 test rossi. Le famiglie di fallimento, contate sull'output:
+    //
+    //   166  Unable to find an element with text     asserzioni su testo cambiato
+    //    64  Unable to find an element with role     RNTL v13 risolve i ruoli diversamente
+    //    56  toHaveStyle                             stili cambiati (palette "Titanium & Gold")
+    //    36  toHaveBeenCalledTimes                   conteggi di render non piu' veri
+    //    12  Cannot find module                      import verso file spostati o rimossi
+    //     4  Unable to find an element with testID
+    //
+    // e **zero** `__fbBatchedBridgeConfig`, **zero** `ReferenceError: window`.
+    // Cioe': si montano tutti, e sbagliano sulle proprie asserzioni, invecchiate
+    // in un anno in cui nessuno le eseguiva.
+    //
+    // Riabilitarli e' quindi un lavoro di manutenzione per file, non una
+    // questione di configurazione, e ha una issue propria. Riabilitarli in
+    // blocco qui aggiungerebbe ~148 rossi a una suite che la #94 ha appena
+    // portato a zero.
+    '/__tests__/.*\\.tsx$',
     // Supabase Edge Functions are Deno programs: their tests import
     // `https://deno.land/...` and use the `Deno` global. They are executed by
     // `deno test`, never by jest — running them here only produced noise.

@@ -77,22 +77,15 @@ const mockTournament = {
 };
 
 /**
- * Sospesa: renderizza un albero di componenti React Native VERO (issue #94).
+ * Sospesa dalla #94, riattivata dalla #101.
  *
- * Tutti e quattro i test chiamano `render(<TournamentList/>)`, e `View` importa
- * `ViewNativeComponent` -> `NativeComponentRegistry` ->
- * `getNativeComponentAttributes` -> `processColor` -> `Platform.ios` ->
- * `NativePlatformConstantsIOS`, che chiede il modulo al `TurboModuleRegistry`
- * e muore con `Invariant Violation: __fbBatchedBridgeConfig is not set`. Non e'
- * un difetto di `TournamentList` ne' di `useTournaments`: questa
- * configurazione jest non sa montare react-native, ed e' la stessa ragione per
- * cui `jest.config.js` esclude gia' tutti i test `.tsx`.
- *
- * Vedi la nota estesa in `__tests__/integration/vis-to-database-sync.test.ts`,
- * incluso il tentativo con `react-native/jest/setup.js` (appende il runner) e
- * il fatto che farlo funzionare va aperto come issue a se'.
+ * Tutti e quattro i test chiamano `render(<TournamentList/>)`, che moriva con
+ * `Invariant Violation: __fbBatchedBridgeConfig is not set`: non un difetto di
+ * `TournamentList` ne' di `useTournaments`, ma la configurazione jest che non
+ * sapeva montare react-native. Ora lo sa — `jest.native-modules.js` fornisce
+ * `global.nativeModuleProxy`, che e' il punto di innesto previsto dal runtime.
  */
-describe.skip('TournamentList Migration', () => {
+describe('TournamentList Migration', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {

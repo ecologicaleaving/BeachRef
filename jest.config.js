@@ -4,13 +4,9 @@
 // cosi' chi la prende in mano sa cosa aspettarsi prima di aprirla.
 const TSX_IN_QUARANTENA = [
   '__tests__/accessibility\\.test\\.tsx$', //                           text, role
-  '__tests__/components/Assignment/AssignmentCard\\.test\\.tsx$', //    text, toHaveStyle
-  '__tests__/components/Assignment/AssignmentCardVariants\\.test\\.tsx$', // toHaveStyle
   '__tests__/components/Hierarchy/InformationArchitecture\\.test\\.tsx$', // text
   '__tests__/components/MatchCard\\.test\\.tsx$', //                    text
-  '__tests__/components/Status/StatusIndicator\\.test\\.tsx$', //       text, toHaveStyle
   '__tests__/components/TournamentDetail\\.test\\.tsx$', //             text
-  '__tests__/components/Typography/EnhancedText\\.test\\.tsx$', //      toHaveStyle
   '__tests__/components/navigation/GlobalStatusBar\\.test\\.tsx$', //   text
   '__tests__/components/navigation/TimezoneToggle\\.test\\.tsx$', //    text
   '__tests__/integration/RealtimeIntegration\\.test\\.tsx$', //         Cannot find module

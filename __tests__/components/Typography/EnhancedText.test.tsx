@@ -251,7 +251,15 @@ describe('Enhanced Typography Components', () => {
         </EnhancedBodyText>
       );
 
-      expect(screen.getByText('Regular text with')).toBeTruthy();
+      // `exact: false` perche' il testo del nodo padre e' COMPOSITO: i suoi
+      // figli sono la stringa "Regular text with " piu' l'elemento
+      // `<EnhancedCaption>`, quindi il testo che RNTL confronta e' l'intero
+      // "Regular text with inline caption" e la corrispondenza esatta non
+      // scatta (issue #111). Non e' un assert allargato: la stringa cercata e'
+      // la stessa, cambia il modo di cercarla dentro un nodo che ne contiene
+      // altre. Ed e' proprio la composizione che questo test verifica —
+      // l'annidamento e' il suo oggetto.
+      expect(screen.getByText('Regular text with', { exact: false })).toBeTruthy();
       expect(screen.getByText('inline caption')).toBeTruthy();
     });
   });

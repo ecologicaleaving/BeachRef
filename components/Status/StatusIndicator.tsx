@@ -49,12 +49,31 @@ export const StatusIndicator = React.memo<StatusIndicatorProps>(({
   const animationDuration = getStatusAnimationDuration(type);
   
   // Animation effect
+  //
+  // Il ciclo di pulsazione si ripianifica da solo con un `setTimeout`, e
+  // l'effect non aveva alcun cleanup (issue #111): per `in-progress`,
+  // `sync-pending` e `critical` il ciclo sopravviveva allo smontaggio del
+  // componente, continuando a ripartire e a chiamare `setCurrentAnimationState`
+  // su un componente che non c'e' piu'. Sotto jest lo si vede in modo netto —
+  // il timer scattava dopo il teardown della suite, quando `Animated` non
+  // esiste piu', e faceva cadere il processo Node con
+  // `Cannot read properties of undefined (reading 'sequence')`.
+  //
+  // Ora l'effect restituisce il proprio cleanup: annulla il timer in attesa e
+  // ferma l'animazione in corso. `annullato` serve perche' la callback di
+  // `.start()` puo' arrivare DOPO lo smontaggio: `stopAnimation()` la invoca
+  // comunque, e senza questa guardia ripianificherebbe il timer che abbiamo
+  // appena annullato.
   React.useEffect(() => {
     if (!shouldAnimate) return;
-    
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let annullato = false;
+
     const startAnimation = () => {
+      if (annullato) return;
       setCurrentAnimationState('transitioning');
-      
+
       Animated.sequence([
         Animated.timing(animatedValue, {
           toValue: 0.7,
@@ -67,17 +86,24 @@ export const StatusIndicator = React.memo<StatusIndicatorProps>(({
           useNativeDriver: true,
         }),
       ]).start(() => {
+        if (annullato) return;
         setCurrentAnimationState('idle');
         // Continue pulsing for certain statuses
         if (['in-progress', 'sync-pending', 'critical'].includes(type)) {
-          setTimeout(startAnimation, 100);
+          timer = setTimeout(startAnimation, 100);
         }
       });
     };
-    
+
     if (currentAnimationState === 'idle') {
       startAnimation();
     }
+
+    return () => {
+      annullato = true;
+      if (timer) clearTimeout(timer);
+      animatedValue.stopAnimation();
+    };
   }, [shouldAnimate, type, animationDuration, animatedValue, currentAnimationState]);
   
   // Get component styles based on variant and size

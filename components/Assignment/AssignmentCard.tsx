@@ -284,11 +284,28 @@ const getStyles = (variant: string) => {
     teamsContainer: {
       marginBottom: designTokens.spacing.xsmall,
     },
+    // `designTokens.typography.lineHeights` NON ESISTE, e questa era la sola
+    // riga del codebase a nominarlo: leggerne `.h2` sollevava
+    // `TypeError: Cannot read properties of undefined`, quindi la card non si
+    // montava MAI — e con essa `MyAssignmentsScreen`, che la usa (issue #111).
+    //
+    // Anche `typography.sizes` era il posto sbagliato: contiene
+    // `small | medium | large`, non `h2`/`h3`. Il `?.` sulla prima delle due
+    // letture nascondeva meta' del guasto restituendo `undefined`, cioe' un
+    // `fontSize` assente; la seconda, senza `?.`, e' quella che sollevava.
+    //
+    // Le due grandezze vivono insieme dentro la variante tipografica —
+    // `typography.h2.fontSize` e `typography.h2.lineHeight` — che e' anche il
+    // motivo per cui restano coerenti fra loro.
     teamsText: {
       ...baseText,
-      fontSize: variant === 'current' ? designTokens.typography.sizes?.h2 : designTokens.typography.sizes.h3,
+      fontSize: variant === 'current'
+        ? designTokens.typography.h2.fontSize
+        : designTokens.typography.h3.fontSize,
       fontWeight: variant === 'current' ? '700' : '600',
-      lineHeight: variant === 'current' ? designTokens.typography.lineHeights.h2 : designTokens.typography.lineHeights.h3,
+      lineHeight: variant === 'current'
+        ? designTokens.typography.h2.lineHeight
+        : designTokens.typography.h3.lineHeight,
     },
     matchDetailsContainer: {
       gap: designTokens.spacing.xsmall,

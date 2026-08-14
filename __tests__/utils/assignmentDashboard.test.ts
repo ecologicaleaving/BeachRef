@@ -17,8 +17,25 @@ import {
 } from '../../utils/assignmentDashboard';
 import { Assignment } from '../../types/assignments';
 
-// Mock assignments for testing
-const mockAssignments: Assignment[] = [
+// L'orologio e' congelato per l'intera suite, e le fixture sono costruite
+// *dopo* il congelamento (issue #107).
+//
+// Prima erano costruite all'import del modulo, relative a `Date.now()` reale.
+// Gli offset (+1h, +25h, -1h) descrivono uno scenario — "due assegnazioni
+// oggi, una domani, una conclusa" — che pero' e' vero solo se l'ora corrente
+// e' lontana dalla mezzanotte: dopo le ~23:00 locali "fra un'ora" cade nel
+// giorno successivo, e i due test che contano le assegnazioni di oggi
+// diventavano rossi. Non era un difetto di `getUpcomingAssignments`: era la
+// fixture che, a quell'ora, descriveva un altro scenario.
+//
+// Spostare l'offset non basta — qualunque scarto fisso prima o poi attraversa
+// la mezzanotte. L'istante e' costruito con il costruttore *locale*
+// (`new Date(2026, 5, 1, 12, ...)`) e non da una stringa ISO, cosi' e'
+// mezzogiorno in qualunque fuso orario: -1h e +1h restano nello stesso giorno
+// e +25h nel successivo ovunque giri la suite.
+const FROZEN_NOW = new Date(2026, 5, 1, 12, 0, 0); // 1 giugno 2026, mezzogiorno locale
+
+const createMockAssignments = (): Assignment[] => [
   {
     id: 'current-001',
     courtNumber: 1,
@@ -78,6 +95,17 @@ const mockAssignments: Assignment[] = [
 ];
 
 describe('assignmentDashboard utilities', () => {
+  let mockAssignments: Assignment[];
+
+  beforeEach(() => {
+    jest.useFakeTimers({ now: FROZEN_NOW });
+    mockAssignments = createMockAssignments();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('getCurrentAssignment', () => {
     it('should return explicitly current assignment', () => {
       const result = getCurrentAssignment(mockAssignments);
@@ -197,20 +225,14 @@ describe('assignmentDashboard utilities', () => {
   });
 
   describe('formatAssignmentTimeForDashboard', () => {
-    // The clock is frozen for this test. It reads `new Date()` here and the
-    // function under test reads `Date.now()` a moment later, so any millisecond
-    // elapsing between the two turns "30 min" into "29 min" — which is exactly
-    // how this suite came to be flaky in a full parallel run while passing in
-    // isolation (issue #61, AC8). Freezing time removes the race rather than
-    // widening the assertion.
-    beforeEach(() => {
-      jest.useFakeTimers({ now: new Date('2026-06-01T12:00:00Z') });
-    });
-
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
+    // Il congelamento dell'orologio, che questo blocco dichiarava per conto
+    // proprio, e' ora quello della suite intera (issue #107) — il motivo per
+    // cui serve qui resta valido e vale la pena ricordarlo: il test legge
+    // `new Date()` e la funzione sotto esame legge `Date.now()` un istante
+    // dopo, quindi qualunque millisecondo trascorso fra i due trasforma
+    // "30 min" in "29 min". E' cosi' che questa suite era diventata instabile
+    // in un run parallelo completo pur passando in isolamento (issue #61, AC8).
+    // Congelare il tempo elimina la corsa invece di allargare l'assert.
     it('should format time correctly for different durations', () => {
       const now = new Date();
 

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { TouchableOpacity } from 'react-native';
 import { Icon } from '../../../components/Icons/Icon';
 
 describe('Icon Component', () => {
@@ -165,9 +166,17 @@ describe('Icon Component', () => {
     expect(icon).toBeTruthy();
   });
 
+  // `activeOpacity` vive sul componente `TouchableOpacity`, non sul nodo host
+  // che `getByRole` restituisce — cercarla li' dava `undefined` (issue #111).
+  // `UNSAFE_getByType` e' dichiaratamente un'API di dettaglio implementativo,
+  // ed e' l'attrezzo giusto proprio perche' cio' che questo test verifica *e'*
+  // un dettaglio implementativo: l'opacita' al tocco non e' osservabile
+  // dall'albero renderizzato. Il comportamento vero — che l'icona interattiva
+  // risponda al tocco — e' gia' coperto da
+  // 'should use button role and handle press for interactive icons'.
   it('should handle touch opacity for interactive icons', () => {
     const mockOnPress = jest.fn();
-    const { getByRole } = render(
+    const { UNSAFE_getByType } = render(
       <Icon
         category="action"
         name="edit"
@@ -175,8 +184,7 @@ describe('Icon Component', () => {
         onPress={mockOnPress}
       />
     );
-    
-    const button = getByRole('button');
-    expect(button.props.activeOpacity).toBe(0.7);
+
+    expect(UNSAFE_getByType(TouchableOpacity).props.activeOpacity).toBe(0.7);
   });
 });

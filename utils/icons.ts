@@ -201,8 +201,23 @@ export function getIconColor(
   wcagCompliant: boolean; 
 } {
   const themeColors = ICON_COLOR_THEMES[theme];
-  const iconColor = (themeColors as any)[colorKey] || themeColors.primary;
-  
+
+  // Il ripiego era `themeColors.primary`, e **il tema `status` non ha
+  // `primary`** (issue #111): le sue chiavi sono `current`, `upcoming`,
+  // `completed`, `cancelled`, `emergency`. Con un `colorKey` che quel tema non
+  // conosce, `iconColor` restava `undefined` e la riga sotto lo passava a
+  // `calculateContrast`, che moriva con `Invalid hex color: undefined`.
+  // Non un colore sbagliato: un'eccezione, quindi un'icona che fa cadere lo
+  // schermo che la contiene.
+  //
+  // Il ripiego finale e' ora un colore che esiste per costruzione. Un'icona di
+  // colore inatteso e' un difetto di aspetto; un'icona che solleva e' un
+  // difetto di disponibilita', e i due non si scambiano.
+  const iconColor: string =
+    (themeColors as Record<string, string>)[colorKey] ||
+    (themeColors as Record<string, string>).primary ||
+    colors.textPrimary;
+
   const contrast = calculateContrast(iconColor, backgroundColor);
   
   return {

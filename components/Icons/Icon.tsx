@@ -29,9 +29,13 @@ export interface IconProps {
   isEmergency?: boolean;
   onPress?: () => void;
   style?: ViewStyle;
-  testID?: string;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
+  testID?: string | undefined;
+  // Stessa ragione del blocco piu' sotto: con `exactOptionalPropertyTypes`,
+  // "prop assente" e "prop presente e undefined" sono tipi diversi, e chi
+  // inoltra props — `AccessibilityIcon`, `IconLibrary` — passa sempre il
+  // secondo.
+  accessibilityLabel?: string | undefined;
+  accessibilityHint?: string | undefined;
   /**
    * Override espliciti di dimensione e colore (issue #49).
    *
@@ -59,12 +63,16 @@ export interface IconProps {
    * TypeScript non l'ha segnalato perche' le props non dichiarate finivano in
    * `...iconProps` di `AccessibilityIcon` senza che nessuno le rileggesse.
    */
-  accessibilityRole?: AccessibilityRole;
-  accessibilityState?: AccessibilityState;
-  accessibilityValue?: AccessibilityValue;
-  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
-  accessibilityElementsHidden?: boolean;
-  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants';
+  // `| undefined` esplicito perche' il progetto compila con
+  // `exactOptionalPropertyTypes`: senza, `AccessibilityIcon` non puo' passare
+  // una prop il cui valore *e'* `undefined` (TS2375), che e' esattamente cio'
+  // che fa quando chi la usa non la specifica.
+  accessibilityRole?: AccessibilityRole | undefined;
+  accessibilityState?: AccessibilityState | undefined;
+  accessibilityValue?: AccessibilityValue | undefined;
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive' | undefined;
+  accessibilityElementsHidden?: boolean | undefined;
+  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants' | undefined;
 }
 
 export const Icon: React.FC<IconProps> = React.memo(({
@@ -106,11 +114,15 @@ export const Icon: React.FC<IconProps> = React.memo(({
     // console.warn(`Icon contrast insufficient for outdoor visibility: ${iconStyles.contrast.ratio.toFixed(2)}:1`);
   }
 
+  // `style` e' opzionale, quindi l'array puo' contenere `undefined`: dichiararlo
+  // `ViewStyle[]` era una bugia che `tsc` segnalava (TS2322). Si filtra invece
+  // di allargare il tipo — `StyleSheet.flatten` ignora i falsy, ma il tipo deve
+  // dire il vero.
   const containerStyle: ViewStyle[] = [
     styles.container,
     iconStyles.style,
     style,
-  ];
+  ].filter((s): s is ViewStyle => Boolean(s));
 
   // Inoltrate a entrambi i rami (issue #111). `accessibilityRole` esplicito
   // vince su quello derivato dal tema: e' il modo in cui `AccessibilityIcon`

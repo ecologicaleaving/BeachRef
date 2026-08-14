@@ -239,8 +239,13 @@ export function getIconSize(
   strokeWidth: number; 
   touchTarget: number; 
 } {
-  let iconSize = ICON_SIZES[size];
-  let strokeWidth = STROKE_WIDTHS[size];
+  // Annotati `number` di proposito: `ICON_SIZES` e `STROKE_WIDTHS` sono
+  // `as const`, quindi l'inferenza li stringe ai letterali (`24 | 32 | 44`) e
+  // le riassegnazioni qui sotto — 44 per il touch target, `* 1.2` per
+  // l'emergenza — non ci rientrano. La funzione restituisce `number`: e' il
+  // tipo della variabile che era troppo stretto, non il valore.
+  let iconSize: number = ICON_SIZES[size];
+  let strokeWidth: number = STROKE_WIDTHS[size];
   
   // Ensure interactive icons meet 44px touch target minimum
   if (isInteractive && iconSize < 44) {

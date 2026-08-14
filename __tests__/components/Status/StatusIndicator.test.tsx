@@ -41,18 +41,25 @@ jest.mock('../../../theme/tokens', () => ({
 }));
 
 jest.mock('../../../utils/statusIndicators', () => ({
+  // I colori qui sono LETTERALI, non letti da 'theme/tokens' (issue #111).
+  // Due di essi erano `colors.success`, con `colors` mai importato: la
+  // factory di un `jest.mock` viene sollevata in cima al modulo e non puo'
+  // vedere nulla dello scope esterno, quindi la suite non veniva nemmeno
+  // caricata — 'Test suite failed to run', zero test eseguiti. Il valore e'
+  // quello vero di `colors.success` (#0E582A, portato a contrasto 7:1 dalla
+  // #94).
   getStatusColor: jest.fn((status: StatusType) => {
     const colorMap: Record<StatusType, string> = {
       current: '#2C3E50',
       upcoming: '#2B5F75',
-      completed: colors.success,
+      completed: '#0E582A',
       cancelled: '#1B365D',
       changed: '#B8530A',
       'pre-match': '#2B5F75',
       'in-progress': '#2C3E50',
       delayed: '#B8530A',
       suspended: '#8B1538',
-      online: colors.success,
+      online: '#0E582A',
       offline: '#445566',
       'sync-pending': '#B8530A',
       error: '#8B1538',
@@ -217,14 +224,29 @@ describe('StatusIndicator Component', () => {
       expect(onPress).toHaveBeenCalledTimes(1);
     });
 
+    // Il test cercava il wrapper touchable e lo premeva, aspettandosi che non
+    // reagisse. Il componente fa qualcosa di diverso e migliore: con
+    // `disabled` **non rende affatto** il wrapper — `isInteractive = onPress
+    // && !disabled` — quindi non c'e' nulla da premere e, soprattutto, niente
+    // che venga annunciato come bottone a chi usa uno screen reader.
+    //
+    // La proprieta' verificata resta la stessa (l'indicatore non e'
+    // premibile); cambia il modo in cui il componente la realizza. Il testo
+    // dell'indicatore continua a essere reso: disabilitato non vuol dire
+    // invisibile.
+    //
+    // Nota per chi passa di qui: `StatusIndicator.tsx` conserva
+    // `disabled={disabled}` e `styles.disabled` SUL TouchableOpacity, cioe'
+    // dentro il ramo che `disabled` rende irraggiungibile. E' codice morto —
+    // scritto per l'altro comportamento, quello che questo test si aspettava.
     it('should not be touchable when disabled', () => {
       const onPress = jest.fn();
-      const { getByTestId } = render(
+      const { queryByTestId, getByTestId } = render(
         <StatusIndicator {...defaultProps} onPress={onPress} disabled={true} />
       );
-      
-      const touchable = getByTestId('test-status-indicator-touchable');
-      fireEvent.press(touchable);
+
+      expect(queryByTestId('test-status-indicator-touchable')).toBeNull();
+      expect(getByTestId('test-status-indicator')).toBeTruthy();
       expect(onPress).not.toHaveBeenCalled();
     });
 

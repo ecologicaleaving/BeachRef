@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ViewStyle, AccessibilityRole, Platform, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ViewStyle, AccessibilityRole, AccessibilityState, AccessibilityValue, Platform, Text } from 'react-native';
 import { Ionicons } from './vectorIconSets';
 import { 
   IconSize, 
@@ -29,9 +29,13 @@ export interface IconProps {
   isEmergency?: boolean;
   onPress?: () => void;
   style?: ViewStyle;
-  testID?: string;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
+  testID?: string | undefined;
+  // Stessa ragione del blocco piu' sotto: con `exactOptionalPropertyTypes`,
+  // "prop assente" e "prop presente e undefined" sono tipi diversi, e chi
+  // inoltra props — `AccessibilityIcon`, `IconLibrary` — passa sempre il
+  // secondo.
+  accessibilityLabel?: string | undefined;
+  accessibilityHint?: string | undefined;
   /**
    * Override espliciti di dimensione e colore (issue #49).
    *
@@ -46,6 +50,29 @@ export interface IconProps {
   width?: number;
   height?: number;
   fill?: string;
+  /**
+   * Props di accessibilita' inoltrate al nodo host (issue #111).
+   *
+   * `AccessibilityIcon` — che esiste per aggiungere accessibilita' a `Icon` —
+   * passava GIA' tutte queste, e `Icon` le scartava perche' non le
+   * dichiarava: stato, valore, live region e il ruolo che
+   * `AccessibilityIcon.getAccessibilityRole()` calcola non arrivavano mai al
+   * `View`. Un'icona che annuncia di essere selezionata non lo annunciava, e
+   * `accessibilityElementsHidden` non nascondeva niente.
+   *
+   * TypeScript non l'ha segnalato perche' le props non dichiarate finivano in
+   * `...iconProps` di `AccessibilityIcon` senza che nessuno le rileggesse.
+   */
+  // `| undefined` esplicito perche' il progetto compila con
+  // `exactOptionalPropertyTypes`: senza, `AccessibilityIcon` non puo' passare
+  // una prop il cui valore *e'* `undefined` (TS2375), che e' esattamente cio'
+  // che fa quando chi la usa non la specifica.
+  accessibilityRole?: AccessibilityRole | undefined;
+  accessibilityState?: AccessibilityState | undefined;
+  accessibilityValue?: AccessibilityValue | undefined;
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive' | undefined;
+  accessibilityElementsHidden?: boolean | undefined;
+  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants' | undefined;
 }
 
 export const Icon: React.FC<IconProps> = React.memo(({
@@ -65,6 +92,12 @@ export const Icon: React.FC<IconProps> = React.memo(({
   width,
   height,
   fill,
+  accessibilityRole,
+  accessibilityState,
+  accessibilityValue,
+  accessibilityLiveRegion,
+  accessibilityElementsHidden,
+  importantForAccessibility,
 }) => {
   const baseIconName = getIconName(category, name);
   const variantIconName = getVariantIconName(baseIconName, variant);
@@ -81,11 +114,30 @@ export const Icon: React.FC<IconProps> = React.memo(({
     // console.warn(`Icon contrast insufficient for outdoor visibility: ${iconStyles.contrast.ratio.toFixed(2)}:1`);
   }
 
+  // `style` e' opzionale, quindi l'array puo' contenere `undefined`: dichiararlo
+  // `ViewStyle[]` era una bugia che `tsc` segnalava (TS2322). Si filtra invece
+  // di allargare il tipo — `StyleSheet.flatten` ignora i falsy, ma il tipo deve
+  // dire il vero.
   const containerStyle: ViewStyle[] = [
     styles.container,
     iconStyles.style,
     style,
-  ];
+  ].filter((s): s is ViewStyle => Boolean(s));
+
+  // Inoltrate a entrambi i rami (issue #111). `accessibilityRole` esplicito
+  // vince su quello derivato dal tema: e' il modo in cui `AccessibilityIcon`
+  // distingue un'icona-bottone da un'immagine, e finora non aveva effetto.
+  const a11yProps = {
+    accessibilityRole: (accessibilityRole ??
+      iconStyles.accessibility.accessibilityRole) as AccessibilityRole,
+    accessibilityLabel: accessibilityLabel || `${category} ${name} icon`,
+    accessibilityHint,
+    accessibilityState,
+    accessibilityValue,
+    accessibilityLiveRegion,
+    accessibilityElementsHidden,
+    importantForAccessibility,
+  };
 
   const iconElement = Platform.OS === 'web' ? (
     // Web fallback to avoid font loading timeouts
@@ -111,9 +163,7 @@ export const Icon: React.FC<IconProps> = React.memo(({
         onPress={onPress}
         activeOpacity={0.7}
         testID={testID}
-        accessibilityRole={iconStyles.accessibility.accessibilityRole as AccessibilityRole}
-        accessibilityLabel={accessibilityLabel || `${category} ${name} icon`}
-        accessibilityHint={accessibilityHint}
+        {...a11yProps}
       >
         {iconElement}
       </TouchableOpacity>
@@ -121,12 +171,21 @@ export const Icon: React.FC<IconProps> = React.memo(({
   }
 
   // Non-interactive icon
+  //
+  // `accessible` non e' ridondante accanto a `accessibilityRole` (issue #111).
+  // Una `View` che dichiara ruolo ed etichetta ma non `accessible` NON e' un
+  // elemento di accessibilita': VoiceOver non annuncia l'etichetta e continua
+  // a navigare i figli separatamente — e il figlio, qui, e' il glifo. Chi usa
+  // uno screen reader sentiva il glifo al posto di "navigation home icon".
+  //
+  // Il `TouchableOpacity` del ramo interattivo lo e' gia' di suo, e infatti
+  // era l'unico ramo che i test trovavano.
   return (
     <View
       style={containerStyle}
       testID={testID}
-      accessibilityRole={iconStyles.accessibility.accessibilityRole as AccessibilityRole}
-      accessibilityLabel={accessibilityLabel || `${category} ${name} icon`}
+      accessible
+      {...a11yProps}
     >
       {iconElement}
     </View>

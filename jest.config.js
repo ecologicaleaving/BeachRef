@@ -1,3 +1,30 @@
+// I test `.tsx` ancora da riparare (issue #111). Vedi il commento accanto a
+// `...TSX_IN_QUARANTENA` in `testPathIgnorePatterns`: questa lista si accorcia,
+// non si allunga. Ogni voce porta la famiglia di fallimento che la tiene qui,
+// cosi' chi la prende in mano sa cosa aspettarsi prima di aprirla.
+const TSX_IN_QUARANTENA = [
+  '__tests__/accessibility\\.test\\.tsx$', //                           text, role
+  '__tests__/components/Hierarchy/InformationArchitecture\\.test\\.tsx$', // text
+  '__tests__/components/MatchCard\\.test\\.tsx$', //                    text
+  '__tests__/components/TournamentDetail\\.test\\.tsx$', //             text
+  '__tests__/components/navigation/GlobalStatusBar\\.test\\.tsx$', //   text
+  '__tests__/components/navigation/TimezoneToggle\\.test\\.tsx$', //    text
+  '__tests__/integration/RealtimeIntegration\\.test\\.tsx$', //         Cannot find module
+  '__tests__/screens/MyAssignmentsScreen\\.enhanced\\.test\\.tsx$', //  text
+  '__tests__/screens/RefereeDashboardHierarchy\\.test\\.tsx$', //       text
+  '__tests__/screens/RefereeDashboardScreen\\.test\\.tsx$', //          text
+  'components/RefereeAnalytics/__tests__/RefereeAnalyticsDashboard\\.test\\.tsx$', // text
+  'components/__tests__/TournamentDetail\\.matches\\.integration\\.test\\.tsx$', //   text
+  'components/__tests__/live-score/LiveScoreCard\\.test\\.tsx$', //     toHaveBeenCalledTimes
+  'components/__tests__/live-score/MatchStatusIndicators\\.test\\.tsx$', // text
+  'components/entities/Referee/__tests__/RefereeCard\\.analytics\\.test\\.tsx$', //   text
+  'components/referee/__tests__/AssignmentCards\\.test\\.tsx$', //      text
+  'components/referee/__tests__/CompletedMatchCard\\.test\\.tsx$', //   text
+  'components/referee/__tests__/LiveMatchCard\\.test\\.tsx$', //        text
+  'screens/__tests__/MatchResultsScreen\\.test\\.tsx$', //              text
+  'screens/__tests__/MyAssignmentsScreen\\.test\\.tsx$', //             text
+];
+
 // Shared configuration for both projects below.
 const base = {
   testEnvironment: 'node',
@@ -98,30 +125,28 @@ const base = {
     // gitignored (.gitignore:98) and `scripts/audit/config.ts` already excludes
     // `.claude/**`; jest was the last tool still reading it.
     '/\\.claude/',
-    // I 28 test `.tsx` restano esclusi — ma NON piu' per "React Native setup
-    // complexity", che e' cio' che questa riga ha dichiarato fino alla #101 e
-    // che ora e' falso: l'ambiente monta react-native
-    // (`jest.native-modules.js`, barriera in `__tests__/jest-native-modules.test.ts`).
+    // I test `.tsx` NON sono piu' esclusi in blocco (issue #111).
     //
-    // Misurato dopo la #101, togliendo l'esclusione: 2 file verdi su 28, con
-    // ~148 test rossi. Le famiglie di fallimento, contate sull'output:
+    // Lo sono stati da sempre, con la motivazione "React Native setup
+    // complexity". Dalla #101 non e' piu' vera: l'ambiente monta react-native
+    // (`jest.native-modules.js`, barriera in
+    // `__tests__/jest-native-modules.test.ts`). Misurato togliendo
+    // l'esclusione, i 28 file si montavano tutti — **zero**
+    // `__fbBatchedBridgeConfig`, **zero** `ReferenceError: window` — e
+    // fallivano su asserzioni proprie, invecchiate in un anno in cui nessuno
+    // le eseguiva.
     //
-    //   166  Unable to find an element with text     asserzioni su testo cambiato
-    //    64  Unable to find an element with role     RNTL v13 risolve i ruoli diversamente
-    //    56  toHaveStyle                             stili cambiati (palette "Titanium & Gold")
-    //    36  toHaveBeenCalledTimes                   conteggi di render non piu' veri
-    //    12  Cannot find module                      import verso file spostati o rimossi
-    //     4  Unable to find an element with testID
+    // Un'esclusione a tappeto e una riabilitazione a tappeto sono entrambe
+    // sbagliate: la prima nasconde 28 file, la seconda aggiunge ~148 rossi a
+    // una suite che la #94 ha portato a zero. Al loro posto c'e' una
+    // QUARANTENA NOMINALE: i file ancora da riparare sono elencati uno per
+    // uno qui sotto, e ogni riparazione ne toglie una riga. Quando la lista e'
+    // vuota, spariscono lista e commento.
     //
-    // e **zero** `__fbBatchedBridgeConfig`, **zero** `ReferenceError: window`.
-    // Cioe': si montano tutti, e sbagliano sulle proprie asserzioni, invecchiate
-    // in un anno in cui nessuno le eseguiva.
-    //
-    // Riabilitarli e' quindi un lavoro di manutenzione per file, non una
-    // questione di configurazione, e ha una issue propria. Riabilitarli in
-    // blocco qui aggiungerebbe ~148 rossi a una suite che la #94 ha appena
-    // portato a zero.
-    '/__tests__/.*\\.tsx$',
+    // Regola: si esce da questa lista riparando il test, MAI allargando
+    // l'assert. Dove il test dice il vero e il codice no, il rosso e' il
+    // risultato utile e diventa una issue.
+    ...TSX_IN_QUARANTENA,
     // Supabase Edge Functions are Deno programs: their tests import
     // `https://deno.land/...` and use the `Deno` global. They are executed by
     // `deno test`, never by jest — running them here only produced noise.

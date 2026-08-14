@@ -11,24 +11,30 @@ import { Icon, IconProps } from './Icon';
 
 export interface AccessibilityIconProps extends IconProps {
   // Enhanced accessibility props
-  accessibilityState?: AccessibilityState;
+  //
+  // Il `| undefined` esplicito e' richiesto da `exactOptionalPropertyTypes`
+  // (issue #111): `IconLibrary` inoltra queste props con `{...props}`, cioe'
+  // presenti e possibilmente `undefined`, che con quel flag NON e' lo stesso
+  // tipo di "assenti". Dichiararle qui senza `| undefined` produceva TS2375
+  // sui tre call site di `IconLibrary`.
+  accessibilityState?: AccessibilityState | undefined;
   accessibilityValue?: {
-    min?: number;
-    max?: number;
-    now?: number;
-    text?: string;
-  };
-  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants';
-  accessibilityElementsHidden?: boolean;
-  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
-  
+    min?: number | undefined;
+    max?: number | undefined;
+    now?: number | undefined;
+    text?: string | undefined;
+  } | undefined;
+  importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants' | undefined;
+  accessibilityElementsHidden?: boolean | undefined;
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive' | undefined;
+
   // Screen reader specific props
-  screenReaderDescription?: string;
-  contextualHint?: string;
-  
+  screenReaderDescription?: string | undefined;
+  contextualHint?: string | undefined;
+
   // High contrast support
-  respectHighContrastMode?: boolean;
-  highContrastFallback?: string;
+  respectHighContrastMode?: boolean | undefined;
+  highContrastFallback?: string | undefined;
 }
 
 export const AccessibilityIcon: React.FC<AccessibilityIconProps> = React.memo(({

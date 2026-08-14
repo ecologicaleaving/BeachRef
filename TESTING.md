@@ -122,6 +122,82 @@ Nota sul formato: il client invia il body come **form param URL-encoded**
 
 ---
 
+---
+
+# Montare componenti React Native (issue #101)
+
+```ts
+import { render } from '@testing-library/react-native';
+render(React.createElement(TournamentList));   // ✅ funziona
+```
+
+Fino alla #101 non funzionava: qualunque `render()` di un componente vero moriva
+con `Invariant Violation: __fbBatchedBridgeConfig is not set`.
+
+## Dove nasceva, e dove è stato tagliato
+
+La catena è `View → ViewNativeComponent → NativeComponentRegistry →
+getNativeComponentAttributes → processColor → Platform.ios →
+NativePlatformConstantsIOS → TurboModuleRegistry → NativeModules`. Il
+`jest.mock('react-native')` di `jest.env.js` **non la intercetta**, perché
+sostituisce l'export pubblico mentre quella catena passa dagli import *relativi
+interni* di react-native.
+
+Il punto d'innesto è `Libraries/BatchedBridge/NativeModules.js`, che solleva
+l'invariant **solo nel ramo `else`**:
+
+```js
+if (global.nativeModuleProxy) { NativeModules = global.nativeModuleProxy }
+else { invariant(global.__fbBatchedBridgeConfig, '...') }
+```
+
+`jest.native-modules.js` (in `setupFiles`, **prima** di `jest.env.js`) fornisce
+quel proxy: crea un modulo nativo finto su richiesta, con i metodi come
+`jest.fn()`. Nessuna patch a react-native e nessun elenco di moduli da tenere
+allineato.
+
+## Perché non il preset ufficiale
+
+`react-native/jest/setup.js` è la strada ovvia ed è stata tentata **due volte**,
+nella #94 e nella #101. Appende il runner, perché collide con il
+`jest.mock('react-native')` di `jest.env.js` (che fa `requireActual`). E
+comunque non sarebbe adottabile così com'è: alla riga 58 definisce
+`window: { value: global }`, che è esattamente ciò che `jest.env.js` **vieta**,
+con una misura a supporto (#94) — in questo codebase almeno cinque moduli
+deducono di girare su web dall'*assenza* di `window`.
+
+Se ti trovi a riprovarci, il vincolo da rispettare è quello, non il preset.
+
+## Due mock chirurgici, e perché
+
+| Mock | Ragione |
+|---|---|
+| `global.nativeModuleProxy` | Il taglio alla radice descritto sopra |
+| `Libraries/ReactNative/AppContainer` → ramo `-prod` | `<Modal>` monta `AppContainer`, che con `__DEV__` vero sceglie `AppContainer-dev`; quel ramo legge `window.__REACT_DEVTOOLS_GLOBAL_HOOK__` **a livello di modulo**. Il ramo `-prod` non legge nessun globale: è lo stesso componente meno LogBox, inspector e overlay di debug |
+
+Il mock ufficiale `react-native/jest/mockModal.js` non serve: passa da
+`mockComponent`, che fa `requireActual` di `Modal.js` e riesegue lo stesso
+import.
+
+## Cosa è verificato che si monti
+
+`__tests__/jest-native-modules.test.ts` monta `View`, `Text`, `ScrollView`,
+`ActivityIndicator`, `TextInput`, `Image`, `Pressable`, `TouchableOpacity`,
+`FlatList`, `Switch`, `Modal`, `Animated.View` e `RefreshControl`. **È la
+barriera**: se qualcuno tocca il setup, è lì che il danno diventa visibile,
+invece che in una suite a caso fra 140.
+
+## I test `.tsx` restano esclusi — e non per questo motivo
+
+`testPathIgnorePatterns` esclude ancora `/__tests__/.*\.tsx$`. Il commento
+storico diceva "React Native setup complexity", e **non è più vero**: misurati
+dopo la #101, quei 28 file si montano. Falliscono su asserzioni proprie —
+`getByRole('image')` che RNTL v13 non risolve più allo stesso modo, conteggi di
+render, testo cambiato. Vedi la nota in `jest.config.js` per i numeri e la
+issue che li riprende.
+
+---
+
 ## Regole
 
 1. **Mai** `require()` lazy nel codice di produzione per aggirare jest.

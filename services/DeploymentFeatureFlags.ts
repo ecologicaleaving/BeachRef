@@ -31,13 +31,68 @@ export class DeploymentFeatureFlags {
     
     // Default feature flag configuration
     this.flags = {
-      USE_NEW_ANALYTICS_ENDPOINTS: this.getEnvironmentFlag('USE_NEW_ANALYTICS_ENDPOINTS', true),
+      // SPENTO di partenza (issue #102).
+      //
+      // Era acceso. Finche' nessuno consultava questo flag non faceva danni;
+      // nel momento in cui `useRefereeAnalytics` lo consulta, un default acceso
+      // significa che alla prima apertura TUTTI gli utenti prendono le
+      // statistiche dalle Edge Function invece che dal percorso attuale — senza
+      // che nessuno abbia verificato che i numeri coincidano, e senza un modo
+      // di tornare indietro che non sia un commit e un deploy.
+      //
+      // Si accende deliberatamente, un browser alla volta, con
+      // `?nuoveAnalytics=on`. Vedi `applyBrowserOverride`.
+      USE_NEW_ANALYTICS_ENDPOINTS: this.getEnvironmentFlag('USE_NEW_ANALYTICS_ENDPOINTS', false),
       ENABLE_ANALYTICS_MONITORING: this.getEnvironmentFlag('ENABLE_ANALYTICS_MONITORING', true),
       ANALYTICS_CACHE_ENABLED: this.getEnvironmentFlag('ANALYTICS_CACHE_ENABLED', true),
       ANALYTICS_PERFORMANCE_LOGGING: this.getEnvironmentFlag('ANALYTICS_PERFORMANCE_LOGGING', false)
     };
 
+    // SINCRONO, e prima di `initializeFlags()`: quest'ultima e' asincrona, e il
+    // primo `isNewAnalyticsEndpointsEnabled()` puo' arrivare prima che finisca.
+    // Un interruttore che vale "fra un attimo" non serve a chi sta guardando la
+    // pagina adesso.
+    this.applyBrowserOverride();
+
     this.initializeFlags();
+  }
+
+  /**
+   * L'interruttore che si puo' azionare davvero (issue #102).
+   *
+   * `EXPO_PUBLIC_USE_NEW_ANALYTICS_ENDPOINTS` su Netlify e' un PAVIMENTO, non un
+   * rimedio: cambiarla e' un redeploy, e nel frattempo chi ha i numeri sbagliati
+   * continua a vederli. E' la lezione scritta in CLAUDE.md dopo la #54.
+   *
+   *   ?nuoveAnalytics=on    accende, e la scelta resta memorizzata
+   *   ?nuoveAnalytics=off   spegne, idem
+   *
+   * Vale per il browser che lo digita, quindi serve a verificare e a rientrare
+   * in fretta — non a spegnere per tutti. Per quello serve cambiare il default,
+   * ed e' voluto: promuovere una sorgente dati a tutti deve essere un atto
+   * deliberato e revisionabile in una diff.
+   */
+  private applyBrowserOverride(): void {
+    const CHIAVE = 'beachref.nuoveAnalytics';
+    const PARAM = 'nuoveAnalytics';
+
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return;
+
+      const daUrl = new URLSearchParams(window.location?.search ?? '').get(PARAM);
+
+      if (daUrl === 'on' || daUrl === 'off') {
+        window.localStorage.setItem(CHIAVE, daUrl);
+      }
+
+      const scelta = window.localStorage.getItem(CHIAVE);
+      if (scelta === 'on' || scelta === 'off') {
+        this.flags.USE_NEW_ANALYTICS_ENDPOINTS = scelta === 'on';
+      }
+    } catch {
+      // Storage negato o URL illeggibile: si resta sul default. Un interruttore
+      // rotto non deve impedire alla pagina di aprirsi.
+    }
   }
 
   /**
@@ -83,7 +138,14 @@ export class DeploymentFeatureFlags {
    * Get environment flag value with fallback
    */
   private getEnvironmentFlag(key: string, defaultValue: boolean): boolean {
-    const envValue = process.env[key];
+    // Si guarda ANCHE la variante `EXPO_PUBLIC_` (issue #102).
+    //
+    // Nel bundle web, Expo inlinea soltanto le variabili che cominciano per
+    // `EXPO_PUBLIC_`: `process.env.USE_NEW_ANALYTICS_ENDPOINTS` e' quindi
+    // sempre `undefined` nel browser, e con lui il valore predefinito vinceva
+    // sempre. Un interruttore che nell'unico ambiente dove gira non si puo'
+    // toccare non e' un interruttore.
+    const envValue = process.env[key] ?? process.env[`EXPO_PUBLIC_${key}`];
     if (envValue === undefined) return defaultValue;
     return envValue.toLowerCase() === 'true';
   }

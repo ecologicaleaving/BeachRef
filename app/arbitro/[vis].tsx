@@ -40,6 +40,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '../../components/Typography/Text';
 import { colors, spacing, brandBlue, neutrals } from '../../theme/tokens';
+import { categoryLabel, phaseLabel } from '../../utils/englishLabels';
 import { statoAccesso, tokenCorrente, type StatoAccesso } from '../../services/auth/AccessService';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -126,7 +127,7 @@ async function leggi<T>(tabella: string, query: string): Promise<T[]> {
       Authorization: `Bearer ${token ?? SUPABASE_ANON_KEY}`,
     },
   });
-  if (!r.ok) throw new Error(`HTTP ${r.status} su ${tabella}: ${(await r.text()).slice(0, 160)}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status} from ${tabella}: ${(await r.text()).slice(0, 160)}`);
   return await r.json();
 }
 
@@ -238,10 +239,10 @@ export default function SchedaArbitro() {
   if (accesso && accesso.stato !== 'autorizzato') {
     return (
       <View style={st.centro}>
-        <Text style={st.vuotoTitolo}>Serve l&apos;accesso</Text>
-        <Text style={st.vuotoTesto}>Le statistiche sono riservate a chi è stato invitato.</Text>
+        <Text style={st.vuotoTitolo}>Sign in required</Text>
+        <Text style={st.vuotoTesto}>Statistics are available to invited users.</Text>
         <Pressable style={st.bottone} onPress={() => router.push('/accedi')}>
-          <Text style={st.testoBottone}>Vai all&apos;accesso</Text>
+          <Text style={st.testoBottone}>Go to sign in</Text>
         </Pressable>
       </View>
     );
@@ -250,10 +251,10 @@ export default function SchedaArbitro() {
   if (errore || !carriera) {
     return (
       <View style={st.centro}>
-        <Text style={st.vuotoTitolo}>Arbitro non trovato</Text>
-        <Text style={st.vuotoTesto}>{errore ?? `Nessuna statistica per il VIS ${vis}.`}</Text>
+        <Text style={st.vuotoTitolo}>Referee not found</Text>
+        <Text style={st.vuotoTesto}>{errore ?? `No statistics for VIS ${vis}.`}</Text>
         <Pressable style={st.bottone} onPress={() => router.push('/referee-stats-lab')}>
-          <Text style={st.testoBottone}>Torna all&apos;elenco</Text>
+          <Text style={st.testoBottone}>Back to the list</Text>
         </Pressable>
       </View>
     );
@@ -272,7 +273,7 @@ export default function SchedaArbitro() {
     <ScrollView style={st.pagina} contentContainerStyle={st.contenuto}>
       <View style={st.colonna}>
         <Pressable onPress={() => router.push('/referee-stats-lab')} hitSlop={8}>
-          <Text style={st.indietro}>← Elenco arbitri</Text>
+          <Text style={st.indietro}>← Referee list</Text>
         </Pressable>
 
         {/* ---- Testata ---------------------------------------------------- */}
@@ -288,7 +289,7 @@ export default function SchedaArbitro() {
               <Targhetta
                 testo={`${(carriera.first_match ?? '').slice(0, 4)} – ${(carriera.last_match ?? '').slice(0, 4)}`}
               />
-              <Targhetta testo={`${carriera.seasons} stagioni`} />
+              <Targhetta testo={`${carriera.seasons} ${carriera.seasons === 1 ? 'season' : 'seasons'}`} />
             </View>
           </View>
         </View>
@@ -296,7 +297,7 @@ export default function SchedaArbitro() {
         {/* ---- Selettore stagione ----------------------------------------- */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={st.selettore}>
           <Chip attivo={stagione === 'carriera'} onPress={() => setStagione('carriera')}>
-            Carriera
+            Career
           </Chip>
           {[...stagioni].reverse().map((s) => (
             <Chip key={s.season} attivo={stagione === s.season} onPress={() => setStagione(s.season)}>
@@ -306,15 +307,15 @@ export default function SchedaArbitro() {
         </ScrollView>
 
         {/* ---- Le finali, per prime --------------------------------------- */}
-        <Sezione titolo="Fasi di vertice" nota="Escluse le finali e semifinali di piazzamento">
+        <Sezione titolo="Championship rounds" nota="Excludes placement finals and semifinals">
           <View style={st.vertice}>
             {vertice.map((v) => (
               <View key={v.fase} style={[st.cartaVertice, v.fase === 'Finale' && st.cartaOro]}>
                 <Text style={[st.verticeN, v.fase === 'Finale' && st.verticeNOro]}>{v.totale}</Text>
-                <Text style={st.verticeFase}>{v.fase}</Text>
+                <Text style={st.verticeFase}>{phaseLabel(v.fase)}</Text>
                 {v.per.length > 0 && (
                   <Text style={st.verticeDettaglio} numberOfLines={3}>
-                    {v.per.map(([c, n]) => `${n} ${c}`).join('\n')}
+                    {v.per.map(([c, n]) => `${n} ${categoryLabel(c)}`).join('\n')}
                   </Text>
                 )}
               </View>
@@ -324,7 +325,7 @@ export default function SchedaArbitro() {
 
         {/* ---- La forma della carriera ------------------------------------ */}
         {stagione === 'carriera' && stagioni.length > 1 && (
-          <Sezione titolo="La carriera nel tempo" nota="Partite per stagione">
+          <Sezione titolo="Career over time" nota="Matches per season">
             <View style={st.timeline}>
               {stagioni.map((s) => (
                 <Pressable key={s.season} style={st.annoCol} onPress={() => setStagione(s.season)}>
@@ -343,32 +344,30 @@ export default function SchedaArbitro() {
             </View>
             {troncato && (
               <Text style={st.avviso}>
-                Il VIS pubblica gli identificativi degli arbitri solo dal {PRIMO_ANNO_CON_IDENTIFICATIVI}.
-                Prima di allora le partite portano un nome abbreviato e nessun numero: se questa
-                carriera è cominciata prima, la parte precedente non è ricostruibile.
+                VIS has published referee IDs only since {PRIMO_ANNO_CON_IDENTIFICATIVI}. Earlier matches have an abbreviated name and no ID, so any earlier part of this career cannot be reconstructed.
               </Text>
             )}
           </Sezione>
         )}
 
         {/* ---- I numeri --------------------------------------------------- */}
-        <Sezione titolo={stagione === 'carriera' ? 'In carriera' : `Stagione ${stagione}`}>
+        <Sezione titolo={stagione === 'carriera' ? 'Career totals' : `Season ${stagione}`}>
           <View style={st.numeri}>
-            <Numero n={nPartite} etichetta="partite" grande />
-            <Numero n={nTornei} etichetta="tornei" />
-            <Numero n={nPrimo} etichetta="da 1° arbitro" sotto={`${quotaPrimo}%`} />
-            <Numero n={nSecondo} etichetta="da 2° arbitro" sotto={`${100 - quotaPrimo}%`} />
+            <Numero n={nPartite} etichetta="matches" grande />
+            <Numero n={nTornei} etichetta="tournaments" />
+            <Numero n={nPrimo} etichetta="as 1st referee" sotto={`${quotaPrimo}%`} />
+            <Numero n={nSecondo} etichetta="as 2nd referee" sotto={`${100 - quotaPrimo}%`} />
           </View>
         </Sezione>
 
         {/* ---- Livello e area --------------------------------------------- */}
         <View style={[st.duecolonne, stretto && st.unacolonna]}>
           <View style={st.mezza}>
-            <Sezione titolo="Livello dei tornei" nota="In ordine di importanza">
+            <Sezione titolo="Tournament level" nota="By level of importance">
               {perCategoria.map(([c, v], i) => (
                 <Barra
                   key={c}
-                  etichetta={c}
+                  etichetta={categoryLabel(c)}
                   n={v.n}
                   max={Math.max(...perCategoria.map(([, x]) => x.n), 1)}
                   evidenzia={i === 0}
@@ -377,11 +376,11 @@ export default function SchedaArbitro() {
             </Sezione>
           </View>
           <View style={st.mezza}>
-            <Sezione titolo="Confederazione">
+            <Sezione titolo="Confederation">
               {perConfederazione.map(([c, n], i) => (
                 <Barra
                   key={c}
-                  etichetta={c}
+                  etichetta={c === 'n.d.' ? 'Unknown' : c}
                   n={n}
                   max={perConfederazione[0]?.[1] ?? 1}
                   evidenzia={i === 0}
@@ -392,35 +391,35 @@ export default function SchedaArbitro() {
         </View>
 
         {/* ---- Tutte le fasi ---------------------------------------------- */}
-        <Sezione titolo="Tutte le fasi">
+        <Sezione titolo="All rounds">
           <View style={st.fasi}>
             {perFase.map(([f, n]) => (
               <View key={f} style={st.fasePillola}>
                 <Text style={st.fasePillolaN}>{n}</Text>
-                <Text style={st.fasePillolaT}>{f}</Text>
+                <Text style={st.fasePillolaT}>{phaseLabel(f)}</Text>
               </View>
             ))}
           </View>
         </Sezione>
 
         {/* ---- Partite ----------------------------------------------------- */}
-        <Sezione titolo={`Partite (${inSelezione.length})`}>
+        <Sezione titolo={`Matches (${inSelezione.length})`}>
           {inSelezione.slice(0, 50).map((p) => (
             <View key={p.match_no} style={st.riga}>
               <Text style={st.rData}>{p.local_date ?? '—'}</Text>
               {!stretto && (
                 <Text style={st.rTorneo} numberOfLines={1}>
-                  {p.tournament_name ?? `Torneo ${p.tournament_no}`}
-                  {p.gender ? ` · ${p.gender === 'W' ? 'F' : p.gender === 'M' ? 'M' : 'M+W'}` : ''}
+                  {p.tournament_name ?? `Tournament ${p.tournament_no}`}
+                  {p.gender ? ` · ${p.gender === 'W' ? 'W' : p.gender === 'M' ? 'M' : 'M+W'}` : ''}
                 </Text>
               )}
               <Text
                 style={[st.rFase, FASI_DI_VERTICE.includes(p.phase ?? '') && st.rFaseVertice]}
-                numberOfLines={1}
+                numberOfLines={2}
               >
-                {p.phase ?? '—'}
+                {phaseLabel(p.phase)}
               </Text>
-              <Text style={st.rRuolo}>{p.role === 'FIRST' ? '1°' : '2°'}</Text>
+              <Text style={st.rRuolo}>{p.role === 'FIRST' ? 'R1' : 'R2'}</Text>
               <Text style={st.rSquadre} numberOfLines={1}>
                 {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
               </Text>
@@ -433,8 +432,7 @@ export default function SchedaArbitro() {
           ))}
           {inSelezione.length > 50 && (
             <Text style={st.nota}>
-              …e altre {inSelezione.length - 50}. L&apos;elenco si ferma a 50 per restare leggibile;
-              i conteggi qui sopra le contano tutte.
+              …and {inSelezione.length - 50}{' '}more. The list shows up to 50 matches for readability; the totals above include all matches.
             </Text>
           )}
         </Sezione>
@@ -513,7 +511,7 @@ function Numero({
 }) {
   return (
     <View style={st.numero}>
-      <Text style={[st.numeroN, grande && st.numeroNGrande]}>{n.toLocaleString('it-IT')}</Text>
+      <Text style={[st.numeroN, grande && st.numeroNGrande]}>{n.toLocaleString('en-US')}</Text>
       <Text style={st.numeroE}>{etichetta}</Text>
       {sotto ? <Text style={st.numeroS}>{sotto}</Text> : null}
     </View>

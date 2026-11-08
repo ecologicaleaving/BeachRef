@@ -48,7 +48,7 @@ export default function DatabaseStatsScreen() {
 
       // Check Supabase availability
       if (!isSupabaseAvailable()) {
-        setError('Supabase non disponibile. Verifica configurazione .env');
+        setError('Supabase is unavailable. Check the environment configuration.');
         setLoading(false);
         return;
       }
@@ -57,7 +57,7 @@ export default function DatabaseStatsScreen() {
       setStats(dbStats as DbStats);
     } catch (err) {
       console.error('Failed to load DB stats:', err);
-      setError(err instanceof Error ? err.message : 'Errore caricamento statistiche');
+      setError(err instanceof Error ? err.message : 'Failed to load statistics');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -84,7 +84,7 @@ export default function DatabaseStatsScreen() {
   const formatDate = (dateString: string): string => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('it-IT', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -106,7 +106,7 @@ export default function DatabaseStatsScreen() {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={[styles.backText, { color: theme.colors.primary }]}>← Indietro</Text>
+              <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
             </Pressable>
             <Text style={[styles.title, { color: theme.colors.text }]}>
               Database Statistics
@@ -115,7 +115,7 @@ export default function DatabaseStatsScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
             <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-              Caricamento statistiche...
+              Loading statistics...
             </Text>
           </View>
         </View>
@@ -129,7 +129,7 @@ export default function DatabaseStatsScreen() {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={[styles.backText, { color: theme.colors.primary }]}>← Indietro</Text>
+              <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
             </Pressable>
             <Text style={[styles.title, { color: theme.colors.text }]}>
               Database Statistics
@@ -137,7 +137,7 @@ export default function DatabaseStatsScreen() {
           </View>
           <View style={styles.errorContainer}>
             <Text style={[styles.errorTitle, { color: theme.colors.error }]}>
-              ⚠️ Errore
+              ⚠️ Error
             </Text>
             <Text style={[styles.errorText, { color: theme.colors.textSecondary }]}>
               {error}
@@ -146,7 +146,7 @@ export default function DatabaseStatsScreen() {
               onPress={loadStats}
               style={[styles.retryButton, { backgroundColor: theme.colors.primary }]}
             >
-              <Text style={styles.retryButtonText}>Riprova</Text>
+              <Text style={styles.retryButtonText}>Try again</Text>
             </Pressable>
           </View>
         </View>
@@ -159,13 +159,13 @@ export default function DatabaseStatsScreen() {
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Text style={[styles.backText, { color: theme.colors.primary }]}>← Indietro</Text>
+            <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
           </Pressable>
           <Text style={[styles.title, { color: theme.colors.text }]}>
             Database Statistics
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            Dati salvati in Supabase (Lazy Loading)
+            Data stored in Supabase (loaded on demand)
           </Text>
         </View>
 
@@ -178,7 +178,7 @@ export default function DatabaseStatsScreen() {
           {/* Summary Cards */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              📊 Riepilogo
+              📊 Summary
             </Text>
 
             <View style={styles.cardsRow}>
@@ -187,7 +187,7 @@ export default function DatabaseStatsScreen() {
                   {stats?.tournamentCount || 0}
                 </Text>
                 <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>
-                  Tornei
+                  Tournaments
                 </Text>
               </View>
 
@@ -196,7 +196,7 @@ export default function DatabaseStatsScreen() {
                   {stats?.matchCount || 0}
                 </Text>
                 <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>
-                  Partite
+                  Matches
                 </Text>
               </View>
             </View>
@@ -207,7 +207,7 @@ export default function DatabaseStatsScreen() {
                   {stats?.refereeCount || 0}
                 </Text>
                 <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>
-                  Arbitri
+                  Referees
                 </Text>
               </View>
 
@@ -226,7 +226,7 @@ export default function DatabaseStatsScreen() {
           {stats?.byYear && Object.keys(stats.byYear).length > 0 && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                📅 Dati per Anno
+                📅 Data by year
               </Text>
               {Object.entries(stats.byYear)
                 .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
@@ -240,13 +240,13 @@ export default function DatabaseStatsScreen() {
                     </Text>
                     <View style={styles.yearStats}>
                       <Text style={[styles.yearStatText, { color: theme.colors.textSecondary }]}>
-                        {data.tournaments} tornei
+                        {data.tournaments} tournaments
                       </Text>
                       <Text style={[styles.yearStatText, { color: theme.colors.textSecondary }]}>
                         •
                       </Text>
                       <Text style={[styles.yearStatText, { color: theme.colors.textSecondary }]}>
-                        {data.matches} partite
+                        {data.matches} matches
                       </Text>
                     </View>
                   </View>
@@ -261,7 +261,7 @@ export default function DatabaseStatsScreen() {
             </Text>
             <View style={[styles.infoRow, { backgroundColor: theme.colors.surface }]}>
               <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                Spazio occupato
+                Storage used
               </Text>
               <Text style={[styles.infoValue, { color: theme.colors.text }]}>
                 {formatBytes(stats?.totalSize || 0)}
@@ -276,7 +276,7 @@ export default function DatabaseStatsScreen() {
             </Text>
             <View style={[styles.infoRow, { backgroundColor: theme.colors.surface }]}>
               <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                Ultimo aggiornamento
+                Last updated
               </Text>
               <Text style={[styles.infoValue, { color: theme.colors.text }]}>
                 {formatDate(stats?.lastUpdate || '')}
@@ -284,7 +284,7 @@ export default function DatabaseStatsScreen() {
             </View>
             <View style={[styles.infoRow, { backgroundColor: theme.colors.surface }]}>
               <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                Dati più vecchi
+                Oldest data
               </Text>
               <Text style={[styles.infoValue, { color: theme.colors.text }]}>
                 {formatDate(stats?.oldestData || '')}
@@ -295,14 +295,14 @@ export default function DatabaseStatsScreen() {
           {/* Info Box */}
           <View style={[styles.infoBox, { backgroundColor: theme.colors.surface }]}>
             <Text style={[styles.infoBoxTitle, { color: theme.colors.primary }]}>
-              💡 Come funziona il Lazy Loading
+              💡 How loading on demand works
             </Text>
             <Text style={[styles.infoBoxText, { color: theme.colors.textSecondary }]}>
-              I dati vengono salvati automaticamente nel database Supabase quando accedi a un torneo.
+              Data is automatically saved to the Supabase database when you open a tournament.
               {'\n\n'}
-              Questo riduce le chiamate VIS API del 70-90% e rende l'app 40x più veloce quando ricarichi dati già visti.
+              This reduces VIS API requests by 70–90% and makes the app 40 times faster when reloading previously viewed data.
               {'\n\n'}
-              La cache è year-aware: i tornei dello stesso numero ma di anni diversi non si mescolano più (fix bug João Pessoa).
+              The cache keeps each year separate, so tournaments sharing an ID across different years remain distinct.
             </Text>
           </View>
         </ScrollView>

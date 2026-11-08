@@ -158,7 +158,7 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
 
           {lastUpdated && (
             <Text style={styles.timestampText}>
-              Last updated: {lastUpdated.toLocaleTimeString()}
+              Last updated: {lastUpdated.toLocaleTimeString('en-GB')}
             </Text>
           )}
         </View>

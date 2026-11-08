@@ -199,7 +199,7 @@ const TournamentInfoPanel: React.FC<TournamentInfoPanelProps> = React.memo(({
                 fill={designTokens.colors.textSecondary}
               />
               <Text style={styles.tournamentDates}>
-                {tournamentInfo.startDate.toLocaleDateString()} - {tournamentInfo.endDate.toLocaleDateString()}
+                {tournamentInfo.startDate.toLocaleDateString('en-US')} - {tournamentInfo.endDate.toLocaleDateString('en-US')}
               </Text>
             </View>
           </View>

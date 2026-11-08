@@ -286,7 +286,7 @@ export const AssignmentTimeline: React.FC<AssignmentTimelineProps> = React.memo(
       {/* Enhanced Header with View Controls */}
       <View style={styles.header}>
         <Text style={styles.title}>
-          {view === 'daily' ? `Schedule - ${new Date(selectedDate).toLocaleDateString()}` : 
+          {view === 'daily' ? `Schedule - ${new Date(selectedDate).toLocaleDateString('en-US')}` :
            view === 'tournament' ? 'Tournament Schedule' : 'Detailed Timeline'}
         </Text>
         

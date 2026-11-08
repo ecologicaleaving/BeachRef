@@ -300,10 +300,10 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
         // mostrare una porta che si apre su un rifiuto.
         ...(accesso.autorizzato
           ? [{ titolo: 'Stats', onPress: () => handleMenuItemPress('/referee-stats-lab') }]
-          : [{ titolo: 'Accesso', onPress: () => handleMenuItemPress('/accedi') }]),
-        { titolo: 'Esci', onPress: handleEsci },
+          : [{ titolo: 'Sign in', onPress: () => handleMenuItemPress('/accedi') }]),
+        { titolo: 'Sign out', onPress: handleEsci },
       ]
-    : [{ titolo: 'Accedi con Google', onPress: () => handleMenuItemPress('/accedi') }];
+    : [{ titolo: 'Sign in with Google', onPress: () => handleMenuItemPress('/accedi') }];
 
   const handleTournamentToggle = (tournamentId: string) => {
     setExpandedTournaments(prev => {

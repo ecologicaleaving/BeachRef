@@ -25,6 +25,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View }
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { colors, spacing } from '../theme/tokens';
+import { invitationReasonLabel } from '../utils/englishLabels';
 import {
   completaRitorno,
   entraConGoogle,
@@ -86,7 +87,7 @@ export default function Iscrizione() {
     setInCorso(true);
     try {
       const r = await iscriviti(codice.trim());
-      setEsito(r.motivo);
+      setEsito(invitationReasonLabel(r.motivo));
       if (r.ok) await aggiorna();
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
@@ -106,29 +107,29 @@ export default function Iscrizione() {
   return (
     <ScrollView contentContainerStyle={stili.centro}>
       <View style={stili.riquadro}>
-        <Text style={stili.titolo}>Iscrizione</Text>
-        <Text style={stili.sottotitolo}>Statistiche arbitri BeachRef</Text>
+        <Text style={stili.titolo}>Registration</Text>
+        <Text style={stili.sottotitolo}>BeachRef referee statistics</Text>
 
         {stato.stato === 'non_configurato' && <Text style={stili.errore}>{stato.dettaglio}</Text>}
 
         {stato.stato === 'autorizzato' && (
           <>
-            <Text style={stili.ok}>Sei iscritto.</Text>
+            <Text style={stili.ok}>You are registered.</Text>
             <Text style={stili.nota}>{stato.email}</Text>
             <Pressable style={stili.bottone} onPress={() => router.push('/referee-stats-lab')}>
-              <Text style={stili.testoBottone}>Vai alle statistiche</Text>
+              <Text style={stili.testoBottone}>View statistics</Text>
             </Pressable>
           </>
         )}
 
         {stato.stato !== 'autorizzato' && stato.stato !== 'non_configurato' && (
           <>
-            <Text style={stili.etichetta}>Codice di invito</Text>
+            <Text style={stili.etichetta}>Invitation code</Text>
             <TextInput
               style={stili.campo}
               value={codice}
               onChangeText={setCodice}
-              placeholder="il codice che hai ricevuto"
+              placeholder="the code you received"
               placeholderTextColor={colors.textTertiary}
               autoCapitalize="characters"
             />
@@ -141,17 +142,17 @@ export default function Iscrizione() {
                   disabled={inCorso || !codice.trim()}
                 >
                   <Text style={stili.testoBottone}>
-                    {inCorso ? 'Apro Google…' : 'Continua con Google'}
+                    {inCorso ? 'Opening Google…' : 'Continue with Google'}
                   </Text>
                 </Pressable>
                 <Text style={stili.nota}>
-                  Serve un account Google. Dopo l&apos;accesso il codice viene verificato.
+                  A Google account is required. Your code is verified after you sign in.
                 </Text>
               </>
             ) : (
               <>
                 <Text style={stili.nota}>
-                  Accesso fatto come {stato.email}. Manca solo il codice.
+                  Signed in as {stato.email}. Enter your invitation code to continue.
                 </Text>
                 <Pressable
                   style={[stili.bottone, !codice.trim() && stili.bottoneSpento]}
@@ -159,11 +160,11 @@ export default function Iscrizione() {
                   disabled={inCorso || !codice.trim()}
                 >
                   <Text style={stili.testoBottone}>
-                    {inCorso ? 'Verifico…' : 'Iscrivimi'}
+                    {inCorso ? 'Checking…' : 'Register'}
                   </Text>
                 </Pressable>
                 <Pressable style={stili.bottoneChiaro} onPress={async () => { await esci(); await aggiorna(); }}>
-                  <Text style={stili.testoBottoneChiaro}>Usa un altro account</Text>
+                  <Text style={stili.testoBottoneChiaro}>Use another account</Text>
                 </Pressable>
               </>
             )}

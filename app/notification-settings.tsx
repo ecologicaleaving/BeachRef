@@ -89,7 +89,7 @@ export default function NotificationSettingsScreen() {
       setPreferences(prefs);
     } catch (error) {
       console.error('Failed to load notification settings:', error);
-      Alert.alert('Errore', 'Impossibile caricare le impostazioni delle notifiche.');
+      Alert.alert('Error', 'Unable to load notification settings.');
     } finally {
       setLoading(false);
     }
@@ -106,11 +106,11 @@ export default function NotificationSettingsScreen() {
       if (status === PermissionStatus.GRANTED) {
         // Register for push notifications
         await NotificationService.getInstance().registerForPushNotifications(refereeId);
-        Alert.alert('Successo', 'Le notifiche sono state abilitate con successo!');
+        Alert.alert('Success', 'Notifications have been enabled!');
       }
     } catch (error) {
       console.error('Failed to request permissions:', error);
-      Alert.alert('Errore', 'Impossibile richiedere i permessi per le notifiche.');
+      Alert.alert('Error', 'Unable to request notification permissions.');
     }
   };
 
@@ -125,7 +125,7 @@ export default function NotificationSettingsScreen() {
       setPreferences(updated);
     } catch (error) {
       console.error('Failed to toggle notifications:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare le preferenze.');
+      Alert.alert('Error', 'Unable to update preferences.');
     }
   };
 
@@ -143,7 +143,7 @@ export default function NotificationSettingsScreen() {
       setPreferences(updated);
     } catch (error) {
       console.error('Failed to toggle notification type:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare le preferenze.');
+      Alert.alert('Error', 'Unable to update preferences.');
     }
   };
 
@@ -152,14 +152,14 @@ export default function NotificationSettingsScreen() {
     return (
       <Container>
         <NavigationHeader
-          title="Impostazioni Notifiche"
+          title="Notification settings"
           showBackButton
           onBackPress={() => router.back()}
         />
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={[styles.loadingText, { color: theme.colors.text }]}>
-            Caricamento impostazioni...
+            Loading settings...
           </Text>
         </View>
       </Container>
@@ -172,7 +172,7 @@ export default function NotificationSettingsScreen() {
           `undefined`, so this was always the 'dark' branch. Written out. */}
       <StatusBar style="dark" />
       <NavigationHeader
-        title="Impostazioni Notifiche"
+        title="Notification settings"
         showBackButton
         onBackPress={() => router.back()}
       />
@@ -184,22 +184,22 @@ export default function NotificationSettingsScreen() {
         {/* Permission Status Section */}
         <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            Permessi
+            Permissions
           </Text>
 
           <View style={styles.permissionStatus}>
             <View style={styles.permissionInfo}>
               <Text style={[styles.label, { color: theme.colors.text }]}>
-                Stato Notifiche
+                Notification status
               </Text>
               <Text style={[styles.permissionStatusText, {
                 color: permissionStatus === PermissionStatus.GRANTED
                   ? theme.colors.success
                   : theme.colors.warning
               }]}>
-                {permissionStatus === PermissionStatus.GRANTED && '✅ Abilitate'}
-                {permissionStatus === PermissionStatus.DENIED && '❌ Disabilitate'}
-                {permissionStatus === PermissionStatus.UNDETERMINED && '⚠️ Non Richieste'}
+                {permissionStatus === PermissionStatus.GRANTED && '✅ Enabled'}
+                {permissionStatus === PermissionStatus.DENIED && '❌ Disabled'}
+                {permissionStatus === PermissionStatus.UNDETERMINED && '⚠️ Not requested'}
               </Text>
             </View>
 
@@ -209,7 +209,7 @@ export default function NotificationSettingsScreen() {
                 onPress={handleRequestPermissions}
               >
                 <Text style={[styles.buttonText, { color: theme.colors.onPrimary }]}>
-                  Richiedi Permessi
+                  Request permissions
                 </Text>
               </TouchableOpacity>
             )}
@@ -217,7 +217,7 @@ export default function NotificationSettingsScreen() {
 
           {permissionStatus === PermissionStatus.DENIED && (
             <Text style={[styles.helpText, { color: theme.colors.textSecondary }]}>
-              Per abilitare le notifiche, vai nelle impostazioni del dispositivo e abilita le notifiche per BeachRef.
+              To enable notifications, open your device settings and allow notifications for BeachRef.
             </Text>
           )}
         </View>
@@ -229,10 +229,10 @@ export default function NotificationSettingsScreen() {
               <View style={styles.settingRow}>
                 <View style={styles.settingInfo}>
                   <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                    Abilita Notifiche
+                    Enable notifications
                   </Text>
                   <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                    Ricevi notifiche push per aggiornamenti importanti
+                    Receive push notifications for important updates
                   </Text>
                 </View>
                 <Switch
@@ -252,16 +252,16 @@ export default function NotificationSettingsScreen() {
             {preferences.enabled && permissionStatus === PermissionStatus.GRANTED && (
               <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                  Tipi di Notifiche
+                  Notification types
                 </Text>
 
                 <View style={styles.settingRow}>
                   <View style={styles.settingInfo}>
                     <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                      Nuove Assegnazioni
+                      New assignments
                     </Text>
                     <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                      Notifica quando vieni assegnato a un nuovo torneo
+                      Notify me when I am assigned to a new tournament
                     </Text>
                   </View>
                   <Switch
@@ -278,10 +278,10 @@ export default function NotificationSettingsScreen() {
                 <View style={styles.settingRow}>
                   <View style={styles.settingInfo}>
                     <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                      Risultati Match
+                      Match results
                     </Text>
                     <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                      Notifica quando un match assegnato termina
+                      Notify me when an assigned match ends
                     </Text>
                   </View>
                   <Switch
@@ -298,10 +298,10 @@ export default function NotificationSettingsScreen() {
                 <View style={styles.settingRow}>
                   <View style={styles.settingInfo}>
                     <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                      Designazioni Match
+                      Match designations
                     </Text>
                     <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                      Notifica quando sei designato per un match specifico
+                      Notify me when I am designated for a match
                     </Text>
                   </View>
                   <Switch
@@ -318,10 +318,10 @@ export default function NotificationSettingsScreen() {
                 <View style={styles.settingRow}>
                   <View style={styles.settingInfo}>
                     <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                      Cambi Stato
+                      Status changes
                     </Text>
                     <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                      Notifica per aggiornamenti di stato assegnazioni
+                      Notify me about assignment status changes
                     </Text>
                   </View>
                   <Switch
@@ -338,10 +338,10 @@ export default function NotificationSettingsScreen() {
                 <View style={styles.settingRow}>
                   <View style={styles.settingInfo}>
                     <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-                      Aggiornamenti Torneo
+                      Tournament updates
                     </Text>
                     <Text style={[styles.settingDescription, { color: theme.colors.textSecondary }]}>
-                      Notifica per aggiornamenti generali del torneo
+                      Notify me about general tournament updates
                     </Text>
                   </View>
                   <Switch
@@ -361,7 +361,7 @@ export default function NotificationSettingsScreen() {
             {preferences.enabled && permissionStatus === PermissionStatus.GRANTED && (
               <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                  Promemoria
+                  Reminders
                 </Text>
 
                 <ReminderConfig
@@ -381,7 +381,7 @@ export default function NotificationSettingsScreen() {
             {preferences.enabled && permissionStatus === PermissionStatus.GRANTED && (
               <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                  Ore Silenziose
+                  Quiet hours
                 </Text>
 
                 <QuietHoursConfig

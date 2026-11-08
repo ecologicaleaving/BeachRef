@@ -188,7 +188,7 @@ const CourtAssignmentIndicator: React.FC<CourtAssignmentIndicatorProps> = ({
         </Text>
         
         <Text style={styles.changeType}>
-          {typeInfo.label} • {primaryChange.timestamp.toLocaleTimeString()}
+          {typeInfo.label} • {primaryChange.timestamp.toLocaleTimeString('en-GB')}
         </Text>
         
         {relevantChanges.length > 1 && (
@@ -293,7 +293,7 @@ export const CourtChangesDetail: React.FC<{
                     {priorityInfo.icon} Match {change.matchNo}
                   </Text>
                   <Text style={styles.detailChangeTime}>
-                    {change.timestamp.toLocaleTimeString()}
+                    {change.timestamp.toLocaleTimeString('en-GB')}
                   </Text>
                 </View>
                 <Text style={styles.detailChangeText}>

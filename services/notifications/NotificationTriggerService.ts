@@ -158,12 +158,12 @@ export class NotificationTriggerService {
     try {
       const count = assignments.length;
       const title = count === 1
-        ? 'Nuova Assegnazione'
-        : `${count} Nuove Assegnazioni`;
+        ? 'New assignment'
+        : `${count} New assignments`;
 
       const body = count === 1
-        ? `Sei stato assegnato al torneo ${assignments[0].tournamentName}`
-        : `Hai ricevuto ${count} nuove assegnazioni ai tornei`;
+        ? `You have been assigned to tournament ${assignments[0].tournamentName}`
+        : `You have received ${count} new tournament assignments`;
 
       const payload: NotificationPayload = {
         type: 'new_assignment' as NotificationType,
@@ -214,10 +214,10 @@ export class NotificationTriggerService {
         return;
       }
 
-      const title = 'Match Terminato';
+      const title = 'Match finished';
       const body = teams
-        ? `Il match ${teams} è terminato`
-        : 'Un match assegnato è terminato';
+        ? `Match ${teams} has finished`
+        : 'An assigned match has finished';
 
       const payload: NotificationPayload = {
         type: 'match_result' as NotificationType,
@@ -271,12 +271,12 @@ export class NotificationTriggerService {
       }
 
       const title = urgency === 'critical' || urgency === 'high'
-        ? `${urgency === 'critical' ? '🚨' : '⚠️'} Cambio Status`
-        : 'Cambio Status Assegnazione';
+        ? `${urgency === 'critical' ? '🚨' : '⚠️'} Status change`
+        : 'Assignment status change';
 
-      let body = `Status cambiato: ${newStatus}`;
+      let body = `Status changed: ${newStatus}`;
       if (courtNumber) {
-        body += ` - Campo ${courtNumber}`;
+        body += ` - Court ${courtNumber}`;
       }
       if (teams) {
         body += ` - ${teams}`;
@@ -332,8 +332,8 @@ export class NotificationTriggerService {
         return;
       }
 
-      const title = 'Nuova Designazione';
-      let body = `Sei stato designato per il match ${matchNo}: ${teams}`;
+      const title = 'New designation';
+      let body = `You have been designated for match ${matchNo}: ${teams}`;
       if (scheduledTime) {
         body += ` (${scheduledTime})`;
       }
@@ -401,8 +401,8 @@ export class NotificationTriggerService {
         return;
       }
 
-      const title = '⏰ Reminder Match';
-      const body = `Il match ${matchNo} (${teams}) inizia tra ${minutesBefore} minuti`;
+      const title = '⏰ Match reminder';
+      const body = `Match ${matchNo} (${teams}) starts in ${minutesBefore} minutes`;
 
       const payload: NotificationPayload = {
         type: 'match_reminder' as NotificationType,

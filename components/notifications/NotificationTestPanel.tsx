@@ -70,10 +70,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
         true
       );
 
-      Alert.alert('Inviato', `Notifica di test inviata: ${title}`);
+      Alert.alert('Sent', `Test notification sent: ${title}`);
     } catch (error) {
       console.error('Failed to send test notification:', error);
-      Alert.alert('Errore', 'Impossibile inviare la notifica di test.');
+      Alert.alert('Error', 'Unable to send the test notification.');
     }
   };
 
@@ -91,10 +91,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
         }
       });
 
-      Alert.alert('Inviato', 'Test Nuova Assegnazione inviato');
+      Alert.alert('Sent', 'New assignment test sent');
     } catch (error) {
       console.error('Failed to test new assignment:', error);
-      Alert.alert('Errore', 'Test fallito');
+      Alert.alert('Error', 'Test failed');
     }
   };
 
@@ -111,10 +111,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
         teams: 'Team A vs Team B'
       });
 
-      Alert.alert('Inviato', 'Test Risultato Match inviato');
+      Alert.alert('Sent', 'Match result test sent');
     } catch (error) {
       console.error('Failed to test match result:', error);
-      Alert.alert('Errore', 'Test fallito');
+      Alert.alert('Error', 'Test failed');
     }
   };
 
@@ -132,10 +132,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
         teams: 'Team C vs Team D'
       });
 
-      Alert.alert('Inviato', 'Test Cambio Status inviato');
+      Alert.alert('Sent', 'Status change test sent');
     } catch (error) {
       console.error('Failed to test status change:', error);
-      Alert.alert('Errore', 'Test fallito');
+      Alert.alert('Error', 'Test failed');
     }
   };
 
@@ -152,10 +152,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
         minutesBefore: 30
       });
 
-      Alert.alert('Inviato', 'Test Reminder inviato');
+      Alert.alert('Sent', 'Reminder test sent');
     } catch (error) {
       console.error('Failed to test match reminder:', error);
-      Alert.alert('Errore', 'Test fallito');
+      Alert.alert('Error', 'Test failed');
     }
   };
 
@@ -166,15 +166,15 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
     try {
       await NotificationTriggerService.getInstance().triggerEmergency({
         refereeId,
-        title: 'EMERGENZA TEST',
-        message: 'Questa è una notifica di emergenza di test',
+        title: 'TEST EMERGENCY',
+        message: 'This is a test emergency notification',
         assignmentId: 'test-assignment-id'
       });
 
-      Alert.alert('Inviato', 'Test Emergenza inviato');
+      Alert.alert('Sent', 'Emergency test sent');
     } catch (error) {
       console.error('Failed to test emergency:', error);
-      Alert.alert('Errore', 'Test fallito');
+      Alert.alert('Error', 'Test failed');
     }
   };
 
@@ -184,10 +184,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
   const clearRateLimits = () => {
     try {
       NotificationTriggerService.getInstance().clearRateLimits();
-      Alert.alert('Fatto', 'Rate limits azzerati');
+      Alert.alert('Done', 'Rate limits reset');
     } catch (error) {
       console.error('Failed to clear rate limits:', error);
-      Alert.alert('Errore', 'Operazione fallita');
+      Alert.alert('Error', 'Operation failed');
     }
   };
 
@@ -198,10 +198,10 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
     try {
       NotificationQueueService.getInstance().clearQueue();
       loadQueueStats();
-      Alert.alert('Fatto', 'Coda notifiche svuotata');
+      Alert.alert('Done', 'Notification queue cleared');
     } catch (error) {
       console.error('Failed to clear queue:', error);
-      Alert.alert('Errore', 'Operazione fallita');
+      Alert.alert('Error', 'Operation failed');
     }
   };
 
@@ -318,7 +318,7 @@ export function NotificationTestPanel({ refereeId }: NotificationTestPanelProps)
 
         <TouchableOpacity
           style={[styles.testButton, { backgroundColor: theme.colors.warning }]}
-          onPress={() => sendTestNotification('status_change' as any, 'Test Generico', 'Notifica di test generica')}
+          onPress={() => sendTestNotification('status_change' as any, 'Generic test', 'Generic test notification')}
         >
           <Text style={[styles.buttonText, { color: theme.colors.onPrimary }]}>
             Test Generic

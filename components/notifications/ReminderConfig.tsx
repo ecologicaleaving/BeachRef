@@ -72,10 +72,10 @@ export function ReminderConfig({ reminders, onUpdate }: ReminderConfigProps) {
       <View style={styles.toggleRow}>
         <View style={styles.toggleInfo}>
           <Text style={[styles.label, { color: theme.colors.text }]}>
-            Reminder Match
+            Match reminders
           </Text>
           <Text style={[styles.description, { color: theme.colors.textSecondary }]}>
-            Ricevi promemoria prima dei match assegnati
+            Receive reminders before assigned matches
           </Text>
         </View>
         <Switch
@@ -92,7 +92,7 @@ export function ReminderConfig({ reminders, onUpdate }: ReminderConfigProps) {
       {reminders.enabled && (
         <View style={styles.timingsContainer}>
           <Text style={[styles.timingsLabel, { color: theme.colors.textSecondary }]}>
-            Invia promemoria:
+            Send reminders:
           </Text>
 
           {REMINDER_OPTIONS.map(minutes => {
@@ -111,7 +111,7 @@ export function ReminderConfig({ reminders, onUpdate }: ReminderConfigProps) {
                 <Text style={[styles.timingText, {
                   color: isEnabled ? theme.colors.onPrimary : theme.colors.text
                 }]}>
-                  {minutes} minuti prima
+                  {minutes} minutes before
                 </Text>
                 {isEnabled && (
                   <Text style={[styles.checkmark, { color: theme.colors.onPrimary }]}>

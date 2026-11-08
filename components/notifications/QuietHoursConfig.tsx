@@ -55,7 +55,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
       await onUpdate(updated);
     } catch (error) {
       console.error('Failed to toggle quiet hours:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare le ore silenziose.');
+      Alert.alert('Error', 'Unable to update quiet hours.');
     }
   };
 
@@ -65,7 +65,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
   const handleStartTimeChange = async (time: string) => {
     try {
       if (!validateTime(time)) {
-        Alert.alert('Formato Non Valido', 'Inserisci il tempo in formato HH:mm (es. 22:00)');
+        Alert.alert('Invalid format', 'Enter a time in HH:mm format (e.g. 22:00)');
         return;
       }
 
@@ -81,7 +81,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
       await onUpdate(updated);
     } catch (error) {
       console.error('Failed to update start time:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare l\'orario di inizio.');
+      Alert.alert('Error', 'Unable to update the start time.');
     }
   };
 
@@ -91,7 +91,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
   const handleEndTimeChange = async (time: string) => {
     try {
       if (!validateTime(time)) {
-        Alert.alert('Formato Non Valido', 'Inserisci il tempo in formato HH:mm (es. 08:00)');
+        Alert.alert('Invalid format', 'Enter a time in HH:mm format (e.g. 08:00)');
         return;
       }
 
@@ -107,7 +107,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
       await onUpdate(updated);
     } catch (error) {
       console.error('Failed to update end time:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare l\'orario di fine.');
+      Alert.alert('Error', 'Unable to update the end time.');
     }
   };
 
@@ -116,10 +116,10 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
       <View style={styles.toggleRow}>
         <View style={styles.toggleInfo}>
           <Text style={[styles.label, { color: theme.colors.text }]}>
-            Ore Silenziose
+            Quiet hours
           </Text>
           <Text style={[styles.description, { color: theme.colors.textSecondary }]}>
-            Non ricevere notifiche durante queste ore
+            Pause notifications during these hours
           </Text>
         </View>
         <Switch
@@ -137,7 +137,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
         <View style={styles.timeInputs}>
           <View style={styles.timeInputGroup}>
             <Text style={[styles.timeLabel, { color: theme.colors.text }]}>
-              Inizio
+              Start
             </Text>
             <TextInput
               style={[styles.timeInput, {
@@ -158,7 +158,7 @@ export function QuietHoursConfig({ quietHours, onUpdate }: QuietHoursConfigProps
 
           <View style={styles.timeInputGroup}>
             <Text style={[styles.timeLabel, { color: theme.colors.text }]}>
-              Fine
+              End
             </Text>
             <TextInput
               style={[styles.timeInput, {

@@ -81,7 +81,7 @@ const ManualRefreshButton: React.FC<ManualRefreshButtonProps> = ({
     } else if (diffHour < 24) {
       return `${diffHour}h ago`;
     } else {
-      return date.toLocaleString();
+      return date.toLocaleString('en-GB');
     }
   };
 

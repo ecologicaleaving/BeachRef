@@ -181,7 +181,7 @@ const ScheduleChangeIndicator: React.FC<ScheduleChangeIndicatorProps> = ({
         </Text>
         
         <Text style={styles.lastDetected}>
-          Last detected: {scheduleChanges.lastDetected.toLocaleTimeString()}
+          Last detected: {scheduleChanges.lastDetected.toLocaleTimeString('en-GB')}
         </Text>
       </View>
 
@@ -269,7 +269,7 @@ export const ScheduleChangesDetail: React.FC<{
       </View>
       
       <Text style={styles.detailTimestamp}>
-        Last detected: {scheduleChanges.lastDetected.toLocaleString()}
+        Last detected: {scheduleChanges.lastDetected.toLocaleString('en-GB')}
       </Text>
     </View>
   );

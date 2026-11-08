@@ -35,6 +35,7 @@ import {
 import { router } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { colors, spacing } from '../theme/tokens';
+import { categoryLabel, phaseLabel, shortCategoryLabel } from '../utils/englishLabels';
 import { statoAccesso, tokenCorrente, type StatoAccesso } from '../services/auth/AccessService';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -110,11 +111,11 @@ type Ordine = 'matches' | 'as_first' | 'as_second' | 'tournaments' | 'referee_na
 const COLONNE_CATEGORIA = 6;
 
 const COLONNE: { chiave: Ordine; etichetta: string; larghezza: number; numerica: boolean }[] = [
-  { chiave: 'referee_name', etichetta: 'Arbitro', larghezza: 200, numerica: false },
-  { chiave: 'matches', etichetta: 'Partite', larghezza: 80, numerica: true },
-  { chiave: 'as_first', etichetta: '1°', larghezza: 60, numerica: true },
-  { chiave: 'as_second', etichetta: '2°', larghezza: 60, numerica: true },
-  { chiave: 'tournaments', etichetta: 'Tornei', larghezza: 70, numerica: true },
+  { chiave: 'referee_name', etichetta: 'Referee', larghezza: 200, numerica: false },
+  { chiave: 'matches', etichetta: 'Matches', larghezza: 80, numerica: true },
+  { chiave: 'as_first', etichetta: 'R1', larghezza: 60, numerica: true },
+  { chiave: 'as_second', etichetta: 'R2', larghezza: 60, numerica: true },
+  { chiave: 'tournaments', etichetta: 'Tournaments', larghezza: 110, numerica: true },
 ];
 
 /** Il VIS parla per cifre; qui si parla a un umano. */
@@ -123,18 +124,12 @@ const ALTRA = 'Non determinata';
 
 /** Le intestazioni devono stare in due righe da 92px. */
 function etichettaCorta(c: string): string {
-  return c
-    .replace('BPT ', '')
-    .replace('Campionati del Mondo', 'Mondiali')
-    .replace('Campionati continentali', 'Continentali')
-    .replace('Continental ', 'Cont. ')
-    .replace('Giochi multisport', 'Multisport')
-    .replace('Qualificazione ', 'Qual. ');
+  return shortCategoryLabel(c);
 }
 
 function etichettaGenere(g: string | null): string {
   if (g === 'M') return 'M';
-  if (g === 'W') return 'F';
+  if (g === 'W') return 'W';
   // "M + W" e' l'etichetta che l'app usa gia' nella selezione tornei: non
   // vale la pena inventarne una seconda per la stessa cosa.
   if (g === 'MIXED') return 'M + W';
@@ -157,7 +152,7 @@ async function leggi<T = Riga>(tabella: string, query: string): Promise<T[]> {
     // risultato vuoto: va distinto, altrimenti "nessun dato" e "non ho il
     // permesso di vedere i dati" sembrano la stessa cosa.
     const corpo = await risposta.text();
-    throw new Error(`HTTP ${risposta.status} su ${tabella}: ${corpo.slice(0, 200)}`);
+    throw new Error(`HTTP ${risposta.status} from ${tabella}: ${corpo.slice(0, 200)}`);
   }
   return await risposta.json();
 }
@@ -412,21 +407,21 @@ export default function RefereeStatsLab() {
       <ScrollView contentContainerStyle={stili.centro}>
         <Text style={stili.titoloErrore}>
           {accesso.stato === 'non_configurato'
-            ? 'Accesso non configurato'
+            ? 'Sign in is not configured'
             : accesso.stato === 'anonimo'
-              ? 'Serve l’accesso'
-              : 'Account non abilitato'}
+              ? 'Sign in required'
+              : 'Account does not have access'}
         </Text>
         <Text style={stili.testoErrore}>
           {accesso.stato === 'non_configurato'
             ? accesso.dettaglio
             : accesso.stato === 'anonimo'
-              ? 'Le statistiche sono riservate. Entra con Google per vederle.'
-              : `${accesso.email ?? 'Questo account'} ha fatto l’accesso, ma non è fra le persone autorizzate. Serve un invito.`}
+              ? 'Statistics are restricted. Sign in with Google to view them.'
+              : `${accesso.email ?? 'This account'} is signed in, but is not authorized. An invitation is required.`}
         </Text>
         {accesso.stato !== 'non_configurato' && (
           <Pressable style={stili.bottone} onPress={() => router.push('/accedi')}>
-            <Text style={stili.testoBottone}>Vai all&apos;accesso</Text>
+            <Text style={stili.testoBottone}>Go to sign in</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -437,7 +432,7 @@ export default function RefereeStatsLab() {
     return (
       <View style={stili.centro}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={stili.attesa}>Lettura delle statistiche aggregate…</Text>
+        <Text style={stili.attesa}>Loading aggregated statistics…</Text>
       </View>
     );
   }
@@ -445,10 +440,10 @@ export default function RefereeStatsLab() {
   if (errore) {
     return (
       <ScrollView contentContainerStyle={stili.centro}>
-        <Text style={stili.titoloErrore}>Non riesco a leggere le statistiche</Text>
+        <Text style={stili.titoloErrore}>Unable to load statistics</Text>
         <Text style={stili.testoErrore}>{errore}</Text>
         <Pressable style={stili.bottone} onPress={carica}>
-          <Text style={stili.testoBottone}>Riprova</Text>
+          <Text style={stili.testoBottone}>Try again</Text>
         </Pressable>
       </ScrollView>
     );
@@ -460,10 +455,9 @@ export default function RefereeStatsLab() {
       refreshControl={<RefreshControl refreshing={false} onRefresh={carica} />}
     >
       <View style={stili.intestazione}>
-        <Text style={stili.titolo}>Statistiche arbitro — banco di lavoro</Text>
+        <Text style={stili.titolo}>Referee statistics</Text>
         <Text style={stili.sottotitolo}>
-          Dati aggregati da `match_referees`, collegati per identità VIS.{'\n'}
-          Pagina non collegata al sito: solo indirizzo diretto.
+          Career and season statistics by referee.
         </Text>
       </View>
 
@@ -474,7 +468,7 @@ export default function RefereeStatsLab() {
             onPress={() => setStagione('carriera')}
           >
             <Text style={[stili.testoPillola, stagione === 'carriera' && stili.testoPillolaAttiva]}>
-              Carriera
+              Career
             </Text>
           </Pressable>
           {stagioni.map((s) => (
@@ -492,14 +486,14 @@ export default function RefereeStatsLab() {
 
         <TextInput
           style={stili.ricerca}
-          placeholder="Cerca per nome o federazione…"
+          placeholder="Search by name or federation…"
           placeholderTextColor={colors.textTertiary}
           value={cerca}
           onChangeText={setCerca}
         />
 
         <Text style={stili.riepilogo}>
-          {totali.arbitri} arbitri · {totali.designazioni} designazioni
+          {totali.arbitri} {totali.arbitri === 1 ? 'referee' : 'referees'} · {totali.designazioni} {totali.designazioni === 1 ? 'assignment' : 'assignments'}
         </Text>
       </View>
 
@@ -547,7 +541,7 @@ export default function RefereeStatsLab() {
               <Text style={stili.testoIntestazione}>Fed.</Text>
             </View>
             <View style={[stili.cella, { width: 190 }]}>
-              <Text style={stili.testoIntestazione}>Periodo</Text>
+              <Text style={stili.testoIntestazione}>Period</Text>
             </View>
           </View>
 
@@ -588,7 +582,7 @@ export default function RefereeStatsLab() {
               <View style={[stili.cella, { width: 60 }]}>
                 <Text style={[stili.valore, stili.numerica]}>{r.as_second}</Text>
               </View>
-              <View style={[stili.cella, { width: 70 }]}>
+              <View style={[stili.cella, { width: 110 }]}>
                 <Text style={[stili.valore, stili.numerica]}>{r.tournaments}</Text>
               </View>
               {colonneCategoria.map((c) => {
@@ -609,7 +603,7 @@ export default function RefereeStatsLab() {
               <View style={[stili.cella, { width: 190 }]}>
                 <Text style={stili.debole}>
                   {r.first_match ?? '—'} → {r.last_match ?? '—'}
-                  {r.seasons != null ? `  (${r.seasons} st.)` : ''}
+                  {r.seasons != null ? `  (${r.seasons} ${r.seasons === 1 ? 'season' : 'seasons'})` : ''}
                 </Text>
               </View>
             </Pressable>
@@ -628,13 +622,13 @@ export default function RefereeStatsLab() {
 
                 {!caricaDettaglio && !erroreDettaglio && confederazioni.length > 1 && (
                   <View style={stili.categorie}>
-                    <Text style={stili.etichettaFiltro}>Confederazione</Text>
+                    <Text style={stili.etichettaFiltro}>Confederation</Text>
                     <Pressable
                       style={[stili.pillolaPiccola, !confed && stili.pillolaAttiva]}
                       onPress={() => setConfed(null)}
                     >
                       <Text style={[stili.testoPillolaPiccola, !confed && stili.testoPillolaAttiva]}>
-                        Tutte
+                        All
                       </Text>
                     </Pressable>
                     {confederazioni.map(([nome, n]) => (
@@ -649,7 +643,7 @@ export default function RefereeStatsLab() {
                             confed === nome && stili.testoPillolaAttiva,
                           ]}
                         >
-                          {nome} · {n}
+                          {nome === ALTRA ? 'Unknown' : nome} · {n}
                         </Text>
                       </Pressable>
                     ))}
@@ -658,13 +652,13 @@ export default function RefereeStatsLab() {
 
                 {!caricaDettaglio && !erroreDettaglio && categorie.length > 1 && (
                   <View style={stili.categorie}>
-                    <Text style={stili.etichettaFiltro}>Categoria</Text>
+                    <Text style={stili.etichettaFiltro}>Category</Text>
                     <Pressable
                       style={[stili.pillolaPiccola, !categoria && stili.pillolaAttiva]}
                       onPress={() => setCategoria(null)}
                     >
                       <Text style={[stili.testoPillolaPiccola, !categoria && stili.testoPillolaAttiva]}>
-                        Tutte
+                        All
                       </Text>
                     </Pressable>
                     {categorie.map(([nome, n]) => (
@@ -679,7 +673,7 @@ export default function RefereeStatsLab() {
                             categoria === nome && stili.testoPillolaAttiva,
                           ]}
                         >
-                          {nome} · {n}
+                          {categoryLabel(nome)} · {n}
                         </Text>
                       </Pressable>
                     ))}
@@ -687,7 +681,7 @@ export default function RefereeStatsLab() {
                 )}
 
                 {!caricaDettaglio && !erroreDettaglio && torneiVisibili.length === 0 && (
-                  <Text style={stili.debole}>Nessun torneo per questa selezione.</Text>
+                  <Text style={stili.debole}>No tournaments for this selection.</Text>
                 )}
 
                 {!caricaDettaglio &&
@@ -706,13 +700,13 @@ export default function RefereeStatsLab() {
                           <View style={{ flex: 1 }}>
                             <Text style={stili.torneoNome}>
                               {espanso ? '▾ ' : '▸ '}
-                              {t.tournament_name ?? `Torneo VIS ${t.tournament_no}`}
+                              {t.tournament_name ?? `VIS tournament ${t.tournament_no}`}
                               {t.gender ? (
                                 <Text style={stili.genere}>{`  ${etichettaGenere(t.gender)}`}</Text>
                               ) : null}
                               <Text style={stili.categoria}>
                                 {`  ${t.confederation ?? ''}${t.confederation ? ' · ' : ''}${
-                                  t.category ?? `${ALTRO} (tipo ${t.tournament_type ?? '?'})`
+                                  t.category ? categoryLabel(t.category) : `Other (type ${t.tournament_type ?? '?'})`
                                 }`}
                               </Text>
                             </Text>
@@ -726,7 +720,7 @@ export default function RefereeStatsLab() {
                             {t.matches}
                             <Text
                               style={stili.debole}
-                            >{`  ${t.as_first}×1° ${t.as_second}×2°`}</Text>
+                            >{`  ${t.as_first}×R1 ${t.as_second}×R2`}</Text>
                           </Text>
                         </Pressable>
 
@@ -737,11 +731,11 @@ export default function RefereeStatsLab() {
                                 {p.local_date ?? '—'}
                                 {p.local_time ? ` ${p.local_time.slice(0, 5)}` : ''}
                               </Text>
-                              <Text style={stili.partitaFase} numberOfLines={1}>
-                                {p.round_name ?? '—'}
+                              <Text style={stili.partitaFase} numberOfLines={2}>
+                                {phaseLabel(p.round_name)}
                               </Text>
                               <Text style={stili.partitaRuolo}>
-                                {p.role === 'FIRST' ? '1°' : '2°'}
+                                {p.role === 'FIRST' ? 'R1' : 'R2'}
                               </Text>
                               <Text style={stili.partitaSquadre} numberOfLines={1}>
                                 {p.team_a_name ?? '—'} vs {p.team_b_name ?? '—'}
@@ -756,7 +750,7 @@ export default function RefereeStatsLab() {
 
                         {espanso && sue.length === 0 && (
                           <Text style={[stili.debole, stili.partitaVuota]}>
-                            Nessuna partita registrata per questo torneo nella selezione corrente.
+                            No matches recorded for this tournament in the current selection.
                           </Text>
                         )}
                       </View>
@@ -770,9 +764,7 @@ export default function RefereeStatsLab() {
           {righe.length === 0 && (
             <View style={stili.vuoto}>
               <Text style={stili.debole}>
-                Nessuna riga. Se il backfill non ha ancora girato, o se
-                `refresh_referee_stats()` non è mai stata eseguita, le tabelle sono vuote —
-                il che è diverso dal non avere il permesso di leggerle.
+                No statistics yet. Historical data may still be loading, or the statistics may not have been calculated yet.
               </Text>
             </View>
           )}
@@ -781,8 +773,7 @@ export default function RefereeStatsLab() {
 
       <View style={stili.piede}>
         <Text style={stili.debole}>
-          Le statistiche non si aggiornano da sole: le ricalcola
-          `refresh_referee_stats()` alla fine di ogni ciclo di backfill.
+          Statistics are recalculated after each historical data import.
         </Text>
       </View>
 
@@ -876,7 +867,7 @@ const stili = StyleSheet.create({
   rigaAperta: { backgroundColor: '#F4F4F5' },
   dettaglio: {
     // Larga quanto la tabella, colonne di categoria comprese.
-    width: 730 + 92 * COLONNE_CATEGORIA,
+    width: 770 + 92 * COLONNE_CATEGORIA,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: '#FAFAFA',

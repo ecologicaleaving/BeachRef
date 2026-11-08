@@ -46,7 +46,7 @@ export function AnalyticsRefreshIndicator({
     } else if (diffHours < 24) {
       return `${diffHours}h ago`;
     } else {
-      return date.toLocaleDateString();
+      return date.toLocaleDateString('en-US');
     }
   };
 
@@ -188,7 +188,7 @@ const formatTimestamp = (timestamp: string): string => {
   } else if (diffHours < 24) {
     return `${diffHours}h ago`;
   } else {
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-US');
   }
 };
 

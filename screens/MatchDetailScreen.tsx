@@ -1184,7 +1184,7 @@ export default function MatchDetailScreen() {
               <Text style={styles.infoLabel}>Date</Text>
               <Text style={styles.infoValue}>
                 {mergedData.type === 'legacy' && isBeachMatchCore(mergedData.data) && mergedData.data.scheduledDateTime
-                  ? new Date(mergedData.data.scheduledDateTime).toLocaleDateString()
+                  ? new Date(mergedData.data.scheduledDateTime).toLocaleDateString('en-US')
                   : mergedData.type === 'dto' && mergedData.data.schedule?.localDate
                   ? mergedData.data.schedule.localDate
                   : mergedData.type === 'legacy'

@@ -110,7 +110,7 @@ export default function Accedi() {
 
         {stato.stato === 'autorizzato' && (
           <>
-            <Text style={stili.benvenuto}>Ciao {stato.nome ?? stato.email}</Text>
+            <Text style={stili.benvenuto}>Welcome {stato.nome ?? stato.email}</Text>
             <Pressable
               style={stili.bottone}
               onPress={() => router.push('/referee-stats-lab')}

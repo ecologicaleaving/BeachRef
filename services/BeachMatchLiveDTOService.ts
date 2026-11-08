@@ -213,7 +213,7 @@ export class BeachMatchLiveDTOService {
 
           if (matchData.scheduledDateTime) {
             dto.schedule.localDate = matchData.scheduledDateTime.split('T')[0];
-            dto.schedule.localTime = new Date(matchData.scheduledDateTime).toLocaleTimeString();
+            dto.schedule.localTime = new Date(matchData.scheduledDateTime).toLocaleTimeString('en-GB');
             dto.schedule.utcBegin = matchData.scheduledDateTime;
           }
 

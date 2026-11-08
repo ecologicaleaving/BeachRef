@@ -421,7 +421,7 @@ const TournamentList: React.FC = () => {
         
         {statusLastUpdate && (
           <CaptionText style={styles.statusLastUpdate}>
-            Last status update: {statusLastUpdate.toLocaleTimeString()}
+            Last status update: {statusLastUpdate.toLocaleTimeString('en-GB')}
           </CaptionText>
         )}
       </View>

@@ -398,7 +398,7 @@ export function AnalyticsSettings({
         {/* Settings Info */}
         <View style={styles.infoSection}>
           <Text style={styles.infoText}>
-            Last updated: {new Date(settings.lastUpdated).toLocaleString()}
+            Last updated: {new Date(settings.lastUpdated).toLocaleString('en-GB')}
           </Text>
           <Text style={styles.infoText}>
             Real-time updates: {settings.enableRealTimeUpdates ? 'Enabled' : 'Disabled'}

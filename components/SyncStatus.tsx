@@ -172,7 +172,7 @@ export function SyncStatusDetailed({ style }: { style?: any }) {
         <View style={styles.detailedRow}>
           <Text style={styles.detailedLabel}>Last Sync:</Text>
           <Text style={styles.detailedValue}>
-            {new Date(syncStatus.lastSyncAttempt).toLocaleTimeString()}
+            {new Date(syncStatus.lastSyncAttempt).toLocaleTimeString('en-GB')}
           </Text>
         </View>
       )}

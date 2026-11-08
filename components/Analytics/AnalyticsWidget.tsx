@@ -164,7 +164,7 @@ export function AnalyticsWidget({
           <View style={styles.expandedContent}>
             <Text style={styles.sectionTitle}>Performance Details</Text>
             <Text style={styles.performanceDetail}>
-              Last Updated: {new Date(lastUpdated).toLocaleTimeString()}
+              Last Updated: {new Date(lastUpdated).toLocaleTimeString('en-GB')}
             </Text>
             <Text style={styles.performanceDetail}>
               Target: &lt; 500ms query time

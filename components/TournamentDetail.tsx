@@ -1035,7 +1035,7 @@ const TournamentDetail: React.FC<TournamentDetailProps> = ({ tournament, onBack 
               </Text>
               {statusLastUpdate && (
                 <Text style={styles.realtimeLastUpdate}>
-                  Last update: {statusLastUpdate.toLocaleTimeString()}
+                  Last update: {statusLastUpdate.toLocaleTimeString('en-GB')}
                 </Text>
               )}
             </View>

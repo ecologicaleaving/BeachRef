@@ -73,7 +73,7 @@ function transformMatchToLegacy(dto: MatchDTO): BeachMatch {
     // Add other required legacy fields with defaults
     MatchInTournament: dto.matchCode,
     LocalDate: new Date(dto.scheduledDateTime),
-    LocalTime: new Date(dto.scheduledDateTime).toLocaleTimeString(),
+    LocalTime: new Date(dto.scheduledDateTime).toLocaleTimeString('en-GB'),
     Court: dto.court?.courtName || dto.court?.courtNumber || '1',
   } as BeachMatch;
 }

@@ -266,7 +266,7 @@ const MyAssignmentsScreenContent: React.FC = () => {
               </Text>
               {lastSyncTime && (
                 <Text style={styles.lastSyncText}>
-                  Last sync: {lastSyncTime.toLocaleTimeString()}
+                  Last sync: {lastSyncTime.toLocaleTimeString('en-GB')}
                 </Text>
               )}
               {syncPending && isOnline && (

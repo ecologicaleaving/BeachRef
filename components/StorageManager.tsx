@@ -257,7 +257,7 @@ export function StorageManager({ style }: { style?: any }) {
       {lastCleanup && (
         <View style={styles.infoCard}>
           <Text style={styles.infoText}>
-            Last cleanup: {lastCleanup.toLocaleString()}
+            Last cleanup: {lastCleanup.toLocaleString('en-GB')}
           </Text>
         </View>
       )}

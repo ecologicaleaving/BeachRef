@@ -118,7 +118,7 @@ export const RefereeAnalyticsWithSync: React.FC<RefereeAnalyticsWithSyncProps> =
           </Text>
           {syncStatus.nextSync && (
             <Text style={styles.nextSyncText}>
-              Next sync: {syncStatus.nextSync.toLocaleTimeString()}
+              Next sync: {syncStatus.nextSync.toLocaleTimeString('en-GB')}
             </Text>
           )}
         </View>

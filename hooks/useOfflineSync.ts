@@ -483,7 +483,7 @@ export function useOfflineSync(config: OfflineSyncConfig = {}): OfflineSyncResul
 
     try {
       if (!supabase) {
-        throw new Error('Supabase non configurato: impossibile risolvere i conflitti');
+        throw new Error('Supabase is not configured: unable to resolve conflicts');
       }
 
       // Check for conflicts in sync_status table (Story 5.1 integration)

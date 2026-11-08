@@ -201,7 +201,7 @@ export const AssignmentStatusManager: React.FC<AssignmentStatusManagerProps> = (
                 Court {assignment.courtNumber} • {assignment.refereePosition}
               </Text>
               <Text style={styles.assignmentTime}>
-                {assignment.matchTime.toLocaleDateString()} at{' '}
+                {assignment.matchTime.toLocaleDateString('en-US')} at{' '}
                 {assignment.matchTime.toLocaleTimeString('en-US', { 
                   hour: 'numeric', 
                   minute: '2-digit',
@@ -306,7 +306,7 @@ export const AssignmentStatusManager: React.FC<AssignmentStatusManagerProps> = (
               <View key={note.id} style={styles.noteItem}>
                 <Text style={styles.noteText}>{note.text}</Text>
                 <Text style={styles.noteTimestamp}>
-                  {note.timestamp.toLocaleDateString()} at{' '}
+                  {note.timestamp.toLocaleDateString('en-US')} at{' '}
                   {note.timestamp.toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit',

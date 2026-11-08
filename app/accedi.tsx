@@ -77,7 +77,7 @@ export default function Accedi() {
     <ScrollView contentContainerStyle={stili.centro}>
       <View style={stili.riquadro}>
         <Text style={stili.titolo}>BeachRef</Text>
-        <Text style={stili.sottotitolo}>Statistiche arbitri</Text>
+        <Text style={stili.sottotitolo}>Referee statistics</Text>
 
         {stato.stato === 'non_configurato' && (
           <Text style={stili.errore}>{stato.dettaglio}</Text>
@@ -87,39 +87,38 @@ export default function Accedi() {
           <>
             <Pressable style={stili.bottone} onPress={entra} disabled={inCorso}>
               <Text style={stili.testoBottone}>
-                {inCorso ? 'Apro Google…' : 'Accedi con Google'}
+                {inCorso ? 'Opening Google…' : 'Sign in with Google'}
               </Text>
             </Pressable>
             <Text style={stili.nota}>
-              L&apos;accesso è riservato. Se non hai ancora un account, serve un invito.
+              Access is restricted. You need an invitation to create an account.
             </Text>
           </>
         )}
 
         {stato.stato === 'autenticato_non_autorizzato' && (
           <>
-            <Text style={stili.rifiuto}>Questo account non è abilitato.</Text>
+            <Text style={stili.rifiuto}>This account does not have access.</Text>
             <Text style={stili.nota}>
-              {stato.email ?? 'Account'} ha fatto l&apos;accesso, ma non è fra le persone
-              autorizzate a vedere le statistiche. Serve un invito.
+              {stato.email ?? 'Account'} is signed in, but is not authorized to view statistics. An invitation is required.
             </Text>
             <Pressable style={stili.bottoneChiaro} onPress={disconnetti}>
-              <Text style={stili.testoBottoneChiaro}>Esci</Text>
+              <Text style={stili.testoBottoneChiaro}>Sign out</Text>
             </Pressable>
           </>
         )}
 
         {stato.stato === 'autorizzato' && (
           <>
-            <Text style={stili.benvenuto}>Ciao {stato.nome ?? stato.email}</Text>
+            <Text style={stili.benvenuto}>Welcome {stato.nome ?? stato.email}</Text>
             <Pressable
               style={stili.bottone}
               onPress={() => router.push('/referee-stats-lab')}
             >
-              <Text style={stili.testoBottone}>Vai alle statistiche</Text>
+              <Text style={stili.testoBottone}>View statistics</Text>
             </Pressable>
             <Pressable style={stili.bottoneChiaro} onPress={disconnetti}>
-              <Text style={stili.testoBottoneChiaro}>Esci</Text>
+              <Text style={stili.testoBottoneChiaro}>Sign out</Text>
             </Pressable>
           </>
         )}

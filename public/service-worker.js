@@ -10,7 +10,7 @@
 
 const CACHE_PREFIX = 'beachref-';
 const CACHE_NAME = 'beachref-notifications-v2';
-const APP_VERSION = '2026.07.25.1'; // Bump on every deploy that changes this file
+const APP_VERSION = '2026.11.08.1'; // Bump on every deploy that changes this file
 
 /**
  * Service Worker installation
@@ -99,12 +99,12 @@ self.addEventListener('push', (event) => {
       actions: [
         {
           action: 'open',
-          title: 'Apri',
+          title: 'Open',
           icon: '/open-icon.png'
         },
         {
           action: 'dismiss',
-          title: 'Ignora',
+          title: 'Dismiss',
           icon: '/dismiss-icon.png'
         }
       ]
@@ -122,7 +122,7 @@ self.addEventListener('push', (event) => {
     // Fallback notification
     event.waitUntil(
       self.registration.showNotification('BeachRef', {
-        body: 'Hai una nuova notifica',
+        body: 'You have a new notification',
         icon: '/icon.png',
         badge: '/badge.png'
       })

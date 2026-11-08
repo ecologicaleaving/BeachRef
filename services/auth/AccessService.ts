@@ -93,7 +93,7 @@ export function accessoConfigurato(): boolean {
 async function client(): Promise<SupabaseClient> {
   if (!accessoConfigurato()) {
     throw new Error(
-      'Supabase non e configurato: mancano EXPO_PUBLIC_SUPABASE_URL o EXPO_PUBLIC_SUPABASE_ANON_KEY'
+      'Supabase is not configured: EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY is missing'
     );
   }
   if (!clientPromise) {
@@ -239,8 +239,8 @@ async function calcolaStatoAccesso(): Promise<StatoAccesso> {
     return {
       stato: 'non_configurato',
       dettaglio:
-        'Mancano EXPO_PUBLIC_SUPABASE_URL e/o EXPO_PUBLIC_SUPABASE_ANON_KEY. ' +
-        'Vanno impostate su Netlify (Site settings, Environment variables).',
+        'EXPO_PUBLIC_SUPABASE_URL and/or EXPO_PUBLIC_SUPABASE_ANON_KEY is missing. ' +
+        'Set them in Netlify under Site settings > Environment variables.',
     };
   }
 
@@ -277,7 +277,7 @@ export async function iscriviti(codice: string): Promise<EsitoIscrizione> {
   if (error) return { ok: false, motivo: error.message };
 
   const riga = Array.isArray(data) ? data[0] : data;
-  return { ok: Boolean(riga?.ok), motivo: riga?.reason ?? 'esito sconosciuto' };
+  return { ok: Boolean(riga?.ok), motivo: riga?.reason ?? 'Unknown result' };
 }
 
 /** Il token da mettere in `Authorization` per leggere le tabelle protette. */

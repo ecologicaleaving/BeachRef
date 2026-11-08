@@ -186,8 +186,8 @@ export class NotificationService {
         if (!webPushService.isWebPushSupported()) {
           this.log('Web push not supported in this browser');
           Alert.alert(
-            'Browser Non Supportato',
-            'Il tuo browser non supporta le notifiche push. Prova Chrome, Firefox o Edge.'
+            'Browser not supported',
+            'Your browser does not support push notifications. Try Chrome, Firefox, or Edge.'
           );
           return PermissionStatus.DENIED;
         }
@@ -231,20 +231,20 @@ export class NotificationService {
 
         // Show guidance to enable in settings
         Alert.alert(
-          'Notifiche Disabilitate',
-          'Per ricevere notifiche push, abilita le notifiche nelle impostazioni del dispositivo.',
+          'Notifications disabled',
+          'To receive push notifications, enable them in your device settings.',
           [
-            { text: 'Annulla', style: 'cancel' },
+            { text: 'Cancel', style: 'cancel' },
             {
-              text: 'Apri Impostazioni',
+              text: 'Open settings',
               onPress: () => {
                 if (Platform.OS === 'ios') {
                   Notifications.openSettingsAsync();
                 } else {
                   // Android requires linking to settings
                   Alert.alert(
-                    'Impostazioni',
-                    'Vai in Impostazioni > App > BeachRef > Notifiche per abilitare.'
+                    'Settings',
+                    'Go to Settings > Apps > BeachRef > Notifications to enable them.'
                   );
                 }
               }

@@ -254,7 +254,8 @@ nessun conteggio — né verde né rosso. Non sono stati riattivati nella #61 pe
 **copertura dichiarata e non esistente**, non copertura.
 
 ## Backlog
-- **FIX PRONTO (issue #116, in attesa di pubblicazione)**: La selezione tornei mostra le stagioni ricavate dai dati VIS, senza il limite fisso al 2026; refresh e retry mantengono lo stesso insieme di stagioni del caricamento iniziale. Conservato il limite storico inferiore 2001 ed escluse le date non valide. Verificati su VIS 4 eventi 2027 e la relativa sezione nella build web locale; test di regressione su apertura 2027/2028, refresh, retry e apertura automatica al cambio anno. Pubblicazione Netlify tramite PR verso `master`, previa approvazione.
+- **FIX PRONTO (issue #118, in attesa di pubblicazione)**: Verifica linguistica della webapp e traduzione in inglese di statistiche arbitro, scheda carriera, accesso/invito, menu e notifiche. Categorie/fasi e motivi di invito tradotti nella presentazione mantenendo chiavi e contratti esistenti. Formati UI delle date esplicitamente inglesi; invariata la rilevazione del fuso orario. Audit delle stringhe di prima parte e verifica UI con dati simulati per le statistiche protette.
+- **DONE (issue #116, PR #117, pubblicata 2026-11-08)**: La selezione tornei mostra le stagioni ricavate dai dati VIS, senza il limite fisso al 2026; refresh e retry mantengono lo stesso insieme di stagioni del caricamento iniziale. Conservato il limite storico inferiore 2001 ed escluse le date non valide. Verificati su VIS 4 eventi 2027 e la relativa sezione nella build web locale; test di regressione su apertura 2027/2028, refresh, retry e apertura automatica al cambio anno. Pubblicata su Netlify dopo approvazione, verificata in produzione con 17/17 smoke test verdi.
 - **TODO**: Integrazione AI per analisi performance arbitri
 - **TODO**: Offline mode per gestione tornei senza connessione
 - **TODO**: Dashboard web per organizzatori tornei

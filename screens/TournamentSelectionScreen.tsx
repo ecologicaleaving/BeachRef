@@ -115,12 +115,9 @@ const TournamentSelectionScreen: React.FC = () => {
 
         const visApi = new VisApiClient(config, DEFAULT_RETRY_CONFIG);
 
-        // Attempting VIS API call - filter for current year only
-        const currentYear = new Date().getFullYear();
+        // Match the initial load: published seasons may include future years.
         const response = await visApi.getEventList({
           tournamentType: 'BPT',
-          startDate: `${currentYear}-01-01`,
-          endDate: `${currentYear}-12-31`,
           maxResults: 50
         });
 
@@ -698,15 +695,6 @@ const TournamentSelectionScreen: React.FC = () => {
     loadTournaments(true);
   }, [loadTournaments]);
 
-  // Get season years sorted (recent first)
-  const getSeasonYears = (): number[] => {
-    const years: number[] = [];
-    for (let year = 2026; year >= 2001; year--) {
-      years.push(year);
-    }
-    return years;
-  };
-
   // Format month header for collapsible sections
   const formatMonthHeader = (monthKey: string): string => {
     const [year, month] = monthKey.split('-');
@@ -727,8 +715,8 @@ const TournamentSelectionScreen: React.FC = () => {
       const startDate = new Date(tournament.dates.startDate);
       const year = startDate.getFullYear();
 
-      // Only include tournaments from 2001 to 2026
-      if (year < 2001 || year > 2026) {
+      // Keep the historical lower bound without hiding newly published seasons.
+      if (!Number.isFinite(year) || year < 2001) {
         return false;
       }
 
@@ -785,7 +773,9 @@ const TournamentSelectionScreen: React.FC = () => {
     });
 
     // Convert grouped data to sections array
-    const years = getSeasonYears();
+    const years = Object.keys(seasonGroups)
+      .map(key => Number(key.replace('season-', '')))
+      .sort((a, b) => b - a);
 
     years.forEach(year => {
       const seasonKey = getSeasonKey(year);
@@ -847,10 +837,7 @@ const TournamentSelectionScreen: React.FC = () => {
       const currentMonthKey = getMonthKey(currentYear, currentMonth);
 
       // Initialize seasons - only current year expanded
-      const initialSeasons: { [key: string]: boolean } = {};
-      for (let year = 2001; year <= 2026; year++) {
-        initialSeasons[getSeasonKey(year)] = year === currentYear;
-      }
+      const initialSeasons: { [key: string]: boolean } = { [currentSeasonKey]: true };
 
       // Initialize months - always expand current month in current year
       const initialMonths: { [key: string]: boolean } = {};

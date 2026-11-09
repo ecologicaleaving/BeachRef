@@ -1,25 +1,8 @@
 /**
- * L'accesso, in un posto solo (issue #97).
- *
- * Due domande distinte, e tenerle distinte e' il punto:
- *
- *   CHI SEI      lo dice Google, tramite Supabase Auth
- *   SE PUOI      lo dice una riga in `app_users`
- *
- * Chiunque ha un account Google. Se le due domande si confondessero,
- * "autenticato" diventerebbe "autorizzato" e la pagina statistiche sarebbe
- * pubblica con un passaggio in piu'.
- *
- * ## Perche' `@supabase/supabase-js` si carica quando serve
- *
- * Pesa. La pagina statistiche legge PostgREST con `fetch` proprio per non
- * trascinarlo nel bundle (vedi "Web bundle weight" in CLAUDE.md), ma
- * l'autenticazione OAuth non si fa a mano: gestione del PKCE, dello scambio
- * del codice, del refresh del token. Quindi il client c'e', ma arriva con un
- * `import()` dinamico — che Metro sa spezzare in un chunk separato, mentre un
- * `require()` dentro una funzione lo risolverebbe staticamente (issue #45).
- *
- * Il costo lo paga solo chi apre `/accedi` o `/iscrizione`.
+ * Google access for referee statistics (issues #97, #120).
+ * OAuth provisions the account; every authenticated identity can read statistics.
+ * The database RPC remains authoritative so an incomplete deployment fails closed.
+ * The SDK loads on demand, only when an auth/statistics page needs a session.
  */
 
 import type { SupabaseClient, Session } from '@supabase/supabase-js';
@@ -170,7 +153,7 @@ export async function completaRitorno(): Promise<string | null> {
   return error ? error.message : null;
 }
 
-/** Toglie `code` e `state`, tiene il resto — l'invito deve sopravvivere. */
+/** Toglie `code` e `state`, tiene gli altri parametri per i vecchi link. */
 function pulisciQuery(search: string): string {
   const q = new URLSearchParams(search);
   q.delete('code');
@@ -219,7 +202,7 @@ async function sessione(): Promise<Session | null> {
  * Lo stato corrente, in una domanda sola.
  *
  * L'autorizzazione la decide il DATABASE, non questo codice: `is_authorized()`
- * guarda `app_users` con i permessi del chiamante. Una risposta calcolata qui
+ * verifica l'identita' autenticata con i permessi del chiamante. Una risposta calcolata qui
  * sarebbe un'opinione del browser, e il browser e' di chi lo usa.
  */
 export async function statoAccesso(): Promise<StatoAccesso> {
@@ -264,7 +247,7 @@ async function calcolaStatoAccesso(): Promise<StatoAccesso> {
 export type EsitoIscrizione = { ok: boolean; motivo: string };
 
 /**
- * Riscatta un codice di invito per l'utente appena autenticato.
+ * Compatibilita' con il vecchio flusso a inviti: non serve per registrarsi.
  *
  * Tutta la validazione sta nella funzione SQL: scadenza, revoca, usi residui,
  * e il lock che impedisce a due iscrizioni simultanee di consumare lo stesso

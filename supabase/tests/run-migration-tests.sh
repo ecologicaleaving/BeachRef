@@ -75,6 +75,7 @@ run_test "sync_backlog"                /repo/supabase/tests/sync_backlog.test.sq
 run_test "referees_name_not_identity"  /repo/supabase/tests/referees_name_not_identity.test.sql
 run_test "referee_stats"               /repo/supabase/tests/referee_stats.test.sql
 run_test "accesso_riservato"           /repo/supabase/tests/accesso_riservato.test.sql
+run_test "open_google_registration"   /repo/supabase/tests/open_google_registration.test.sql
 
 echo
 echo "=== Risultati: $PASS passed, $FAIL failed ==="

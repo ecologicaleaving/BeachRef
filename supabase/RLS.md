@@ -1,5 +1,10 @@
 # What the public key can reach, and why it could reach too much
 
+**Issue #120: migration 037 is ready for review and has not been applied to
+production.** It changes statistics access from invitation membership to any
+signed-in identity. Anonymous reads remain denied. See section 9 for the exact
+five-table scope and application procedure; sections 1–8 document earlier models.
+
 Issue #77. This file is the answer to its AC5 — *why the policies of issue #22
 did not produce the effect they declared* — and the reference for the access
 model that replaced them.
@@ -307,3 +312,56 @@ npm run test:migrations
 Docker only, never the project. It runs both the happy path (21 assertions:
 real production types, constraints, cascade behaviour, closure, idempotency)
 and the adversarial default-privileges case.
+
+## 9. Open Google registration and authenticated statistics reads (issue #120)
+
+Migration [037_open_google_registration.sql](migrations/037_open_google_registration.sql)
+supersedes the invitation requirement introduced by 028 and extended to category
+statistics by 032. Those historical migrations and their tests remain unchanged.
+A Google OAuth account is provisioned by Supabase Auth; no invitation redemption
+or `app_users` insertion is required for access.
+
+The consumer is the referee statistics list and career detail pages. The explicit
+read whitelist is:
+
+- `referee_season_stats`
+- `referee_career_stats`
+- `referee_tournament_stats`
+- `referee_match_log`
+- `referee_category_stats`
+
+On these five tables, 037 replaces the earlier read policies with SELECT policies
+for `authenticated` using `(SELECT auth.uid()) IS NOT NULL`. It revokes public,
+anonymous and authenticated grants before granting only SELECT to authenticated
+users. RLS stays enabled. A session with no UID sees no rows; anonymous requests
+lack SELECT privileges. INSERT, UPDATE, DELETE and TRUNCATE remain denied.
+
+`is_authorized()` now reports whether `auth.uid()` exists. Its execution grant
+remains restricted to authenticated callers, and the frontend still requires an
+explicit true result. An absent or mismatched backend deployment therefore leaves
+the UI closed. The migration does not change private-table grants or policies:
+`app_users` remains self-readable only, invitation codes remain unreadable, and
+worker/service-role permissions remain in place.
+
+### Applying and verifying 037
+
+**Current status: ready for review, not applied to production.** After approval,
+Davide opens Supabase Dashboard → SQL Editor and runs the complete
+`supabase/migrations/037_open_google_registration.sql` file, including its
+transaction and postconditions. Reapplication is supported. Do not edit or rerun
+028/032 as a substitute for applying 037.
+
+The standard local regression command is:
+
+```bash
+npm run test:migrations
+```
+
+The harness runs [open_google_registration.test.sql](tests/open_google_registration.test.sql)
+in a disposable database. It seeds every read model, applies 037 and reapplies it
+twice, compares complete stored rows and private-table grants/policies, and uses
+real `SET ROLE` reads for a new identity without `app_users` membership, a legacy
+member and a missing UID. It also verifies anonymous denials and authenticated
+DML/private/worker denials. The separate historical
+[accesso_riservato.test.sql](tests/accesso_riservato.test.sql) continues to verify
+028's original invitation model in its own database.

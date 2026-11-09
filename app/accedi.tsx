@@ -1,14 +1,4 @@
-/**
- * Accesso (issue #97).
- *
- * Un bottone solo: Google. **Nessun bottone di iscrizione**, di proposito —
- * ci si iscrive da `/iscrizione`, che non e' collegata da nessuna parte e il
- * cui indirizzo viene mandato a mano.
- *
- * Chi arriva qui senza essere stato invitato si autentica benissimo e non vede
- * niente: e' la distinzione fra "chi sei" e "se puoi", e la decide il database
- * (vedi migration 028).
- */
+/** Google sign in and open account registration (issue #120). */
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -30,7 +20,9 @@ export default function Accedi() {
 
   const aggiorna = useCallback(async () => {
     try {
-      setStato(await statoAccesso());
+      const prossimo = await statoAccesso();
+      setStato(prossimo);
+      if (prossimo.stato === 'autorizzato') router.replace('/referee-stats-lab');
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
     }
@@ -42,9 +34,14 @@ export default function Accedi() {
       // contrario, la sessione non esisterebbe ancora e la pagina direbbe
       // "anonimo" a chi ha appena fatto l'accesso — che e' esattamente il
       // sintomo osservato al primo tentativo reale.
-      const guasto = await completaRitorno();
-      if (guasto) setErrore(guasto);
-      await aggiorna();
+      try {
+        const guasto = await completaRitorno();
+        if (guasto) setErrore(guasto);
+      } catch (e) {
+        setErrore(e instanceof Error ? e.message : String(e));
+      } finally {
+        await aggiorna();
+      }
     })();
   }, [aggiorna]);
 
@@ -56,6 +53,7 @@ export default function Accedi() {
       await entraConGoogle('/accedi');
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
+    } finally {
       setInCorso(false);
     }
   };
@@ -68,7 +66,14 @@ export default function Accedi() {
   if (!stato) {
     return (
       <View style={stili.centro}>
-        <ActivityIndicator color={colors.primary} />
+        {errore ? (
+          <>
+            <Text style={stili.errore}>{errore}</Text>
+            <Pressable style={stili.bottoneChiaro} onPress={aggiorna}>
+              <Text style={stili.testoBottoneChiaro}>Try again</Text>
+            </Pressable>
+          </>
+        ) : <ActivityIndicator color={colors.primary} />}
       </View>
     );
   }
@@ -91,17 +96,23 @@ export default function Accedi() {
               </Text>
             </Pressable>
             <Text style={stili.nota}>
-              Access is restricted. You need an invitation to create an account.
+              Anyone with a Google account can sign up and view statistics.
             </Text>
+            <Pressable style={stili.bottoneChiaro} onPress={() => router.push('/iscrizione')}>
+              <Text style={stili.testoBottoneChiaro}>Create account</Text>
+            </Pressable>
           </>
         )}
 
         {stato.stato === 'autenticato_non_autorizzato' && (
           <>
-            <Text style={stili.rifiuto}>This account does not have access.</Text>
+            <Text style={stili.rifiuto}>Statistics are temporarily unavailable.</Text>
             <Text style={stili.nota}>
-              {stato.email ?? 'Account'} is signed in, but is not authorized to view statistics. An invitation is required.
+              {stato.email ?? 'Account'} is signed in. Please try again in a moment.
             </Text>
+            <Pressable style={stili.bottoneChiaro} onPress={aggiorna}>
+              <Text style={stili.testoBottoneChiaro}>Try again</Text>
+            </Pressable>
             <Pressable style={stili.bottoneChiaro} onPress={disconnetti}>
               <Text style={stili.testoBottoneChiaro}>Sign out</Text>
             </Pressable>

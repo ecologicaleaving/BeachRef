@@ -24,8 +24,8 @@
  *    a cio' che e' di vertice: finali e barra piu' alta. Se colorassi tutto,
  *    non guiderebbe piu' l'occhio da nessuna parte.
  *
- * Riservata come il resto: senza accesso e senza invito il database non
- * risponde, e la pagina lo dice invece di mostrare zeri.
+ * Every signed-in identity can read statistics (migration 037).
+ * Anonymous reads remain blocked by the database.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -239,8 +239,8 @@ export default function SchedaArbitro() {
   if (accesso && accesso.stato !== 'autorizzato') {
     return (
       <View style={st.centro}>
-        <Text style={st.vuotoTitolo}>Sign in required</Text>
-        <Text style={st.vuotoTesto}>Statistics are available to invited users.</Text>
+        <Text style={st.vuotoTitolo}>{accesso.stato === 'anonimo' ? 'Sign in required' : 'Statistics are temporarily unavailable'}</Text>
+        <Text style={st.vuotoTesto}>Sign in with Google to view statistics. Anyone can create an account.</Text>
         <Pressable style={st.bottone} onPress={() => router.push('/accedi')}>
           <Text style={st.testoBottone}>Go to sign in</Text>
         </Pressable>

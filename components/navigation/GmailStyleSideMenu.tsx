@@ -271,14 +271,7 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
     router.push(route as any);
   };
 
-  // --- Accesso (issue #103) -------------------------------------------------
-  //
-  // `/accedi` e `/referee-stats-lab` esistono dalla #97 ma non erano collegate
-  // da nessuna parte: si raggiungevano solo digitando l'indirizzo.
-  //
-  // `/iscrizione` NON compare qui, ed e' voluto: ci si iscrive solo con un
-  // indirizzo mandato a mano, perche' autenticarsi con Google e' alla portata di
-  // chiunque mentre l'autorizzazione e' un invito.
+  // Auth links read the local snapshot; the SDK stays lazy (issues #103, #120).
   const accesso = useAccessoRicordato();
 
   useEffect(() => {
@@ -294,16 +287,15 @@ export const GmailStyleSideMenu: React.FC<GmailStyleSideMenuProps> = ({
 
   const vociAccesso: { titolo: string; onPress: () => void }[] = accesso.autenticato
     ? [
-        // "Stats" solo a chi e' autorizzato. Chi si e' autenticato senza invito
-        // non la vede: la distinzione fra "chi sei" e "se puoi" e' la stessa
-        // che la #97 ha messo nel database, e il menu la rispecchia invece di
-        // mostrare una porta che si apre su un rifiuto.
         ...(accesso.autorizzato
           ? [{ titolo: 'Stats', onPress: () => handleMenuItemPress('/referee-stats-lab') }]
           : [{ titolo: 'Sign in', onPress: () => handleMenuItemPress('/accedi') }]),
         { titolo: 'Sign out', onPress: handleEsci },
       ]
-    : [{ titolo: 'Sign in with Google', onPress: () => handleMenuItemPress('/accedi') }];
+    : [
+        { titolo: 'Sign in with Google', onPress: () => handleMenuItemPress('/accedi') },
+        { titolo: 'Create account', onPress: () => handleMenuItemPress('/iscrizione') },
+      ];
 
   const handleTournamentToggle = (tournamentId: string) => {
     setExpandedTournaments(prev => {

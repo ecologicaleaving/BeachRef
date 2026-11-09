@@ -12,7 +12,7 @@
 - **Environment**: production
 - **Database ID**: beachref-production
 - **Schema**: sql-migrations
-- **Migration Status**: current
+- **Migration Status**: migration 037 pronta per review (#120), non ancora applicata in produzione
 - **Connection**: 
   - DEV: supabase local (localhost:54321)
   - PROD: auto-injected via Expo environment
@@ -33,7 +33,7 @@
 - **Deploy Method**: expo-build (mobile) / Netlify (web)
 - **Deploy Host**: expo-build-service (mobile) / Netlify (web)
 - **CI Status**: passing
-- **Last Deploy**: 2026-07-25T10:52:00Z (web — issue #40/PR #41 OfficialsService; prima PR #39 fix permessi CI)
+- **Last Deploy**: 2026-11-08 (web — issue #118, PR #119; commit produzione `0a834bb`, deploy Netlify `6af0e3a3bcc7393e2a590b73`)
 - **Environment Variables (build web)**: **nessuna, oggi.** Verificato su bundle
   (issue #52): né il bundle di produzione buildato dalla Action né quello
   buildato da Netlify contengono un URL Supabase o una chiave — le
@@ -253,8 +253,38 @@ nessun conteggio — né verde né rosso. Non sono stati riattivati nella #61 pe
 è lavoro a sé (serve un harness RN funzionante), ma vanno considerati
 **copertura dichiarata e non esistente**, non copertura.
 
+## Registrazione Google aperta (issue #120 — pronta per review)
+
+La registrazione via Google è libera: menu e login mostrano **Create account**,
+`/iscrizione` non richiede codici, e il callback OAuth porta alle statistiche.
+I vecchi link `/iscrizione?invito=...` restano utilizzabili senza riscattare inviti.
+Supabase Auth crea l'identità durante OAuth; non serve una riga in `app_users`.
+
+Il nuovo modello richiede la migration
+`supabase/migrations/037_open_google_registration.sql`: ogni utente autenticato
+con UID può leggere i cinque modelli `referee_season_stats`,
+`referee_career_stats`, `referee_tournament_stats`, `referee_match_log` e
+`referee_category_stats`. Le letture anonime restano negate; agli utenti
+sono concessi solo SELECT, senza DML o TRUNCATE. Permessi e policy delle altre
+tabelle, inclusi `app_users` e `invites`, restano invariati.
+
+**Stato: pronta per review, migration non applicata.** Dopo approvazione,
+Davide applica il file 037 completo nel Supabase SQL Editor; le migration
+storiche 028/032 non vanno riscritte. Il frontend continua a verificare
+`is_authorized()` e rimane chiuso se il backend non è ancora aggiornato.
+Restano PKCE con scambio esplicito, storage isolato, stato locale del menu e logout.
+
+Verifiche locali: 27 test auth/menu/stato ricordato e 13 test dei componenti
+login/signup passati; test SQL 037 passato su PostgreSQL 18.6 tramite ambiente
+locale temporaneo, con prima applicazione e due riapplicazioni, cinque sentinelle,
+ruoli reali e invarianti sui dati e sulle tabelle private. Passato anche il test
+storico 028 senza modifiche. Browser/export sono in verifica prima della PR.
+Il comando standard dei test SQL resta `npm run test:migrations` (Docker).
+Dettagli del modello in `supabase/RLS.md`, sezione 9.
+
 ## Backlog
-- **FIX PRONTO (issue #118, in attesa di pubblicazione)**: Verifica linguistica della webapp e traduzione in inglese di statistiche arbitro, scheda carriera, accesso/invito, menu e notifiche. Categorie/fasi e motivi di invito tradotti nella presentazione mantenendo chiavi e contratti esistenti. Formati UI delle date esplicitamente inglesi; invariata la rilevazione del fuso orario. Audit delle stringhe di prima parte e verifica UI con dati simulati per le statistiche protette.
+- **FIX PRONTO (issue #120, review e migration 037 in attesa)**: Registrazione Google libera e accesso alle statistiche per ogni utente autenticato; signup visibile nel menu/login, callback diretto alle statistiche, nessun codice richiesto. Cinque modelli in sola lettura con RLS; anonimi e scritture bloccati, tabelle private invariate. Migration locale verificata e non ancora applicata in produzione.
+- **DONE (issue #118, PR #119, pubblicata 2026-11-08)**: Verifica linguistica della webapp e traduzione in inglese di statistiche arbitro, scheda carriera, accesso/invito, menu e notifiche. Categorie/fasi e motivi di invito tradotti nella presentazione mantenendo chiavi e contratti esistenti. Formati UI delle date esplicitamente inglesi; invariata la rilevazione del fuso orario. Audit delle stringhe di prima parte e verifica UI con dati simulati per le statistiche protette.
 - **DONE (issue #116, PR #117, pubblicata 2026-11-08)**: La selezione tornei mostra le stagioni ricavate dai dati VIS, senza il limite fisso al 2026; refresh e retry mantengono lo stesso insieme di stagioni del caricamento iniziale. Conservato il limite storico inferiore 2001 ed escluse le date non valide. Verificati su VIS 4 eventi 2027 e la relativa sezione nella build web locale; test di regressione su apertura 2027/2028, refresh, retry e apertura automatica al cambio anno. Pubblicata su Netlify dopo approvazione, verificata in produzione con 17/17 smoke test verdi.
 - **TODO**: Integrazione AI per analisi performance arbitri
 - **TODO**: Offline mode per gestione tornei senza connessione
@@ -748,5 +778,5 @@ superficie molto più piccola.
 
 ---
 
-*Last Updated: 2026-07-26T12:00:00Z*
+*Last Updated: 2026-11-09*
 

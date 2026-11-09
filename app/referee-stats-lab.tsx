@@ -10,11 +10,8 @@
  * e anagrafica restano chiuse: se questa pagina volesse mostrarle, non
  * potrebbe.
  *
- * **Dalla migration 028 servono un accesso e un invito.** La chiave anonima
- * non apre piu' queste tabelle: le letture viaggiano con il token della
- * sessione, e chi non e' in `app_users` riceve zero righe dal database — non
- * una schermata vuota decisa qui. Il controllo nella pagina serve a dire
- * perche' non si vede nulla, non a impedirlo: quello lo fa PostgREST.
+ * Statistics require a signed-in identity (migration 037). Every Google
+ * account has access; the database enforces read-only access and blocks anon.
  *
  * Usa `fetch` su PostgREST e non `@supabase/supabase-js` di proposito: sono
  * due GET senza autenticazione ne' realtime, e importare il client
@@ -410,14 +407,14 @@ export default function RefereeStatsLab() {
             ? 'Sign in is not configured'
             : accesso.stato === 'anonimo'
               ? 'Sign in required'
-              : 'Account does not have access'}
+              : 'Statistics are temporarily unavailable'}
         </Text>
         <Text style={stili.testoErrore}>
           {accesso.stato === 'non_configurato'
             ? accesso.dettaglio
             : accesso.stato === 'anonimo'
-              ? 'Statistics are restricted. Sign in with Google to view them.'
-              : `${accesso.email ?? 'This account'} is signed in, but is not authorized. An invitation is required.`}
+              ? 'Sign in with Google to view statistics. Anyone can create an account.'
+              : `${accesso.email ?? 'This account'} is signed in. Please try again in a moment.`}
         </Text>
         {accesso.stato !== 'non_configurato' && (
           <Pressable style={stili.bottone} onPress={() => router.push('/accedi')}>

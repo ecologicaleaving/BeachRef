@@ -1,55 +1,21 @@
-/**
- * Iscrizione su invito (issue #97).
- *
- * NON e' collegata da nessuna parte, e non deve esserlo: si arriva qui solo
- * con l'indirizzo, che Davide manda alle persone scelte.
- *
- *   /iscrizione?invito=<codice>
- *
- * Il codice non e' una password — viaggia in chiaro nel link, come deve.
- * Serve a limitare CHI puo' iscriversi: un indirizzo che circola senza codice
- * non apre niente, ogni codice e' revocabile, e si sa a chi era stato dato.
- *
- * Senza il codice, il segreto dell'URL sarebbe l'intero controllo d'accesso:
- * chi lo inoltra autorizza qualcun altro, e chi lo trova in una cronologia
- * condivisa si iscrive da solo.
- *
- * Tutta la validazione sta in `redeem_invite()` (migration 028): scadenza,
- * revoca, usi residui e il lock contro due iscrizioni simultanee. Qui non si
- * controlla nulla, perche' un controllo nel browser si aggira aprendo la
- * console.
- */
-
+/** Open Google registration. Legacy ?invito links remain valid and need no code. */
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
 import { Text } from '../components/Typography/Text';
 import { colors, spacing } from '../theme/tokens';
-import { invitationReasonLabel } from '../utils/englishLabels';
-import {
-  completaRitorno,
-  entraConGoogle,
-  esci,
-  iscriviti,
-  statoAccesso,
-  type StatoAccesso,
-} from '../services/auth/AccessService';
+import { completaRitorno, entraConGoogle, esci, statoAccesso, type StatoAccesso } from '../services/auth/AccessService';
 
 export default function Iscrizione() {
-  const parametri = useLocalSearchParams<{ invito?: string }>();
-  const [codice, setCodice] = useState('');
   const [stato, setStato] = useState<StatoAccesso | null>(null);
-  const [esito, setEsito] = useState<string | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
   const [inCorso, setInCorso] = useState(false);
 
-  useEffect(() => {
-    if (typeof parametri.invito === 'string') setCodice(parametri.invito);
-  }, [parametri.invito]);
-
   const aggiorna = useCallback(async () => {
     try {
-      setStato(await statoAccesso());
+      const prossimo = await statoAccesso();
+      setStato(prossimo);
+      if (prossimo.stato === 'autorizzato') router.replace('/referee-stats-lab');
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
     }
@@ -57,13 +23,14 @@ export default function Iscrizione() {
 
   useEffect(() => {
     (async () => {
-      // Prima si chiude il giro su Google, poi si guarda chi siamo: al
-      // contrario, la sessione non esisterebbe ancora e la pagina direbbe
-      // "anonimo" a chi ha appena fatto l'accesso — che e' esattamente il
-      // sintomo osservato al primo tentativo reale.
-      const guasto = await completaRitorno();
-      if (guasto) setErrore(guasto);
-      await aggiorna();
+      try {
+        const guasto = await completaRitorno();
+        if (guasto) setErrore(guasto);
+      } catch (e) {
+        setErrore(e instanceof Error ? e.message : String(e));
+      } finally {
+        await aggiorna();
+      }
     })();
   }, [aggiorna]);
 
@@ -71,24 +38,7 @@ export default function Iscrizione() {
     setErrore(null);
     setInCorso(true);
     try {
-      // Il codice torna dall'indirizzo dopo il giro su Google, quindi va
-      // rimesso nel link di ritorno: la sessione lo perderebbe.
-      const q = codice ? `?invito=${encodeURIComponent(codice)}` : '';
-      await entraConGoogle(`/iscrizione${q}`);
-    } catch (e) {
-      setErrore(e instanceof Error ? e.message : String(e));
-      setInCorso(false);
-    }
-  };
-
-  const riscatta = async () => {
-    setErrore(null);
-    setEsito(null);
-    setInCorso(true);
-    try {
-      const r = await iscriviti(codice.trim());
-      setEsito(invitationReasonLabel(r.motivo));
-      if (r.ok) await aggiorna();
+      await entraConGoogle('/iscrizione');
     } catch (e) {
       setErrore(e instanceof Error ? e.message : String(e));
     } finally {
@@ -96,82 +46,40 @@ export default function Iscrizione() {
     }
   };
 
-  if (!stato) {
-    return (
-      <View style={stili.centro}>
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
+  if (!stato && !errore) {
+    return <View style={stili.centro}><ActivityIndicator color={colors.primary} /></View>;
   }
 
   return (
     <ScrollView contentContainerStyle={stili.centro}>
       <View style={stili.riquadro}>
-        <Text style={stili.titolo}>Registration</Text>
+        <Text style={stili.titolo}>Create account</Text>
         <Text style={stili.sottotitolo}>BeachRef referee statistics</Text>
+        <Text style={[stili.nota, stili.introduzione]}>Sign up with Google to view career and season statistics. Registration is open to everyone.</Text>
 
-        {stato.stato === 'non_configurato' && <Text style={stili.errore}>{stato.dettaglio}</Text>}
-
-        {stato.stato === 'autorizzato' && (
+        {stato?.stato === 'non_configurato' && <Text style={stili.errore}>{stato.dettaglio}</Text>}
+        {stato?.stato === 'anonimo' && (
+          <Pressable style={[stili.bottone, inCorso && stili.bottoneSpento]} onPress={entra} disabled={inCorso}>
+            <Text style={stili.testoBottone}>{inCorso ? 'Opening Google…' : 'Sign up with Google'}</Text>
+          </Pressable>
+        )}
+        {stato?.stato === 'autorizzato' && <Text style={stili.ok}>Opening statistics…</Text>}
+        {stato?.stato === 'autenticato_non_autorizzato' && (
           <>
-            <Text style={stili.ok}>You are registered.</Text>
-            <Text style={stili.nota}>{stato.email}</Text>
-            <Pressable style={stili.bottone} onPress={() => router.push('/referee-stats-lab')}>
-              <Text style={stili.testoBottone}>View statistics</Text>
+            <Text style={stili.errore}>You are signed in as {stato.email ?? 'a Google user'}. Statistics are temporarily unavailable. Please try again in a moment.</Text>
+            <Pressable style={stili.bottoneChiaro} onPress={async () => { await esci(); await aggiorna(); }}>
+              <Text style={stili.testoBottoneChiaro}>Use another account</Text>
             </Pressable>
           </>
         )}
-
-        {stato.stato !== 'autorizzato' && stato.stato !== 'non_configurato' && (
-          <>
-            <Text style={stili.etichetta}>Invitation code</Text>
-            <TextInput
-              style={stili.campo}
-              value={codice}
-              onChangeText={setCodice}
-              placeholder="the code you received"
-              placeholderTextColor={colors.textTertiary}
-              autoCapitalize="characters"
-            />
-
-            {stato.stato === 'anonimo' ? (
-              <>
-                <Pressable
-                  style={[stili.bottone, !codice.trim() && stili.bottoneSpento]}
-                  onPress={entra}
-                  disabled={inCorso || !codice.trim()}
-                >
-                  <Text style={stili.testoBottone}>
-                    {inCorso ? 'Opening Google…' : 'Continue with Google'}
-                  </Text>
-                </Pressable>
-                <Text style={stili.nota}>
-                  A Google account is required. Your code is verified after you sign in.
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text style={stili.nota}>
-                  Signed in as {stato.email}. Enter your invitation code to continue.
-                </Text>
-                <Pressable
-                  style={[stili.bottone, !codice.trim() && stili.bottoneSpento]}
-                  onPress={riscatta}
-                  disabled={inCorso || !codice.trim()}
-                >
-                  <Text style={stili.testoBottone}>
-                    {inCorso ? 'Checking…' : 'Register'}
-                  </Text>
-                </Pressable>
-                <Pressable style={stili.bottoneChiaro} onPress={async () => { await esci(); await aggiorna(); }}>
-                  <Text style={stili.testoBottoneChiaro}>Use another account</Text>
-                </Pressable>
-              </>
-            )}
-          </>
+        {(!stato || stato.stato === 'autenticato_non_autorizzato') && (
+          <Pressable style={stili.bottoneChiaro} onPress={aggiorna}>
+            <Text style={stili.testoBottoneChiaro}>Try again</Text>
+          </Pressable>
         )}
-
-        {esito && <Text style={stili.esito}>{esito}</Text>}
+        <Pressable style={stili.bottoneChiaro} onPress={() => router.push('/accedi')}>
+          <Text style={stili.testoBottoneChiaro}>Already have an account? Sign in</Text>
+        </Pressable>
         {errore && <Text style={stili.errore}>{errore}</Text>}
       </View>
     </ScrollView>
@@ -197,16 +105,6 @@ const stili = StyleSheet.create({
   },
   titolo: { fontSize: 26, fontWeight: '700', color: colors.textPrimary },
   sottotitolo: { color: colors.textSecondary, marginBottom: spacing.xl },
-  etichetta: { color: colors.textSecondary, fontSize: 13, marginBottom: spacing.xs },
-  campo: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: spacing.borderRadius,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-  },
   bottone: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
@@ -218,7 +116,7 @@ const stili = StyleSheet.create({
   bottoneChiaro: { marginTop: spacing.md, paddingVertical: spacing.sm, alignItems: 'center' },
   testoBottoneChiaro: { color: colors.textSecondary },
   ok: { color: colors.success, fontSize: 18, fontWeight: '700', marginBottom: spacing.sm },
-  esito: { color: colors.textPrimary, marginTop: spacing.md, textAlign: 'center' },
+  introduzione: { marginTop: 0, marginBottom: spacing.lg },
   nota: {
     color: colors.textTertiary,
     fontSize: 13,

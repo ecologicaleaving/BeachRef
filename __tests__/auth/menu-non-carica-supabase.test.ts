@@ -86,10 +86,8 @@ describe('il menu laterale non carica Supabase', () => {
   });
 });
 
-describe('nessun ingresso verso l\'iscrizione', () => {
-  it('il menu non collega /iscrizione', () => {
-    // Ci si iscrive solo con un indirizzo mandato a mano: autenticarsi con
-    // Google e' alla portata di chiunque, l'autorizzazione e' un invito.
-    expect(senzaCommenti(leggi('components/navigation/GmailStyleSideMenu.tsx'))).not.toContain('/iscrizione');
+describe('open registration navigation', () => {
+  it('the anonymous menu includes registration without loading the SDK', () => {
+    expect(senzaCommenti(leggi('components/navigation/GmailStyleSideMenu.tsx'))).toContain('/iscrizione');
   });
 });
